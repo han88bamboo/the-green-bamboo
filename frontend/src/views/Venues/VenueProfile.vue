@@ -1426,7 +1426,7 @@
                                 <button type="button" class="btn secondary-btn-border-thick rounded-0 reverse-clickable-text px-0" @click="editMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1);"  style="color:black;"> Reset Section Order </button>
                             </div>-->
                             <div v-if="editMenuMode" class="col-2 d-grid px-1">
-                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Item </button>
+                                <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" data-bs-toggle="modal" data-bs-target="#addMenuItemModal"> Add Item(s) </button>
                             </div>
                             <div v-if="editMenuMode" class="col-2 d-grid px-1">
                                 <button type="button" class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0" @click="addMenuSection"> Add Section </button>
@@ -2005,7 +2005,7 @@
 
                                     <!-- Modal Header -->
                                     <div class="modal-header">
-                                        <h1 class="modal-title fs-5" id="addMenuItemModalLabel">Add Menu Item</h1>
+                                        <h1 class="modal-title fs-5" id="addMenuItemModalLabel">Add Menu Items</h1>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
 
@@ -2015,190 +2015,210 @@
                                         <!-- Note -->
                                         <p class="fw-bold" style="color: #ae3e3e ">You will need an existing Menu Section to be created first before you can start adding menu items to your menu!</p>
                                         <p class="fw-bold" style="color: #ae3e3e ">If you have just added a new Menu Section, remember to click "Save" first before adding a new menu item.</p>
-                                        <!-- [input] bottle name -->
-                                        <div class="form-group mb-3">
-                                            <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
-
-                                            <input
-                                                type="text"
-                                                class="form-control"
-                                                v-model="searchQuery"
-                                                @input="debouncedSearch"
-                                                placeholder="Enter a Drink to Add to Menu"
-                                            />
-
-                                            <ul class="list-group" v-if="searchResults.length > 0 && searchQuery">
-                                                <li 
-                                                v-for="listing in searchResults" 
-                                                :key="listing.id" 
-                                                class="list-group-item list-group-item-action"
-                                                @click="selectListing(listing)"
-                                                >
-                                                {{ listing.listingName }} (Producer: {{ listing.producerName }})
-                                                </li>
-                                            </ul>
-
-                                            <p v-show="newMenuItemID.length > 0" class="text-start mb-1 text-danger" id="newMenuItemTargetError"></p>
-                                        </div>
-
-
-                                        <!-- [input] target menu section -->
-                                        <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Target Menu Section <span class="text-danger">*</span></p>
-                                            <select class="form-select" aria-label="newMenuItemTargetSection" v-model="newMenuItemTargetSection" @change="updateNewMenuItemTargetSection">
+                                        
+                                        <!-- Global Target Menu Section -->
+                                        <div class="form-group mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
+                                            <p class="text-start mb-1 fw-bold"> Target Menu Section (applies to all items) <span class="text-danger">*</span></p>
+                                            <select class="form-select" aria-label="globalMenuItemTargetSection" v-model="globalMenuItemTargetSection" @change="updateGlobalMenuItemTargetSection">
+                                                <option value="">Select a menu section...</option>
                                                 <option v-for="(menuSection, sectionIndex) in editMenu" v-bind:key="menuSection" v-bind:value="menuSection"> 
                                                     #{{ sectionIndex }}: {{ menuSection.sectionName }} 
                                                 </option>
                                             </select>
-                                            <p v-show="Object.keys(this.newMenuItemTargetSection).length !== 0" class="text-start mb-1 text-danger" id="newMenuItemTargetSectionError"></p>
-                                            <p v-show="Object.keys(this.newMenuItemTargetSection).length !== 0" class="text-start mb-1 text-warning-emphasis fst-italic" id="newMenuItemTargetSectionNotice"></p>
+                                            <p v-show="Object.keys(this.globalMenuItemTargetSection).length !== 0" class="text-start mb-1 text-danger" id="globalMenuItemTargetSectionError"></p>
                                         </div>
 
-                                        <!-- [input] menu item price -->
-                                        <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Menu Item Price (Note: If there is no price, leave it as -1)</p>
-                                            <input type="number" class="form-control" v-model="newMenuItemPrice" min="-1" step="0.01">
-                                        </div>
+                                        <!-- Multiple Menu Items Container -->
+                                        <div v-for="(item, itemIndex) in multipleMenuItems" :key="'item-' + itemIndex" class="mb-4">
+                                            
+                                            <!-- Item Header -->
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h5 class="fw-bold text-primary mb-0">Item {{ itemIndex + 1 }}</h5>
+                                                <button v-if="itemIndex > 0" type="button" class="btn btn-outline-danger btn-sm" @click="removeMenuItem(itemIndex)">
+                                                    Remove Item
+                                                </button>
+                                            </div>
 
-                                        <!-- [input] menu serving type -->
-                                        <div class="form-group mb-3">
-                                            <p class="text-start mb-1"> Menu Item Serving Type </p>
-                                            <select class="form-select" v-model="newMenuItemServingType">
-                                                <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
-                                            </select>
-                                        </div>
+                                            <div class="border rounded p-3" style="background-color: #fafafa;">
+                                                
+                                                <!-- [input] bottle name -->
+                                                <div class="form-group mb-3">
+                                                    <p class="text-start mb-1">Bottle Listing ID (Search by Name) <span class="text-danger">*</span></p>
 
-                                        <!-- ------- START Menu Item Preview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                                    <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        v-model="item.searchQuery"
+                                                        @input="debouncedSearchMultiple(itemIndex)"
+                                                        :placeholder="'Enter a Drink to Add to Menu (Item ' + (itemIndex + 1) + ')'"
+                                                    />
 
-                                        <!-- Menu Item Preview -->
-                                        <div v-if="Object.keys(this.newMenuItemTarget).length !== 0" class="col-12 my-3">
-                                            <hr>
-                                            <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item Preview:</p>
-                                            <!-- DESKTOP -->
-                                            <div class="row mobile-view-hide">
+                                                    <ul class="list-group" v-if="item.searchResults && item.searchResults.length > 0 && item.searchQuery">
+                                                        <li 
+                                                        v-for="listing in item.searchResults" 
+                                                        :key="listing.id" 
+                                                        class="list-group-item list-group-item-action"
+                                                        @click="selectListingMultiple(listing, itemIndex)"
+                                                        >
+                                                        {{ listing.listingName }} (Producer: {{ listing.producerName }})
+                                                        </li>
+                                                    </ul>
 
-                                                <!-- Item Image -->
-                                                <div class="col-2 image-container text-center mx-auto">
-                                                    <!-- <img :src=" 'data:image/jpeg;base64,' + ( newMenuItemTarget.photo || defaultPhoto)" style="width: 150px; height: 150px;"> -->
-                                                    <img :src="( newMenuItemTarget.photo || defaultPhoto)" style="width: 150px; height: 150px;">
+                                                    <p v-show="item.newMenuItemID && item.newMenuItemID.length > 0" class="text-start mb-1 text-danger"></p>
                                                 </div>
 
-                                                <!-- Item Information -->
-                                                <div class="col-10">
+                                                <!-- [input] menu item price -->
+                                                <div class="form-group mb-3">
+                                                    <p class="text-start mb-1"> Menu Item Price (Note: If there is no price, leave it as -1)</p>
+                                                    <input type="number" class="form-control" v-model="item.newMenuItemPrice" min="-1" step="0.01">
+                                                </div>
 
-                                                    <!-- Item Name -->
-                                                    <div class="row">
-                                                        <div class="col-7">
-                                                            <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ newMenuItemTarget.listingName }}</p>
+                                                <!-- [input] menu serving type -->
+                                                <div class="form-group mb-3">
+                                                    <p class="text-start mb-1"> Menu Item Serving Type </p>
+                                                    <select class="form-select" v-model="item.newMenuItemServingType">
+                                                        <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- ------- START Menu Item Preview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                <!-- Menu Item Preview -->
+                                                <div v-if="item.newMenuItemTarget && Object.keys(item.newMenuItemTarget).length !== 0" class="col-12 my-3">
+                                                    <hr>
+                                                    <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item Preview:</p>
+                                                    <!-- DESKTOP -->
+                                                    <div class="row mobile-view-hide">
+
+                                                        <!-- Item Image -->
+                                                        <div class="col-2 image-container text-center mx-auto">
+                                                            <img :src="(item.newMenuItemTarget.photo || defaultPhoto)" style="width: 150px; height: 150px;">
                                                         </div>
-                                                    </div>
 
-                                                    <!-- Item Details -->
-                                                    <div class="row">
-
-                                                        <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                                        <!-- Item Information -->
                                                         <div class="col-10">
-                                                            <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                                <span v-if="newMenuItemTarget.producerName">{{ newMenuItemTarget.producerName }} | </span>
-                                                                <span v-if="newMenuItemTarget.drinkType">{{ newMenuItemTarget.drinkType }} | </span>
-                                                                <span v-if="newMenuItemTarget.typeCategory">{{ newMenuItemTarget.typeCategory }} | </span>
-                                                                <span v-if="newMenuItemTarget.abv">{{ newMenuItemTarget.abv }} ABV | </span>
-                                                                <span v-if="newMenuItemTarget.originCountry">{{ newMenuItemTarget.originCountry }}</span>
-                                                            </p>
 
-                                                            <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                                <span v-if="newMenuItemTarget.officialDesc">{{ newMenuItemTarget.officialDesc }}</span>
-                                                            </p>
-                                                        </div>
+                                                            <!-- Item Name -->
+                                                            <div class="row">
+                                                                <div class="col-7">
+                                                                    <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ item.newMenuItemTarget.listingName }}</p>
+                                                                </div>
+                                                            </div>
 
-                                                        <!-- Item Rating -->
-                                                        <div class="col-2">
-                                                            <p class="fs-3 fw-bold rating-text text-start">
-                                                                {{ newMenuItemTarget.avgRating }}  ★
-                                                            </p>
+                                                            <!-- Item Details -->
+                                                            <div class="row">
+
+                                                                <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                                                <div class="col-10">
+                                                                    <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                        <span v-if="item.newMenuItemTarget.producerName">{{ item.newMenuItemTarget.producerName }} | </span>
+                                                                        <span v-if="item.newMenuItemTarget.drinkType">{{ item.newMenuItemTarget.drinkType }} | </span>
+                                                                        <span v-if="item.newMenuItemTarget.typeCategory">{{ item.newMenuItemTarget.typeCategory }} | </span>
+                                                                        <span v-if="item.newMenuItemTarget.abv">{{ item.newMenuItemTarget.abv }} ABV | </span>
+                                                                        <span v-if="item.newMenuItemTarget.originCountry">{{ item.newMenuItemTarget.originCountry }}</span>
+                                                                    </p>
+
+                                                                    <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                                        <span v-if="item.newMenuItemTarget.officialDesc">{{ item.newMenuItemTarget.officialDesc }}</span>
+                                                                    </p>
+                                                                </div>
+
+                                                                <!-- Item Rating -->
+                                                                <div class="col-2">
+                                                                    <p class="fs-3 fw-bold rating-text text-start">
+                                                                        {{ item.newMenuItemTarget.avgRating }}  ★
+                                                                    </p>
+                                                                </div>
+
+                                                            </div>
+
+                                                            <!-- Item Menu Details -->
+                                                            <div class="row">
+
+                                                                <!-- Item Price / Item Serving Type -->
+                                                                <div class="col-4">
+                                                                    <p class="text-start fs-5 fw-bold default-text-no-background">$ {{ item.newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == item.newMenuItemServingType)?.servingType || "-" }}</p>
+                                                                </div>
+
+                                                            </div>
+
                                                         </div>
 
                                                     </div>
+                                                    <!-- MOBILE -->
+                                                    <div class="row mobile-view-show">
 
-                                                    <!-- Item Menu Details -->
-                                                    <div class="row">
-
-                                                        <!-- Item Price / Item Serving Type -->
-                                                        <div class="col-4">
-                                                            <p class="text-start fs-5 fw-bold default-text-no-background">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == newMenuItemServingType).servingType || "-" }}</p>
+                                                        <!-- Item Image -->
+                                                        <div class=" mobile-col-3 image-container text-center mx-auto">
+                                                            <img :src="(item.newMenuItemTarget.photo || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
                                                         </div>
 
+                                                        <!-- Item Information -->
                                                         
+                                                        <div class="mobile-col-8 mobile-pe-0 mobile-ps-2 me-2">
+                                                            <div class="row">
+
+                                                                <!-- Item Name -->
+                                                                <div class="mobile-mb-1">
+                                                                        <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ item.newMenuItemTarget.listingName }}</p>
+                                                                </div>
+
+                                                                <!-- Item Details -->
+                                                                <div class="row">
+                                                                    <!-- Item Producer / Drink Type / Type Category / ABV / Country -->
+                                                                        <p class="text-start mb-1 mobile-fs-7" >
+                                                                            <span v-if="item.newMenuItemTarget.producerName">{{ item.newMenuItemTarget.producerName }} | </span>
+                                                                            <span v-if="item.newMenuItemTarget.drinkType">{{ item.newMenuItemTarget.drinkType }} | </span>
+                                                                            <span v-if="item.newMenuItemTarget.typeCategory">{{ item.newMenuItemTarget.typeCategory }} | </span>
+                                                                            <span v-if="item.newMenuItemTarget.abv">{{ item.newMenuItemTarget.abv }} ABV | </span>
+                                                                            <span v-if="item.newMenuItemTarget.originCountry">{{ item.newMenuItemTarget.originCountry }}</span>
+                                                                        </p>
+                                                                </div>
+
+                                                                <!-- Item Rating -->
+                                                                <div class="d-flex align-items-center gap-1">
+                                                                    <p class="fs-3 fw-bold rating-text mb-0">
+                                                                        {{ item.newMenuItemTarget.avgRating }} ★
+                                                                    </p>
+                                                                </div>
+
+                                                                <!-- Item Menu Details -->
+                                                                <div class="d-flex align-items-center gap-1">
+
+                                                                    <!-- Item Price / Item Serving Type -->
+                                                                    <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">$ {{ item.newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == item.newMenuItemServingType)?.servingType || "-" }}</p>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
 
                                                     </div>
-
                                                 </div>
 
-                                            </div>
-                                            <!-- MOBILE -->
-                                            <div class="row mobile-view-show">
-
-                                                <!-- Item Image -->
-                                                <div class=" mobile-col-3 image-container text-center mx-auto">
-                                                    <!-- <img :src=" 'data:image/jpeg;base64,' + ( newMenuItemTarget.photo || defaultPhoto)" style="width: 150px; height: 150px;"> -->
-                                                    <img :src="( newMenuItemTarget.photo || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
-                                                </div>
-
-                                                <!-- Item Information -->
-                                                
-                                                <div class="mobile-col-8 mobile-pe-0 mobile-ps-2 me-2">
-                                                    <div class="row">
-
-                                                        <!-- Item Name -->
-                                                        <div class="mobile-mb-1">
-                                                                <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ newMenuItemTarget.listingName }}</p>
-                                                        </div>
-
-                                                        <!-- Item Details -->
-                                                        <div class="row">
-                                                            <!-- Item Producer / Drink Type / Type Category / ABV / Country -->
-                                                                <p class="text-start mb-1 mobile-fs-7" >
-                                                                    <span v-if="newMenuItemTarget.producerName">{{ newMenuItemTarget.producerName }} | </span>
-                                                                    <span v-if="newMenuItemTarget.drinkType">{{ newMenuItemTarget.drinkType }} | </span>
-                                                                    <span v-if="newMenuItemTarget.typeCategory">{{ newMenuItemTarget.typeCategory }} | </span>
-                                                                    <span v-if="newMenuItemTarget.abv">{{ newMenuItemTarget.abv }} ABV | </span>
-                                                                    <span v-if="newMenuItemTarget.originCountry">{{ newMenuItemTarget.originCountry }}</span>
-                                                                </p>
-                                                        </div>
-
-                                                        <!-- Item Rating -->
-                                                        <div class="d-flex align-items-center gap-1">
-                                                            <p class="fs-3 fw-bold rating-text mb-0">
-                                                                {{ newMenuItemTarget.avgRating }} ★
-                                                            </p>
-                                                        </div>
-
-                                                    
-
-                                                        <!-- Item Menu Details -->
-                                                        <div class="d-flex align-items-center gap-1">
-
-                                                            <!-- Item Price / Item Serving Type -->
-                                                            <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">$ {{ newMenuItemPrice || "-" }} / {{ servingTypes.find(i => i.id == newMenuItemServingType).servingType || "-" }}</p>
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-
+                                                <!-- ------- END Menu Item Preview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                                             </div>
                                         </div>
 
-                                        <!-- ------- END Menu Item Preview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                        <!-- Add Additional Item Button -->
+                                        <div class="text-center mb-3" v-if="multipleMenuItems.length < 20">
+                                            <button type="button" class="btn btn-outline-primary" @click="addAdditionalItem">
+                                                + Select Additional Item ({{ multipleMenuItems.length }}/20)
+                                            </button>
+                                        </div>
+
+                                        <!-- Maximum Items Message -->
+                                        <div class="text-center mb-3" v-if="multipleMenuItems.length >= 20">
+                                            <p class="text-warning fst-italic">Maximum of 20 items can be added at once.</p>
+                                        </div>
 
                                     </div>
 
                                     <!-- Modal Footer -->
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="newMenuItemTargetSection = {}; newMenuItemTarget = {} ; newMenuItemID = ''; newMenuItemPrice = -1; getDefaultServingType();">Cancel</button>
-                                        <button type="button" class="btn secondary-btn rounded reverse-clickable-text" data-bs-dismiss="modal" @click="addMenuItem"
-                                            v-bind:disabled="Object.keys(newMenuItemTargetSection).length === 0 || Object.keys(newMenuItemTarget).length === 0">
-                                            Add Item
+                                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="resetMultipleMenuItems();">Cancel</button>
+                                        <button type="button" class="btn secondary-btn rounded reverse-clickable-text" data-bs-dismiss="modal" @click="addMultipleMenuItems"
+                                            v-bind:disabled="!isValidToSubmitMultiple()">
+                                            Add {{ getValidItemsCount() }} Item(s)
                                         </button>
                                     </div>
 
@@ -3796,6 +3816,21 @@
                 newMenuItemTargetSection: {},
                 newMenuItemPrice: -1,
                 newMenuItemServingType: {},
+                
+                // Multiple menu items functionality
+                multipleMenuItems: [
+                    {
+                        searchQuery: '',
+                        searchResults: [],
+                        newMenuItemID: '',
+                        newMenuItemTarget: {},
+                        newMenuItemPrice: -1,
+                        newMenuItemServingType: 1, // Will be properly initialized when servingTypes are loaded
+                        debounceTimer: null
+                    }
+                ],
+                globalMenuItemTargetSection: {},
+                
                 renameMenuSectionModalTarget: {},
                 renameMenuSectionModalOld: '',
                 renameMenuSectionModalNew: '',
@@ -4116,6 +4151,7 @@
                         const servingTypesResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getServingTypes`);
                         this.servingTypes = servingTypesResponse.data;
                         this.getDefaultServingType();
+                        this.initializeMultipleItemsDefaultServingTypes();
 
                         // Obtain map data
                         try {
@@ -5400,6 +5436,22 @@
                 }
             },
 
+            // Initialize Default Serving Types for Multiple Items
+            initializeMultipleItemsDefaultServingTypes() {
+                try {
+                    const defaultServing = this.servingTypes.find(s => s.servingType === "-");
+                    const defaultId = defaultServing ? defaultServing.id : 1;
+                    
+                    this.multipleMenuItems.forEach(item => {
+                        if (!item.newMenuItemServingType) {
+                            item.newMenuItemServingType = defaultId;
+                        }
+                    });
+                } catch (error) {
+                    console.error(error);
+                }
+            },
+
             // Add Menu Item
             async addMenuItem() {
                     
@@ -5468,6 +5520,203 @@
                 this.newMenuItemTargetSection = {};
                 this.newMenuItemPrice = '';
                 this.getDefaultServingType();
+            },
+
+            // Add Additional Item (for multiple items modal)
+            addAdditionalItem() {
+                if (this.multipleMenuItems.length < 20) {
+                    const defaultServingId = this.servingTypes.find(type => type.servingType === "-")?.id || 1;
+                    
+                    this.multipleMenuItems.push({
+                        searchQuery: '',
+                        searchResults: [],
+                        newMenuItemID: '',
+                        newMenuItemTarget: {},
+                        newMenuItemPrice: -1,
+                        newMenuItemServingType: defaultServingId,
+                        debounceTimer: null
+                    });
+                }
+            },
+
+            // Remove Menu Item (for multiple items modal)
+            removeMenuItem(itemIndex) {
+                if (itemIndex > 0 && this.multipleMenuItems.length > 1) {
+                    this.multipleMenuItems.splice(itemIndex, 1);
+                }
+            },
+
+            // Reset Multiple Menu Items
+            resetMultipleMenuItems() {
+                const defaultServingId = this.servingTypes.find(type => type.servingType === "-")?.id || 1;
+                
+                this.multipleMenuItems = [
+                    {
+                        searchQuery: '',
+                        searchResults: [],
+                        newMenuItemID: '',
+                        newMenuItemTarget: {},
+                        newMenuItemPrice: -1,
+                        newMenuItemServingType: defaultServingId,
+                        debounceTimer: null
+                    }
+                ];
+                this.globalMenuItemTargetSection = {};
+            },
+
+            // Debounced Search for Multiple Items
+            debouncedSearchMultiple(itemIndex) {
+                const item = this.multipleMenuItems[itemIndex];
+                
+                // Clear previous timeout
+                if (item.debounceTimer) {
+                    clearTimeout(item.debounceTimer);
+                }
+
+                // Set new timeout
+                item.debounceTimer = setTimeout(() => {
+                    this.searchListingsMultiple(itemIndex);
+                }, 300);
+            },
+
+            // Search Listings for Multiple Items
+            async searchListingsMultiple(itemIndex) {
+                const item = this.multipleMenuItems[itemIndex];
+                
+                if (!item.searchQuery || item.searchQuery.trim() < 2) {
+                    item.searchResults = [];
+                    return;
+                }
+
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${item.searchQuery}`);
+
+                    if (response.status === 200) {
+                        item.searchResults = response.data.slice(0, 10); // Limit to 10 results
+                    }
+                } catch (error) {
+                    console.error('Error searching listings:', error);
+                    item.searchResults = [];
+                }
+            },
+
+            // Select Listing for Multiple Items
+            selectListingMultiple(listing, itemIndex) {
+                const item = this.multipleMenuItems[itemIndex];
+                
+                item.newMenuItemID = listing.id;
+                item.newMenuItemTarget = listing;
+                item.searchQuery = listing.listingName;
+                item.searchResults = [];
+            },
+
+            // Update Global Menu Item Target Section
+            updateGlobalMenuItemTargetSection() {
+                // This method can be used for validation if needed
+                console.log('Global target section updated:', this.globalMenuItemTargetSection);
+            },
+
+            // Check if valid to submit multiple items
+            isValidToSubmitMultiple() {
+                if (Object.keys(this.globalMenuItemTargetSection).length === 0) {
+                    return false;
+                }
+
+                // Check if at least one item is valid
+                return this.multipleMenuItems.some(item => 
+                    item.newMenuItemID && Object.keys(item.newMenuItemTarget).length > 0
+                );
+            },
+
+            // Get count of valid items
+            getValidItemsCount() {
+                return this.multipleMenuItems.filter(item => 
+                    item.newMenuItemID && Object.keys(item.newMenuItemTarget).length > 0
+                ).length;
+            },
+
+            // Add Multiple Menu Items
+            async addMultipleMenuItems() {
+                const validItems = this.multipleMenuItems.filter(item => 
+                    item.newMenuItemID && Object.keys(item.newMenuItemTarget).length > 0
+                );
+
+                if (validItems.length === 0 || Object.keys(this.globalMenuItemTargetSection).length === 0) {
+                    alert("Please select at least one item and a target menu section.");
+                    return;
+                }
+
+                let successCount = 0;
+                let errors = [];
+
+                for (let i = 0; i < validItems.length; i++) {
+                    const item = validItems[i];
+                    
+                    // Add item to section (local update)
+                    this.globalMenuItemTargetSection.sectionMenu.push({
+                        itemID: item.newMenuItemTarget['id'],
+                        itemOrder: this.globalMenuItemTargetSection.sectionMenu.length,
+                        itemPrice: item.newMenuItemPrice || -1,
+                        itemServingType: item.newMenuItemServingType,
+                        itemAvailability: true,
+                        itemDetails: {
+                            itemPhoto: item.newMenuItemTarget.photo,
+                            itemName: item.newMenuItemTarget.listingName,
+                            itemType: item.newMenuItemTarget.drinkType,
+                            itemTypeCategory: item.newMenuItemTarget.typeCategory,
+                            itemABV: item.newMenuItemTarget.abv,
+                            itemCountry: item.newMenuItemTarget.originCountry,
+                            itemDesc: item.newMenuItemTarget.officialDesc,
+                            itemRating: item.newMenuItemTarget.avgRating,
+                            itemProducer: item.newMenuItemTarget.producerName,
+                            itemProducerID: item.newMenuItemTarget.producerID,
+                            itemServingTypeName: "Serving",
+                        }
+                    });
+
+                    try {
+                        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`, 
+                            {
+                                venueID: this.targetVenue['id'],
+                                menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
+                                listingID: item.newMenuItemTarget['id'],
+                                itemPrice: item.newMenuItemPrice || -1,
+                                servingType: item.newMenuItemServingType,
+                                sectionName: this.globalMenuItemTargetSection.sectionName,
+                            },
+                            {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.status == 201) {
+                            successCount++;
+                        }
+                    }
+                    catch (error) {
+                        errors.push(`Failed to add item: ${item.newMenuItemTarget.listingName}`);
+                        console.error(error);
+                    }
+                }
+
+                // Show results
+                if (successCount > 0) {
+                    const toast = useToast();
+                    toast.success(`Successfully added ${successCount} item(s) to menu.`);
+                    
+                    if (errors.length > 0) {
+                        toast.warning(`Some items failed to add: ${errors.join(', ')}`);
+                    }
+                    
+                    // Reload page
+                    this.$router.go(0);
+                } else {
+                    alert("Failed to add any items. Please try again! You may have tried to add items to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then try again.");
+                }
+
+                this.editMenuMode = false;
+                this.resetMultipleMenuItems();
             },
 
             // Delete Menu Item
