@@ -898,7 +898,7 @@
                     <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
                       style="display: none" />
                     <label for="reviewPhoto">
-                      <div class="mobile-review-svg-button">
+                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button">
                         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24"
                           fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round"
                           stroke-linejoin="round">
@@ -910,13 +910,14 @@
                           <line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line>
                         </svg>
                       </div>
+                    
+                      <div v-else class="row mobile-review-svg-button">
+                        <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
+                          loading="lazy" />
+                      </div>
                     </label>
-                    <div class="row">
-                      <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
-                        loading="lazy" />
-                    </div>
-                    <div class="row justify-content-start mb-2">
-                      <div class="col-md-4 text-start">
+                    <div class="row justify-content-center mb-2">
+                      <div class="col-sm-7 text-center mt-2">
                         <button v-if="image64 !== null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">
                           Clear Photo
                         </button>
@@ -4034,6 +4035,7 @@ export default {
       this.$router.push("/"); // Navigate to root
     },
     getTagName(tag) {
+      if (!tag) return "";
       const subTag = this.subTags.find((subTag) => subTag.id === tag);
       if (subTag) {
         const familyTag = this.flavorTags.find(
