@@ -5232,7 +5232,7 @@
                     if (start && end && start === "00:00" && end === "00:00") continue;
 
 
-                    if (start && end && start >= end && !(end > "00:00" && end <= "03:00")) 
+                    if (start && end && start >= end && !(end > "00:00" && end <= "03:00") && end !== "00:00") 
                         {
                         this.editOpeningHoursError = true;
                         if (errorSpan) {
