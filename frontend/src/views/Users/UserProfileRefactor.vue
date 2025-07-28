@@ -1909,11 +1909,18 @@
                     object-fit: contain;
                     border-radius: 4px;
                   "
-                  alt="Explore and join a club!"
+                  alt="Explore and join a club! Earn 100 points to create your own Club!"
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Explore and join a club!
+                    Explore and join a club! 
+                    <router-link
+                      to="/badges-and-points"
+                      style="color: #FF3E31; font-weight: bold; text-decoration: none;"
+                    >
+                      Earn 200 points
+                    </router-link>
+                    to create your own Club!
                   </p>
                   <router-link :to="'/clubs/view'">
                     <button

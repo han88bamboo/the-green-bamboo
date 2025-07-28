@@ -1651,3 +1651,13 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 front end 
+
+# Update as of 28th July, 10pm
+
+Coder: Kai
+
+Purpose of the changes:
+- Add "earn 200 points" to welcome message
+
+Nature of the changes (frontend / backend / database):
+front end 
