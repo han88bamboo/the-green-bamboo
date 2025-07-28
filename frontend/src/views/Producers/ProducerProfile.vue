@@ -653,6 +653,7 @@
                     </span>
                   </p>
                 </div>
+              
               </div>
             </div>
           </div>
@@ -663,14 +664,17 @@
           <!-- Info Fields (7 columns desktop, full width mobile) -->
           <div class="col-12 col-lg-7">
             <div class="row">
-              <!-- Average Rating -->
-              <div class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
-                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                  <b>{{ getAverageDrinkRating() }}<span style="color: #f0b358">★</span></b>
-                </h5>
+              
+                <!-- Average Rating -->
+              <div class="d-flex align-items-center mb-3">
                 <p class="mb-0 mobile-rating-smaller-text-2">
-                  <u>Average Rating</u>
+                  <u>Average Drink Rating:</u>
                 </p>
+                <h3 class="mb-0 ms-1">
+                   &nbsp;<b>{{ getAverageDrinkRating() }}
+                    <span style="color: #f0b358">★</span>
+                  </b>
+                </h3>
               </div>
 
               <!-- Year Founded -->
@@ -717,7 +721,8 @@
           </div>
 
           <!-- Buttons (5 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-5 d-flex flex-column flex-lg-row gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0 align-items-start align-items-lg-center">
+          <div class="col-12 col-lg-5 d-flex flex-row gap-2 align-items-center">
+
             <!-- Follow Button -->
             <button
               v-if="!following"
@@ -2159,7 +2164,7 @@
             </div>
           </div>
           <!-- DRINK LISTING CATALOGUE-->
-          <div class="row scrollable-expressions-none">
+          <div class="row scrollable-listings">
             <!-- v-loop for each listing -->
             <div class="container text-start">
               <div
@@ -2172,8 +2177,6 @@
                   <div
                     class="col-2 image-container text-start mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
-
-                  
                     <router-link
                       :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       class="default-text-no-background"
@@ -2184,12 +2187,10 @@
                         class="producer-bottle-listing-page-bottle-image"
                       />
                     </router-link>
-
-
                     <!-- Item Rating for MOBILE VIEW ONLY, sits neatly under image -->
                     <div
                     class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show"
-                  >
+                    >
                     <p
                       class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
                       style="margin-bottom: 0.1rem"
@@ -2197,7 +2198,7 @@
                       {{ getRatings(listing) }}&nbsp;
                       <span style="font-size: 30px;"> ★</span>
                     </p>
-                  </div>
+                    </div>
 
                     <div class="row mt-2">
                       <!-- edit listing -->

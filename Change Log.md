@@ -1641,3 +1641,13 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 front end 
 
+# Update as of 28th July, 4pm
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak positioning of average rating of producers
+- add scroll bar to producer listings and venue menu on producer and venue pages 
+
+Nature of the changes (frontend / backend / database):
+front end 
