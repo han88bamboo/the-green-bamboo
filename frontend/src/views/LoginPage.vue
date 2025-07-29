@@ -356,6 +356,9 @@ export default {
       // check if user is already logged in
       this.loginCheck();
 
+      // Trim spaces from username
+      this.ID = this.ID.trim();
+      
       // [if] check if all details keyed in
       if (this.ID == "" || this.password == "") {
         // check if ID keyed in
