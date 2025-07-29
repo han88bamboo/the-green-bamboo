@@ -1801,11 +1801,11 @@ def getVintageAgg(reviewTarget):
             ROUND(AVG("rating"), 1) as avgRating,
             ROUND(
                 (COUNT(CASE WHEN "willRecommend" = true THEN 1 END) * 100.0 / 
-                COUNT(CASE WHEN "willRecommend" IS NOT NULL THEN 1 END)), 0
+                NULLIF(COUNT(CASE WHEN "willRecommend" IS NOT NULL THEN 1 END), 0)), 0
             ) as recommendPercent,
             ROUND(
                 (COUNT(CASE WHEN "wouldBuyAgain" = true THEN 1 END) * 100.0 / 
-                COUNT(CASE WHEN "wouldBuyAgain" IS NOT NULL THEN 1 END)), 0
+                NULLIF(COUNT(CASE WHEN "wouldBuyAgain" IS NOT NULL THEN 1 END), 0)), 0
             ) as drinkAgainPercent
         FROM "reviews"
         WHERE "reviewTarget" = %s
