@@ -56,7 +56,8 @@ def authcheck():
         password = loginInfo["password"]
 
         # Check if user exists in the "users" table
-        cur.execute('SELECT * FROM users WHERE LOWER(username) = LOWER(%s)', (username,))
+        cur.execute('SELECT * FROM users WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+
         user = cur.fetchone()
         if user is not None:
             if(str(user["hashedPassword"]) == str(password)):
@@ -79,7 +80,7 @@ def authcheck():
                 ), 401
 
         # Check if producer exists in the "producers" table
-        cur.execute('SELECT * FROM producers WHERE LOWER(username) = LOWER(%s)', (username,))
+        cur.execute('SELECT * FROM producers WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
         producer = cur.fetchone()
         if (producer is not None):
             # Producer exists, check if password matches
@@ -103,7 +104,7 @@ def authcheck():
                 ), 401
 
         # Check if venue exists in the "venues" table
-        cur.execute('SELECT * FROM venues WHERE LOWER(username) = LOWER(%s)', (username,))
+        cur.execute('SELECT * FROM venues WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
         venue = cur.fetchone()
         if (venue is not None):
 
