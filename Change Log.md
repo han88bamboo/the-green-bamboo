@@ -1788,3 +1788,17 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+# Update as of 30th July
+
+Coder: Han 
+
+Purpose of the changes:
+-authcheck - ensure user names are case insensitive when logging in
+-remove case sensitivity, spacing in usernames
+-prevent duplicates for venue usernames
+-allow for either email / username login
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
