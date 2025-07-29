@@ -353,11 +353,13 @@ export default {
       this.authPending = true;
       // clear previous values
       this.errors = [];
+
       // check if user is already logged in
       this.loginCheck();
 
-      // Trim spaces from username
-      this.ID = this.ID.trim();
+      // Normalize username: trim, remove all spaces and convert to lowercase
+      this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
+      
       
       // [if] check if all details keyed in
       if (this.ID == "" || this.password == "") {
