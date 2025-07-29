@@ -74,7 +74,7 @@
     <h5 class="pt-3 fw-bold mobile-rating-smaller-text-2" v-if="errorMessage"
       >Oops! An error occured while creating account, please try
       again!</h5>
-    <h5 class="pt-3 fw-bold mobile-rating-smaller-text-2" v-if="duplicateEntry">The account has already been created.</h5>
+    <h5 class="pt-3 fw-bold mobile-rating-smaller-text-2" v-if="duplicateEntry">The credentials you used have already been taken! Please try a different username / email address!</h5>
     <button class="btn primary-btn btn-sm mt-0 mb-3" @click="reset">
       <span class="fs-6"> Retry sign up again! </span>
     </button>
@@ -151,6 +151,9 @@
                         <span v-if="duplicateUser" class="text-danger"
                           >Username is already taken, if this is you, login
                           instead!</span
+                        >
+                        <span v-if="invalidUsernameFormat" class="text-danger"
+                          >Username can only contain letters and numbers (no spaces or special characters).</span
                         >
                       </div>
                     </div>
@@ -523,6 +526,7 @@ export default {
       missingDisplayName: false,
       missingEmail: false,
       invalidEmail: false,
+      invalidUsernameFormat: false, // Add this new line
       passwordMismatch: false,
       missingPassword: false,
       weakPassword: false,
@@ -636,10 +640,25 @@ export default {
         this.missingUsername = true;
         errorCount++;
       } else {
-        this.checkUsername(this.username);
-        if (this.duplicateUser) {
+        // Trim username before checking
+        this.username = this.username.trim();
+
+        // Check username format
+        if (!this.validateUsername(this.username)) {
+          this.invalidUsernameFormat = true;
           errorCount++;
+        } else {
+          // Only check for duplicates if format is valid
+          this.checkUsername(this.username);
+          if (this.duplicateUser) {
+            errorCount++;
+          }
         }
+
+        // this.checkUsername(this.username);
+        // if (this.duplicateUser) {
+        //   errorCount++;
+        // }
       }
 
       if (this.displayName == "") {
@@ -922,6 +941,7 @@ export default {
       this.missingUsername = false;
       this.missingEmail = false;
       this.invalidEmail = false;
+      this.invalidUsernameFormat = false; 
       this.passwordMismatch = false;
       this.missingPassword = false;
       this.missingPasswordRepeat = false;
@@ -938,11 +958,15 @@ export default {
         // const response = await this.$axios.get(
         //     `http://127.0.0.1:5000/getData/getUsers`
         // );
+
+        // Trim whitespace from username
+        const trimmedUsername = username.trim();
+    
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getUsers`
         );
         let duplicateUser = response.data.filter((user) => {
-          return user.username == username;
+          return user.username == trimmedUsername;
         });
 
         if (duplicateUser.length == 0) {
@@ -953,6 +977,12 @@ export default {
       } catch (error) {
         console.error(error);
       }
+    },
+
+    validateUsername(username) {
+      // Only allow letters and numbers (no spaces, special chars, or accented chars)
+      const regex = /^[a-zA-Z0-9]+$/;
+      return regex.test(username);
     },
 
     async loginUser() {
@@ -966,7 +996,7 @@ export default {
           this.username;
         const response = await this.$axios.get(submitURL);
 
-        if (response.data.username == this.username) {
+        if (response.data.username.toLowerCase() == this.username.toLowerCase()) {
           const userID = response.data["id"];
           const accUsername = response.data["username"];
 
