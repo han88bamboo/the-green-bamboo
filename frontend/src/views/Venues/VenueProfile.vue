@@ -2064,6 +2064,7 @@
                                                         <small class="text-muted">
                                                             (Producer: {{ listing.producerName }} | 
                                                             Type: {{ listing.drinkType }} | 
+                                                            ABV: {{ listing.abv ? listing.abv + '%' : 'N/A' }} | 
                                                             Country: {{ listing.originCountry }})
                                                         </small>
                                                         </li>
