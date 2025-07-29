@@ -1024,9 +1024,10 @@ export default {
       // const submitURL =
       //         `http://127.0.0.1:5000/getData/getUserByUsername/` +
       //         this.username;
+      const trimmedUsername = this.username.trim();
       const submitURL =
         `${process.env.VUE_APP_API_URL}/getData/getUserByUsername/` +
-        this.username;
+        trimmedUsername;
       const response = await this.$axios.get(submitURL);
       if (response.data.username == this.username) {
         localStorage.setItem("88B_accID", response.data["id"]);
