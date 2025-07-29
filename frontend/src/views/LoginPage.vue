@@ -30,8 +30,35 @@
               >
                 Discover new juice, find friends and log your tasting notes!
               </p>
+
+              <p class="text-muted small mx-4 mb-2">
+                Choose how you want to log in
+              </p>
+
+              <!-- Login method toggle -->
+              <div class="row">
+                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                  <div class="login-toggle-container">
+                    <div 
+                      class="login-toggle-option" 
+                      :class="{ 'login-toggle-active': loginMethod === 'username' }" 
+                      @click="setLoginMethod('username')"
+                    >
+                      Username
+                    </div>
+                    <div 
+                      class="login-toggle-option" 
+                      :class="{ 'login-toggle-active': loginMethod === 'email' }" 
+                      @click="setLoginMethod('email')"
+                    >
+                      Email Address
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- username -->
-              <div class="row pt-2">
+              <div class="row pt-3" v-if="loginMethod === 'username'">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                   <div class="form-floating">
                     <input
@@ -45,6 +72,22 @@
                   </div>
                 </div>
               </div>
+              <!-- email -->
+              <div class="row pt-3" v-if="loginMethod === 'email'" >
+                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                  <div class="form-floating">
+                    <input
+                      type="email"
+                      class="form-control form-box-outline"
+                      id="email"
+                      placeholder="Email Address"
+                      v-model="email"
+                    />
+                    <label for="email"> Email Address </label>
+                  </div>
+                </div>
+              </div>
+
               <!-- password -->
               <div class="row pt-2">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
@@ -289,6 +332,37 @@
     margin-bottom: 15px;
   }
 }
+
+.login-toggle-container {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.login-toggle-option {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  color: #6c757d;
+}
+
+.login-toggle-active {
+  background-color: #EBA446;
+  color: black;
+  font-weight: bold;
+}
+
+.login-toggle-option:hover:not(.login-toggle-active) {
+  background-color: #e9ecef;
+}
+
 </style>
 
 <script>
@@ -313,10 +387,12 @@ export default {
       authPending: false,
       accountID: {},
       errors: [],
+      loginMethod: 'username',
 
       // form values
       role: "",
       ID: "",
+      email: "",
       password: "",
 
       // variable to toggle password reset form
@@ -360,12 +436,11 @@ export default {
       // Normalize username: trim, remove all spaces and convert to lowercase
       this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
       
-      
-      // [if] check if all details keyed in
-      if (this.ID == "" || this.password == "") {
-        // check if ID keyed in
-        if (this.ID == "") {
-          this.errors.push("No username entered");
+      // Check if either username or email is provided
+      if ((this.ID == "" && this.email == "") || this.password == "") {
+        // check if both ID and email are empty
+        if (this.ID == "" && this.email == "") {
+          this.errors.push("Please enter either a username or email address");
         }
         // check if password keyed in
         if (this.password == "") {
@@ -376,16 +451,48 @@ export default {
         this.authPending = false;
       }
 
-      // [else] all details keyed in
+      // [else] required details keyed in
       else {
-        // Check login validity
-        let hashedPassword = this.hashPassword(this.ID, this.password);
-        let loginInfo = { username: this.ID, password: hashedPassword };
-        this.auth(
-          loginInfo,
-          `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
-        );
+        // If email is provided, get username from email first
+        if (this.email != "") {
+          this.getUsernameFromEmail();
+        } else {
+          // Use username directly
+          this.proceedWithLogin(this.ID);
+        }
       }
+    },
+
+    // Get username from email address
+    async getUsernameFromEmail() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUsernameFromEmail/${this.email}`
+        );
+        
+        if (response.data.username) {
+          // Save the username to this.ID so it will be stored in localStorage
+          this.ID = response.data.username;
+          this.proceedWithLogin(response.data.username);
+        } else {
+          this.errors.push("No account found with this email address");
+          this.authPending = false;
+        }
+      } catch (error) {
+        this.errors.push("Error verifying email address");
+        this.authPending = false;
+      }
+    },
+
+    // Proceed with login using username
+    proceedWithLogin(username) {
+      // Check login validity
+      let hashedPassword = this.hashPassword(username, this.password);
+      let loginInfo = { username: username, password: hashedPassword };
+      this.auth(
+        loginInfo,
+        `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
+      );
     },
 
     // Authentication
@@ -458,6 +565,18 @@ export default {
     hideResetForm() {
       this.showResetPWForm = false;
     },
+
+    // Set login method (username or email)
+    setLoginMethod(method) {
+      this.loginMethod = method;
+      // Clear both fields when switching
+      if (method === 'username') {
+        this.email = '';
+      } else {
+        this.ID = '';
+      }
+    },
+    
   },
 };
 </script>

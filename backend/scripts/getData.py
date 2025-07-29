@@ -23,7 +23,7 @@
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
-#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUserFollowList/<id> (GET), 
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUsernameFromEmail/<email> (GET), /getUserFollowList/<id> (GET), 
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
 #           /getLatestReviewsDrinks/<id> (GET),
@@ -3333,6 +3333,47 @@ def getUserByUsername(username):
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching the user."}), 500
+
+# [GET] Get username from email address
+@blueprint.route("/getUsernameFromEmail/<email>")
+def getUsernameFromEmail(email):
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            # First, check in users table
+            cursor.execute('SELECT "username" FROM "users" WHERE "email" = %s', (email,))
+            user_data = cursor.fetchone()
+            
+            if user_data:
+                return jsonify({"username": user_data["username"]}), 200
+            
+            # If not found in users, check in accountRequests table
+            cursor.execute('SELECT "businessId", "businessType" FROM "accountRequests" WHERE "email" = %s', (email,))
+            account_request = cursor.fetchone()
+            
+            if account_request:
+                business_id = account_request["businessId"]
+                business_type = account_request["businessType"]
+                
+                if business_type == "producer":
+                    cursor.execute('SELECT "username" FROM "producers" WHERE "id" = %s', (business_id,))
+                    producer_data = cursor.fetchone()
+                    if producer_data:
+                        return jsonify({"username": producer_data["username"]}), 200
+                        
+                elif business_type == "venue":
+                    cursor.execute('SELECT "username" FROM "venues" WHERE "id" = %s', (business_id,))
+                    venue_data = cursor.fetchone()
+                    if venue_data:
+                        return jsonify({"username": venue_data["username"]}), 200
+            
+            # No account found with this email
+            return jsonify({"username": None}), 404
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred while fetching username from email."}), 500
 
 # ----------------------
 # [NEW] TO BE ADDED:
