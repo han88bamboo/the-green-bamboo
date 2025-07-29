@@ -1590,10 +1590,12 @@ frontend, backend
 Coder: Han
 
 Purpose of the changes:
-danish's work
+updated fav listings, combined venue revs and bugs
+added venues list, fixed venue reviews tags
 
 Nature of the changes (frontend / backend / database):
-frontend, backend
+frontend, backend, database
+
 
 
 # Update as of 22nd July
@@ -1641,6 +1643,117 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 front end 
 
+# Update as of 23rd 
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+fixed venue profile edit route
+
+Nature of the changes (frontend / backend / database):
+backend 
+
+# Update as of 23rd
+
+Coder: Han 
+
+Purpose of the changes:
+-fixed error where venue profile cannot update data
+-to get events page working even when events are cleared
+-ux changes for review modal slider
+-get review ratings to show up on load more on following tab of explore page
+
+Nature of the changes (frontend / backend / database):
+frontend, backend 
+
+
+# Update as of 23rd July, 4pm
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+-user lists fix, venue unknown username fix
+
+Nature of the changes (frontend / backend / database):
+front end , backend mostly
+
+
+# Update as of 24th July
+
+Coder: Han 
+
+Purpose of the changes:
+-making search unaccented + allowing for clicking directly into listings on autocomplete
+-allowing producers to freely select producers + removing requirement for source link
+-allow for user's creation of producers
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 25th July
+
+Coder: Han 
+
+Purpose of the changes:
+-removed requirement to fill in official description
+-removed need to view listing submission requests (since auto approved now)
+-When photo is added in review form, it's now in the + box
+-adjusting clear image button
+-guidance for selection of producers in submit drinks page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fix fullstop encoding in search url
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 26th July
+
+Coder: Han (Ming Sheng)
+
+Purpose of the changes:
+-added vintage support for wine reviews and listings
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+
+# Update as of 27th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fetching reviews of drinks tasted and putting them on venue profile
+-lazyloading for venue bottle images
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 28th July
+
+Coder: Han 
+
+Purpose of the changes:
+-sending notifications when someone follows you
+-improving context of  autocomplete search
+-remove need for ABV + add debounced search for producers and bottlers for submit review form
+-allow 20 items to be added to menu at once
+-make venue item search more robust
+-pullihng abv info for venue menu search
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
 # Update as of 28th July, 4pm
 
 Coder: Kai
@@ -1661,3 +1774,17 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 front end 
+
+
+# Update as of 29th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fix styling for review modal image
+-allow for 5pm to 12am cases
+-bugfix for vintaging feature on bottle listing
+-made signup page and login page ignore spacing, ignore casing, make duplicate check more robust
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
