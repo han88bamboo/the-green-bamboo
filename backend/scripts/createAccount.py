@@ -47,7 +47,7 @@ def createAccount():
     
     # Check for existing account with the same username
     with db_conn.cursor() as cursor:
-        cursor.execute('SELECT "id" FROM "users" WHERE "username" = %s', (rawUsername,))
+        cursor.execute('SELECT "id" FROM "users" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
         existingAccount = cursor.fetchone()
         
         if existingAccount is not None:
