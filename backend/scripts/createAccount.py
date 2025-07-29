@@ -47,6 +47,7 @@ def createAccount():
     
     # Check for existing account with the same username
     with db_conn.cursor() as cursor:
+        # 1. First check users table
         cursor.execute('SELECT "id" FROM "users" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
         existingAccount = cursor.fetchone()
         
@@ -57,10 +58,40 @@ def createAccount():
                     "data": {
                         "userName": rawUsername
                     },
-                    "message": "Username already exists."
+                    "message": "Username already exists (Code: users)."
                 }
             ), 400
     
+        # 2. Then check venues table
+        cursor.execute('SELECT "id" FROM "venues" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
+        existingVenue = cursor.fetchone()
+        
+        if existingVenue is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawUsername
+                    },
+                    "message": "Username already exists (Code: venues)."
+                }
+            ), 400
+
+        # 3. Finally check producers table
+        cursor.execute('SELECT "id" FROM "producers" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
+        existingProducer = cursor.fetchone()
+        
+        if existingProducer is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawUsername
+                    },
+                    "message": "Username already exists (Code: producers)."
+                }
+            ), 400
+
     # Handle photo upload if present
     if rawAccount['photo']:
         base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawAccount['photo'])
