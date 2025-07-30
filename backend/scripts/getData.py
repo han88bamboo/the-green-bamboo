@@ -5067,6 +5067,11 @@ def getUsernames():
     cur = conn.cursor()
 
     try:
+
+        # Add query for users table
+        cur.execute('SELECT "username" FROM "users"')
+        user_usernames = cur.fetchall()
+
         cur.execute('SELECT "username" FROM "producers"')
         producer_usernames = cur.fetchall()
 
@@ -5075,6 +5080,7 @@ def getUsernames():
 
         # Combine and filter usernames
         usernames = (
+            [username['username'] for username in user_usernames] +
             [username['username'] for username in producer_usernames] +
             [username['username'] for username in venue_usernames]
         )
