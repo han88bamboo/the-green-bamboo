@@ -92,6 +92,39 @@ def createAccount():
                 }
             ), 400
 
+        # Now check for duplicate emails
+        rawEmail = rawAccount['email']
+        
+        # 1. Check if email exists in users table
+        cursor.execute('SELECT * FROM "users" WHERE email = %s', (rawEmail,))
+        existingUserEmail = cursor.fetchone()
+        
+        if existingUserEmail is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "email": rawEmail
+                    },
+                    "message": "Email already exists in user accounts."
+                }
+            ), 400
+        
+        # 2. Check if email exists in accountRequests table
+        cursor.execute('SELECT * FROM "accountRequests" WHERE email = %s', (rawEmail,))
+        existingRequestEmail = cursor.fetchone()
+        
+        if existingRequestEmail is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "email": rawEmail
+                    },
+                    "message": "This email has a pending account request."
+                }
+            ), 400
+
     # Handle photo upload if present
     if rawAccount['photo']:
         base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawAccount['photo'])
