@@ -677,6 +677,16 @@
                 </h3>
               </div>
 
+              <!-- Review Count -->
+              <div class="d-flex align-items-center mb-3">
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Review Count:</u>
+                </p>
+                <h3 class="mb-0 ms-1">
+                   &nbsp;<b>{{ getTotalReviewCount() }}</b>
+                </h3>
+              </div>
+
               <!-- Year Founded -->
               <div v-if="specified_producer.yearFounded" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
                 <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
@@ -4545,6 +4555,16 @@ export default {
       
       const averageRating = totalRating / allDrinkReviews.length;
       return averageRating.toFixed(1);
+    },
+
+    // get total review count for this producer
+    getTotalReviewCount() {
+      // Get all reviews for this producer's listings
+      const allDrinkReviews = this.reviews.filter(review => {
+        return this.allDrinksIDs.includes(review.reviewTarget);
+      });
+      
+      return allDrinkReviews.length;
     },
 
     // get compiled dictionary of count of each type of drink
