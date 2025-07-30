@@ -1392,10 +1392,10 @@
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                 <div v-if="specified_listing.drinkType !== 'Wine'"> 
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Reviewsssss
+                    Submit Review
                   </button>
                   <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
-                    Update Reviewsssss
+                    Update Review
                   </button>
                 </div>
                 <div v-else>
@@ -1551,11 +1551,11 @@
 
                     <!-- Edit & Delete Buttons -->
                     <div class="mt-2">
-                      <button v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)"
+                      <!-- <button v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)"
                         class="btn btn-warning me-1 py-1 mobile-fs-7" @click="setUpdateID(review)"
                         data-bs-toggle="modal" data-bs-target="#reviewModal">
                         Edit
-                      </button>
+                      </button> -->
                       <button v-if="review.userID === correctModerator || (user && user.isAdmin)"
                         class="btn btn-danger py-1 mobile-fs-7" @click="setDeleteID(review)" data-bs-toggle="modal"
                         data-bs-target="#deleteReview">

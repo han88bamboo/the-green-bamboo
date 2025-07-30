@@ -1802,3 +1802,14 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
+Coder: MS
+
+Purpose of the changes:
+Add vintage support for venue profile menu mangement
+- Add 'variant' (vintage) column to the menuItems table and updates backend, SQL, and frontend to support vintage for wine items. 
+- Add input and display of vintage support, and the backend getVenue, addListingToMenu API updated accordingly for variants retrieval. 
+- hides edit button and debugging code in bottlelistings.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, databse 

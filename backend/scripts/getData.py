@@ -3601,7 +3601,7 @@ def getVenue(id):
         # Query to get a specific venue and related data
         query = """
             SELECT 
-                v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
+                v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v."yearOpened", v."openForReservations", v.website,
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
@@ -3614,6 +3614,7 @@ def getVenue(id):
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
+                                'itemVintage', mi."variant",
                                 'itemPrice', mi."itemPrice",
                                 'itemAvailability', mi."itemAvailability",
                                 'itemID', mi."itemID",
@@ -3677,9 +3678,6 @@ def getVenue(id):
         venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
         venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
         venue['updates'] = venue['updates'] if venue['updates'] else []
-
-        # Remove unnecessary fields
-        del venue["hashedPassword"]
 
         return jsonify(venue), 200
 

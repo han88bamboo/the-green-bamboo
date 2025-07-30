@@ -579,8 +579,10 @@ CREATE TABLE "menuItems" (
     "itemAvailability" BOOLEAN,
     "itemID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL,
     "itemServingType" INTEGER REFERENCES "servingTypes"("id") ON DELETE SET NULL,
-    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE
+    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
+    "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
+-- ALTER TABLE "menuItems" ADD COLUMN "variant" SMALLINT DEFAULT NULL;
 
 -- ========= "venuesOpeningHours" =========
 CREATE TABLE "venuesOpeningHours" (

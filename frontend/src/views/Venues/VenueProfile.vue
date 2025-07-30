@@ -1517,14 +1517,17 @@
                                         <!-- SECOND COLUMN: Item Information -->
                                         <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
                                             <div class="row">
-
-                                            <!-- Item Name -->
+                                                <!-- <div v-for="key in Object.keys(sectionItem)" :key="key">
+                                                    {{ key }}
+                                                </div> -->
+                                                <!-- Item Name -->
                                                 <div class="mobile-mb-1">
                                                     <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
-                                                        <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">{{ sectionItem.itemDetails['itemName'] }}</p>
+                                                        <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
+                                                            {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? '[' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                                        </p>
                                                     </router-link>
                                                 </div>
-
                                             </div>
 
                                             <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
@@ -1586,7 +1589,9 @@
 
                                             <!-- Item Name -->
                                             <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName  }">
-                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ sectionItem.itemDetails['itemName'] }}</p>
+                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                    {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? '[' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                                </p>
                                             </router-link>
 
                                             <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -2072,7 +2077,13 @@
 
                                                     <p v-show="item.newMenuItemID && item.newMenuItemID.length > 0" class="text-start mb-1 text-danger"></p>
                                                 </div>
-
+                                                
+                                                <!-- [input] input vintage for wine drink type -->
+                                                <div class="form-group mb-3" v-if="item.newMenuItemTarget.drinkType == 'Wine'">
+                                                    <p class="text-start mb-1"> Vintage (Optional) </p>
+                                                    <input type="number" class="form-control" v-model="item.newMenuItemVintage">
+                                                </div>
+                                                
                                                 <!-- [input] menu item price -->
                                                 <div class="form-group mb-3">
                                                     <p class="text-start mb-1"> Menu Item Price (Note: If there is no price, leave it as -1)</p>
@@ -2107,7 +2118,9 @@
                                                             <!-- Item Name -->
                                                             <div class="row">
                                                                 <div class="col-7">
-                                                                    <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">{{ item.newMenuItemTarget.listingName }}</p>
+                                                                    <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                        {{ item.newMenuItemTarget.listingName }} {{ item.newMenuItemVintage ? '[' + item.newMenuItemVintage + ' Vintage]' : '' }}
+                                                                    </p>
                                                                 </div>
                                                             </div>
 
@@ -3820,6 +3833,7 @@
                 newMenuItemID: '', // selected item ID to add to menu
                 newMenuItemTarget: {},
                 newMenuItemTargetSection: {},
+                newMenuItemVintage: null, 
                 newMenuItemPrice: -1,
                 newMenuItemServingType: {},
                 
@@ -3830,6 +3844,7 @@
                         searchResults: [],
                         newMenuItemID: '',
                         newMenuItemTarget: {},
+                        newMenuItemVintage: null,
                         newMenuItemPrice: -1,
                         newMenuItemServingType: 1, // Will be properly initialized when servingTypes are loaded
                         debounceTimer: null
@@ -5465,6 +5480,7 @@
                 this.newMenuItemTargetSection.sectionMenu.push({
                     itemID: this.newMenuItemTarget['id'],
                     itemOrder: this.newMenuItemTargetSection.sectionMenu.length,
+                    itemVintage: this.newMenuItemVintage,
                     itemPrice: this.newMenuItemPrice,
                     itemServingType: this.newMenuItemServingType,
                     itemAvailability: true,
@@ -5494,6 +5510,7 @@
                             venueID: this.targetVenue['id'],
                             menuOrder: this.newMenuItemTargetSection.sectionMenu.length -1,
                             listingID: this.newMenuItemTarget['id'],
+                            itemVintage: this.newMenuItemVintage,
                             itemPrice: this.newMenuItemPrice,
                             servingType: this.newMenuItemServingType,
                             sectionName: this.newMenuItemTargetSection.sectionName,
@@ -5662,6 +5679,7 @@
                     this.globalMenuItemTargetSection.sectionMenu.push({
                         itemID: item.newMenuItemTarget['id'],
                         itemOrder: this.globalMenuItemTargetSection.sectionMenu.length,
+                        itemVintage: item.newMenuItemVintage,
                         itemPrice: item.newMenuItemPrice || -1,
                         itemServingType: item.newMenuItemServingType,
                         itemAvailability: true,
@@ -5686,6 +5704,7 @@
                                 venueID: this.targetVenue['id'],
                                 menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
                                 listingID: item.newMenuItemTarget['id'],
+                                itemVintage: item.newMenuItemVintage,
                                 itemPrice: item.newMenuItemPrice || -1,
                                 servingType: item.newMenuItemServingType,
                                 sectionName: this.globalMenuItemTargetSection.sectionName,

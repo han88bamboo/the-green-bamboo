@@ -715,7 +715,7 @@ def addListingToMenu():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print("Received data for adding listing to menu:", data)
+    # print("Received data for adding listing to menu:", data)
 
     venueID = int(data['venueID'])
     menuOrder = int(data['menuOrder'])
@@ -723,6 +723,14 @@ def addListingToMenu():
     itemPrice = data['itemPrice']
     servingType = int(data['servingType'])
     sectionName = data['sectionName']
+
+    itemVintage = data['itemVintage']
+    if itemVintage and str(itemVintage).strip():
+        # print("vintage data:", itemVintage)
+        itemVintage = int(itemVintage)
+    else:
+        # print("vintage NULL")
+        itemVintage = None
     
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -744,15 +752,22 @@ def addListingToMenu():
         
         sectionId = section['id']
 
+        columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+        values = [menuOrder, itemPrice, True, listingID, servingType, sectionId]
+
+        if itemVintage is not None:
+            columns.append("variant")
+            values.append(itemVintage)
+
+        column_names = ", ".join(f'"{col}"' for col in columns)
+        placeholders = ", ".join(["%s"] * len(values))
+
         cur.execute(
-            """
-                INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (menuOrder, itemPrice, True, listingID, servingType, sectionId)
+            f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
+            values
         )
         conn.commit()
-        
+
         # ---------------------------------------------------------
         # Build and insert notification for the producer whose bottle listing was added
         # ---------------------------------------------------------
