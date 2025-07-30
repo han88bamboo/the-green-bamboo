@@ -7156,3 +7156,54 @@ def getSystemSetting(setting_name):
     
     finally:
         cursor.close()
+
+# to get canonical username for login
+
+@blueprint.route("/getCanonicalUsername/<username>", methods=['GET'])
+def getCanonicalUsername(username):
+    try:
+        conn = g.db
+        cur = conn.cursor()
+        
+        # Check all three tables for the username
+        # First check users table
+        cur.execute('SELECT username FROM users WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+        user = cur.fetchone()
+        
+        if user is not None:
+            return jsonify({
+                "code": 200,
+                "username": user['username']
+            }), 200
+            
+        # Check producers table
+        cur.execute('SELECT username FROM producers WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+        producer = cur.fetchone()
+        
+        if producer is not None:
+            return jsonify({
+                "code": 200,
+                "username": producer['username']
+            }), 200
+            
+        # Check venues table
+        cur.execute('SELECT username FROM venues WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+        venue = cur.fetchone()
+        
+        if venue is not None:
+            return jsonify({
+                "code": 200,
+                "username": venue['username']
+            }), 200
+            
+        # No user found
+        return jsonify({
+            "code": 404,
+            "message": "Username not found"
+        }), 404
+        
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the username"
+        }), 500

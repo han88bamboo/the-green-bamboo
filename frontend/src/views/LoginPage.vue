@@ -433,8 +433,8 @@ export default {
       // check if user is already logged in
       this.loginCheck();
 
-      // Normalize username: trim, remove all spaces and convert to lowercase
-      this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
+      // // Normalize username: trim, remove all spaces and convert to lowercase
+      // this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
       
       // Check if either username or email is provided
       if ((this.ID == "" && this.email == "") || this.password == "") {
@@ -485,14 +485,35 @@ export default {
     },
 
     // Proceed with login using username
-    proceedWithLogin(username) {
-      // Check login validity
-      let hashedPassword = this.hashPassword(username, this.password);
-      let loginInfo = { username: username, password: hashedPassword };
-      this.auth(
-        loginInfo,
-        `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
-      );
+    async proceedWithLogin(username) {
+      try {
+        // First get the canonical username from the database
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getCanonicalUsername/${username}`
+        );
+        if (response.data.username) {
+          // Use the canonical username from database for hashing
+          const canonicalUsername = response.data.username;
+
+          // Check login validity using the canonical username
+          let hashedPassword = this.hashPassword(canonicalUsername, this.password);
+          let loginInfo = { 
+            username: username, 
+            password: hashedPassword, 
+            canonicalUsername: canonicalUsername // Send canonical username for verification
+          };
+          this.auth(
+            loginInfo,
+            `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
+          );
+        } else {
+          this.errors.push("Error retrieving account information");
+          this.authPending = false;
+        }
+      } catch (error) {
+        this.errors.push("Error verifying account information");
+        this.authPending = false;
+      }
     },
 
     // Authentication
