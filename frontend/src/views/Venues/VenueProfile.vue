@@ -69,30 +69,33 @@
                 gap: 16px;
                 margin-bottom: 16px;
                 ">
-                                <img src="/CurateMenu.png" style="
-                    width: 64px;
-                    height: 64px;
-                    object-fit: contain;
-                    border-radius: 4px;
-                " alt="Update your menu" />
+                    <img src="/CurateMenu.png" style="
+                        width: 64px;
+                        height: 64px;
+                        object-fit: contain;
+                        border-radius: 4px;"
+                        alt="Update your menu" />
                                 <div class="text-start">
                                     <p class="mobile-rating-smaller-text-2 mb-2 text-start">
                                         <strong>Curate Your Menu! Show fans what you're pouring so they'll get over
                                             now!</strong> (PS: Generate a menu QR code–customers can scan to see the
                                         menu at your venue!)
                                     </p>
-                                    <button class="btn btn-warning btn-sm rounded fw-bold fs-8"
-                                        @click="contentMode = 'menu'; enableEditMenuMode()" onclick="setTimeout(() => {
-                        document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'});
-                        setTimeout(() => {
-                        window.scrollBy({top: -100, behavior: 'smooth'});
-                        const menuEl = document.getElementById('menu');
-                        if (menuEl) {
-                            menuEl.classList.add('highlight-section');
-                            setTimeout(() => menuEl.classList.remove('highlight-section'), 3000);
-                        }
-                        }, 550);
-                    }, 100)">
+                                    <button
+                                        class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                                        @click="contentMode = 'menu'; enableEditMenuMode()"
+                                        onclick="setTimeout(() => {
+                                            document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'});
+                                            setTimeout(() => {
+                                            window.scrollBy({top: -100, behavior: 'smooth'});
+                                            const menuEl = document.getElementById('menu');
+                                            if (menuEl) {
+                                                menuEl.classList.add('highlight-section');
+                                                setTimeout(() => menuEl.classList.remove('highlight-section'), 3000);
+                                            }
+                                            }, 550);
+                                        }, 100)"
+                                    >
                                         Update Menu
                                     </button>
                                 </div>
@@ -1699,8 +1702,8 @@
                                             <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
                                                 <div class="row">
                                                     <!-- <div v-for="key in Object.keys(sectionItem)" :key="key">
-                                                    {{ key }}
-                                                </div> -->
+                                                        {{ key }} {{ sectionItem[key] }}
+                                                    </div> -->
                                                     <!-- Item Name -->
                                                     <div class="mobile-mb-1">
                                                         <router-link class="default-text-no-background"
@@ -6265,7 +6268,9 @@ export default {
 
         // Update Menu
         async updateMenu() {
-
+            // console.log('-------------------')
+            // console.log(this.editMenu)
+            // console.log('-------------------')
             this.editMenuMode = false;
             this.dataLoaded = false;
 

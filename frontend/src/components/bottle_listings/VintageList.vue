@@ -41,8 +41,8 @@
               <tr v-for="vintage in listings" :key="vintage.year">
                 <td class="vintage-year">{{ vintage.year }}</td>
                 <td class="rating">{{ vintage.avgrating }} ★</td>
-                <td class="percentage">{{ vintage.recommendpercent }}%</td>
-                <td class="percentage">{{ vintage.drinkagainpercent }}%</td>
+                <td class="percentage">{{ vintage.recommendpercent === "0" ? '-%' : vintage.recommendpercent + '%' }}</td>
+                <td class="percentage">{{ vintage.drinkagainpercent === "0" ? '-%' : vintage.drinkagainpercent + '%' }}</td>
               </tr>
             </template>
             <tr v-else>

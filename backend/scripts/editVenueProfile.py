@@ -900,12 +900,30 @@ def editMenu():
 
             # Insert items for each section
             for item in section.get('sectionMenu', []):
+                # dynamically add vintage
+                columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+                values = [item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), sectionId]
+
+                # only add when you find vintage maintained by user
+                itemVintage = item.get('itemVintage')
+                if itemVintage and str(itemVintage).strip():
+                    # print("vintage data:", itemVintage)
+                    itemVintage = int(itemVintage)
+                else:
+                    # print("vintage NULL")
+                    itemVintage = None
+
+                if itemVintage is not None:
+                    columns.append("variant")
+                    values.append(itemVintage)
+
+                # append it back as string to be passed for execution
+                column_names = ", ".join(f'"{col}"' for col in columns)
+                placeholders = ", ".join(["%s"] * len(values))
+
                 cur.execute(
-                    '''
-                    INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ''',
-                    (item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), sectionId)
+                    f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
+                    values
                 )
 
         conn.commit()

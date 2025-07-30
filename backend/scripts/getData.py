@@ -2940,40 +2940,26 @@ def getVenuesWithSpecificListing(listingID):
         listingID = int(listingID)  # ensure it's an integer
 
         with conn.cursor() as cursor:
-            # Get venue IDs containing the listing
+            # Single optimized query with JOIN and LIMIT
             cursor.execute("""
-                SELECT DISTINCT vm."venueId"
+                SELECT v."id", v."venueName", v."originLocation", v."photo", v."website", v."address", 
+                    COALESCE((
+                        SELECT json_agg(DISTINCT mi2."variant" ORDER BY mi2."variant")
+                        FROM "menuItems" mi2
+                        JOIN "venuesMenu" vm2 ON mi2."sectionId" = vm2.id
+                        WHERE vm2."venueId" = v.id 
+                            AND mi2."itemID" = %s 
+                            AND mi2."variant" IS NOT NULL
+                    ), '[]'::json) AS vintages
                 FROM "menuItems" mi
                 JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
-                WHERE mi."itemID" = %s;
-            """, (listingID,))
+                JOIN "venues" v ON vm."venueId" = v."id"
+                WHERE mi."itemID" = %s
+                GROUP BY v."id", v."venueName", v."originLocation", v."photo", v."website", v."address"
+                LIMIT 3;
+            """, (listingID, listingID,))
 
-            venues_id = cursor.fetchall()  # List of tuples like [(1,), (2,), ...]
-
-            if not venues_id:
-                return []
-
-            venues_data = []
-            for venue in venues_id:
-                id = venue['venueId']
-
-                cursor.execute("""
-                    SELECT "id", "venueName", "originLocation", "photo", "website" , "address"
-                    FROM "venues"
-                    WHERE "id" = %s;
-                """, (id,))
-                
-                venue_data = cursor.fetchone()
-
-                if venue_data:
-                    venues_data.append({
-                        "id": venue_data["id"],
-                        "venueName": venue_data["venueName"],
-                        "originLocation": venue_data["originLocation"],
-                        "photo": venue_data["photo"],
-                        "website": venue_data["website"],
-                        "address": venue_data["address"]
-                    })
+            venues_data = cursor.fetchall()
 
             if not venues_data:
                 return jsonify({
@@ -2981,9 +2967,26 @@ def getVenuesWithSpecificListing(listingID):
                     "message": "No venue data found for the specified listing."
                 }), 404
 
+            # Convert to list of dictionaries (if not already done by cursor)
+            result = []
+            for venue in venues_data:
+                result.append({
+                    "id": venue["id"],
+                    "venueName": venue["venueName"],
+                    "originLocation": venue["originLocation"],
+                    "photo": venue["photo"],
+                    "website": venue["website"],
+                    "address": venue["address"],
+                    "vintages": venue["vintages"]
+                })
 
-            return jsonify(venues_data), 200
+            return jsonify(result), 200
 
+    except ValueError:
+        return jsonify({
+            "code": 400,
+            "message": "Invalid listing ID. Must be a valid integer."
+        }), 400
     except Exception as e:
         print(str(e))
         return jsonify({
@@ -2991,6 +2994,7 @@ def getVenuesWithSpecificListing(listingID):
             "message": "An error occurred while fetching venues with the specified listing.",
             "error": str(e)
         }), 500
+
 
 # [GET] Get all listings names test
 @blueprint.route('/venue-listings', methods=['GET'])

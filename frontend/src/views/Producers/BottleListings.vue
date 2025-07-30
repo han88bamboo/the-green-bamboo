@@ -319,21 +319,38 @@
                         <!-- where to try -->
                         <div class="row">
                           <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-                              height: 250px;
                               border-radius: 10px;
                               box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
                             ">
-                            <!-- TZH added '-green'-->
                             <!-- header text -->
                             <div class="square-inline text-start">
                               <h4 class="mr-auto">Where to Try</h4>
                             </div>
                             <!-- body -->
                             <div style="height: 85%">
-                              <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
+                              <div class="text-start pt-2 overflow-auto">
                                 <!-- [function] where to try -->
+
+                                <div v-if="venues.length > 0">
+                                  <div v-for="venue in venues" v-bind:key="venue.id">
+                                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
+                                      class="reverse-clickable-text venue-name">
+                                      <span class="location-icon">📍</span>
+                                      {{ venue.venueName }}
+                                    </router-link>
+                                    <div class="vintages-container">
+                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage" class="vintage-badge">
+                                        {{ vintage }}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div> 
+                                <div v-else>
+                                  <p class="mb-1">We couldn't find any bars with this listing.</p>
+                                </div>
+                            
                                 <!-- [if] user does not allow location -->
-                                <div v-if="nearestBars.length == 0">
+                                <!-- <div v-if="nearestBars.length == 0">
                                   <div v-for="venue in venueListings" v-bind:key="venue.id">
                                     <router-link :to="{
                                       path: '/profile/venue/' + venue.id + '/' + venue.venueName,
@@ -341,9 +358,10 @@
                                       <p class="mb-1">{{ venue.venueName }}</p>
                                     </router-link>
                                   </div>
-                                </div>
+                                </div> -->
+
                                 <!-- [else] user allows location -->
-                                <div v-else>
+                                <!-- <div v-else>
                                   <div v-for="([venueID]) in nearestBars" :key="venueID">
                                     <router-link :to="{
                                       path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID),
@@ -373,7 +391,7 @@
                                       </p>
                                     </router-link>
                                   </div>
-                                </div>
+                                </div> -->
                               </div>
                             </div>
                           </div>
@@ -2067,7 +2085,6 @@
         <!-- where to try -->
         <div class="row">
           <div class="square primary-square-green rounded p-3 mb-3 text-start" style="
-              height: 250px;
               border-radius: 10px;
               box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
             ">
@@ -2077,19 +2094,38 @@
             </div>
             <!-- body -->
             <div style="height: 85%">
-              <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
+              <div class="text-start pt-2 overflow-auto">
                 <!-- [function] where to try -->
+
+                <div v-if="venues.length > 0">
+                  <div v-for="venue in venues" v-bind:key="venue.id">
+                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
+                      class="reverse-clickable-text venue-name">
+                      <span class="location-icon">📍</span>
+                      {{ venue.venueName }}
+                    </router-link>
+                    <div class="vintages-container">
+                      <span v-for="vintage in venue.vintages" v-bind:key="vintage" class="vintage-badge">
+                        {{ vintage }}
+                      </span>
+                    </div>
+                  </div>
+                </div> 
+                <div v-else>
+                  <p class="mb-1">We couldn't find any bars with this listing.</p>
+                </div>
+
                 <!-- [if] user does not allow location -->
-                <div v-if="nearestBars.length == 0">
+                <!-- <div v-if="nearestBars.length == 0">
                   <div v-for="venue in venueListings" v-bind:key="venue.id">
                     <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
                       class="reverse-clickable-text">
                       <p class="mb-1">{{ venue.venueName }}</p>
                     </router-link>
                   </div>
-                </div>
+                </div> -->
                 <!-- [else] user allows location -->
-                <div v-else>
+                <!-- <div v-else>
                   <div v-for="([venueID]) in nearestBars" v-bind:key="venueID">
                     <router-link :to="{ path: '/profile/venue/' + venueID + '/' + getVenueNameFromID(venueID) }" class="reverse-clickable-text">
                       <p class="mb-4">
@@ -2111,7 +2147,8 @@
                       </p>
                     </router-link>
                   </div>
-                </div>
+                </div> -->
+
               </div>
             </div>
           </div>
@@ -2789,6 +2826,10 @@ export default {
         this.venues = response.data;
         this.venueWithDrinkList = response.data;
 
+        // console.log('------------------------')
+        // console.log(this.venues)
+        // console.log('------------------------')
+
         // Add ids to venueIDs
         this.venueIDs = this.venues.map((venue) => venue.id);
 
@@ -2950,9 +2991,9 @@ export default {
         // console.log(this.specified_listing)
         // console.log(this.specified_listing.drinkType)
 
-        if (this.venueWithDrinkList != []) {
-          this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
-        }
+        // if (this.venueWithDrinkList != []) {
+        //   this.whereToTry(); // find where to try specified listing [RE-ENABLE WHEN VENUES HAVE MENU ATTRIBUTE]
+        // }
 
         // console.log(this.reviews)
         // this.filteredReviews = this.getReviewsForListing(
@@ -3130,6 +3171,7 @@ export default {
       // get variant review stats 
       if (this.specified_listing.drinkType == 'Wine') {
         this.vintage_listings = await this.retrieveStats(`${process.env.VUE_APP_API_URL}/getData/getVintageAgg/${this.specified_listing.id}`, this.vintage_listings)
+        // console.log(this.vintage_listings)
       }
 
       this.specificReviewRating = this.getRatings(this.specified_listing);
@@ -3198,80 +3240,81 @@ export default {
     },
 
     // view which venues have specified listing, sort by alphabetical order of venue name
-    whereToTry() {
+    // disable for now
+    // whereToTry() {
 
-      if ((this.currentLocation.lat != 0) | (this.currentLocation.lng != 0)) {
-        const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
-        // const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
-        // const maxDistance = 5000
-        // create an object to store the distance of each venue from the current location
-        let venueDistances = {};
-        this.venueWithDrinkList.forEach(async (venue) => {
-          const address = encodeURIComponent(venue.address);
-          const response = await this.$axios.get(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`
-          );
-          const { results } = response.data;
-          if (results.length > 0) {
-            const { lat, lng } = results[0].geometry.location;
-            venue.coordinates = { lat, lng };
+    //   if ((this.currentLocation.lat != 0) | (this.currentLocation.lng != 0)) {
+    //     const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
+    //     // const apiKey = 'AIzaSyD5aukdDYDbnc8BKjFF_YjApx-fUe515Hs'; // Replace with your Google Places API key
+    //     // const maxDistance = 5000
+    //     // create an object to store the distance of each venue from the current location
+    //     let venueDistances = {};
+    //     this.venueWithDrinkList.forEach(async (venue) => {
+    //       const address = encodeURIComponent(venue.address);
+    //       const response = await this.$axios.get(
+    //         `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${apiKey}`
+    //       );
+    //       const { results } = response.data;
+    //       if (results.length > 0) {
+    //         const { lat, lng } = results[0].geometry.location;
+    //         venue.coordinates = { lat, lng };
 
-            let origins = `${this.currentLocation.lat},${this.currentLocation.lng}`;
-            let destinations = `${venue.coordinates.lat},${venue.coordinates.lng}`;
+    //         let origins = `${this.currentLocation.lat},${this.currentLocation.lng}`;
+    //         let destinations = `${venue.coordinates.lat},${venue.coordinates.lng}`;
 
-            try {
-              const response2 = await this.$axios.get(
-                `${process.env.VUE_APP_API_URL}/editListing/getDistance/` +
-                origins +
-                "/" +
-                destinations +
-                "/" +
-                apiKey
-              );
-              const responseData = response2.data.data;
-              const rows = responseData.rows;
-              if (rows.length > 0 && rows[0].elements.length > 0) {
-                const distance = rows[0].elements[0].distance;
-                const duration = rows[0].elements[0].duration;
+    //         try {
+    //           const response2 = await this.$axios.get(
+    //             `${process.env.VUE_APP_API_URL}/editListing/getDistance/` +
+    //             origins +
+    //             "/" +
+    //             destinations +
+    //             "/" +
+    //             apiKey
+    //           );
+    //           const responseData = response2.data.data;
+    //           const rows = responseData.rows;
+    //           if (rows.length > 0 && rows[0].elements.length > 0) {
+    //             const distance = rows[0].elements[0].distance;
+    //             const duration = rows[0].elements[0].duration;
 
-                const distance_text = distance.text;
-                const distance_value = distance.value;
-                const duration_text = duration.text;
+    //             const distance_text = distance.text;
+    //             const distance_value = distance.value;
+    //             const duration_text = duration.text;
 
-                // to store the distance value only
-                venueDistances[venue.id] = distance_value;
+    //             // to store the distance value only
+    //             venueDistances[venue.id] = distance_value;
 
-                // to store other info
-                this.venueDetails[venue.id] = {
-                  distance: distance_text,
-                  duration: duration_text,
-                };
-              }
-            } catch (error) {
-              console.error("Error in getDistance request:", error);
+    //             // to store other info
+    //             this.venueDetails[venue.id] = {
+    //               distance: distance_text,
+    //               duration: duration_text,
+    //             };
+    //           }
+    //         } catch (error) {
+    //           console.error("Error in getDistance request:", error);
 
-              // If there's an error, just add to nearestBars with no distance
-              venueDistances[venue.id] = 99999999; // Default distance if API fails
+    //           // If there's an error, just add to nearestBars with no distance
+    //           venueDistances[venue.id] = 99999999; // Default distance if API fails
 
-              this.venueDetails[venue.id] = {
-                distance: "NA",
-                duration: "Unknown",
-              };
-            }
-          }
-          // if (venue.distance != null && venue.distance != undefined && venue.distance < maxDistance){
-          //     this.nearestBars.push(venue.venueName)
-          //     console.log(this.nearestBars)
-          // }
+    //           this.venueDetails[venue.id] = {
+    //             distance: "NA",
+    //             duration: "Unknown",
+    //           };
+    //         }
+    //       }
+    //       // if (venue.distance != null && venue.distance != undefined && venue.distance < maxDistance){
+    //       //     this.nearestBars.push(venue.venueName)
+    //       //     console.log(this.nearestBars)
+    //       // }
 
-          // sort the venues by distance
-          let nearestBars = this.sortDistanceValues(venueDistances);
-          this.nearestBars = nearestBars;
-        });
-      }
+    //       // sort the venues by distance
+    //       let nearestBars = this.sortDistanceValues(venueDistances);
+    //       this.nearestBars = nearestBars;
+    //     });
+    //   }
 
-      this.venueListings = this.venueWithDrinkList
-    },
+    //   this.venueListings = this.venueWithDrinkList
+    // },
 
     getProducerName(producerID) {
       const producer = this.producers.find(
@@ -4306,19 +4349,20 @@ export default {
       }
     },
 
+    // google map api prep
     // Get current location using browser's Geolocation API
-    getCurrentLocation() {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.currentLocation.lat = position.coords.latitude;
-          this.currentLocation.lng = position.coords.longitude;
-        },
-        (error) => {
-          console.error(error);
-          // Handle error gracefully
-        }
-      );
-    },
+    // getCurrentLocation() {
+    //   navigator.geolocation.getCurrentPosition(
+    //     (position) => {
+    //       this.currentLocation.lat = position.coords.latitude;
+    //       this.currentLocation.lng = position.coords.longitude;
+    //     },
+    //     (error) => {
+    //       console.error(error);
+    //       // Handle error gracefully
+    //     }
+    //   );
+    // },
 
     updateFriendTag() {
       let friendTagError = document.getElementById("friendTagError");
@@ -4552,7 +4596,7 @@ export default {
           if (accType !== null) {
             this.userType = accType;
           }
-          this.getCurrentLocation();
+          // this.getCurrentLocation();
         } else {
           this.dataLoaded = null;
           this.listingExists = false;
@@ -4706,3 +4750,79 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.venue-item {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+.venue-item:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.venue-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: white;
+  text-decoration: none;
+  display: block;
+}
+
+.venue-name:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.vintages-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vintage-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.vintage-badge:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.no-venues {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1rem;
+}
+
+.no-venues-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.location-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  opacity: 0.8;
+}
+</style>
