@@ -919,7 +919,9 @@ export default {
 
     // create unique hash based on username and password
     hashPassword(username, password) {
-      const combinedString = username.toString() + password;
+      // trim username to ensure consistent hashing
+      const trimmedUsername = username.toString().trim();
+      const combinedString = trimmedUsername + password;
       let hash = 0;
 
       for (let i = 0; i < combinedString.length; i++) {
