@@ -53,7 +53,7 @@
     <!-- Display when bottle listing submission encounters an error -->
     <div class="text-danger fw-bold fs-6 my-5" v-if="errorSubmission"> 
         <span v-if="errorMessage">An error occurred while attempting to send sign up details, please try again!</span>
-        <span v-if="duplicateEntry">Your sign up details have already been sent. You should receive an email soon as we are currently reviewing your sign up application. Please contact us at hello@drink-x.com for help!</span>
+        <span v-if="duplicateEntry">Your email address has already been submitted to Drink-X, or used for another account. Please contact us at hello@drink-x.com for help!</span>
         <br><br>
         <button class="btn primary-btn btn-sm" @click="reset">
             <span class="fs-6" style="color: white;"> Click to retry! </span>

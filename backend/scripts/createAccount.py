@@ -187,6 +187,7 @@ def createAccountRequest():
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
+        # Check if email already exists in accountRequests table
         cur.execute('SELECT * FROM "accountRequests" WHERE email = %s', (rawEmail,))
         existingAccount = cur.fetchone()
 
@@ -201,6 +202,17 @@ def createAccountRequest():
                 }
             ), 400
         
+        # Check if email exists in users table
+        cur.execute('SELECT * FROM "users" WHERE email = %s', (rawEmail,))
+        existingUser = cur.fetchone()
+        
+        if existingUser is not None:
+            return jsonify({
+                "code": 400,
+                "data": {"email": rawEmail},
+                "message": "Email already exists in user accounts."
+            }), 400
+
         # Extract only the values that correspond to database columns
         values = [rawAccount.get(col) for col in rawAccount]
 
