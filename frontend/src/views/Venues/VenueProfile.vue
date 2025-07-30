@@ -607,8 +607,11 @@
                             </span>
                             <span v-if="targetVenue.openForReservations && targetVenue.website"> | </span>
                             <span v-if="targetVenue.website">
-                                <strong>Website:</strong> {{ targetVenue.website }}
-                            </span>
+                                <strong>Website:</strong> 
+                                <a :href="targetVenue.website" target="_blank">
+                                    {{ targetVenue.website }}
+                                </a>
+                            </span>  
                         </p>
                     </div>
 
