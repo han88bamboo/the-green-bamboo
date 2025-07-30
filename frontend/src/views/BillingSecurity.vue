@@ -645,13 +645,25 @@
             }, 
 
             async checkUsername() {
+                // trim username to ensure consistent processing
+                this.username = this.username.trim();
 
                 // username empty
                 if (this.username == "") {
                     this.formError["username"] = "Please enter a username.";
                     return;
+                    
+                // check for uppercase letters
+                } else if (this.username !== this.username.toLowerCase()) {
+                    this.formError["username"] = "Username must be all lowercase letters.";
+                    return;
 
-                // username not empty
+                // username format validation
+                } else if (!this.validateUsername(this.username)) {
+                    this.formError["username"] = "Username can only contain letters and numbers (no spaces or special characters).";
+                    return;
+
+                // username not empty and valid format
                 } else {
                     // username changed
                     if (this.username != this.business.username) {
