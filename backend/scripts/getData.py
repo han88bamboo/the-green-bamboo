@@ -3342,14 +3342,14 @@ def getUsernameFromEmail(email):
     try:
         with conn.cursor() as cursor:
             # First, check in users table
-            cursor.execute('SELECT "username" FROM "users" WHERE "email" = %s', (email,))
+            cursor.execute('SELECT "username" FROM "users" WHERE LOWER(REPLACE("email", \' \', \'\')) = LOWER(REPLACE(%s, \' \', \'\'))', (email,))
             user_data = cursor.fetchone()
             
             if user_data:
                 return jsonify({"username": user_data["username"]}), 200
             
             # If not found in users, check in accountRequests table
-            cursor.execute('SELECT "businessId", "businessType" FROM "accountRequests" WHERE "email" = %s', (email,))
+            cursor.execute('SELECT "businessId", "businessType" FROM "accountRequests" WHERE LOWER(REPLACE("email", \' \', \'\')) = LOWER(REPLACE(%s, \' \', \'\'))', (email,))
             account_request = cursor.fetchone()
             
             if account_request:
