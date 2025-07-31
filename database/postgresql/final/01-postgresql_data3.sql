@@ -250,7 +250,13 @@ CREATE TABLE "venues" (
     "publicHolidays" VARCHAR(255),
     "stripeCustomerId" VARCHAR(255),
     "pin" VARCHAR(255),
-    "requestId" INTEGER -- [!] reference "accountRequests"
+    "requestId" INTEGER, -- [!] reference "accountRequests"
+    "instagram" TEXT,
+    "facebook" TEXT,
+    "tiktok" TEXT,
+    "email" TEXT,
+    "phoneNumber" TEXT,
+    "whatsappNumber" TEXT
 );
 
 -- create index 

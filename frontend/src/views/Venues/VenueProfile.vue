@@ -583,6 +583,33 @@
                         <label for="websiteInput">Website</label>
                         <input type="url" class="form-control mb-3" id="websiteInput" v-model="editWebsite" />
                     </div>
+                    <div class="col-6">
+                        <label for="instagramInput">Instagram</label>
+                        <input type="url" class="form-control mb-3" id="instagramInput" v-model="editInstagram" 
+                               placeholder="https://www.instagram.com/yourhandle" />
+                    </div>
+                    <div class="col-6">
+                        <label for="facebookInput">Facebook</label>
+                        <input type="url" class="form-control mb-3" id="facebookInput" v-model="editFacebook" 
+                               placeholder="https://www.facebook.com/yourpage" />
+                    </div>
+                    <div class="col-6">
+                        <label for="tiktokInput">TikTok</label>
+                        <input type="url" class="form-control mb-3" id="tiktokInput" v-model="editTiktok" 
+                               placeholder="https://www.tiktok.com/@yourhandle" />
+                    </div>
+                    <div class="col-6">
+                        <label for="emailInput">Email</label>
+                        <input type="email" class="form-control mb-3" id="emailInput" v-model="editEmail" />
+                    </div>
+                    <div class="col-6">
+                        <label for="phoneNumberInput">Phone No.</label>
+                        <input type="tel" class="form-control mb-3" id="phoneNumberInput" v-model="editPhoneNumber" />
+                    </div>
+                    <div class="col-6">
+                        <label for="whatsappNumberInput">WhatsApp</label>
+                        <input type="tel" class="form-control mb-3" id="whatsappNumberInput" v-model="editWhatsappNumber" />
+                    </div>
                     <div class="col-12 d-flex align-items-center">
                         <label class="me-3 mb-0">Open for Reservations:</label>
                         <input type="checkbox" id="openForReservationsCheckbox" v-model="editOpenForReservations"
@@ -601,20 +628,57 @@
                             <span v-if="targetVenue.yearOpened">
                                 <strong>Year Opened:</strong> {{ targetVenue.yearOpened }}
                             </span>
-                            <span
-                                v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website)">
+                            <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)">
                                 | </span>
                             <span v-if="targetVenue.openForReservations">
-                                <strong>Open for Reservations:</strong> {{ targetVenue.openForReservations === true ?
-                                'Yes' : 'No' }}
+                                <strong>Open for Reservations:</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
                             </span>
-                            <span v-if="targetVenue.openForReservations && targetVenue.website"> | </span>
+                            <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.website">
                                 <strong>Website:</strong> 
                                 <a :href="targetVenue.website" target="_blank">
                                     {{ targetVenue.website }}
                                 </a>
-                            </span>  
+                            </span>
+                            <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.instagram">
+                                <strong>Instagram:</strong> 
+                                <a :href="targetVenue.instagram" target="_blank">
+                                    {{ formatInstagramHandle(targetVenue.instagram) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.facebook">
+                                <strong>Facebook:</strong> 
+                                <a :href="targetVenue.facebook" target="_blank">
+                                    {{ formatFacebookHandle(targetVenue.facebook) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.tiktok">
+                                <strong>TikTok:</strong> 
+                                <a :href="targetVenue.tiktok" target="_blank">
+                                    {{ formatTikTokHandle(targetVenue.tiktok) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.email">
+                                <strong>Email:</strong> 
+                                <a :href="`mailto:${targetVenue.email}`">
+                                    {{ targetVenue.email }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.phoneNumber">
+                                <strong>Phone:</strong> {{ targetVenue.phoneNumber }}
+                            </span>
+                            <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
+                            <span v-if="targetVenue.whatsappNumber">
+                                <strong>WhatsApp:</strong> 
+                                <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
+                                    {{ targetVenue.whatsappNumber }}
+                                </a>
+                            </span>
                         </p>
                     </div>
 
@@ -4270,6 +4334,12 @@ export default {
             editYearOpened: null,
             editOpenForReservations: '',
             editWebsite: '',
+            editInstagram: '',
+            editFacebook: '',
+            editTiktok: '',
+            editEmail: '',
+            editPhoneNumber: '',
+            editWhatsappNumber: '',
             qaQuestion: '',
             qaAnswer: '',
 
@@ -4542,6 +4612,23 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     methods: {
+        // Helper methods for social media formatting
+        formatInstagramHandle(url) {
+            if (!url) return '';
+            const match = url.match(/instagram\.com\/([^/?]+)/);
+            return match ? `@${match[1]}` : url;
+        },
+        formatFacebookHandle(url) {
+            if (!url) return '';
+            const match = url.match(/facebook\.com\/([^/?]+)/);
+            return match ? match[1] : url;
+        },
+        formatTikTokHandle(url) {
+            if (!url) return '';
+            const match = url.match(/tiktok\.com\/@([^/?]+)/);
+            return match ? `@${match[1]}` : url;
+        },
+        
         setUpdateID(review) {
             this.updateID = review.id;
         },
@@ -4622,6 +4709,12 @@ export default {
                     this.editYearOpened = this.targetVenue["yearOpened"];
                     this.editOpenForReservations = this.targetVenue["openForReservations"];
                     this.editWebsite = this.targetVenue["website"];
+                    this.editInstagram = this.targetVenue["instagram"];
+                    this.editFacebook = this.targetVenue["facebook"];
+                    this.editTiktok = this.targetVenue["tiktok"];
+                    this.editEmail = this.targetVenue["email"];
+                    this.editPhoneNumber = this.targetVenue["phoneNumber"];
+                    this.editWhatsappNumber = this.targetVenue["whatsappNumber"];
                     this.newAddress = this.targetVenue["address"];
                     this.newPublicHolidays = this.targetVenue["publicHolidays"];
                     this.newReservationDetails = this.targetVenue["reservationDetails"];
@@ -5527,6 +5620,12 @@ export default {
             console.log("yearOpened:", this.editYearOpened);
             console.log("openForReservations:", this.editOpenForReservations);
             console.log("website:", this.editWebsite);
+            console.log("instagram:", this.editInstagram);
+            console.log("facebook:", this.editFacebook);
+            console.log("tiktok:", this.editTiktok);
+            console.log("email:", this.editEmail);
+            console.log("phoneNumber:", this.editPhoneNumber);
+            console.log("whatsappNumber:", this.editWhatsappNumber);
 
             this.editProfile = false;
 
@@ -5541,6 +5640,12 @@ export default {
                 yearOpened: this.editYearOpened,
                 openForReservations: this.editOpenForReservations,
                 website: this.editWebsite,
+                instagram: this.editInstagram,
+                facebook: this.editFacebook,
+                tiktok: this.editTiktok,
+                email: this.editEmail,
+                phoneNumber: this.editPhoneNumber,
+                whatsappNumber: this.editWhatsappNumber,
             };
             console.log("Payload object sans image:", payload);
 

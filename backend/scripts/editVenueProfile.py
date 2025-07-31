@@ -38,6 +38,12 @@ def editDetails():
     yearOpened = data.get('yearOpened', None)
     openForReservations = data.get('openForReservations')
     website = data.get('website', '')
+    instagram = data.get('instagram', '')
+    facebook = data.get('facebook', '')
+    tiktok = data.get('tiktok', '')
+    email = data.get('email', '')
+    phoneNumber = data.get('phoneNumber', '')
+    whatsappNumber = data.get('whatsappNumber', '')
 
     try:
         # Find existing venue
@@ -68,10 +74,17 @@ def editDetails():
                     "yearOpened" = %s,
                     "openForReservations" = %s,
                     "website" = %s,
+                    "instagram" = %s,
+                    "facebook" = %s,
+                    "tiktok" = %s,
+                    "email" = %s,
+                    "phoneNumber" = %s,
+                    "whatsappNumber" = %s,
                     "photo" = %s
                 WHERE id = %s
                 """,
-                (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, website, image64, venueID)
+                (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, 
+                 website, instagram, facebook, tiktok, email, phoneNumber, whatsappNumber, image64, venueID)
             )
             conn.commit()
 

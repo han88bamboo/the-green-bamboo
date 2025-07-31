@@ -3607,7 +3607,8 @@ def getVenue(id):
             SELECT 
                 v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website,
+                v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
+                v.email, v."phoneNumber", v."whatsappNumber",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build the menu JSON
                 COALESCE((
