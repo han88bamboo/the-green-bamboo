@@ -1918,7 +1918,7 @@
                       to="/badges-and-points"
                       style="color: #FF3E31; font-weight: bold; text-decoration: none;"
                     >
-                      Earn 200 points
+                      Earn 100 points
                     </router-link>
                     to create your own Club!
                   </p>
