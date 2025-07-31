@@ -6360,6 +6360,29 @@ Thank you!`
     window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
   }
   },
+  watch:{
+     '$route.params.producerID': function(newId, oldId) {
+      console.log('Route producer ID changed from', oldId, 'to', newId);
+      if (newId !== oldId) {
+        // Reset data loading state
+        this.dataLoaded = false;
+        
+        // Reset data
+        this.targetProducer = newId;
+        this.targetProducerID = newId;
+        
+        // Check if it's own profile
+        if (this.userType == 'producer' && this.user_id == this.targetProducer) {
+          this.selfView = true;
+        } else {
+          this.selfView = false;
+        }
+        
+        // Reload data
+        this.loadData();
+      }
+    }
+  }
 };
 </script>
 

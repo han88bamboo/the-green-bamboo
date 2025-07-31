@@ -2764,6 +2764,30 @@ export default {
   
   },
   watch: {
+    '$route.params.listingID': function(newId, oldId) {
+      console.log('Route listing ID changed from', oldId, 'to', newId);
+      if (newId !== oldId) {
+        // Reset data loading state
+        this.dataLoaded = false;
+        this.listingExists = true;
+        
+        // Update listing ID
+        this.listing_id = newId;
+        this.bookmarkListingID = newId;
+        
+        // Clear previous data
+        this.reviews = [];
+        this.filteredReviewsWithImages = [];
+        this.specified_listing = {};
+        
+        // Reload data
+        this.checkListingExists();
+        
+        // Clear review cache for the previous listing
+        this.clearReviewCache();
+      }
+    },
+
     // caching should be disabled for wines
     // Watch all relevant fields and cache them
     reviewDesc: 'cacheReviewForm',

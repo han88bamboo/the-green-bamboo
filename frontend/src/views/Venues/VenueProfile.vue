@@ -7505,8 +7505,36 @@ Thank you!`
             );
             window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
         }
+    },
+    watch: {
+    '$route.params.venueID': function(newId, oldId) {
+        console.log('Route venue ID changed from', oldId, 'to', newId);
+        if (newId !== oldId) {
+            // Reset data loading state
+            this.dataLoaded = false;
+            this.venueExists = null;
+            
+            // Reset data
+            this.targetVenue = newId;
+            this.targetVenueID = newId;
+            
+            // Check if it's own profile
+            if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
+                this.selfView = true;
+            } else {
+                this.selfView = false;
+            }
+            
+            // Reload venue data
+            if (this.targetVenue != "" && this.targetVenue != undefined) {
+                this.getVenueData();
+            } else {
+                this.venueExists = false;
+            }
+        }
     }
-}
+    }
+    }    
 </script>
 
 <style>
