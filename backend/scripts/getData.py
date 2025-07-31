@@ -2961,11 +2961,13 @@ def getVenuesWithSpecificListing(listingID):
 
             venues_data = cursor.fetchall()
 
+            # if not venues_data:
+            #     return jsonify({
+            #         "code": 404,
+            #         "message": "No venue data found for the specified listing."
+            #     }), 404
             if not venues_data:
-                return jsonify({
-                    "code": 404,
-                    "message": "No venue data found for the specified listing."
-                }), 404
+                return jsonify([]), 200
 
             # Convert to list of dictionaries (if not already done by cursor)
             result = []
