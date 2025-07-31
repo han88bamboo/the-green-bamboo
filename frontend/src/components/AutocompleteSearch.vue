@@ -484,7 +484,7 @@ export default {
 
 .dropdown-menu {
   border-radius: 8px;
-  padding: 0.2rem 0;
+  padding: 0.2rem 0.25rem;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
@@ -506,7 +506,7 @@ export default {
   display: flex;
   align-items: center;
   cursor: pointer;
-  margin: 0 0.25rem;
+  margin: 0;
   border-radius: 4px;
 }
 
