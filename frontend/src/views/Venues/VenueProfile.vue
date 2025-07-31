@@ -2507,18 +2507,60 @@
 
                                                 <div class="border rounded p-3" style="background-color: #fafafa;">
 
+                                                    <!-- [input] producer search -->
+                                                    <div class="form-group mb-3">
+                                                        <p class="text-start mb-1">Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
+                                                                style="font-size: 14px;">Select a producer to filter drink search</span></p>
+
+                                                        <input type="text" class="form-control"
+                                                            v-model="item.producerSearchQuery"
+                                                            @input="debouncedSearchProducers(itemIndex)"
+                                                            :placeholder="'Search for a producer to filter drinks (Item ' + (itemIndex + 1) + ')'" />
+
+                                                        <ul class="list-group"
+                                                            v-if="item.producerSearchResults && item.producerSearchResults.length > 0 && item.producerSearchQuery">
+                                                            <li v-for="producer in item.producerSearchResults" :key="producer.id"
+                                                                class="list-group-item list-group-item-action"
+                                                                @click="selectProducer(producer, itemIndex)">
+                                                                {{ producer.producerName }}
+                                                                <small class="text-muted">
+                                                                    ({{ producer.originCountry }})
+                                                                </small>
+                                                            </li>
+                                                        </ul>
+
+                                                        <!-- Show selected producer -->
+                                                        <div v-if="item.selectedProducer && item.selectedProducer.id" 
+                                                            class="mt-2 p-2 bg-light border rounded">
+                                                            <small class="text-success fw-bold">
+                                                                ✓ Producer Selected: {{ item.selectedProducer.producerName }}
+                                                                <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                                                    @click="item.selectedProducer = {}; item.producerSearchQuery = ''">
+                                                                    Clear
+                                                                </button>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+
                                                     <!-- [input] bottle name -->
                                                     <div class="form-group mb-3">
                                                         <p class="text-start mb-1">Drink Name<span
-                                                                class="text-danger">*</span> <span class="text-muted"
-                                                                style="font-size: 14px;">(Just begin typing, then select
-                                                                from the
-                                                                drop-down suggestions.)</span></p>
+                                                                class="text-danger">*</span> 
+                                                            <span class="text-muted"
+                                                                style="font-size: 14px;">Just begin typing, then select
+                                                                from the drop-down suggestions.</span>
+                                                            <span v-if="item.selectedProducer && item.selectedProducer.id" 
+                                                                class="text-info fw-bold" style="font-size: 14px;">
+                                                                - Filtered by {{ item.selectedProducer.producerName }}
+                                                            </span>
+                                                        </p>
 
                                                         <input type="text" class="form-control"
                                                             v-model="item.searchQuery"
                                                             @input="debouncedSearchMultiple(itemIndex)"
-                                                            :placeholder="'Enter a Drink to Add to Menu (Item ' + (itemIndex + 1) + ')'" />
+                                                            :placeholder="item.selectedProducer && item.selectedProducer.id ? 
+                                                                'Search drinks from ' + item.selectedProducer.producerName + ' (Item ' + (itemIndex + 1) + ')' :
+                                                                'Enter a Drink to Add to Menu (Item ' + (itemIndex + 1) + ')'" />
 
                                                         <ul class="list-group"
                                                             v-if="item.searchResults && item.searchResults.length > 0 && item.searchQuery">
@@ -6155,13 +6197,17 @@ export default {
                 const defaultServingId = this.servingTypes.find(type => type.servingType === "-")?.id || 1;
 
                 this.multipleMenuItems.push({
+                    producerSearchQuery: '',
+                    producerSearchResults: [],
+                    selectedProducer: {},
                     searchQuery: '',
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
-                    debounceTimer: null
+                    debounceTimer: null,
+                    producerDebounceTimer: null
                 });
             }
         },
@@ -6179,16 +6225,71 @@ export default {
 
             this.multipleMenuItems = [
                 {
+                    producerSearchQuery: '',
+                    producerSearchResults: [],
+                    selectedProducer: {},
                     searchQuery: '',
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
-                    debounceTimer: null
+                    debounceTimer: null,
+                    producerDebounceTimer: null
                 }
             ];
             this.globalMenuItemTargetSection = {};
+        },
+
+        // Debounced Search for Producers
+        debouncedSearchProducers(itemIndex) {
+            const item = this.multipleMenuItems[itemIndex];
+
+            // Clear previous timeout
+            if (item.producerDebounceTimer) {
+                clearTimeout(item.producerDebounceTimer);
+            }
+
+            // Set new timeout
+            item.producerDebounceTimer = setTimeout(() => {
+                this.searchProducers(itemIndex);
+            }, 300);
+        },
+
+        // Search Producers
+        async searchProducers(itemIndex) {
+            const item = this.multipleMenuItems[itemIndex];
+
+            if (!item.producerSearchQuery || item.producerSearchQuery.trim().length < 2) {
+                item.producerSearchResults = [];
+                return;
+            }
+
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducerNamesDynamicSearch/${item.producerSearchQuery}`);
+
+                if (response.status === 200) {
+                    item.producerSearchResults = response.data.slice(0, 10); // Limit to 10 results
+                }
+            } catch (error) {
+                console.error('Error searching producers:', error);
+                item.producerSearchResults = [];
+            }
+        },
+
+        // Select Producer
+        selectProducer(producer, itemIndex) {
+            const item = this.multipleMenuItems[itemIndex];
+
+            item.selectedProducer = producer;
+            item.producerSearchQuery = producer.producerName;
+            item.producerSearchResults = [];
+            
+            // Reset bottle search when producer changes
+            item.searchQuery = '';
+            item.searchResults = [];
+            item.newMenuItemID = '';
+            item.newMenuItemTarget = {};
         },
 
         // Debounced Search for Multiple Items
@@ -6216,7 +6317,15 @@ export default {
             }
 
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${item.searchQuery}`);
+                let response;
+                
+                // If a producer is selected, search only within that producer's listings
+                if (item.selectedProducer && item.selectedProducer.id) {
+                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesByProducer/${item.searchQuery}/${item.selectedProducer.id}`);
+                } else {
+                    // Otherwise, search all listings
+                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${item.searchQuery}`);
+                }
 
                 if (response.status === 200) {
                     item.searchResults = response.data.slice(0, 10); // Limit to 10 results

@@ -9,11 +9,11 @@
 #           [Listings]
 #           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
 #           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getListingsNames/<search_term> (GET),
-#           /getRecentlyAddedListings (POST), /getListingByName/<listing_name> (GET)
+#           /getRecentlyAddedListings (POST), /getListingByName/<listing_name> (GET), /getListingNamesByProducer/<searchTerm>/<producerId> (GET)
 
 #           [Producers]
 #           /getProducers (GET), /getProducer/<id> (GET), /getProducersByIDs (POST), /getProducersBySearch (GET),
-#           /getProducersProfileViews (GET), /getProducersProfileViewsByProducer/<id> (GET),
+#           /getProducersProfileViews (GET), /getProducersProfileViewsByProducer/<id> (GET), /getProducerNamesDynamicSearch/<searchTerm> (GET),
 #           /getBestRatedExpressions/<producerID> (GET), /getMostReviewedExpressions/<producerID> (GET),
 #           /getProducerDashBoardData/<producerID> (GET), /getProducerLatestReviews/<producerID> (GET),
 
@@ -797,7 +797,7 @@ def getListingNamesDynamicSearch(searchTerm):
             WHERE unaccent(p."producerName") %% unaccent(%s)
             
             ORDER BY combined_sim_score DESC
-            LIMIT 30
+            LIMIT 50
         """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm))
 
         listings_data = cursor.fetchall()
@@ -831,6 +831,125 @@ def getListingNamesDynamicSearch(searchTerm):
     except Exception as e:
         print(f"Error fetching listing names by dynamic search: {str(e)}")
         return jsonify({"code": 500, "message": "An error occurred while fetching listing names."}), 500
+
+# [GET] Get producer names by dynamic search term
+@blueprint.route("/getProducerNamesDynamicSearch/<searchTerm>")
+def getProducerNamesDynamicSearch(searchTerm):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Searches for producers by name with similarity
+        cursor.execute(""" 
+            SELECT 
+                p."id", 
+                p."producerName",
+                p."originCountry",
+                p."photo",
+                similarity(unaccent(p."producerName"), unaccent(%s)) AS sim_score
+            FROM "producers" p
+            WHERE unaccent(p."producerName") %% unaccent(%s)
+            ORDER BY sim_score DESC
+            LIMIT 20
+        """, (searchTerm, searchTerm))
+
+        producers_data = cursor.fetchall()
+
+        # Convert the fetched data to a list of dictionaries
+        for producer in producers_data:
+            producer_dict = {
+                "id": producer["id"],
+                "producerName": producer["producerName"],
+                "originCountry": producer["originCountry"],
+                "photo": producer["photo"],
+                "similarity": producer["sim_score"]
+            }
+            # Convert Decimal to float if necessary
+            for key, value in producer_dict.items():
+                if isinstance(value, Decimal):
+                    producer_dict[key] = float(value)
+            producer.update(producer_dict)
+
+        if not producers_data:
+            return jsonify([])
+
+        return jsonify(producers_data)
+
+    except Exception as e:
+        print(f"Error in getProducerNamesDynamicSearch: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while searching producers."}), 500
+
+# [GET] Get Listing names by dynamic search term filtered by producer
+@blueprint.route("/getListingNamesByProducer/<searchTerm>/<int:producerId>")
+def getListingNamesByProducer(searchTerm, producerId):
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+
+        # First, lower the similarity threshold to 0.15 for more permissive matching
+        cursor.execute("SET pg_trgm.similarity_threshold = 0.15")
+
+        # Searches for listings by name from a specific producer
+        cursor.execute(""" 
+            SELECT 
+                l."id", 
+                l."listingName", 
+                l."photo",
+                p."producerName",
+                l."drinkType",
+                l."typeCategory",
+                l."abv",
+                l."originCountry",
+                l."officialDesc",
+                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                similarity(unaccent(l."listingName"), unaccent(%s)) AS sim_score
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            WHERE l."producerID" = %s
+            AND unaccent(l."listingName") %% unaccent(%s)
+            ORDER BY sim_score DESC
+            LIMIT 30
+        """, (searchTerm, producerId, searchTerm))
+
+        listings_data = cursor.fetchall()
+
+        # Convert the fetched data to a list of dictionaries
+        for listing in listings_data:
+            listing_dict = {
+                "id": listing["id"],
+                "listingName": listing["listingName"],
+                "producerName": listing["producerName"],
+                "photo": listing["photo"],
+                "drinkType": listing["drinkType"],
+                "typeCategory": listing["typeCategory"],
+                "abv": listing["abv"],
+                "originCountry": listing["originCountry"],
+                "officialDesc": listing["officialDesc"],
+                "avgRating": listing["avgRating"],
+                "similarity": listing["sim_score"]
+            }
+            # Convert Decimal to float if necessary
+            for key, value in listing_dict.items():
+                if isinstance(value, Decimal):
+                    listing_dict[key] = float(value)
+            listing.update(listing_dict)
+
+        if not listings_data:
+            return jsonify([])
+
+        return jsonify(listings_data)
+
+    except Exception as e:
+        print(f"Error in getListingNamesByProducer: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while searching listings by producer."}), 500
+    finally:
+        # Make sure to reset the threshold back to default (0.3)
+        # This will run even if there's an exception in the try block
+        try:
+            cursor.execute("SET pg_trgm.similarity_threshold TO DEFAULT")
+        except:
+            pass  # Ignore any errors during cleanup
 
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
@@ -2966,9 +3085,10 @@ def getVenuesWithSpecificListing(listingID):
             #         "code": 404,
             #         "message": "No venue data found for the specified listing."
             #     }), 404
+
             if not venues_data:
                 return jsonify([]), 200
-
+            
             # Convert to list of dictionaries (if not already done by cursor)
             result = []
             for venue in venues_data:
