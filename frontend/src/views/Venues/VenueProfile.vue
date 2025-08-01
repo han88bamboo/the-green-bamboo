@@ -4923,6 +4923,26 @@ export default {
                 );
                 this.bottleReviews = response.data;
 
+                // Preload bottle details for all reviews
+                const listingIds = [...new Set(this.bottleReviews.map(review => review.reviewTarget))];
+
+                // Fetch names concurrently rather than sequentially
+                if (listingIds.length > 0) {
+                    await Promise.all(listingIds.map(async (listingId) => {
+                        try {
+                            const response = await this.$axios.get(
+                                `${process.env.VUE_APP_API_URL}/getData/getListing/${listingId}`
+                            );
+                            if (response.data) {
+                                this.bottleListings[listingId] = response.data;
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching name for listing ${listingId}:`, error);
+                            this.bottleListings[listingId] = { listingName: 'Unknown Bottle' };
+                        }
+                    }));
+                }
+
                 // Combine all review images after loading both venue and bottle reviews
                 this.getCombinedReviewImages();
 
