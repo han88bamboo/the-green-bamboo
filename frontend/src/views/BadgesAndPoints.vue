@@ -213,7 +213,7 @@
             <!-- Action Badge Row -->
             <div class="d-flex flex-wrap align-items-start mb-4">
               <div class="d-flex col-12 col-md-2 justify-content-center">
-                <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Checkpoint_collector_badge.png?v=1751984337"
+                <img src="https://drinkx-badges.s3.ap-southeast-1.amazonaws.com/Images+of+Action+Badges/Checkpoint_Collector.png"
                     alt="Action Badge" class="img-fluid mb-2 rounded" style="max-width: 100px;">
               </div>
               <div class="col-12 col-md-9 text-start">
@@ -251,7 +251,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  The <b><i>Whisky Explorer</i></b> badge is your passport to the world of whisky. Every time you review a whisky—whether it's a smooth Scottish single malt, a bold American bourbon, or a delicate Japanese blend—you're building towards this prestigious badge. Your first whisky review earns you Level 1, and as you continue exploring the amber spirit, your expertise level rises alongside your palate sophistication.
+                  The <b><i>Whisky Explorer</i></b> badge is your first checkpoint in the world of whisky. Every time you review a whisky—whether it's a Scottish single malt, an American bourbon, or a floral Japanese whisky, you're building towards this prestigious badge. Your first whisky review earns you Level 1, and as you continue exploring the amber spirit, your expertise level rises alongside your palate sophistication.
                 </p>
               </div>
             </div>
@@ -264,7 +264,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  Wine enthusiasts will find their calling with <b><i>Grape Expectations</i></b>. This badge celebrates your journey through vineyards around the world, from crisp Sauvignon Blancs to full-bodied Cabernets. Each wine review—be it a casual evening pour or a special occasion vintage—contributes to your growing wine knowledge and badge progression.
+                  Wine enthusiasts will find their calling with <b><i>Grape Expectations</i></b>. This badge celebrates your journey through vineyards around the world, from crisp Sauvignon Blancs to full-bodied Cabernets. Each wine review contributes to your growing wine knowledge and badge progression.
                 </p>
               </div>
             </div>
@@ -277,7 +277,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  The <b><i>El Tequila Supremo</i></b> badge honors your exploration of Mexico's national spirit. Whether you're sipping a smooth blanco, a complex añejo, or discovering the nuances of different agave regions, every tequila review brings you closer to supremo status. This badge reflects not just your reviews, but your appreciation for the craftsmanship behind each bottle.
+                  The <b><i>El Tequila Supremo</i></b> badge honors your exploration of Mexico's national spirit. Whether you're sipping a smooth blanco, a complex añejo, or discovering the nuances of different regions within Tequila, every tequila review brings you closer to supremo status.
                 </p>
               </div>
             </div>
@@ -290,7 +290,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  Caribbean adventure seekers will gravitate towards the <b><i>Rumaniac</i></b> badge. From light Puerto Rican rums to dark Jamaican varieties, from spiced blends to premium aged expressions, each rum review showcases your journey through the tropical spirit world. The badge levels up as you explore different styles, regions, and production methods.
+                  Caribbean adventure seekers will love the <b><i>Rumaniac</i></b> badge. From crisp Rhum Agricoles to funky Jamaican expressions, each rum review showcases your journey through the tropical spirit world. The badge levels up as you explore different styles, regions, and production methods.
                 </p>
               </div>
             </div>
@@ -318,7 +318,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  <b><i>The Baguette Brigade</i></b> badge celebrates your exploration of French drinking culture. Every review of a French wine, cognac, armagnac, or artisanal beer contributes to this badge. France's rich drinking heritage spans from Bordeaux vineyards to Champagne houses, and each review demonstrates your appreciation for French savoir-vivre and terroir.
+                  <b><i>The Baguette Brigade</i></b> badge celebrates your exploration of French drinking culture. Every review of a French-produced drink contributes to this badge. Each level demonstrates your appreciation for French savoir-vivre and terroir.
                 </p>
               </div>
             </div>
@@ -331,7 +331,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  Scottish spirit enthusiasts can earn <b><i>You're Kilting It!</i></b> by reviewing drinks from Scotland. While Scotch whisky reviews are the primary driver, this badge also recognizes reviews of Scottish gins, craft beers, and other spirits. Each review reflects your journey through Scotland's dramatic landscapes and time-honored distilling traditions.
+                  Scottish spirit enthusiasts can earn <b><i>You're Kilting It!</i></b> by reviewing drinks made in Scotland. While Scotch whisky reviews are the primary driver, this badge also recognizes reviews of any Scotland-produced drinks, be they gins, craft beers, and other spirits.
                 </p>
               </div>
             </div>
@@ -344,7 +344,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  The <b><i>Tom Yum For The Soul</i></b> badge represents your adventure into Thai drinking culture. Whether you're reviewing traditional rice wines, modern Thai craft beers, or innovative Thai-inspired spirits, each review showcases your curiosity about Thailand's emerging beverage scene and traditional drinking customs.
+                  The <b><i>Tom Yum For The Soul</i></b> badge represents your adventure into Thai drinking culture. Whether you're reviewing traditional rice wines, modern Thai craft beers, or innovative Thai-inspired spirits, each level charts your journey through Thailand's emerging beverage scene and traditional drinking customs.
                 </p>
               </div>
             </div>
@@ -357,7 +357,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  Mexican beverage explorers can pursue <b><i>Aztec Avengers Assemble</i></b> through reviews of drinks from Mexico. Beyond tequila and mezcal, this includes Mexican craft beers, traditional pulque, and regional specialties. Each review demonstrates your appreciation for Mexico's rich drinking heritage that spans from ancient traditions to modern innovations.
+                  Mexican beverage explorers can pursue <b><i>Aztec Avengers Assemble</i></b> through reviews of drinks from Mexico. Beyond tequila and mezcal, this includes Mexican craft beers, traditional pulque, and regional specialties. Each level demonstrates your appreciation for Mexico's rich drinking heritage that spans from ancient traditions to modern innovations.
                 </p>
               </div>
             </div>
@@ -370,7 +370,7 @@
               </div>
               <div class="col-12 col-md-9 text-start">
                 <p class="mobile-rating-smaller-text-2 mb-0">
-                  <b><i>Breakfast In Kyoto</i></b> honors your exploration of Japanese drinking culture. From world-renowned Japanese whisky to sake, shochu, craft beers, and innovative spirits, each review reflects your journey through Japan's meticulous approach to beverage craftsmanship and the philosophy of continuous improvement.
+                  <b><i>Breakfast In Kyoto</i></b> honors your exploration of Japanese drinking culture. From world-renowned Japanese whisky to sake, shochu, craft beers, and innovative spirits, each level reflects your journey through Japan's age-old approach to beverage craftsmanship.
                 </p>
               </div>
             </div>
