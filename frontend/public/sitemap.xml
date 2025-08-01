@@ -192,4 +192,18 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://drink-x.com/profile/venue/22/gulpriversidetaproom&bottleshop%F0%9F%8D%BB%F0%9F%8D%B7</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://drink-x.com/profile/venue/25/barmadame</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
