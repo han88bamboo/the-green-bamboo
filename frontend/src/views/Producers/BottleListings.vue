@@ -2420,8 +2420,8 @@ export default {
 
       // Twitter Card
       twitterCard: 'summary_large_image',
-      twitterSite: '@yourhandle',
-      twitterCreator: '@yourhandle',
+      twitterSite: '@drinkx',
+      twitterCreator: '@drinkx',
       twitterTitle: dynamicTitle,
       twitterDescription: dynamicDescription,
       twitterImage: dynamicImage,

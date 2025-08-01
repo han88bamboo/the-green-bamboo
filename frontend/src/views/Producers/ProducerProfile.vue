@@ -3785,6 +3785,9 @@
 
 <!-- JavaScript -->
 <script>
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { ref, computed } from 'vue'
+
 // import { all } from 'axios';
 import EventBox from "@/components/EventBox.vue";
 import NavBar from "@/components/NavBar.vue";
@@ -3804,6 +3807,232 @@ export default {
     BookmarkModal,
     FooterBar,
     LoadingWithFunFact,
+  },
+  setup() {
+    // Create reactive references for meta data
+    const metaData = ref({
+      title: 'Producer Page',
+      image: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998",
+      description: '',
+      url: '',
+      siteName: 'www.drink-x.com',
+      type: 'website',
+      locale: 'en_US',
+      keywords: 'brand, listings, events, brand information',
+      rating: '',
+      reviewCount: 0,
+      robotsIndex: true,
+      robotsFollow: true,
+      robotsImageIndex: true,
+      robotsSnippet: true
+    })
+
+    // Computed properties for dynamic meta content
+    const dynamicTitle = computed(() => metaData.value.title)
+    const dynamicDescription = computed(() => metaData.value.description)
+    const dynamicImage = computed(() => metaData.value.image)
+    const dynamicUrl = computed(() => metaData.value.url)
+    const dynamicKeywords = computed(() => metaData.value.keywords)
+
+    // Computed property for structured data
+    const structuredData = computed(() => {
+      if (!metaData.value.title || metaData.value.title === 'Product Page') {
+        return ''
+      }
+
+      const data = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": metaData.value.title,
+        "image": metaData.value.image,
+        "description": metaData.value.description,
+        "url": metaData.value.url
+      }
+
+      if (metaData.value.rating) {
+        data.aggregateRating = {
+          "@type": "AggregateRating",
+          "ratingValue": metaData.value.rating,
+          "ratingCount": metaData.value.reviewCount || 1
+        }
+      }
+
+      return JSON.stringify(data)
+    })
+
+    // Computed property for dynamic robots content
+    const robotsContent = computed(() => {
+      const robots = []
+
+      // Basic indexing
+      robots.push(metaData.value.robotsIndex ? 'index' : 'noindex')
+      robots.push(metaData.value.robotsFollow ? 'follow' : 'nofollow')
+
+      // Image indexing
+      if (metaData.value.robotsImageIndex) {
+        robots.push('max-image-preview:large')
+      } else {
+        robots.push('noimageindex')
+      }
+
+      // Snippet control
+      if (metaData.value.robotsSnippet) {
+        robots.push('max-snippet:-1') // No limit on snippet length
+        robots.push('max-video-preview:-1') // No limit on video preview
+      } else {
+        robots.push('nosnippet')
+      }
+
+      return robots.join(', ')
+    })
+
+    // useHead for general head management and custom meta tags
+    useHead({
+      title: dynamicTitle,
+
+      // Custom meta tags that useSeoMeta doesn't cover
+      meta: [
+        {
+          name: 'author',
+          content: 'drink-x'
+        },
+        {
+          name: 'robots',
+          content: robotsContent
+        },
+        {
+          name: 'googlebot',
+          content: robotsContent // Specific for Google
+        },
+        {
+          name: 'bingbot',
+          content: robotsContent // Specific for Bing
+        },
+        {
+          name: 'rating',
+          content: computed(() => metaData.value.rating || '')
+        },
+        {
+          name: 'price',
+          content: computed(() => metaData.value.price || '')
+        },
+        // Additional SEO meta tags
+        {
+          name: 'distribution',
+          content: 'global'
+        }
+      ],
+
+      // Link tags
+      link: [
+        {
+          rel: 'canonical',
+          href: dynamicUrl
+        },
+        {
+          rel: 'preload',
+          href: dynamicImage,
+          as: 'image',
+          condition: computed(() => metaData.value.image && metaData.value.image !== 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739')
+        }
+      ],
+
+      // JSON-LD structured data for rich snippets
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: structuredData
+        }
+      ]
+    })
+
+    // useSeoMeta for SEO and social media optimization
+    useSeoMeta({
+      // Basic SEO
+      title: dynamicTitle,
+      description: dynamicDescription,
+      keywords: dynamicKeywords,
+
+      // Open Graph (Facebook, LinkedIn, etc.)
+      ogTitle: dynamicTitle,
+      ogDescription: dynamicDescription,
+      ogImage: dynamicImage,
+      ogImageWidth: '1200',
+      ogImageHeight: '630',
+      ogUrl: dynamicUrl,
+      ogType: computed(() => metaData.value.type),
+      ogSiteName: computed(() => metaData.value.siteName),
+      ogLocale: computed(() => metaData.value.locale),
+
+      // Twitter Card
+      twitterCard: 'summary_large_image',
+      twitterSite: '@drinkx',
+      twitterCreator: '@drinkx',
+      twitterTitle: dynamicTitle,
+      twitterDescription: dynamicDescription,
+      twitterImage: dynamicImage,
+      twitterImageAlt: computed(() => `Image of ${metaData.value.title}`),
+
+      // Additional social platforms
+      articleAuthor: 'drink-x.com',
+      articlePublisher: '88bamboo.com',
+
+      // Canonical URL
+      canonical: dynamicUrl,
+
+      // Robots
+      // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      // Enhanced robots directive
+      robots: robotsContent
+    })
+
+    // Function to update meta tags
+    const updateAllMetaTags = (producerData, reviewStats = null) => {
+      const producerName = producerData ? ` ${producerData.producerName}` : ''
+      const rating = reviewStats?.averageRating ? ` (${reviewStats.averageRating}★)` : ''
+      const reviewCount = reviewStats?.totalReviews ? ` - ${reviewStats.totalReviews} reviews` : ''
+
+      // Create rich description
+      const description = producerData.producerDesc ||
+        `${producerName}${reviewCount}. Read reviews and discover more details about this brand.'}.`
+
+      // Generate keywords
+      const keywords = [
+        producerData.producerName,
+        producerData.originCountry,
+        producerData.location,
+        producerData.website, 
+        'reviews',
+        'spirits',
+        'drinks'
+      ].filter(Boolean).join(', ')
+
+      // Determine robots behavior based on content quality
+      const shouldIndex = producerName !== 'Producer Page' &&
+        producerData.producerDesc.trim() !== ''
+
+      // Update the reactive metaData object
+      metaData.value = {
+        title: `${producerName}${producerData.originCountry}${rating}`,
+        image: producerData.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739',
+        description: description,
+        url: typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '',
+        siteName: 'drink-x.com',
+        type: 'product',
+        locale: 'en_US',
+        keywords: keywords,
+        rating: reviewStats?.averageRating?.toString() || '',
+        reviewCount: reviewStats?.totalReviews || 0,
+        robotsIndex: shouldIndex,
+        robotsImageIndex: true,
+        robotsSnippet: shouldIndex
+      }
+    }
+
+    return {
+      metaData,
+      updateAllMetaTags
+    }
   },
   data() {
     return {
@@ -4058,7 +4287,7 @@ export default {
       targetProducerID: '',
     
     };
-  },
+  }, 
   async mounted() {
     var userID = localStorage.getItem("88B_accID");
     if (userID != null) {
@@ -4489,6 +4718,17 @@ export default {
       // Set dataLoaded to true
       if (this.dataLoaded != null) {
         this.dataLoaded = true;
+
+        // Wait for next tick to ensure all computed properties are updated
+        this.$nextTick(() => {
+          this.updateAllMetaTags(
+            this.specified_producer,
+            {
+              averageRating : this.getAverageDrinkRating(),
+              totalReviews: this.getTotalReviewCount(),
+            }
+          );
+        });
       }
     },
 

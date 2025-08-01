@@ -1018,8 +1018,8 @@ export default {
 
                 // Twitter Card
                 twitterCard: 'summary_large_image',
-                twitterSite: '@yourhandle',
-                twitterCreator: '@yourhandle',
+                twitterSite: '@drinkx',
+                twitterCreator: '@drinkx',
                 twitterTitle: 'https://www.drink-x.com',
                 twitterDescription: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
                 twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
