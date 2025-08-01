@@ -983,11 +983,11 @@ export default {
                     rel: 'canonical',
                     href: 'https://drink-x.com'
                 },
-                {
-                    rel: 'preload',
-                    href: '../../Images/Background/landing_page_hero_image.webp',
-                    as: 'image'
-                }
+                // {
+                //     rel: 'preload',
+                //     href: '../../Images/Background/landing_page_hero_image.webp',
+                //     as: 'image'
+                // }
             ],
 
             // JSON-LD structured data for rich snippets
