@@ -1410,15 +1410,15 @@
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
                 <div v-if="specified_listing.drinkType !== 'Wine'"> 
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
                   </button>
                   <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
-                    Update Review
+                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
                   </button>
                 </div>
                 <div v-else>
                   <button type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
                   </button>
                 </div>
               </div>
@@ -2698,7 +2698,9 @@ export default {
       shareSuccess: false,
       shareError: false,
       shareSuccessMessage: "",
-      shareErrorMessage: ""
+      shareErrorMessage: "",
+
+      isSubmittingReview: false
     };
   },
   mounted() {
@@ -3737,6 +3739,9 @@ export default {
 
     // Function to add review
     addReview() {
+
+      this.isSubmittingReview = true;
+
       // TODO Combine with editReview because using the same variables
 
       // let errorPhrase = "Your completion is incomplete"
@@ -3819,6 +3824,7 @@ export default {
         alert(
           "Submission has error, please fill in the required fields properly"
         );
+        this.isSubmittingReview = false;  // Reset loading state on validation error
         return "Submission error";
       }
       if (this.selectedLanguage == "") {
@@ -3826,6 +3832,7 @@ export default {
         alert(
           "Submission has error, please fill in the required fields properly"
         );
+        this.isSubmittingReview = false;  // Reset loading state on validation error
         return "Submission error";
       }
       if (this.reviewDesc !== "") {
@@ -3897,6 +3904,7 @@ export default {
           this.errorMessage = true; // Display generic error message
         }
       }
+      this.isSubmittingReview = false; // Reset loading state
       return response;
     },
 
@@ -3927,6 +3935,7 @@ export default {
           this.errorMessage = true; // Display generic error message
         }
       }
+      this.isSubmittingReview = false; // Reset loading state
       return response;
     },
 
