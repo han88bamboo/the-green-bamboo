@@ -156,5 +156,40 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
+  <!-- product listing test -->
+  <url>
+    <loc>https://drink-x.com/listing/view/1161804/nevernevertriplejunipergin</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
   
+  <url>
+    <loc>https://drink-x.com/listing/view/1177247/ubecreamliqueur</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://drink-x.com/listing/view/1177272/orvalbelgiantrappistale</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://drink-x.com/listing/view/1161089/hendricksgin</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://drink-x.com/listing/view/1161106/beefeaterlondondrygin</loc>
+    <lastmod>2025-07-02</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
