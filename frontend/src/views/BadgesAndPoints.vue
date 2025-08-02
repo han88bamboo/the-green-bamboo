@@ -32,23 +32,36 @@
     <section class="features text-center pt-4 align-items-center" style="background-color: #f0b258;">
       <div class="container">
         <div class="d-flex flex-wrap align-items-center">
-          <div class="col-1  "></div>
+         
           <!-- LEFT COLUMN: POINTS AND RANKINGS -->
-          <div class="col-5 text-align-start mobile-me-2 px-4 mobile-px-2">
-            <h1 class="mobile-fs-4 fw-bold">Points & Rank</h1>
-            <p class="mobile-rating-smaller-text-2">Your points reflect your contributions to the Drink-X community, from sharing reviews to inviting friends. As your points grow, you earn ranks and unlock site features.</p>
-            <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/DrinkXPointsIcon.png?v=1751982475" alt="Fan Club" class="img-fluid mb-2 rounded"  style="max-width: 100px;">
-            <br><strong class="toggle-link" :class="{ active: activeDropdown === 'brands' }" data-target="brands" @click="toggleDropdown('brands')">See How Points Work</strong> 
-        </div>
+                    
+          <!-- LEFT COLUMN: POINTS AND RANKINGS -->
+          <div class="col-6 text-align-start px-4 mobile-px-2">
+            <button 
+              class="toggle-button w-100 text-center p-3 border rounded" 
+              :class="{ active: activeDropdown === 'brands' }" 
+              @click="toggleDropdown('brands')"
+            >
+              <h1 class="mobile-fs-4 fw-bold mb-2">Points & Rank</h1>
+              <p class="mobile-rating-smaller-text-2 mb-3 mobile-view-hide">Your points reflect your contributions to the Drink-X community, from sharing reviews to inviting friends. As your points grow, you earn ranks and unlock site features.</p>
+              <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/DrinkXPointsIcon.png?v=1751982475" alt="Points Icon" class="img-fluid mb-2 rounded" style="max-width: 100px;">
+              <br><strong class="toggle-link-text">Click To See How Points Work</strong>
+            </button>
+          </div>
           
           <!-- RIGHT COLUMN: BADGES -->
-          <div class="col-5 text-align-start mobile-me-2 px-4 mobile-px-2">
-            <h1 class="mobile-fs-4 fw-bold">Badges</h1>
-            <p class="mobile-rating-smaller-text-2">Badges tell the story of what you love, where you’ve explored, and how you’ve contributed. Each badge starts at Level 1, with levels rising alongside you!</p>
-            <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/DrinkXBadgesIcon.png?v=1751982535" alt="Fan Club" class="img-fluid mb-2 rounded"  style="max-width: 100px;">
-            <br><strong class="toggle-link" :class="{ active: activeDropdown === 'venues' }" data-target="venues" @click="toggleDropdown('venues')">See How Badges Work</strong> 
+          <div class="col-6 text-align-start px-4 mobile-px-2">
+            <button 
+              class="toggle-button w-100 text-center p-3 border rounded" 
+              :class="{ active: activeDropdown === 'venues' }" 
+              @click="toggleDropdown('venues')"
+            >
+              <h1 class="mobile-fs-4 fw-bold mb-2">Badges</h1>
+              <p class="mobile-rating-smaller-text-2 mb-3 mobile-view-hide">Badges tell the story of what you love, where you've explored, and how you've contributed. Each badge starts at Level 1, with levels rising alongside you!</p>
+              <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/DrinkXBadgesIcon.png?v=1751982535" alt="Badges Icon" class="img-fluid mb-2 rounded" style="max-width: 100px;">
+              <br><strong class="toggle-link-text">Click To See How Badges Work</strong>
+            </button>
           </div>
-          <div class="col-1 mobile-view-show"></div>
         </div>
       </div>
       <br>
@@ -83,6 +96,7 @@
             <br><br>
             <i><b>👉 Tip: Points stack! Submit a detailed review with an image attached: you’ll earn 5 points for submitting a review, and an additional 2 points for attaching an image to your review.</b></i> </p>
             </div>
+
             <div class="col-1 mobile-view-show"></div>
             <!-- LEFT COLUMN: TEXT -->
             <div class="col-10 col-lg-2 text-center text-md-start mb-3 mb-md-0">
@@ -406,7 +420,7 @@
             <!-- Checkpoint Collector Badge -->
             <div class="d-flex flex-wrap align-items-start mb-3">
               <div class="d-flex col-12 col-md-2 justify-content-center">
-                <img src="https://drinkx-badges.s3.ap-southeast-1.amazonaws.com/Images+of+Action+Badges/3_User+tags+Location+in+review_Checkpoint+Collector.png"
+                <img src="https://drinkx-badges.s3.ap-southeast-1.amazonaws.com/Images+of+Action+Badges/Checkpoint_Collector.png"
                     alt="Checkpoint Collector Badge" class="img-fluid mb-2 rounded" style="max-width: 80px;">
               </div>
               <div class="col-12 col-md-9 text-start">
@@ -525,11 +539,7 @@
     },
     methods: {
     toggleDropdown(target) {
-      if (this.activeDropdown === target) {
-        this.activeDropdown = null;
-      } else {
-        this.activeDropdown = target;
-      }
+     this.activeDropdown = target;
     },
     isActive(path) {
       return this.$route.path === path;
@@ -659,5 +669,42 @@
   position: relative;
   background-color: #f8a940;
   z-index: 0;
+}
+
+.toggle-button {
+  background: white !important;
+  border: 2px solid #f0b258 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.toggle-button:hover {
+  background: #fef6ea !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.toggle-button.active {
+  background: #027562 !important;
+  color: white !important;
+  border-color: #f0b258 !important;
+  box-shadow: 0 2px 8px rgba(240, 178, 88, 0.3);
+}
+
+.toggle-button.active h1,
+.toggle-button.active p,
+.toggle-button.active .toggle-link-text {
+  color: white !important;
+}
+
+.toggle-link-text {
+  color: #f0b258;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.toggle-button.active .toggle-link-text {
+  color: white !important;
 }
 </style>
