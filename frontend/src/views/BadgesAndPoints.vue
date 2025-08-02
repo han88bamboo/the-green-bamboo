@@ -97,6 +97,75 @@
             <i><b>👉 Tip: Points stack! Submit a detailed review with an image attached: you’ll earn 5 points for submitting a review, and an additional 2 points for attaching an image to your review.</b></i> </p>
             </div>
 
+        
+        <!-- Full width table section -->
+        <div class="container-fluid px-0">
+          <div class="table-responsive col-10 col-lg-8 ms-5 ps-5 mobile-ps-0">
+            <table class="table table-bordered mb-0" style="border-color: #f0b358;">
+              <thead style="background-color: #f0b358;">
+                <tr>
+                  <th scope="col" class="fw-bold text-center ps-4">Activity</th>
+                  <th scope="col" class="fw-bold text-center" style="width: 120px;">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Submitting a Review</td>
+                  <td class="text-center">5</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➕ Adding an Image to a Review</td>
+                  <td class="text-center">+2</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➕ Writing an Extended Review</td>
+                  <td class="text-center">+3</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➕ Tagging Location</td>
+                  <td class="text-center">+2</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➕ Tagging Friend</td>
+                  <td class="text-center">+2</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➕ Receiving Upvotes</td>
+                  <td class="text-center">+1 each</td>
+                </tr>
+                <tr style="background-color: #fef6ea !important;">
+                  <td class="text-start ps-5">➖ Receiving Downvotes</td>
+                  <td class="text-center">-1 each</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Creating Public Lists</td>
+                  <td class="text-center">2</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Adding a New Drink Listing</td>
+                  <td class="text-center">3</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Helping to Improve an Existing Listing</td>
+                  <td class="text-center">2</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Asking Questions to Brands or Venues</td>
+                  <td class="text-center">1</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Posting in Clubs</td>
+                  <td class="text-center">1</td>
+                </tr>
+                <tr>
+                  <td class="fw-bold text-start ps-4">Making Comments</td>
+                  <td class="text-center">1</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
             <div class="col-1 mobile-view-show"></div>
             <!-- LEFT COLUMN: TEXT -->
             <div class="col-10 col-lg-2 text-center text-md-start mb-3 mb-md-0">
