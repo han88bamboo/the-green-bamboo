@@ -100,7 +100,7 @@
         
         <!-- Full width table section -->
         <div class="container-fluid px-0">
-          <div class="table-responsive col-10 col-lg-8 ms-5 ps-5 mobile-ps-0">
+          <div class="table-responsive col-10 col-lg-8 ms-5 ps-5 mobile-ps-0 mobile-ms-0">
             <table class="table table-bordered mb-0" style="border-color: #f0b358;">
               <thead style="background-color: #f0b358;">
                 <tr>
