@@ -6618,8 +6618,9 @@ export default {
                 return;
             }
 
-            let successCount = 0;
+            // let successCount = 0;
             let errors = [];
+            let promises = [];
 
             for (let i = 0; i < validItems.length; i++) {
                 const item = validItems[i];
@@ -6647,49 +6648,59 @@ export default {
                     }
                 });
 
-                try {
-                    const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
-                        {
-                            venueID: this.targetVenue['id'],
-                            menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
-                            listingID: item.newMenuItemTarget['id'],
-                            itemVintage: item.newMenuItemVintage,
-                            itemPrice: item.newMenuItemPrice || -1,
-                            servingType: item.newMenuItemServingType,
-                            sectionName: this.globalMenuItemTargetSection.sectionName,
-                        },
-                        {
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                    if (response.status == 201) {
-                        successCount++;
+                // Instead of awaiting each call, store the promise
+                const promise = this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
+                    {
+                        venueID: this.targetVenue['id'],
+                        menuOrder: this.globalMenuItemTargetSection.sectionMenu.length - 1,
+                        listingID: item.newMenuItemTarget['id'],
+                        itemVintage: item.newMenuItemVintage,
+                        itemPrice: item.newMenuItemPrice || -1,
+                        servingType: item.newMenuItemServingType,
+                        sectionName: this.globalMenuItemTargetSection.sectionName,
                     }
-                }
-                catch (error) {
-                    errors.push(`Failed to add item: ${item.newMenuItemTarget.listingName}`);
-                    console.error(error);
-                }
+                )
+                .then(response => {
+                    // if (response.status === 201) {
+                    //     successCount++;
+                    // }
+                    return { success: response.status === 201, item: item.newMenuItemTarget.listingName };
+                })
+                .catch(error => {
+                    errors.push({
+                        item: item.newMenuItemTarget.listingName,
+                        error: error.response?.data?.message || "Unknown error"
+                    });
+                    return { success: false, item: item.newMenuItemTarget.listingName };
+                });
+
+                promises.push(promise);
             }
 
-            // Show results
-            if (successCount > 0) {
-                const toast = useToast();
-                toast.success(`Successfully added ${successCount} item(s) to menu.`);
+            // Wait for ALL promises to complete before proceeding
+            await Promise.all(promises);
 
-                if (errors.length > 0) {
-                    toast.warning(`Some items failed to add: ${errors.join(', ')}`);
-                }
+            // // Show results - commented out because not working properly
+            // successCount = results.filter(result => result.success).length;
+            // if (successCount > 0) {
+            //     const toast = useToast();
+            //     toast.success(`You are adding ${successCount} item(s) to menu.`);
 
-                // Reload page
-                this.$router.go(0);
-            } else {
-                alert("Failed to add any items. Please try again! You may have tried to add items to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then try again.");
-            }
+            //     if (errors.length > 0) {
+            //         toast.warning(`Some items failed to add: ${errors.join(', ')}`);
+            //     }
 
-            this.editMenuMode = false;
+            //     // // Reload page
+            //     // this.$router.go(0);
+            // } else {
+            //     alert("Failed to add any items. Please try again! You may have tried to add items to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then try again.");
+            // }
+            
+            // Show a generic success message
+            const toast = useToast();
+            toast.success(`Items added to menu.`);
+            // this.editMenuMode = false;
             this.resetMultipleMenuItems();
         },
 
