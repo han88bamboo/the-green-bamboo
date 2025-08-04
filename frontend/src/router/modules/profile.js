@@ -32,6 +32,11 @@ const routes = [
     name: "profileVenue",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Venues/VenueProfile.vue"),
   },
+  {
+    path: "/profile/venue-refac/:venueID?/:username",
+    name: "profileVenueRefac",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Venues/VenueProfile_refac.vue"),
+  }
 ];
 
 export default routes;
