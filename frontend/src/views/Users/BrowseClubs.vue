@@ -393,7 +393,7 @@
                                 <!-- Club Banner Image -->
                                 <div class="col-md-2 text-start w-100 mb-3" style="width: 400px; height: 150px;">
                                     <img v-if="club.clubBanner" :src="club.clubBanner" 
-                                        class="img-fluid border" 
+                                        class="img-fluid border w-100" 
                                         alt="..." 
                                         style="height: 160px; object-fit: cover; border-radius: 0.5rem;"/>
                                     
