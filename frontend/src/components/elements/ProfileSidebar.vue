@@ -103,7 +103,7 @@
 // import EventBox from '@/components/EventBox.vue'; // Assuming path
 
 export default {
-    name: 'VenueSidebar',
+    name: 'ProfileSidebar',
     // components: { EventBox },
     props: {
         loading: Boolean,

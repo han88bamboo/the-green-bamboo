@@ -137,7 +137,7 @@ Normal User (Anonymous & Logged-In)
 
             <!-- Sidebar Column -->
             <div class="col-xl-3 col-12" id="qna-section">
-                <VenueSidebar :loading="isLoadingVenue" :venue="targetVenue" :is-self-view="isOwner" :answered-questions="answeredQuestions"
+                <ProfileSidebar :loading="isLoadingVenue" :venue="targetVenue" :is-self-view="isOwner" :answered-questions="answeredQuestions"
                     :unanswered-questions="unansweredQuestions" :opening-hours="openingHours" />
             </div>
         </div>
@@ -154,7 +154,7 @@ import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
 import VenueOverviewTab from '@/components/venue_profile/VenueOverviewTab.vue';
 import VenueMenuTab from '@/components/venue_profile/VenueMenuTab.vue';
 import VenueReviewsTab from '@/components/venue_profile/VenueReviewsTab.vue';
-import VenueSidebar from '@/components/venue_profile/VenueSidebar.vue';
+import ProfileSidebar from '@/components/elements/ProfileSidebar.vue';
 
 // Constants and utilities
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -226,7 +226,7 @@ export default {
         VenueOverviewTab,
         VenueMenuTab,
         VenueReviewsTab,
-        VenueSidebar,
+        ProfileSidebar,
     },
     data() {
         return {

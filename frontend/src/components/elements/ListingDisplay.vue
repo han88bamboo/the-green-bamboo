@@ -5,53 +5,66 @@
       <strong>{{ displayName }}</strong>
     </h5>
 
-    <!-- Main Content -->
-    <div v-if="validListings.length > 0" class="listings-container">
-      <!-- Desktop/Tablet Grid View -->
-      <div class="d-none d-md-block">
-        <div class="row g-3">
-          <div 
-            v-for="listing in validListings" 
-            :key="listing.id"
-            class="col-xl-2 col-lg-3 col-md-4 col-sm-6"
-          >
-            <ListingCard 
-              :listing="listing"
-              :user="user"
-              :truncate-length="DESKTOP_TRUNCATE_LENGTH"
-              @icon-clicked="handleIconClick"
-            />
-          </div>
-        </div>
+    <!-- Loading State -->
+    <div v-if="loading" class="text-center p-3">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
+    </div>
 
-      <!-- Mobile Horizontal Scroll View -->
-      <div class="d-block d-md-none">
-        <div class="mobile-scroll-container">
-          <div class="mobile-scroll-wrapper">
+    <!-- Error State -->
+    <div v-else-if="error" class="alert alert-danger text-center">
+      Could not load {{ displayName.toLowerCase() }}.
+      <button class="btn btn-sm btn-danger ms-2" @click="$emit('retry')">Retry</button>
+    </div>
+
+    <!-- Content or Empty State -->
+    <template v-else>
+      <div v-if="validListings.length > 0" class="listings-container">
+        <!-- Desktop/Tablet Grid View -->
+        <div class="d-none d-md-block">
+          <div class="row g-3">
             <div 
               v-for="listing in validListings" 
               :key="listing.id"
-              class="mobile-scroll-item"
+              class="col-xl-2 col-lg-3 col-md-4 col-sm-6"
             >
               <ListingCard 
                 :listing="listing"
                 :user="user"
-                :truncate-length="MOBILE_TRUNCATE_LENGTH"
-                :is-mobile="true"
+                :truncate-length="DESKTOP_TRUNCATE_LENGTH"
                 @icon-clicked="handleIconClick"
               />
             </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Empty State -->
-    <EmptyState 
-      v-else 
-      :display-name="displayName" 
-    />
+        <!-- Mobile Horizontal Scroll View -->
+        <div class="d-block d-md-none">
+          <div class="mobile-scroll-container">
+            <div class="mobile-scroll-wrapper">
+              <div 
+                v-for="listing in validListings" 
+                :key="listing.id"
+                class="mobile-scroll-item"
+              >
+                <ListingCard 
+                  :listing="listing"
+                  :user="user"
+                  :truncate-length="MOBILE_TRUNCATE_LENGTH"
+                  :is-mobile="true"
+                  @icon-clicked="handleIconClick"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <EmptyState 
+        v-else 
+        :display-name="displayName" 
+      />
+    </template>
   </div>
 </template>
 
@@ -194,7 +207,7 @@ export default {
       type: String,
       required: true
     },
-    listingArr: {
+    listingData: {
       type: Array,
       default: () => []
     },
@@ -209,6 +222,14 @@ export default {
     columnWidth: {
       type: String,
       default: '195px'
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    error: {
+      type: [Object, String, Boolean],
+      default: null
     }
   },
   data() {
@@ -219,7 +240,7 @@ export default {
   },
   computed: {
     validListings() {
-      return this.listingArr?.filter(listing => listing?.id) || [];
+      return this.listingData?.filter(listing => listing?.id) || [];
     }
   },
   methods: {
