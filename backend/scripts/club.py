@@ -1211,6 +1211,7 @@ def canCreate(userID, userType):
     cur = conn.cursor()
 
     try:
+        
         # Step 1: Check if the user is a valid type user
         if userType not in ['user', 'producer', 'venue']:
             return jsonify({
