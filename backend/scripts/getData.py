@@ -3716,6 +3716,211 @@ def getVenuesByIds():
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching venues by IDs."}), 500
 
+# [GET] Specific Venue
+@blueprint.route("/venue/<id>")
+def venue(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Query to get a specific venue and related data
+        query = """
+            SELECT 
+                v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
+                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
+                v.email, v."phoneNumber", v."whatsappNumber",
+                v.username, v."venueType", 
+                -- Build the menu JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', vm.id,
+                        'sectionName', vm."sectionName",
+                        'sectionOrder', vm."sectionOrder"
+                    ) ORDER BY vm."sectionOrder")
+                    FROM "venuesMenu" vm
+                    WHERE vm."venueId" = v.id
+                ), '[]') AS menu,
+                -- Build openingHours JSON
+                COALESCE((
+                    SELECT row_to_json(oh)
+                    FROM "venuesOpeningHours" oh
+                    WHERE oh."venueId" = v.id
+                ), '{}'::json) AS "openingHours",
+                -- Build questionsAnswers JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', qa.id,
+                        'question', qa.question,
+                        'answer', qa.answer,
+                        'date', qa.date,
+                        'userId', qa."userId"
+                    ))
+                    FROM "venuesQuestionAnswers" qa
+                    WHERE qa."venueId" = v.id
+                ), '[]') AS "questionsAnswers",
+                -- Build updates JSON
+                COALESCE((
+                    SELECT json_agg(json_build_object(
+                        'id', u.id,
+                        'date', u.date,
+                        'text', u.text,
+                        'photo', u.photo,
+                        'venueId', u."venueId",
+                        'likes', COALESCE((
+                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+                            FROM "venueUpdateLikes" l
+                            WHERE l."updateId" = u.id
+                        ), '[]')
+                    ) ORDER BY u.date DESC)
+                    FROM "venuesUpdates" u
+                    WHERE u."venueId" = v.id
+                ), '[]') AS updates
+            FROM venues v
+            WHERE v.id = %s
+            GROUP BY v.id
+        """
+
+        cur.execute(query, (id,))
+        venue_data = cur.fetchone()
+
+        if venue_data is None:
+            return jsonify({"message": "Venue not found"}), 404
+
+        venue = dict(venue_data)
+        venue['menu'] = venue['menu'] if venue['menu'] else []
+        venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+        venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+        venue['updates'] = venue['updates'] if venue['updates'] else []
+
+        return jsonify(venue), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the venue."
+            }
+        ), 500
+
+    finally:
+        cur.close()
+
+
+# [GET] Specific Venue
+@blueprint.route("/getVenueMenu/<section_id>")
+def getVenueMenu(section_id):
+    """Optimized version with performance improvements and better error handling"""
+    
+    # Input validation
+    if not section_id:
+        return jsonify({"code": 400, "message": "Menu category is mandatory."}), 400
+    
+    # Parse and validate query parameters
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+        limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        search = request.args.get("search", "").strip()
+    except ValueError:
+        return jsonify({"code": 400, "message": "Invalid pagination parameters"}), 400
+    
+    offset = (page - 1) * limit
+    
+    conn = g.db
+    cur = conn.cursor()
+    
+    try:
+        # Build WHERE conditions (use proper parameterization)
+        where_conditions = ['"sectionId" = %s']
+        params = [section_id]
+        
+        if search:
+            # Search across multiple fields for better UX
+            where_conditions.append('(LOWER(mi."variant") LIKE %s OR LOWER(mi."itemID") LIKE %s)')
+            search_param = f"%{search.lower()}%"
+            params.extend([search_param, search_param])
+        
+        where_clause = " AND ".join(where_conditions)
+        
+        # Use a single query with window function for better performance
+        # This eliminates the need for a separate COUNT query
+        sql = f"""
+            SELECT 
+                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
+                lst."officialDesc", mi."itemPrice", mi."itemAvailability", srvTyp."servingType", mi."variant",
+                COUNT(*) OVER() as total_count
+            FROM "menuItems" mi
+            INNER JOIN "listings" lst
+                ON mi."itemID" = lst."id"
+            LEFT JOIN "servingTypes" srvTyp
+                ON mi."itemServingType" = srvTyp."id"
+            WHERE {where_clause}
+            ORDER BY mi."itemOrder" ASC -- , mi."id" ASC  Add secondary sort for consistency
+            LIMIT %s OFFSET %s;
+        """
+        
+        cur.execute(sql, params + [limit, offset])
+        rows = cur.fetchall()
+        
+        if not rows:
+            total_items = 0
+            menu_items = []
+        else:
+            # Get total count from the window function (access by key since using RealDictRow)
+            total_items = rows[0]['total_count']
+            menu_items = [
+                {
+                    "id": row['id'],
+                    "sectionId": row['sectionId'], 
+                    "itemID": row['itemID'],
+                    "itemOrder": row['itemOrder'],
+                    "name": row['listingName'],
+                    "photo": row['photo'],
+                    "description": row['officialDesc'],
+                    "itemAvailability": row['itemAvailability'],
+                    "variant": row['variant'],
+                    "servingType": row['servingType'],
+                    "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
+                }
+                for row in rows
+            ]
+        
+        # Calculate pagination info
+        total_pages = (total_items + limit - 1) // limit
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        return jsonify({
+            "code": 200,
+            "data": menu_items,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "has_next": has_next,
+                "has_prev": has_prev
+            }
+        }), 200
+        
+    except Exception as e:
+        # # Log the actual error for debugging
+        # import logging
+        # logging.error(f"Database error in get_menu_items: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return generic error to client
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving menu items."
+        }), 500
+        
+    finally:
+        if cur:
+            cur.close()
+
 
 # [GET] Specific Venue
 @blueprint.route("/getVenue/<id>")
