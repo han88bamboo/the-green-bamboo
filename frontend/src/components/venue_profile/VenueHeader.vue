@@ -2,21 +2,21 @@
 <template>
     <div class="venue-profile-container">
         <!-- Loading State -->
-        <div v-if="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
+        <!-- <div v-if="isLoading" class="d-flex justify-content-center align-items-center" style="min-height: 400px;">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading venue...</span>
             </div>
-        </div>
+        </div> -->
 
         <!-- Error State -->
-        <div v-else-if="loadError" class="alert alert-danger">
+        <!-- <div v-else-if="loadError" class="alert alert-danger">
             <h4>Error Loading Venue</h4>
             <p>{{ loadError }}</p>
             <button class="btn btn-primary" @click="loadVenueData">Try Again</button>
-        </div>
+        </div> -->
 
         <!-- Main Content - Only render when venue data is available -->
-        <div v-else-if="venue && Object.keys(venue).length > 0" class="row">
+        <div v-if="venue && Object.keys(venue).length > 0" class="row">
             <!-- VenueImage Component -->
             <VenueImage :venue-photo="venue.photo || ''" :default-photo="defaultProfilePhoto" :is-editing="editProfile"
                 :selected-image="selectedImage" :loading="imageUploadLoading" @image-selected="handleImageSelected"
@@ -24,7 +24,8 @@
                 ref="venueImageRef" />
 
             <!-- VenueDetails Component -->
-            <VenueDetails :venue="venue" :is-editing="editProfile" :edit-data="venueEditData" :description-limit="150"
+            <VenueDetails :isLoading="isLoading" :venue="venue" :is-editing="editProfile" 
+                :edit-data="venueEditData" :description-limit="150"
                 :venue-types="availableVenueTypes" :validation-rules="venueValidationRules"
                 @update:editData="handleVenueDetailsUpdate" @validation-changed="handleValidationChanged"
                 ref="venueDetailsRef">
@@ -90,6 +91,7 @@ export default {
         VenueAddDetails
     },
     props: {
+        isLoading: Boolean,
         venue: {
             type: Object,
             required: true,

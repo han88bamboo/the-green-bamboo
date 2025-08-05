@@ -77,7 +77,7 @@
                                                 </div>
                                                 
                                                 <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.description }}</p>
-                                                <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice }} / {{ item.servingType }}</p>
+                                                <p class="card-text fw-medium mb-0 text-start">${{ item.itemPrice }} / {{ item.servingType }}</p>
                                             </div>
                                             </div>
                                         </div>

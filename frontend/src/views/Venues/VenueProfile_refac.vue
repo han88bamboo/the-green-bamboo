@@ -99,7 +99,8 @@ Normal User (Anonymous & Logged-In)
                 <VenueWelcome v-if="isOwner" @navigate-to-section="scrollToSection" />
 
                 <!-- Venue Header -->
-                <VenueHeader :venue="targetVenue" :isFollowing="isFollowing"
+                <VenueHeader :isLoading="isLoadingVenue"
+                    :venue="targetVenue" :isFollowing="isFollowing"
                     :is-self-view="isOwner" :is-power-view="isAdmin"
                     :is-editing="editProfile" @toggle-edit="editProfile = !editProfile" 
                     @save-profile="saveProfileEdits" @photo-updated="handlePhotoUpdate" 

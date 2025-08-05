@@ -73,9 +73,14 @@
                     <div class="square-inline">
                         <h5 class="mr-auto mobile-fs-6 fw-bold"> Opening Hours </h5>
                     </div>
-                    <div v-for="(hours, day) in openingHours" :key="day" class="d-flex justify-content-between">
-                        <span>{{ day }}:</span>
-                        <span class="fw-bold"> {{ formatTime(hours[0]) }} - {{ formatTime(hours[1]) }} </span>
+                    <div v-if="openingHours">
+                        <div v-for="(hours, day) in openingHours" :key="day" class="d-flex justify-content-between">
+                            <span>{{ day }}:</span>
+                            <span class="fw-bold"> {{ formatTime(hours[0]) }} - {{ formatTime(hours[1]) }} </span>
+                        </div>
+                    </div>
+                    <div v-else class="text-body-secondary mobile-rating-smaller-text-2">
+                        No opening hours information!
                     </div>
 
                     <!-- Section Header -->

@@ -23,12 +23,18 @@
 
         <!-- View Mode -->
         <div v-else>
-          <h5 class="text-body-secondary mobile-view-hide">
-            {{ (venue && venue.originLocation) || 'Unknown' }}
-          </h5>
-          <h6 class="text-body-secondary mobile-view-show mb-1">
-            {{ (venue && venue.originLocation) || 'Unknown' }}
-          </h6>
+          <template v-if="isLoading">
+            <div class="shimmer shimmer-line-h5 mobile-view-hide"></div>
+            <div class="shimmer shimmer-line-h6 mobile-view-show mb-1"></div>
+          </template>
+          <template v-else>
+            <h5 class="text-body-secondary mobile-view-hide">
+              {{ (venue && venue.originLocation) || 'Unknown' }}
+            </h5>
+            <h6 class="text-body-secondary mobile-view-show mb-1">
+              {{ (venue && venue.originLocation) || 'Unknown' }}
+            </h6>
+          </template>
         </div>
       </div>
 
@@ -72,12 +78,18 @@
 
         <!-- View Mode -->
         <div v-else class="ps-0 pe-0">
-          <h3 class="text-body-secondary mobile-view-hide">
-            <b>{{ (venue && venue.venueName) || 'Venue Name Not Set' }}</b>
-          </h3>
-          <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1">
-            <b>{{ (venue && venue.venueName) || 'Venue Name Not Set' }}</b>
-          </h4>
+          <template v-if="isLoading">
+            <div class="shimmer shimmer-line-h3 mobile-view-hide"></div>
+            <div class="shimmer shimmer-line-h4 mobile-view-show mb-1"></div>
+          </template>
+          <template v-else>
+            <h3 class="text-body-secondary mobile-view-hide">
+              <b>{{ (venue && venue.venueName) || 'Venue Name Not Set' }}</b>
+            </h3>
+            <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1">
+              <b>{{ (venue && venue.venueName) || 'Venue Name Not Set' }}</b>
+            </h4>
+          </template>
         </div>
       </div>
     </div>
@@ -107,7 +119,10 @@
 
         <!-- View Mode -->
         <div v-else class="ps-0 pe-0">
-          <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+          <template v-if="isLoading">
+            <div class="shimmer shimmer-line-p"></div>
+          </template>
+          <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
             <i>{{ (venue && venue.venueType) || 'N/A' }}</i>
           </p>
         </div>
@@ -141,27 +156,34 @@
 
         <!-- View Mode -->
         <div v-else class="ps-0 pe-0">
-          <div v-if="venue && venue.venueDesc && venue.venueDesc.length > descriptionLimit">
-            <p v-if="!showFullDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-              {{ truncatedDescription }}
-              <a @click="showFullDescription = true" 
-                 class="text-primary fw-bold text-decoration-none"
-                 style="cursor: pointer;">
-                (Read More)
-              </a>
-            </p>
+          <template v-if="isLoading">
+            <div class="shimmer shimmer-line-desc w-90"></div>
+            <div class="shimmer shimmer-line-desc w-80"></div>
+            <div class="shimmer shimmer-line-desc w-70"></div>
+          </template>
+          <div v-else>
+            <div v-if="venue && venue.venueDesc && venue.venueDesc.length > descriptionLimit">
+              <p v-if="!showFullDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                {{ truncatedDescription }}
+                <a @click="showFullDescription = true" 
+                   class="text-primary fw-bold text-decoration-none"
+                   style="cursor: pointer;">
+                  (Read More)
+                </a>
+              </p>
+              <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                {{ venue.venueDesc }}
+                <a @click="showFullDescription = false" 
+                   class="text-primary fw-bold text-decoration-none"
+                   style="cursor: pointer;">
+                  (Read Less)
+                </a>
+              </p>
+            </div>
             <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-              {{ venue.venueDesc }}
-              <a @click="showFullDescription = false" 
-                 class="text-primary fw-bold text-decoration-none"
-                 style="cursor: pointer;">
-                (Read Less)
-              </a>
+              {{ (venue && venue.venueDesc) || 'Claim the business to add your story!' }}
             </p>
           </div>
-          <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-            {{ (venue && venue.venueDesc) || 'Claim the business to add your story!' }}
-          </p>
         </div>
       </div>
     </div>
@@ -191,6 +213,7 @@ export default {
   name: 'VenueDetails',
 
   props: {
+    isLoading: Boolean,
     // Venue object containing all venue information
     venue: {
       type: Object,
@@ -573,4 +596,66 @@ label[for="venueTypeInput"]:after,
 label[for="venueDescInput"]:after {
   content: none;
 }
+
+/* Shimmer loading effect */
+@keyframes placeholderShimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.shimmer {
+  animation: placeholderShimmer 1.2s linear infinite forwards;
+  background: #f6f7f8;
+  background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+  background-repeat: no-repeat;
+  background-size: 800px 100%;
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  height: 1em;
+  width: 100%;
+}
+
+.shimmer-line-h5 {
+  height: 1.25rem;
+  width: 40%;
+  margin-bottom: 0.5rem;
+}
+
+.shimmer-line-h6 {
+  height: 1rem;
+  width: 40%;
+  margin-bottom: 0.25rem;
+}
+
+.shimmer-line-h3 {
+  height: 2rem;
+  width: 70%;
+  margin-bottom: 0.5rem;
+}
+
+.shimmer-line-h4 {
+  height: 1.75rem;
+  width: 70%;
+  margin-bottom: 0.5rem;
+}
+
+.shimmer-line-p {
+  height: 1rem;
+  width: 30%;
+  margin-bottom: 1rem;
+}
+
+.shimmer-line-desc {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.shimmer-line-desc.w-90 { width: 90%; }
+.shimmer-line-desc.w-80 { width: 80%; }
+.shimmer-line-desc.w-70 { width: 70%; }
 </style>

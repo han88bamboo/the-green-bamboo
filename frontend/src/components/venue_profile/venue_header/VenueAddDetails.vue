@@ -46,8 +46,7 @@ export default {
   name: 'VenueAddDetails',
   emits: ["follow-clicked", 'review-clicked'], // declare emits
   props: {
-    // loading: Boolean,
-    // error: Boolean,
+    loading: Boolean,
     isFollowing: Boolean,
     // Venue object containing all venue information
     venue: {
