@@ -546,11 +546,11 @@
                                 </div>
                                 <!-- [else] not editing tzh removed classes text-body-secondary fs m-0-->
                                 <div v-else class="ps-0 pe-0 ">
-                                    <div v-if="targetVenue.venueDesc.length > 150">
+                                    <div v-if="targetVenue.venueDesc.length > 320">
                                         <p v-if="!showFullDescription"
                                             class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                            {{ targetVenue["venueDesc"].slice(0, 150) + (targetVenue["venueDesc"].length
-                                            > 150 ? '...' : '')}}
+                                            {{ targetVenue["venueDesc"].slice(0, 320) + (targetVenue["venueDesc"].length
+                                            > 320 ? '...' : '')}}
                                             <a @click="showFullDescription = true" style="font-weight: bold;">(Read
                                                 More)</a>
                                         </p>
