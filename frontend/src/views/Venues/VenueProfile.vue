@@ -1708,8 +1708,7 @@
 
                             <!-- Message about Expanding / Collapsing Sections -->
                             <div v-else class="row my-2">
-                                <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu
-                                    section's name to expand or hide its contents! </p>
+                                <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents! </p>
                             </div>
 
                             <!-- MENU FACTIONS -->
