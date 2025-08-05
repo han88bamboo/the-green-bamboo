@@ -75,7 +75,7 @@
                     </div>
                     <div v-for="(hours, day) in openingHours" :key="day" class="d-flex justify-content-between">
                         <span>{{ day }}:</span>
-                        <span class="fw-bold">{{ formatTime(hours[0]) }} - {{ formatTime(hours[1]) }}</span>
+                        <span class="fw-bold"> {{ formatTime(hours[0]) }} - {{ formatTime(hours[1]) }} </span>
                     </div>
 
                     <!-- Section Header -->
@@ -84,8 +84,7 @@
                     </div>
 
                     <div class="text-body-secondary mobile-rating-smaller-text-2">
-                        <div v-if="venue['reservationDetails'] == ''"
-                            class="fst-italic mobile-rating-smaller-text-2">
+                        <div v-if="venue['reservationDetails'] == ''" class="fst-italic mobile-rating-smaller-text-2">
                             No reservation details available!
                         </div>
                         <div v-else>
@@ -107,6 +106,7 @@ export default {
     // components: { EventBox },
     props: {
         loading: Boolean,
+        error: String,
         venue: Object,
         isSelfView: Boolean,
         answeredQuestions: Array,

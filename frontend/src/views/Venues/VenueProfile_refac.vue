@@ -122,8 +122,8 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
-                        <VenueMenuTab :menu="detailedMenu" :is-self-view="isOwner"
-                            :claim-status="targetVenue.claimStatus" :loaded-listings="loadedListings" />
+                        <VenueMenuTab :menu="menuSections" :is-self-view="isOwner"
+                            :claim-status="targetVenue.claimStatus" />
                     </div>
 
                     <!-- Reviews Tab -->
@@ -137,7 +137,8 @@ Normal User (Anonymous & Logged-In)
 
             <!-- Sidebar Column -->
             <div class="col-xl-3 col-12" id="qna-section">
-                <ProfileSidebar :loading="isLoadingVenue" :venue="targetVenue" :is-self-view="isOwner" :answered-questions="answeredQuestions"
+                <ProfileSidebar :loading="isLoadingVenue" :error="dataLoadingError" :venue="targetVenue" 
+                    :is-self-view="isOwner" :answered-questions="answeredQuestions"
                     :unanswered-questions="unansweredQuestions" :opening-hours="openingHours" />
             </div>
         </div>
@@ -258,7 +259,6 @@ export default {
                     lat: 0,
                 }
             },
-            detailedMenu: [],
             userInfo: {},
             filteredVenueReviews: [],
             bottleReviews: [],
@@ -269,6 +269,8 @@ export default {
             answeredQuestions: [],
             unansweredQuestions: [],
             openingHours: {},
+
+            menuSections: [],
 
             overview: {
                 mp_loading: false, // most popular loading state
@@ -337,11 +339,11 @@ export default {
             this.isOwner = this.checkOwnerPriviledge();
         },
 
-        // Separated venue fetching for better error handling and testability
+        // Separated venue fetching for better error handling and testability `${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`
         async fetchVenueDetails() {
             const response = await apiService.fetchWithRetry(
                 this.$axios,
-                `${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`
+                `${process.env.VUE_APP_API_URL}/getData/venue/${this.targetVenueID}`
             );
 
             if (!processUtils.isValidResponse(response)) {
@@ -360,7 +362,7 @@ export default {
 
             try {
                 const venueData = await this.fetchVenueDetails();
-                console.log(venueData)
+                console.log(venueData);
                 if (!venueData) {
                     this.venueExists = false;
                     return;
@@ -373,14 +375,14 @@ export default {
                     this.processVenueHours(venueData),
                     this.processVenueMenu(venueData),
                     this.processVenueUpdates(venueData),
-                    this.fetchServingTypes(),
+                    // this.fetchServingTypes(),
                     this.processMapData(venueData.address),
                     this.processClaimStatus(venueData)
                 ]);
+                console.log(this.menuSections)
 
                 this.venueExists = true;
-                await this.loadMenuData();
-
+                // await this.loadMenuData(); 
             } catch (error) {
                 console.error('Error fetching venue data:', error);
                 this.dataLoadingError = error.message;
@@ -441,13 +443,14 @@ export default {
 
         // Process menu data
         processVenueMenu(venueData) {
-            const menu = venueData.menu || [];
+            // const menu = venueData.menu || [];
 
             // Sort sections and items
-            this.detailedMenu = processUtils.sortByProperty(menu, 'sectionOrder');
-            this.detailedMenu.forEach(section => {
-                section.sectionMenu = processUtils.sortByProperty(section.sectionMenu, 'itemOrder');
-            });
+            this.menuSections = venueData.menu || [];
+            //  processUtils.sortByProperty(menu, 'sectionOrder');
+            // this.menuSections.forEach(section => {
+            //     section.sectionMenu = processUtils.sortByProperty(section.sectionMenu, 'itemOrder');
+            // });
         },
 
         // Process updates
@@ -512,7 +515,6 @@ export default {
         async processMapData(address) {
 
             if (!address || typeof window === 'undefined') {
-                console.log('early return')
                 // SSR or no address - use defaults
                 this.setDefaultMapLocation();
                 return;
@@ -533,12 +535,10 @@ export default {
                     this.setDefaultMapLocation();
                 }
 
-                console.log(this.targetVenue)
             } catch (error) {
-                console.log(error)
+                console.error(error)
                 // console.error("Error getting maps data:", error);
                 this.setDefaultMapLocation();
-                console.log(this.targetVenue)
             }
         },
 
