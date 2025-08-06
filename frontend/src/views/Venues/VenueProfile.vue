@@ -5401,7 +5401,9 @@ export default {
                 // Set editMenu and searchMenuResults
                 this.resetEditMenu();
                 this.searchMenuResults = this.detailedMenu;
-
+                this.searchMenuResults = this.detailedMenu.sort((a, b) => 
+                    parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
+                ); 
 
             }
             catch (error) {
@@ -6246,6 +6248,10 @@ export default {
                     sectionMenu: sectionMenu,
                 });
             }
+
+            // Sort editMenu numerically by sectionOrder
+            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+
         },
 
         // Add Menu Section
