@@ -1175,15 +1175,15 @@
                       </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Aroma</p>
-                        <input v-model="aroma" type="text" class="form-control" id="aroma" />
+                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1" placeholder="Describe the aroma..."></textarea>
                       </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Taste</p>
-                        <input v-model="taste" type="text" class="form-control" id="taste" />
+                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1" placeholder="Describe the taste..."></textarea>
                       </div>
                       <div class="form-group mb-2">
                         <p class="text-start mb-2 fw-bold">Finish</p>
-                        <input v-model="finish" type="text" class="form-control" id="finish" />
+                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1" placeholder="Describe the finish..."></textarea>
                       </div>
                     </div>
                   </div>
@@ -2724,6 +2724,11 @@ export default {
 
       // Restore cached review data if present
       this.restoreReviewCache();
+      
+      // Initialize auto-resize functionality for textareas
+      this.$nextTick(() => {
+        this.setupAutoResize();
+      });
     } catch (error) {
       console.error(error);
     }
@@ -2830,11 +2835,72 @@ export default {
     },
     selectedLocation: 'cacheReviewForm',
     selectedLocationAddress: 'cacheReviewForm',
-    image64: 'cacheReviewForm'
+    image64: 'cacheReviewForm',
+    
+    // Watch for when modal becomes visible
+    addingReview(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.setupAutoResize();
+        });
+      }
+    },
+    
+    // Watch for when extend review section becomes visible
+    extendReview(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.setupAutoResize();
+        });
+      }
+    }
   },
   methods: {
     // fetch specific listing data
     created() { },
+
+    // Setup auto-resize functionality for textareas
+    setupAutoResize() {
+      // Use a short delay to ensure modal is fully rendered
+      setTimeout(() => {
+        const textareas = document.querySelectorAll('.auto-resize-textarea');
+        console.log('Found textareas:', textareas.length); // Debug log
+        
+        textareas.forEach(textarea => {
+          // Remove existing listeners to avoid duplicates
+          textarea.removeEventListener('input', this.autoResize);
+          
+          // Auto-resize on input
+          textarea.addEventListener('input', this.autoResize);
+          
+          // Set initial height
+          this.autoResize({ target: textarea });
+        });
+      }, 100);
+    },
+
+    // Auto-resize function for textareas
+    autoResize(event) {
+      if (!event || !event.target) return;
+      
+      const textarea = event.target;
+      
+      // Reset height to auto to get correct scrollHeight
+      textarea.style.height = 'auto';
+      
+      // Set new height based on content
+      const newHeight = Math.max(38, textarea.scrollHeight);
+      textarea.style.height = newHeight + 'px';
+      
+      console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
+    },
+
+    // Call this when modal opens or when textareas become visible
+    initializeTextareas() {
+      this.$nextTick(() => {
+        this.setupAutoResize();
+      });
+    },
 
     // load data from database
     async loadData() {
@@ -4866,5 +4932,22 @@ export default {
   height: 16px;
   margin-right: 8px;
   opacity: 0.8;
+}
+
+/* Auto-resizing textarea styles */
+.auto-resize-textarea {
+  resize: vertical;
+  min-height: 38px;
+  overflow-y: auto;
+  transition: height 0.2s ease;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auto-resize-textarea:focus {
+  border-color: #006A50;
+  box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
 }
 </style>
