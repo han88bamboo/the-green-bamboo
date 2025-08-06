@@ -59,7 +59,7 @@
         <div class="text-danger  fw-bold fs-5" v-if="errorSubmission"> 
             <span v-if="errorMessage">An error occurred while attempting to submit, please try again!</span>
             <span v-if="invalidListing">Your request is not linked to a valid listing, please try again!</span>
-            <span v-if="duplicateEntry">The bottle listing you are trying to submit already exists.</span>
+            <!-- <span v-if="duplicateEntry">The bottle listing you are trying to submit already exists.</span> --> <!--commented out temporarily to disable duplicate check-->
             <br>
             <button class="btn primary-btn btn-sm" @click="reset">
                 <span class="fs-5"> Retry your submission here! </span>
@@ -1476,6 +1476,11 @@
                     if (responseCode == 420 || responseCode == 440) {
                         responseCode = 400
                     }
+                }
+
+                // Temporarily treat duplicate entries (400) as success for new listings
+                if (responseCode == 400 && this.formMode == "new") {
+                    responseCode = 201; // Force success
                 }
                 
                 if (responseCode == 201) {
