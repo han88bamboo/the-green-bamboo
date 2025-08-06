@@ -752,7 +752,7 @@
           <!-- ADD YOUR REVIEW & BOOKMARK -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
             <!-- Logged-in users -->
-            <div v-if="specified_listing.drinkType == 'Wine'"> 
+            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"> 
               <div v-if="userType === 'user' && userID !== 'defaultUser'">
                 <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
                   data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
@@ -1168,7 +1168,8 @@
                   <!-- row 8: aroma, taste and finish -->
                   <div class="row pt-2">
                     <div class="col justify-content-start mb-3">
-                      <div v-if="specified_listing.drinkType == 'Wine'" class="form-group mb-3">
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="form-group mb-3">
+                      <!--<div v-if="specified_listing.drinkType == 'Wine' || specified_listing.drinkType == 'Sake'" class="form-group mb-3">-->
                         <p class="text-start mb-2 fw-bold">Vintage</p>
                         <input v-model="variant" type="text" class="form-control" id="aroma" />
                       </div>
@@ -1831,7 +1832,7 @@
                         </div>
                       </div>
                       <!-- Variant -->
-                      <div v-if="specified_listing.drinkType == 'Wine'" class="row mt-2">
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row mt-2">
                         <div class="col-3">
                           <b>Vintage</b>
                         </div>
@@ -2243,6 +2244,9 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
+
+// load in control 
+import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
 
 export default {
   components: {
@@ -2700,7 +2704,9 @@ export default {
       shareSuccessMessage: "",
       shareErrorMessage: "",
 
-      isSubmittingReview: false
+      isSubmittingReview: false, 
+
+      VARIANT_DRNK_TYP,
     };
   },
   mounted() {
@@ -3195,7 +3201,10 @@ export default {
       // }
 
       // get variant review stats 
-      if (this.specified_listing.drinkType == 'Wine') {
+      // if (this.specified_listing.drinkType == 'Wine') {
+      // console.log("variant type: ", VARIANT_DRNK_TYP)
+      // console.log('result : ', VARIANT_DRNK_TYP.includes(this.specified_listing.drinkType))
+      if (VARIANT_DRNK_TYP.includes(this.specified_listing.drinkType)) {
         this.vintage_listings = await this.retrieveStats(`${process.env.VUE_APP_API_URL}/getData/getVintageAgg/${this.specified_listing.id}`, this.vintage_listings)
         // console.log(this.vintage_listings)
       }

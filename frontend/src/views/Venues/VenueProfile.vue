@@ -2582,7 +2582,7 @@
 
                                                     <!-- [input] input vintage for wine drink type -->
                                                     <div class="form-group mb-3"
-                                                        v-if="item.newMenuItemTarget.drinkType == 'Wine'">
+                                                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(item.newMenuItemTarget.drinkType)"> 
                                                         <p class="text-start mb-1"> Vintage (Optional) </p>
                                                         <input type="number" class="form-control"
                                                             v-model="item.newMenuItemVintage">
@@ -3950,10 +3950,12 @@
                 <div class="modal-header" style="background-color:#F0B358">
                     <!-- Change heading based on edit state -->
                     <h5 v-if="!inEdit" class="modal-title" id="venueReviewModalLabel"
-                        style="color: black; font-weight:bold;">Add Your Review</h5>
+                        style="color: black; font-weight:bold;">
+                        Add Your Review
+                    </h5>
                     <h5 v-else class="modal-title" id="venueReviewModalLabel" style="color: black; font-weight:bold;">
-                        Edit
-                        Your Review</h5>
+                        Edit Your Review
+                    </h5>
                     <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
@@ -4315,6 +4317,9 @@ import EventBox from '@/components/EventBox.vue';
 import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+
+// load in control 
+import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
 
 export default {
     name: 'profileVenue',
@@ -4781,7 +4786,9 @@ export default {
 
             selectedDetailedReview: {},
             bottleListings: {},
-            venues: []
+            venues: [],
+
+            VARIANT_DRNK_TYP, 
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
