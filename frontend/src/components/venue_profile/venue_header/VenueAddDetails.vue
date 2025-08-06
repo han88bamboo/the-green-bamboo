@@ -1,42 +1,42 @@
 <template>
   <!-- Additional business details and action buttons -->
-  <div class="row">
-    <div class="col-12 pe-0 ps-0">
-      <!-- detailed inforrmation -->
-        <div class="d-flex justify-content-between align-items-end mt-3">
-          <div style="text-align: left; margin-left: 1rem;">
-            <p class="mb-1">
-              <strong>Year Opened:</strong>
-              {{ venue.yearOpened && venue.yearOpened.toString().trim() ? venue.yearOpened : 'n/a' }}
-              |
-              <strong>Open for Reservations:</strong> {{ venue.reservations ? 'Yes' : 'No' }}
-            </p>
-            <p class="mb-1">
-              <strong>Website:</strong>
-              <a :href="venue.website" target="_blank">
-                {{ venue.website && venue.website.toString().trim() ? venue.website : 'n/a' }}
-              </a>
-              |
-              <strong>Instagram:</strong> {{ venue.instagram && venue.instagram.toString().trim() ?
-                venue.instagram :
-                'n/a' }}
-            </p>
-            <p class="mb-0">
-              <strong>Phone:</strong> {{ venue.phone && venue.phone.toString().trim() ? venue.phone :
-                'n/a' }}
-            </p>
-          </div>
+  <div class="row mt-3 align-items-center">
+    <!-- Left Column: Text Info -->
+    <div class="col-lg-8 col-md-7">
+      <div style="text-align: left;">
+        <p class="mb-1">
+          <strong>Year Opened:</strong>
+          {{ venue.yearOpened && venue.yearOpened.toString().trim() ? venue.yearOpened : 'n/a' }}
+          |
+          <strong>Open for Reservations:</strong> {{ venue.reservations ? 'Yes' : 'No' }}
+        </p>
+        <p class="mb-1">
+          <strong>Website:</strong>
+          <a :href="venue.website" target="_blank">
+            {{ venue.website && venue.website.toString().trim() ? venue.website : 'n/a' }}
+          </a>
+          |
+          <strong>Instagram:</strong> {{ venue.instagram && venue.instagram.toString().trim() ?
+            venue.instagram :
+            'n/a' }}
+        </p>
+        <p class="mb-0">
+          <strong>Phone:</strong> {{ venue.phone && venue.phone.toString().trim() ? venue.phone :
+            'n/a' }}
+        </p>
+      </div>
+    </div>
 
-          <!-- CTA buttons -->
-          <div class="d-flex align-items-center gap-2">
-            <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')">
-              {{ isFollowing ? '- Unfollow' : '+ Follow' }}
-            </button>
-            <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal">
-              Review Venue
-            </button>
-          </div>
-        </div>
+    <!-- Right Column: Buttons -->
+    <div class="col-lg-4 col-md-5">
+      <div class="d-flex align-items-center justify-content-md-end justify-content-center gap-2 mt-3 mt-md-0">
+        <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')">
+          {{ isFollowing ? '- Unfollow' : '+ Follow' }}
+        </button>
+        <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal">
+          Review Venue
+        </button>
+      </div>
     </div>
   </div>
 </template>
