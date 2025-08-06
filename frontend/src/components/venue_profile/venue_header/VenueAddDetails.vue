@@ -32,7 +32,7 @@
             <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')">
               {{ isFollowing ? '- Unfollow' : '+ Follow' }}
             </button>
-            <button class="btn fw-bold action-btn" @click="$emit('review-clicked')">
+            <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal">
               Review Venue
             </button>
           </div>

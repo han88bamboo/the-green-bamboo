@@ -105,7 +105,7 @@ Normal User (Anonymous & Logged-In)
                     :is-editing="editProfile" @toggle-edit="editProfile = !editProfile" 
                     @save-profile="saveProfileEdits" @photo-updated="handlePhotoUpdate" 
                     @follow-clicked="handleFollowClick"
-                    @review-clicked="handleReviewClick"    
+                    @review-clicked="openModal('review')"    
                 />
 
                 <!-- Content Tabs -->
@@ -145,6 +145,13 @@ Normal User (Anonymous & Logged-In)
         </div>
     </div>
     <FooterBar />
+
+    <!-- review modal goes here -->
+    <VenueReviewModal 
+      :user_id="viewerID"
+      :venueId="targetVenue.id"
+      :filteredVenueReviews="filteredVenueReviews"
+    />
 </template>
 
 <script>
@@ -156,6 +163,7 @@ import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
 import VenueOverviewTab from '@/components/venue_profile/VenueOverviewTab.vue';
 import VenueMenuTab from '@/components/venue_profile/VenueMenuTab.vue';
 import VenueReviewsTab from '@/components/venue_profile/VenueReviewsTab.vue';
+import VenueReviewModal from '@/components/venue_profile/VenueReviewModal.vue';
 import ProfileSidebar from '@/components/elements/ProfileSidebar.vue';
 
 // Constants and utilities
@@ -228,6 +236,7 @@ export default {
         VenueOverviewTab,
         VenueMenuTab,
         VenueReviewsTab,
+        VenueReviewModal,
         ProfileSidebar,
     },
     data() {
@@ -242,6 +251,9 @@ export default {
             isLoadingMenu: false,
             dataLoadingError: null,
 
+            viewerID: localStorage.getItem('88B_accID'),
+            viewerType: localStorage.getItem('88B_accType'),
+        
             venueExists: true,
             dataLoaded: true,
             isOwner: false, // Set to true to show the welcome banner for demonstration
@@ -264,8 +276,8 @@ export default {
             filteredVenueReviews: [],
             bottleReviews: [],
             user_id: '',
-            viewerID: null,
-            viewerType: '',
+            // viewerID: null,
+            // viewerType: '',
             isFollowing: false,
             answeredQuestions: [],
             unansweredQuestions: [],
@@ -283,17 +295,23 @@ export default {
                 ra_loading: false, // recently added loading state
                 ra_error: null, // recently added error 
                 ra_recentlyAdded: [] // recently added list
-            }
+            },
+
+             
         };
     },
-    created() {
+    mounted() {
         // Load viewer's info from localStorage to determine access rights
-        this.viewerID = localStorage.getItem('userID');
-        this.viewerType = localStorage.getItem('userType');
-        this.isAdmin = localStorage.getItem('power') === 'true';
+        // this.viewerID = localStorage.getItem('userID');
+        // this.viewerType = localStorage.getItem('userType');
+        // this.isAdmin = localStorage.getItem('power') === 'true';
 
         // check if user has the prviledge to run owner rights
         this.isOwner = this.checkOwnerPriviledge();
+        
+        console.log('-------------------------------')
+        console.log(this.isOwner)
+        console.log('-------------------------------')
 
         // set basic information to get fetch venue information and checks 
         this.handleVenueRoute()
@@ -310,7 +328,11 @@ export default {
             // Power users have owner privileges for claimed venues
             const isPowerUserWithClaim =
                 this.isAdmin && Boolean(this.targetVenue.claimStatus);
-
+            console.log('viewerType : ', this.viewerType)
+            console.log('viewerID : ', this.viewerID)
+            console.log('targetVenue', this.targetVenue)
+            console.log('veunue owner : ', isVenueOwner)
+            console.log('power user : ', isPowerUserWithClaim)
             return isVenueOwner || isPowerUserWithClaim;
         },
 
@@ -899,15 +921,18 @@ export default {
                     }, { headers: { 'Content-Type': 'application/json'}});
             }
             catch (error) {
+                if (this.isFollowing) {
+                    this.isFollowing = false; 
+                } else {
+                    this.isFollowing = true;
+                }
                 // Reload page, but why ? 
                 // this.$router.go(0);
                 console.error(error)
             }
         },
 
-        async handleReviewClick() {
-            alert('you clicked on review');
-        },
+        
     },
     // Lifecycle hooks
     beforeUnmount() {
