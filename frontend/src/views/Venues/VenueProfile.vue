@@ -4302,7 +4302,6 @@
             </div>
         </div>
     </div>
-    <FooterBar />
 </template>
 
 <script>
@@ -4314,7 +4313,6 @@ import draggable from 'vuedraggable';
 import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
 import EventBox from '@/components/EventBox.vue';
-import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
@@ -4329,7 +4327,6 @@ export default {
         ListingRowDisplayProducerProfile,
         BookmarkModal,
         EventBox,
-        FooterBar,
         LoadingWithFunFact,
     },
   setup() {
