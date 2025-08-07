@@ -2575,6 +2575,95 @@
                       </div>
                     </div>
 
+
+
+                    <!-- add drink modal -->
+                    <div
+                      class="modal fade"
+                      id="exampleModal"
+                      tabindex="-1"
+                      aria-labelledby="exampleModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div
+                        class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+                      >
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5>Add Drink to List: {{ currentList }}</h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body" style="height: 400px">
+                            <!-- search -->
+                            <div>
+                              <!-- search bar  -->
+                              <div class="input-group mb-3">
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="Search for drink"
+                                  aria-label="Recipient's username"
+                                  aria-describedby="button-addon2"
+                                  v-model="drinkSearch"
+                                  @input="searchResult"
+                                />
+                              </div>
+                              <!-- search results -->
+                              <div
+                                class="overflow-auto"
+                                :style="{
+                                  height:
+                                    drinksToAdd.length > 0 ? '200px' : '300px',
+                                }"
+                              >
+                                <div
+                                  class="form-check"
+                                  v-for="(drinkName, index) in drinkSearchResults"
+                                  :key="index"
+                                >
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="drinkName"
+                                    :id="'drinkCheckbox' + index"
+                                    v-model="drinksToAdd"
+                                  />
+                                  <label
+                                    class="form-check-label"
+                                    :for="'drinkCheckbox' + index"
+                                  >
+                                    {{ drinkName }}
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- selected results -->
+                            <div v-if="drinksToAdd.length > 0" class="mt-2">
+                              <hr />
+                              <div class="overflow-auto" style="height: 75px">
+                                <b>Selected Drinks: </b>
+                                {{ drinksToAdd.join(", ") }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="addDrinkToList(currentList)"
+                            >
+                              Add to List
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     <!-- list details -->
                     <div
                       class="row"
