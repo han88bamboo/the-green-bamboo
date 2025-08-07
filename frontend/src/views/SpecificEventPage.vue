@@ -771,7 +771,6 @@
         <!-- Invite Friend Modal End -->
     </div>
     <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <style scoped>
@@ -819,13 +818,11 @@ import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
 import Quill from 'quill';
 import DOMPurify from 'dompurify';
-import FooterBar from "@/components/FooterBar.vue";
 
 export default {
     name: 'SpecificEventPage',
     components: {
-        NavBar,
-        FooterBar
+        NavBar
     },
     data() {
         return {
