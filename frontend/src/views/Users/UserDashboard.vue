@@ -194,7 +194,6 @@
                     </div>
                 </div>
             </div>
-            <FooterBar />
         </div>
 
         <!-- The Modal is controlled by this parent component -->
@@ -207,7 +206,6 @@
 <script>
 // --- IMPORTS ---
 import NavBar from '@/components/NavBar.vue';
-import FooterBar from '@/components/FooterBar.vue';
 // import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 // import ErrorDisplay from '@/components/user_dashboard/ErrorDisplay.vue';
 import UserProfileHeader from '@/components/user_dashboard/UserProfileHeader.vue';
@@ -240,7 +238,6 @@ export default {
     name: 'UserDashboard',
     components: {
         NavBar,
-        FooterBar,
         // LoadingWithFunFact,
         UserProfileHeader,
         ActivityFeed,
