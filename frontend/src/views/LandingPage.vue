@@ -389,8 +389,6 @@
             </router-link>
         </div>
     </section>
-    <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <script>
@@ -401,14 +399,12 @@ import { useSearch } from '@/composables/navbar/useSearch';
 
 import NavBar from "@/components/NavBar.vue";
 import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
-import FooterBar from "@/components/FooterBar.vue";
 import editorialSection from '@/components/landing_page/editorialSection.vue';
 
 export default {
     components: {
         NavBar,
         AutocompleteSearch,
-        FooterBar,
         editorialSection
     },
     setup() {

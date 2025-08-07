@@ -144,7 +144,6 @@ Normal User (Anonymous & Logged-In)
             </div>
         </div>
     </div>
-    <FooterBar />
 
     <!-- review modal goes here -->
     <VenueReviewModal 
@@ -156,7 +155,6 @@ Normal User (Anonymous & Logged-In)
 
 <script>
 import NavBar from '@/components/NavBar.vue';
-import FooterBar from '@/components/FooterBar.vue';
 import VenueWelcome from '@/components/venue_profile/VenueWelcome.vue';
 import VenueHeader from '@/components/venue_profile/VenueHeader.vue';
 import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
@@ -229,7 +227,6 @@ export default {
     name: 'VenueProfilePage',
     components: {
         NavBar,
-        FooterBar,
         VenueWelcome,
         VenueHeader,
         VenueContentTabs,
@@ -398,7 +395,6 @@ export default {
                     this.processVenueHours(venueData),
                     this.processVenueMenu(venueData),
                     this.processVenueUpdates(venueData),
-                    // this.fetchServingTypes(),
                     this.processMapData(venueData.address),
                     this.processClaimStatus(venueData)
                 ]);
@@ -490,49 +486,49 @@ export default {
         },
 
         // Fetch serving types
-        async fetchServingTypes() {
-            try {
-                const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/getData/getServingTypes`
-                );
-                this.servingTypes = response.data;
-                this.getDefaultServingType();
-                this.initializeMultipleItemsDefaultServingTypes();
-            } catch (error) {
-                console.error('Error fetching serving types:', error);
-            }
-        },
+        // async fetchServingTypes() {
+        //     try {
+        //         const response = await this.$axios.get(
+        //             `${process.env.VUE_APP_API_URL}/getData/getServingTypes`
+        //         );
+        //         this.servingTypes = response.data;
+        //         this.getDefaultServingType();
+        //         this.initializeMultipleItemsDefaultServingTypes();
+        //     } catch (error) {
+        //         console.error('Error fetching serving types:', error);
+        //     }
+        // },
 
-        // Get Default Serving Type
-        getDefaultServingType() {
-            try {
-                const defaultServing = this.servingTypes.find(s => s.servingType === "-");
-                if (defaultServing) {
-                    this.newMenuItemServingType = defaultServing.id;
-                } else {
-                    console.error('No serving type with "-" found. Setting a default id.');
-                    this.newMenuItemServingType = 1;  // Or set to a specific default id, e.g. 1
-                }
-            } catch (error) {
-                console.error(error);
-            }
-        },
+        // // Get Default Serving Type
+        // getDefaultServingType() {
+        //     try {
+        //         const defaultServing = this.servingTypes.find(s => s.servingType === "-");
+        //         if (defaultServing) {
+        //             this.newMenuItemServingType = defaultServing.id;
+        //         } else {
+        //             console.error('No serving type with "-" found. Setting a default id.');
+        //             this.newMenuItemServingType = 1;  // Or set to a specific default id, e.g. 1
+        //         }
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // },
 
-        // Initialize Default Serving Types for Multiple Items
-        initializeMultipleItemsDefaultServingTypes() {
-            try {
-                const defaultServing = this.servingTypes.find(s => s.servingType === "-");
-                const defaultId = defaultServing ? defaultServing.id : 1;
+        // // Initialize Default Serving Types for Multiple Items
+        // initializeMultipleItemsDefaultServingTypes() {
+        //     try {
+        //         const defaultServing = this.servingTypes.find(s => s.servingType === "-");
+        //         const defaultId = defaultServing ? defaultServing.id : 1;
 
-                this.multipleMenuItems.forEach(item => {
-                    if (!item.newMenuItemServingType) {
-                        item.newMenuItemServingType = defaultId;
-                    }
-                });
-            } catch (error) {
-                console.error(error);
-            }
-        },
+        //         this.multipleMenuItems.forEach(item => {
+        //             if (!item.newMenuItemServingType) {
+        //                 item.newMenuItemServingType = defaultId;
+        //             }
+        //         });
+        //     } catch (error) {
+        //         console.error(error);
+        //     }
+        // },
 
         // Process map data with better error handling
         async processMapData(address) {
