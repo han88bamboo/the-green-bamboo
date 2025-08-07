@@ -110,7 +110,7 @@ text-align: center;
 width: 90%;
 max-width: 400px;
 max-height: 90vh;
-overflow-y: auto;
+/* overflow-y: auto; */
 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 position: relative;
 }
