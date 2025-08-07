@@ -138,8 +138,6 @@
         </div>
     
 
-    <FooterBar />
-
 </template>
 
 <script>
@@ -149,14 +147,12 @@ import { computed } from 'vue'
 import { useSearch } from '@/composables/navbar/useSearch'; 
 
 import NavBar from "@/components/NavBar.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import BestOfCard from "@/components/BestOfCard.vue";
 
 export default {
     name: "BestOfView",
     components: {
         NavBar,
-        FooterBar,
         BestOfCard,
     }, 
     setup() {

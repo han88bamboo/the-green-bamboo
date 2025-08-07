@@ -1558,7 +1558,6 @@
       :listingID="bookmarkListingID"
     />
   </div>
-  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -1573,7 +1572,6 @@ import { useSearch } from '@/composables/navbar/useSearch';
 
 import NavBar from "@/components/NavBar.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
@@ -1581,7 +1579,6 @@ export default {
     NavBar,
     // BookmarkIcon,
     BookmarkModal,
-    FooterBar,
     LoadingWithFunFact
   },
   setup() {

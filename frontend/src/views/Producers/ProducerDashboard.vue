@@ -594,7 +594,6 @@
         
     </div> <!-- end of main content -->
     </div>
-    <FooterBar />
 
 </template>
 
@@ -608,7 +607,6 @@
     import { Line } from 'vue-chartjs'
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
     import { LineElement, PointElement } from 'chart.js'
-    import FooterBar from "@/components/FooterBar.vue";
     import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -619,7 +617,6 @@
             NavBar,
             Bar,
             Line,
-            FooterBar,
             LoadingWithFunFact,
         },
         computed: {

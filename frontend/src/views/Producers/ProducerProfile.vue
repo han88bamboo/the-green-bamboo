@@ -3778,7 +3778,6 @@
     />
   </div>
   <!-- end of main content -->
-  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -3794,7 +3793,6 @@ import NavBar from "@/components/NavBar.vue";
 import ListingRowDisplayProducerProfile from "@/components/ListingRowDisplayProducerProfile.vue";
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
@@ -3805,7 +3803,6 @@ export default {
     ListingRowDisplayProducerProfile,
     BookmarkIcon,
     BookmarkModal,
-    FooterBar,
     LoadingWithFunFact,
   },
   setup() {

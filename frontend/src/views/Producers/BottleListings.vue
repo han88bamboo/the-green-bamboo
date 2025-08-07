@@ -2233,7 +2233,6 @@
   </div>
   <!-- end of your drinks shelf & brands you follow -->
 
-  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -2247,7 +2246,6 @@ import NavBar from "@/components/NavBar.vue";
 // import ReviewModal from '@/components/EditReview.vue'
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
 
@@ -2259,7 +2257,6 @@ export default {
     NavBar,
     BookmarkIcon,
     BookmarkModal,
-    FooterBar,
     LoadingWithFunFact,
     VintageList,
   },

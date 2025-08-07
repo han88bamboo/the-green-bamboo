@@ -245,7 +245,6 @@
         </div>
       </div>
     </div>
-    <FooterBar />
   </div>
 </template>
 
@@ -370,7 +369,6 @@
 import NavBar from "@/components/NavBar.vue";
 import GoogleSignIn from "@/components/GoogleSignIn.vue";
 import ForgotPasswordForm from "@/components/ForgotPasswordForm.vue";
-import FooterBar from "@/components/FooterBar.vue";
 
 // specify components used
 export default {
@@ -379,7 +377,6 @@ export default {
     NavBar,
     GoogleSignIn,
     ForgotPasswordForm,
-    FooterBar,
   },
 
   data() {
