@@ -163,7 +163,6 @@
   </div>
 
   <div>
-    <FooterBar />
   </div>
 </template>
 
@@ -174,12 +173,9 @@
 import NavBar from "@/components/NavBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
-import FooterBar from "@/components/FooterBar.vue";
-
 export default {
   components: {
     NavBar,
-    FooterBar,
     LoadingWithFunFact,
   },
 
