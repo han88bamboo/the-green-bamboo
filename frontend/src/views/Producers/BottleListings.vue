@@ -1428,7 +1428,7 @@
         </div>
         <!-- END OF MODAL -->
 
-        <VintageList :loading="vintage_listings.loading" :error="vintage_listings.error"
+        <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" :loading="vintage_listings.loading" :error="vintage_listings.error"
           :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" 
           @vintage-selected="onVintageSelected"  
         />

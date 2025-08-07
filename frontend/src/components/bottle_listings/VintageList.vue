@@ -1,6 +1,6 @@
 <template>
   <!-- By Vintage Table -->
-  <div v-if="drinkType == 'Wine'" class="vintage-section mt-4 mb-4">
+  <div class="vintage-section mt-4 mb-4">
     <!-- Loading state -->
     <div v-if="loading" class="text-center py-2">
       <div class="spinner-border spinner-border-sm text-light me-2" role="status">
