@@ -1482,7 +1482,6 @@
     </div>
   </div>
   <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <script>
@@ -1490,14 +1489,12 @@
 import NavBar from "@/components/NavBar.vue";
 import ClubSettings from "@/components/ClubSettings.vue";
 import { useToast } from "vue-toastification";
-import FooterBar from "@/components/FooterBar.vue";
 
 export default {
   name: "ClubView",
   components: {
     NavBar,
-    ClubSettings,
-    FooterBar
+    ClubSettings
   },
   data() {
     return {

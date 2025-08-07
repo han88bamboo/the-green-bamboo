@@ -1044,7 +1044,6 @@
                 :listingID="bookmarkListingID" />
             
         </div>
-        <FooterBar />
 
 
     
@@ -1056,7 +1055,6 @@ import EventBox from '@/components/EventBox.vue';
 import NavBar from '@/components/NavBar.vue';
 import ListingRowDisplayUserProfile from '@/components/ListingRowDisplayUserProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
-import FooterBar from "@/components/FooterBar.vue";
 
 
 // toggling between lists and list details
@@ -1065,8 +1063,7 @@ export default {
         NavBar, 
         ListingRowDisplayUserProfile, 
         BookmarkModal,
-        EventBox,
-        FooterBar
+        EventBox
     },
     data() {
         return {

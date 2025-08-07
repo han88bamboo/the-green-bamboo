@@ -224,7 +224,6 @@
       </div>
     </section>
     
-    <FooterBar />
   </div>
 </template>
 
@@ -236,13 +235,11 @@ import { computed } from 'vue'
 import { useSearch } from '@/composables/navbar/useSearch'; 
 
 import NavBar from '@/components/NavBar.vue';
-import FooterBar from '@/components/FooterBar.vue';
 
 export default {
   name: 'PartnerCenter',
   components: {
-    NavBar,
-    FooterBar
+    NavBar
   },
   setup() {
         // Computed property for structured data

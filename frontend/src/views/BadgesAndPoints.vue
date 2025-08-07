@@ -581,19 +581,16 @@
 
     
     
-    <FooterBar />
   </div>
 </template>
 
 <script>
   import NavBar from '@/components/NavBar.vue';
-  import FooterBar from '@/components/FooterBar.vue';
 
   export default {
     name: 'PartnerCenter',
     components: {
-      NavBar,
-      FooterBar
+      NavBar
     },
     data() {
       return {
