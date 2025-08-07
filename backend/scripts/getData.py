@@ -3374,7 +3374,7 @@ def getUser(id):
     sql = """ 
         SELECT "id", "username", "displayName", "choiceDrinks", "modType", "photo", 
         "joinDate", "firstName", "lastName", "isAdmin", "birthday", "choiceFlavours",
-        "preferences", "grails", "upAndComing", "goats", "blueDot", "ambassador"
+        "preferences", "grails", "upAndComing", "goats", "blueDot", "ambassador", "categoryExpert"
         FROM "users"
         WHERE "id" = %s
     """  

@@ -85,6 +85,12 @@
                   Ambassador
                 </span>
 
+                <!-- User Title (category expert) -->
+                <span v-if="displayUser && displayUser.categoryExpert" class="badge rounded-pill ms-2"
+                  style="background-color: #5D83D9; color: white">
+                  {{ displayUser.categoryExpert }}
+                </span>
+
                 <!-- Add this temporarily to debug -->
                 <div style="display: none;">
                   {{ displayUser && typeof displayUser.ambassador }} - 

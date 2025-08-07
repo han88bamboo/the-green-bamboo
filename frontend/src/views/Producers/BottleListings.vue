@@ -1566,6 +1566,12 @@
                         Ambassador
                       </span>
 
+                      <!-- User Title (category expert) -->
+                      <span v-if="checkCategoryExpertFromUserID(review.userID)" class="badge rounded-pill ms-2"
+                        style="background-color: #5D83D9; color: white">
+                        {{ checkCategoryExpertFromUserID(review.userID) }}
+                      </span>
+
                     </div>
 
                     <!-- Edit & Delete Buttons -->
@@ -3792,6 +3798,15 @@ export default {
       if (user) {
         return user["ambassador"] === true;
       }
+    },
+    checkCategoryExpertFromUserID(userID) {
+      const user = this.users.find((user) => {
+        return user["id"] == userID;
+      });
+      if (user && user["categoryExpert"]) {
+        return user["categoryExpert"];
+      }
+      return null;
     },
 
     displaySelectColour(colour) {

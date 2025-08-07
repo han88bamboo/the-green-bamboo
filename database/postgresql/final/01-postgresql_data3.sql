@@ -288,7 +288,8 @@ CREATE TABLE "users" (
     "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing" - remove this to decouple db
     "goats" TEXT[], -- SMU Group 3 added in "goats" - remove this to decouple db
     "blueDot" BOOLEAN DEFAULT TRUE, -- Indicates if the blue dot should be shown
-    "ambassador" BOOLEAN DEFAULT FALSE 
+    "ambassador" BOOLEAN DEFAULT FALSE,
+    "categoryExpert" VARCHAR(255) DEFAULT NULL -- Category expert designation (e.g., "Champagne Expert", "Whisky Expert", etc.)
 );
 
 -- ========= "userBadges" =========
