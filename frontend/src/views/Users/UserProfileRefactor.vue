@@ -3601,14 +3601,12 @@
       </div>
     </div>
 
-    <FooterBar />
   </div>
 </template>
 
 <script>
 import NavBar from "@/components/NavBar.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from "vue-toastification";
 import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
@@ -3620,7 +3618,6 @@ export default {
   components: {
     NavBar,
     PWStrengthChecker,
-    FooterBar,
     EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,
