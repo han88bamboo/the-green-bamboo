@@ -443,7 +443,6 @@
         </div>
     </div>
     <!-- Footer End -->
-        <FooterBar />
 </template>
 
 <script>
@@ -456,13 +455,11 @@ import { useSearch } from '@/composables/navbar/useSearch';
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
-import FooterBar from "@/components/FooterBar.vue";
 
 export default {
     name: "BrowseClubs",
     components: {
-        NavBar,
-        FooterBar
+        NavBar
     },
     setup() {
         // Computed property for structured data
