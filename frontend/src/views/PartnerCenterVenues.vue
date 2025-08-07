@@ -277,7 +277,6 @@ Event links on Drink-X are shareable, allowing interested attendees to help spre
       </div>
     </section>
     
-    <FooterBar />
   </div>
 </template>
 
@@ -285,13 +284,11 @@ Event links on Drink-X are shareable, allowing interested attendees to help spre
 
 <script>
 import NavBar from '@/components/NavBar.vue';
-import FooterBar from '@/components/FooterBar.vue';
 
 export default {
   name: 'DrinkXForVenue',
   components: {
     NavBar,
-    FooterBar,
     
   }
 };
