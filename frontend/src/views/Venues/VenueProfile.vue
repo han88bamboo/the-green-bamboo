@@ -682,82 +682,82 @@
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageCocktails }"
                                       @click="editAmenities.beverageCocktails = !editAmenities.beverageCocktails">
-                                    <i class="bi bi-cup-straw me-1"></i>Cocktails
+                                    <PhMartini :size="16" class="me-1" />Cocktails
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageWine }"
                                       @click="editAmenities.beverageWine = !editAmenities.beverageWine">
-                                    <i class="bi bi-cup me-1"></i>Wine
+                                    <PhChampagne :size="16" class="me-1" />Wine
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageBeer }"
                                       @click="editAmenities.beverageBeer = !editAmenities.beverageBeer">
-                                    <i class="bi bi-cup-straw me-1"></i>Beer
+                                    <PhBeer :size="16" class="me-1" />Beer
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageWhisky }"
                                       @click="editAmenities.beverageWhisky = !editAmenities.beverageWhisky">
-                                    <i class="bi bi-cup me-1"></i>Whisky
+                                    <PhBrandy :size="16" class="me-1" />Whisky
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageBrandy }"
                                       @click="editAmenities.beverageBrandy = !editAmenities.beverageBrandy">
-                                    <i class="bi bi-cup me-1"></i>Brandy
+                                    <PhBrandy :size="16" class="me-1" />Brandy
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageTequila }"
                                       @click="editAmenities.beverageTequila = !editAmenities.beverageTequila">
-                                    <i class="bi bi-cup me-1"></i>Tequila
+                                    <PhFlowerLotus :size="16" class="me-1" />Tequila
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageMezcal }"
                                       @click="editAmenities.beverageMezcal = !editAmenities.beverageMezcal">
-                                    <i class="bi bi-cup me-1"></i>Mezcal
+                                    <PhFlowerLotus :size="16" class="me-1" />Mezcal
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageRum }"
                                       @click="editAmenities.beverageRum = !editAmenities.beverageRum">
-                                    <i class="bi bi-cup me-1"></i>Rum
+                                    <PhBrandy :size="16" class="me-1" />Rum
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageSake }"
                                       @click="editAmenities.beverageSake = !editAmenities.beverageSake">
-                                    <i class="bi bi-cup me-1"></i>Sake
+                                    <PhWine :size="16" class="me-1" />Sake
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageShochu }"
                                       @click="editAmenities.beverageShochu = !editAmenities.beverageShochu">
-                                    <i class="bi bi-cup me-1"></i>Shochu
+                                    <PhBrandy :size="16" class="me-1" />Shochu
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageSoju }"
                                       @click="editAmenities.beverageSoju = !editAmenities.beverageSoju">
-                                    <i class="bi bi-cup me-1"></i>Soju
+                                    <PhBrandy :size="16" class="me-1" />Soju
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageBaijiu }"
                                       @click="editAmenities.beverageBaijiu = !editAmenities.beverageBaijiu">
-                                    <i class="bi bi-cup me-1"></i>Baijiu
+                                    <PhBrandy :size="16" class="me-1" />Baijiu
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageGin }"
                                       @click="editAmenities.beverageGin = !editAmenities.beverageGin">
-                                    <i class="bi bi-cup me-1"></i>Gin
+                                    <PhBrandy :size="16" class="me-1" />Gin
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageVodka }"
                                       @click="editAmenities.beverageVodka = !editAmenities.beverageVodka">
-                                    <i class="bi bi-cup me-1"></i>Vodka
+                                    <PhBrandy :size="16" class="me-1" />Vodka
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageAbsinthe }"
                                       @click="editAmenities.beverageAbsinthe = !editAmenities.beverageAbsinthe">
-                                    <i class="bi bi-cup me-1"></i>Absinthe
+                                    <PhBrandy :size="16" class="me-1" />Absinthe
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageArrack }"
                                       @click="editAmenities.beverageArrack = !editAmenities.beverageArrack">
-                                    <i class="bi bi-cup me-1"></i>Arrack
+                                    <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
                             </div>
                         </div>
@@ -964,52 +964,52 @@
 
                                 <!-- Beverages -->
                                 <span v-if="targetVenue.amenities?.beverageWine" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Wine
+                                    <PhChampagne :size="16" class="me-1" />Wine
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageBeer" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup-straw me-1"></i>Beer
+                                    <PhBeer :size="16" class="me-1" />Beer
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageCocktails" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup-straw me-1"></i>Cocktails
+                                    <PhMartini :size="16" class="me-1" />Cocktails
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageWhisky" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Whisky
+                                    <PhBrandy :size="16" class="me-1" />Whisky
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageGin" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Gin
+                                    <PhBrandy :size="16" class="me-1" />Gin
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageVodka" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Vodka
+                                    <PhBrandy :size="16" class="me-1" />Vodka
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageRum" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Rum
+                                    <PhBrandy :size="16" class="me-1" />Rum
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageTequila" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Tequila
-                                </span>
-                                <span v-if="targetVenue.amenities?.beverageBrandy" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Brandy
-                                </span>
-                                <span v-if="targetVenue.amenities?.beverageSake" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Sake
+                                    <PhFlowerLotus :size="16" class="me-1" />Tequila
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageMezcal" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Mezcal
+                                    <PhFlowerLotus :size="16" class="me-1" />Mezcal
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageBrandy" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Brandy
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageSake" class="badge bg-success me-1 mb-1">
+                                    <PhWine :size="16" class="me-1" />Sake
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageShochu" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Shochu
+                                    <PhBrandy :size="16" class="me-1" />Shochu
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageSoju" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Soju
+                                    <PhBrandy :size="16" class="me-1" />Soju
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageBaijiu" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Baijiu
+                                    <PhBrandy :size="16" class="me-1" />Baijiu
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageAbsinthe" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Absinthe
+                                    <PhBrandy :size="16" class="me-1" />Absinthe
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageArrack" class="badge bg-success me-1 mb-1">
-                                    <i class="bi bi-cup me-1"></i>Arrack
+                                    <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
 
                                 <!-- General Amenities -->
@@ -4705,6 +4705,16 @@ import EventBox from '@/components/EventBox.vue';
 import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
+// Import Phosphor Icons
+import { 
+  PhWine, 
+  PhBeer, 
+  PhChampagne, 
+  PhMartini,
+  PhBrandy,
+  PhFlowerLotus
+} from '@phosphor-icons/vue'
+
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
 
@@ -4717,6 +4727,13 @@ export default {
         BookmarkModal,
         EventBox,
         LoadingWithFunFact,
+        // Add Phosphor Icons as components
+        PhWine,
+        PhBeer, 
+        PhMartini,
+        PhBrandy,
+        PhFlowerLotus,
+        PhChampagne,
     },
   setup() {
     // Create reactive references for meta data

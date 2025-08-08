@@ -13,6 +13,7 @@
   "dependencies": {
     "@canvasjs/vue-charts": "^1.0.4",
     "@fawmi/vue-google-maps": "^0.9.79",
+    "@phosphor-icons/vue": "^2.2.1",
     "@popperjs/core": "^2.11.8",
     "@stripe/stripe-js": "^4.0.0",
     "@unhead/vue": "^2.0.11",
