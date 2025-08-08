@@ -31,7 +31,7 @@
                 ref="venueDetailsRef">
                 <!-- Actions slot for buttons -->
                 <template #actions>
-                    <div class="d-grid no-padding text-end" v-if="!selfView && !powerView">
+                    <div class="d-grid no-padding text-end" v-if="!isSelfView && !isPowerView">
                         <!-- Claim Venue -->
                         <p v-if="!venue.claimStatus"
                             class="text-body-secondary no-margin text-decoration-underline fst-italic"
@@ -63,7 +63,7 @@
 
             </VenueDetails>
 
-            <VenueAddDetails :venue="venue" :isFollowing="isFollowing"
+            <VenueAddDetails :venue="venue" :isFollowing="isFollowing" :is-editing="editProfile"
                 @follow-clicked="$emit('follow-clicked')"
                 @review-clicked="$emit('review-clicked')"
             />

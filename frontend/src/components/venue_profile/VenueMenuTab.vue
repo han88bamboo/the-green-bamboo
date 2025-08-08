@@ -45,61 +45,76 @@
                             <!-- Menu Items -->
                             <div v-else-if="section.sectionMenu && section.sectionMenu.length > 0" class="bg-white">
                                 <div v-for="(item, itemIndex) in section.sectionMenu" :key="itemIndex"
-                                    class="py-2 px-3 border-bottom">
+                                    class="py-1 px-3">
 
-                                    <router-link
-                                        :to="{ path: '/listing/view/' + item.itemID + '/' + item.name }"
-                                        class="listing-item-link text-decoration-none"
-                                    >
+                                    <router-link :to="{ path: '/listing/view/' + item.itemID + '/' + item.name }"
+                                        class="listing-item-link text-decoration-none">
                                         <div class="card mb-3 listing-card border-0 shadow-sm">
-                                        <div class="card-body p-3">
-                                            <div class="d-flex align-items-start">
-                                            <!-- Item Image -->
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="image-wrapper d-flex align-items-center justify-content-center rounded-2"
-                                                    style="width: 80px; height: 80px; background-color: #f8f6f0;">
-                                                <img v-if="item.photo && item.photo.trim() !== ''" 
-                                                    :src="item.photo" 
-                                                    :alt="item.name"
-                                                    class="img-fluid rounded"
-                                                    style="max-width: 70px; max-height: 70px; object-fit: contain;">
-                                                <!-- Fallback Icon -->
-                                                <i v-else class="bi bi-cup-straw" style="font-size: 28px; color: #d4941e;"></i>
-                                                </div>  
-                                            </div>
+                                            <div class="card-body p-3">
+                                                <div class="d-flex align-items-start">
 
-                                            <!-- Item Details -->
-                                            <div class="flex-grow-1" style="min-width: 0;">
-                                                <div class="d-flex justify-content-between align-items-start mb-1">
-                                                    <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }}</h5>
-                                                    <!-- Star icon -->
-                                                    <i class="bi bi-star text-warning flex-shrink-0"></i>
+                                                    <!-- Item Image -->
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="image-wrapper d-flex align-items-center justify-content-center rounded-2"
+                                                            :style="{
+                                                                'width': '80px', 
+                                                                'height': '80px',
+                                                                'background-color': '#f8f6f0',
+                                                                'filter': item.itemAvailability === false ? 'grayscale(100%)' : 'none'
+                                                            }">
+                                                            <img v-if="item.photo && item.photo.trim() !== ''"
+                                                                :src="item.photo" :alt="item.name"
+                                                                class="img-fluid rounded"
+                                                                style="max-width: 70px; max-height: 70px; object-fit: contain;">
+                                                            <!-- Fallback Icon -->
+                                                            <i v-else class="bi bi-cup-straw"
+                                                                style="font-size: 28px; color: #d4941e;"></i>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Item Details -->
+                                                    <div class="flex-grow-1" style="min-width: 0;">
+                                                        <div
+                                                            class="d-flex justify-content-between align-items-start mb-1">
+                                                            <h5 class="card-title fw-semibold mb-0 me-2 item-title">
+                                                                {{ item.name }}
+                                                            </h5>
+                                                            <!-- Star icon -->
+                                                            <i class="bi bi-star text-warning flex-shrink-0"></i>
+                                                        </div>
+
+                                                        <p class="card-text text-muted small mb-2 lh-sm text-start">
+                                                            {{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV'}} 
+                                                        </p>
+                                                        <p class="card-text fw-medium mb-0 text-start">
+                                                            ${{ item.itemPrice }} / {{ item.servingType }}
+                                                        </p>
+                                                        <!-- Availability -->
+                                                        <p v-if="item.itemAvailability == false"
+                                                            class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
+                                                            Temporarily Unavailable
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                
-                                                <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.description }}</p>
-                                                <p class="card-text fw-medium mb-0 text-start">${{ item.itemPrice }} / {{ item.servingType }}</p>
                                             </div>
-                                            </div>
-                                        </div>
                                         </div>
                                     </router-link>
-                                    
-                                    <!-- pagination -->
-                                    <div v-if="section.pagination && section.pagination.total_pages > 1" class="p-2 bg-light">
-                                        <button 
-                                            class="btn btn-sm btn-outline-secondary me-1"
-                                            :disabled="section.pagination.page <= 1"
-                                            @click="loadSectionMenu(section, index, section.pagination.page - 1)"
-                                        >Previous</button>
 
-                                        <span>Page {{ section.pagination.page }} of {{ section.pagination.total_pages }}</span>
+                                </div>
 
-                                        <button 
-                                            class="btn btn-sm btn-outline-secondary ms-1"
-                                            :disabled="section.pagination.page >= section.pagination.total_pages"
-                                            @click="loadSectionMenu(section, index, section.pagination.page + 1)"
-                                        >Next</button>
-                                    </div>
+                                <!-- pagination -->
+                                <div v-if="section.pagination && section.pagination.total_pages > 1"
+                                    class="p-2 bg-light">
+                                    <button class="btn btn-sm btn-outline-secondary me-1"
+                                        :disabled="section.pagination.page <= 1"
+                                        @click="loadSectionMenu(section, index, section.pagination.page - 1)">Previous</button>
+
+                                    <span>Page {{ section.pagination.page }} of {{ section.pagination.total_pages
+                                        }}</span>
+
+                                    <button class="btn btn-sm btn-outline-secondary ms-1"
+                                        :disabled="section.pagination.page >= section.pagination.total_pages"
+                                        @click="loadSectionMenu(section, index, section.pagination.page + 1)">Next</button>
                                 </div>
 
                             </div>
@@ -126,7 +141,7 @@ export default {
         if (this.menu && this.menu.length > 0) {
             this.menu.forEach(section => {
                 if (section.isExpanded === undefined) {
-                    this.$set(section, 'isExpanded', false);
+                    Object.assign(section, { isExpanded: false });
                 }
             });
         }
@@ -167,6 +182,7 @@ export default {
 
                 // Extract from backend response
                 const items = response.data.data || [];
+                console.log(items)
                 const pagination = response.data.pagination || { page, limit, total_pages: 1 };
 
                 // Store in section so it’s reactive
@@ -214,52 +230,52 @@ export default {
 
 <style scoped>
 .listing-item-link {
-  color: inherit;
+    color: inherit;
 }
 
 .listing-card {
-  transition: all 0.2s ease;
-  border-radius: 12px !important;
+    transition: all 0.2s ease;
+    border-radius: 12px !important;
 }
 
 .listing-card:hover {
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-  transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px);
 }
 
 .item-title {
-  text-decoration: underline;
-  color: #2c3e50;
-  font-size: 1rem;
+    text-decoration: underline;
+    color: #2c3e50;
+    font-size: 1rem;
 }
 
 .card-text.text-muted {
-  color: #6c757d !important;
+    color: #6c757d !important;
 }
 
 .card-text.fw-medium {
-  color: #2c3e50;
+    color: #2c3e50;
 }
 
 /* Responsive adjustments */
 @media (max-width: 576px) {
-  .image-wrapper {
-    width: 60px !important;
-    height: 60px !important;
-  }
-  
-  .image-wrapper img {
-    max-width: 50px !important;
-    max-height: 50px !important;
-  }
-  
-  .item-title {
-    font-size: 0.9rem;
-  }
-  
-  .card-text.small {
-    font-size: 0.8rem !important;
-  }
+    .image-wrapper {
+        width: 60px !important;
+        height: 60px !important;
+    }
+
+    .image-wrapper img {
+        max-width: 50px !important;
+        max-height: 50px !important;
+    }
+
+    .item-title {
+        font-size: 0.9rem;
+    }
+
+    .card-text.small {
+        font-size: 0.8rem !important;
+    }
 }
 
 /* Slide animation */

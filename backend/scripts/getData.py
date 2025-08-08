@@ -3851,8 +3851,8 @@ def getVenueMenu(section_id):
         sql = f"""
             SELECT 
                 mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
-                lst."officialDesc", mi."itemPrice", mi."itemAvailability", srvTyp."servingType", mi."variant",
-                COUNT(*) OVER() as total_count
+                lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
+                srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
                 ON mi."itemID" = lst."id"
@@ -3871,6 +3871,7 @@ def getVenueMenu(section_id):
             menu_items = []
         else:
             # Get total count from the window function (access by key since using RealDictRow)
+            # "description": row['officialDesc'],
             total_items = rows[0]['total_count']
             menu_items = [
                 {
@@ -3880,7 +3881,9 @@ def getVenueMenu(section_id):
                     "itemOrder": row['itemOrder'],
                     "name": row['listingName'],
                     "photo": row['photo'],
-                    "description": row['officialDesc'],
+                    "bottler": row['bottler'], 
+                    "drinkType": row['drinkType'],
+                    "abv": row['abv'],
                     "itemAvailability": row['itemAvailability'],
                     "variant": row['variant'],
                     "servingType": row['servingType'],
