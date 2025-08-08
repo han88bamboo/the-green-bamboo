@@ -195,31 +195,43 @@ def createListings():
         # NEW: Send approval notification to the original submitter
         # First, find the original request from requestListings table
         cur.execute(
-            'SELECT "userID" FROM "requestListings" WHERE "listingName" = %s',
+            'SELECT "userID", "venueID", "submitterType" FROM "requestListings" WHERE "listingName" = %s',
             (rawBottleName,)
         )
         original_request = cur.fetchone()
         
-        if original_request and original_request['userID']:
-            submitter_id = original_request['userID']
+        if original_request:
+            submitter_type = original_request.get('submitterType', 'user')
             
-            # Build URL slug for the approved listing
-            slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+            # Determine the actual submitter ID and type
+            if submitter_type == 'venue' and original_request['venueID']:
+                submitter_id = original_request['venueID']
+                submitter_user_type = 'venue'
+            elif submitter_type == 'user' and original_request['userID']:
+                submitter_id = original_request['userID']
+                submitter_user_type = 'user'
+            else:
+                submitter_id = None
+                submitter_user_type = None
             
-            # Create approval notification
-            approval_notification = {
-                "userId": submitter_id,
-                "userType": "user",  # Could be "user", "producer", or "venue" - you may want to store this in requestListings
-                "notiTabs": "forYou",
-                "notiType": "approvedListing",
-                "image": rawBottle.get('photo'),
-                "link": f"/listing/view/{new_id}/{slug}",
-                "message": f"Your listing request '{rawBottleName}' has been approved and is now live!",
-                "createdAt": current_time,
-            }
-            
-            print("Sending approval notification:", approval_notification)
-            notifications.add_notification_to_db(approval_notification)
+            if submitter_id:
+                # Build URL slug for the approved listing
+                slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+                
+                # Create approval notification with correct user type
+                approval_notification = {
+                    "userId": submitter_id,
+                    "userType": submitter_user_type,  # Now correctly set based on actual submitter
+                    "notiTabs": "forYou",
+                    "notiType": "approvedListing",
+                    "image": rawBottle.get('photo'),
+                    "link": f"/listing/view/{new_id}/{slug}",
+                    "message": f"Your listing request '{rawBottleName}' has been approved and is now live!",
+                    "createdAt": current_time,
+                }
+                
+                print("Sending approval notification:", approval_notification)
+                notifications.add_notification_to_db(approval_notification)
 
         # Existing notification logic for followers
         cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
