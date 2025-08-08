@@ -2509,7 +2509,7 @@
                                                     <!-- [input] producer search -->
                                                     <div class="form-group mb-3">
                                                         <p class="text-start mb-1">Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
-                                                                style="font-size: 14px;">Select a producer to filter drink search</span></p>
+                                                                style="font-size: 14px;"> Select a producer to filter drink search</span></p>
 
                                                         <input type="text" class="form-control"
                                                             v-model="item.producerSearchQuery"
