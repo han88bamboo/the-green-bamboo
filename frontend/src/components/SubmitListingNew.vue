@@ -371,13 +371,40 @@
                         </div>
                         <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
                         <div class="form-group mb-3" v-if="indOperator">
-                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
-                            <input type="text" list="bottler-names" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name" @input="getBottlerID" autocomplete="off">
-                            <datalist id="bottler-names">
-                                <option v-for="bottler in bottlersList" :key="bottler.producerName" :value="bottler.producerName">
+                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p>
+                            
+                            <input type="text" class="form-control" 
+                                   v-model="form['bottler']" 
+                                   :disabled="!indOperator" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Bottler Name" 
+                                   @input="handleBottlerInput"
+                                   @blur="hideBottlerDropdown">
+
+                            <!-- Dropdown list with drawer styling -->
+                            <ul class="list-group"
+                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator">
+                                <li v-for="bottler in bottlersList" :key="bottler.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectBottler(bottler)">
                                     {{ bottler.producerName }}
-                                </option>
-                            </datalist>
+                                    <small class="text-muted" v-if="bottler.originCountry">
+                                        ({{ bottler.originCountry }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Show selected bottler -->
+                            <div v-if="selectedBottler && selectedBottler.id" 
+                                 class="mt-2 p-2 bg-light border rounded">
+                                <small class="text-success fw-bold">
+                                    ✓ Bottler Selected: {{ selectedBottler.producerName }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                            @click="clearSelectedBottler()">
+                                        Clear
+                                    </button>
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Input: Alcohol Strength (% ABV) + Alcohol Age / Vintage (years old / Year Bottled) -->
@@ -544,6 +571,10 @@
                 selectedProducer: {},
                 showProducerDropdown: false,
 
+                // New bottler selection state
+                selectedBottler: {},
+                showBottlerDropdown: false,
+
                 form: {
                     "editDesc": "",
                     "sourceLink": "",
@@ -583,6 +614,14 @@
                     this.selectedProducer = {
                         id: this.form['producerID'],
                         producerName: this.form['producerNew']
+                    };
+                }
+                
+                // Restore selectedBottler if we have bottler data in cache
+                if (this.form['bottlerID'] && this.form['bottler']) {
+                    this.selectedBottler = {
+                        id: this.form['bottlerID'],
+                        producerName: this.form['bottler']
                     };
                 }
             }
@@ -1097,6 +1136,15 @@
                     this.indOperator = true;
                     this.form["bottler"] = previousData.bottler;
                     this.form["bottlerID"] = previousData.bottlerID;
+                    
+                    // Set selectedBottler if we have bottler data
+                    if (previousData.bottlerID && previousData.bottler) {
+                        this.selectedBottler = {
+                            id: previousData.bottlerID,
+                            producerName: previousData.bottler,
+                            originCountry: previousData.originCountry || ''
+                        };
+                    }
                 } else {
                     this.indOperator = false;
                 }
@@ -1243,6 +1291,43 @@
                 // Use a timeout to allow click events on dropdown items to fire first
                 setTimeout(() => {
                     this.showProducerDropdown = false;
+                }, 150);
+            },
+
+            // New methods for drawer-style bottler selection
+            handleBottlerInput() {
+                this.showBottlerDropdown = true;
+                this.getBottlerID(); // Keep existing logic for ID resolution
+                
+                // Trigger debounced search if input has at least 2 characters
+                if (this.form['bottler'] && this.form['bottler'].length >= 2) {
+                    this.debouncedFetchBottlers(this.form['bottler']);
+                } else {
+                    this.bottlersList = [];
+                    this.showBottlerDropdown = false;
+                }
+            },
+
+            selectBottler(bottler) {
+                this.selectedBottler = bottler;
+                this.form['bottler'] = bottler.producerName;
+                this.form['bottlerID'] = bottler.id;
+                this.showBottlerDropdown = false;
+                this.bottlersList = [];
+            },
+
+            clearSelectedBottler() {
+                this.selectedBottler = {};
+                this.form['bottler'] = '';
+                this.form['bottlerID'] = '';
+                this.showBottlerDropdown = false;
+                this.bottlersList = [];
+            },
+
+            hideBottlerDropdown() {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    this.showBottlerDropdown = false;
                 }, 150);
             },
 
