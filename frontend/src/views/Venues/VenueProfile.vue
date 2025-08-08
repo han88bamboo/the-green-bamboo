@@ -748,6 +748,42 @@
                                         <label class="form-check-label" for="beverageSake">Sake</label>
                                     </div>
                                 </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageMezcal" v-model="editAmenities.beverageMezcal">
+                                        <label class="form-check-label" for="beverageMezcal">Mezcal</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageShochu" v-model="editAmenities.beverageShochu">
+                                        <label class="form-check-label" for="beverageShochu">Shochu</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageSoju" v-model="editAmenities.beverageSoju">
+                                        <label class="form-check-label" for="beverageSoju">Soju</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageBaijiu" v-model="editAmenities.beverageBaijiu">
+                                        <label class="form-check-label" for="beverageBaijiu">Baijiu</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageAbsinthe" v-model="editAmenities.beverageAbsinthe">
+                                        <label class="form-check-label" for="beverageAbsinthe">Absinthe</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beverageArrack" v-model="editAmenities.beverageArrack">
+                                        <label class="form-check-label" for="beverageArrack">Arrack</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -999,6 +1035,24 @@
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageSake" class="badge bg-success me-1 mb-1">
                                     <i class="bi bi-cup me-1"></i>Sake
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageMezcal" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Mezcal
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageShochu" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Shochu
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageSoju" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Soju
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageBaijiu" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Baijiu
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageAbsinthe" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Absinthe
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageArrack" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Arrack
                                 </span>
 
                                 <!-- General Amenities -->
