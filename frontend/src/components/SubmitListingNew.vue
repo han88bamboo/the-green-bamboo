@@ -1509,6 +1509,7 @@
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
+                                "submitterType": this.userType, // Include submitter type from localStorage
                                 "producerID": this.form["producerID"],
                                 "bottlerID": this.form["bottlerID"],
                                 "photo": this.form["photo"],
@@ -1540,6 +1541,7 @@
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
+                                "submitterType": this.userType, // Include submitter type from localStorage
                                 "listingID": this.form["listingID"],
                                 "reviewStatus": false,
                             }

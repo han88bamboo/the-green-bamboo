@@ -64,16 +64,26 @@ def requestListing():
     producerId = rawRequest.get('producerID') or None
     userId = rawRequest.get('userID') or None
     bottler_id = rawRequest.get('bottlerID') or None
+    
+    # Determine submitter type from frontend
+    submitter_type = rawRequest.get('submitterType', 'user')  # Default to 'user' for backwards compatibility
+    
+    # For venues submitting requests, store venue ID separately
+    venue_id = None
+    if submitter_type == 'venue':
+        venue_id = userId  # Frontend sends venue ID in userID field
+        userId = None      # Clear userId to avoid FK violation
 
     try:
         cursor.execute("""
             INSERT INTO "requestListings" (
                 "listingName", bottler, "drinkType", "sourceLink", "brandRelation", 
                 "reviewStatus", "userID", photo, "originCountry", "producerID", 
-                "bottlerID", "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "officialDesc"
+                "bottlerID", "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "officialDesc",
+                "submitterType", "venueID"
             ) VALUES (%s, %s, %s, %s, %s, 
                       %s, %s, %s, %s, %s, 
-                      %s, %s, %s, %s, %s, %s, %s, %s)
+                      %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """, (
             rawRequestName,
@@ -82,7 +92,7 @@ def requestListing():
             rawRequest['sourceLink'],
             rawRequest['brandRelation'],
             True if auto_approve else rawRequest['reviewStatus'],
-            userId,
+            userId,  # Will be None for venue submissions
             rawRequest['photo'],
             rawRequest['originCountry'],
             producerId,
@@ -93,7 +103,9 @@ def requestListing():
             rawRequest['age'],
             rawRequest['reviewLink'],
             rawRequest.get('drinkStyle', ''),
-            rawRequest.get('officialDesc', '')
+            rawRequest.get('officialDesc', ''),
+            submitter_type,
+            venue_id
         ))
 
         newRequestId = cursor.fetchone()
@@ -144,7 +156,27 @@ def requestListing():
             listing_id = cursor.fetchone()['id']
             
             # Create notification for the submitter
-            if userId:
+            if submitter_type == 'venue' and venue_id:
+                # Venue submitter notification
+                # Create a URL-safe slug
+                slug = re.sub(r'[^a-z0-9]+', '', rawRequestName.lower())
+                
+                # Insert notification for venue
+                notification_data = {
+                    "userId": venue_id,
+                    "userType": "venue",
+                    "notiTabs": "forYou",
+                    "notiType": "approvedListing",
+                    "image": rawRequest.get('photo'),
+                    "link": f"/listing/view/{listing_id}/{slug}",
+                    "message": f"Your listing request '{rawRequestName}' has been approved and is now live!",
+                    "createdAt": current_time,
+                }
+                
+                notifications.add_notification_to_db(notification_data)
+                
+            elif userId and submitter_type == 'user':
+                # Original user submitter logic
                 # Create a URL-safe slug
                 slug = re.sub(r'[^a-z0-9]+', '', rawRequestName.lower())
                 
@@ -162,7 +194,7 @@ def requestListing():
                 
                 notifications.add_notification_to_db(notification_data)
                 
-                # Process any reward points or badges
+                # Process any reward points or badges for users only
                 if pointsHelperFunc.check_max_proof_points(userId) is False:
                     # Add proof points for successful listing creation
                     cursor.execute(
@@ -323,12 +355,22 @@ def requestListingModify(requestID):
     userId = rawRequest.get('userID') or None
     bottler_id = rawRequest.get('bottlerID') or None
     
+    # Determine submitter type from frontend
+    submitter_type = rawRequest.get('submitterType', 'user')  # Default to 'user' for backwards compatibility
+    
+    # For venues submitting requests, store venue ID separately
+    venue_id = None
+    if submitter_type == 'venue':
+        venue_id = userId  # Frontend sends venue ID in userID field
+        userId = None      # Clear userId to avoid FK violation
+    
     try:
         cursor.execute("""
             UPDATE "requestListings"
             SET "listingName" = %s, bottler = %s, "drinkType" = %s, "sourceLink" = %s, "brandRelation" = %s, 
                 "reviewStatus" = %s, "userID" = %s, photo = %s, "originCountry" = %s, "producerID" = %s, 
-                "bottlerID" = %s, "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s, "drinkStyle" = %s, "officialDesc" = %s
+                "bottlerID" = %s, "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s, "drinkStyle" = %s, "officialDesc" = %s,
+                "submitterType" = %s, "venueID" = %s
             WHERE id = %s;
         """, (
             rawRequestName,
@@ -337,7 +379,7 @@ def requestListingModify(requestID):
             rawRequest['sourceLink'],
             rawRequest['brandRelation'],
             rawRequest['reviewStatus'],
-            userId,
+            userId,  # Will be None for venue submissions
             rawRequest['photo'],
             rawRequest['originCountry'],
             producerId,
@@ -348,7 +390,9 @@ def requestListingModify(requestID):
             rawRequest['age'],
             rawRequest['reviewLink'],
             rawRequest.get('drinkStyle', ''),
-            rawRequest.get('officialDesc', ''),  
+            rawRequest.get('officialDesc', ''),
+            submitter_type,
+            venue_id,
             requestID
         ))
 

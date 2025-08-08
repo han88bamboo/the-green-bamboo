@@ -744,7 +744,9 @@ CREATE TABLE "requestListings" (
     "age" VARCHAR(255),
     "reviewLink" VARCHAR(255),
     "drinkStyle" VARCHAR(255), -- added by tzh
-    "officialDesc" TEXT -- added by tzh
+    "officialDesc" TEXT, -- added by tzh
+    "submitterType" VARCHAR(20) DEFAULT 'user',  -- added by tzh
+    "venueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL  -- added by tzh
 );
 
 -- ========= "requestEdits" =========
