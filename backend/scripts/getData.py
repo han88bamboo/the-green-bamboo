@@ -1400,7 +1400,7 @@ def getUniqueProducersNamesID(search_term, pid):
     try:
         # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
         if pid != '0':
-            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (int(pid),))
+            cursor.execute('SELECT "id", "producerName", "originCountry" FROM "producers" WHERE "id" = %s', (int(pid),))
             producer_data = cursor.fetchone()
             
             if producer_data:
@@ -1409,12 +1409,13 @@ def getUniqueProducersNamesID(search_term, pid):
                     "code": 200,
                     "message": "Producer fetched successfully.",
                     "id": producer_data["id"],
-                    "producerName": producer_data["producerName"]
+                    "producerName": producer_data["producerName"],
+                    "originCountry": producer_data["originCountry"]
                 })
             
         # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
         cursor.execute("""
-            SELECT "id", "producerName", "isIndependentBottler"
+            SELECT "id", "producerName", "isIndependentBottler", "originCountry"
             FROM "producers"
             WHERE "producerName" ILIKE %s
             LIMIT 30
@@ -1441,6 +1442,7 @@ def getUniqueProducersNamesID(search_term, pid):
         producer_dict = {
             "producerName": producer["producerName"],
             "isIndependentBottler": producer["isIndependentBottler"],
+            "originCountry": producer["originCountry"],
             "id": producer["id"]
         }
         producers_list.append(producer_dict)

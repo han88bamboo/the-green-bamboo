@@ -27,7 +27,7 @@
         <!-- Display when bottle listing is successfully submitted -->
         <div class="text-success fw-bold fs-5" v-if="successSubmission"> 
             <div v-if="formType == 'req'">
-                <span v-if="formMode == 'new'">The request has successfully been submitted! Please search for the listing now and add your review! 😉 </span>
+                <span v-if="formMode == 'new'">The request has successfully been submitted! The listing is now on Drink-X and can be reviewed (or added to a menu)! 😉 </span>
                 <span v-if="formMode == 'edit'">The edit request has successfully been submitted!</span>
                 <span v-if="formMode == 'dup'">The duplicate report has successfully been submitted!</span>
             </div>
@@ -197,13 +197,38 @@
                         <!-- set name only, then before submitting request, put the id, save computation -->
                         <div class="form-group mb-3" > <!--removed v-else-->
                             <p class="text-start mb-1">Producer Name <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
-                            <input list="producer-names" v-model="form['producerNew']" autocomplete="off" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
-                            <datalist id="producer-names">
-                                {{ producerList }}
-                                <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
+                            
+                            <input type="text" class="form-control" 
+                                   v-model="form['producerNew']" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Producer Name" 
+                                   @input="handleProducerInput"
+                                   @blur="hideProducerDropdown">
+
+                            <!-- Dropdown list with drawer styling -->
+                            <ul class="list-group"
+                                v-if="producerList && producerList.length > 0 && form['producerNew'] && showProducerDropdown">
+                                <li v-for="producer in producerList" :key="producer.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectProducer(producer)">
                                     {{ producer.producerName }}
-                                </option>
-                            </datalist>
+                                    <small class="text-muted" v-if="producer.originCountry">
+                                        ({{ producer.originCountry }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Show selected producer -->
+                            <div v-if="selectedProducer && selectedProducer.id" 
+                                 class="mt-2 p-2 bg-light border rounded">
+                                <small class="text-success fw-bold">
+                                    ✓ Producer Selected: {{ selectedProducer.producerName }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                            @click="clearSelectedProducer()">
+                                        Clear
+                                    </button>
+                                </small>
+                            </div>
 
                             <!-- [admins] Redirect to Admin page to create a producer -->
                             <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
@@ -515,6 +540,10 @@
                 drinkStylesList:[],
                 tempDrinkStylesList: [],
 
+                // New producer selection state
+                selectedProducer: {},
+                showProducerDropdown: false,
+
                 form: {
                     "editDesc": "",
                     "sourceLink": "",
@@ -548,6 +577,14 @@
                 this.tempDrinkType = localStorage.getItem('cachedListingTempDrinkType') || "";
                 this.tempTypeCategory = localStorage.getItem('cachedListingTempTypeCategory') || "";
                 this.tempDrinkStyle = localStorage.getItem('cachedListingTempDrinkStyle') || "";
+                
+                // Restore selectedProducer if we have producer data in cache
+                if (this.form['producerID'] && this.form['producerNew']) {
+                    this.selectedProducer = {
+                        id: this.form['producerID'],
+                        producerName: this.form['producerNew']
+                    };
+                }
             }
 
             // Get userID
@@ -808,6 +845,7 @@
                             // Set producerNew after populateForm to ensure it is not overwritten
                             if (this.producerList.length > 0) {
                                 this.form['producerNew'] = this.producerList[0].producerName;
+                                this.selectedProducer = this.producerList[0];
                             }
                         }
                     } 
@@ -1042,6 +1080,15 @@
                 this.form["producerNew"] = previousData.producerNew;
                 console.log('form.producerNew:', this.form["producerNew"]);
 
+                // Set selectedProducer if we have producer data
+                if (previousData.producerID && previousData.producerNew) {
+                    this.selectedProducer = {
+                        id: previousData.producerID,
+                        producerName: previousData.producerNew,
+                        originCountry: previousData.originCountry || ''
+                    };
+                }
+
                 this.form["officialDesc"] = previousData.officialDesc;
                 console.log('form.officialDesc:', this.form["officialDesc"]);
 
@@ -1162,6 +1209,43 @@
                 }
             },
 
+            // New methods for drawer-style producer selection
+            handleProducerInput() {
+                this.showProducerDropdown = true;
+                this.getProducerID(); // Keep existing logic for ID resolution
+                
+                // Trigger debounced search if input has at least 2 characters
+                if (this.form['producerNew'] && this.form['producerNew'].length >= 2) {
+                    this.debouncedFetchProducers(this.form['producerNew']);
+                } else {
+                    this.producerList = [];
+                    this.showProducerDropdown = false;
+                }
+            },
+
+            selectProducer(producer) {
+                this.selectedProducer = producer;
+                this.form['producerNew'] = producer.producerName;
+                this.form['producerID'] = producer.id;
+                this.showProducerDropdown = false;
+                this.producerList = [];
+            },
+
+            clearSelectedProducer() {
+                this.selectedProducer = {};
+                this.form['producerNew'] = '';
+                this.form['producerID'] = '';
+                this.showProducerDropdown = false;
+                this.producerList = [];
+            },
+
+            hideProducerDropdown() {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    this.showProducerDropdown = false;
+                }, 150);
+            },
+
             // Handle newly created producer from modal
             handleNewProducer(producer) {
                 // Add the new producer to producerList
@@ -1177,6 +1261,13 @@
                 // Select the newly created producer
                 this.form['producerNew'] = producer.name;
                 this.form['producerID'] = producer.id;
+                
+                // Set as selected producer for the new UI
+                this.selectedProducer = {
+                    id: producer.id,
+                    producerName: producer.name,
+                    isIndependentBottler: producer.isIndependentBottler
+                };
                 
                 // Close the modal
                 this.showCreateProducerModal = false;
