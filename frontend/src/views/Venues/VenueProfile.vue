@@ -618,6 +618,182 @@
                             {{ editOpenForReservations === true ? 'Yes' : 'No' }}
                         </label>
                     </div>
+
+                    <!-- Amenities Edit Section -->
+                    <div class="col-12 mt-4">
+                        <h6 class="fw-bold mb-3">Amenities & Features</h6>
+                        
+                        <!-- Payment Methods -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">Payment Methods</h6>
+                            <div class="row">
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="cardPayment" v-model="editAmenities.cardPayment">
+                                        <label class="form-check-label" for="cardPayment">Card Payment</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="cashPayment" v-model="editAmenities.cashPayment">
+                                        <label class="form-check-label" for="cashPayment">Cash Payment</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="applePay" v-model="editAmenities.applePay">
+                                        <label class="form-check-label" for="applePay">Apple Pay</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="googlePay" v-model="editAmenities.googlePay">
+                                        <label class="form-check-label" for="googlePay">Google Pay</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="crypto" v-model="editAmenities.crypto">
+                                        <label class="form-check-label" for="crypto">Cryptocurrency</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Beverages & Food -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">Beverages & Food</h6>
+                            <div class="row">
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="wine" v-model="editAmenities.wine">
+                                        <label class="form-check-label" for="wine">Wine</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="beer" v-model="editAmenities.beer">
+                                        <label class="form-check-label" for="beer">Beer</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="spirits" v-model="editAmenities.spirits">
+                                        <label class="form-check-label" for="spirits">Spirits</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="cocktails" v-model="editAmenities.cocktails">
+                                        <label class="form-check-label" for="cocktails">Cocktails</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="nonAlcoholic" v-model="editAmenities.nonAlcoholic">
+                                        <label class="form-check-label" for="nonAlcoholic">Non-Alcoholic</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="coffee" v-model="editAmenities.coffee">
+                                        <label class="form-check-label" for="coffee">Coffee</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="food" v-model="editAmenities.food">
+                                        <label class="form-check-label" for="food">Food</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- General Amenities -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">General Amenities</h6>
+                            <div class="row">
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="wifi" v-model="editAmenities.wifi">
+                                        <label class="form-check-label" for="wifi">WiFi</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="parking" v-model="editAmenities.parking">
+                                        <label class="form-check-label" for="parking">Parking</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="outdoorSeating" v-model="editAmenities.outdoorSeating">
+                                        <label class="form-check-label" for="outdoorSeating">Outdoor Seating</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="liveMusic" v-model="editAmenities.liveMusic">
+                                        <label class="form-check-label" for="liveMusic">Live Music</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="privateEvents" v-model="editAmenities.privateEvents">
+                                        <label class="form-check-label" for="privateEvents">Private Events</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="wheelchairAccessible" v-model="editAmenities.wheelchairAccessible">
+                                        <label class="form-check-label" for="wheelchairAccessible">Wheelchair Accessible</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="petFriendly" v-model="editAmenities.petFriendly">
+                                        <label class="form-check-label" for="petFriendly">Pet Friendly</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="smokingArea" v-model="editAmenities.smokingArea">
+                                        <label class="form-check-label" for="smokingArea">Smoking Area</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="tvScreens" v-model="editAmenities.tvScreens">
+                                        <label class="form-check-label" for="tvScreens">TV Screens</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="gameArea" v-model="editAmenities.gameArea">
+                                        <label class="form-check-label" for="gameArea">Game Area</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="danceFloor" v-model="editAmenities.danceFloor">
+                                        <label class="form-check-label" for="danceFloor">Dance Floor</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="rooftop" v-model="editAmenities.rooftop">
+                                        <label class="form-check-label" for="rooftop">Rooftop</label>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4 col-lg-3 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="garden" v-model="editAmenities.garden">
+                                        <label class="form-check-label" for="garden">Garden</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- View Mode: Venue Info + Buttons -->
@@ -680,6 +856,93 @@
                                 </a>
                             </span>
                         </p>
+
+                        <!-- Amenities Section -->
+                        <div v-if="hasAmenities" class="mt-3">
+                            <h6 class="fw-bold mb-2">Amenities & Features</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                <!-- Payment Methods -->
+                                <span v-if="targetVenue.amenities?.cardPayment" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-credit-card me-1"></i>Card Payment
+                                </span>
+                                <span v-if="targetVenue.amenities?.cashPayment" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-cash me-1"></i>Cash Payment
+                                </span>
+                                <span v-if="targetVenue.amenities?.applePay" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-phone me-1"></i>Apple Pay
+                                </span>
+                                <span v-if="targetVenue.amenities?.googlePay" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-google me-1"></i>Google Pay
+                                </span>
+                                <span v-if="targetVenue.amenities?.crypto" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-currency-bitcoin me-1"></i>Crypto
+                                </span>
+
+                                <!-- Beverages -->
+                                <span v-if="targetVenue.amenities?.wine" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Wine
+                                </span>
+                                <span v-if="targetVenue.amenities?.beer" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup-straw me-1"></i>Beer
+                                </span>
+                                <span v-if="targetVenue.amenities?.spirits" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup me-1"></i>Spirits
+                                </span>
+                                <span v-if="targetVenue.amenities?.cocktails" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup-straw me-1"></i>Cocktails
+                                </span>
+                                <span v-if="targetVenue.amenities?.nonAlcoholic" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup-hot me-1"></i>Non-Alcoholic
+                                </span>
+                                <span v-if="targetVenue.amenities?.coffee" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-cup-hot me-1"></i>Coffee
+                                </span>
+                                <span v-if="targetVenue.amenities?.food" class="badge bg-success me-1 mb-1">
+                                    <i class="bi bi-egg-fried me-1"></i>Food
+                                </span>
+
+                                <!-- General Amenities -->
+                                <span v-if="targetVenue.amenities?.wifi" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-wifi me-1"></i>WiFi
+                                </span>
+                                <span v-if="targetVenue.amenities?.parking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-car-front me-1"></i>Parking
+                                </span>
+                                <span v-if="targetVenue.amenities?.outdoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-tree me-1"></i>Outdoor Seating
+                                </span>
+                                <span v-if="targetVenue.amenities?.liveMusic" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-music-note me-1"></i>Live Music
+                                </span>
+                                <span v-if="targetVenue.amenities?.privateEvents" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-calendar-event me-1"></i>Private Events
+                                </span>
+                                <span v-if="targetVenue.amenities?.wheelchairAccessible" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-universal-access me-1"></i>Wheelchair Accessible
+                                </span>
+                                <span v-if="targetVenue.amenities?.petFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-heart me-1"></i>Pet Friendly
+                                </span>
+                                <span v-if="targetVenue.amenities?.smokingArea" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-cloud me-1"></i>Smoking Area
+                                </span>
+                                <span v-if="targetVenue.amenities?.tvScreens" class="badge bg-dark me-1 mb-1">
+                                    <i class="bi bi-tv me-1"></i>TV Screens
+                                </span>
+                                <span v-if="targetVenue.amenities?.gameArea" class="badge bg-dark me-1 mb-1">
+                                    <i class="bi bi-controller me-1"></i>Game Area
+                                </span>
+                                <span v-if="targetVenue.amenities?.danceFloor" class="badge bg-dark me-1 mb-1">
+                                    <i class="bi bi-music-note-beamed me-1"></i>Dance Floor
+                                </span>
+                                <span v-if="targetVenue.amenities?.rooftop" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-building me-1"></i>Rooftop
+                                </span>
+                                <span v-if="targetVenue.amenities?.garden" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-flower1 me-1"></i>Garden
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
@@ -4594,6 +4857,36 @@ export default {
             editEmail: '',
             editPhoneNumber: '',
             editWhatsappNumber: '',
+            editAmenities: {
+                // Payment Methods
+                cardPayment: false,
+                cashPayment: false,
+                applePay: false,
+                googlePay: false,
+                crypto: false,
+                // Beverages & Food
+                wine: false,
+                beer: false,
+                spirits: false,
+                cocktails: false,
+                nonAlcoholic: false,
+                coffee: false,
+                food: false,
+                // General Amenities
+                wifi: false,
+                parking: false,
+                outdoorSeating: false,
+                liveMusic: false,
+                privateEvents: false,
+                wheelchairAccessible: false,
+                petFriendly: false,
+                smokingArea: false,
+                tvScreens: false,
+                gameArea: false,
+                danceFloor: false,
+                rooftop: false,
+                garden: false
+            },
             qaQuestion: '',
             qaAnswer: '',
 
@@ -4790,7 +5083,10 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     computed: {
-
+        hasAmenities() {
+            if (!this.targetVenue.amenities) return false;
+            return Object.values(this.targetVenue.amenities).some(value => value === true);
+        }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     mounted() {
@@ -4971,6 +5267,12 @@ export default {
                     this.editEmail = this.targetVenue["email"];
                     this.editPhoneNumber = this.targetVenue["phoneNumber"];
                     this.editWhatsappNumber = this.targetVenue["whatsappNumber"];
+                    
+                    // Set amenities data
+                    if (this.targetVenue["amenities"]) {
+                        this.editAmenities = { ...this.editAmenities, ...this.targetVenue["amenities"] };
+                    }
+                    
                     this.newAddress = this.targetVenue["address"];
                     this.newPublicHolidays = this.targetVenue["publicHolidays"];
                     this.newReservationDetails = this.targetVenue["reservationDetails"];
@@ -5909,6 +6211,7 @@ export default {
             console.log("email:", this.editEmail);
             console.log("phoneNumber:", this.editPhoneNumber);
             console.log("whatsappNumber:", this.editWhatsappNumber);
+            console.log("amenities:", this.editAmenities);
 
             this.editProfile = false;
 
@@ -5929,6 +6232,7 @@ export default {
                 email: this.editEmail,
                 phoneNumber: this.editPhoneNumber,
                 whatsappNumber: this.editWhatsappNumber,
+                amenities: this.editAmenities,
             };
             console.log("Payload object sans image:", payload);
 

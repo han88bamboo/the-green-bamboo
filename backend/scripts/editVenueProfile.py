@@ -44,6 +44,7 @@ def editDetails():
     email = data.get('email', '')
     phoneNumber = data.get('phoneNumber', '')
     whatsappNumber = data.get('whatsappNumber', '')
+    amenities = data.get('amenities', {})
 
     try:
         # Find existing venue
@@ -86,6 +87,91 @@ def editDetails():
                 (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, 
                  website, instagram, facebook, tiktok, email, phoneNumber, whatsappNumber, image64, venueID)
             )
+
+            # Update or insert amenities data
+            if amenities:
+                # Check if amenities record exists
+                cur.execute('SELECT id FROM "venueAmenities" WHERE "venueId" = %s', (venueID,))
+                existing_amenities = cur.fetchone()
+
+                amenities_data = (
+                    amenities.get('cardPayment', False),
+                    amenities.get('cashPayment', False),
+                    amenities.get('applePay', False),
+                    amenities.get('googlePay', False),
+                    amenities.get('crypto', False),
+                    amenities.get('wine', False),
+                    amenities.get('beer', False),
+                    amenities.get('spirits', False),
+                    amenities.get('cocktails', False),
+                    amenities.get('nonAlcoholic', False),
+                    amenities.get('coffee', False),
+                    amenities.get('food', False),
+                    amenities.get('wifi', False),
+                    amenities.get('parking', False),
+                    amenities.get('outdoorSeating', False),
+                    amenities.get('liveMusic', False),
+                    amenities.get('privateEvents', False),
+                    amenities.get('wheelchairAccessible', False),
+                    amenities.get('petFriendly', False),
+                    amenities.get('smokingArea', False),
+                    amenities.get('tvScreens', False),
+                    amenities.get('gameArea', False),
+                    amenities.get('danceFloor', False),
+                    amenities.get('rooftop', False),
+                    amenities.get('garden', False)
+                )
+
+                if existing_amenities:
+                    # Update existing amenities
+                    cur.execute(
+                        """
+                        UPDATE "venueAmenities" 
+                        SET 
+                            "cardPayment" = %s,
+                            "cashPayment" = %s,
+                            "applePay" = %s,
+                            "googlePay" = %s,
+                            "crypto" = %s,
+                            "wine" = %s,
+                            "beer" = %s,
+                            "spirits" = %s,
+                            "cocktails" = %s,
+                            "nonAlcoholic" = %s,
+                            "coffee" = %s,
+                            "food" = %s,
+                            "wifi" = %s,
+                            "parking" = %s,
+                            "outdoorSeating" = %s,
+                            "liveMusic" = %s,
+                            "privateEvents" = %s,
+                            "wheelchairAccessible" = %s,
+                            "petFriendly" = %s,
+                            "smokingArea" = %s,
+                            "tvScreens" = %s,
+                            "gameArea" = %s,
+                            "danceFloor" = %s,
+                            "rooftop" = %s,
+                            "garden" = %s
+                        WHERE "venueId" = %s
+                        """,
+                        amenities_data + (venueID,)
+                    )
+                else:
+                    # Insert new amenities record
+                    cur.execute(
+                        """
+                        INSERT INTO "venueAmenities" 
+                        ("venueId", "cardPayment", "cashPayment", "applePay", "googlePay", "crypto",
+                         "wine", "beer", "spirits", "cocktails", "nonAlcoholic", "coffee", "food",
+                         "wifi", "parking", "outdoorSeating", "liveMusic", "privateEvents",
+                         "wheelchairAccessible", "petFriendly", "smokingArea", "tvScreens",
+                         "gameArea", "danceFloor", "rooftop", "garden")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (venueID,) + amenities_data
+                    )
+
             conn.commit()
 
             return jsonify(

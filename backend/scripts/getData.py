@@ -70,6 +70,7 @@ import feedparser
 import re
 import requests
 import hashlib
+import traceback
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
 from bson import json_util
@@ -3939,6 +3940,12 @@ def getVenue(id):
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
                 v.email, v."phoneNumber", v."whatsappNumber",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
+                -- Build amenities JSON
+                COALESCE((
+                    SELECT row_to_json(va)
+                    FROM "venueAmenities" va
+                    WHERE va."venueId" = v.id
+                ), '{}'::json) AS amenities,
                 -- Build the menu JSON
                 COALESCE((
                     SELECT json_agg(json_build_object(
@@ -4012,6 +4019,7 @@ def getVenue(id):
         venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
         venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
         venue['updates'] = venue['updates'] if venue['updates'] else []
+        venue['amenities'] = venue['amenities'] if venue['amenities'] else {}
 
         return jsonify(venue), 200
 

@@ -53,6 +53,7 @@ DROP TABLE IF EXISTS "userProducerListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
+DROP TABLE IF EXISTS "venueAmenities" CASCADE;
 DROP TABLE IF EXISTS "venuesMenu" CASCADE;
 DROP TABLE IF EXISTS "venuesOpeningHours" CASCADE;
 DROP TABLE IF EXISTS "venuesProfileViews" CASCADE;
@@ -257,6 +258,63 @@ CREATE TABLE "venues" (
     "email" TEXT,
     "phoneNumber" TEXT,
     "whatsappNumber" TEXT
+);
+
+-- ========= "venueAmenities" =========
+CREATE TABLE "venueAmenities" (
+    "id" SERIAL PRIMARY KEY,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE CASCADE,
+    -- Payment Modes
+    "paymentCash" BOOLEAN DEFAULT FALSE,
+    "paymentVisa" BOOLEAN DEFAULT FALSE,
+    "paymentMasterCard" BOOLEAN DEFAULT FALSE,
+    "paymentAmericanExpress" BOOLEAN DEFAULT FALSE,
+    "paymentDiscover" BOOLEAN DEFAULT FALSE,
+    "paymentApplePay" BOOLEAN DEFAULT FALSE,
+    "paymentPayNow" BOOLEAN DEFAULT FALSE,
+    "paymentGooglePay" BOOLEAN DEFAULT FALSE,
+    "paymentSamsungPay" BOOLEAN DEFAULT FALSE,
+    -- Beverage Offerings
+    "beverageCocktails" BOOLEAN DEFAULT FALSE,
+    "beverageWine" BOOLEAN DEFAULT FALSE,
+    "beverageBeer" BOOLEAN DEFAULT FALSE,
+    "beverageWhisky" BOOLEAN DEFAULT FALSE,
+    "beverageBrandy" BOOLEAN DEFAULT FALSE,
+    "beverageTequila" BOOLEAN DEFAULT FALSE,
+    "beverageMezcal" BOOLEAN DEFAULT FALSE,
+    "beverageRum" BOOLEAN DEFAULT FALSE,
+    "beverageSake" BOOLEAN DEFAULT FALSE,
+    "beverageShochu" BOOLEAN DEFAULT FALSE,
+    "beverageSoju" BOOLEAN DEFAULT FALSE,
+    "beverageBaijiu" BOOLEAN DEFAULT FALSE,
+    "beverageGin" BOOLEAN DEFAULT FALSE,
+    "beverageVodka" BOOLEAN DEFAULT FALSE,
+    "beverageAbsinthe" BOOLEAN DEFAULT FALSE,
+    "beverageArrack" BOOLEAN DEFAULT FALSE,
+    -- Other Amenities (Yes/No)
+    "foodServed" BOOLEAN DEFAULT FALSE,
+    "outdoorSeating" BOOLEAN DEFAULT FALSE,
+    "indoorSeating" BOOLEAN DEFAULT FALSE,
+    "petFriendly" BOOLEAN DEFAULT FALSE,
+    "childFriendly" BOOLEAN DEFAULT FALSE,
+    "familyFriendly" BOOLEAN DEFAULT FALSE,
+    "smokeFriendly" BOOLEAN DEFAULT FALSE,
+    "wheelchairAccessibility" BOOLEAN DEFAULT FALSE,
+    "freeWiFi" BOOLEAN DEFAULT FALSE,
+    "happyHourDrinks" BOOLEAN DEFAULT FALSE,
+    "liveMusic" BOOLEAN DEFAULT FALSE,
+    "barGames" BOOLEAN DEFAULT FALSE,
+    "sommelierService" BOOLEAN DEFAULT FALSE,
+    "deliveryAvailable" BOOLEAN DEFAULT FALSE,
+    "lgbtqFriendly" BOOLEAN DEFAULT FALSE,
+    "reservationsRequired" BOOLEAN DEFAULT FALSE,
+    "membershipRequired" BOOLEAN DEFAULT FALSE,
+    "inStoreScheduling" BOOLEAN DEFAULT FALSE,
+    -- Custom amenities
+    "otherAmenities" TEXT,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("venueId")
 );
 
 -- create index 
