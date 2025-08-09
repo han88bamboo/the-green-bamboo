@@ -1,5 +1,4 @@
 <template>
-
   <!-- Additional business details and action buttons -->
   <div class="row mt-3 align-items-center">
     <!-- Left Column: Text Info -->
@@ -18,13 +17,24 @@
             {{ venue.website && venue.website.toString().trim() ? venue.website : 'n/a' }}
           </a>
           |
-          <strong>Instagram:</strong> {{ venue.instagram && venue.instagram.toString().trim() ?
-            venue.instagram :
-            'n/a' }}
+          <strong>Instagram:</strong> 
+          {{ venue.instagram && venue.instagram.toString().trim() ? venue.instagram : 'n/a' }}
+          | 
+          <strong>Facebook:</strong>
+          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
+          | 
+          <strong>Facebook:</strong>
+          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
+          | 
+          <strong>tiktok:</strong>
+          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
         </p>
         <p class="mb-0">
-          <strong>Phone:</strong> {{ venue.phone && venue.phone.toString().trim() ? venue.phone :
-            'n/a' }}
+          <strong>Phone:</strong> 
+          {{ venue.phone && venue.phone.toString().trim() ? venue.phone : 'n/a' }}
+          | 
+          <strong>WhatsApp:</strong>
+          {{ venue.whatsappNumber && venue.whatsappNumber.toString().trim() ? venue.whatsappNumber : 'n/a' }}
         </p>
       </div>
 
@@ -32,45 +42,45 @@
       <div v-else class="row mb-3">
         <div class="col-6">
           <label for="yearOpenedInput">Year Opened</label>
-          <input type="number" class="form-control mb-3" id="yearOpenedInput" v-model="editYearOpened" />
+          <input type="number" class="form-control mb-3" id="yearOpenedInput" v-model="localEditData.yearOpened" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="websiteInput">Website</label>
-          <input type="url" class="form-control mb-3" id="websiteInput" v-model="editWebsite" />
+          <input type="url" class="form-control mb-3" id="websiteInput" v-model="localEditData.website" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="instagramInput">Instagram</label>
-          <input type="url" class="form-control mb-3" id="instagramInput" v-model="editInstagram"
-            placeholder="https://www.instagram.com/yourhandle" />
+          <input type="url" class="form-control mb-3" id="instagramInput" v-model="localEditData.instagram"
+            placeholder="https://www.instagram.com/yourhandle" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="facebookInput">Facebook</label>
-          <input type="url" class="form-control mb-3" id="facebookInput" v-model="editFacebook"
-            placeholder="https://www.facebook.com/yourpage" />
+          <input type="url" class="form-control mb-3" id="facebookInput" v-model="localEditData.facebook"
+            placeholder="https://www.facebook.com/yourpage" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="tiktokInput">TikTok</label>
-          <input type="url" class="form-control mb-3" id="tiktokInput" v-model="editTiktok"
-            placeholder="https://www.tiktok.com/@yourhandle" />
+          <input type="url" class="form-control mb-3" id="tiktokInput" v-model="localEditData.tiktok"
+            placeholder="https://www.tiktok.com/@yourhandle" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="emailInput">Email</label>
-          <input type="email" class="form-control mb-3" id="emailInput" v-model="editEmail" />
+          <input type="email" class="form-control mb-3" id="emailInput" v-model="localEditData.email" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="phoneNumberInput">Phone No.</label>
-          <input type="tel" class="form-control mb-3" id="phoneNumberInput" v-model="editPhoneNumber" />
+          <input type="tel" class="form-control mb-3" id="phoneNumberInput" v-model="localEditData.phoneNumber" @input="handleInputChange" />
         </div>
         <div class="col-6">
           <label for="whatsappNumberInput">WhatsApp</label>
-          <input type="tel" class="form-control mb-3" id="whatsappNumberInput" v-model="editWhatsappNumber" />
+          <input type="tel" class="form-control mb-3" id="whatsappNumberInput" v-model="localEditData.whatsappNumber" @input="handleInputChange" />
         </div>
         <div class="col-12 d-flex align-items-center">
           <label class="me-3 mb-0">Open for Reservations:</label>
-          <input type="checkbox" id="openForReservationsCheckbox" v-model="editOpenForReservations" :true-value="true"
-            :false-value="false" />
+          <input type="checkbox" id="openForReservationsCheckbox" v-model="localEditData.openForReservations" :true-value="true"
+            :false-value="false" @change="handleInputChange" />
           <label for="openForReservationsCheckbox" class="ms-2">
-            {{ editOpenForReservations === true ? 'Yes' : 'No' }}
+            {{ localEditData.openForReservations === true ? 'Yes' : 'No' }}
           </label>
         </div>
       </div>
@@ -80,10 +90,10 @@
     <!-- Right Column: Buttons -->
     <div class="col-lg-4 col-md-5">
       <div class="d-flex align-items-center justify-content-md-end justify-content-center gap-2 mt-3 mt-md-0">
-        <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')">
+        <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')" :disabled="isEditing">
           {{ isFollowing ? '- Unfollow' : '+ Follow' }}
         </button>
-        <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal">
+        <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal" :disabled="isEditing">
           Review Venue
         </button>
       </div>
@@ -94,7 +104,7 @@
 <script>
 export default {
   name: 'VenueAddDetails',
-  emits: ["follow-clicked", 'review-clicked'], // declare emits
+  emits: ["follow-clicked", 'review-clicked', 'update:editData'], // declare emits
   props: {
     loading: Boolean,
 
@@ -129,26 +139,55 @@ export default {
         phone: ''
       })
     },
+  },
 
-    // Validation rules
-    validationRules: {
-      type: Object,
-      default: () => ({
-        venueName: { required: true, minLength: 2, maxLength: 100 },
-        country: { required: true, minLength: 2 },
-        venueType: { required: false },
-        venueDesc: { required: false, maxLength: 500 }
-      })
+  data() {
+    return {
+      localEditData: {
+        yearOpened: null,
+        website: '',
+        instagram: '',
+        facebook: '',
+        tiktok: '',
+        email: '',
+        phoneNumber: '',
+        whatsappNumber: '',
+        openForReservations: false
+      }
     }
   },
 
-  data() { },
+  watch: {
+    isEditing: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.initializeEditData();
+        }
+      }
+    },
+  },
 
-  computed: {},
-
-  watch: {},
-
-  methods: {}
+  methods: {
+    initializeEditData() {
+      this.localEditData.yearOpened = this.venue.yearOpened || null;
+      this.localEditData.website = this.venue.website || '';
+      this.localEditData.instagram = this.venue.instagram || '';
+      this.localEditData.facebook = this.venue.facebook || '';
+      this.localEditData.tiktok = this.venue.tiktok || '';
+      this.localEditData.email = this.venue.email || '';
+      this.localEditData.phoneNumber = this.venue.phone || '';
+      this.localEditData.whatsappNumber = this.venue.whatsappNumber || '';
+      this.localEditData.openForReservations = this.venue.reservations || false;
+    },
+    getEditData() {
+      return this.localEditData;
+    },
+    handleInputChange() {
+      this.$emit('update:editData', this.localEditData);
+    }
+  },
+  expose: ['getEditData']
 }
 </script>
 

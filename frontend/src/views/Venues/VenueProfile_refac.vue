@@ -889,9 +889,51 @@ export default {
                 }
             });
         },
-        saveProfileEdits() {
-            // Placeholder for saving profile edits
-            this.editProfile = false;
+
+        async saveProfileEdits(consolidatedData) {
+            console.log('Original consolidatedData:', consolidatedData);
+            try {
+                this.isSaving = true;
+                this.imageUploadLoading = true;
+
+                const formData = new FormData();
+                // Better iteration and debugging
+                Object.entries(consolidatedData).forEach(([key, value]) => {
+                    if (value !== null && value !== undefined && value !== '') {
+                        const apiFieldName = key === 'country' ? 'originLocation' : key;
+                        formData.append(apiFieldName, value);
+                    }
+                });
+
+                // Properly log FormData contents
+                console.log('FormData contents:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}: ${value}`);
+                }
+
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/venueInfo`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    timeout: 30000, // 30 second timeout
+                });
+
+                if (response.data && response.data.success) {
+                    this.targetVenue = { ...this.targetVenue, ...response.data.targetVenue };
+                    this.editProfile = false;
+                    // Show success message
+                    alert('Profile updated successfully!');
+                } else {
+                    const errorMessage = response.data?.message || 'Failed to update profile.';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Save profile error:', error);
+                alert('An error occurred while saving the profile.');
+            } finally {
+                this.isSaving = false;
+                this.imageUploadLoading = false;
+            }
         },
         handlePhotoUpdate(newPhoto) {
             // Placeholder for handling photo updates

@@ -11,13 +11,200 @@ from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
-
+from typing import Dict, Any, Optional, Tuple
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 # TODO: Create function using BOTO Library to upload images to the S3 bucket
 # TODO: Create function using BOTO Library to delete images from the S3 bucket
+
+# Amenities field mapping for dynamic processing
+AMENITIES_FIELDS = [
+    'paymentCash', 'paymentVisa', 'paymentMasterCard', 'paymentAmericanExpress',
+    'paymentDiscover', 'paymentApplePay', 'paymentPayNow', 'paymentGooglePay',
+    'paymentSamsungPay', 'beverageCocktails', 'beverageWine', 'beverageBeer',
+    'beverageWhisky', 'beverageBrandy', 'beverageTequila', 'beverageMezcal',
+    'beverageRum', 'beverageSake', 'beverageShochu', 'beverageSoju',
+    'beverageBaijiu', 'beverageGin', 'beverageVodka', 'beverageAbsinthe',
+    'beverageArrack', 'foodServed', 'outdoorSeating', 'indoorSeating',
+    'petFriendly', 'childFriendly', 'familyFriendly', 'smokeFriendly',
+    'wheelchairAccessibility', 'freeWiFi', 'happyHourDrinks', 'liveMusic',
+    'barGames', 'sommelierService', 'deliveryAvailable', 'lgbtqFriendly',
+    'reservationsRequired', 'membershipRequired', 'inStoreScheduling'
+]
+
+def process_image_upload(form_data: Dict[str, Any], current_photo: Optional[str]) -> Optional[str]:
+    """Handle image upload processing."""
+    if not form_data.get('image64'):
+        return current_photo
+    
+    try:
+        # Clean base64 string
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', form_data['image64'])
+        
+        # Delete old image if exists
+        if current_photo:
+            s3Images.deleteImageFromS3(current_photo)
+        
+        # Upload new image
+        return s3Images.uploadBase64ImageToS3(base64_string)
+    
+    except Exception as e:
+        print(f"Error processing image upload: {e}")
+        return current_photo
+
+def get_venue_by_id(cursor, venue_id: int) -> Optional[Dict[str, Any]]:
+    """Retrieve venue by ID."""
+    cursor.execute('SELECT * FROM venues WHERE id = %s', (venue_id,))
+    return cursor.fetchone()
+
+def validate_venue_data(data: Dict[str, Any]) -> Tuple[bool, str]:
+    """Validate required venue data fields."""
+    try:
+        venue_id = int(data.get('venueId'))
+        if venue_id <= 0:
+            return False, "Invalid venue ID"
+        return True, ""
+    except (ValueError, TypeError):
+        return False, "Venue ID is required and must be a valid integer"
+
+def extract_venue_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract and clean venue data from form."""
+    return {
+        'venueName': form_data.get('venueName', '').strip(),
+        'venueType': form_data.get('venueType', '').strip(),
+        'venueDesc': form_data.get('venueDesc', '').strip(),
+        'originLocation': form_data.get('originLocation', '').strip(),
+        'yearOpened': form_data.get('yearOpened') or None,
+        'openForReservations': form_data.get('openForReservations', 'false').lower() == 'true',
+        'website': form_data.get('website', '').strip(),
+        'instagram': form_data.get('instagram', '').strip(),
+        'facebook': form_data.get('facebook', '').strip(),
+        'tiktok': form_data.get('tiktok', '').strip(),
+        'email': form_data.get('email', '').strip(),
+        'phoneNumber': form_data.get('phoneNumber', '').strip(),
+        'whatsappNumber': form_data.get('whatsappNumber', '').strip()
+    }
+
+def update_venue_details(cursor, venue_data: Dict[str, Any], photo_url: str, venue_id: int):
+    """Update venue basic information."""
+    update_query = """
+        UPDATE venues 
+        SET "venueName" = %s, "venueType" = %s, "venueDesc" = %s, 
+            "originLocation" = %s, "yearOpened" = %s, "openForReservations" = %s,
+            "website" = %s, "instagram" = %s, "facebook" = %s, "tiktok" = %s,
+            "email" = %s, "phoneNumber" = %s, "whatsappNumber" = %s, "photo" = %s
+        WHERE id = %s
+    """
+    
+    cursor.execute(update_query, (
+        venue_data['venueName'], venue_data['venueType'], venue_data['venueDesc'],
+        venue_data['originLocation'], venue_data['yearOpened'], venue_data['openForReservations'],
+        venue_data['website'], venue_data['instagram'], venue_data['facebook'], venue_data['tiktok'],
+        venue_data['email'], venue_data['phoneNumber'], venue_data['whatsappNumber'], 
+        photo_url, venue_id
+    ))
+
+def extract_amenities_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract amenities data from form with dynamic field processing."""
+    amenities = {}
+    
+    # Process boolean fields
+    for field in AMENITIES_FIELDS:
+        amenities[field] = form_data.get(field, 'false').lower() == 'true'
+    
+    # Handle text field
+    amenities['otherAmenities'] = form_data.get('otherAmenities', '').strip()
+    
+    return amenities
+
+def upsert_venue_amenities(cursor, amenities: Dict[str, Any], venue_id: int):
+    """Insert or update venue amenities using efficient upsert."""
+    if not amenities:
+        return
+    
+    # Check if amenities exist
+    cursor.execute('SELECT EXISTS(SELECT 1 FROM "venueAmenities" WHERE "venueId" = %s)', (venue_id,))
+    result = cursor.fetchone()
+    exists = result['exists'] if isinstance(result, dict) else result[0]
+    
+    # Prepare amenities values
+    amenities_values = [amenities.get(field, False) for field in AMENITIES_FIELDS]
+    amenities_values.append(amenities.get('otherAmenities', ''))
+    
+    if exists:
+        # Update existing record
+        set_clause = ', '.join([f'"{field}" = %s' for field in AMENITIES_FIELDS + ['otherAmenities']])
+        update_query = f'UPDATE "venueAmenities" SET {set_clause} WHERE "venueId" = %s'
+        cursor.execute(update_query, amenities_values + [venue_id])
+    else:
+        # Insert new record
+        fields = '", "'.join(['venueId'] + AMENITIES_FIELDS + ['otherAmenities'])
+        placeholders = ', '.join(['%s'] * (len(AMENITIES_FIELDS) + 2))
+        insert_query = f'INSERT INTO "venueAmenities" ("{fields}") VALUES ({placeholders})'
+        cursor.execute(insert_query, [venue_id] + amenities_values)
+
+@blueprint.route('/venueInfo', methods=['POST'])
+def updateVenueInformation():
+    """Main endpoint for updating venue details."""
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Validate input data
+        form_data = request.form.to_dict()
+        is_valid, error_message = validate_venue_data(form_data)
+        if not is_valid:
+            return jsonify({"code": 400, "message": error_message}), 400
+        
+        venue_id = int(form_data['venueId'])
+        
+        # Check if venue exists
+        existing_venue = get_venue_by_id(cursor, venue_id)
+        if not existing_venue:
+            return jsonify({"code": 404, "message": "Venue not found."}), 404
+        
+        # Extract and process data
+        venue_data = extract_venue_data(form_data)
+        amenities_data = extract_amenities_data(form_data)
+        
+        # Handle image upload
+        photo_url = process_image_upload(form_data, existing_venue.get('photo'))
+        
+        # Update venue details
+        update_venue_details(cursor, venue_data, photo_url, venue_id)
+        
+        # Update amenities if provided
+        if amenities_data:
+            upsert_venue_amenities(cursor, amenities_data, venue_id)
+        
+        # Commit transaction
+        conn.commit()
+        
+        return jsonify({
+            "code": 201,
+            "message": "Updated profile successfully!"
+        }), 201
+        
+    except ValueError as e:
+        conn.rollback()
+        return jsonify({"code": 400, "message": f"Invalid data: {str(e)}"}), 400
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating venue: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred updating profile!"
+        }), 500
+    
+    finally:
+        cursor.close()
+
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit venue profile
@@ -231,7 +418,9 @@ def editDetails():
             ), 404
         
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
+
         return jsonify(
             {
                 "code": 500,
