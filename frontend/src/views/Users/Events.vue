@@ -496,7 +496,7 @@
 
                 <!--- Error message for error retrieving recent activity or no recent activtiy found -->
                 <div v-if="trendingEventsError" class="mt-3">
-                    <h2>{{ trendingEventsError }}</h2>
+                    <h6 mobile-fs-7>{{ trendingEventsError }}</h6>
                     <hr>
                 </div>
 

@@ -1813,3 +1813,14 @@ Add vintage support for venue profile menu mangement
 
 Nature of the changes (frontend / backend / database):
 frontend, backend, databse 
+
+# Update as of 9th Aug
+
+Coder: Kai  
+
+Purpose of the changes:
+-Added new "Drink X Features" section to landing page, swapped out more legible cover image, added SEO text on landing page, minor spacing adjustments to events and bottle listings page. 
+
+
+Nature of the changes (frontend / backend / database):
+frontend

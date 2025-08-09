@@ -511,11 +511,11 @@
         <div class="mt-2 g-0 row container scrollable mobile-view-show text-start">
           <div class="row Xcol-lg-12 pe-0 Xpadding-right-for-suggesteditslink-large-screen">
             <!--<div class="py-2"></div>-->
-            <div class="col-2">
+            <div class="col-3">
               <h6 class="text-body-secondary fst-italic mt-2">About</h6>
               <!--tzh added about-->
             </div>
-            <div class="col-10 mt-1 mb-0">
+            <div class="col-9 mt-1 mb-0">
               <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
                 <button type="button"
                   class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center">

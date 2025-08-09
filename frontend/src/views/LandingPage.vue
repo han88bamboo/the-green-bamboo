@@ -3,13 +3,17 @@
     <main>
     <!-- Hero Section with Search -->
     <section class="hero-section text-center">
-        <img src="../../Images/Background/landing_page_hero_image.webp" class="hero-bg" style="filter: brightness(0.7);"
+        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
-            <h1 class="mb-4 fw-bold display-5 mobile-fs-4">
+            <h1 class="mb-4 fw-bold display-5 mobile-fs-4 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
+            <h4 class=" mobile-fs-6 mobile-px-4 pb-4">
+                Drink X lets you search, discover, review and share any drink you want.
+            </h4>
+            
             <div class="row justify-content-center w-100">
                 <div class="col-12 col-md-8 col-lg-6">
                     <!-- <SearchBar :showSurpriseButton="true" class="w-100" /> -->
@@ -19,7 +23,7 @@
                     <div class="col-12 align-items-center justify-content-center ">
                         <router-link :to="'/explore'">
                             <button
-                                class="btn btn-md text-white fw-bold"
+                                class="btn btn-md text-white fw-bold mobile-rating-smaller-text-2"
                                 style="background-color: #83a9e8; margin-top: 1rem;"
                                 aria-label="Surprise Me!"
                             >
@@ -34,133 +38,11 @@
 
     <!-- Hero End -->
 
-    <!-- Icon Section -->
-    <section class="container py-4">
-        <div class="row g-2">
-            <!-- Desktop View -->
-            <div class="d-none d-md-flex align-items-start gap-3 mb-3">
-                <h2 class="fw-bold mb-0" style="color: #027562;">Our Features</h2>
-            </div>
-            <!-- Mobile View -->
-            <div class="d-md-none">
-                <h2 class="fw-bold mobile-fs-5 m-2 text-start" style="color: #027562;">Our Features</h2>
-            </div>
-            <!-- Feature 1 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/login'">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer1.png" alt="Log your drink reviews and share your favorites" class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="'/login'" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Log Your Drink Reviews and Share Your Favorites
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- Feature 2 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/clubs/view'">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer2.png" alt="Find your communities and join events"
-                                    class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="'/clubs/view'" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Find Your Communities and Join Events
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- Feature 3 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/explore'">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer3.png" alt="Discover new drinks and find crowdsourced reviews"
-                                    class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="'/explore'" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Discover New Drinks and Find Crowdsourced Reviews
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/clubs/view'">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer4.png" alt="Connect with your favorite bars and brands" class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="'/clubs/view'" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Connect With Your Favorite Bars and Brands
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- Feature 5 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="'/clubs/view'">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer5.png" alt="Find nearby producers and venues" class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="'/clubs/view'" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Find Nearby Producers and Venues
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-
-            <!-- Feature 6 -->
-            <div class="col-lg-2 col-md-4 col-6 mb-4">
-                <div class="d-flex flex-lg-column flex-row align-items-center h-100">
-                    <router-link :to="safeProfileRoute">
-                        <button class="btn border-0 fw-bold tilt-hover" type="button">
-                            <div class="mb-lg-3 icon-container">
-                                <img src="../../Images/Landing Page/Layer6.png" alt="Start collecting points and badges from your first review" class="img-fluid" loading="lazy" />
-                            </div>
-                        </button>
-                    </router-link>
-                    <router-link :to="safeProfileRoute" class="text-link">
-                        <h3 class="mb-0 text-lg-center text-start mobile-fs-7 d-flex align-items-center caption-height h6">
-                            Start Collecting Points and Badges From Your First Review
-                        </h3>
-                    </router-link>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Icon End -->
+    
 
     <!-- Trending Section -->
-    <section style="background-color: wheat;">
-        <div class="container p-4">
+    <section >
+        <div class="container p-4 pb-0">
             <div class="container pb-0">
                 <!-- Trending and Description in One Row -->
                 <div class="d-md-flex text-start gap-3 mb-3">
@@ -252,6 +134,97 @@
         </div>
     </section>
     <!-- Trending End -->
+
+    <section class="hero-wrapper position-relative">
+      <div class="container">
+        <div class="d-flex flex-wrap align-items-center">
+          <div class="col-1 mobile-view-hide"></div>
+          <!-- RIGHT COLUMN: IMAGE -->
+          <div class="col-8 pb-4 text-start" style="min-height:250px">
+            <div class="container position-relative">
+              <br class="mobile-view-hide">
+              <h1 class="fw-bold my-3">Why You'll Love <span style="color: #f04444;">Drink-X</span></h1>
+              <h4 class="mb-2 mobile-fs-6">
+                Drink X (Drink-X) is a global platform to discover, review, and track every drink you try, whilst connecting with bars, producers and drinking buddies.
+              </h4>
+              
+            </div>
+          </div>
+          
+          <!-- LEFT COLUMN: TEXT -->
+          <div class="col-10 col-md-5 text-center text-md-start mb-3 mb-md-0">
+            
+          </div>
+          <div class="col-1"></div>
+
+          
+        </div>
+      </div>
+      
+      <!-- Juicebox image -->
+      <img src="../assets/Venue_Juicebox.png" alt="Juicebox"
+        class="juicebox-img">
+      <!-- Red sloped block -->
+      <div class="red-slope"></div>
+    </section>
+    <section class="features text-center py-4" style="background-color: #f04444;">
+      <div class="container">
+        <h2 class="mobile-fs-2 fw-bold mb-4 mt-0" style="color:white">Drink-X's Features</h2>
+        <div class="row row-cols-2 row-cols-md-3 g-3">
+          <!-- Feature 1 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/insights.png" alt="Insights" class="img-fluid mb-2 rounded" style="max-width: 120px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">Log Reviews Of Any Drink You Want: Wine to Whisky, Sake to Stout ✏️</p>
+            </div>
+          </div>
+          
+
+          <!-- Feature 2 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../assets/defaultGroupBanner.png" alt="Fan Club" class="img-fluid mb-2 rounded" style="max-width: 120px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🍻 Invite Friends and See What They're Sipping!</p>
+            </div>
+          </div>
+          
+
+          <!-- Feature 3 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/Layer5.png" alt="Show Menu" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🍸 Eyeing a Drink? Find Venues Nearby That Serve It</p>
+            </div>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/footer4.png" alt="Q&As" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">💭 Geeking Out? Ask Your Favourite Producers Your Burning Questions</p>
+            </div>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="../../Images/Landing Page/footer5.png" alt="Host Events" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🎉 Host & Join Events with Your Drink Buddies </p>
+            </div>
+          </div>
+          
+          <!-- Feature 6 -->
+          <div class="col">
+            <div class="p-3 h-100 d-flex flex-column align-items-center justify-content-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px;">
+              <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/DrinkXBadgesIcon.png?v=1751982535" alt="List Venue" class="img-fluid mb-2" style="max-width: 80px;">
+              <p class="default-body-text-no-background mb-0 fw-bold mobile-rating-smaller-text-2">🌟 Start Collecting Badges From Your First Review</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+   
 
     <!-- Editorial Section -->
     <editorialSection 
@@ -451,7 +424,7 @@ export default {
             meta: [
                 {
                     name: 'keywords',
-                    content: 'drink reviews, cocktail recipes, spirits, whiskey, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
+                    content: 'drinkx, drink x, drink-x, drink reviews, cocktail recipes, spirits, whiskey, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
                 },
                 {
                     name: 'author',
@@ -502,7 +475,7 @@ export default {
             useSeoMeta({
                 // Basic SEO
                 title: 'Drink-X | A World of Drinks - Just Look It Up!',
-                description: 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                description: 'Discover your next great drink on Drink X! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
 
                 // Open Graph (Facebook, LinkedIn, etc.)
                 ogTitle: 'Drink-X | A World of Drinks - Just Look It Up!',
@@ -895,10 +868,15 @@ button.btn.selected {
     /* overflow: hidden; */
 }
 
+@media (max-width: 767px) {
+    .hero-section {
+        padding-top: 80%; /* taller mobile height */
+    }
+}
+
 @media (min-width: 768px) {
     .hero-section {
-        padding-top: 28%;
-        /* desktop: 2:6 = 1:3 */
+        padding-top: 28%; /* desktop height stays the same */
     }
 }
 
@@ -912,4 +890,32 @@ button.btn.selected {
     filter: brightness(0.7);
     z-index: -1;
 }
+
+
+  .hero-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.red-slope {
+  position: absolute;
+  bottom: -40px; /* Push slope down below the hero section */
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: #f04444;
+  clip-path: polygon(100% 0, 0 60%, 0 100%, 100% 100%);
+  z-index: 1;
+}
+
+.juicebox-img {
+  position: absolute;
+  bottom: 50px;
+  right: 30px; /* Slight padding from the right edge for balance */
+  width: 120px; /* Or larger if needed for impact */
+  z-index: 3; /* Ensure it's above the red slope */
+  transform: translateY(30%); /* Nudge it downward to float over the slope */
+}
+
+
 </style>
