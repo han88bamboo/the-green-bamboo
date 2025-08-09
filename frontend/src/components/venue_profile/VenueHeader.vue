@@ -274,14 +274,8 @@ export default {
          * Confirm exit from edit mode
          */
         confirmExitEdit() {
-            // Check if there are unsaved changes
-            if (this.hasUnsavedChanges()) {
-                if (confirm('You have unsaved changes. Are you sure you want to exit without saving?')) {
-                    this.exitEditMode()
-                }
-            } else {
-                this.exitEditMode()
-            }
+            this.exitEditMode();
+            this.toggleEditProfile();
         },
 
         /**
