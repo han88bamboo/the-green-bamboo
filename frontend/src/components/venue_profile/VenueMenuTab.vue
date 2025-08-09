@@ -14,7 +14,7 @@
                 <p class="fs-5 fw-bold m-0">{{ (menu && menu.length) || 0 }} Drinks On The Menu</p>
                 <div v-if="isSelfView" class="d-flex gap-2">
                     <button class="btn btn-outline-primary">Edit Menu</button>
-                    <button class="btn btn-outline-secondary">Share Menu</button>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#shareMenuModal">Share Menu</button>
                 </div>
             </div>
 
@@ -136,6 +136,7 @@ export default {
         isSelfView: Boolean,
         menu: Array
     },
+    emits: ['section-load-error', 'share-menu-clicked'],
     mounted() {
         // Ensure isExpanded exists for reactivity
         if (this.menu && this.menu.length > 0) {

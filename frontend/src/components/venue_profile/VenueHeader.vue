@@ -58,11 +58,14 @@
             </VenueDetails>
 
             <VenueAddDetails :venue="venue" :isFollowing="isFollowing" :is-editing="isEditing"
+                :isOwner="isOwner" :isAdmin="isAdmin"
                 @follow-clicked="$emit('follow-clicked')"
                 @review-clicked="$emit('review-clicked')"
                 @update:editData="handleVenueDetailsUpdate"
                 ref="venueAddDetailsRef"
             />
+
+            <!-- Amenity badge section -->
         </div>
 
         <!-- Empty State -->
@@ -96,6 +99,16 @@ export default {
         isSelfView: Boolean,
         isPowerView: Boolean,
         isEditing: Boolean,
+        
+        isOwner: {
+            type: Boolean,
+            default: false
+        },
+
+        isAdmin: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {

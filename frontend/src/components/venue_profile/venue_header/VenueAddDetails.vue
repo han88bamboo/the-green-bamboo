@@ -90,10 +90,10 @@
     <!-- Right Column: Buttons -->
     <div class="col-lg-4 col-md-5">
       <div class="d-flex align-items-center justify-content-md-end justify-content-center gap-2 mt-3 mt-md-0">
-        <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')" :disabled="isEditing">
+        <button class="btn fw-bold action-btn" @click="$emit('follow-clicked')" :disabled="isEditing || isOwner">
           {{ isFollowing ? '- Unfollow' : '+ Follow' }}
         </button>
-        <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal" :disabled="isEditing">
+        <button class="btn fw-bold action-btn" data-bs-toggle="modal" data-bs-target="#venueReviewModal" :disabled="isEditing || isOwner">
           Review Venue
         </button>
       </div>
@@ -107,6 +107,16 @@ export default {
   emits: ["follow-clicked", 'review-clicked', 'update:editData'], // declare emits
   props: {
     loading: Boolean,
+
+    isOwner: {
+      type: Boolean,
+      default: false
+    },
+
+    isAdmin: {
+      type: Boolean,
+      default: false
+    },
 
     // Whether component is in edit mode
     isEditing: {

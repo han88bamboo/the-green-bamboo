@@ -163,15 +163,15 @@
           </template>
           <div v-else>
             <div v-if="venue && venue.venueDesc && venue.venueDesc.length > descriptionLimit">
-              <p v-if="!showFullDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+              <!-- <p v-if="!showFullDescription" class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                 {{ truncatedDescription }}
                 <a @click="showFullDescription = true" 
                    class="text-primary fw-bold text-decoration-none"
                    style="cursor: pointer;">
                   (Read More)
                 </a>
-              </p>
-              <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+              </p> -->
+              <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                 {{ venue.venueDesc }}
                 <a @click="showFullDescription = false" 
                    class="text-primary fw-bold text-decoration-none"
@@ -283,9 +283,6 @@ export default {
         venueType: '',
         venueDesc: ''
       },
-
-      // Show/hide full description
-      showFullDescription: false,
 
       // Validation errors
       errors: {},

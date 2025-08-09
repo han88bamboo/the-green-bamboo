@@ -101,7 +101,7 @@ Normal User (Anonymous & Logged-In)
                 <!-- Venue Header -->
                 <VenueHeader :isLoading="isLoadingVenue"
                     :venue="targetVenue" :isFollowing="isFollowing"
-                    :is-self-view="isOwner" :is-power-view="isAdmin"
+                    :isOwner="isOwner" :isAdmin="isAdmin"
                     :is-editing="editProfile" @toggle-edit="editProfile = !editProfile" 
                     @save-profile="saveProfileEdits" @photo-updated="handlePhotoUpdate" 
                     @follow-clicked="handleFollowClick"
@@ -124,7 +124,8 @@ Normal User (Anonymous & Logged-In)
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
                         <VenueMenuTab :menu="menuSections" :is-self-view="isOwner"
-                            :claim-status="targetVenue.claimStatus" />
+                            :claim-status="targetVenue.claimStatus"        
+                        />
                     </div>
 
                     <!-- Reviews Tab -->
@@ -151,6 +152,10 @@ Normal User (Anonymous & Logged-In)
       :venueId="targetVenue.id"
       :filteredVenueReviews="filteredVenueReviews"
     />
+
+    <VenueQRModal 
+      :pageURL="pageURL"
+    /> 
 </template>
 
 <script>
@@ -161,8 +166,13 @@ import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
 import VenueOverviewTab from '@/components/venue_profile/VenueOverviewTab.vue';
 import VenueMenuTab from '@/components/venue_profile/VenueMenuTab.vue';
 import VenueReviewsTab from '@/components/venue_profile/VenueReviewsTab.vue';
-import VenueReviewModal from '@/components/venue_profile/VenueReviewModal.vue';
 import ProfileSidebar from '@/components/elements/ProfileSidebar.vue';
+
+import VenueReviewModal from '@/components/venue_profile/VenueReviewModal.vue';
+import VenueQRModal from '@/components/venue_profile/VenueQRModal.vue';
+
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 // Constants and utilities
 const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -233,9 +243,16 @@ export default {
         VenueOverviewTab,
         VenueMenuTab,
         VenueReviewsTab,
-        VenueReviewModal,
         ProfileSidebar,
+        VenueReviewModal,
+        VenueQRModal,
     },
+    setup() {
+        const route = useRoute()
+        const pageURL = `${process.env.VUE_APP_BASE_URL}` + computed(() => route.fullPath)
+        
+        return { pageURL }
+    }, 
     data() {
         return {
             // Caching and performance
@@ -347,7 +364,7 @@ export default {
                 this.targetVenue = this.viewerID;
                 this.targetVenueID = this.viewerID;
                 this.userName = this.userName || ''; // Ensure it's not undefined
-                this.currentURL = `${this.currentURL}/${this.targetVenue}/${this.userName}`;
+                this.pageURL = `${this.pageURL}/${this.targetVenue}/${this.userName}`;
             }
             else {
                 // Redirect non-venue users without venueID
@@ -484,51 +501,6 @@ export default {
                 }));
             }
         },
-
-        // Fetch serving types
-        // async fetchServingTypes() {
-        //     try {
-        //         const response = await this.$axios.get(
-        //             `${process.env.VUE_APP_API_URL}/getData/getServingTypes`
-        //         );
-        //         this.servingTypes = response.data;
-        //         this.getDefaultServingType();
-        //         this.initializeMultipleItemsDefaultServingTypes();
-        //     } catch (error) {
-        //         console.error('Error fetching serving types:', error);
-        //     }
-        // },
-
-        // // Get Default Serving Type
-        // getDefaultServingType() {
-        //     try {
-        //         const defaultServing = this.servingTypes.find(s => s.servingType === "-");
-        //         if (defaultServing) {
-        //             this.newMenuItemServingType = defaultServing.id;
-        //         } else {
-        //             console.error('No serving type with "-" found. Setting a default id.');
-        //             this.newMenuItemServingType = 1;  // Or set to a specific default id, e.g. 1
-        //         }
-        //     } catch (error) {
-        //         console.error(error);
-        //     }
-        // },
-
-        // // Initialize Default Serving Types for Multiple Items
-        // initializeMultipleItemsDefaultServingTypes() {
-        //     try {
-        //         const defaultServing = this.servingTypes.find(s => s.servingType === "-");
-        //         const defaultId = defaultServing ? defaultServing.id : 1;
-
-        //         this.multipleMenuItems.forEach(item => {
-        //             if (!item.newMenuItemServingType) {
-        //                 item.newMenuItemServingType = defaultId;
-        //             }
-        //         });
-        //     } catch (error) {
-        //         console.error(error);
-        //     }
-        // },
 
         // Process map data with better error handling
         async processMapData(address) {
@@ -946,6 +918,16 @@ export default {
             this.loadedProducers.clear();
         },
 
+        openShareModal() {
+            if (this.shareModalInstance) {
+                this.shareModalInstance.show();
+            }
+        },
+
+        copyPageURL() {
+            this.copyToClipboard(this.pageURL);
+        },
+
         async handleFollowClick() {
             // based on click we swap between true and false
             this.isFollowing = !this.isFollowing
@@ -970,6 +952,19 @@ export default {
             }
         },
 
+        // Copy to Clipboard
+        copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    this.clipboardCopied = true;
+                    setTimeout(() => {
+                        this.clipboardCopied = false;
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+        },
         
     },
     // Lifecycle hooks
