@@ -1,10 +1,42 @@
 <template>
     <div class="d-flex flex-column gap-4">
+        <!-- View Analytics Button (Venue) -->
+        <div v-if="isSelfView">
+            <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/dashboard/venue' }">
+                <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;"> View
+                    My Analytics
+                </button>
+            </router-link>
+
+            <!-- v-if admincreated account, if yes dont show -->
+            <router-link v-if="!adminCreated" class="d-grid pb-3 text-decoration-none"
+                :to="{ path: '/business/settings' }">
+                <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;">
+                    Settings
+                </button>
+            </router-link>
+
+            <div v-else class="d-grid pb-3 text-decoration-none">
+                <button class="btn secondary-btn-not-rounded rounded-0" type="button" style=" font-weight: bold;"
+                    disabled>
+                    Settings 
+                </button>
+            </div>
+
+            <!-- Button for change/reset password -->
+            <div class="d-grid pb-0 text-decoration-none">
+                <button type="button" class="btn secondary-btn-not-rounded rounded-0" data-bs-toggle="modal"
+                    data-bs-target="#changePasswordModal">
+                    Change/Reset Password
+                </button>
+            </div>
+        </div>
+
         <!-- Q&A Box -->
         <div class="border rounded p-3 shadow-sm square primary-square-green rounded mb-0">
 
             <h5 class="fw-bold mb-3">Q&As for {{ venue.venueName }}</h5>
-            
+
             <div v-if="loading">
                 <div class="spinner-border spinner-border-sm text-light me-2" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -13,7 +45,8 @@
             </div>
             <div v-else>
                 <!-- Unclaimed View -->
-                <div v-if="!venue.claimStatus" class="text-center py-1 m-1 rounded" style="background-color: rgb(221, 200, 169); margin: 10px; color:black">
+                <div v-if="!venue.claimStatus" class="text-center py-1 m-1 rounded"
+                    style="background-color: rgb(221, 200, 169); margin: 10px; color:black">
                     <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2">Do you own this business?</p>
                     <p>Sign up for a venue account to answer questions from your fans!</p>
                     <button class="btn btn-warning fw-bold">Claim This Business</button>
@@ -38,10 +71,10 @@
             <div v-if="loading" class="bg-secondary text-white text-center py-5 rounded">
                 <!-- Loading state -->
                 <div class="text-center py-2">
-                <div class="spinner-border spinner-border-sm text-light me-2" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <span class="text-muted fst-italic">Loading map data...</span>
+                    <div class="spinner-border spinner-border-sm text-light me-2" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="text-muted fst-italic">Loading map data...</span>
                 </div>
             </div>
             <!-- Map -->
@@ -54,7 +87,7 @@
         <!-- Opening Hours Box -->
         <div class="square primary-square-green-outline rounded p-3 mb-0">
             <h5 class="fw-bold mb-3">Opening Hours and Reservation Details</h5>
-            
+
             <div v-if="loading">
                 <div class="spinner-border spinner-border-sm text-light me-2" role="status">
                     <span class="visually-hidden">Loading...</span>
@@ -122,11 +155,11 @@ export default {
         return {
             // construct our own mapmarker so that we do not 
             // duplicate known values so many times 
-            mapMarkers: [{ 
-                position: { 
-                    lat: this.venue?.loc?.lat || 0, 
-                    lng: this.venue?.loc?.long || 0 
-                } 
+            mapMarkers: [{
+                position: {
+                    lat: this.venue?.loc?.lat || 0,
+                    lng: this.venue?.loc?.long || 0
+                }
             }]
         }
     },
@@ -144,5 +177,4 @@ export default {
 }
 </script>
 
-<style scoped>
-</style>
+<style scoped></style>

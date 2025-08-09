@@ -39,7 +39,7 @@
       </div>
 
       <!-- Actions Slot (for claim venue, edit profile buttons) -->
-      <div class="col-5 mobile-view-hide">
+      <div class="col-5">
         <slot name="actions">
 
         </slot>

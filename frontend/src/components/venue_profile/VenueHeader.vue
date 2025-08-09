@@ -42,22 +42,29 @@
                             ✓ Verified Venue
                         </p>
                     </div>
-
                     <!-- Edit Profile Toggle -->
                     <div class="d-grid no-padding text-end" v-else>
                         <button v-if="!editProfile" type="button"
                             class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text"
                             @click="toggleEditProfile">
-                            Edit Profile
+                            <i class="bi bi-pencil-square"></i>
+                            <span class="d-none d-lg-inline ms-2">Edit Profile</span>
                         </button>
 
-                        <button v-else type="button" class="btn success-btn rounded-0 reverse-clickable-text"
-                            @click="saveProfileEdits" :disabled="!isFormValid || isSaving">
-                            <span v-if="isSaving" class="spinner-border spinner-border-sm me-2" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </span>
-                            {{ isSaving ? 'Saving...' : 'Save' }}
-                        </button>
+                        <div v-else class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn success-btn rounded-0 reverse-clickable-text"
+                                @click="saveProfileEdits" :disabled="!isFormValid || isSaving">
+                                <span v-if="isSaving" class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </span>
+                                <i v-else class="bi bi-save"></i>
+                                <span class="d-none d-lg-inline ms-2">{{ isSaving ? 'Saving...' : 'Save' }}</span>
+                            </button>
+                            <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text" @click="confirmExitEdit" :disabled="isSaving">
+                                <i class="bi bi-x-circle"></i>
+                                <span class="d-none d-lg-inline ms-2">Cancel</span>
+                            </button>
+                        </div>
                     </div>
                 </template>
 
