@@ -18,7 +18,7 @@
                 ref="venueDetailsRef">
                 <!-- Actions slot for buttons -->
                 <template #actions>
-                    <div class="d-grid no-padding text-end" v-if="!isSelfView && !isPowerView">
+                    <div class="d-grid no-padding text-end" v-if="!isOwner && !isAdmin">
                         <!-- Claim Venue -->
                         <p v-if="!venue.claimStatus"
                             class="text-body-secondary no-margin text-decoration-underline fst-italic"
@@ -96,8 +96,6 @@ export default {
             required: true,
         },
         isFollowing: Boolean, 
-        isSelfView: Boolean,
-        isPowerView: Boolean,
         isEditing: Boolean,
         
         isOwner: {

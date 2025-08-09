@@ -249,7 +249,7 @@ export default {
     },
     setup() {
         const route = useRoute()
-        const pageURL = `${process.env.VUE_APP_BASE_URL}` + computed(() => route.fullPath)
+        const pageURL = computed(() => `${process.env.VUE_APP_BASE_URL}${route.fullPath}`)
         
         return { pageURL }
     }, 
@@ -954,6 +954,8 @@ export default {
 
         // Copy to Clipboard
         copyToClipboard(text) {
+            // if (process.server) return; // Skip on server-side for nuxt js 
+
             navigator.clipboard.writeText(text)
                 .then(() => {
                     this.clipboardCopied = true;
