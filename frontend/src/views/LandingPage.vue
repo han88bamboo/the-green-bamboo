@@ -7,7 +7,7 @@
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
-            <h1 class="mb-4 fw-bold display-5 mobile-fs-4 mobile-px-4">
+            <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
             <h4 class=" mobile-fs-6 mobile-px-4 pb-4">
@@ -20,7 +20,7 @@
                     <AutocompleteSearch @select="handleSelection" />
 
                     <!-- surprise me button -->
-                    <div class="col-12 align-items-center justify-content-center ">
+                    <div class="col-12 align-items-center justify-content-center mb-4">
                         <router-link :to="'/explore'">
                             <button
                                 class="btn btn-md text-white fw-bold mobile-rating-smaller-text-2"
@@ -140,10 +140,10 @@
         <div class="d-flex flex-wrap align-items-center">
           <div class="col-1 mobile-view-hide"></div>
           <!-- RIGHT COLUMN: IMAGE -->
-          <div class="col-8 pb-4 text-start" style="min-height:250px">
+          <div class="col-9 pb-4 text-start" style="min-height:250px">
             <div class="container position-relative">
               <br class="mobile-view-hide">
-              <h1 class="fw-bold my-3">Why You'll Love <span style="color: #f04444;">Drink-X</span></h1>
+              <h2 class="fw-bold my-3">Why You'll Love <span style="color: #f04444;">Drink-X</span></h2>
               <h4 class="mb-2 mobile-fs-6">
                 Drink X (Drink-X) is a global platform to discover, review, and track every drink you try, whilst connecting with bars, producers and drinking buddies.
               </h4>
