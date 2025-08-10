@@ -87,7 +87,7 @@
                                                             {{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV'}} 
                                                         </p>
                                                         <p class="card-text fw-medium mb-0 text-start">
-                                                            ${{ item.itemPrice }} / {{ item.servingType }}
+                                                            {{ item.itemPrice === -1 ? '-' : `$ ${item.itemPrice} / ${item.servingType}` }}
                                                         </p>
                                                         <!-- Availability -->
                                                         <p v-if="item.itemAvailability == false"

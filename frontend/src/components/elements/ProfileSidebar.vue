@@ -133,6 +133,17 @@
             </div>
 
         </div>
+
+        <!-- Event Box -->
+        <div class="square primary-square-green-outline rounded p-3 mb-0">
+            <div class="d-flex justify-content-between align-items-center mb-0">
+                <h5 class="fw-bold">Upcoming Events</h5>
+                <button v-if="isSelfView" class="btn btn-sm btn-outline-secondary">Edit</button>
+            </div>
+            <p v-if="loading" class="text-start">retrieving events ... </p>
+            <p v-else class="text-start">{{ venue.events? venue.events : 'No events added yet.' }}</p>
+        </div>
+
     </div>
 </template>
 

@@ -117,8 +117,10 @@ Normal User (Anonymous & Logged-In)
                     <!-- Overview Tab -->
                     <div v-show="contentMode === 'overview'" id="overview-section">
                         <VenueOverviewTab :updates="targetVenue.updates" :venue-name="targetVenue.venueName"
-                            :is-self-view="isOwner" :overview="overview"
-                            :user-info="userInfo" />
+                            :isOwner="isOwner" :overview="overview"
+                            :user-info="userInfo" 
+                            @submit-update="handleUpdateSubmit"    
+                        />
                     </div>
 
                     <!-- Menu Tab -->
@@ -311,6 +313,9 @@ export default {
                 ra_recentlyAdded: [] // recently added list
             },
 
+            // Properties to hold data from the child component
+            updateText: '',
+            updatePhoto: null,
              
         };
     },
@@ -323,9 +328,9 @@ export default {
         // check if user has the prviledge to run owner rights
         this.isOwner = this.checkOwnerPriviledge();
         
-        console.log('-------------------------------')
-        console.log(this.isOwner)
-        console.log('-------------------------------')
+        // console.log('-------------------------------')
+        // console.log(this.isOwner)
+        // console.log('-------------------------------')
 
         // set basic information to get fetch venue information and checks 
         this.handleVenueRoute()
@@ -334,6 +339,33 @@ export default {
         this.getVenueData();
     },
     methods: {
+        handleUpdateSubmit(updateData) {
+            // Store the received data
+            this.updateText = updateData.text;
+            this.updatePhoto = updateData.photo;
+
+            // Log to console for verification
+            // console.log('Received update text:', this.updateText);
+            // console.log('Received update photo (base64):', this.updatePhoto);
+            // alert('Update received! Check the console for the data.');
+
+            // --- Placeholder for backend submission ---
+            const payload = {
+                venueID: this.targetVenue.id,
+                date: new Date().toISOString(), // backend expects this exact format
+                text: this.updateText,
+                image64: this.updatePhoto
+            };
+
+            this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addUpdates`, payload)
+                .then(() => {
+                    this.getVenueData();
+                })
+                .catch(error => {
+                    console.error('Error posting update:', error);
+                });
+            
+        },
         // Logic to determine if the current viewer is the owner of the venue profile
         checkOwnerPriviledge() {
             const isVenueOwner =
@@ -342,11 +374,11 @@ export default {
             // Power users have owner privileges for claimed venues
             const isPowerUserWithClaim =
                 this.isAdmin && Boolean(this.targetVenue.claimStatus);
-            console.log('viewerType : ', this.viewerType)
-            console.log('viewerID : ', this.viewerID)
-            console.log('targetVenue', this.targetVenue)
-            console.log('veunue owner : ', isVenueOwner)
-            console.log('power user : ', isPowerUserWithClaim)
+            // console.log('viewerType : ', this.viewerType)
+            // console.log('viewerID : ', this.viewerID)
+            // console.log('targetVenue', this.targetVenue)
+            // console.log('veunue owner : ', isVenueOwner)
+            // console.log('power user : ', isPowerUserWithClaim)
             return isVenueOwner || isPowerUserWithClaim;
         },
 
@@ -399,7 +431,7 @@ export default {
 
             try {
                 const venueData = await this.fetchVenueDetails();
-                console.log(venueData);
+                // console.log(venueData);
                 if (!venueData) {
                     this.venueExists = false;
                     return;
@@ -415,7 +447,7 @@ export default {
                     this.processMapData(venueData.address),
                     this.processClaimStatus(venueData)
                 ]);
-                console.log(this.menuSections)
+                // console.log(this.menuSections)
 
                 this.venueExists = true;
                 // await this.loadMenuData(); 
@@ -863,7 +895,7 @@ export default {
         },
 
         async saveProfileEdits(consolidatedData) {
-            console.log('Original consolidatedData:', consolidatedData);
+            // console.log('Original consolidatedData:', consolidatedData);
             try {
                 this.isSaving = true;
                 this.imageUploadLoading = true;
@@ -878,10 +910,9 @@ export default {
                 });
 
                 // Properly log FormData contents
-                console.log('FormData contents:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
-                }
+                // for (let [key, value] of formData.entries()) {
+                //     console.log(`${key}: ${value}`);
+                // }
 
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/venueInfo`, formData, {
                     headers: {
