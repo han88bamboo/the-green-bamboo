@@ -992,16 +992,18 @@
                           <!-- Combined Input Field -->
                           <div class="input-group mb-2">
                             <div class="location-input-wrapper" style="position: relative; width: 100%;">
-                              <input 
-                                type="text"
-                                v-model="locationInputValue"
-                                placeholder="Add location (venue or home)" 
+                              <GMapAutocomplete 
+                                placeholder="Tag where you tasted this drink" 
+                                @place_changed="setPlaceFromAutocomplete"
                                 @input="onLocationInput"
                                 @focus="onLocationFocus"
                                 @blur="onLocationBlur"
                                 @keydown="onLocationKeydown"
                                 class="form-control input-with-icon" 
-                                ref="locationInput">
+                                ref="locationInput"
+                                :value="locationInputValue"
+                                :options="{ types: ['establishment'] }">
+                              </GMapAutocomplete>
                             </div>
                           </div>
                         </div>
@@ -2657,7 +2659,6 @@ export default {
       selectedLocationId: "",
       showHomeOption: false, // Controls visibility of home option dropdown
       locationInputValue: "", // Separate input value for the location field
-      autocompleteInstance: null, // Google Maps autocomplete instance
       extendObservation: false,
       loggedIn: false,
       userID: "defaultUser",
@@ -4136,11 +4137,10 @@ export default {
       this.selectedLocationAddress = "";
       this.locationInputValue = "";
       this.showHomeOption = false;
+      // Clear the GMapAutocomplete component
       if (this.$refs.locationInput) {
-        this.$refs.locationInput.value = "";
-      }
-      if (!this.locationOnWebsite && this.$refs.autocomplete && this.$refs.autocomplete.$el) {
-        this.$refs.autocomplete.$el.value = "";
+        // For GMapAutocomplete, we need to clear the value differently
+        this.$refs.locationInput.$el.value = "";
       }
     },
 
@@ -4623,7 +4623,7 @@ export default {
     /* eslint-disable */
     // eslint-disable-next-line no-unused-vars
     onLocationInput(event) { // eslint-disable-line no-unused-vars
-      const inputValue = event.target.value; // eslint-disable-line no-unused-vars
+      const inputValue = typeof event === 'string' ? event : event.target.value; // eslint-disable-line no-unused-vars
       this.locationInputValue = inputValue;
       
       // Clear any previous selection if user is typing something new
@@ -4634,13 +4634,12 @@ export default {
       }
     },
 
-    // Method to handle focus on location input - triggers both home option and Google Maps
+    // Method to handle focus on location input - triggers home option
     onLocationFocus() {
       // Always show home option when field is focused
       this.showHomeOption = true;
       
-      // Initialize Google Maps autocomplete on the visible input
-      this.initializeGoogleMapsAutocomplete();
+      // No need to manually initialize Google Maps autocomplete - GMapAutocomplete handles this
     },
 
     // Method to handle blur (with delay to allow clicking on home option)
@@ -4657,34 +4656,15 @@ export default {
       // Let normal autocomplete behavior handle Enter key
     },
 
-    // Initialize Google Maps autocomplete programmatically
-    initializeGoogleMapsAutocomplete() {
-      if (window.google && window.google.maps && this.$refs.locationInput) {
-        // Create autocomplete instance if not exists
-        if (!this.autocompleteInstance) {
-          this.autocompleteInstance = new window.google.maps.places.Autocomplete(
-            this.$refs.locationInput,
-            { types: ['establishment'] }
-          );
-          
-          // Listen for place selection
-          this.autocompleteInstance.addListener('place_changed', () => {
-            const place = this.autocompleteInstance.getPlace();
-            if (place && place.geometry) {
-              this.setPlaceFromAutocomplete(place);
-            }
-          });
-        }
-      }
-    },
-
-    // Handle place selection from autocomplete
+    // Handle place selection from GMapAutocomplete
     setPlaceFromAutocomplete(place) {
-      this.selectedLocationType = 'venue';
-      this.selectedLocation = place.name || place.formatted_address;
-      this.selectedLocationAddress = place.formatted_address;
-      this.locationInputValue = this.selectedLocation;
-      this.showHomeOption = false;
+      if (place && place.geometry) {
+        this.selectedLocationType = 'venue';
+        this.selectedLocation = place.name || place.formatted_address;
+        this.selectedLocationAddress = place.formatted_address;
+        this.locationInputValue = this.selectedLocation;
+        this.showHomeOption = false;
+      }
     },
 
     // Method to select home location
