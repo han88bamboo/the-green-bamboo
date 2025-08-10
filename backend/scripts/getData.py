@@ -3052,7 +3052,7 @@ def getProducerReviewsByProducerId(id):
 
         return jsonify(reviews_data)
 
-# [GET] Home reviews - reviews where location = -1 (Home tastings)
+# [GET] Home reviews - reviews where location IS NULL (Home tastings)
 @blueprint.route("/getHomeReviews", methods=['GET'])
 def getHomeReviews():
     conn = g.db
@@ -3064,7 +3064,7 @@ def getHomeReviews():
                 FROM reviews r
                 JOIN users u ON r."userID" = u.id
                 JOIN listings l ON r."reviewTarget" = l.id
-                WHERE r.location = -1  -- Home reviews
+                WHERE r.location IS NULL AND r.address = 'home'  -- Home reviews
                 ORDER BY r."createdDate" DESC
             """)
             

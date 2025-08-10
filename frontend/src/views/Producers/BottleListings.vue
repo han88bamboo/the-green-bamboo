@@ -1547,7 +1547,7 @@
                       <!-- Location -->
                       <span v-if="review.location">
                         at
-                        <router-link v-if="review.location === -1" :to="'/home/profile'" 
+                        <router-link v-if="review.location === null || review.location === undefined" :to="'/home/profile'" 
                           class="text-decoration-none text-dark">
                           <b>🏠 Home</b>
                         </router-link>
@@ -1797,7 +1797,7 @@
                           <b>Location</b>
                         </div>
                         <div class="col-9">
-                          <span v-if="detailedReview.location === -1">
+                          <span v-if="detailedReview.location === null || detailedReview.location === undefined">
                             <router-link to="/home/profile" style="color: inherit">
                               <b>🏠 Home</b>
                             </router-link>
@@ -2778,7 +2778,7 @@ export default {
       return parseInt(this.bookmarkListingID);
     },
     venueLink() {
-      if (this.detailedReview.location === -1) {
+      if (this.detailedReview.location === null || this.detailedReview.location === undefined) {
         return '/home/profile';
       }
       return `/profile/venue/${this.detailedReview.location}/${this.getVenueNameFromID(this.detailedReview.location)}`;

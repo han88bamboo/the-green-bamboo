@@ -124,13 +124,15 @@ def createReviews():
 
     # Insert new venue if necessary OR handle "Home" case
     venue_id = None
+    stored_address = raw_review.get('address', '')
     if raw_review.get('location') and raw_review.get('address'):
         location_name = raw_review['location']
         address = raw_review['address']
         
         # Check if this is a "Home" tasting
         if location_name.lower() == 'home' and address.lower() == 'home':
-            venue_id = -1  # Special ID for home tastings
+            venue_id = None  # NULL for home tastings (no venue reference needed)
+            stored_address = 'home'  # Normalize to lowercase for consistency
         else:
             # Existing venue logic for real venues
             # Check for exact match first
@@ -183,11 +185,11 @@ def createReviews():
                 insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                       "hashedPassword", "claimStatus", photo, "reservationDetails", username)
                                       VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-            hashed_password = 'hashed_password'
-            cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-    
-            conn.commit()
+                hashed_password = 'hashed_password'
+                cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+                venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        
+                conn.commit()
 
     # Upload image into S3
     if raw_review['photo']:
@@ -205,7 +207,7 @@ def createReviews():
                         created_date, raw_review['language'], raw_review['finish'], will_recommend,
                         would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                         raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                        observation_tags, venue_id, raw_review['address'])
+                        observation_tags, venue_id, stored_address)
     else :
         insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
                                 "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", 
@@ -215,7 +217,7 @@ def createReviews():
                         created_date, raw_review['language'], raw_review['finish'], will_recommend,
                         would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                         raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                        observation_tags, venue_id, raw_review['address'], variant)
+                        observation_tags, venue_id, stored_address, variant)
 
     try:
         cur.execute(insert_review_sql, review_values)
