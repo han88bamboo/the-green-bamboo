@@ -343,7 +343,7 @@ export default {
       try {
         this.loading = true;
         this.dataLoaded = false;
-        const response = await axios.get('/api/getHomeReviews');
+        const response = await axios.get(`${process.env.VUE_APP_API_URL}/getData/getHomeReviews`);
         this.homeReviews = response.data;
         this.error = null;
         this.dataLoaded = true;
