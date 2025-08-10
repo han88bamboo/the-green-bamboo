@@ -1710,13 +1710,13 @@
                     </button>
 
                     <ul class="dropdown-menu">
-                      <li v-if="review.userID === parseInt(userID) || correctModerator || (user && user.isAdmin)">
+                      <li v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item" @click="setUpdateID(review)" data-bs-toggle="modal"
                           data-bs-target="#reviewModal">
                           Edit
                         </button>
                       </li>
-                      <li v-if="review.userID === correctModerator || (user && user.isAdmin)">
+                      <li v-if="(review.userID === parseInt(userID) && Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)) || review.userID === correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item text-danger" @click="setDeleteID(review)" data-bs-toggle="modal"
                           data-bs-target="#deleteReview">
                           Delete
