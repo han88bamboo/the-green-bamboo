@@ -692,7 +692,7 @@
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageBeer }"
                                       @click="editAmenities.beverageBeer = !editAmenities.beverageBeer">
-                                    <PhBeer :size="16" class="me-1" />Beer
+                                    <PhBeerStein :size="16" class="me-1" />Beer
                                 </span>
                                 <span class="badge amenity-badge beverage-badge" 
                                       :class="{ 'active': editAmenities.beverageWhisky }"
@@ -967,7 +967,7 @@
                                     <PhChampagne :size="16" class="me-1" />Wine
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageBeer" class="badge bg-success me-1 mb-1">
-                                    <PhBeer :size="16" class="me-1" />Beer
+                                    <PhBeerStein :size="16" class="me-1" />Beer
                                 </span>
                                 <span v-if="targetVenue.amenities?.beverageCocktails" class="badge bg-success me-1 mb-1">
                                     <PhMartini :size="16" class="me-1" />Cocktails
@@ -4708,7 +4708,7 @@ import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 // Import Phosphor Icons
 import { 
   PhWine, 
-  PhBeer, 
+  PhBeerStein, 
   PhChampagne, 
   PhMartini,
   PhBrandy,
@@ -4729,7 +4729,7 @@ export default {
         LoadingWithFunFact,
         // Add Phosphor Icons as components
         PhWine,
-        PhBeer, 
+        PhBeerStein, 
         PhMartini,
         PhBrandy,
         PhFlowerLotus,

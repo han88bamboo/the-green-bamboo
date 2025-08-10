@@ -980,25 +980,38 @@
                       </div>
 
                       <div class="form-group mb-2">
-                        <!-- Location Type Selection -->
-                        <div class="input-group mb-2">
-                          <select v-model="selectedLocationType" class="form-select" @change="onLocationTypeChange">
-                            <option value="">Select location type</option>
-                            <option value="home">🏠 Home</option>
-                            <option value="venue">📍 Venue</option>
-                          </select>
+                        <!-- Enhanced Location Input with Home Option and Google Maps -->
+                        <div class="location-input-container" style="position: relative;">
+                          <!-- Home Option Dropdown (appears when typing) -->
+                          <div v-if="showHomeOption" class="home-option-dropdown">
+                            <div class="home-option-item" @click="selectHomeLocation">
+                              🏠 Tasted At Home
+                            </div>
+                          </div>
+                          
+                          <!-- Combined Input Field -->
+                          <div class="input-group mb-2">
+                            <div class="location-input-wrapper" style="position: relative; width: 100%;">
+                              <input 
+                                type="text"
+                                v-model="locationInputValue"
+                                placeholder="Add location (venue or home)" 
+                                @input="onLocationInput"
+                                @focus="onLocationFocus"
+                                @blur="onLocationBlur"
+                                @keydown="onLocationKeydown"
+                                class="form-control input-with-icon" 
+                                ref="locationInput">
+                            </div>
+                          </div>
                         </div>
                         
-                        <!-- Google Maps Autocomplete (shown only when venue is selected) -->
-                        <div v-if="selectedLocationType === 'venue'" class="input-group mb-2">
-                          <GMapAutocomplete placeholder="Add venue location" @place_changed="setPlace"
-                            class="form-control input-with-icon" ref="autocomplete" :value="selectedLocation">
-                          </GMapAutocomplete>
-                        </div>
-                        
-                        <!-- Home confirmation (shown when home is selected) -->
+                        <!-- Location confirmation display -->
                         <div v-if="selectedLocationType === 'home'" class="alert alert-info mb-2">
                           📍 You've selected "Home" as your tasting location
+                        </div>
+                        <div v-if="selectedLocationType === 'venue' && selectedLocation" class="alert alert-success mb-2">
+                          📍 Selected venue: {{ selectedLocation }}
                         </div>
                         
                         <div>
@@ -2642,6 +2655,9 @@ export default {
       selectedLocation: "",
       selectedLocationAddress: "",
       selectedLocationId: "",
+      showHomeOption: false, // Controls visibility of home option dropdown
+      locationInputValue: "", // Separate input value for the location field
+      autocompleteInstance: null, // Google Maps autocomplete instance
       extendObservation: false,
       loggedIn: false,
       userID: "defaultUser",
@@ -4118,7 +4134,12 @@ export default {
       this.selectedLocationType = "";
       this.selectedLocation = "";
       this.selectedLocationAddress = "";
-      if (!this.locationOnWebsite) {
+      this.locationInputValue = "";
+      this.showHomeOption = false;
+      if (this.$refs.locationInput) {
+        this.$refs.locationInput.value = "";
+      }
+      if (!this.locationOnWebsite && this.$refs.autocomplete && this.$refs.autocomplete.$el) {
         this.$refs.autocomplete.$el.value = "";
       }
     },
@@ -4598,11 +4619,81 @@ export default {
       }
     },
 
-    setPlace(place) {
-      if (this.selectedLocationType === 'venue') {
-        this.selectedLocation = place.name;
-        this.selectedLocationAddress = place.formatted_address;
+    // Method to handle input in the location field
+    /* eslint-disable */
+    // eslint-disable-next-line no-unused-vars
+    onLocationInput(event) { // eslint-disable-line no-unused-vars
+      const inputValue = event.target.value; // eslint-disable-line no-unused-vars
+      this.locationInputValue = inputValue;
+      
+      // Clear any previous selection if user is typing something new
+      if (this.selectedLocationType && inputValue !== 'Home' && inputValue !== this.selectedLocation) {
+        this.selectedLocationType = '';
+        this.selectedLocation = '';
+        this.selectedLocationAddress = '';
       }
+    },
+
+    // Method to handle focus on location input - triggers both home option and Google Maps
+    onLocationFocus() {
+      // Always show home option when field is focused
+      this.showHomeOption = true;
+      
+      // Initialize Google Maps autocomplete on the visible input
+      this.initializeGoogleMapsAutocomplete();
+    },
+
+    // Method to handle blur (with delay to allow clicking on home option)
+    onLocationBlur() {
+      // Delay hiding to allow click on home option
+      setTimeout(() => {
+        this.showHomeOption = false;
+      }, 200);
+    },
+
+    // Handle keyboard navigation
+    onLocationKeydown(event) {
+      // If Enter is pressed, do nothing special (removed home auto-detection)
+      // Let normal autocomplete behavior handle Enter key
+    },
+
+    // Initialize Google Maps autocomplete programmatically
+    initializeGoogleMapsAutocomplete() {
+      if (window.google && window.google.maps && this.$refs.locationInput) {
+        // Create autocomplete instance if not exists
+        if (!this.autocompleteInstance) {
+          this.autocompleteInstance = new window.google.maps.places.Autocomplete(
+            this.$refs.locationInput,
+            { types: ['establishment'] }
+          );
+          
+          // Listen for place selection
+          this.autocompleteInstance.addListener('place_changed', () => {
+            const place = this.autocompleteInstance.getPlace();
+            if (place && place.geometry) {
+              this.setPlaceFromAutocomplete(place);
+            }
+          });
+        }
+      }
+    },
+
+    // Handle place selection from autocomplete
+    setPlaceFromAutocomplete(place) {
+      this.selectedLocationType = 'venue';
+      this.selectedLocation = place.name || place.formatted_address;
+      this.selectedLocationAddress = place.formatted_address;
+      this.locationInputValue = this.selectedLocation;
+      this.showHomeOption = false;
+    },
+
+    // Method to select home location
+    selectHomeLocation() {
+      this.selectedLocationType = 'home';
+      this.selectedLocation = 'Home';
+      this.selectedLocationAddress = 'Home';
+      this.locationInputValue = 'Home';
+      this.showHomeOption = false;
     },
 
     // return place id
@@ -4841,8 +4932,10 @@ export default {
           this.selectedObservations = data.selectedObservations || [];
           this.friendTagList = data.friendTagList || [];
           this.showFriendTagList = data.showFriendTagList || [];
+          this.selectedLocationType = data.selectedLocationType || "";
           this.selectedLocation = data.selectedLocation || "";
           this.selectedLocationAddress = data.selectedLocationAddress || "";
+          this.locationInputValue = data.locationInputValue || "";
           this.image64 = data.image64 || null;
         } catch (e) {
           // If cache is corrupted, ignore
@@ -4867,8 +4960,10 @@ export default {
         selectedObservations: this.selectedObservations,
         friendTagList: this.friendTagList,
         showFriendTagList: this.showFriendTagList,
+        selectedLocationType: this.selectedLocationType,
         selectedLocation: this.selectedLocation,
         selectedLocationAddress: this.selectedLocationAddress,
+        locationInputValue: this.locationInputValue,
         image64: this.image64
       };
       localStorage.setItem(cacheKey, JSON.stringify(data));
@@ -5006,5 +5101,54 @@ export default {
 .auto-resize-textarea:focus {
   border-color: #006A50;
   box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+}
+
+/* Location input container and home option dropdown styles */
+.location-input-container {
+  position: relative;
+}
+
+.home-option-dropdown {
+  position: absolute;
+  top: -50px;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.home-option-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.home-option-item:hover {
+  background-color: #f8f9fa;
+}
+
+.home-option-item:last-child {
+  border-bottom: none;
+}
+
+/* Ensure the Google Maps autocomplete dropdown appears below the input */
+.pac-container {
+  z-index: 999 !important;
+}
+
+/* Style for the location input wrapper */
+.location-input-wrapper {
+  position: relative;
+  width: 100%;
 }
 </style>

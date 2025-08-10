@@ -71,5 +71,10 @@
     "eslint-plugin-vue": "^8.0.3",
     "jest": "^27.0.5",
     "sitemap": "^8.0.0"
+  },
+  "eslintConfig": {
+    "rules": {
+      "no-unused-vars": ["error", { "args": "none" }]
+    }
   }
 }
