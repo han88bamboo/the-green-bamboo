@@ -13,25 +13,49 @@
             <!-- Home Information -->
             <div class="col-xl-9 col-12 px-3 px-lg-4">
 
-                <!-- ------- START Home Name / Title ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                <!-- Home Name -->
-                <div class="row">
-                    <div class="ps-0 pe-0">
-                        <h3 class="text-body-secondary mobile-view-hide"> <b> Home Tastings </b> </h3>
-                        <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1"> <b> Home Tastings </b> </h4>
-                    </div>
-                </div>
+                <!-- ------- START Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                <!-- ------- END Home Name / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                <!-- Description -->
-                <div class="row scrollable">
-                    <div class="col-12 pe-lg-0 ps-0">
-                        <div class="ps-0 pe-0 ">
-                            <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                Explore and share tasting experiences from the comfort of home. Join the community of home tasters discovering new flavors and sharing their reviews.
-                            </p>
+                <!-- Header -->
+                <div class="row">
+
+                    <!-- ------- START Image ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                    <!-- Image -->
+                    <div class="col-lg-3 col-12 mb-lg-0 mb-3 image-container text-start mobile-col-5">
+                        <div>
+                            <img src="/home-icon.png" alt="Home Tastings" class="producer-bottle-listing-page-image"
+                                 onerror="this.src='/default-home.svg'">
                         </div>
                     </div>
+
+                    <!-- ------- END Image / START Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                    <!-- Details -->
+                    <div class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7">
+                        <div class="row">
+
+                            <!-- Home Name -->
+                            <div class="col-12 pe-0 ps-0">
+                                <h3 class="text-body-secondary mobile-view-hide"> <b>Tasted at Home</b> </h3>
+                                <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1"> <b>Tasted at Home</b> </h4>
+                            </div>
+
+                            <!-- ------- END Home Name / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                            <!-- Description -->
+                            <div class="row scrollable">
+                                <div class="col-12 pe-lg-0 ps-0">
+                                    <div class="ps-0 pe-0 ">
+                                        <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                            Explore and share tasting experiences from the comfort of home. Join the community of home tasters discovering new flavors and sharing their reviews.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- ------- END Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
                 </div>
 
                 <!-- View Mode: Home Info + Buttons -->
@@ -50,7 +74,7 @@
                         <div class="d-flex flex-column gap-2 mobile-d-grid mobile-gap-1">
                             <!-- Follow Button -->
                             <button v-if="!homeFollowing"
-                                class="btn btn-lg primary-btn-less-round text-nowrap mobile-rating-smaller-text-2"
+                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 @click="toggleHomeFollow" style="font-weight: bold;">
                                 + Follow
                             </button>
@@ -65,6 +89,8 @@
                 </div>
 
                 <!--------- END Follow Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                 <!-- START Content Buttons (Home Overview / Home Reviews) -->
                 <div class="row mt-3 mobile-mt-1" id="menu-section">
@@ -379,6 +405,19 @@ export default {
 <style scoped>
 /* Match VenueProfile.vue styling patterns */
 
+.producer-bottle-listing-page-image {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .rating .star {
   color: #ddd;
   font-size: 1.2rem;
@@ -550,3 +589,4 @@ export default {
   }
 }
 </style>
+
