@@ -1545,9 +1545,9 @@
                       <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": "" }}</b>
 
                       <!-- Location -->
-                      <span v-if="review.location">
+                      <span v-if="review.location || (review.location === null && review.address && review.address.toLowerCase() === 'home')">
                         at
-                        <router-link v-if="review.location === null || review.location === undefined" :to="'/home/profile'" 
+                        <router-link v-if="review.location === null && review.address && review.address.toLowerCase() === 'home'" :to="'/home/profile'" 
                           class="text-decoration-none text-dark">
                           <b>🏠 Home</b>
                         </router-link>
@@ -1797,12 +1797,13 @@
                           <b>Location</b>
                         </div>
                         <div class="col-9">
-                          <span v-if="detailedReview.location === null || detailedReview.location === undefined">
+                          <span v-if="detailedReview.location === null && detailedReview.address && detailedReview.address.toLowerCase() === 'home'">
                             <router-link to="/home/profile" style="color: inherit">
                               <b>🏠 Home</b>
                             </router-link>
                           </span>
                           <span v-else-if="
+                            detailedReview.location !== null &&
                             detailedReview.location !== '' &&
                             checkVenue(detailedReview.address) != ''
                           ">
