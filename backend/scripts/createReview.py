@@ -9,9 +9,31 @@ from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
+import unicodedata
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+
+def normalize_venue_name(name):
+    """Normalize venue name for fuzzy matching"""
+    if not name:
+        return ""
+    
+    # Convert to lowercase and remove accents
+    name = unicodedata.normalize('NFKD', name.lower())
+    name = ''.join(c for c in name if not unicodedata.combining(c))
+    
+    # Remove punctuation and collapse whitespace
+    name = re.sub(r'[^\w\s]', '', name)
+    name = re.sub(r'\s+', ' ', name).strip()
+    
+    # Remove common words
+    stop_words = {'bar', 'bars', 'pub', 'pubs', 'taproom', 'tap', 'room', 'taphouse', 
+                  'house', 'cellar', 'cocktail', 'cocktails', 'tavern', 'and', 'the', 'at'}
+    words = [word for word in name.split() if word not in stop_words]
+    
+    return ' '.join(words)
 
 
 # Helper function to create a unique username for the venue
@@ -105,9 +127,53 @@ def createReviews():
     if raw_review.get('location') and raw_review.get('address'):
         location_name = raw_review['location']
         address = raw_review['address']
+        
+        # Check for exact match first
         cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
         venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        
         if not venue_id:
+            # Try fuzzy matching on venue name with exact address match
+            normalized_input_name = normalize_venue_name(location_name)
+            if normalized_input_name:
+                cur.execute("""
+                    WITH normalized_venues AS (
+                        SELECT 
+                            id, 
+                            "venueName",
+                            regexp_replace(
+                                regexp_replace(
+                                    regexp_replace(
+                                        lower("venueName"), 
+                                        '[^a-z0-9\\s]', 
+                                        '', 
+                                        'g'
+                                    ),
+                                    '(^|\\s+)(bar|bars|pub|pubs|taproom|tap|room|taphouse|house|cellar|cocktail|cocktails|tavern|and|the|at)(\\s+|$)', 
+                                    '\\1\\3', 
+                                    'g'
+                                ),
+                                '\\s+', 
+                                ' ', 
+                                'g'
+                            ) AS normalized_name
+                        FROM venues
+                        WHERE "address" = %s
+                    )
+                    SELECT id, "venueName", 
+                        similarity(%s, TRIM(normalized_name)) as sim
+                    FROM normalized_venues
+                    WHERE similarity(%s, TRIM(normalized_name)) > 0.3
+                    ORDER BY sim DESC
+                    LIMIT 1
+                """, (address, normalized_input_name, normalized_input_name))
+                
+                fuzzy_match = cur.fetchone()
+                if fuzzy_match:
+                    venue_id = fuzzy_match['id']
+        
+        if not venue_id:
+            # Create new venue if no exact or fuzzy match found
             username = create_username(location_name)
             insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
                                   "hashedPassword", "claimStatus", photo, "reservationDetails", username)
