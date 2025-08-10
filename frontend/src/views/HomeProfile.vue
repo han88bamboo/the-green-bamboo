@@ -1,12 +1,27 @@
 <template>
     <NavBar />
 
-    <!-- Display when data is still loading -->
-    <LoadingWithFunFact v-if="dataLoaded === false" />
-
     <!-- Main Content -->
-    <div class="container pt-5 mobile-pt-3" v-if="dataLoaded == true">
-        <div class="row">
+    <div class="container pt-5 mobile-pt-3">
+
+        <!-- Display when data is still loading -->
+        <LoadingWithFunFact v-if="dataLoaded === false" />
+
+        <!-- Display when data fails to load -->
+        <div class="text-danger fst-italic fw-bold fs-3" v-if="dataLoaded == null">
+            <span>An error occurred while loading this page, please try again!</span>
+            <br>
+            <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
+                <span class="fs-5 fst-italic"> Return to previous page </span>
+            </button>
+            <router-link :to="'/'" class="mx-1">
+                <button class="btn primary-btn btn-sm">
+                    <span class="fs-5 fst-italic"> Go to Home page </span>
+                </button>
+            </router-link>
+        </div>
+
+        <div class="row" v-if="dataLoaded == true">
 
             <!-- ------- START Home Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -34,25 +49,36 @@
                     <div class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7">
                         <div class="row">
 
+                            <!-- Country/Description -->
+                            <div class="col-7 pe-0 ps-0">
+                                <h5 class="text-body-secondary mobile-view-hide">Home Tastings Community</h5>
+                                <h6 class="text-body-secondary mobile-view-show mb-1">Home Tastings Community</h6>
+                            </div>
+
+                            <div class="col-5 mobile-view-hide">
+                                <!-- This space intentionally left blank to match VenueProfile layout -->
+                            </div>
+
                             <!-- Home Name -->
                             <div class="col-12 pe-0 ps-0">
                                 <h3 class="text-body-secondary mobile-view-hide"> <b>Tasted at Home</b> </h3>
                                 <h4 class="text-body-secondary mobile-view-show pe-0 ps-0 mb-1"> <b>Tasted at Home</b> </h4>
                             </div>
 
-                            <!-- ------- END Home Name / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                            <!-- Description -->
-                            <div class="row scrollable">
-                                <div class="col-12 pe-lg-0 ps-0">
-                                    <div class="ps-0 pe-0 ">
-                                        <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                            Explore and share tasting experiences from the comfort of home. Join the community of home tasters discovering new flavors and sharing their reviews.
-                                        </p>
-                                    </div>
+                        </div>
+
+                        <!-- ------- END Home Name / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                        <!-- Description -->
+                        <div class="row scrollable">
+                            <div class="col-12 pe-lg-0 ps-0">
+                                <div class="ps-0 pe-0 ">
+                                    <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                        Explore and share tasting experiences from the comfort of home. Join the community of home tasters discovering new flavors and sharing their reviews.
+                                    </p>
                                 </div>
                             </div>
-
                         </div>
+
                     </div>
                     <!-- ------- END Description ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -63,15 +89,15 @@
                     <!-- Home Info -->
                     <div class="col-7 mobile-col-12 mobile-mb-2">
                         <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
-                            <strong>Total Reviews:</strong> {{ homeReviews.length }} | 
-                            <strong>Average Rating:</strong> {{ averageRating.toFixed(1) }}/5 |
-                            <strong>Community:</strong> Home tasters worldwide
+                            <strong>{{ homeReviews.length }}</strong> reviews • 
+                            <strong>{{ averageRating.toFixed(1) }}</strong>/5 average rating • 
+                            <strong>{{ uniqueReviewers }}</strong> reviewers
                         </p>
                     </div>
 
                     <!-- Right Side: Follow Button -->
-                    <div class="col-5 mobile-col-12 d-flex justify-content-end mobile-justify-content-start">
-                        <div class="d-flex flex-column gap-2 mobile-d-grid mobile-gap-1">
+                    <div class="col-5 d-flex flex-column flex-lg-row justify-content-start justify-content-lg-end align-items-start align-items-lg-center gap-2">
+                        <div class="d-flex gap-2">
                             <!-- Follow Button -->
                             <button v-if="!homeFollowing"
                                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
@@ -107,12 +133,12 @@
                         <button v-if="contentMode == 'reviews'"
                             class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
                             @click="contentMode = 'reviews'">
-                            Home Reviews ({{ homeReviews.length }})
+                            Home Reviews
                         </button>
                         <button v-else
                             class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
                             @click="contentMode = 'reviews'">
-                            Home Reviews ({{ homeReviews.length }})
+                            Home Reviews
                         </button>
                     </div>
                 </div>
@@ -121,16 +147,21 @@
 
                 <!-- Home Overview -->
                 <div v-if="contentMode == 'overview'">
+
+                    <!-- ------- START Latest Updates Header + Latest Update Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
                     <!-- Latest Updates Header -->
                     <div class="row">
                         <div class="col-12">
-                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Home Tasting Community</p>
-                            <p class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">Discover what fellow enthusiasts are tasting at home!</p>
+                            <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">Latest Updates from Home Tasters</p>
+                            <p v-if="homeReviews.length === 0"
+                                class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">No home tasting reviews have been shared yet!</p>
                         </div>
                     </div>
 
-                    <!-- Recent Activity -->
+                    <!-- Latest Update Information -->
                     <div v-if="homeReviews.length > 0">
+
                         <!-- Row 1: Recent Home Reviews -->
                         <div class="row align-items-start mt-3">
                             <div class="col-12 text-start">
@@ -172,72 +203,91 @@
                             Create First Home Review
                         </router-link>
                     </div>
+
+                    <!-- ------- END Latest Updates ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
                 </div>
 
+                <!-- ------- END Home Overview ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- Home Reviews -->
+
                 <div v-if="contentMode == 'reviews'">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6">All Home Reviews ({{ homeReviews.length }})</p>
-                                <div class="sort-options" v-if="homeReviews.length > 0">
-                                    <select v-model="sortBy" @change="sortReviews" class="form-select">
-                                        <option value="newest">Newest First</option>
-                                        <option value="oldest">Oldest First</option>
-                                        <option value="highest">Highest Rating</option>
-                                        <option value="lowest">Lowest Rating</option>
-                                    </select>
+                    <!-- Example heading for home reviews -->
+                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
+                        style="font-weight: bold; color: black;">
+                        Average Home Rating:&nbsp;{{ averageRating.toFixed(1) }}
+                        <span style="color: #f0b358">★</span>
+                    </h4>
+
+                    <div class="row text-start" style="padding-left: 0.75em">
+                        <div class="col">
+                            <div class="row justify-content-start align-items-start mt-2">
+                                
+                                <div v-if="homeReviews.length === 0" class="text-center py-5">
+                                    <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                                    <h5>No home reviews yet</h5>
+                                    <p class="text-muted">Start the home tasting community by creating the first review!</p>
+                                    <router-link to="/create-review" class="btn btn-primary">
+                                        Create First Home Review
+                                    </router-link>
                                 </div>
-                            </div>
-                            
-                            <div v-if="homeReviews.length === 0" class="text-center py-5">
-                                <i class="fas fa-home fa-3x text-muted mb-3"></i>
-                                <h5>No home reviews yet</h5>
-                                <p class="text-muted">Start the home tasting community by creating the first review!</p>
-                                <router-link to="/create-review" class="btn btn-primary">
-                                    Create First Home Review
-                                </router-link>
-                            </div>
-                            
-                            <div v-else>
-                                <div v-for="review in sortedReviews" :key="review.id" class="row mt-3 p-3 border rounded">
-                                    <div class="col-md-3 mobile-col-12">
-                                        <img :src="review.listing_image || '/default-bottle.jpg'" 
-                                             :alt="review.listing_name" class="img-fluid rounded review-image" />
+                                
+                                <div v-else>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <p class="text-start text-body-secondary fs-5 fw-bold m-0 mobile-fs-6">All Home Reviews ({{ homeReviews.length }})</p>
+                                        <div class="sort-options" v-if="homeReviews.length > 0">
+                                            <select v-model="sortBy" @change="sortReviews" class="form-select">
+                                                <option value="newest">Newest First</option>
+                                                <option value="oldest">Oldest First</option>
+                                                <option value="highest">Highest Rating</option>
+                                                <option value="lowest">Lowest Rating</option>
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div class="col-md-9 mobile-col-12">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <h5 class="fw-bold">{{ review.listing_name }}</h5>
-                                                <div class="rating mb-2">
-                                                    <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= review.rating }">★</span>
-                                                    <span class="rating-text ms-2">{{ review.rating }}/5</span>
+                                    
+                                    <div v-for="review in sortedReviews" :key="review.id" class="row mt-3 p-3 border rounded">
+                                        <div class="col-md-3 mobile-col-12">
+                                            <img :src="review.listing_image || '/default-bottle.jpg'" 
+                                                 :alt="review.listing_name" class="img-fluid rounded review-image" />
+                                        </div>
+                                        <div class="col-md-9 mobile-col-12">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <div>
+                                                    <h5 class="fw-bold">{{ review.listing_name }}</h5>
+                                                    <div class="rating mb-2">
+                                                        <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= review.rating }">★</span>
+                                                        <span class="rating-text ms-2">{{ review.rating }}/5</span>
+                                                    </div>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted d-block">{{ formatDate(review.date_time) }}</small>
+                                                    <small class="text-muted d-block">by {{ review.username }}</small>
                                                 </div>
                                             </div>
-                                            <div class="text-end">
-                                                <small class="text-muted d-block">{{ formatDate(review.date_time) }}</small>
-                                                <small class="text-muted d-block">by {{ review.username }}</small>
+                                            
+                                            <p class="review-text">{{ review.review_text || 'No review text provided.' }}</p>
+                                            
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <router-link :to="`/listing/${review.listing_id}/${review.listing_name}`" 
+                                                           class="btn btn-sm btn-outline-primary">
+                                                    View Listing
+                                                </router-link>
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-home me-1"></i>
+                                                    Home Tasting
+                                                </span>
                                             </div>
-                                        </div>
-                                        
-                                        <p class="review-text">{{ review.review_text || 'No review text provided.' }}</p>
-                                        
-                                        <div class="d-flex gap-2 align-items-center">
-                                            <router-link :to="`/listing/${review.listing_id}/${review.listing_name}`" 
-                                                       class="btn btn-sm btn-outline-primary">
-                                                View Listing
-                                            </router-link>
-                                            <span class="badge bg-secondary">
-                                                <i class="fas fa-home me-1"></i>
-                                                Home Tasting
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </div>
+
                 </div>
+
+                <!-- ------- END Home reviews ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             </div>
 
@@ -245,63 +295,39 @@
 
             <!-- Home Sidebar -->
             <div class="col-xl-3 col-12">
-                
-                <!-- ------- START Home Statistics ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="border rounded p-3 mb-3">
-                            <h5 class="fw-bold mb-3">Home Tasting Stats</h5>
-                            
-                            <div class="stat-item mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Total Reviews:</span>
-                                    <span class="fw-bold">{{ homeReviews.length }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-item mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Average Rating:</span>
-                                    <span class="fw-bold">{{ averageRating.toFixed(1) }}/5</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-item mb-2">
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Active Reviewers:</span>
-                                    <span class="fw-bold">{{ uniqueReviewers }}</span>
-                                </div>
-                            </div>
-                            
-                            <hr class="my-3">
-                            
-                            <div class="d-grid">
-                                <router-link to="/create-review" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i>
-                                    Add Home Review
-                                </router-link>
-                            </div>
-                        </div>
+
+                <!-- ------- START Q & A ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- NOTE: This section is intentionally removed for Home Profile -->
+
+                <!-- ------- END Q & A / START Map View ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- NOTE: Map/Location section is intentionally removed for Home Profile -->
+
+                <!-- ------- START Opening Hours ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                <!-- NOTE: Opening Hours section is intentionally removed for Home Profile -->
+
+                <!-- ------- END Opening Hours / START About Section ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                <!-- About Home Tastings -->
+                <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                    <div class="square primary-square-green-outline rounded p-3 mb-3">
+                        <!-- Header -->
+                        <h4 class="text-start" style="font-weight:bold;"> About Home Tastings </h4>
+                        
+                        <p class="small text-muted mb-3">
+                            Home tastings allow you to explore and review drinks in the comfort of your own space. 
+                            Share your experiences with the community and discover what others are enjoying at home.
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <strong>Features:</strong> Rate drinks, write detailed reviews, share photos, and connect with fellow enthusiasts.
+                        </p>
                     </div>
                 </div>
 
-                <!-- ------- START About Home Tastings ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="border rounded p-3">
-                            <h5 class="fw-bold mb-3">About Home Tastings</h5>
-                            <p class="small text-muted mb-3">
-                                Home tastings allow you to explore and review drinks in the comfort of your own space. 
-                                Share your experiences with the community and discover what others are enjoying at home.
-                            </p>
-                            <p class="small text-muted mb-0">
-                                <strong>Features:</strong> Rate drinks, write detailed reviews, share photos, and connect with fellow enthusiasts.
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                <!-- ------- END About Section ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             </div>
+
+            <!-- ------- END Home Sidebar ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
         </div>
     </div>
@@ -418,6 +444,14 @@ export default {
   align-items: center;
 }
 
+.square {
+  border: 1px solid #dee2e6;
+}
+
+.primary-square-green-outline {
+  border-color: #28a745;
+}
+
 .rating .star {
   color: #ddd;
   font-size: 1.2rem;
@@ -472,6 +506,14 @@ export default {
   border: 1px solid #007bff;
 }
 
+.primary-btn {
+  background-color: #007bff;
+  color: white;
+  border: 1px solid #007bff;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
 .primary-btn-less-round {
   background-color: #007bff;
   color: white;
@@ -513,9 +555,19 @@ export default {
     max-width: 58.333333%;
   }
   
+  .mobile-col-5 {
+    flex: 0 0 41.666667%;
+    max-width: 41.666667%;
+  }
+  
   .mobile-col-4 {
     flex: 0 0 33.333333%;
     max-width: 33.333333%;
+  }
+  
+  .mobile-col-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
   }
   
   .mobile-col-2 {
