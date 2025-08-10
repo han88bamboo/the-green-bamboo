@@ -980,18 +980,34 @@
                       </div>
 
                       <div class="form-group mb-2">
+                        <!-- Location Type Selection -->
                         <div class="input-group mb-2">
-                          <GMapAutocomplete placeholder="Add location" @place_changed="setPlace"
+                          <select v-model="selectedLocationType" class="form-select" @change="onLocationTypeChange">
+                            <option value="">Select location type</option>
+                            <option value="home">🏠 Home</option>
+                            <option value="venue">📍 Venue</option>
+                          </select>
+                        </div>
+                        
+                        <!-- Google Maps Autocomplete (shown only when venue is selected) -->
+                        <div v-if="selectedLocationType === 'venue'" class="input-group mb-2">
+                          <GMapAutocomplete placeholder="Add venue location" @place_changed="setPlace"
                             class="form-control input-with-icon" ref="autocomplete" :value="selectedLocation">
                           </GMapAutocomplete>
                         </div>
+                        
+                        <!-- Home confirmation (shown when home is selected) -->
+                        <div v-if="selectedLocationType === 'home'" class="alert alert-info mb-2">
+                          📍 You've selected "Home" as your tasting location
+                        </div>
+                        
                         <div>
                           <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError">
                           </p>
                         </div>
                         <div class="row">
                           <div class="col-6 col-md-12 d-flex justify-content-start">
-                            <button v-if="selectedLocation !== ''"
+                            <button v-if="selectedLocationType !== ''"
                               class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2" @click="clearLocation">
                               Clear Selection
                             </button>
@@ -1529,9 +1545,13 @@
                       <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": "" }}</b>
 
                       <!-- Location -->
-                      <span v-if="review.location && checkVenue(review.address) !== ''">
+                      <span v-if="review.location">
                         at
-                        <router-link
+                        <router-link v-if="review.location === -1" :to="'/home/profile'" 
+                          class="text-decoration-none text-dark">
+                          <b>🏠 Home</b>
+                        </router-link>
+                        <router-link v-else-if="checkVenue(review.address) !== ''"
                           :to="'/profile/venue/' + review.location + '/' + getVenueNameFromID(review.location)"
                           class="text-decoration-none text-dark">
                           <b>{{ getVenueNameFromID(review.location) }} </b>
@@ -1777,7 +1797,12 @@
                           <b>Location</b>
                         </div>
                         <div class="col-9">
-                          <span v-if="
+                          <span v-if="detailedReview.location === -1">
+                            <router-link to="/home/profile" style="color: inherit">
+                              <b>🏠 Home</b>
+                            </router-link>
+                          </span>
+                          <span v-else-if="
                             detailedReview.location !== '' &&
                             checkVenue(detailedReview.address) != ''
                           ">
@@ -2612,6 +2637,7 @@ export default {
       locationOptions: [], // Your list of options
       locationSearchTerm: "",
       tagLocation: "",
+      selectedLocationType: "",
       selectedLocation: "",
       selectedLocationAddress: "",
       selectedLocationId: "",
@@ -2752,6 +2778,9 @@ export default {
       return parseInt(this.bookmarkListingID);
     },
     venueLink() {
+      if (this.detailedReview.location === -1) {
+        return '/home/profile';
+      }
       return `/profile/venue/${this.detailedReview.location}/${this.getVenueNameFromID(this.detailedReview.location)}`;
     },
     filteredReviews() {
@@ -2836,6 +2865,7 @@ export default {
       handler: 'cacheReviewForm',
       deep: true
     },
+    selectedLocationType: 'cacheReviewForm',
     selectedLocation: 'cacheReviewForm',
     selectedLocationAddress: 'cacheReviewForm',
     image64: 'cacheReviewForm',
@@ -4084,7 +4114,9 @@ export default {
 
     clearLocation() {
       this.tagLocation = "";
+      this.selectedLocationType = "";
       this.selectedLocation = "";
+      this.selectedLocationAddress = "";
       if (!this.locationOnWebsite) {
         this.$refs.autocomplete.$el.value = "";
       }
@@ -4555,9 +4587,21 @@ export default {
       }
     },
 
+    onLocationTypeChange() {
+      if (this.selectedLocationType === 'home') {
+        this.selectedLocation = 'Home';
+        this.selectedLocationAddress = 'Home';
+      } else {
+        this.selectedLocation = '';
+        this.selectedLocationAddress = '';
+      }
+    },
+
     setPlace(place) {
-      this.selectedLocation = place.name;
-      this.selectedLocationAddress = place.formatted_address;
+      if (this.selectedLocationType === 'venue') {
+        this.selectedLocation = place.name;
+        this.selectedLocationAddress = place.formatted_address;
+      }
     },
 
     // return place id

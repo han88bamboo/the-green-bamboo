@@ -36,6 +36,11 @@ const routes = [
     path: "/profile/venue-refac/:venueID?/:username",
     name: "profileVenueRefac",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Venues/VenueProfile_refac.vue"),
+  },
+  {
+    path: "/home/profile",
+    name: "homeProfile",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/HomeProfile.vue"),
   }
 ];
 

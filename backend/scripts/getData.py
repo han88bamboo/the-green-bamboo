@@ -38,7 +38,7 @@
 #           /getProducerTourReviews (GET), /getProducerReviewsByProducerId/<id> (GET),
 
 #           [Venue Reviews]
-#           /getVenueReviews (GET), /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), 
+#           /getVenueReviews (GET), /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), /getHomeReviews (GET), 
 
 #           [User Bookmarks]
 #           /getBookmarkListings (POST), 
@@ -3051,6 +3051,48 @@ def getProducerReviewsByProducerId(id):
             del review["downvotes"]
 
         return jsonify(reviews_data)
+
+# [GET] Home reviews - reviews where location = -1 (Home tastings)
+@blueprint.route("/getHomeReviews", methods=['GET'])
+def getHomeReviews():
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT r.*, u.username, u.photo as "userPhoto", l."listingName"
+                FROM reviews r
+                JOIN users u ON r."userID" = u.id
+                JOIN listings l ON r."reviewTarget" = l.id
+                WHERE r.location = -1  -- Home reviews
+                ORDER BY r."createdDate" DESC
+            """)
+            
+            reviews_data = cursor.fetchall()
+            
+            if not reviews_data:
+                return jsonify([])
+            
+            # Process user votes for each review
+            for review in reviews_data:
+                review["userVotes"] = {
+                    "upvotes": review.get("upvotes", []) if review.get("upvotes") else [],
+                    "downvotes": review.get("downvotes", []) if review.get("downvotes") else []
+                }
+                # Clean up if these fields exist
+                if "upvotes" in review:
+                    del review["upvotes"]
+                if "downvotes" in review:
+                    del review["downvotes"]
+            
+            return jsonify(reviews_data)
+            
+    except Exception as e:
+        print(str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving home reviews."
+        }), 500
 
 
 # [GET] Venue information where their menu contains a specific drink/listing

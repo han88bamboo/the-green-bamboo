@@ -122,62 +122,67 @@ def createReviews():
     # else:
     #     would_buy_again = bool(would_buy_again == 'true')
 
-    # Insert new venue if necessary
+    # Insert new venue if necessary OR handle "Home" case
     venue_id = None
     if raw_review.get('location') and raw_review.get('address'):
         location_name = raw_review['location']
         address = raw_review['address']
         
-        # Check for exact match first
-        cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
-        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-        
-        if not venue_id:
-            # Try fuzzy matching on venue name with exact address match
-            normalized_input_name = normalize_venue_name(location_name)
-            if normalized_input_name:
-                cur.execute("""
-                    WITH normalized_venues AS (
-                        SELECT 
-                            id, 
-                            "venueName",
-                            regexp_replace(
+        # Check if this is a "Home" tasting
+        if location_name.lower() == 'home' and address.lower() == 'home':
+            venue_id = -1  # Special ID for home tastings
+        else:
+            # Existing venue logic for real venues
+            # Check for exact match first
+            cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
+            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+            
+            if not venue_id:
+                # Try fuzzy matching on venue name with exact address match
+                normalized_input_name = normalize_venue_name(location_name)
+                if normalized_input_name:
+                    cur.execute("""
+                        WITH normalized_venues AS (
+                            SELECT 
+                                id, 
+                                "venueName",
                                 regexp_replace(
                                     regexp_replace(
-                                        lower("venueName"), 
-                                        '[^a-z0-9\\s]', 
-                                        '', 
+                                        regexp_replace(
+                                            lower("venueName"), 
+                                            '[^a-z0-9\\s]', 
+                                            '', 
+                                            'g'
+                                        ),
+                                        '(^|\\s+)(bar|bars|pub|pubs|taproom|tap|room|taphouse|house|cellar|cocktail|cocktails|tavern|and|the|at)(\\s+|$)', 
+                                        '\\1\\3', 
                                         'g'
                                     ),
-                                    '(^|\\s+)(bar|bars|pub|pubs|taproom|tap|room|taphouse|house|cellar|cocktail|cocktails|tavern|and|the|at)(\\s+|$)', 
-                                    '\\1\\3', 
+                                    '\\s+', 
+                                    ' ', 
                                     'g'
-                                ),
-                                '\\s+', 
-                                ' ', 
-                                'g'
-                            ) AS normalized_name
-                        FROM venues
-                        WHERE "address" = %s
-                    )
-                    SELECT id, "venueName", 
-                        similarity(%s, TRIM(normalized_name)) as sim
-                    FROM normalized_venues
-                    WHERE similarity(%s, TRIM(normalized_name)) > 0.3
-                    ORDER BY sim DESC
-                    LIMIT 1
-                """, (address, normalized_input_name, normalized_input_name))
-                
-                fuzzy_match = cur.fetchone()
-                if fuzzy_match:
-                    venue_id = fuzzy_match['id']
-        
-        if not venue_id:
-            # Create new venue if no exact or fuzzy match found
-            username = create_username(location_name)
-            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
-                                  "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+                                ) AS normalized_name
+                            FROM venues
+                            WHERE "address" = %s
+                        )
+                        SELECT id, "venueName", 
+                            similarity(%s, TRIM(normalized_name)) as sim
+                        FROM normalized_venues
+                        WHERE similarity(%s, TRIM(normalized_name)) > 0.3
+                        ORDER BY sim DESC
+                        LIMIT 1
+                    """, (address, normalized_input_name, normalized_input_name))
+                    
+                    fuzzy_match = cur.fetchone()
+                    if fuzzy_match:
+                        venue_id = fuzzy_match['id']
+            
+            if not venue_id:
+                # Create new venue if no exact or fuzzy match found
+                username = create_username(location_name)
+                insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                      "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                      VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
             hashed_password = 'hashed_password'
             cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
             venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
