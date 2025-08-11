@@ -13,116 +13,109 @@
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <p class="fs-5 fw-bold m-0">{{ (menu && menu.length) || 0 }} Drinks On The Menu</p>
                 <div v-if="isSelfView" class="d-flex gap-2">
-                    <button class="btn btn-outline-primary">Edit Menu</button>
-                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#shareMenuModal">Share Menu</button>
+                    <button v-if="!isEditMode" class="btn btn-outline-primary" @click="toggleEditMode"><i class="bi bi-pencil me-1"></i>Edit Menu</button>
+                    <button v-if="!isEditMode" class="btn btn-outline-secondary" data-bs-toggle="modal"
+                        data-bs-target="#shareMenuModal"><i class="bi bi-share me-1"></i>Share Menu</button>
                 </div>
             </div>
 
-            <!-- Menu Sections -->
-            <div v-if="menu && menu.length > 0">
-                <div v-for="(section, index) in menu" :key="index" class="mb-2">
-                    <!-- Clickable Section Header @click="section.isExpanded = !section.isExpanded" -->
-                    <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
-                        style="background-color: #f0b258; cursor: pointer; user-select: none;"
-                        @click="toggleSection(section, index)">
-                        <div class="d-flex align-items-center">
-                            <h6 class="mb-0 fw-semibold text-dark">{{ section.sectionName }}</h6>
-                            <i :class="['bi', 'ms-2', section.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down']"
-                                style="font-size: 12px;"></i>
-                        </div>
-                    </div>
+            <!-- Edit Mode -->
+            <VenueMenuEdit v-if="isEditMode" :menu-data="editableMenu" @cancel="toggleEditMode"
+                @save="handleSaveChanges" />
 
-                    <!-- Smooth Slide Transition -->
-                    <transition name="slide">
-                        <div v-show="section.isExpanded">
-                            <!-- Loading state -->
-                            <div v-if="section.isLoading" class="text-center p-4 bg-white border border-top-0">
-                                <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true">
-                                </div>
-                                Loading menu items...
+            <!-- View Mode -->
+            <div v-else>
+                <div v-if="menu && menu.length > 0">
+                    <div v-for="(section, index) in menu" :key="index" class="mb-2">
+                        <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
+                            style="background-color: #f0b258; cursor: pointer; user-select: none;"
+                            @click="toggleSection(section, index)">
+                            <div class="d-flex align-items-center">
+                                <h6 class="mb-0 fw-semibold text-dark">{{ section.sectionName }}</h6>
+                                <i :class="['bi', 'ms-2', section.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down']"
+                                    style="font-size: 12px;"></i>
                             </div>
-
-                            <!-- Menu Items -->
-                            <div v-else-if="section.sectionMenu && section.sectionMenu.length > 0" class="bg-white">
-                                <div v-for="(item, itemIndex) in section.sectionMenu" :key="itemIndex"
-                                    class="py-1 px-3">
-
-                                    <router-link :to="{ path: '/listing/view/' + item.itemID + '/' + item.name }"
-                                        class="listing-item-link text-decoration-none">
-                                        <div class="card mb-3 listing-card border-0 shadow-sm">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex align-items-start">
-
-                                                    <!-- Item Image -->
-                                                    <div class="flex-shrink-0 me-3">
-                                                        <div class="image-wrapper d-flex align-items-center justify-content-center rounded-2"
-                                                            :style="{
-                                                                'width': '80px', 
-                                                                'height': '80px',
-                                                                'background-color': '#f8f6f0',
-                                                                'filter': item.itemAvailability === false ? 'grayscale(100%)' : 'none'
-                                                            }">
-                                                            <img v-if="item.photo && item.photo.trim() !== ''"
-                                                                :src="item.photo" :alt="item.name"
-                                                                class="img-fluid rounded"
-                                                                style="max-width: 70px; max-height: 70px; object-fit: contain;">
-                                                            <!-- Fallback Icon -->
-                                                            <i v-else class="bi bi-cup-straw"
-                                                                style="font-size: 28px; color: #d4941e;"></i>
+                        </div>
+                        <transition name="slide">
+                            <div v-show="section.isExpanded">
+                                <div v-if="section.isLoading" class="text-center p-4 bg-white border border-top-0">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status"
+                                        aria-hidden="true"></div>
+                                    Loading menu items...
+                                </div>
+                                <div v-else-if="section.sectionMenu && section.sectionMenu.length > 0"
+                                    class="bg-white">
+                                    <div v-for="(item, itemIndex) in section.sectionMenu" :key="itemIndex"
+                                        class="py-1 px-3">
+                                        <router-link :to="{ path: '/listing/view/' + item.itemID + '/' + item.name }"
+                                            class="listing-item-link text-decoration-none">
+                                            <div class="card mb-3 listing-card border-0 shadow-sm">
+                                                <div class="card-body p-3">
+                                                    <div class="d-flex align-items-start">
+                                                        <div class="flex-shrink-0 me-3">
+                                                            <div class="image-wrapper d-flex align-items-center justify-content-center rounded-2"
+                                                                :style="{
+                                                                    'width': '80px',
+                                                                    'height': '80px',
+                                                                    'background-color': '#f8f6f0',
+                                                                    'filter': item.itemAvailability === false ? 'grayscale(100%)' : 'none'
+                                                                }">
+                                                                <img v-if="item.photo && item.photo.trim() !== ''"
+                                                                    :src="item.photo" :alt="item.name"
+                                                                    class="img-fluid rounded"
+                                                                    style="max-width: 70px; max-height: 70px; object-fit: contain;">
+                                                                <i v-else class="bi bi-cup-straw"
+                                                                    style="font-size: 28px; color: #d4941e;"></i>
+                                                            </div>
                                                         </div>
-                                                    </div>
-
-                                                    <!-- Item Details -->
-                                                    <div class="flex-grow-1" style="min-width: 0;">
-                                                        <div
-                                                            class="d-flex justify-content-between align-items-start mb-1">
-                                                            <h5 class="card-title fw-semibold mb-0 me-2 item-title">
-                                                                {{ item.name }}
-                                                            </h5>
-                                                            <!-- Star icon -->
-                                                            <i class="bi bi-star text-warning flex-shrink-0"></i>
+                                                        <div class="flex-grow-1" style="min-width: 0;">
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-start mb-1">
+                                                                <h5
+                                                                    class="card-title fw-semibold mb-0 me-2 item-title">
+                                                                    {{ item.name }}
+                                                                </h5>
+                                                                <i class="bi bi-star text-warning flex-shrink-0"></i>
+                                                            </div>
+                                                            <p
+                                                                class="card-text text-muted small mb-2 lh-sm text-start">
+                                                                {{ item.bottler ? item.bottler : 'Unknown Producer' }} |
+                                                                {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{
+                                                                    item.abv ? item.abv + '%' : 'N/A ABV' }}
+                                                            </p>
+                                                            <p class="card-text fw-medium mb-0 text-start">
+                                                                {{ item.itemPrice === -1 ? '-' : `$ ${item.itemPrice} /
+                                                                ${item.servingType}` }}
+                                                            </p>
+                                                            <p v-if="item.itemAvailability == false"
+                                                                class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
+                                                                Temporarily Unavailable
+                                                            </p>
                                                         </div>
-
-                                                        <p class="card-text text-muted small mb-2 lh-sm text-start">
-                                                            {{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV'}} 
-                                                        </p>
-                                                        <p class="card-text fw-medium mb-0 text-start">
-                                                            {{ item.itemPrice === -1 ? '-' : `$ ${item.itemPrice} / ${item.servingType}` }}
-                                                        </p>
-                                                        <!-- Availability -->
-                                                        <p v-if="item.itemAvailability == false"
-                                                            class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
-                                                            Temporarily Unavailable
-                                                        </p>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </router-link>
-
+                                        </router-link>
+                                    </div>
+                                    <div v-if="section.pagination && section.pagination.total_pages > 1"
+                                        class="p-2 bg-light">
+                                        <button class="btn btn-sm btn-outline-secondary me-1"
+                                            :disabled="section.pagination.page <= 1"
+                                            @click="loadSectionMenu(section, index, section.pagination.page - 1)">Previous</button>
+                                        <span>Page {{ section.pagination.page }} of {{
+                                            section.pagination.total_pages }}</span>
+                                        <button class="btn btn-sm btn-outline-secondary ms-1"
+                                            :disabled="section.pagination.page >= section.pagination.total_pages"
+                                            @click="loadSectionMenu(section, index, section.pagination.page + 1)">Next</button>
+                                    </div>
                                 </div>
-
-                                <!-- pagination -->
-                                <div v-if="section.pagination && section.pagination.total_pages > 1"
-                                    class="p-2 bg-light">
-                                    <button class="btn btn-sm btn-outline-secondary me-1"
-                                        :disabled="section.pagination.page <= 1"
-                                        @click="loadSectionMenu(section, index, section.pagination.page - 1)">Previous</button>
-
-                                    <span>Page {{ section.pagination.page }} of {{ section.pagination.total_pages
-                                        }}</span>
-
-                                    <button class="btn btn-sm btn-outline-secondary ms-1"
-                                        :disabled="section.pagination.page >= section.pagination.total_pages"
-                                        @click="loadSectionMenu(section, index, section.pagination.page + 1)">Next</button>
-                                </div>
-
+                                <div v-else class="py-2 px-3 text-muted small">No items in this section.</div>
                             </div>
-
-                            <!-- No items -->
-                            <div v-else class="py-2 px-3 text-muted small">No items in this section.</div>
-                        </div>
-                    </transition>
+                        </transition>
+                    </div>
+                </div>
+                 <div v-else class="text-center text-muted p-4">
+                    This venue hasn't added any drinks to their menu yet.
                 </div>
             </div>
         </div>
@@ -130,15 +123,26 @@
 </template>
 
 <script>
+import VenueMenuEdit from './VenueMenuEdit.vue';
+
 export default {
+    components: {
+        VenueMenuEdit
+    },
     props: {
         claimStatus: Boolean,
         isSelfView: Boolean,
-        menu: Array
+        menu: Array,
+        venueId: String,
     },
-    emits: ['section-load-error', 'share-menu-clicked'],
+    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated'],
+    data() {
+        return {
+            isEditMode: false,
+            editableMenu: [],
+        }
+    },
     mounted() {
-        // Ensure isExpanded exists for reactivity
         if (this.menu && this.menu.length > 0) {
             this.menu.forEach(section => {
                 if (section.isExpanded === undefined) {
@@ -148,16 +152,34 @@ export default {
         }
     },
     methods: {
+        toggleEditMode() {
+            this.isEditMode = !this.isEditMode;
+            if (this.isEditMode) {
+                this.editableMenu = JSON.parse(JSON.stringify(this.menu));
+            }
+        },
+        async handleSaveChanges(updatedMenu) {
+            console.log('Saving changes:', updatedMenu);
+            // NOTE: A backend endpoint is required here.
+            // This is a placeholder for the API call.
+            try {
+                // const response = await this.$axios.post(`/api/venues/${this.venueId}/menu/update`, {
+                //     menu: updatedMenu 
+                // });
+                // On success:
+                this.$emit('menu-updated', updatedMenu);
+                this.isEditMode = false;
+            } catch (error) {
+                console.error("Failed to save menu changes:", error);
+                // Optionally, show an error toast to the user
+            }
+        },
         async toggleSection(section, index) {
-            // Toggle the expanded state
             section.isExpanded = !section.isExpanded;
-
-            // If expanding and no menu items loaded yet, fetch them
             if (section.isExpanded && (!section.sectionMenu || section.sectionMenu.length === 0)) {
                 await this.loadSectionMenu(section, index);
             }
         },
-
         async loadSectionMenu(section, index, page = 1, limit = 10) {
             if (!section || !section.id) {
                 console.error('Invalid section provided to loadSectionMenu');
@@ -173,7 +195,7 @@ export default {
                 const response = await this.$axios.get(
                     `${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`,
                     {
-                        params: { page, limit }, // pagination params
+                        params: { page, limit },
                         timeout: 10000,
                         headers: { 'Accept': 'application/json' }
                     }
@@ -181,12 +203,9 @@ export default {
 
                 if (!response.data) throw new Error('Invalid response format');
 
-                // Extract from backend response
                 const items = response.data.data || [];
-                console.log(items)
                 const pagination = response.data.pagination || { page, limit, total_pages: 1 };
 
-                // Store in section so it’s reactive
                 section.sectionMenu = items;
                 section.pagination = pagination;
                 section.itemCount = pagination.total_items || items.length;
@@ -221,10 +240,6 @@ export default {
                 section.isLoading = false;
             }
         },
-
-        async retryLoadSection(section, index) {
-            await this.loadSectionMenu(section, index);
-        }
     }
 };
 </script>

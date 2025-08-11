@@ -152,7 +152,7 @@
 </template>
 
 <script>
-import ListingDisplay from '../elements/ListingDisplay.vue';
+import ListingDisplay from '@/components/elements/ListingDisplay.vue';
 
 export default {
     name: 'VenueOverviewTab',

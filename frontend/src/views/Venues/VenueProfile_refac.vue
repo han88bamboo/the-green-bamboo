@@ -275,7 +275,7 @@ export default {
             isOwner: false, // Set to true to show the welcome banner for demonstration
             isAdmin: false,
             editProfile: false,
-            contentMode: 'overview', // Default tab
+            contentMode: 'menu', // Default tab
             targetVenue: {
                 updates: [],
                 venueName: 'Unknown',
@@ -288,6 +288,7 @@ export default {
                     lat: 0,
                 }
             },
+
             userInfo: {},
             filteredVenueReviews: [],
             bottleReviews: [],
@@ -316,7 +317,6 @@ export default {
             // Properties to hold data from the child component
             updateText: '',
             updatePhoto: null,
-             
         };
     },
     mounted() {
@@ -336,7 +336,8 @@ export default {
         this.handleVenueRoute()
 
         // Fetch venue data and then check permissions
-        this.getVenueData();
+        // this.getVenueData();
+        this.loadData();
     },
     methods: {
         handleUpdateSubmit(updateData) {
@@ -420,6 +421,27 @@ export default {
             }
 
             return response.data;
+        },
+
+        async loadData() {
+            try {
+                await Promise.all([
+                    this.getVenueData(),
+                    this.getOverview(), 
+                    this.getReviews()
+                ]);
+
+            } catch (error) {
+                console.error(error)
+            } 
+        },
+
+        async getOverview() {
+            return
+        },
+
+        async getReviews() {
+            return 
         },
 
         // Main venue data fetching method - optimized for SSR
