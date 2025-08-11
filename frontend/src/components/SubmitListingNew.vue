@@ -259,7 +259,7 @@
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Name of Bottle <span class="text-danger">*</span></p>
+                            <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item <span class="text-danger">*</span></p>
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Bottle Name">
                         </div>
 
@@ -433,6 +433,7 @@
                     </div>
 
                     <!-- [REQ] Input: Relationship with Brand -->
+                    <!-- COMMENTED OUT: Brand relationship selection is handled automatically
                     <p class="text-start mb-1" v-if="formType == 'req'">Your Relationship with the Brand <span class="text-danger">*</span></p>
                     <div class="text-start mb-3" v-if="formType == 'req'">
                         <div class="form-check form-check-inline" v-if="userType == 'user'">
@@ -456,6 +457,7 @@
                             <label class="form-check-label" for="brandRelationOther">Others</label>
                         </div>
                     </div>
+                    -->
 
                     <!-- Error Handling -->
                     <div v-if="errors.length > 0">
