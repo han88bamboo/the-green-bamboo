@@ -29,28 +29,35 @@
                 <div class="mb-2">
                     <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
                         style="background-color: #e9ecef; cursor: default;">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex align-items-center flex-grow-1">
                             <i class="bi bi-grip-vertical drag-handle me-2" style="cursor: grab;"></i>
-                            <h6 class="mb-0 fw-semibold text-dark" @click="toggleSection(section)" style="cursor: pointer;">
+                            <!-- Inline Edit for Section Name -->
+                            <input v-if="section.isEditingName" v-model="section.sectionName" 
+                                   @blur="finishEditingName(section)" @keyup.enter="finishEditingName(section)" 
+                                   class="form-control form-control-sm me-2" type="text" v-focus>
+                            <h6 v-else class="mb-0 fw-semibold text-dark" @click="toggleSection(section)" style="cursor: pointer;">
                                 {{ section.sectionName }}
                             </h6>
                             <i :class="['bi', 'ms-2', section.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down']"
                                 style="font-size: 12px; cursor: pointer;" @click="toggleSection(section)"></i>
                         </div>
-                        <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteSection(section, index)">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary me-1" @click="editSectionName(section)" title="Edit name">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteSection(section, index)" title="Delete section">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Listings within section -->
                     <transition name="slide">
                         <div v-if="section.isExpanded" class="p-3 bg-white border border-top-0 rounded-bottom">
-                            <!-- Loading state -->
                             <div v-if="section.isLoading" class="text-center p-4">
                                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                                 Loading all items...
                             </div>
-                            <!-- Draggable Listings -->
                             <draggable v-else-if="section.sectionMenu && section.sectionMenu.length" v-model="section.sectionMenu" item-key="itemID" handle=".drag-handle-item" ghost-class="ghost">
                                 <template #item="{ element: item, index: itemIndex }">
                                     <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
@@ -73,17 +80,29 @@
                 </div>
             </template>
         </draggable>
+
+        <!-- Add Section Button -->
+        <div class="mt-3">
+            <button class="btn btn-outline-primary w-100" @click="addSection">
+                <i class="bi bi-plus-lg me-1"></i> Add New Section
+            </button>
+        </div>
     </div>
 </template>
 
 <script>
 import draggable from 'vuedraggable';
 
+const focus = {
+  mounted: (el) => el.focus()
+}
+
 export default {
     name: 'VenueMenuEdit',
     components: {
         draggable,
     },
+    directives: { focus },
     props: {
         menuData: {
             type: Array,
@@ -106,10 +125,32 @@ export default {
         },
     },
     methods: {
+        addSection() {
+            const newSection = {
+                id: `new_${Date.now()}`,
+                sectionName: 'New Section',
+                isExpanded: false,
+                sectionMenu: [],
+                isEditingName: true, // Start in edit mode
+            };
+            this.localMenu.push(newSection);
+        },
+        editSectionName(section) {
+            section.isEditingName = true;
+        },
+        finishEditingName(section) {
+            if (!section.sectionName || section.sectionName.trim() === '') {
+                section.sectionName = 'Untitled Section';
+            }
+            section.isEditingName = false;
+        },
         async toggleSection(section) {
+            if (section.isEditingName) return;
             section.isExpanded = !section.isExpanded;
             if (section.isExpanded && (!section.sectionMenu || section.sectionMenu.length === 0)) {
-                await this.loadAllSectionItems(section);
+                if (!section.id.startsWith('new_')) { // Don't fetch for new sections
+                    await this.loadAllSectionItems(section);
+                }
             }
         },
         async loadAllSectionItems(section) {
@@ -120,11 +161,10 @@ export default {
                     `${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`,
                     { params: { paginate: false } } // Load all items
                 );
-                section.sectionMenu = response.data.data || [];
+                section.sectionMenu = response?.data?.data || [];
             } catch (error) {
                 console.error(`Error loading all items for section ${section.id}:`, error);
                 section.sectionMenu = [];
-                // Optionally, show an error message to the user
             } finally {
                 section.isLoading = false;
             }
