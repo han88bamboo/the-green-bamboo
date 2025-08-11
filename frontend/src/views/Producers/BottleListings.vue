@@ -1040,7 +1040,7 @@
                       <p class="text-start mb-2 fw-bold">
                         Review<span class="text-danger">*</span>
                       </p>
-                      <textarea v-model="reviewDesc" class="form-control" id="reviewTextarea" rows="3"
+                      <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
                         placeholder="Min 20 characters"></textarea>
                     </div>
                     <div v-if="reviewDescError !== ''" class="col-md-12">
@@ -5070,7 +5070,6 @@ export default {
 .auto-resize-textarea {
   resize: vertical;
   min-height: 38px;
-  overflow-y: auto;
   transition: height 0.2s ease;
   word-wrap: break-word;
   white-space: pre-wrap;
