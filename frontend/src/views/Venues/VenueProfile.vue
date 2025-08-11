@@ -4399,7 +4399,7 @@
                         <div class="col justify-content-start mb-3">
                             <div class="col-md-12">
                                 <p class="text-start mb-2 fw-bold">Review<span class="text-danger">*</span></p>
-                                <textarea v-model="reviewDesc" class="form-control" id="venueReviewTextarea" rows="3"
+                                <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="venueReviewTextarea" rows="3"
                                     placeholder="Min 20 characters"></textarea>
                             </div>
                             <div v-if="reviewDescError !== ''" class="col-md-12">
@@ -5315,6 +5315,11 @@ export default {
         // this.$root.$on('error', (error) => {
         //     this.handleDragError({ error });
         // });
+
+        // Initialize auto-resize functionality for textareas
+        this.$nextTick(() => {
+            this.setupAutoResize();
+        });
     },
     beforeUnmount() {
         // Remove the event listener when component is destroyed
@@ -5341,6 +5346,49 @@ export default {
             if (!url) return '';
             const match = url.match(/tiktok\.com\/@([^/?]+)/);
             return match ? `@${match[1]}` : url;
+        },
+
+        // Setup auto-resize functionality for textareas
+        setupAutoResize() {
+            // Use a short delay to ensure modal is fully rendered
+            setTimeout(() => {
+                const textareas = document.querySelectorAll('.auto-resize-textarea');
+                console.log('Found textareas:', textareas.length); // Debug log
+                
+                textareas.forEach(textarea => {
+                    // Remove existing listeners to avoid duplicates
+                    textarea.removeEventListener('input', this.autoResize);
+                    
+                    // Auto-resize on input
+                    textarea.addEventListener('input', this.autoResize);
+                    
+                    // Set initial height
+                    this.autoResize({ target: textarea });
+                });
+            }, 100);
+        },
+
+        // Auto-resize function for textareas
+        autoResize(event) {
+            if (!event || !event.target) return;
+            
+            const textarea = event.target;
+            
+            // Reset height to auto to get correct scrollHeight
+            textarea.style.height = 'auto';
+            
+            // Set new height based on content
+            const newHeight = Math.max(38, textarea.scrollHeight);
+            textarea.style.height = newHeight + 'px';
+            
+            console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
+        },
+
+        // Call this when modal opens or when textareas become visible
+        initializeTextareas() {
+            this.$nextTick(() => {
+                this.setupAutoResize();
+            });
         },
         
         setUpdateID(review) {
@@ -8254,6 +8302,15 @@ Thank you!`
                 this.venueExists = false;
             }
         }
+    },
+    
+    // Watch for when venue review modal becomes visible
+    addingVenueReview(newVal) {
+        if (newVal) {
+            this.$nextTick(() => {
+                this.setupAutoResize();
+            });
+        }
     }
     }
     }    
@@ -8456,5 +8513,21 @@ Thank you!`
         padding: 0.4rem 0.6rem;
         margin: 0.1rem;
     }
+}
+
+/* Auto-resizing textarea styles */
+.auto-resize-textarea {
+    resize: vertical;
+    min-height: 38px;
+    transition: height 0.2s ease;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.auto-resize-textarea:focus {
+    border-color: #006A50;
+    box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
 }
 </style>
