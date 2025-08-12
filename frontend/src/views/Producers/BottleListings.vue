@@ -1152,34 +1152,36 @@
                           </div>
                         </div>
 
-                        <!-- row 7B: all colours (just show a few) -->
-                        <div class="row justify-content-start mb-3 text-start">
-                          <div class="col-7">
-                            <button v-for="(colour, i) in colours.slice(0, 8)" :key="i"
-                              class="btn me-1 mb-1" disabled :style="{
-                                width: '20px',
-                                height: '20px',
+                        <!-- row 7B: all colours (show more colors, tighter spacing) -->
+                        <div class="row justify-content-start mb-2 text-start">
+                          <div class="col-12">
+                            <button v-for="(colour, i) in colours.slice(0, 14)" :key="i"
+                              class="btn me-1 mb-1 preview-color-btn" disabled :style="{
+                                width: '18px',
+                                height: '18px',
                                 backgroundColor: colour,
                                 borderRadius: '0',
                                 borderColor: 'grey',
                                 borderWidth: '1px',
+                                marginRight: '2px',
+                                padding: '0',
                               }"></button>
                           </div>
                         </div>
 
-                        <!-- row 8: aroma, taste and finish -->
+                        <!-- row 8: aroma, taste and finish (tighter spacing) -->
                         <div class="row">
-                          <div class="col justify-content-start mb-3">
-                            <div class="form-group mb-3">
-                              <p class="text-start mb-2 fw-bold">Aroma</p>
+                          <div class="col justify-content-start">
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold">Aroma</p>
                               <div class="preview-input-field"></div>
                             </div>
-                            <div class="form-group mb-3">
-                              <p class="text-start mb-2 fw-bold">Taste</p>
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold">Taste</p>
                               <div class="preview-input-field"></div>
                             </div>
-                            <div class="form-group mb-2">
-                              <p class="text-start mb-2 fw-bold">Finish</p>
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold">Finish</p>
                               <div class="preview-input-field"></div>
                             </div>
                           </div>
@@ -1189,7 +1191,7 @@
                       <!-- Fade overlay with call-to-action -->
                       <div class="preview-fade-overlay">
                         <div class="preview-cta">
-                          <span>Click to extend review and add more details</span>
+                          <span>Extend to add more details!</span>
                           <i class="bi bi-chevron-down ms-2"></i>
                         </div>
                       </div>
@@ -5240,32 +5242,42 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 140px; /* Increased height for stronger fade */
   background: linear-gradient(to bottom, 
     rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.8) 50%, 
-    rgba(255, 255, 255, 0.95) 100%);
+    rgba(255, 255, 255, 0.4) 30%, /* Earlier fade start */
+    rgba(255, 255, 255, 0.8) 60%, 
+    rgba(255, 255, 255, 0.95) 80%,
+    rgba(255, 255, 255, 1) 100%); /* Stronger fade */
   display: flex;
-  align-items: flex-end;
+  align-items: start; 
   justify-content: center;
-  padding-bottom: 15px;
+  padding: 15px;
 }
 
 .preview-cta {
   background: rgba(240, 179, 88, 0.9);
   color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 10px 20px;
+  border-radius: 25px;
   font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
   backdrop-filter: blur(5px);
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Add subtle shadow */
 }
 
 .extended-preview-container:hover .preview-cta {
   background: rgba(240, 179, 88, 1);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+}
+
+/* Style for preview color buttons */
+.preview-color-btn {
+  margin-right: 2px !important;
+  padding: 0 !important;
 }
 
 /* Responsive adjustments */
@@ -5276,12 +5288,18 @@ export default {
   }
   
   .preview-fade-overlay {
-    height: 60px;
+    height: 100px; /* Increased for mobile too */
   }
   
   .preview-cta {
     font-size: 0.8rem;
-    padding: 6px 12px;
+    padding: 8px 16px;
+  }
+  
+  .preview-color-btn {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 1px !important;
   }
 }
 </style>
