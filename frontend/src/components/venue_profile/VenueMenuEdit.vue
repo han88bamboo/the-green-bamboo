@@ -19,7 +19,7 @@
         <div class="alert alert-info d-flex align-items-center" role="alert">
             <i class="bi bi-info-circle-fill me-3 fs-4"></i>
             <div>
-                Drag and drop sections to reorder them. Click a section to expand and manage its listings.
+                Drag and drop sections or sub-sections to reorder them. Click to expand and manage contents.
             </div>
         </div>
 
@@ -28,10 +28,9 @@
             <template #item="{ element: section, index }">
                 <div class="mb-2">
                     <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
-                        style="background-color: #e9ecef; cursor: default;">
+                        style="background-color: #f0b258; cursor: default;">
                         <div class="d-flex align-items-center flex-grow-1">
                             <i class="bi bi-grip-vertical drag-handle me-2" style="cursor: grab;"></i>
-                            <!-- Inline Edit for Section Name -->
                             <input v-if="section.isEditingName" v-model="section.sectionName" 
                                    @blur="finishEditingName(section)" @keyup.enter="finishEditingName(section)" 
                                    class="form-control form-control-sm me-2" type="text" v-focus>
@@ -51,9 +50,80 @@
                         </div>
                     </div>
 
-                    <!-- Listings within section -->
+                    <!-- Expanded Section Content -->
                     <transition name="slide">
                         <div v-if="section.isExpanded" class="p-3 bg-white border border-top-0 rounded-bottom">
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 mb-3">
+                                <button class="btn btn-sm btn-outline-primary" @click="addSubsection(section)">
+                                    <i class="bi bi-plus-lg"></i> Add Sub-section
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" @click="addListing(section)">
+                                    <i class="bi bi-plus-lg"></i> Add Listing
+                                </button>
+                            </div>
+
+                            <!-- Sub-sections -->
+                            <div class="ps-4"> <!-- Indentation for sub-sections -->
+                                <draggable v-model="section.subSections" item-key="id" handle=".drag-handle-subsection" ghost-class="ghost">
+                                    <template #item="{ element: subSection, index: subSectionIndex }">
+                                        <div class="mb-2">
+                                            <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded" style="background-color: #e9ecef; cursor: default;">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <i class="bi bi-grip-vertical drag-handle-subsection me-2" style="cursor: grab;"></i>
+                                                    <input v-if="subSection.isEditingName" v-model="subSection.sectionName" 
+                                                           @blur="finishEditingName(subSection)" @keyup.enter="finishEditingName(subSection)" 
+                                                           class="form-control form-control-sm me-2" type="text" v-focus>
+                                                    <h6 v-else class="mb-0 fw-semibold text-dark" @click="toggleSubSection(subSection)" style="cursor: pointer;">
+                                                        {{ subSection.sectionName }}
+                                                    </h6>
+                                                    <i :class="['bi', 'ms-2', subSection.isExpanded ? 'bi-chevron-up' : 'bi-chevron-down']"
+                                                        style="font-size: 12px; cursor: pointer;" @click="toggleSubSection(subSection)"></i>
+                                                </div>
+                                                <div>
+                                                    <button class="btn btn-sm btn-outline-secondary me-1" @click="editSectionName(subSection)" title="Edit name">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteSubSection(section, subSectionIndex)" title="Delete sub-section">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- Listings within sub-section -->
+                                            <transition name="slide">
+                                                <div v-if="subSection.isExpanded" class="p-3 bg-white border border-top-0 rounded-bottom">
+                                                    <draggable v-if="subSection.sectionMenu && subSection.sectionMenu.length" v-model="subSection.sectionMenu" item-key="itemID" handle=".drag-handle-item" ghost-class="ghost">
+                                                        <template #item="{ element: item, index: itemIndex }">
+                                                            <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
+                                                                <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
+                                                                <span class="flex-grow-1">{{ item.name }}</span>
+                                                                <div class="d-flex gap-2">
+                                                                    <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
+                                                                        <i class="bi bi-arrow-up"></i>
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-outline-danger" title="Remove from section" @click="removeItem(subSection.sectionMenu, itemIndex)">
+                                                                        <i class="bi bi-x"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </draggable>
+                                                    <div v-else class="text-muted p-2">No items in this sub-section.</div>
+                                                    <div class="mt-2">
+                                                        <button class="btn btn-sm btn-outline-success w-100" @click="addListing(subSection)">
+                                                            <i class="bi bi-plus-lg"></i> Add Listing to Sub-section
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </transition>
+                                        </div>
+                                    </template>
+                                </draggable>
+                            </div>
+
+                            <hr v-if="section.subSections && section.subSections.length > 0 && section.sectionMenu && section.sectionMenu.length > 0" class="my-3">
+
+                            <!-- Listings directly in section -->
                             <div v-if="section.isLoading" class="text-center p-4">
                                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                                 Loading all items...
@@ -74,7 +144,10 @@
                                     </div>
                                 </template>
                             </draggable>
-                            <div v-else class="text-muted p-2">No items in this section.</div>
+                            
+                            <div v-if="!section.isLoading && (!section.sectionMenu || section.sectionMenu.length === 0) && (!section.subSections || section.subSections.length === 0)" class="text-muted p-2">
+                                No items or sub-sections in this section.
+                            </div>
                         </div>
                     </transition>
                 </div>
@@ -119,6 +192,20 @@ export default {
         menuData: {
             handler(newValue) {
                 this.localMenu = JSON.parse(JSON.stringify(newValue));
+                this.localMenu.forEach(section => {
+                    if (!section.subSections) {
+                        section.subSections = [];
+                    }
+                    if (section.subSections) {
+                        section.subSections.forEach(sub => {
+                            sub.isExpanded = sub.isExpanded ?? false;
+                            sub.isEditingName = sub.isEditingName ?? false;
+                            if (!sub.sectionMenu) {
+                                sub.sectionMenu = [];
+                            }
+                        });
+                    }
+                });
             },
             immediate: true,
             deep: true,
@@ -131,7 +218,8 @@ export default {
                 sectionName: 'New Section',
                 isExpanded: false,
                 sectionMenu: [],
-                isEditingName: true, // Start in edit mode
+                subSections: [],
+                isEditingName: true,
             };
             this.localMenu.push(newSection);
         },
@@ -148,7 +236,7 @@ export default {
             if (section.isEditingName) return;
             section.isExpanded = !section.isExpanded;
             if (section.isExpanded && (!section.sectionMenu || section.sectionMenu.length === 0)) {
-                if (!section.id.startsWith('new_')) { // Don't fetch for new sections
+                if (!String(section.id).startsWith('new_')) {
                     await this.loadAllSectionItems(section);
                 }
             }
@@ -159,9 +247,9 @@ export default {
             try {
                 const response = await this.$axios.get(
                     `${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`,
-                    { params: { paginate: false } } // Load all items
+                    { params: { paginate: false } }
                 );
-                section.sectionMenu = response?.data?.data || [];
+                section.sectionMenu = response.data.data || [];
             } catch (error) {
                 console.error(`Error loading all items for section ${section.id}:`, error);
                 section.sectionMenu = [];
@@ -180,6 +268,40 @@ export default {
         },
         removeItem(list, itemIndex) {
             list.splice(itemIndex, 1);
+        },
+        addSubsection(section) {
+            if (!section.subSections) {
+                section.subSections = [];
+            }
+            const newSubSection = {
+                id: `new_sub_${Date.now()}`,
+                sectionName: 'New Sub-section',
+                isExpanded: false,
+                sectionMenu: [],
+                isEditingName: true,
+            };
+            section.subSections.push(newSubSection);
+        },
+        confirmDeleteSubSection(section, subSectionIndex) {
+            const subsection = section.subSections[subSectionIndex];
+            if (window.confirm(`Are you sure you want to delete the sub-section "${subsection.sectionName}"? This cannot be undone.`)) {
+                section.subSections.splice(subSectionIndex, 1);
+            }
+        },
+        toggleSubSection(subsection) {
+            if (subsection.isEditingName) return;
+            subsection.isExpanded = !subsection.isExpanded;
+        },
+        addListing(itemContainer) {
+            if (!itemContainer.sectionMenu) {
+                itemContainer.sectionMenu = [];
+            }
+            const newListing = {
+                itemID: `new_item_${Date.now()}`,
+                name: 'New Item (Placeholder)',
+            };
+            itemContainer.sectionMenu.push(newListing);
+            itemContainer.isExpanded = true;
         }
     }
 };
@@ -190,7 +312,7 @@ export default {
     opacity: 0.5;
     background: #c8ebfb;
 }
-.drag-handle, .drag-handle-item {
+.drag-handle, .drag-handle-item, .drag-handle-subsection {
     cursor: grab;
 }
 .listing-edit-item {
