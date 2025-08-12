@@ -17,7 +17,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
-from scripts import badge_helpers, notifications
+from scripts import badge_helpers, notifications, pointsHelperFunc
 
 # Use to upload image to S3
 import s3Images
@@ -688,20 +688,49 @@ def canCreateEvents(user_id, user_type):
     cursor = conn.cursor()
 
     try:
-        # Step 1: Check if the user can create more events
-        can_create = canCreateMoreEvents(cursor, user_id, user_type)
+        # Check for user type: user - needs to have minimum proof points
+        if user_type == 'user':
+            canCreateTuple = pointsHelperFunc.check_user_can_create_event(user_id)
 
-        if not can_create[0]:
+            if not canCreateTuple[0]:
+                if canCreateTuple[1] == 'insufficient points':
+                    return jsonify({
+                        'canCreate': False,
+                        'reason': 'insufficient points',
+                        'message': 'You need a minimum of 100 proof points to create events.',
+                        'pointsNeeded': canCreateTuple[2]
+                    }), 200
+                
+                else:
+                    return jsonify({
+                        'canCreate': False,
+                        'reason': 'max events created',
+                        'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
+                        'numEventsCreated': canCreateTuple[2]
+                    }), 200
+            
+            # User can create an event
             return jsonify({
-                'canCreate': False,
-                'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
-                'limit': can_create[1]
+                'canCreate': True,
+                'message': 'User can create more events as per the limit'
             }), 200
 
-        return jsonify({
-            'canCreate': True,
-            'message': 'User can create more events as per the limit'
-        }), 200
+        # For producers and venues, use the existing logic
+        else:
+            # Step 1: Check if the user can create more events
+            can_create = canCreateMoreEvents(cursor, user_id, user_type)
+
+            if not can_create[0]:
+                return jsonify({
+                    'canCreate': False,
+                    'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
+                    'limit': can_create[1]
+                }), 200
+
+            return jsonify({
+                'canCreate': True,
+                'message': 'User can create more events as per the limit'
+            }), 200
 
     except Exception as e:
         print(str(e))

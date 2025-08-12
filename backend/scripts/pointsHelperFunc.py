@@ -146,6 +146,51 @@ def check_user_can_create_club(user_id):
 
 ###############################################################################################################
 
+
+# Check if user has achieved the minimum proof points to create an event
+max_number_of_events = 5
+min_points_event = 100
+
+def check_user_can_create_event(user_id):
+    """
+    Check if the user has achieved the minimum proof points to create an event.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        tuple: (bool, str, int) - (can_create, reason, value)
+    """
+
+    # Retrieve the minimum proof points from the database
+    conn = g.db
+    cur = conn.cursor()
+
+    # Retrieve the user's current proof points from the database
+    cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+    current_points = cur.fetchone()
+
+    # Check if user exists in the points system
+    if current_points is None:
+        return (False, 'user not found', 0)
+
+    # Check if the user has reached the minimum proof points to create an event
+    if current_points['currentPoints'] >= min_points_event:
+        
+        # Check if the user has reached the maximum number of events they can create
+        cur.execute('SELECT COUNT(*) FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s AND "createdDate" >= date_trunc(\'month\', CURRENT_DATE)', (user_id, 'user',))
+        event_count = cur.fetchone()
+
+        if event_count['count'] < max_number_of_events:
+            return (True, None, None)
+        else:
+            return (False, 'max events reached', max_number_of_events)
+    else:
+        return (False, 'insufficient points', min_points_event)
+
+
+###############################################################################################################
+
 # Get the current proof points of the user using user ID
 def get_current_proof_points(user_id):
     """

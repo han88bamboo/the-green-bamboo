@@ -1136,8 +1136,20 @@ export default {
                 let response;
                 response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/canCreateEvents/` + this.userID + "/" + this.userType);
                 this.canCreateEvent = response.data.canCreate;
-                console.log(this.canCreateEvent);
-                this.canCreateEventMessage = response.data.message;
+                
+                // cannot create event
+                if (!this.canCreateEvent) {
+                    if (this.userType == "user") {
+                        if (response.data.reason == "insufficient points") {
+                            this.canCreateEventMessage = response.data.message;
+                        } else {
+                            this.canCreateEventMessage = response.data.message;
+                        }
+                    } 
+                    else {
+                        this.canCreateEventMessage = response.data.message;
+                    }
+                }
             }
             catch (error) {
                 console.error(error);
