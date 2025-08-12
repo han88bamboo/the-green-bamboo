@@ -1139,6 +1139,64 @@
                   </div>
                 </div>
 
+                <!-- Preview section when collapsed -->
+                <div v-if="!extendReview" class="row mb-3">
+                  <div class="col-12">
+                    <div class="extended-preview-container" @click="controlModal">
+                      <!-- Limited height preview content -->
+                      <div class="preview-content">
+                        <!-- row 7: colours -->
+                        <div class="row">
+                          <div class="col-6 col-md-12 justify-content-start">
+                            <p class="text-start mb-2 fw-bold">Colour</p>
+                          </div>
+                        </div>
+
+                        <!-- row 7B: all colours (just show a few) -->
+                        <div class="row justify-content-start mb-3 text-start">
+                          <div class="col-7">
+                            <button v-for="(colour, i) in colours.slice(0, 8)" :key="i"
+                              class="btn me-1 mb-1" disabled :style="{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: colour,
+                                borderRadius: '0',
+                                borderColor: 'grey',
+                                borderWidth: '1px',
+                              }"></button>
+                          </div>
+                        </div>
+
+                        <!-- row 8: aroma, taste and finish -->
+                        <div class="row">
+                          <div class="col justify-content-start mb-3">
+                            <div class="form-group mb-3">
+                              <p class="text-start mb-2 fw-bold">Aroma</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                            <div class="form-group mb-3">
+                              <p class="text-start mb-2 fw-bold">Taste</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                            <div class="form-group mb-2">
+                              <p class="text-start mb-2 fw-bold">Finish</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Fade overlay with call-to-action -->
+                      <div class="preview-fade-overlay">
+                        <div class="preview-cta">
+                          <span>Click to extend review and add more details</span>
+                          <i class="bi bi-chevron-down ms-2"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- row 7: section breaker (horizontal line) -->
                 <div class="row">
                   <!-- Dashed line -->
@@ -5129,5 +5187,101 @@ export default {
 .location-input-wrapper {
   position: relative;
   width: 100%;
+}
+
+/* Extended review preview styles - NYT paywall style */
+.extended-preview-container {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.extended-preview-container:hover {
+  border-color: #6c757d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-content {
+  padding: 20px;
+  height: 200px; /* Fixed height for preview */
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-input-field {
+  height: 35px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-input-field::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #dee2e6 20%, 
+    #dee2e6 80%, 
+    transparent 100%);
+  transform: translateY(-50%);
+}
+
+.preview-fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.8) 50%, 
+    rgba(255, 255, 255, 0.95) 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 15px;
+}
+
+.preview-cta {
+  background: rgba(240, 179, 88, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.extended-preview-container:hover .preview-cta {
+  background: rgba(240, 179, 88, 1);
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .preview-content {
+    padding: 15px;
+    height: 150px;
+  }
+  
+  .preview-fade-overlay {
+    height: 60px;
+  }
+  
+  .preview-cta {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
 }
 </style>
