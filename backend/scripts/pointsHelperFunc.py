@@ -148,7 +148,7 @@ def check_user_can_create_club(user_id):
 
 
 # Check if user has achieved the minimum proof points to create an event
-max_number_of_events = 5
+max_number_of_events = 2
 min_points_event = 100
 
 def check_user_can_create_event(user_id):
