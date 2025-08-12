@@ -1814,6 +1814,99 @@ Add vintage support for venue profile menu mangement
 Nature of the changes (frontend / backend / database):
 frontend, backend, databse 
 
+
+# Update as of 31st July
+
+Coder: Han 
+
+Purpose of the changes:
+-venues to show socials, have clickable website urls
+-"earn 100 points to create your own club"
+–add producer search to menu items
+-attempted update to vue-gtag library
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+
+# Update as of 1st Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-listing names (of reviewed drinks) not showing up on venues
+-review submission loading wheel
+-badges and points explainer
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 4th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-fixed multi item submission on menu - disabled feedback message for now
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 5th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-fix bug where validation of user doesnt work properly for club creation
+-zoom in picture for browsing clubs
+
+Nature of the changes (frontend / backend / database):
+backend, frontend
+
+# Update as of 6th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-longer "read more" section for venues
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 6th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-venue menu sorting - sorting lexicographically to numerically 
+-disable duplicate check when submitting listings
+-getting review bar to grow in height as more words go in
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 7th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-add a drink modal was not present (Danish's error)
+-sake expert, or champagne expert, etc badge implementation
+-allow autocomplete to work on popup
+-removing the FooterBar/> component from every vue page since it is added by JS
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 8th Aug
+Coder: Han 
+
+Purpose of the changes:
+-adding selection drawers for producer and IB selection on submit a listing
+-amenities badges for venues
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
 # Update as of 9th Aug
 
 Coder: Kai  
@@ -1824,3 +1917,21 @@ Purpose of the changes:
 
 Nature of the changes (frontend / backend / database):
 frontend
+
+# Update as of 9th Aug
+Coder: Han 
+
+Purpose of the changes:
+-fix to allow venues to submit listings too
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 10th Aug
+Coder: Han 
+
+Purpose of the changes:
+-allow for tagging of home in bottle reviews
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
