@@ -1036,29 +1036,36 @@
                 <!-- row 3: review and vintage -->
                 <div class="row">
                   <div class="col justify-content-start mb-3">
+                    <div class="row mb-2">
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-12">
+                        <p class="text-start mb-0 fw-bold" >Vintage
+                          <span v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                           For wine and sake, you can review specific vintage years.
+                          </span>
+                        </p> 
+                      </div>
+                    </div>
+                    <div class="row mb-2">
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage" placeholder="e.g. 2020" />
+                      </div>
+                    </div>
                     <!-- Labels row -->
                     <div class="row mb-2">
-                      <div :class="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType) ? 'col-10' : 'col-12'">
+                      <div class="col-12">
                         <p class="text-start mb-0 fw-bold">
                           Review<span class="text-danger">*</span>
                         </p>
-                        <p v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                          Please note that for wine and sake labels, reviews can be given for specific vintage years.
-                        </p>
+                        
                       </div>
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-2">
-                        <p class="text-start mb-0 fw-bold">Vintage</p>
-                      </div>
+                      
                     </div>
                     
                     <!-- Input fields row -->
                     <div class="row">
-                      <div :class="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType) ? 'col-10' : 'col-12'">
+                      <div class="col-12">
                         <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
                           placeholder="Min 20 characters"></textarea>
-                      </div>
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-2">
-                        <input v-model="variant" type="text" class="form-control" id="vintage" placeholder="e.g. 2020" />
                       </div>
                     </div>
                     

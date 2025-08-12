@@ -508,14 +508,14 @@
                     ></textarea>
                   </div>
                   <div v-else class="ps-0 pe-0">
-                    <div v-if="specified_producer.producerDesc.length > 150">
+                    <div v-if="specified_producer.producerDesc.length > 320">
                       <p
                         v-if="!showFullProducerDescription"
                         class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
                       >
                         {{
-                          specified_producer["producerDesc"].slice(0, 150) +
-                          (specified_producer["producerDesc"].length > 150
+                          specified_producer["producerDesc"].slice(0, 320) +
+                          (specified_producer["producerDesc"].length > 320
                             ? "..."
                             : "")
                         }}
