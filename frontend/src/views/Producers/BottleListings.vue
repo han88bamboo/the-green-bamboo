@@ -1062,6 +1062,7 @@
                       </option>
                       <option :value="true">Yes</option>
                       <option :value="false">No</option>
+                      <option :value="null">–</option>
                     </select>
                   </div>
 
@@ -1074,6 +1075,7 @@
                       </option>
                       <option :value="true">Yes</option>
                       <option :value="false">No</option>
+                      <option :value="null">–</option>
                     </select>
                   </div>
                 </div>
@@ -1148,7 +1150,7 @@
                         <!-- row 7: colours -->
                         <div class="row">
                           <div class="col-6 col-md-12 justify-content-start">
-                            <p class="text-start mb-1 fw-bold">Colour</p>
+                            <p class="text-start mb-1 fw-bold small">Colour</p>
                           </div>
                         </div>
 
@@ -1173,15 +1175,15 @@
                         <div class="row">
                           <div class="col justify-content-start">
                             <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold">Aroma</p>
+                              <p class="text-start mb-1 fw-bold small">Aroma</p>
                               <div class="preview-input-field"></div>
                             </div>
                             <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold">Taste</p>
+                              <p class="text-start mb-1 fw-bold small">Taste</p>
                               <div class="preview-input-field"></div>
                             </div>
                             <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold">Finish</p>
+                              <p class="text-start mb-1 fw-bold small">Finish</p>
                               <div class="preview-input-field"></div>
                             </div>
                           </div>
@@ -1191,7 +1193,7 @@
                       <!-- Fade overlay with call-to-action -->
                       <div class="preview-fade-overlay">
                         <div class="preview-cta">
-                          <span>Extend to add more details!</span>
+                          <span class="fst-italic" >Extend and add more details!</span>
                           <i class="bi bi-chevron-down ms-2"></i>
                         </div>
                       </div>
