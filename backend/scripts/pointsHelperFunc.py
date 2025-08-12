@@ -102,7 +102,7 @@ def check_max_proof_points(user_id):
 
 
 # Check if user has achieved the minumum proof points to create a club 
-max_number_of_clubs = 3
+max_number_of_clubs = 2
 min_points = 100
 
 def check_user_can_create_club(user_id):

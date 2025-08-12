@@ -723,7 +723,7 @@ export default {
                     if (this.userType == "user") {
 
                         if (response.data.reason == "insufficient points") {
-                            this.cannotCreateClubMsg = response.data.message + ". You need a minimum of " + response.data.pointsNeeded + " proof points to create a club.";
+                            this.cannotCreateClubMsg = response.data.message + " You need a minimum of " + response.data.pointsNeeded + " proof points to create a club.";
                         } else {
                             this.cannotCreateClubMsg = response.data.message;
                         }
