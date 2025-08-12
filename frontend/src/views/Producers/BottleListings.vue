@@ -1148,12 +1148,12 @@
                         <!-- row 7: colours -->
                         <div class="row">
                           <div class="col-6 col-md-12 justify-content-start">
-                            <p class="text-start mb-2 fw-bold">Colour</p>
+                            <p class="text-start mb-1 fw-bold">Colour</p>
                           </div>
                         </div>
 
                         <!-- row 7B: all colours (show more colors, tighter spacing) -->
-                        <div class="row justify-content-start mb-2 text-start">
+                        <div class="row justify-content-start mb-1 text-start">
                           <div class="col-12">
                             <button v-for="(colour, i) in colours.slice(0, 14)" :key="i"
                               class="btn me-1 mb-1 preview-color-btn" disabled :style="{
@@ -5256,23 +5256,30 @@ export default {
 }
 
 .preview-cta {
-  background: rgba(240, 179, 88, 0.9);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 25px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 900; /* Extra bold */
   text-align: center;
-  backdrop-filter: blur(5px);
+  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2), 
+               0px 0px 12px rgba(0, 0, 0, 0.3),
+               1px 1px 4px rgba(0, 0, 0, 0.3); /* Heavy shadow */
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); /* Add subtle shadow */
+  background: none; /* Remove background */
+  border: none; /* Remove border */
+  padding: 0; /* Remove padding */
+  border-radius: 0; /* Remove border radius */
+  backdrop-filter: none; /* Remove backdrop filter */
+  box-shadow: none; /* Remove box shadow */
 }
 
-.extended-preview-container:hover .preview-cta {
-  background: rgba(240, 179, 88, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Enhanced shadow on hover */
+.extended-preview-container:hover {
+  color: #000; /* Darker on hover */
+  transform: translateY(-1px);
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9), 
+               0px 0px 15px rgba(0, 0, 0, 0.7),
+               2px 2px 6px rgba(0, 0, 0, 1); /* Even heavier shadow on hover */
 }
+
 
 /* Style for preview color buttons */
 .preview-color-btn {
@@ -5292,8 +5299,11 @@ export default {
   }
   
   .preview-cta {
-    font-size: 0.8rem;
-    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 800; /* Slightly less bold on mobile but still heavy */
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8), 
+                 0px 0px 10px rgba(0, 0, 0, 0.6),
+                 1px 1px 3px rgba(0, 0, 0, 0.9); /* Adjusted for mobile */
   }
   
   .preview-color-btn {
