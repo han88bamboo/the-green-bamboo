@@ -1042,6 +1042,9 @@
                         <p class="text-start mb-0 fw-bold">
                           Review<span class="text-danger">*</span>
                         </p>
+                        <p v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                          Please note that for wine and sake labels, reviews can be given for specific vintage years.
+                        </p>
                       </div>
                       <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-2">
                         <p class="text-start mb-0 fw-bold">Vintage</p>
