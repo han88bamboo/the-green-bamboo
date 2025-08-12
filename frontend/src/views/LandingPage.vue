@@ -388,7 +388,7 @@ export default {
                 "@type": "WebSite",
                 "name": 'Drink-X | A World of Drinks - Just Look It Up!',
                 "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
-                "description": 'Discover your next great drink! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
+                "description": 'Discover your next great drink on Drink X! Sign up for free - log your drink reviews, discover new brands, and explore your next go-to bar.',
                 "url": 'https://www.drink-x.com',
                 "potentialAction": {
                 "@type": "SearchAction",
