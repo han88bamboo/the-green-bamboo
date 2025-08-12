@@ -1033,16 +1033,32 @@
                   </div>
                 </div>
 
-                <!-- row 3: review -->
+                <!-- row 3: review and vintage -->
                 <div class="row">
                   <div class="col justify-content-start mb-3">
-                    <div class="col-md-12">
-                      <p class="text-start mb-2 fw-bold">
-                        Review<span class="text-danger">*</span>
-                      </p>
-                      <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
-                        placeholder="Min 20 characters"></textarea>
+                    <!-- Labels row -->
+                    <div class="row mb-2">
+                      <div class="col-8">
+                        <p class="text-start mb-0 fw-bold">
+                          Review<span class="text-danger">*</span>
+                        </p>
+                      </div>
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-4">
+                        <p class="text-start mb-0 fw-bold">Vintage</p>
+                      </div>
                     </div>
+                    
+                    <!-- Input fields row -->
+                    <div class="row">
+                      <div class="col-8">
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
+                          placeholder="Min 20 characters"></textarea>
+                      </div>
+                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage" placeholder="e.g. 2020" />
+                      </div>
+                    </div>
+                    
                     <div v-if="reviewDescError !== ''" class="col-md-12">
                       <p class="text-danger text-start mb-2 fw-bold">
                         {{ reviewDescError }}
@@ -1300,11 +1316,6 @@
                   <!-- row 8: aroma, taste and finish -->
                   <div class="row pt-2">
                     <div class="col justify-content-start mb-3">
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="form-group mb-3">
-                      <!--<div v-if="specified_listing.drinkType == 'Wine' || specified_listing.drinkType == 'Sake'" class="form-group mb-3">-->
-                        <p class="text-start mb-2 fw-bold">Vintage</p>
-                        <input v-model="variant" type="text" class="form-control" id="aroma" />
-                      </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Aroma</p>
                         <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1" placeholder="Describe the aroma..."></textarea>
