@@ -1078,12 +1078,51 @@
                   </div>
                 </div>
 
-                <!-- row 5: extend review -->
+                <!-- row 5: rating -->
+                <div class="row">
+                  <div class="col-12 mb-3">
+                    <div class="row align-items-center text-start">
+                      <p class="text-star mb-1 fw-bold">
+                        My Rating<span class="text-danger">*</span>
+                      </p>
+                      <label for="customRange2" class="form-label">
+                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
+                        Stars
+                      </label>
+                      <div class="col-auto">
+                        <label for="customRange" class="form-label fw-bold">1</label>
+                      </div>
+                      <div class="col">
+                        <div class="slider-container" style="position: relative">
+                          <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
+                            id="customRange" />
+                          <div class="tickmarks">
+                            <span class="tick" style="left: 5%">|</span>
+                            <span class="tick" style="left: 15%">|</span>
+                            <span class="tick" style="left: 25%">|</span>
+                            <span class="tick" style="left: 35%">|</span>
+                            <span class="tick" style="left: 45%">|</span>
+                            <span class="tick" style="left: 55%">|</span>
+                            <span class="tick" style="left: 65%">|</span>
+                            <span class="tick" style="left: 75%">|</span>
+                            <span class="tick" style="left: 85%">|</span>
+                            <span class="tick" style="left: 95%">|</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <label for="customRange" class="form-label fw-bold">10</label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 6: extend review -->
                 <div class="row">
                   <!-- Buttons to expand -->
                   <div v-if="!extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white"
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
                         @click="controlModal">
                         Extend Review &#9660;
                       </button>
@@ -1092,7 +1131,7 @@
                   <!-- Button to collapse -->
                   <div v-if="extendReview" class="col justify-content-start mb-3 text-start">
                     <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white"
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
                         @click="controlModal">
                         Condense Review &#9650;
                       </button>
@@ -1100,7 +1139,7 @@
                   </div>
                 </div>
 
-                <!-- row 6: section breaker (horizontal line) -->
+                <!-- row 7: section breaker (horizontal line) -->
                 <div class="row">
                   <!-- Dashed line -->
                   <div class="col justify-content-start mb-1 text-start">
@@ -1220,45 +1259,6 @@
                   </div>
                 </div>
                 <!-- end of v-if check for extendReview -->
-
-                <!-- row 9: rating -->
-                <div class="row">
-                  <div class="col-12 mb-3">
-                    <div class="row align-items-center text-start">
-                      <p class="text-star mb-1 fw-bold">
-                        My Rating<span class="text-danger">*</span>
-                      </p>
-                      <label for="customRange2" class="form-label">
-                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
-                        Stars
-                      </label>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">1</label>
-                      </div>
-                      <div class="col">
-                        <div class="slider-container" style="position: relative">
-                          <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
-                            id="customRange" />
-                          <div class="tickmarks">
-                            <span class="tick" style="left: 5%">|</span>
-                            <span class="tick" style="left: 15%">|</span>
-                            <span class="tick" style="left: 25%">|</span>
-                            <span class="tick" style="left: 35%">|</span>
-                            <span class="tick" style="left: 45%">|</span>
-                            <span class="tick" style="left: 55%">|</span>
-                            <span class="tick" style="left: 65%">|</span>
-                            <span class="tick" style="left: 75%">|</span>
-                            <span class="tick" style="left: 85%">|</span>
-                            <span class="tick" style="left: 95%">|</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">10</label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
                 <!-- row 10: flavour tags -->
                 <div class="row">
