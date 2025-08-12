@@ -1932,6 +1932,10 @@ Coder: Han
 
 Purpose of the changes:
 -allow for tagging of home in bottle reviews
+-enable intuitive selection of home tagging
+-fixed delete button for wine reviews
+-change Name of Bottle at submission to Name of Drink / Bottle / Cocktails
 
 Nature of the changes (frontend / backend / database):
 frontend, backend
+
