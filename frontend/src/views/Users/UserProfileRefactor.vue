@@ -1919,24 +1919,35 @@
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Explore and join a club! 
+                    Explore and join a club or event! 
                     <router-link
                       to="/badges-and-points"
                       style="color: #FF3E31; font-weight: bold; text-decoration: none;"
                     >
                       Earn 100 points
                     </router-link>
-                    to create your own Club!
+                    to create your own Club or Event!
                   </p>
-                  <router-link :to="'/clubs/view'">
-                    <button
-                      class="btn btn-warning btn-sm rounded fw-bold"
-                      @mouseover="hoverButton($event)"
-                      @mouseleave="leaveButton($event)"
-                    >
-                      Find A Club
-                    </button>
-                  </router-link>
+                  <div class="d-flex gap-2">
+                    <router-link :to="'/clubs/view'">
+                      <button
+                        class="btn btn-warning btn-sm rounded fw-bold"
+                        @mouseover="hoverButton($event)"
+                        @mouseleave="leaveButton($event)"
+                      >
+                        Find Clubs
+                      </button>
+                    </router-link>
+                    <router-link :to="'/events/view'">
+                      <button
+                        class="btn btn-warning btn-sm rounded fw-bold"
+                        @mouseover="hoverButton($event)"
+                        @mouseleave="leaveButton($event)"
+                      >
+                        Find Events
+                      </button>
+                    </router-link>
+                  </div>
                 </div>
               </div>
             </div>
