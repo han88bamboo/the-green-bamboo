@@ -196,7 +196,7 @@
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
                         <div class="form-group mb-3" > <!--removed v-else-->
-                            <p class="text-start mb-1">Producer Name <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
+                            <p class="text-start mb-1">Name of Producer (Brand, Bar or Venue, etc)<span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
                             
                             <input type="text" class="form-control" 
                                    v-model="form['producerNew']" 
@@ -233,7 +233,7 @@
                             <!-- [admins] Redirect to Admin page to create a producer -->
                             <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
                                 <router-link :to="'/admin/dashboard'" class="fw-bold">
-                                    Click here to create!
+                                    <span style="font-weight: bold; text-decoration: underline;">Click here to create!</span>
                                 </router-link>
                             </p>
                             
@@ -259,7 +259,7 @@
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item <span class="text-danger">*</span></p>
+                            <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item<span class="text-danger">*</span></p>
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Bottle Name">
                         </div>
 
@@ -554,7 +554,7 @@
                 tempDrinkType: "",
                 tempTypeCategory: "",
                 tempProducer: "",
-                indOperator: true,
+                indOperator: false,
                 tempDrinkStyle: "",
 
                 // Form data variables
