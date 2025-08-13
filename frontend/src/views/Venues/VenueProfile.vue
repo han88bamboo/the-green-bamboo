@@ -4262,7 +4262,7 @@
                                 <div v-if="editReservationDetails">
                                     <textarea v-model="newReservationDetails" class="form-control"
                                         id="reservationDetailsTextArea" rows="3"
-                                        placeholder="Enter reservation details"></textarea>
+                                        placeholder="Enter reservation URL here"></textarea>
                                 </div>
 
                                 <!-- Section Content (View Mode) -->
@@ -4273,7 +4273,13 @@
                                             No reservation details available!
                                         </div>
                                         <div v-else>
-                                            {{ targetVenue["reservationDetails"] }}
+                                            <a :href="targetVenue['reservationDetails']" 
+                                               target="_blank" 
+                                               rel="noopener noreferrer"
+                                               class="text-decoration-none fw-bold"
+                                               style="color: #006A50; cursor: pointer;">
+                                                To Make a Reservation, Click Here!
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
