@@ -8274,6 +8274,11 @@ Please find my details below:
 Thank you!`
             );
             window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
+        },
+
+        // Reload the current page (called when user clicks Close on success modal)
+        reloadRoute() {
+            this.$router.go(0);
         }
     },
     watch: {
