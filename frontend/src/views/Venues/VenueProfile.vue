@@ -1089,13 +1089,13 @@
                             </button>
 
                             <!-- Review button: logged in + not editing -->
-                            <button v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
+                            <button v-if="userType === 'user' && userID !== 'defaultUser' && !inEdit"
                                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 data-bs-toggle="modal" data-bs-target="#venueReviewModal" style="font-weight: bold;">
                                 Review Venue
                             </button>
                             <!-- Logged-out users -->
-                            <button v-else
+                            <button v-else-if="userType !== 'user' || userID === 'defaultUser'"
                                 class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 @click="$router.push('/login')" style="font-weight: bold;">
                                 Review Venue
@@ -3499,7 +3499,7 @@
                                                 <!-- Drink Name -->
                                                 <span>
                                                     for
-                                                    <router-link :to="'/bottle/' + review.reviewTarget"
+                                                    <router-link :to="`/listing/view/${review.reviewTarget}/${getBottleNameFromReview(review).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`"
                                                         class="text-decoration-none text-dark">
                                                         <b>{{ getBottleNameFromReview(review) }} </b>
                                                     </router-link>
