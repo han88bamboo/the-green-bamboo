@@ -5255,6 +5255,7 @@ export default {
           return producer ? producer.producerName : null;
         }
       }
+      return null;
     },
 
     // ------------------ Unfollow Display User ------------------

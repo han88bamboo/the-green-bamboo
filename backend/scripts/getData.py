@@ -437,7 +437,7 @@ def getListingsByIDs():
 
         sql = """
             SELECT "id", "listingName", "drinkType", 
-                "originCountry", "bottler", "photo"
+                "originCountry", "bottler", "photo", "producerID"
             FROM listings
             WHERE "id" IN %s;
         """
@@ -454,6 +454,7 @@ def getListingsByIDs():
                 "originCountry": row.get("originCountry", ""),
                 "bottler": row.get("bottler", ""),
                 "photo": row.get("photo", ""),
+                "producerID": row.get("producerID", ""),
             } 
             for row in rows
         ]
