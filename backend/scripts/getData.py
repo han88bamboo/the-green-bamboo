@@ -30,7 +30,7 @@
 #           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET),
 
 #           [Listing Reviews]
-#           /getRecentListingReviews/<id> (GET), /getReviews (GET),
+#           /getRecentListingReviews/<id> (GET), /getAllUserReviews/<id> (GET), /getReviews (GET),
 #           /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), 
 #           /getListingReviewsRating/<listing_id> (GET), /getTop5MostReviewedListings (GET),
 
@@ -414,17 +414,26 @@ def lbListings():
         return jsonify({"error": str(e)}), 500
 
 
-@blueprint.route("/getListingsByIDs", methods=['GET'])
+@blueprint.route("/getListingsByIDs", methods=['GET', 'POST'])
 def getListingsByIDs():
     conn = g.db
 
     try:
-        # Convert query parameters from strings to integers
-        raw_ids = request.args.getlist('ids')
-        listing_ids = [int(i) for i in raw_ids]
+        # Handle both GET and POST requests
+        if request.method == 'POST':
+            # For POST requests, get IDs from JSON body
+            data = request.get_json()
+            listing_ids = data.get('listingIDs', []) if data else []
+        else:
+            # For GET requests, get IDs from query parameters
+            raw_ids = request.args.getlist('ids')
+            listing_ids = [int(i) for i in raw_ids]
 
         if not listing_ids:
             return jsonify([]), 200
+
+        # Ensure all IDs are integers
+        listing_ids = [int(i) for i in listing_ids]
 
         sql = """
             SELECT "id", "listingName", "drinkType", 
@@ -1668,6 +1677,85 @@ def getRecentListingReviews(id):
         "topRatedReviews": top_rated_reviews_data,  # top rated reviews
         "drinkCount": drink_count["count"]
     }), 200
+
+# [GET] Get all reviews by a specific user with pagination
+@blueprint.route("/getAllUserReviews/<id>")
+def getAllUserReviews(id):
+    conn = g.db
+    
+    # Get pagination parameters
+    offset = int(request.args.get('offset', 0))
+    limit = int(request.args.get('limit', 50))  # Default to 50 reviews per page
+        
+    try:
+        # Convert id to int and validate
+        user_id = int(id)
+        if user_id <= 0:
+            print(f"DEBUG: Invalid user ID: {user_id}")
+            return jsonify({"code": 400, "message": "Invalid user ID"}), 400
+        
+        with conn.cursor() as cursor:
+            # Get total count of reviews by the user
+            print(f"DEBUG: Executing count query for userID={user_id}")
+            cursor.execute("""
+                SELECT COUNT(*) as total
+                FROM "reviews"
+                WHERE "userID" = %s 
+                AND "reviewType" = 'Listing'
+            """, (user_id,))
+            
+            total_count = cursor.fetchone()["total"]
+            
+            # Get paginated reviews
+            cursor.execute("""
+                SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+                FROM "reviews"
+                LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+                WHERE "reviews"."userID" = %s 
+                AND "reviews"."reviewType" = 'Listing'
+                ORDER BY "reviews"."createdDate" DESC
+                LIMIT %s OFFSET %s
+            """, (user_id, limit, offset))
+
+            reviews_data = cursor.fetchall()
+
+            if not reviews_data:
+                reviews_data = []
+
+            # Process user votes for each review
+            for review in reviews_data:
+                review["userVotes"] = {
+                    "upvotes": review["upvotes"] if review["upvotes"] else [],
+                    "downvotes": review["downvotes"] if review["downvotes"] else []
+                }
+                # Remove the raw vote fields
+                if "upvotes" in review:
+                    del review["upvotes"]
+                if "downvotes" in review:
+                    del review["downvotes"]
+
+            # Calculate if there are more reviews
+            has_more = (offset + len(reviews_data)) < total_count
+
+            return jsonify({
+                "code": 200,
+                "message": "User reviews fetched successfully",
+                "reviews": reviews_data,
+                "total": total_count,
+                "hasMore": has_more,
+                "offset": offset,
+                "limit": limit
+            }), 200
+
+    except ValueError:
+        print(f"DEBUG: Could not convert id to integer: {id}")
+        return jsonify({"code": 400, "message": "Invalid user ID format"}), 400
+    except Exception as e:
+        print(f"Error fetching all user reviews: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching user reviews."
+        }), 500
     
 # [GET] Get all listings names test
 @blueprint.route('/bottle-listings', methods=['GET'])

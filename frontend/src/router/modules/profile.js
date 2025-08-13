@@ -23,6 +23,11 @@ const routes = [
     ]
   },
   {
+    path: "/profile/user/allreviews/:userID/:username",
+    name: "allReviews",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllReviews.vue"),
+  },
+  {
     path: "/profile/producer/:producerID/:username",
     name: "profileProducer",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Producers/ProducerProfile.vue"),

@@ -2092,6 +2092,15 @@
                   columnWidth="165px"
                 />
                 
+                <!-- View All Reviews Button -->
+                <div v-if="recentReviews && recentReviews.length > 0" class="text-center mb-4">
+                  <router-link 
+                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
+                    class="btn primary-btn-green"
+                  >
+                    View All Reviews
+                  </router-link>
+                </div>
                 
                 <br>
               </div>
