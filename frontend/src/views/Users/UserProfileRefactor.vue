@@ -1365,6 +1365,50 @@
               </div>
             </div>
 
+            <!-- My Recent Reviews -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'My Recent Reviews' : 'Recent Reviews' }}</h5>
+              <p class="mobile-view-show"><strong>{{ ownProfile ? 'My Recent Reviews' : 'Recent Reviews' }}</strong></p>
+              <hr />
+              <div v-if="!recentReviews || recentReviews.length === 0">
+                {{ ownProfile ? 'You have no reviews yet.' : 'No reviews yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(review, index) in recentReviews.slice(0, 3)" 
+                    :key="review.id"
+                  >
+                    <!-- Review image with squared border -->
+                    <div class="position-relative review-container" :key="index">
+                      <a
+                        :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="review.photo || defaultDrinkImage"
+                          alt="review image"
+                          class="rounded border border-dark review-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="review-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">{{ getListingName(review.reviewTarget) || 'Unknown Drink' }}</div>
+                          <div style="color: #666; margin-bottom: 2px;">{{ getListingDrinkType(review.reviewTarget) || 'Unknown Type' }}</div>
+                          <div style="color: #888; font-size: 0.75rem;">{{ getListingProducerName(review.reviewTarget) || 'Unknown Producer' }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <a :href="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View all reviews</a>
+              </div>
+            </div>
+
             <div v-if="ownProfile" class="mt-4">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
               <div v-if="ownProfile" class="row mt-3 mobile-view-show">
@@ -5194,6 +5238,25 @@ export default {
       }
     },
 
+    // Get drink type from listing ID
+    getListingDrinkType(listingID) {
+      if (this.listings) {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        return listing ? listing.drinkType : null;
+      }
+    },
+
+    // Get producer name from listing ID
+    getListingProducerName(listingID) {
+      if (this.listings) {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        if (listing && listing.producerID) {
+          const producer = this.getProducerFromID(listing.producerID);
+          return producer ? producer.producerName : null;
+        }
+      }
+    },
+
     // ------------------ Unfollow Display User ------------------
     async editFollow(action) {
       if (action === "unfollow") {
@@ -6413,6 +6476,45 @@ export default {
 
 .welcome-toggle .chevron-toggle {
   transition: transform 0.3s ease;
+}
+
+/* Review Container Styles */
+.review-container {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.review-img {
+  transition: transform 0.2s ease;
+}
+
+.review-container:hover .review-img {
+  transform: scale(1.05);
+}
+
+.review-container:hover {
+  transform: translateY(-2px);
+}
+
+.review-text {
+  line-height: 1.3;
+}
+
+/* Responsive adjustments for reviews */
+@media (max-width: 768px) {
+  .review-img {
+    max-width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .review-text {
+    font-size: 0.7rem !important;
+  }
+  
+  .review-text div {
+    margin-bottom: 1px !important;
+  }
 }
 
 </style>
