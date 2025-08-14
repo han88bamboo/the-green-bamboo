@@ -1637,7 +1637,6 @@ def getRecentListingReviews(id):
             LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
             WHERE "reviews"."userID" = %s 
             AND "reviews"."reviewType" = 'Listing'
-            AND "reviews"."createdDate" >= NOW() - INTERVAL '5 days'
             ORDER BY "reviews"."createdDate" DESC
             LIMIT 10
         """, (id,))
