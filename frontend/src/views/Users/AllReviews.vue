@@ -718,7 +718,6 @@ export default {
 <style scoped>
 .bottle-img {
   width: 100%;
-  height: 120px;
   object-fit: cover;
 }
 
