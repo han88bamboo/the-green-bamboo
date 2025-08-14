@@ -436,10 +436,12 @@ def getListingsByIDs():
         listing_ids = [int(i) for i in listing_ids]
 
         sql = """
-            SELECT "id", "listingName", "drinkType", "typeCategory",
-                "originCountry", "bottler", "photo", "producerID"
-            FROM listings
-            WHERE "id" IN %s;
+            SELECT l."id", l."listingName", l."drinkType", l."typeCategory",
+                l."originCountry", l."bottler", l."photo", l."producerID",
+                p."producerName"
+            FROM listings l
+            LEFT JOIN producers p ON l."producerID" = p."id"
+            WHERE l."id" IN %s;
         """
 
         with conn.cursor() as cursor:
@@ -456,6 +458,7 @@ def getListingsByIDs():
                 "bottler": row.get("bottler", ""),
                 "photo": row.get("photo", ""),
                 "producerID": row.get("producerID", ""),
+                "producerName": row.get("producerName", ""),
             } 
             for row in rows
         ]

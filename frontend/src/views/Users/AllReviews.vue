@@ -136,6 +136,11 @@
                       <b>{{ getListingName(review.reviewTarget) }}</b>
                     </p>
                   </a>
+                  
+                  <!-- Producer Name -->
+                  <p class="text-muted small mb-2" v-if="getListingProducerName(review.reviewTarget)">
+                    by {{ getListingProducerName(review.reviewTarget) }}
+                  </p>
 
                   <!-- Country and Review Date -->
                   <div class="d-flex justify-content-between align-items-center mb-2">
@@ -478,6 +483,14 @@ export default {
           
           listingsResponse.data.forEach(listing => {
             this.listings[listing.id] = listing;
+            
+            // Debug: Log listing data to see if producerName is included
+            if (listing.producerName) {
+              console.log(`DEBUG: Listing ${listing.id} has producer: ${listing.producerName}`);
+            } else {
+              console.log(`DEBUG: Listing ${listing.id} missing producerName:`, listing);
+            }
+            
             // Collect unique countries for filter
             if (listing.originCountry && listing.originCountry.trim()) {
               countries.add(listing.originCountry.trim());
@@ -638,6 +651,20 @@ export default {
     
     getListingTypeCategory(listingID) {
       return this.listings[listingID]?.typeCategory || '';
+    },
+    
+    getListingProducerName(listingID) {
+      const listing = this.listings[listingID];
+      const producerName = listing?.producerName || '';
+      
+      // Debug logging
+      if (!producerName && listing) {
+        console.log(`DEBUG: No producer name for listing ${listingID}:`, listing);
+      } else if (producerName) {
+        console.log(`DEBUG: Found producer name for listing ${listingID}: ${producerName}`);
+      }
+      
+      return producerName;
     },
     
     getLocationName(locationID) {
