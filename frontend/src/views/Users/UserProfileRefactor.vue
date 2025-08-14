@@ -1414,7 +1414,13 @@
               <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
               <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
               <hr />
-              <div v-if="!recentUserActivity || recentUserActivity.filter(activity => activity.type === 'follow').length === 0">
+              <div v-if="loadingFollowingUsers" class="text-center">
+                Loading following users...
+              </div>
+              <div v-else-if="errorFollowingUsers" class="text-danger">
+                {{ errorFollowingUsers }}
+              </div>
+              <div v-else-if="!followingUsers || followingUsers.length === 0">
                 {{ ownProfile ? 'You haven\'t followed anyone yet.' : 'No recent follows yet.' }}
               </div>
 
@@ -1422,23 +1428,23 @@
                 <div class="row">
                   <div 
                     class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(activity, index) in recentUserActivity.filter(activity => activity.type === 'follow').slice(0, 3)" 
-                    :key="`follow-${activity.userID || index}`"
+                    v-for="(user, index) in followingUsers.slice(0, 3)" 
+                    :key="`following-${user.userID || index}`"
                   >
                     <!-- User profile with circular border -->
                     <div class="position-relative user-container" :key="index">
                       <a
-                        :href="`/profile/user/${activity.userID}/${activity.username}`"
+                        :href="`/profile/user/${user.userID}/${user.username}`"
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="activity.photo || displayUser.photo || defaultProfilePhoto"
+                          :src="user.photo ? 'data:image/jpeg;base64,' + user.photo : defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
                         />
                         <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ activity.username }}</div>
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
                         </div>
                       </a>
                     </div>
@@ -1452,7 +1458,13 @@
               <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
               <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
               <hr />
-              <div v-if="!recentFollowersActivity || recentFollowersActivity.filter(activity => activity.type === 'follow').length === 0">
+              <div v-if="loadingFollowersUsers" class="text-center">
+                Loading followers...
+              </div>
+              <div v-else-if="errorFollowersUsers" class="text-danger">
+                {{ errorFollowersUsers }}
+              </div>
+              <div v-else-if="!followersUsers || followersUsers.length === 0">
                 {{ ownProfile ? 'No recent followers yet.' : 'No recent followers yet.' }}
               </div>
 
@@ -1460,23 +1472,23 @@
                 <div class="row">
                   <div 
                     class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(activity, index) in recentFollowersActivity.filter(activity => activity.type === 'follow').slice(0, 3)" 
-                    :key="`follower-${activity.userID || index}`"
+                    v-for="(user, index) in followersUsers.slice(0, 3)" 
+                    :key="`follower-${user.userID || index}`"
                   >
                     <!-- User profile with circular border -->
                     <div class="position-relative user-container" :key="index">
                       <a
-                        :href="`/profile/user/${activity.userID}/${activity.username}`"
+                        :href="`/profile/user/${user.userID}/${user.username}`"
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="activity.photo || displayUser.photo || defaultProfilePhoto"
+                          :src="user.photo ? 'data:image/jpeg;base64,' + user.photo : defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
                         />
                         <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ activity.username }}</div>
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
                         </div>
                       </a>
                     </div>
@@ -3846,6 +3858,14 @@ export default {
       errorRecentReviewsActivity: null,
       errorRecentFollowersActivity: null,
 
+      // Following/Followers information
+      followingUsers: [],
+      followersUsers: [],
+      loadingFollowingUsers: false,
+      loadingFollowersUsers: false,
+      errorFollowingUsers: null,
+      errorFollowersUsers: null,
+
       // Following/Followers count information
       followersCount: 0,
 
@@ -4136,6 +4156,8 @@ export default {
           this.getRecentUserActivity(),
           this.getRecentReviewsActivity(),
           this.getRecentFollowersActivity(),
+          this.getFollowingUsers(),
+          this.getFollowersUsers(),
           this.getFollowersCount(),
         ]);
 
@@ -4442,6 +4464,42 @@ export default {
       } catch (error) {
         console.error("Error fetching followers count:", error);
         this.followersCount = 0;
+      }
+    },
+
+    // Get users that this person is following
+    async getFollowingUsers() {
+      this.loadingFollowingUsers = true;
+      this.errorFollowingUsers = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowing/${this.displayUserID}`
+        );
+        this.followingUsers = response.data?.following || [];
+      } catch (error) {
+        console.error("Error fetching following users:", error);
+        this.errorFollowingUsers = "Failed to load following users.";
+        this.followingUsers = [];
+      } finally {
+        this.loadingFollowingUsers = false;
+      }
+    },
+
+    // Get users that follow this person
+    async getFollowersUsers() {
+      this.loadingFollowersUsers = true;
+      this.errorFollowersUsers = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowers/${this.displayUserID}`
+        );
+        this.followersUsers = response.data?.followers || [];
+      } catch (error) {
+        console.error("Error fetching followers users:", error);
+        this.errorFollowersUsers = "Failed to load followers users.";
+        this.followersUsers = [];
+      } finally {
+        this.loadingFollowersUsers = false;
       }
     },
 
