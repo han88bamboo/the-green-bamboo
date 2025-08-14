@@ -59,7 +59,7 @@
 
           <!-- Filter and Sort Controls -->
           <div class="row mb-4">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Filter by Rating:</label>
               <select v-model="ratingFilter" @change="applyFilters" class="form-select">
                 <option value="">All Ratings</option>
@@ -69,7 +69,16 @@
                 <option value="1-4">Poor (1-4)</option>
               </select>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <label class="form-label">Filter by Country:</label>
+              <select v-model="countryFilter" @change="applyFilters" class="form-select">
+                <option value="">All Countries</option>
+                <option v-for="country in availableCountries" :key="country" :value="country">
+                  {{ country }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-4">
               <label class="form-label">Sort by:</label>
               <select v-model="sortBy" @change="applyFilters" class="form-select">
                 <option value="newest">Newest First</option>
@@ -101,10 +110,15 @@
                     </p>
                   </a>
 
-                  <!-- Review Date -->
-                  <p class="text-muted small mb-2">
-                    Reviewed on {{ formatDate(review.createdDate) }}
-                  </p>
+                  <!-- Country and Review Date -->
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="text-muted small mb-0">
+                      Reviewed on {{ formatDate(review.createdDate) }}
+                    </p>
+                    <p class="text-muted small mb-0" v-if="getListingCountry(review.reviewTarget)">
+                      <i class="fas fa-globe me-1"></i>{{ getListingCountry(review.reviewTarget) }}
+                    </p>
+                  </div>
 
                   <!-- Flavor Tags -->
                   <div class="mb-2">
@@ -268,7 +282,11 @@ export default {
       
       // Filtering and sorting
       ratingFilter: '',
+      countryFilter: '',
       sortBy: 'newest',
+      
+      // Available filter options
+      availableCountries: [],
       
       // Loading states
       loadingReviews: false,
@@ -416,9 +434,18 @@ export default {
           
           // Convert array to object for quick lookup
           this.listings = {};
+          const countries = new Set();
+          
           listingsResponse.data.forEach(listing => {
             this.listings[listing.id] = listing;
+            // Collect unique countries for filter
+            if (listing.originCountry && listing.originCountry.trim()) {
+              countries.add(listing.originCountry.trim());
+            }
           });
+          
+          // Sort countries alphabetically
+          this.availableCountries = [...countries].sort();
         }
         
         // Load venues
@@ -460,6 +487,14 @@ export default {
         });
       }
       
+      // Apply country filter
+      if (this.countryFilter) {
+        filtered = filtered.filter(review => {
+          const listing = this.listings[review.reviewTarget];
+          return listing && listing.originCountry === this.countryFilter;
+        });
+      }
+      
       // Apply sorting
       filtered.sort((a, b) => {
         switch (this.sortBy) {
@@ -495,6 +530,10 @@ export default {
     
     getListingName(listingID) {
       return this.listings[listingID]?.listingName || 'Unknown Listing';
+    },
+    
+    getListingCountry(listingID) {
+      return this.listings[listingID]?.originCountry || '';
     },
     
     getLocationName(locationID) {
