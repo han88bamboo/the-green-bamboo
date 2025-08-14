@@ -59,7 +59,7 @@
 
           <!-- Filter and Sort Controls -->
           <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-2">
               <label class="form-label">Filter by Rating:</label>
               <select v-model="ratingFilter" @change="applyFilters" class="form-select">
                 <option value="">All Ratings</option>
@@ -69,7 +69,7 @@
                 <option value="1-4">Poor (1-4)</option>
               </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
               <label class="form-label">Filter by Country:</label>
               <select v-model="countryFilter" @change="applyFilters" class="form-select">
                 <option value="">All Countries</option>
@@ -78,7 +78,34 @@
                 </option>
               </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
+              <label class="form-label">Filter by Drink Type:</label>
+              <select v-model="drinkTypeFilter" @change="onDrinkTypeChange" class="form-select">
+                <option value="">All Drink Types</option>
+                <option v-for="drinkType in availableDrinkTypes" :key="drinkType" :value="drinkType">
+                  {{ drinkType }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">
+                Filter by Drink Category:
+                <span v-if="!drinkTypeFilter" class="text-muted small fst-italic">(Select drink type first)</span>
+              </label>
+              <select 
+                v-model="typeCategoryFilter" 
+                @change="applyFilters" 
+                class="form-select"
+                :disabled="!drinkTypeFilter"
+                :class="{ 'text-muted': !drinkTypeFilter }"
+              >
+                <option value="">All Categories</option>
+                <option v-for="category in availableTypeCategories" :key="category" :value="category">
+                  {{ category }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
               <label class="form-label">Sort by:</label>
               <select v-model="sortBy" @change="applyFilters" class="form-select">
                 <option value="newest">Newest First</option>
@@ -115,9 +142,17 @@
                     <p class="text-muted small mb-0">
                       Reviewed on {{ formatDate(review.createdDate) }}
                     </p>
-                    <p class="text-muted small mb-0" v-if="getListingCountry(review.reviewTarget)">
-                      <i class="fas fa-globe me-1"></i>{{ getListingCountry(review.reviewTarget) }}
-                    </p>
+                    <div class="d-flex align-items-center">
+                      <p class="text-muted small mb-0 me-3" v-if="getListingDrinkType(review.reviewTarget)">
+                        <i class="fas fa-wine-glass me-1"></i>{{ getListingDrinkType(review.reviewTarget) }}
+                        <span v-if="getListingTypeCategory(review.reviewTarget)" class="ms-1">
+                          ({{ getListingTypeCategory(review.reviewTarget) }})
+                        </span>
+                      </p>
+                      <p class="text-muted small mb-0" v-if="getListingCountry(review.reviewTarget)">
+                        <i class="fas fa-globe me-1"></i>{{ getListingCountry(review.reviewTarget) }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Flavor Tags -->
@@ -283,10 +318,14 @@ export default {
       // Filtering and sorting
       ratingFilter: '',
       countryFilter: '',
+      drinkTypeFilter: '',
+      typeCategoryFilter: '',
       sortBy: 'newest',
       
       // Available filter options
       availableCountries: [],
+      availableDrinkTypes: [],
+      availableTypeCategories: [],
       
       // Loading states
       loadingReviews: false,
@@ -435,6 +474,7 @@ export default {
           // Convert array to object for quick lookup
           this.listings = {};
           const countries = new Set();
+          const drinkTypes = new Set();
           
           listingsResponse.data.forEach(listing => {
             this.listings[listing.id] = listing;
@@ -442,10 +482,15 @@ export default {
             if (listing.originCountry && listing.originCountry.trim()) {
               countries.add(listing.originCountry.trim());
             }
+            // Collect unique drink types for filter
+            if (listing.drinkType && listing.drinkType.trim()) {
+              drinkTypes.add(listing.drinkType.trim());
+            }
           });
           
-          // Sort countries alphabetically
+          // Sort countries and drink types alphabetically
           this.availableCountries = [...countries].sort();
+          this.availableDrinkTypes = [...drinkTypes].sort();
         }
         
         // Load venues
@@ -469,6 +514,9 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
         );
         this.flavourTags = flavourTagsResponse.data;
+        
+        // Initialize type categories based on current drink type filter
+        this.updateAvailableTypeCategories();
         
       } catch (error) {
         console.error("Error loading supporting data:", error);
@@ -495,6 +543,22 @@ export default {
         });
       }
       
+      // Apply drink type filter
+      if (this.drinkTypeFilter) {
+        filtered = filtered.filter(review => {
+          const listing = this.listings[review.reviewTarget];
+          return listing && listing.drinkType === this.drinkTypeFilter;
+        });
+      }
+      
+      // Apply type category filter
+      if (this.typeCategoryFilter) {
+        filtered = filtered.filter(review => {
+          const listing = this.listings[review.reviewTarget];
+          return listing && listing.typeCategory === this.typeCategoryFilter;
+        });
+      }
+      
       // Apply sorting
       filtered.sort((a, b) => {
         switch (this.sortBy) {
@@ -513,6 +577,38 @@ export default {
       
       this.filteredReviews = filtered;
       this.currentPage = 1; // Reset to first page when filters change
+    },
+    
+    onDrinkTypeChange() {
+      // Reset type category filter when drink type changes
+      this.typeCategoryFilter = '';
+      
+      // Update available type categories based on selected drink type
+      this.updateAvailableTypeCategories();
+      
+      // Apply filters
+      this.applyFilters();
+    },
+    
+    updateAvailableTypeCategories() {
+      if (!this.drinkTypeFilter) {
+        this.availableTypeCategories = [];
+        return;
+      }
+      
+      const typeCategories = new Set();
+      
+      // Get all reviews that match the selected drink type
+      this.allReviews.forEach(review => {
+        const listing = this.listings[review.reviewTarget];
+        if (listing && listing.drinkType === this.drinkTypeFilter) {
+          if (listing.typeCategory && listing.typeCategory.trim()) {
+            typeCategories.add(listing.typeCategory.trim());
+          }
+        }
+      });
+      
+      this.availableTypeCategories = [...typeCategories].sort();
     },
     
     changePage(page) {
@@ -534,6 +630,14 @@ export default {
     
     getListingCountry(listingID) {
       return this.listings[listingID]?.originCountry || '';
+    },
+    
+    getListingDrinkType(listingID) {
+      return this.listings[listingID]?.drinkType || '';
+    },
+    
+    getListingTypeCategory(listingID) {
+      return this.listings[listingID]?.typeCategory || '';
     },
     
     getLocationName(locationID) {
@@ -699,5 +803,15 @@ export default {
 .pagination .page-link:hover {
   color: #f0b358;
   background-color: #f8f9fa;
+}
+
+/* Disabled select styling */
+.form-select:disabled {
+  background-color: #f8f9fa;
+  opacity: 0.6;
+}
+
+.form-select.text-muted {
+  color: #6c757d !important;
 }
 </style>
