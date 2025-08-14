@@ -19,9 +19,9 @@ def get_rank(proof_points):
     if proof_points >= 800:
         return (emoji + "Imperial", "#027562")
     elif proof_points >= 400:
-        return (emoji + "Over Proof", "#83A9E8")
+        return (emoji + "Over-Proof", "#83A9E8")
     elif proof_points >= 200:
-        return (emoji + "Full Proof", "#F0B358")
+        return (emoji + "Full-Proof", "#F0B358")
     elif proof_points >= 101:
         return (emoji + "Aperitif", "#6C348B")
     else:

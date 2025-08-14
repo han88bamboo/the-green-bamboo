@@ -79,6 +79,7 @@ from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from decimal import Decimal
 from datetime import datetime, timezone, date, timedelta
 from scripts import pointsHelperFunc
+from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -7735,19 +7736,21 @@ def getAllUserFollowing(id):
             SELECT 
                 u."id", u."username", u."displayName", u."photo", u."joinDate",
                 u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                u."choiceDrinks", u."choiceFlavours",
                 COUNT(r."id") as "reviewCount"
             FROM "users" u
             LEFT JOIN "reviews" r ON u."id" = r."userID"
             WHERE u."id" IN ({placeholders})
             GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
-                     u."firstName", u."lastName", u."ambassador", u."categoryExpert"
+                     u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                     u."choiceDrinks", u."choiceFlavours"
             ORDER BY u."displayName", u."username"
         '''
         
         cur.execute(query, user_ids)
         following_users = cur.fetchall()
         
-        # Step 4: Add follower count for each user
+        # Step 4: Add follower count, current points, and rank for each user
         for user in following_users:
             # Count how many people follow this user
             cur.execute('''
@@ -7758,6 +7761,19 @@ def getAllUserFollowing(id):
             
             follower_result = cur.fetchone()
             user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+            
+            # Get current points from pointsRecorder table
+            cur.execute('''
+                SELECT "currentPoints" 
+                FROM "pointsRecorder" 
+                WHERE "userID" = %s AND "userType" = %s
+            ''', (user['id'], 'user'))
+            
+            points_result = cur.fetchone()
+            user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+            
+            # Get user rank based on proof points
+            user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
 
         return jsonify({
             "following": following_users
@@ -7814,19 +7830,21 @@ def getAllUserFollowers(id):
             SELECT 
                 u."id", u."username", u."displayName", u."photo", u."joinDate",
                 u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                u."choiceDrinks", u."choiceFlavours",
                 COUNT(r."id") as "reviewCount"
             FROM "users" u
             LEFT JOIN "reviews" r ON u."id" = r."userID"
             WHERE u."id" IN ({placeholders})
             GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
-                     u."firstName", u."lastName", u."ambassador", u."categoryExpert"
+                     u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                     u."choiceDrinks", u."choiceFlavours"
             ORDER BY u."displayName", u."username"
         '''
         
         cur.execute(query, follower_user_ids)
         follower_users = cur.fetchall()
         
-        # Step 4: Add follower count for each user
+        # Step 4: Add follower count, current points, and rank for each user
         for user in follower_users:
             # Count how many people follow this user
             cur.execute('''
@@ -7837,6 +7855,19 @@ def getAllUserFollowers(id):
             
             follower_result = cur.fetchone()
             user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+            
+            # Get current points from pointsRecorder table
+            cur.execute('''
+                SELECT "currentPoints" 
+                FROM "pointsRecorder" 
+                WHERE "userID" = %s AND "userType" = %s
+            ''', (user['id'], 'user'))
+            
+            points_result = cur.fetchone()
+            user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+            
+            # Get user rank based on proof points
+            user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
 
         return jsonify({
             "followers": follower_users

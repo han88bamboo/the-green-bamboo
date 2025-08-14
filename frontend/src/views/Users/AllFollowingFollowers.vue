@@ -106,7 +106,7 @@
                 v-model="searchFilter" 
                 @input="applyFilters" 
                 class="form-control" 
-                placeholder="Search by username or display name..."
+                placeholder="Search by name, drinks, or flavours..."
               />
             </div>
             <div class="col-md-4">
@@ -118,6 +118,8 @@
                 <option value="join-date-desc">Oldest Members</option>
                 <option value="reviews">Most Reviews</option>
                 <option value="followers">Most Followers</option>
+                <option value="points">Most Points</option>
+                <option value="points-desc">Least Points</option>
               </select>
             </div>
           </div>
@@ -163,12 +165,51 @@
                     </div>
                   </div>
 
+                  <!-- Points and Rank -->
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center">
+                      <p class="text-muted small mb-0 me-3">
+                        <i class="fas fa-trophy me-1"></i>{{ user.currentPoints || 0 }} proof points
+                      </p>
+                      <div v-if="user.proofRank" class="d-flex align-items-center">
+                        <span class="badge" :style="{ backgroundColor: user.proofRank[1], color: '#fff' }">
+                          {{ user.proofRank[0] }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Choice Drinks and Flavours -->
+                  <div class="mb-2" v-if="user.choiceDrinks && user.choiceDrinks.length > 0">
+                    <p class="small text-muted mb-1">Favourite Drinks:</p>
+                    <div class="d-flex flex-wrap">
+                      <span v-for="drink in user.choiceDrinks.slice(0, 5)" :key="drink" class="badge bg-secondary me-1 mb-1">
+                        {{ drink }}
+                      </span>
+                      <span v-if="user.choiceDrinks.length > 5" class=" text-muted">
+                        +{{ user.choiceDrinks.length - 5 }} more
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="mb-2" v-if="user.choiceFlavours && user.choiceFlavours.length > 0">
+                    <p class="small text-muted mb-1">Favorite Flavours:</p>
+                    <div class="d-flex flex-wrap">
+                      <span v-for="flavour in user.choiceFlavours.slice(0, 5)" :key="flavour" class="badge bg-info me-1 mb-1">
+                        {{ flavour }}
+                      </span>
+                      <span v-if="user.choiceFlavours.length > 5" class="small text-muted">
+                        +{{ user.choiceFlavours.length - 5 }} more
+                      </span>
+                    </div>
+                  </div>
+
                   <!-- Full name if available -->
-                  <div class="mb-2" v-if="user.firstName || user.lastName">
+                  <!-- <div class="mb-2" v-if="user.firstName || user.lastName">
                     <p class="small text-muted mb-0">
                       {{ [user.firstName, user.lastName].filter(Boolean).join(' ') }}
                     </p>
-                  </div>
+                  </div> -->
 
                   <!-- Action buttons -->
                   <div class="d-flex justify-content-end align-items-center">
@@ -219,10 +260,30 @@
                     {{ user.reviewCount || 0 }} reviews / {{ user.followerCount || 0 }} followers
                   </p>
                   
-                  <!-- Full name -->
-                  <p class="card-text mb-3 flex-grow-1 small" v-if="user.firstName || user.lastName">
-                    {{ [user.firstName, user.lastName].filter(Boolean).join(' ') }}
-                  </p>
+                  <!-- Points and Rank -->
+                  <div class="mb-2">
+                    <p class="mb-1 small text-muted">
+                      <i class="fas fa-trophy me-1"></i>{{ user.currentPoints || 0 }} proof points
+                    </p>
+                    <div v-if="user.proofRank" class="mb-1">
+                      <span class="badge " :style="{ backgroundColor: user.proofRank[1], color: '#fff' }">
+                        {{ user.proofRank[0] }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Choice Drinks -->
+                  <div class="mb-2" v-if="user.choiceDrinks && user.choiceDrinks.length > 0">
+                    <div class="d-flex flex-wrap">
+                      <span v-for="drink in user.choiceDrinks.slice(0, 5)" :key="drink" class="badge bg-secondary me-1 mb-1">
+                        {{ drink }}
+                      </span>
+                      <span v-if="user.choiceDrinks.length > 5" class=" text-muted">
+                        +{{ user.choiceDrinks.length - 5 }} more
+                      </span>
+                    </div>
+                  </div>
+                  
                   
                   <!-- Bottom row: Join date and action -->
                   <div class="d-flex justify-content-between align-items-center mt-auto">
@@ -233,7 +294,7 @@
                       class="btn btn-sm primary-btn"
                       @click="visitProfile(user.id, user.username)"
                     >
-                      View
+                      View Profile
                     </button>
                   </div>
                 </div>
@@ -466,10 +527,16 @@ export default {
           const firstName = (user.firstName || '').toLowerCase();
           const lastName = (user.lastName || '').toLowerCase();
           
+          // Search in choice drinks and flavours
+          const choiceDrinks = (user.choiceDrinks || []).join(' ').toLowerCase();
+          const choiceFlavours = (user.choiceFlavours || []).join(' ').toLowerCase();
+          
           return displayName.includes(searchTerm) || 
                  username.includes(searchTerm) ||
                  firstName.includes(searchTerm) ||
-                 lastName.includes(searchTerm);
+                 lastName.includes(searchTerm) ||
+                 choiceDrinks.includes(searchTerm) ||
+                 choiceFlavours.includes(searchTerm);
         });
       }
       
@@ -494,6 +561,10 @@ export default {
             return (b.reviewCount || 0) - (a.reviewCount || 0);
           case 'followers':
             return (b.followerCount || 0) - (a.followerCount || 0);
+          case 'points':
+            return (b.currentPoints || 0) - (a.currentPoints || 0);
+          case 'points-desc':
+            return (a.currentPoints || 0) - (b.currentPoints || 0);
           default:
             return 0;
         }
@@ -548,7 +619,6 @@ export default {
 <style scoped>
 .user-img {
   width: 100%;
-  height: 100px;
   object-fit: cover;
 }
 
@@ -666,5 +736,19 @@ export default {
   background-color: #f0b358;
   border-color: #f0b358;
   color: #000;
+}
+
+/* Badge styling */
+.badge {
+  padding: 0.25em 0.5em;
+}
+
+/* Choice drinks and flavours */
+.badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+.badge.bg-info {
+  background-color: #0dcaf0 !important;
 }
 </style>
