@@ -1409,6 +1409,89 @@
               </div>
             </div>
 
+            <!-- Recently Followed Users -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'Recently Followed' : 'Recently Followed' }}</h5>
+              <p class="mobile-view-show"><strong>{{ ownProfile ? 'Recently Followed' : 'Recently Followed' }}</strong></p>
+              <hr />
+              <div v-if="!recentUserActivity || recentUserActivity.filter(activity => activity.type === 'follow').length === 0">
+                {{ ownProfile ? 'You haven\'t followed anyone yet.' : 'No recent follows yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(activity, index) in recentUserActivity.filter(activity => activity.type === 'follow').slice(0, 3)" 
+                    :key="`follow-${activity.userID || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${activity.userID}/${activity.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle border border-dark user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ activity.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Followers -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'Recent Followers' : 'Recent Followers' }}</h5>
+              <p class="mobile-view-show"><strong>{{ ownProfile ? 'Recent Followers' : 'Recent Followers' }}</strong></p>
+              <hr />
+              <div v-if="!recentFollowersActivity || recentFollowersActivity.filter(activity => activity.type === 'follow').length === 0">
+                {{ ownProfile ? 'No recent followers yet.' : 'No recent followers yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(activity, index) in recentFollowersActivity.filter(activity => activity.type === 'follow').slice(0, 3)" 
+                    :key="`follower-${activity.userID || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${activity.userID}/${activity.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle border border-dark user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ activity.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View All Friends Link -->
+            <div class="mt-4 mobile-view-hide">
+              <div>
+                <a :href="`/profile/user/friends/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
+              </div>
+            </div>
+
             <div v-if="ownProfile" class="mt-4">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
               <div v-if="ownProfile" class="row mt-3 mobile-view-show">
@@ -6514,6 +6597,45 @@ export default {
   }
   
   .review-text div {
+    margin-bottom: 1px !important;
+  }
+}
+
+/* User Container Styles */
+.user-container {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.user-img {
+  transition: transform 0.2s ease;
+}
+
+.user-container:hover .user-img {
+  transform: scale(1.05);
+}
+
+.user-container:hover {
+  transform: translateY(-2px);
+}
+
+.user-text {
+  line-height: 1.3;
+}
+
+/* Responsive adjustments for user containers */
+@media (max-width: 768px) {
+  .user-img {
+    max-width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .user-text {
+    font-size: 0.7rem !important;
+  }
+  
+  .user-text div {
     margin-bottom: 1px !important;
   }
 }
