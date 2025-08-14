@@ -1411,8 +1411,8 @@
 
             <!-- Recently Followed Users -->
             <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'Recently Followed' : 'Recently Followed' }}</h5>
-              <p class="mobile-view-show"><strong>{{ ownProfile ? 'Recently Followed' : 'Recently Followed' }}</strong></p>
+              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
+              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
               <hr />
               <div v-if="!recentUserActivity || recentUserActivity.filter(activity => activity.type === 'follow').length === 0">
                 {{ ownProfile ? 'You haven\'t followed anyone yet.' : 'No recent follows yet.' }}
@@ -1432,7 +1432,7 @@
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="defaultProfilePhoto"
+                          :src="activity.photo || displayUser.photo || defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
@@ -1449,8 +1449,8 @@
 
             <!-- Recent Followers -->
             <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'Recent Followers' : 'Recent Followers' }}</h5>
-              <p class="mobile-view-show"><strong>{{ ownProfile ? 'Recent Followers' : 'Recent Followers' }}</strong></p>
+              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
+              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
               <hr />
               <div v-if="!recentFollowersActivity || recentFollowersActivity.filter(activity => activity.type === 'follow').length === 0">
                 {{ ownProfile ? 'No recent followers yet.' : 'No recent followers yet.' }}
@@ -1470,7 +1470,7 @@
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="defaultProfilePhoto"
+                          :src="activity.photo || displayUser.photo || defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
@@ -3846,6 +3846,9 @@ export default {
       errorRecentReviewsActivity: null,
       errorRecentFollowersActivity: null,
 
+      // Following/Followers count information
+      followersCount: 0,
+
       // Add or remove moderator variables
       successRemoveMod: false,
       errorRemoveMod: false,
@@ -3973,6 +3976,12 @@ export default {
       currentListType: "drinks",
 
     };
+  },
+  computed: {
+    // Get the count of users this person is following
+    followingCount() {
+      return this.displayUser?.followLists?.users?.length || 0;
+    }
   },
   mounted() {
     // get local storage
@@ -4127,6 +4136,7 @@ export default {
           this.getRecentUserActivity(),
           this.getRecentReviewsActivity(),
           this.getRecentFollowersActivity(),
+          this.getFollowersCount(),
         ]);
 
         await this.getReviewsSummary();
@@ -4419,6 +4429,19 @@ export default {
         this.errorRecentFollowersActivity = "Failed to load recent followers activity.";
       } finally {
         this.loadingRecentFollowersActivity = false;
+      }
+    },
+
+    // Get the count of followers (users who follow this person)
+    async getFollowersCount() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowers/${this.displayUserID}`
+        );
+        this.followersCount = response.data?.followers?.length || 0;
+      } catch (error) {
+        console.error("Error fetching followers count:", error);
+        this.followersCount = 0;
       }
     },
 
