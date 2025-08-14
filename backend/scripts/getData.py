@@ -436,7 +436,7 @@ def getListingsByIDs():
         listing_ids = [int(i) for i in listing_ids]
 
         sql = """
-            SELECT "id", "listingName", "drinkType", 
+            SELECT "id", "listingName", "drinkType", "typeCategory",
                 "originCountry", "bottler", "photo", "producerID"
             FROM listings
             WHERE "id" IN %s;
@@ -451,6 +451,7 @@ def getListingsByIDs():
                 "id": row["id"], 
                 "listingName": row["listingName"], 
                 "drinkType": row.get("drinkType", ""),
+                "typeCategory": row.get("typeCategory", ""),
                 "originCountry": row.get("originCountry", ""),
                 "bottler": row.get("bottler", ""),
                 "photo": row.get("photo", ""),
