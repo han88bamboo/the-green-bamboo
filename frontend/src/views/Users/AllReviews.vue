@@ -57,6 +57,28 @@
             </button>
           </div>
 
+          <!-- View Toggle -->
+          <div class="d-flex justify-content-end mb-3">
+            <div class="btn-group" role="group" aria-label="View toggle">
+              <button 
+                type="button" 
+                class="btn btn-outline-secondary"
+                :class="{ active: viewMode === 'grid' }"
+                @click="viewMode = 'grid'"
+              >
+                <i class="fas fa-th-large me-1"></i>Grid
+              </button>
+              <button 
+                type="button" 
+                class="btn btn-outline-secondary"
+                :class="{ active: viewMode === 'list' }"
+                @click="viewMode = 'list'"
+              >
+                <i class="fas fa-list me-1"></i>List
+              </button>
+            </div>
+          </div>
+
           <!-- Filter and Sort Controls -->
           <div class="row mb-4">
             <div class="col-md-2">
@@ -116,8 +138,8 @@
             </div>
           </div>
 
-          <!-- Reviews List -->
-          <div v-if="filteredReviews && filteredReviews.length > 0">
+          <!-- Reviews List (List View) -->
+          <div v-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'list'">
             <div v-for="review in paginatedReviews" :key="review.id" class="mb-4">
               <div style="display: flex" class="row mb-2 border rounded p-3">
                 <div class="col-3 mobile-col-3 mobile-pe-0">
@@ -216,6 +238,69 @@
                     <p class="text-muted small mb-0" v-if="review.location || review.address">
                       {{ getLocationName(review.location) || review.address }}
                     </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews Grid (Grid View) -->
+          <div v-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'grid'" class="row">
+            <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 review-card border-light">
+                <!-- Image at top -->
+                <div class="card-img-top-wrapper">
+                  <img
+                    :src="review.photo || defaultDrinkImage"
+                    alt=""
+                    class="card-img-top review-card-img"
+                  />
+                </div>
+                
+                <div class="card-body d-flex flex-column">
+                  <!-- Drink name -->
+                  <a
+                    :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                    style="text-decoration: none; color: #223957"
+                    class="text-decoration-none"
+                  >
+                    <h6 class="card-title mb-2 default-clickable-text fw-bold">
+                      {{ getListingName(review.reviewTarget) }}
+                    </h6>
+                  </a>
+                  
+                  <!-- Producer name -->
+                  <p class="text-muted small mb-2" v-if="getListingProducerName(review.reviewTarget)">
+                    by {{ getListingProducerName(review.reviewTarget) }}
+                  </p>
+                  
+                  <!-- Category and Country -->
+                  <p class="mb-2 small" style="color: #f0b358;" v-if="getListingDrinkType(review.reviewTarget) || getListingCountry(review.reviewTarget)">
+                    <span v-if="getListingDrinkType(review.reviewTarget)">{{ getListingDrinkType(review.reviewTarget) }}</span>
+                    <span v-if="getListingDrinkType(review.reviewTarget) && getListingCountry(review.reviewTarget)"> / </span>
+                    <span v-if="getListingCountry(review.reviewTarget)">{{ getListingCountry(review.reviewTarget) }}</span>
+                  </p>
+                  
+                  <!-- Review excerpt -->
+                  <p class="card-text mb-3 flex-grow-1" v-if="review.reviewDesc">
+                    {{ getReviewExcerpt(review.reviewDesc) }}
+                    <a 
+                      :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                      class="text-danger text-decoration-none ms-1"
+                      style="font-size: 0.9em;"
+                    >
+                      See Full Review
+                    </a>
+                  </p>
+                  
+                  <!-- Bottom row: Date and Rating -->
+                  <div class="d-flex justify-content-between align-items-center mt-auto">
+                    <small class="text-muted">
+                      {{ formatDateGrid(review.createdDate) }}
+                    </small>
+                    <span class="fw-bold rating-text">
+                      {{ parseFloat(review.rating).toFixed(1) }}★
+                    </span>
                   </div>
                 </div>
               </div>
@@ -334,6 +419,9 @@ export default {
       
       // Loading states
       loadingReviews: false,
+      
+      // View mode
+      viewMode: 'grid', // Default to grid view
     };
   },
   computed: {
@@ -710,6 +798,38 @@ export default {
         month: 'long',
         day: 'numeric'
       });
+    },
+    
+    formatDateGrid(dateString) {
+      if (!dateString) return 'Unknown date';
+      
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\//g, ' / '); // Add spaces around slashes
+    },
+    
+    getReviewExcerpt(reviewDesc) {
+      if (!reviewDesc) return '';
+      
+      // Find the first sentence or first 80 characters, whichever comes first
+      const firstSentence = reviewDesc.match(/^[^.!?]+[.!?]/);
+      if (firstSentence && firstSentence[0].length <= 80) {
+        return firstSentence[0];
+      }
+      
+      // If no sentence ending or sentence is too long, take first 80 chars
+      const excerpt = reviewDesc.substring(0, 80);
+      const lastSpaceIndex = excerpt.lastIndexOf(' ');
+      
+      // Cut at last complete word if possible
+      if (lastSpaceIndex > 60) {
+        return excerpt.substring(0, lastSpaceIndex) + '...';
+      }
+      
+      return excerpt + '...';
     }
   }
 };
@@ -839,5 +959,55 @@ export default {
 
 .form-select.text-muted {
   color: #6c757d !important;
+}
+
+/* Grid view styles */
+.review-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.review-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.card-img-top-wrapper {
+  height: 200px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.review-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.card-title {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+/* View toggle buttons */
+.btn-group .btn.active {
+  background-color: #f0b358;
+  border-color: #f0b358;
+  color: #000;
+}
+
+.btn-outline-secondary {
+  color: #223957;
+  border-color: #223957;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f0b358;
+  border-color: #f0b358;
+  color: #000;
 }
 </style>
