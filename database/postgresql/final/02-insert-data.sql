@@ -2874,7 +2874,7 @@ INSERT INTO "listings" (
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
     VALUES 
-    (1, '{}', '{}', '{}'), 
+    (1, '{3,2,5}', '{}', '{}'), 
     (2, '{}', '{}', '{}'), 
     (3, '{}', '{}', '{}'), 
     (4, '{}', '{}', '{}'),
