@@ -1429,16 +1429,16 @@
                   <div 
                     class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
                     v-for="(user, index) in followingUsers.slice(0, 3)" 
-                    :key="`following-${user.userID || index}`"
+                    :key="`following-${user.id || index}`"
                   >
                     <!-- User profile with circular border -->
                     <div class="position-relative user-container" :key="index">
                       <a
-                        :href="`/profile/user/${user.userID}/${user.username}`"
+                        :href="`/profile/user/${user.id}/${user.username}`"
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="user.photo ? 'data:image/jpeg;base64,' + user.photo : defaultProfilePhoto"
+                          :src="user.photo || defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
@@ -1473,16 +1473,16 @@
                   <div 
                     class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
                     v-for="(user, index) in followersUsers.slice(0, 3)" 
-                    :key="`follower-${user.userID || index}`"
+                    :key="`follower-${user.id || index}`"
                   >
                     <!-- User profile with circular border -->
                     <div class="position-relative user-container" :key="index">
                       <a
-                        :href="`/profile/user/${user.userID}/${user.username}`"
+                        :href="`/profile/user/${user.id}/${user.username}`"
                         style="text-decoration: none; color: inherit;"
                       >
                         <img
-                          :src="user.photo ? 'data:image/jpeg;base64,' + user.photo : defaultProfilePhoto"
+                          :src="user.photo || defaultProfilePhoto"
                           alt="user profile photo"
                           class="rounded-circle border border-dark user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
@@ -1500,7 +1500,7 @@
             <!-- View All Friends Link -->
             <div class="mt-4 mobile-view-hide">
               <div>
-                <a :href="`/profile/user/friends/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
+                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
               </div>
             </div>
 
