@@ -28,6 +28,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllReviews.vue"),
   },
   {
+    path: "/profile/user/allfollowingfollowers/:userID/:username",
+    name: "allFollowingFollowers",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Users/AllFollowingFollowers.vue"),
+  },
+  {
     path: "/profile/producer/:producerID/:username",
     name: "profileProducer",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Producers/ProducerProfile.vue"),

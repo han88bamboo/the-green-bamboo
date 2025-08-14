@@ -27,7 +27,7 @@
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
 #           /getLatestReviewsDrinks/<id> (GET),
-#           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET),
+#           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET), /getAllUserFollowing/<id> (GET), /getAllUserFollowers/<id> (GET),
 
 #           [Listing Reviews]
 #           /getRecentListingReviews/<id> (GET), /getAllUserReviews/<id> (GET), /getReviews (GET),
@@ -7693,3 +7693,176 @@ def getCanonicalUsername(username):
             "code": 500,
             "message": "An error occurred retrieving the username"
         }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all users that a specific user is following (detailed user info)
+@blueprint.route("/getAllUserFollowing/<id>")
+def getAllUserFollowing(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if id is a valid user
+        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify({
+                "code": 404,
+                "message": "User not found."
+            }), 404
+        
+        # Step 2: Get the follow list from usersFollowLists
+        cur.execute('SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
+        follow_data = cur.fetchone()
+        
+        if not follow_data or not follow_data['users']:
+            return jsonify({
+                "following": [],
+                "total": 0
+            }), 200
+        
+        following_ids = follow_data['users']
+        
+        # Step 3: Get detailed user information for each following
+        following_users = []
+        for user_id in following_ids:
+            cur.execute('''
+                SELECT 
+                    "id", 
+                    "username", 
+                    "displayName", 
+                    "photo", 
+                    "joinDate",
+                    "firstName",
+                    "lastName"
+                FROM "users" 
+                WHERE "id" = %s
+            ''', (user_id,))
+            
+            user_info = cur.fetchone()
+            if user_info:
+                # Get review count for this user
+                cur.execute('SELECT COUNT(*) as review_count FROM "reviews" WHERE "userId" = %s', (user_id,))
+                review_count = cur.fetchone()['review_count']
+                
+                # Get follower count for this user
+                cur.execute('SELECT COUNT(*) as follower_count FROM "usersFollowLists" WHERE %s = ANY("users")', (user_id,))
+                follower_count = cur.fetchone()['follower_count']
+                
+                following_users.append({
+                    "id": user_info['id'],
+                    "username": user_info['username'],
+                    "displayName": user_info['displayName'],
+                    "photo": user_info['photo'],
+                    "joinDate": user_info['joinDate'].isoformat() if user_info['joinDate'] else None,
+                    "firstName": user_info['firstName'],
+                    "lastName": user_info['lastName'],
+                    "reviewCount": review_count,
+                    "followerCount": follower_count
+                })
+        
+        return jsonify({
+            "following": following_users,
+            "total": len(following_users)
+        }), 200
+
+    except Exception as e:
+        print(f"Error in getAllUserFollowing: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the following list."
+        }), 500
+    
+    finally:
+        cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all users that are following a specific user (detailed user info)
+@blueprint.route("/getAllUserFollowers/<id>")
+def getAllUserFollowers(id):
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Step 1: Check if id is a valid user
+        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+        user_data = cur.fetchone()
+
+        if user_data is None:
+            return jsonify({
+                "code": 404,
+                "message": "User not found."
+            }), 404
+        
+        # Step 2: Find all users who have this user in their following list
+        cur.execute('''
+            SELECT "userId" 
+            FROM "usersFollowLists" 
+            WHERE %s = ANY("users")
+        ''', (id,))
+        
+        follower_data = cur.fetchall()
+        
+        if not follower_data:
+            return jsonify({
+                "followers": [],
+                "total": 0
+            }), 200
+        
+        follower_ids = [row['userId'] for row in follower_data]
+        
+        # Step 3: Get detailed user information for each follower
+        followers = []
+        for user_id in follower_ids:
+            cur.execute('''
+                SELECT 
+                    "id", 
+                    "username", 
+                    "displayName", 
+                    "photo", 
+                    "joinDate",
+                    "firstName",
+                    "lastName"
+                FROM "users" 
+                WHERE "id" = %s
+            ''', (user_id,))
+            
+            user_info = cur.fetchone()
+            if user_info:
+                # Get review count for this user
+                cur.execute('SELECT COUNT(*) as review_count FROM "reviews" WHERE "userId" = %s', (user_id,))
+                review_count = cur.fetchone()['review_count']
+                
+                # Get follower count for this user
+                cur.execute('SELECT COUNT(*) as follower_count FROM "usersFollowLists" WHERE %s = ANY("users")', (user_id,))
+                follower_count = cur.fetchone()['follower_count']
+                
+                followers.append({
+                    "id": user_info['id'],
+                    "username": user_info['username'],
+                    "displayName": user_info['displayName'],
+                    "photo": user_info['photo'],
+                    "joinDate": user_info['joinDate'].isoformat() if user_info['joinDate'] else None,
+                    "firstName": user_info['firstName'],
+                    "lastName": user_info['lastName'],
+                    "reviewCount": review_count,
+                    "followerCount": follower_count
+                })
+        
+        return jsonify({
+            "followers": followers,
+            "total": len(followers)
+        }), 200
+
+    except Exception as e:
+        print(f"Error in getAllUserFollowers: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the followers list."
+        }), 500
+    
+    finally:
+        cur.close()
