@@ -65,16 +65,18 @@
                 class="btn btn-outline-secondary"
                 :class="{ active: viewMode === 'grid' }"
                 @click="viewMode = 'grid'"
+                title="Grid View"
               >
-                <i class="fas fa-th-large me-1"></i>Grid
+                <i class="fas fa-th-large"></i>
               </button>
               <button 
                 type="button" 
                 class="btn btn-outline-secondary"
                 :class="{ active: viewMode === 'list' }"
                 @click="viewMode = 'list'"
+                title="List View"
               >
-                <i class="fas fa-list me-1"></i>List
+                <i class="fas fa-list"></i>
               </button>
             </div>
           </div>
@@ -246,7 +248,7 @@
 
           <!-- Reviews Grid (Grid View) -->
           <div v-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'grid'" class="row">
-            <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-md-6 col-lg-4 mb-4">
+            <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
               <div class="card h-100 review-card border-light">
                 <!-- Image at top -->
                 <div class="card-img-top-wrapper">
