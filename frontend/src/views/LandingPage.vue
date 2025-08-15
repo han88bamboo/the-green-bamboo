@@ -53,8 +53,8 @@
                         <div class="card h-100 review-card border-light" 
                              style="border: 2px solid #f0b358; cursor: pointer;"
                              @click="goToListing(review)">
-                            <!-- Image at top -->
-                            <div class="card-img-top-wrapper">
+                            <!-- Image at top with overlay -->
+                            <div class="card-img-top-wrapper position-relative">
                                 <img v-if="review.photo" 
                                      :src="review.photo" 
                                      class="card-img-top review-card-img"
@@ -67,6 +67,24 @@
                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                      class="card-img-top review-card-img"
                                      alt="Default drink image" />
+                                
+                                <!-- User and Rating Overlay -->
+                                <div class="review-overlay position-absolute d-flex align-items-center">
+                                    <img v-if="review.userPhoto" 
+                                         :src="review.userPhoto" 
+                                         class="rounded-circle me-1" 
+                                         style="width: 18px; height: 18px; object-fit: cover;" 
+                                         :alt="review.username" />
+                                    <img v-else
+                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                         class="rounded-circle me-1" 
+                                         style="width: 18px; height: 18px; object-fit: cover;" 
+                                         alt="Default profile" />
+                                    <span class="overlay-text">
+                                        @{{ truncateText(review.username, 15) }} rated 
+                                        <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
+                                    </span>
+                                </div>
                             </div>
                             
                             <div class="card-body d-flex flex-column">
@@ -92,28 +110,6 @@
                                     "{{ truncateText(review.reviewDesc, 40) }}" 
                                     <span class="text-danger text-decoration-none ms-1">Read Full Review</span>
                                 </p>
-                                
-                                <!-- Bottom row: Rated X★ by @username format -->
-                                <div class="d-flex align-items-center mt-auto">
-                                    <small class="text-muted">
-                                        Rated 
-                                        <span class="fw-bold rating-text">
-                                            {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
-                                        </span>
-                                        by 
-                                        <img v-if="review.userPhoto" 
-                                             :src="review.userPhoto" 
-                                             class="rounded-circle mx-1" 
-                                             style="width: 16px; height: 16px; object-fit: cover;" 
-                                             :alt="review.username" />
-                                        <img v-else
-                                             src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                             class="rounded-circle mx-1" 
-                                             style="width: 16px; height: 16px; object-fit: cover;" 
-                                             alt="Default profile" />
-                                        @{{ truncateText(review.username, 15) }}
-                                    </small>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -1072,12 +1068,37 @@ button.btn.selected {
     overflow: hidden;
     background-color: #f8f9fa;
     border-radius: 10px 10px 0 0;
+    position: relative;
 }
 
 .trending-review-col .review-card-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/* Review Overlay Styles */
+.review-overlay {
+    top: 8px;
+    left: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 4px 8px;
+    backdrop-filter: blur(2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+.overlay-text {
+    color: #333;
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.overlay-rating {
+    color: #f0b358;
+    font-weight: bold;
 }
 
 .trending-review-col .card-body {
