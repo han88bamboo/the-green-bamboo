@@ -38,6 +38,83 @@
 
     <!-- Hero End -->
 
+    <!-- Recent Reviews Section -->
+    <section class="recent-reviews-section py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
+                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"See what others are sipping"</h3>
+            </div>
+            
+            <!-- Recent Reviews Grid -->
+            <div class="reviews-scroll-container">
+                <div class="reviews-grid d-flex">
+                    <div v-for="review in recentReviews" :key="review.reviewId" class="review-col">
+                        <div class="review-card h-100 p-3 text-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px; cursor: pointer;"
+                             @click="goToListing(review)">
+                            <!-- Review Photo -->
+                            <div class="review-image-container mb-2">
+                                <img v-if="review.photo" 
+                                     :src="review.photo" 
+                                     class="img-fluid rounded" 
+                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                     :alt="review.listingName" />
+                                <img v-else-if="review.listingPhoto" 
+                                     :src="review.listingPhoto" 
+                                     class="img-fluid rounded" 
+                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                     :alt="review.listingName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                     class="img-fluid rounded" 
+                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                     alt="Default drink image" />
+                            </div>
+                            
+                            <!-- Listing Info -->
+                            <div class="listing-info mb-2">
+                                <h6 class="fw-bold mb-1 mobile-rating-smaller-text" style="color: #027562; font-size: 0.8rem;">
+                                    {{ truncateText(review.listingName, 20) }}
+                                </h6>
+                                <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
+                                    {{ review.drinkType }}<span v-if="review.originCountry">, {{ review.originCountry }}</span>
+                                </p>
+                                <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
+                                    {{ truncateText(review.producerName, 15) }}
+                                </p>
+                            </div>
+                            
+                            <!-- Review Description -->
+                            <div class="review-desc mb-2">
+                                <p class="mb-0 mobile-rating-smaller-text-2 fst-italic" style="font-size: 0.7rem; color: #333;">
+                                    "{{ truncateText(review.reviewDesc, 30) }}"
+                                </p>
+                            </div>
+                            
+                            <!-- Reviewer Info -->
+                            <div class="reviewer-info d-flex align-items-center justify-content-center">
+                                <img v-if="review.userPhoto" 
+                                     :src="review.userPhoto" 
+                                     class="rounded-circle me-2" 
+                                     style="width: 20px; height: 20px; object-fit: cover;" 
+                                     :alt="review.username" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                     class="rounded-circle me-2" 
+                                     style="width: 20px; height: 20px; object-fit: cover;" 
+                                     alt="Default profile" />
+                                <span class="mobile-rating-smaller-text-2 fw-semibold" style="font-size: 0.7rem;">
+                                    {{ truncateText(review.username, 10) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Recent Reviews End -->
+
     
 
     <!-- Trending Section -->
@@ -536,6 +613,7 @@ export default {
             selectedListing: "",
             articles: [], // This holds your RSS feed data
             reviews: [], // Stores reviews
+            recentReviews: [], // Stores the 5 most recent reviews
             sectionTitles: {
                 latest_news: "Latest Drink News",
                 spotlight: "Spotlight",
@@ -557,6 +635,7 @@ export default {
         this.fetchRSSReviews(); // Fetch RSS news
         this.fetchTop8();
         this.fetchTopListings();
+        this.fetchRecentReviews(); // Fetch 5 most recent reviews
 
         const accID = localStorage.getItem("88B_accID");
         if (accID !== null) {
@@ -582,6 +661,11 @@ export default {
                 .toLowerCase()
                 .replace(/\s+/g, '')
                 .replace(/[^\w]/g, '');
+        },
+        
+        truncateText(text, maxLength = 30) {
+            if (!text) return '';
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
@@ -711,6 +795,30 @@ export default {
                 console.error(error);
             } finally {
                 this.loading = false; // Hide loading spinner
+            }
+        },
+
+        async fetchRecentReviews() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/get5MostRecentReviews`);
+                this.recentReviews = response.data;
+                console.log("Recent reviews:", this.recentReviews);
+            } catch (error) {
+                console.error("Error fetching recent reviews:", error);
+                this.recentReviews = [];
+            }
+        },
+
+        // Navigate to listing page when clicking on a review
+        goToListing(review) {
+            if (review && review.reviewTarget && review.listingName) {
+                try {
+                    this.$router.push({ 
+                        path: '/listing/view/' + review.reviewTarget + '/' + this.slugify(review.listingName) 
+                    });
+                } catch (error) {
+                    console.error("Error navigating to listing:", error);
+                }
             }
         },
 
@@ -915,6 +1023,117 @@ button.btn.selected {
   width: 120px; /* Or larger if needed for impact */
   z-index: 3; /* Ensure it's above the red slope */
   transform: translateY(30%); /* Nudge it downward to float over the slope */
+}
+
+/* Recent Reviews Section */
+.recent-reviews-section {
+    background-color: #f8f9fa;
+}
+
+.reviews-scroll-container {
+    overflow-x: auto;
+    padding: 0 15px;
+    margin: 0 -15px;
+    /* Custom scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: #027562 #f8f9fa;
+}
+
+.reviews-scroll-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.reviews-scroll-container::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.reviews-scroll-container::-webkit-scrollbar-thumb {
+    background: #027562;
+    border-radius: 4px;
+}
+
+.reviews-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #025850;
+}
+
+.reviews-grid {
+    gap: 1rem;
+    padding: 0 0 10px 0;
+    min-width: fit-content;
+}
+
+.review-col {
+    flex: 0 0 auto;
+    width: 200px;
+    min-width: 200px;
+}
+
+.review-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    min-height: 200px;
+    width: 100%;
+}
+
+.review-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.review-image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80px;
+}
+
+.listing-info h6 {
+    line-height: 1.2;
+}
+
+.review-desc p {
+    line-height: 1.3;
+}
+
+.reviewer-info {
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    margin-top: auto;
+}
+
+/* Responsive adjustments for review cards */
+@media (max-width: 576px) {
+    .review-col {
+        width: 160px;
+        min-width: 160px;
+    }
+    
+    .review-card {
+        min-height: 180px;
+    }
+    
+    .review-image-container {
+        height: 60px;
+    }
+}
+
+/* For very large screens, center the grid when all 5 cards fit */
+@media (min-width: 1200px) {
+    .reviews-scroll-container {
+        display: flex;
+        justify-content: center;
+        overflow-x: visible;
+    }
+    
+    .reviews-grid {
+        justify-content: center;
+        max-width: 1200px;
+    }
+    
+    .review-col {
+        width: 220px;
+        min-width: 220px;
+    }
 }
 
 
