@@ -137,8 +137,8 @@
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[0])"
                                     
-                                    @mouseover="$event.target.style.color = '#0056b3'"
-                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    @mouseover="$event.target.style.color = '#E9ECEF'"
+                                    @mouseout="$event.target.style.color = '#ffffff'">
                                     {{ venueMenus[0].venueName }}
                                 </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p> -->
@@ -200,8 +200,8 @@
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[1])"
                                     
-                                    @mouseover="$event.target.style.color = '#0056b3'"
-                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    @mouseover="$event.target.style.color = '#E9ECEF'"
+                                    @mouseout="$event.target.style.color = '#ffffff'">
                                     {{ venueMenus[1].venueName }}
                                 </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p> -->
@@ -263,8 +263,8 @@
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[2])"
                                     
-                                    @mouseover="$event.target.style.color = '#0056b3'"
-                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    @mouseover="$event.target.style.color = '#E9ECEF'"
+                                    @mouseout="$event.target.style.color = '#ffffff'">
                                     {{ venueMenus[2].venueName }}
                                 </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p> -->
