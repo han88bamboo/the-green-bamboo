@@ -134,16 +134,22 @@
                     <div class="col-4 pe-4">
                         <div class="menu-card h-100" v-if="venueMenus[0]">
                             <div class="menu-card-header p-3 ">
-                                <h5 class="mb-1 fw-bold">{{ venueMenus[0].venueName }}</h5>
+                                <h5 class="mb-1 fw-bold" 
+                                    @click="goToVenue(venueMenus[0])"
+                                    
+                                    @mouseover="$event.target.style.color = '#0056b3'"
+                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    {{ venueMenus[0].venueName }}
+                                </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p> -->
                             </div>
-                            <div class="menu-items-list p-3">
+                            <div class="menu-items-list p-3 pb-0">
                                 <div 
                                     v-for="item in venueMenus[0].menuItems" 
                                     :key="`${venueMenus[0].venueId}-${item.listingId}`"
                                     class="menu-item d-flex align-items-start mb-3 p-2 rounded"
                                     @click="goToListing(item)"
-                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                     style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
                                     @mouseout="$event.target.style.backgroundColor = 'transparent'"
                                 >
@@ -152,7 +158,7 @@
                                             :src="item.listingPhoto" 
                                             :alt="item.listingName"
                                             class="rounded"
-                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                            style="width: 63px; height: 63px; object-fit: cover;"
                                         />
                                     </div>
                                     <div class="menu-item-details flex-grow-1 text-start">
@@ -169,6 +175,14 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="menu-card-footer  text-center pb-3">
+                                <button 
+                                    class="btn btn-warning fw-semibold px-4"
+                                    @click="goToVenue(venueMenus[0])"
+                                    style="background-color: #EBA446; border-color: #EBA446; color: black;">
+                                    View Menu
+                                </button>
                             </div>
                         </div>
                         <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
@@ -183,10 +197,16 @@
                     <div class="col-4 ps-2 pe-2">
                         <div class="menu-card h-100" v-if="venueMenus[1]">
                             <div class="menu-card-header p-3 ">
-                                <h5 class="mb-1 fw-bold">{{ venueMenus[1].venueName }}</h5>
+                                <h5 class="mb-1 fw-bold" 
+                                    @click="goToVenue(venueMenus[1])"
+                                    
+                                    @mouseover="$event.target.style.color = '#0056b3'"
+                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    {{ venueMenus[1].venueName }}
+                                </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p> -->
                             </div>
-                            <div class="menu-items-list p-3">
+                            <div class="menu-items-list p-3 pb-0">
                                 <div 
                                     v-for="item in venueMenus[1].menuItems" 
                                     :key="`${venueMenus[1].venueId}-${item.listingId}`"
@@ -201,7 +221,7 @@
                                             :src="item.listingPhoto" 
                                             :alt="item.listingName"
                                             class="rounded"
-                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                            style="width: 63px; height: 63px; object-fit: cover;"
                                         />
                                     </div>
                                     <div class="menu-item-details flex-grow-1 text-start">
@@ -219,6 +239,14 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="menu-card-footer  text-center pb-3">
+                                <button 
+                                    class="btn btn-warning fw-semibold px-4"
+                                    @click="goToVenue(venueMenus[1])"
+                                    style="background-color: #EBA446; border-color: #EBA446; color: black;">
+                                    View Menu
+                                </button>
+                            </div>
                         </div>
                         <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
                             <div class="text-start text-muted">
@@ -232,10 +260,16 @@
                     <div class="col-4 ps-4">
                         <div class="menu-card h-100" v-if="venueMenus[2]">
                             <div class="menu-card-header p-3 ">
-                                <h5 class="mb-1 fw-bold">{{ venueMenus[2].venueName }}</h5>
+                                <h5 class="mb-1 fw-bold" 
+                                    @click="goToVenue(venueMenus[2])"
+                                    
+                                    @mouseover="$event.target.style.color = '#0056b3'"
+                                    @mouseout="$event.target.style.color = '#007bff'">
+                                    {{ venueMenus[2].venueName }}
+                                </h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p> -->
                             </div>
-                            <div class="menu-items-list p-3">
+                            <div class="menu-items-list p-3 pb-0">
                                 <div 
                                     v-for="item in venueMenus[2].menuItems" 
                                     :key="`${venueMenus[2].venueId}-${item.listingId}`"
@@ -250,7 +284,7 @@
                                             :src="item.listingPhoto" 
                                             :alt="item.listingName"
                                             class="rounded"
-                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                            style="width: 63px; height: 63px; object-fit: cover;"
                                         />
                                     </div>
                                     <div class="menu-item-details flex-grow-1 text-start">
@@ -267,6 +301,14 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="menu-card-footer text-center pb-3">
+                                <button 
+                                    class="btn btn-warning fw-semibold px-4"
+                                    @click="goToVenue(venueMenus[2])"
+                                    style="background-color: #EBA446; border-color: #EBA446; color: black;">
+                                    View Menu
+                                </button>
                             </div>
                         </div>
                         <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
@@ -1026,6 +1068,19 @@ export default {
             }
         },
 
+        // Navigate to venue profile page
+        goToVenue(venue) {
+            if (venue && venue.venueId && venue.venueName) {
+                try {
+                    this.$router.push({ 
+                        path: `/profile/venue/${venue.venueId}/${this.slugify(venue.venueName)}` 
+                    });
+                } catch (error) {
+                    console.error("Error navigating to venue:", error);
+                }
+            }
+        },
+
     },
 };
 </script>
@@ -1456,7 +1511,7 @@ button.btn.selected {
 }
 
 .menu-items-list {
-    min-height: 360px;
+    /* min-height: 360px; */
     overflow-y: auto;
 }
 
