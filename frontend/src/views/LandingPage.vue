@@ -89,12 +89,12 @@
                             
                             <div class="card-body d-flex flex-column">
                                 <!-- Drink name -->
-                                <h6 class="card-title mb-2 fw-bold" style="color: #223957;">
+                                <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
                                     {{ truncateText(review.listingName, 30) }}
                                 </h6>
                                 
                                 <!-- Producer name -->
-                                <p class="text-muted small mb-2" v-if="review.producerName">
+                                <p class="text-muted small" v-if="review.producerName" style="margin-bottom:0px;" >
                                     by {{ truncateText(review.producerName, 20) }}
                                 </p>
                                 
@@ -106,9 +106,9 @@
                                 </p>
                                 
                                 <!-- Review excerpt -->
-                                <p class="card-text mb-3 flex-grow-1" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 40) }}" 
-                                    <span class="text-danger text-decoration-none ms-1">Read Full Review</span>
+                                <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
+                                    "{{ truncateText(review.reviewDesc, 35) }}" 
+                                    <span class="text-danger text-decoration-none ms-1">Read Review</span>
                                 </p>
                             </div>
                         </div>
