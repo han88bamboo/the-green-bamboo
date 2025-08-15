@@ -37,7 +37,7 @@ html {
   left: 0;
   width: 100%;
   background-color: white; /* tzh changed F2F2F2 to white */
-  z-index: 99;
+  z-index: 1060; /* Higher than modal backdrop to contain clickable modal content */
 }
 
 .navbar {
@@ -1054,11 +1054,16 @@ html {
 }
 
 .modal {
-  z-index: 1050;
+  z-index: 1050; /* Keep normal modal z-index for modals outside navbar */
 }
 
 .modal-backdrop {
-  z-index: 1049;
+  z-index: 1049; /* Backdrop appears below navbar container */
+}
+
+/* Special handling for modals inside navbar container */
+.navbar-container .modal {
+  z-index: inherit; /* Inherit navbar container's z-index (1060) */
 }
 
 .pac-container pac-logo hdpi {
