@@ -38,7 +38,7 @@
 
     <!-- Hero End -->
 
-    <!-- Recent Reviews Section -->
+    <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
