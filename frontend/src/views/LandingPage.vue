@@ -135,7 +135,7 @@
                         <div class="menu-card h-100" v-if="venueMenus[0]">
                             <div class="menu-card-header p-3 text-center">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[0].venueName }}</h5>
-                                <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p>
+                                <!-- <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p> -->
                             </div>
                             <div class="menu-items-list p-3">
                                 <div 
@@ -184,7 +184,7 @@
                         <div class="menu-card h-100" v-if="venueMenus[1]">
                             <div class="menu-card-header p-3 text-center">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[1].venueName }}</h5>
-                                <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p>
+                                <!-- <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p> -->
                             </div>
                             <div class="menu-items-list p-3">
                                 <div 
@@ -215,9 +215,6 @@
                                             <span class="badge bg-secondary" style="font-size: 0.7rem;">
                                                 {{ item.drinkType }}
                                             </span>
-                                            <span class="text-primary fw-bold" style="font-size: 0.85rem;" v-if="item.itemPrice">
-                                                ${{ item.itemPrice }}
-                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -236,7 +233,7 @@
                         <div class="menu-card h-100" v-if="venueMenus[2]">
                             <div class="menu-card-header p-3 text-center">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[2].venueName }}</h5>
-                                <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p>
+                                <!-- <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p> -->
                             </div>
                             <div class="menu-items-list p-3">
                                 <div 
@@ -266,9 +263,6 @@
                                         <div class="d-flex justify-content-between align-items-center mt-1">
                                             <span class="badge bg-secondary" style="font-size: 0.7rem;">
                                                 {{ item.drinkType }}
-                                            </span>
-                                            <span class="text-primary fw-bold" style="font-size: 0.85rem;" v-if="item.itemPrice">
-                                                ${{ item.itemPrice }}
                                             </span>
                                         </div>
                                     </div>
