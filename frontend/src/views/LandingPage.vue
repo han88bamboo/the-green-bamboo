@@ -42,7 +42,7 @@
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Latest Reviews</h2>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
                 <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"See what others are sipping"</h3>
             </div>
             
@@ -112,7 +112,7 @@
                                  style="width: 20px; height: 20px; object-fit: cover;" 
                                  :alt="review.username" />
                             <img v-else
-                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePicture.png?v=1750084739"
+                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
                                  class="rounded-circle me-2" 
                                  style="width: 20px; height: 20px; object-fit: cover;" 
                                  alt="Default profile" />
