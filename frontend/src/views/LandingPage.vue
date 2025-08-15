@@ -119,7 +119,174 @@
     </section>
     <!-- Recent Reviews End -->
 
-    
+    <!-- What's On Menu Section -->
+    <section class="whats-on-menu-section py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">What's On Menu</h2>
+                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">Featured menus from our partner venues</h3>
+            </div>
+            
+            <!-- Menu Cards Container - 3 columns with horizontal scroll -->
+            <div class="menu-cards-container">
+                <div class="menu-cards-grid">
+                    <!-- Menu Card 1 - Venue ID 11 -->
+                    <div class="menu-card-col">
+                        <div class="menu-card h-100" v-if="venueMenus[0]">
+                            <div class="menu-card-header p-3 text-center">
+                                <h5 class="mb-1 fw-bold">{{ venueMenus[0].venueName }}</h5>
+                                <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p>
+                            </div>
+                            <div class="menu-items-list p-3">
+                                <div 
+                                    v-for="item in venueMenus[0].menuItems" 
+                                    :key="`${venueMenus[0].venueId}-${item.listingId}`"
+                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    @click="goToListing(item)"
+                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                    @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
+                                    @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                                >
+                                    <div class="menu-item-image me-3">
+                                        <img 
+                                            :src="item.listingPhoto" 
+                                            :alt="item.listingName"
+                                            class="rounded"
+                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                        />
+                                    </div>
+                                    <div class="menu-item-details flex-grow-1">
+                                        <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
+                                            {{ truncateText(item.listingName, 25) }}
+                                        </h6>
+                                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">
+                                            {{ item.producerName }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                {{ item.drinkType }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p>Loading menu...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Card 2 - Venue ID 10 -->
+                    <div class="menu-card-col">
+                        <div class="menu-card h-100" v-if="venueMenus[1]">
+                            <div class="menu-card-header p-3 text-center">
+                                <h5 class="mb-1 fw-bold">{{ venueMenus[1].venueName }}</h5>
+                                <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p>
+                            </div>
+                            <div class="menu-items-list p-3">
+                                <div 
+                                    v-for="item in venueMenus[1].menuItems" 
+                                    :key="`${venueMenus[1].venueId}-${item.listingId}`"
+                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    @click="goToListing(item)"
+                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                    @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
+                                    @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                                >
+                                    <div class="menu-item-image me-3">
+                                        <img 
+                                            :src="item.listingPhoto" 
+                                            :alt="item.listingName"
+                                            class="rounded"
+                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                        />
+                                    </div>
+                                    <div class="menu-item-details flex-grow-1">
+                                        <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
+                                            {{ truncateText(item.listingName, 25) }}
+                                        </h6>
+                                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">
+                                            {{ item.producerName }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                {{ item.drinkType }}
+                                            </span>
+                                            <span class="text-primary fw-bold" style="font-size: 0.85rem;" v-if="item.itemPrice">
+                                                ${{ item.itemPrice }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p>Loading menu...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Menu Card 3 - Venue ID 24 -->
+                    <div class="menu-card-col">
+                        <div class="menu-card h-100" v-if="venueMenus[2]">
+                            <div class="menu-card-header p-3 text-center">
+                                <h5 class="mb-1 fw-bold">{{ venueMenus[2].venueName }}</h5>
+                                <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p>
+                            </div>
+                            <div class="menu-items-list p-3">
+                                <div 
+                                    v-for="item in venueMenus[2].menuItems" 
+                                    :key="`${venueMenus[2].venueId}-${item.listingId}`"
+                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    @click="goToListing(item)"
+                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                    @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
+                                    @mouseout="$event.target.style.backgroundColor = 'transparent'"
+                                >
+                                    <div class="menu-item-image me-3">
+                                        <img 
+                                            :src="item.listingPhoto" 
+                                            :alt="item.listingName"
+                                            class="rounded"
+                                            style="width: 50px; height: 50px; object-fit: cover;"
+                                        />
+                                    </div>
+                                    <div class="menu-item-details flex-grow-1">
+                                        <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
+                                            {{ truncateText(item.listingName, 25) }}
+                                        </h6>
+                                        <p class="mb-0 text-muted" style="font-size: 0.8rem;">
+                                            {{ item.producerName }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                {{ item.drinkType }}
+                                            </span>
+                                            <span class="text-primary fw-bold" style="font-size: 0.85rem;" v-if="item.itemPrice">
+                                                ${{ item.itemPrice }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p>Loading menu...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- What's On Menu End -->
 
     <!-- Trending Section -->
     <section >
@@ -618,6 +785,7 @@ export default {
             articles: [], // This holds your RSS feed data
             reviews: [], // Stores reviews
             recentReviews: [], // Stores the 5 most recent reviews
+            venueMenus: [null, null, null], // Stores menu data for the 3 venues
             sectionTitles: {
                 latest_news: "Latest Drink News",
                 spotlight: "Spotlight",
@@ -640,6 +808,7 @@ export default {
         this.fetchTop8();
         this.fetchTopListings();
         this.fetchRecentReviews(); // Fetch 5 most recent reviews
+        this.fetchVenueMenus(); // Fetch venue menus
 
         const accID = localStorage.getItem("88B_accID");
         if (accID !== null) {
@@ -813,12 +982,49 @@ export default {
             }
         },
 
-        // Navigate to listing page when clicking on a review
-        goToListing(review) {
-            if (review && review.reviewTarget && review.listingName) {
+        async fetchVenueMenus() {
+            const venueIds = [11, 10, 24]; // Hard-coded venue IDs as requested
+            
+            try {
+                // Fetch menus for all 3 venues in parallel
+                const promises = venueIds.map(venueId => 
+                    this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getWhatsOnMenu/${venueId}`)
+                        .catch(error => {
+                            console.error(`Error fetching menu for venue ${venueId}:`, error);
+                            return null; // Return null for failed requests
+                        })
+                );
+                
+                const responses = await Promise.all(promises);
+                
+                // Process responses and update venueMenus array
+                this.venueMenus = responses.map((response, index) => {
+                    if (response && response.data && response.data.code === 200) {
+                        return response.data.data;
+                    } else {
+                        console.warn(`No data available for venue ${venueIds[index]}`);
+                        return null;
+                    }
+                });
+                
+                console.log("Venue menus loaded:", this.venueMenus);
+            } catch (error) {
+                console.error("Error fetching venue menus:", error);
+                // Set all menus to null on error
+                this.venueMenus = [null, null, null];
+            }
+        },
+
+        // Navigate to listing page when clicking on a review or menu item
+        goToListing(item) {
+            // Handle both review objects and menu item objects
+            if (item && ((item.reviewTarget && item.listingName) || (item.listingId && item.listingName))) {
                 try {
+                    const listingId = item.reviewTarget || item.listingId;
+                    const listingName = item.listingName;
+                    
                     this.$router.push({ 
-                        path: '/listing/view/' + review.reviewTarget + '/' + this.slugify(review.listingName) 
+                        path: `/listing/view/${listingId}/${this.slugify(listingName)}` 
                     });
                 } catch (error) {
                     console.error("Error navigating to listing:", error);
@@ -1199,6 +1405,150 @@ button.btn.selected {
     .recent-reviews-section .col-lg-2 {
         flex: 0 0 20%;
         max-width: 20%;
+    }
+}
+
+/* What's On Menu Section */
+.whats-on-menu-section {
+    background-color: #ffffff;
+}
+
+/* Menu Cards - Always 3 columns with horizontal scroll */
+.menu-cards-container {
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.menu-cards-grid {
+    display: flex;
+    gap: 1.5rem;
+    min-width: fit-content;
+    padding: 0 10px;
+}
+
+.menu-card-col {
+    flex: 0 0 350px; /* Fixed width for each column */
+    width: 350px;
+}
+
+.menu-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+    min-height: 400px;
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.menu-card-header {
+    background: linear-gradient(135deg, #027562 0%, #025a4a 100%);
+    color: white;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.menu-card-header h5 {
+    color: white;
+    margin-bottom: 0.25rem;
+}
+
+.menu-card-header p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.85rem;
+}
+
+.menu-items-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.menu-item {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+}
+
+.menu-item:hover {
+    background-color: #f8f9fa !important;
+    border-color: #027562 !important;
+    transform: translateX(2px);
+}
+
+.menu-item-image img {
+    border: 2px solid #e9ecef;
+    transition: border-color 0.2s ease;
+}
+
+.menu-item:hover .menu-item-image img {
+    border-color: #027562;
+}
+
+.menu-item-details h6 {
+    color: #333;
+    transition: color 0.2s ease;
+}
+
+.menu-item:hover .menu-item-details h6 {
+    color: #027562;
+}
+
+.badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Scrollbar styling for menu cards */
+.menu-cards-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.menu-cards-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.menu-cards-container::-webkit-scrollbar-thumb {
+    background: #027562;
+    border-radius: 4px;
+}
+
+.menu-cards-container::-webkit-scrollbar-thumb:hover {
+    background: #025a4a;
+}
+
+.menu-items-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.menu-items-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.menu-items-list::-webkit-scrollbar-thumb {
+    background: #027562;
+    border-radius: 3px;
+}
+
+.menu-items-list::-webkit-scrollbar-thumb:hover {
+    background: #025a4a;
+}
+
+/* Responsive adjustments for menu cards */
+@media (max-width: 576px) {
+    .menu-card-col {
+        flex: 0 0 300px;
+        width: 300px;
+    }
+    
+    .menu-card {
+        min-height: 350px;
+    }
+    
+    .menu-items-list {
+        max-height: 270px;
     }
 }
 

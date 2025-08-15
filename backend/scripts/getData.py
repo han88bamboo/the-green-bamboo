@@ -20,6 +20,7 @@
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
+#           /getWhatsOnMenu/<venue_id> (GET),
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -8045,3 +8046,93 @@ def getAllUserFollowers(id):
     
     finally:
         cur.close()
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get random menu items from a specific venue for "What's On Menu" section
+@blueprint.route("/getWhatsOnMenu/<int:venue_id>", methods=['GET'])
+def getWhatsOnMenu(venue_id):
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            # First, verify the venue exists and has menu items with photos
+            cursor.execute("""
+                SELECT v."id", v."venueName", v."photo" as "venuePhoto", 
+                       v."address", v."originLocation", COUNT(mi."id") as menu_items_count
+                FROM "venues" v
+                JOIN "venuesMenu" vm ON v."id" = vm."venueId"
+                JOIN "menuItems" mi ON vm."id" = mi."sectionId"
+                JOIN "listings" l ON mi."itemID" = l."id"
+                WHERE v."id" = %s 
+                  AND l."photo" IS NOT NULL AND l."photo" != '' AND l."photo" != 'null'
+                  AND mi."itemAvailability" = true
+                GROUP BY v."id", v."venueName", v."photo", v."address", v."originLocation"
+            """, (venue_id,))
+            
+            venue = cursor.fetchone()
+            
+            if not venue:
+                return jsonify({
+                    "code": 404,
+                    "message": f"No venue found with ID {venue_id} or venue has no menu items with photos."
+                }), 404
+            
+            # Get 5 random menu items with all required information for this venue
+            cursor.execute("""
+                SELECT 
+                    l."id" as "listingId",
+                    l."listingName",
+                    l."photo" as "listingPhoto",
+                    l."drinkType",
+                    l."abv",
+                    l."age",
+                    p."producerName",
+                    mi."itemPrice",
+                    mi."variant",
+                    st."servingType",
+                    vm."sectionName"
+                FROM "menuItems" mi
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                JOIN "listings" l ON mi."itemID" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN "servingTypes" st ON mi."itemServingType" = st."id"
+                WHERE vm."venueId" = %s
+                  AND l."photo" IS NOT NULL AND l."photo" != '' AND l."photo" != 'null'
+                  AND mi."itemAvailability" = true
+                ORDER BY RANDOM()
+                LIMIT 5;
+            """, (venue_id,))
+            
+            menu_items = cursor.fetchall()
+            
+            if not menu_items:
+                return jsonify({
+                    "code": 404,
+                    "message": f"No available menu items with photos found for venue ID {venue_id}."
+                }), 404
+            
+            # Prepare the response data
+            venue_data = {
+                "venueId": venue['id'],
+                "venueName": venue['venueName'],
+                "venuePhoto": venue['venuePhoto'],
+                "address": venue['address'],
+                "originLocation": venue['originLocation'],
+                "menuItemsCount": venue['menu_items_count'],
+                "menuItems": menu_items
+            }
+            
+            return jsonify({
+                "code": 200,
+                "data": venue_data,
+                "message": f"Successfully retrieved {len(menu_items)} menu items from {venue['venueName']}."
+            }), 200
+            
+    except Exception as e:
+        print(f"Error in getWhatsOnMenu: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the menu items."
+        }), 500
