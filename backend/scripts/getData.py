@@ -23,7 +23,7 @@
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
-#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUsernameFromEmail/<email> (GET), /getUserFollowList/<id> (GET), 
+#           /getUserPhoto/<id>/<userType> (GET), /getUserByUsername/<username> (GET), /getUsersBySearch (GET), /getUsernameFromEmail/<email> (GET), /getUserFollowList/<id> (GET), 
 #           /checkFollowing/<userId>/<userType>/<followId>/<followType> (GET), /getUserReviewSummary/<id> (GET),
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
 #           /getLatestReviewsDrinks/<id> (GET),
@@ -3597,6 +3597,78 @@ def getUserByUsername(username):
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching the user."}), 500
+
+# [GET] Users by search term
+@blueprint.route("/getUsersBySearch", methods=['GET'])
+def getUsersBySearch():
+    conn = g.db
+    searchTerm = request.args.get('searchTerm', '').strip()
+    lastID = request.args.get('lastID', '0').strip()
+    lastID = int(lastID) if lastID.isdigit() else 0
+
+    try:
+        cursor = conn.cursor()
+
+        # Search for users by username using fuzzy matching
+        cursor.execute("""
+            SELECT 
+                u.*, 
+                similarity(unaccent(u."username"), unaccent(%s)) AS sim_score
+            FROM "users" u
+            WHERE unaccent(u."username") %% unaccent(%s)
+            AND u."id" > %s
+            ORDER BY sim_score DESC, u."id" ASC
+            LIMIT 30
+        """, (searchTerm, searchTerm, lastID))
+
+        users_data = cursor.fetchall()
+
+        if not users_data:
+            return jsonify([])
+        
+        # Loop through users to get additional data for each user
+        for user in users_data:
+            user_id = user['id']
+            
+            # Remove sensitive fields
+            user.pop('hashedPassword', None)
+            user.pop('pin', None)
+            
+            # Get review count for the user
+            cursor.execute("""
+                SELECT COUNT(*) AS "reviewCount"
+                FROM "reviews"
+                WHERE "reviewerID" = %s
+            """, (user_id,))
+            review_count = cursor.fetchone()['reviewCount']
+            user['reviewCount'] = review_count
+
+            # Get follower count for the user
+            cursor.execute("""
+                SELECT COUNT(*) AS "followerCount"
+                FROM "followLists"
+                WHERE "followedID" = %s AND "followedType" = 'user'
+            """, (user_id,))
+            follower_count = cursor.fetchone()['followerCount']
+            user['followerCount'] = follower_count
+
+            # Get proof points and rank from pointsHelperFunc
+            user['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
+            user['currentPoints'] = pointsHelperFunc.get_current_proof_points(user_id)
+
+            # Get favorite drinks (choice drinks)
+            if user.get('choiceDrinks'):
+                # If choiceDrinks is stored as a list/array, keep it as is
+                # If it's stored as a string, you might need to parse it
+                user['favoriteDrinks'] = user['choiceDrinks']
+            else:
+                user['favoriteDrinks'] = []
+
+        return jsonify(users_data)
+
+    except Exception as e:
+        print(f"Error fetching users by search: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching users."}), 500
 
 # [GET] Get username from email address
 @blueprint.route("/getUsernameFromEmail/<email>")

@@ -24,7 +24,7 @@
                 :class="{ 'active': selectedCategoryKey === 'all' }"
               >
                 <i class="bi bi-map me-2"></i>
-                Drinks & More
+                Drinks & All
               </button>
             </li>
             <li><hr class="dropdown-divider"></li>
@@ -259,7 +259,7 @@ export default {
     const selectedCategoryKey = ref('all')
     
     const categories = {
-      all: { label: 'Drinks & More', icon: 'bi bi-map' },
+      all: { label: 'Drinks & All', icon: 'bi bi-map' },
       drinks: { label: 'Drinks', icon: 'bi bi-cup-straw' },
       venues: { label: 'Venues', icon: 'bi bi-geo-alt' },
       producers: { label: 'Producers', icon: 'bi bi-houses' },
