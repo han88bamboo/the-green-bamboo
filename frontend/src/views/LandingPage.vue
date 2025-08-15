@@ -106,7 +106,7 @@
                                              style="width: 16px; height: 16px; object-fit: cover;" 
                                              alt="Default profile" />
                                         <small class="text-muted">
-                                            {{ truncateText(review.username, 8) }}
+                                            {{ truncateText(review.username, 15) }}
                                         </small>
                                     </div>
                                     <span class="fw-bold rating-text">
