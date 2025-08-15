@@ -1632,33 +1632,48 @@ def get5MostRecentReviews():
     try:
         with conn.cursor() as cursor:
             cursor.execute("""
-                SELECT DISTINCT ON (r."reviewTarget")
-                    r."id" as "reviewId",
-                    r."userID",
-                    r."reviewTarget",
-                    r."rating",
-                    r."reviewDesc",
-                    r."reviewType",
-                    r."createdDate",
-                    r."observationTag",
-                    r."location",
-                    COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
-                    u."username",
-                    u."photo" as "userPhoto",
-                    l."listingName",
-                    l."drinkType",
-                    l."originCountry",
-                    l."producerID",
-                    p."producerName",
-                    v."venueName"
-                FROM "reviews" r
-                LEFT JOIN "users" u ON r."userID" = u."id"
-                LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
-                LEFT JOIN "producers" p ON l."producerID" = p."id"
-                LEFT JOIN "venues" v ON r."location" = v."id"
-                WHERE r."reviewType" = 'Listing'
-                AND r."rating" IS NOT NULL
-                ORDER BY r."reviewTarget", r."createdDate" DESC
+                WITH recent_reviews AS (
+                    SELECT 
+                        r."id" as "reviewId",
+                        r."userID",
+                        r."reviewTarget",
+                        r."rating",
+                        r."reviewDesc",
+                        r."reviewType",
+                        r."createdDate",
+                        r."observationTag",
+                        r."location",
+                        COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                        l."photo" as "listingPhoto",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        l."listingName",
+                        l."drinkType",
+                        l."originCountry",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName"
+                    FROM "reviews" r
+                    LEFT JOIN "users" u ON r."userID" = u."id"
+                    LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."reviewType" = 'Listing'
+                    AND r."rating" IS NOT NULL
+                    AND r."reviewDesc" IS NOT NULL
+                    AND r."reviewDesc" != ''
+                    ORDER BY r."createdDate" DESC
+                    LIMIT 100
+                ),
+                ranked_reviews AS (
+                    SELECT *,
+                        ROW_NUMBER() OVER (PARTITION BY "reviewTarget" ORDER BY "createdDate" DESC) as rn
+                    FROM recent_reviews
+                )
+                SELECT *
+                FROM ranked_reviews
+                WHERE rn = 1
+                ORDER BY "createdDate" DESC
                 LIMIT 5
             """)
             
