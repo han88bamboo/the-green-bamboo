@@ -46,79 +46,74 @@
                 <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"See what others are sipping"</h3>
             </div>
             
-            <!-- Recent Reviews Grid -->
-            <div class="row g-3 justify-content-center">
-                <div v-for="review in recentReviews" :key="review.reviewId" class="col-12 col-sm-6 col-md-4 col-lg-2">
-                    <div class="review-card h-100 p-3 text-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px; cursor: pointer;"
-                         @click="goToListing(review)">
-                        <!-- Review Photo -->
-                        <div class="review-image-container mb-2">
-                            <img v-if="review.photo" 
-                                 :src="review.photo" 
-                                 class="img-fluid rounded" 
-                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                 :alt="review.listingName" />
-                            <img v-else-if="review.listingPhoto" 
-                                 :src="review.listingPhoto" 
-                                 class="img-fluid rounded" 
-                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                 :alt="review.listingName" />
-                            <img v-else
-                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                 class="img-fluid rounded" 
-                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                 alt="Default drink image" />
-                        </div>
-                        
-                        <!-- Listing Info -->
-                        <div class="listing-info mb-2">
-                            <h6 class="fw-bold mb-1 mobile-rating-smaller-text" style="color: #027562; font-size: 0.8rem;">
-                                {{ truncateText(review.listingName, 20) }}
-                            </h6>
-                            <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
-                                {{ review.drinkType }}<span v-if="review.originCountry">, {{ review.originCountry }}</span>
-                            </p>
-                            <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
-                                {{ truncateText(review.producerName, 15) }}
-                            </p>
-                        </div>
-                        
-                        <!-- Review Description -->
-                        <div class="review-desc mb-2">
-                            <p class="mb-0 mobile-rating-smaller-text-2 fst-italic" style="font-size: 0.7rem; color: #333;">
-                                "{{ truncateText(review.reviewDesc, 30) }}"
-                            </p>
-                        </div>
-                        
-                        <!-- Star Rating -->
-                        <div class="rating-display mb-2">
-                            <div class="d-flex justify-content-center align-items-center">
-                                <span v-for="n in 5" :key="n" class="star" 
-                                      :class="{ 'filled': n <= Math.floor(parseFloat(review.rating) || 0), 'half': n === Math.ceil(parseFloat(review.rating) || 0) && (parseFloat(review.rating) || 0) % 1 !== 0 }"
-                                      style="color: #ffc107; font-size: 0.9rem;">
-                                    ★
-                                </span>
-                                <span class="ms-1 mobile-rating-smaller-text-2 fw-bold" style="font-size: 0.7rem; color: #666;">
-                                    {{ parseFloat(review.rating) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}
-                                </span>
+            <!-- Recent Reviews Grid - Always 5 columns with horizontal scroll -->
+            <div class="trending-reviews-container">
+                <div class="trending-reviews-grid">
+                    <div v-for="review in recentReviews" :key="review.reviewId" class="trending-review-col">
+                        <div class="card h-100 review-card border-light" 
+                             style="border: 2px solid #f0b358; cursor: pointer;"
+                             @click="goToListing(review)">
+                            <!-- Image at top -->
+                            <div class="card-img-top-wrapper">
+                                <img v-if="review.photo" 
+                                     :src="review.photo" 
+                                     class="card-img-top review-card-img"
+                                     :alt="review.listingName" />
+                                <img v-else-if="review.listingPhoto" 
+                                     :src="review.listingPhoto" 
+                                     class="card-img-top review-card-img"
+                                     :alt="review.listingName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                     class="card-img-top review-card-img"
+                                     alt="Default drink image" />
                             </div>
-                        </div>
-                        
-                        <!-- Reviewer Info -->
-                        <div class="reviewer-info d-flex align-items-center justify-content-center">
-                            <img v-if="review.userPhoto" 
-                                 :src="review.userPhoto" 
-                                 class="rounded-circle me-2" 
-                                 style="width: 20px; height: 20px; object-fit: cover;" 
-                                 :alt="review.username" />
-                            <img v-else
-                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                 class="rounded-circle me-2" 
-                                 style="width: 20px; height: 20px; object-fit: cover;" 
-                                 alt="Default profile" />
-                            <span class="mobile-rating-smaller-text-2 fw-semibold" style="font-size: 0.7rem;">
-                                {{ truncateText(review.username, 10) }}
-                            </span>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <!-- Drink name -->
+                                <h6 class="card-title mb-2 fw-bold" style="color: #223957;">
+                                    {{ truncateText(review.listingName, 20) }}
+                                </h6>
+                                
+                                <!-- Producer name -->
+                                <p class="text-muted small mb-2" v-if="review.producerName">
+                                    by {{ truncateText(review.producerName, 15) }}
+                                </p>
+                                
+                                <!-- Category and Country -->
+                                <p class="mb-2 small" style="color: #f0b358;" v-if="review.drinkType || review.originCountry">
+                                    <span v-if="review.drinkType">{{ review.drinkType }}</span>
+                                    <span v-if="review.drinkType && review.originCountry"> / </span>
+                                    <span v-if="review.originCountry">{{ review.originCountry }}</span>
+                                </p>
+                                
+                                <!-- Review excerpt -->
+                                <p class="card-text mb-3 flex-grow-1" v-if="review.reviewDesc">
+                                    "{{ truncateText(review.reviewDesc, 40) }}"
+                                </p>
+                                
+                                <!-- Bottom row: Username and Rating -->
+                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <div class="d-flex align-items-center">
+                                        <img v-if="review.userPhoto" 
+                                             :src="review.userPhoto" 
+                                             class="rounded-circle me-1" 
+                                             style="width: 16px; height: 16px; object-fit: cover;" 
+                                             :alt="review.username" />
+                                        <img v-else
+                                             src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                             class="rounded-circle me-1" 
+                                             style="width: 16px; height: 16px; object-fit: cover;" 
+                                             alt="Default profile" />
+                                        <small class="text-muted">
+                                            {{ truncateText(review.username, 8) }}
+                                        </small>
+                                    </div>
+                                    <span class="fw-bold rating-text">
+                                        {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1042,6 +1037,81 @@ button.btn.selected {
     background-color: #f8f9fa;
 }
 
+/* Trending Reviews - Always 5 columns with horizontal scroll */
+.trending-reviews-container {
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.trending-reviews-grid {
+    display: flex;
+    gap: 1rem;
+    min-width: fit-content;
+    padding: 0 10px;
+}
+
+.trending-review-col {
+    flex: 0 0 240px; /* Fixed width for each column */
+    width: 240px;
+}
+
+.trending-review-col .review-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+.trending-review-col .review-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.trending-review-col .card-img-top-wrapper {
+    height: 200px;
+    overflow: hidden;
+    background-color: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+}
+
+.trending-review-col .review-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.trending-review-col .card-body {
+    padding: 1rem;
+}
+
+.trending-review-col .card-title {
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.trending-review-col .rating-text {
+    color: #f0b358;
+}
+
+/* Scrollbar styling for trending reviews */
+.trending-reviews-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-thumb {
+    background: #027562;
+    border-radius: 4px;
+}
+
+.trending-reviews-container::-webkit-scrollbar-thumb:hover {
+    background: #025a4a;
+}
+
+/* Legacy styles for backwards compatibility */
 .review-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     min-height: 200px;
