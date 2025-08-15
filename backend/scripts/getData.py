@@ -3638,7 +3638,7 @@ def getUsersBySearch():
             cursor.execute("""
                 SELECT COUNT(*) AS "reviewCount"
                 FROM "reviews"
-                WHERE "reviewerID" = %s
+                WHERE "userID" = %s
             """, (user_id,))
             review_count = cursor.fetchone()['reviewCount']
             user['reviewCount'] = review_count
@@ -3646,9 +3646,9 @@ def getUsersBySearch():
             # Get follower count for the user
             cursor.execute("""
                 SELECT COUNT(*) AS "followerCount"
-                FROM "followLists"
-                WHERE "followedID" = %s AND "followedType" = 'user'
-            """, (user_id,))
+                FROM "usersFollowLists" 
+                WHERE %s = ANY("users")
+            """, (str(user_id),))
             follower_count = cursor.fetchone()['followerCount']
             user['followerCount'] = follower_count
 
@@ -3656,13 +3656,11 @@ def getUsersBySearch():
             user['proofRank'] = pointsHelperFunc.get_rank_by_user_id(user_id)
             user['currentPoints'] = pointsHelperFunc.get_current_proof_points(user_id)
 
-            # Get favorite drinks (choice drinks)
+            # Get choice drinks for the user (keep original structure)
             if user.get('choiceDrinks'):
-                # If choiceDrinks is stored as a list/array, keep it as is
-                # If it's stored as a string, you might need to parse it
-                user['favoriteDrinks'] = user['choiceDrinks']
+                user['choiceDrinks'] = user['choiceDrinks']
             else:
-                user['favoriteDrinks'] = []
+                user['choiceDrinks'] = []
 
         return jsonify(users_data)
 

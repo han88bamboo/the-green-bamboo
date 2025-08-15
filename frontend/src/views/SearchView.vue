@@ -627,13 +627,13 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     <!-- Additional content can go here -->
                                 </div>
                                 <!-- Favorite Drinks -->
-                                <div class="mt-2" v-if="userResult['favoriteDrinks'] && userResult['favoriteDrinks'].length > 0">
+                                <div class="mt-2" v-if="userResult['choiceDrinks'] && userResult['choiceDrinks'].length > 0">
                                     <p class="m-0 fst-italic">
-                                        <b>Favorite Drinks: </b>
-                                        <span v-for="(drink, index) in userResult['favoriteDrinks'].slice(0, 3)" :key="index">
-                                            {{ drink }}<span v-if="index < Math.min(2, userResult['favoriteDrinks'].length - 1)">, </span>
+                                        <b>Favourite Drinks: </b>
+                                        <span v-for="(drink, index) in userResult['choiceDrinks'].slice(0, 3)" :key="index">
+                                            {{ drink }}<span v-if="index < Math.min(2, userResult['choiceDrinks'].length - 1)">, </span>
                                         </span>
-                                        <span v-if="userResult['favoriteDrinks'].length > 3">...</span>
+                                        <span v-if="userResult['choiceDrinks'].length > 3">...</span>
                                     </p>
                                 </div>
                             </div>
@@ -1020,7 +1020,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     this.userListings = this.userListings.concat(response.data);
 
                     // Update lastUserID to the last ID of the response
-                    this.lastUserID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+                    this.lastUserID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
 
                     // If no more users, set noMoreUsers to true
                     if (response.data.length <= this.recordsPerLoad - 1) {
