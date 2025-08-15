@@ -1642,7 +1642,7 @@ def get5MostRecentReviews():
                     r."createdDate",
                     r."observationTag",
                     r."location",
-                    r."photo",
+                    COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
                     u."username",
                     u."photo" as "userPhoto",
                     l."listingName",
