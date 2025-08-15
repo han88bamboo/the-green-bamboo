@@ -139,19 +139,11 @@
             <div class="d-flex align-items-center w-100">
               <div class="user-avatar me-2">
                 <img 
-                  v-if="item.photo" 
-                  :src="item.photo" 
+                  :src="item.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288'" 
                   :alt="item.username"
                   class="rounded-circle"
                   style="width: 24px; height: 24px; object-fit: cover;"
                 />
-                <div 
-                  v-else
-                  class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
-                  style="width: 24px; height: 24px; font-size: 12px; color: white;"
-                >
-                  {{ item.username ? item.username.charAt(0).toUpperCase() : '?' }}
-                </div>
               </div>
               <div class="d-flex flex-column flex-grow-1">
                 <span class="fw-medium text-dark item-name">@{{ item.username }}</span>
