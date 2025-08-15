@@ -8078,7 +8078,8 @@ def getWhatsOnMenu(venue_id):
                     "message": f"No venue found with ID {venue_id} or venue has no menu items with photos."
                 }), 404
             
-            # Get 5 random menu items with all required information for this venue
+            # Get 3 menu items with deterministic selection that changes every 6 hours
+            # Use hash-based ordering with time seed for consistent results within 6-hour windows
             cursor.execute("""
                 SELECT 
                     l."id" as "listingId",
@@ -8100,9 +8101,9 @@ def getWhatsOnMenu(venue_id):
                 WHERE vm."venueId" = %s
                   AND l."photo" IS NOT NULL AND l."photo" != '' AND l."photo" != 'null'
                   AND mi."itemAvailability" = true
-                ORDER BY RANDOM()
-                LIMIT 5;
-            """, (venue_id,))
+                ORDER BY ABS(HASHTEXT(l."id"::text || FLOOR(EXTRACT(EPOCH FROM NOW()) / 21600)::text || %s::text))
+                LIMIT 3;
+            """, (venue_id, venue_id))
             
             menu_items = cursor.fetchall()
             

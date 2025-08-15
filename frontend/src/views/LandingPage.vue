@@ -124,16 +124,16 @@
         <div class="container">
             <div class="text-center mb-4">
                 <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">What's On Menu</h2>
-                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">Featured menus from our partner venues</h3>
+                <!-- <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">Featured menus from our partner venues</h3> -->
             </div>
             
             <!-- Menu Cards Container - 3 columns with horizontal scroll -->
             <div class="menu-cards-container">
-                <div class="menu-cards-grid">
+                <div class="menu-cards-grid pt-1">
                     <!-- Menu Card 1 - Venue ID 11 -->
-                    <div class="menu-card-col">
+                    <div class="col-4 pe-4">
                         <div class="menu-card h-100" v-if="venueMenus[0]">
-                            <div class="menu-card-header p-3 text-center">
+                            <div class="menu-card-header p-3 ">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[0].venueName }}</h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[0].address }}</p> -->
                             </div>
@@ -141,7 +141,7 @@
                                 <div 
                                     v-for="item in venueMenus[0].menuItems" 
                                     :key="`${venueMenus[0].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
                                     @click="goToListing(item)"
                                     style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
@@ -155,14 +155,14 @@
                                             style="width: 50px; height: 50px; object-fit: cover;"
                                         />
                                     </div>
-                                    <div class="menu-item-details flex-grow-1">
+                                    <div class="menu-item-details flex-grow-1 text-start">
                                         <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
                                             {{ truncateText(item.listingName, 25) }}
                                         </h6>
                                         <p class="mb-0 text-muted" style="font-size: 0.8rem;">
-                                            {{ item.producerName }}
+                                            {{ truncateText(item.producerName, 20) }}
                                         </p>
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <div class="d-flex justify-content-between align-items-start mt-1">
                                             <span class="badge bg-secondary" style="font-size: 0.7rem;">
                                                 {{ item.drinkType }}
                                             </span>
@@ -171,7 +171,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
+                        <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
                             <div class="text-center text-muted">
                                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
                                 <p>Loading menu...</p>
@@ -180,9 +180,9 @@
                     </div>
 
                     <!-- Menu Card 2 - Venue ID 10 -->
-                    <div class="menu-card-col">
+                    <div class="col-4 ps-2 pe-2">
                         <div class="menu-card h-100" v-if="venueMenus[1]">
-                            <div class="menu-card-header p-3 text-center">
+                            <div class="menu-card-header p-3 ">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[1].venueName }}</h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[1].address }}</p> -->
                             </div>
@@ -190,7 +190,7 @@
                                 <div 
                                     v-for="item in venueMenus[1].menuItems" 
                                     :key="`${venueMenus[1].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
                                     @click="goToListing(item)"
                                     style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
@@ -204,14 +204,14 @@
                                             style="width: 50px; height: 50px; object-fit: cover;"
                                         />
                                     </div>
-                                    <div class="menu-item-details flex-grow-1">
+                                    <div class="menu-item-details flex-grow-1 text-start">
                                         <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
                                             {{ truncateText(item.listingName, 25) }}
                                         </h6>
                                         <p class="mb-0 text-muted" style="font-size: 0.8rem;">
-                                            {{ item.producerName }}
+                                            {{ truncateText(item.producerName, 20) }}
                                         </p>
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <div class="d-flex justify-content-between align-items-start mt-1">
                                             <span class="badge bg-secondary" style="font-size: 0.7rem;">
                                                 {{ item.drinkType }}
                                             </span>
@@ -220,8 +220,8 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
-                            <div class="text-center text-muted">
+                        <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
+                            <div class="text-start text-muted">
                                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
                                 <p>Loading menu...</p>
                             </div>
@@ -229,9 +229,9 @@
                     </div>
 
                     <!-- Menu Card 3 - Venue ID 24 -->
-                    <div class="menu-card-col">
+                    <div class="col-4 ps-4">
                         <div class="menu-card h-100" v-if="venueMenus[2]">
-                            <div class="menu-card-header p-3 text-center">
+                            <div class="menu-card-header p-3 ">
                                 <h5 class="mb-1 fw-bold">{{ venueMenus[2].venueName }}</h5>
                                 <!-- <p class="mb-0 text-muted small">{{ venueMenus[2].address }}</p> -->
                             </div>
@@ -239,7 +239,7 @@
                                 <div 
                                     v-for="item in venueMenus[2].menuItems" 
                                     :key="`${venueMenus[2].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-center mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
                                     @click="goToListing(item)"
                                     style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
@@ -253,14 +253,14 @@
                                             style="width: 50px; height: 50px; object-fit: cover;"
                                         />
                                     </div>
-                                    <div class="menu-item-details flex-grow-1">
+                                    <div class="menu-item-details flex-grow-1 text-start">
                                         <h6 class="mb-1 fw-semibold" style="font-size: 0.9rem; line-height: 1.2;">
                                             {{ truncateText(item.listingName, 25) }}
                                         </h6>
                                         <p class="mb-0 text-muted" style="font-size: 0.8rem;">
-                                            {{ item.producerName }}
+                                            {{ truncateText(item.producerName,20) }}
                                         </p>
-                                        <div class="d-flex justify-content-between align-items-center mt-1">
+                                        <div class="d-flex justify-content-between align-items-start mt-1">
                                             <span class="badge bg-secondary" style="font-size: 0.7rem;">
                                                 {{ item.drinkType }}
                                             </span>
@@ -269,7 +269,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div v-else class="menu-card h-100 d-flex align-items-center justify-content-center">
+                        <div v-else class="menu-card h-100 d-flex align-items-start justify-content-start">
                             <div class="text-center text-muted">
                                 <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
                                 <p>Loading menu...</p>
@@ -1415,7 +1415,7 @@ button.btn.selected {
 
 .menu-cards-grid {
     display: flex;
-    gap: 1.5rem;
+    /* gap: 1.5rem; */
     min-width: fit-content;
     padding: 0 10px;
 }
@@ -1456,7 +1456,7 @@ button.btn.selected {
 }
 
 .menu-items-list {
-    max-height: 320px;
+    min-height: 360px;
     overflow-y: auto;
 }
 
