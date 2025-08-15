@@ -24,7 +24,7 @@
     <!-- Results Dropdown -->
     <div 
       v-if="showResults && searchQuery.length >= 2" 
-      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0"
+      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0" style="max-height: 750px;"
       @mouseenter="isMousedOverResults = true"
       @mouseleave="isMousedOverResults = false"
     >
@@ -155,7 +155,6 @@
               </div>
               <div class="d-flex flex-column flex-grow-1">
                 <span class="fw-medium text-dark item-name">@{{ item.username }}</span>
-                <small class="text-muted user-display-name" v-if="item.displayName">{{ item.displayName }}</small>
               </div>
             </div>
           </div>
