@@ -72,12 +72,12 @@
                             <div class="card-body d-flex flex-column">
                                 <!-- Drink name -->
                                 <h6 class="card-title mb-2 fw-bold" style="color: #223957;">
-                                    {{ truncateText(review.listingName, 20) }}
+                                    {{ truncateText(review.listingName, 30) }}
                                 </h6>
                                 
                                 <!-- Producer name -->
                                 <p class="text-muted small mb-2" v-if="review.producerName">
-                                    by {{ truncateText(review.producerName, 15) }}
+                                    by {{ truncateText(review.producerName, 20) }}
                                 </p>
                                 
                                 <!-- Category and Country -->
@@ -92,26 +92,26 @@
                                     "{{ truncateText(review.reviewDesc, 40) }}"
                                 </p>
                                 
-                                <!-- Bottom row: Username and Rating -->
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <div class="d-flex align-items-center">
+                                <!-- Bottom row: Rated X★ by @username format -->
+                                <div class="d-flex align-items-center mt-auto">
+                                    <small class="text-muted">
+                                        Rated 
+                                        <span class="fw-bold rating-text">
+                                            {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
+                                        </span>
+                                        by 
                                         <img v-if="review.userPhoto" 
                                              :src="review.userPhoto" 
-                                             class="rounded-circle me-1" 
+                                             class="rounded-circle mx-1" 
                                              style="width: 16px; height: 16px; object-fit: cover;" 
                                              :alt="review.username" />
                                         <img v-else
                                              src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                             class="rounded-circle me-1" 
+                                             class="rounded-circle mx-1" 
                                              style="width: 16px; height: 16px; object-fit: cover;" 
                                              alt="Default profile" />
-                                        <small class="text-muted">
-                                            {{ truncateText(review.username, 15) }}
-                                        </small>
-                                    </div>
-                                    <span class="fw-bold rating-text">
-                                        {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
-                                    </span>
+                                        @{{ truncateText(review.username, 15) }}
+                                    </small>
                                 </div>
                             </div>
                         </div>
