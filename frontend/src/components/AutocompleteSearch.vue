@@ -63,7 +63,7 @@
               <small class="text-muted item-detail">{{ item.originCountry || item.drinkType }}</small>
             </div>
           </div>
-          <div class="dropdown-divider my-1" v-if="results.venues.length > 0 || results.producers.length > 0"></div>
+          <div class="dropdown-divider my-1" v-if="results.venues.length > 0 || results.producers.length > 0 || results.users.length > 0"></div>
         </div>
 
         <!-- Venues Section -->
@@ -91,7 +91,7 @@
               <small class="text-muted item-detail">{{ item.originLocation || "unknown" }}</small>
             </div>
           </div>
-          <div class="dropdown-divider my-1" v-if="results.producers.length > 0"></div>
+          <div class="dropdown-divider my-1" v-if="results.producers.length > 0 || results.users.length > 0"></div>
         </div>
 
         <!-- Producers Section -->
@@ -114,6 +114,49 @@
             <div class="d-flex justify-content-between align-items-center w-100">
               <span class="fw-medium text-dark item-name">{{ item.producerName }}</span>
               <small class="text-muted item-detail">{{ item.originCountry || "Not specified" }}</small>
+            </div>
+          </div>
+          <div class="dropdown-divider my-1" v-if="results.users.length > 0"></div>
+        </div>
+
+        <!-- Users Section -->
+        <div v-if="results.users.length > 0">
+          <h6 class="dropdown-header d-flex align-items-center py-2 px-3 mb-0">
+            <i class="bi bi-person me-2 text-muted"></i>
+            <span class="fw-small text-muted">Users</span>
+          </h6>
+          <div
+            v-for="(item, index) in results.users"
+            :key="`user-${item.id}`"
+            :class="[
+              'dropdown-item search-item py-2 px-3',
+              { 'active': selectedIndex === getItemIndex('users', index) }
+            ]"
+            @mousedown="selectItem(item, 'users', $event)"
+            @mouseenter="selectedIndex = getItemIndex('users', index)"
+            role="button"
+          >
+            <div class="d-flex align-items-center w-100">
+              <div class="user-avatar me-2">
+                <img 
+                  v-if="item.photo" 
+                  :src="item.photo" 
+                  :alt="item.username"
+                  class="rounded-circle"
+                  style="width: 24px; height: 24px; object-fit: cover;"
+                />
+                <div 
+                  v-else
+                  class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
+                  style="width: 24px; height: 24px; font-size: 12px; color: white;"
+                >
+                  {{ item.username ? item.username.charAt(0).toUpperCase() : '?' }}
+                </div>
+              </div>
+              <div class="d-flex flex-column flex-grow-1">
+                <span class="fw-medium text-dark item-name">@{{ item.username }}</span>
+                <small class="text-muted user-display-name" v-if="item.displayName">{{ item.displayName }}</small>
+              </div>
             </div>
           </div>
         </div>
@@ -144,6 +187,7 @@ export default {
     const listingsReturnCount = 6
     const venuesReturnCount = 3
     const producersReturnCount = 3
+    const usersReturnCount = 3
     const searchInput = ref(null)
     const searchQuery = ref('')
     const showResults = ref(false)
@@ -155,12 +199,13 @@ export default {
     const results = reactive({
       listings: [],
       venues: [],
-      producers: []
+      producers: [],
+      users: []
     })
 
     // Calculate total items for keyboard navigation
     const getTotalItems = () => {
-      return results.listings.length + results.venues.length + results.producers.length
+      return results.listings.length + results.venues.length + results.producers.length + results.users.length
     }
 
     const getItemIndex = (section, index) => {
@@ -169,12 +214,14 @@ export default {
         baseIndex = results.listings.length
       } else if (section === 'producers') {
         baseIndex = results.listings.length + results.venues.length
+      } else if (section === 'users') {
+        baseIndex = results.listings.length + results.venues.length + results.producers.length
       }
       return baseIndex + index
     }
 
     const hasResults = computed(() => {
-      return results.listings.length > 0 || results.venues.length > 0 || results.producers.length > 0
+      return results.listings.length > 0 || results.venues.length > 0 || results.producers.length > 0 || results.users.length > 0
     })
 
     // API calls
@@ -225,12 +272,27 @@ export default {
       return response.json()
     }
 
+    const getUserListings = async (query, signal) => {
+      const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/user-listings?q=${encodeURIComponent(query)}&limit=${usersReturnCount}`, {
+        signal
+      })
+      if (response.status === 404) {
+        // Expected behavior for no results
+        return []
+      }      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+      return response.json()
+    }
+
     const performSearch = async (query) => {
       // Clear results immediately if query is too short
       if (query.length < 1) {
         results.listings = []
         results.venues = []
         results.producers = []
+        results.users = []
         isLoading.value = false
         return
       }
@@ -248,16 +310,18 @@ export default {
 
       try {
         // Make all API calls concurrently
-        const [listingsData, venuesData, producersData] = await Promise.all([
+        const [listingsData, venuesData, producersData, usersData] = await Promise.all([
           getBottleListings(query, signal).catch(() => []),
           getVenueListings(query, signal).catch(() => []),
-          getProducerListings(query, signal).catch(() => [])
+          getProducerListings(query, signal).catch(() => []),
+          getUserListings(query, signal).catch(() => [])
         ])
 
         // Update results
         results.listings = listingsData || []
         results.venues = venuesData || []
         results.producers = producersData || []
+        results.users = usersData || []
 
       } catch (error) {
         if (error.name !== 'AbortError') {
@@ -266,6 +330,7 @@ export default {
           results.listings = []
           results.venues = []
           results.producers = []
+          results.users = []
         }
       } finally {
         isLoading.value = false
@@ -302,6 +367,7 @@ export default {
         results.listings = []
         results.venues = []
         results.producers = []
+        results.users = []
         isLoading.value = false
         
         // Cancel any pending requests
@@ -320,13 +386,16 @@ export default {
     const getItemByIndex = (index) => {
       const totalListings = results.listings.length
       const totalVenues = results.venues.length
+      const totalProducers = results.producers.length
       
       if (index < totalListings) {
         return { item: results.listings[index], type: 'listings' }
       } else if (index < totalListings + totalVenues) {
         return { item: results.venues[index - totalListings], type: 'venues' }
-      } else {
+      } else if (index < totalListings + totalVenues + totalProducers) {
         return { item: results.producers[index - totalListings - totalVenues], type: 'producers' }
+      } else {
+        return { item: results.users[index - totalListings - totalVenues - totalProducers], type: 'users' }
       }
     }
 
@@ -452,6 +521,10 @@ export default {
         // Use the correct producer profile route with name slug if available
         const slug = item.producerName ? '/' + item.producerName.toLowerCase().replace(/\s+/g, '') : ''
         router.push(`/profile/producer/${item.id}${slug}`)
+      } else if (type === 'users') {
+        // Navigate to user profile
+        const slug = item.username ? '/' + item.username.toLowerCase().replace(/\s+/g, '') : ''
+        router.push(`/profile/user/${item.id}${slug}`)
       }
 
       showResults.value = false
@@ -519,7 +592,9 @@ export default {
   color: white;
 }
 
-.search-item.active .producer-name .venue-address {
+.search-item.active .producer-name, 
+.search-item.active .venue-address,
+.search-item.active .user-display-name {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
@@ -632,6 +707,17 @@ export default {
   margin-top: 2px;
   display: block;
   color: #6c757d;
+}
+
+.user-display-name {
+  font-size: 0.75rem;
+  margin-top: 2px;
+  display: block;
+  color: #6c757d;
+}
+
+.user-avatar {
+  flex-shrink: 0;
 }
 
 </style>

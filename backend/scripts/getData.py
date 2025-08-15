@@ -19,7 +19,7 @@
 
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
-#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
+#           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET), /venue-listings (GET),
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -28,6 +28,7 @@
 #           /getUserDashBoardData/<id> (GET), /getRecentFollowersActivity/<id> (GET), /getRecentReviewsActivity/<id> (GET),
 #           /getLatestReviewsDrinks/<id> (GET),
 #           /getRecentUserActivity/<id> (GET), /getAllUserFollowingsIDs/<id> (GET), /getAllUserFollowing/<id> (GET), /getAllUserFollowers/<id> (GET),
+#           /user-listings (GET),
 
 #           [Listing Reviews]
 #           /getRecentListingReviews/<id> (GET), /getAllUserReviews/<id> (GET), /getReviews (GET),
@@ -55,6 +56,7 @@
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET),
+#           /bottle-listings (GET), /producer-listings (GET), /venue-listings (GET), /user-listings (GET),
 # -----------------------------------------------------------------------------------------
 
 # pip install python-bsonjs
@@ -3294,6 +3296,55 @@ def get_venue_listings():
                 "venueName": row["venueName"], 
                 "originLocation": row["originLocation"],
                 "address": row["address"]
+            } 
+            for row in rows
+        ]
+
+        return jsonify(result), 200
+    
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # print("something went wrong" + str(e), flush=True)
+        return jsonify({"error": str(e)}), 500
+
+@blueprint.route('/user-listings', methods=['GET'])
+def get_user_listings():
+    conn = g.db
+    """Get user listings with search functionality"""
+    try:
+        # Get query parameters
+        query = request.args.get('q', '').strip()
+        limit = int(request.args.get('limit', 3))
+
+        # Validate query
+        if not query:
+            return jsonify([])
+        
+        # Optimized query using trigram index for fuzzy string matching
+        sql = """
+            SELECT "id", "username", "displayName", "photo",
+                similarity(unaccent("username"), unaccent(%s)) as sim_score
+            FROM users
+            WHERE unaccent("username") %% unaccent(%s)
+            ORDER BY sim_score DESC
+            LIMIT %s;
+        """
+
+        with conn.cursor() as cursor:
+            cursor.execute(sql, (query, query, limit))
+            rows = cursor.fetchall()
+
+        # if nothing was found
+        if not rows:
+            return jsonify([]), 200
+
+        result = [
+            {
+                "id": row["id"], 
+                "username": row["username"], 
+                "displayName": row["displayName"],
+                "photo": row["photo"]
             } 
             for row in rows
         ]

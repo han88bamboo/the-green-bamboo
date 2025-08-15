@@ -350,6 +350,9 @@ CREATE TABLE "users" (
     "categoryExpert" VARCHAR(255) DEFAULT NULL -- Category expert designation (e.g., "Champagne Expert", "Whisky Expert", etc.)
 );
 
+-- Create a GIN index on username for trigram fuzzy search
+CREATE INDEX idx_users_username_trgm ON "users" USING gin ("username" gin_trgm_ops);
+
 -- ========= "userBadges" =========
 CREATE TABLE "userBadges" (
     "id" SERIAL PRIMARY KEY,
