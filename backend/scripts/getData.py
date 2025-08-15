@@ -1667,7 +1667,7 @@ def get5MostRecentReviews():
                 ),
                 ranked_reviews AS (
                     SELECT *,
-                        ROW_NUMBER() OVER (PARTITION BY "reviewTarget" ORDER BY "createdDate" DESC) as rn
+                        ROW_NUMBER() OVER (PARTITION BY "drinkType" ORDER BY "createdDate" DESC) as rn
                     FROM recent_reviews
                 )
                 SELECT *
