@@ -3,8 +3,76 @@
     <!-- Search Input -->
     <div class="position-relative">
       <div class="input-group">
-        <!-- <span class="input-group-text bg-white border-end-0" @click="focusInput" style="cursor: pointer;"> -->
-        <span class="input-group-text bg-white border-end-0" @click="handleManualSearch" style="cursor: pointer;">
+        <!-- Category Selector -->
+        <div class="dropdown">
+          <button 
+            class="btn btn-outline-secondary dropdown-toggle category-selector" 
+            type="button" 
+            id="categoryDropdown" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false"
+            :title="`Search in: ${selectedCategory.label}`"
+          >
+            <i :class="selectedCategory.icon" class="me-1"></i>
+            <span class="d-none d-md-inline">{{ selectedCategory.label }}</span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+            <li>
+              <button 
+                class="dropdown-item d-flex align-items-center" 
+                @click="selectCategory('all')"
+                :class="{ 'active': selectedCategoryKey === 'all' }"
+              >
+                <i class="bi bi-map me-2"></i>
+                Drinks & More
+              </button>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <button 
+                class="dropdown-item d-flex align-items-center" 
+                @click="selectCategory('drinks')"
+                :class="{ 'active': selectedCategoryKey === 'drinks' }"
+              >
+                <i class="bi bi-cup-straw me-2"></i>
+                Drinks
+              </button>
+            </li>
+            <li>
+              <button 
+                class="dropdown-item d-flex align-items-center" 
+                @click="selectCategory('venues')"
+                :class="{ 'active': selectedCategoryKey === 'venues' }"
+              >
+                <i class="bi bi-geo-alt me-2"></i>
+                Venues
+              </button>
+            </li>
+            <li>
+              <button 
+                class="dropdown-item d-flex align-items-center" 
+                @click="selectCategory('producers')"
+                :class="{ 'active': selectedCategoryKey === 'producers' }"
+              >
+                <i class="bi bi-houses me-2"></i>
+                Producers
+              </button>
+            </li>
+            <li>
+              <button 
+                class="dropdown-item d-flex align-items-center" 
+                @click="selectCategory('users')"
+                :class="{ 'active': selectedCategoryKey === 'users' }"
+              >
+                <i class="bi bi-person me-2"></i>
+                Users
+              </button>
+            </li>
+          </ul>
+        </div>
+        
+        <!-- Search Icon -->
+        <span class="input-group-text bg-white border-start-0 border-end-0" @click="handleManualSearch" style="cursor: pointer;">
           <i class="bi bi-search text-muted" style="color: #027562;"></i>
         </span>
         <input
@@ -15,7 +83,7 @@
           @keydown="handleKeydown"
           class="form-control border-start-0 ps-0"
           type="text"
-          placeholder="Go for it!"
+          :placeholder="searchPlaceholder"
           autocomplete="off"
         />
       </div>
@@ -41,7 +109,7 @@
         <!-- Listings Section -->
         <div v-if="results.listings.length > 0">
           <h6 class="dropdown-header d-flex align-items-center py-2 px-3 mb-0">
-            <i class="bi bi-cup-hot me-2 text-muted"></i>
+            <i class="bi bi-cup-straw me-2 text-muted"></i>
             <span class="fw-small text-muted">Listings</span>
           </h6>
           <div
@@ -97,7 +165,7 @@
         <!-- Producers Section -->
         <div v-if="results.producers.length > 0">
           <h6 class="dropdown-header d-flex align-items-center py-2 px-3 mb-0">
-            <i class="bi bi-people me-2 text-muted"></i>
+            <i class="bi bi-houses me-2 text-muted"></i>
             <span class="fw-small text-muted">Producers</span>
           </h6>
           <div
@@ -186,6 +254,40 @@ export default {
     const selectedIndex = ref(-1)
     const debounceTimer = ref(null)
     const abortController = ref(null)
+
+    // Category selection state
+    const selectedCategoryKey = ref('all')
+    
+    const categories = {
+      all: { label: 'Drinks & More', icon: 'bi bi-map' },
+      drinks: { label: 'Drinks', icon: 'bi bi-cup-straw' },
+      venues: { label: 'Venues', icon: 'bi bi-geo-alt' },
+      producers: { label: 'Producers', icon: 'bi bi-houses' },
+      users: { label: 'Users', icon: 'bi bi-person' }
+    }
+
+    const selectedCategory = computed(() => categories[selectedCategoryKey.value])
+    
+    const searchPlaceholder = computed(() => {
+      if (selectedCategoryKey.value === 'all') {
+        return 'Go for it!'
+      }
+      return `Search ${selectedCategory.value.label.toLowerCase()}...`
+    })
+
+    const selectCategory = (categoryKey) => {
+      selectedCategoryKey.value = categoryKey
+      // Clear current results when category changes
+      results.listings = []
+      results.venues = []
+      results.producers = []
+      results.users = []
+      
+      // Re-trigger search if there's a query
+      if (searchQuery.value.trim().length >= 2) {
+        debouncedSearch(searchQuery.value.trim())
+      }
+    }
 
     const results = reactive({
       listings: [],
@@ -300,13 +402,35 @@ export default {
       selectedIndex.value = -1
 
       try {
-        // Make all API calls concurrently
-        const [listingsData, venuesData, producersData, usersData] = await Promise.all([
-          getBottleListings(query, signal).catch(() => []),
-          getVenueListings(query, signal).catch(() => []),
-          getProducerListings(query, signal).catch(() => []),
-          getUserListings(query, signal).catch(() => [])
-        ])
+        // Determine which API calls to make based on selected category
+        const apiCalls = []
+        
+        if (selectedCategoryKey.value === 'all' || selectedCategoryKey.value === 'drinks') {
+          apiCalls.push(getBottleListings(query, signal).catch(() => []))
+        } else {
+          apiCalls.push(Promise.resolve([]))
+        }
+        
+        if (selectedCategoryKey.value === 'all' || selectedCategoryKey.value === 'venues') {
+          apiCalls.push(getVenueListings(query, signal).catch(() => []))
+        } else {
+          apiCalls.push(Promise.resolve([]))
+        }
+        
+        if (selectedCategoryKey.value === 'all' || selectedCategoryKey.value === 'producers') {
+          apiCalls.push(getProducerListings(query, signal).catch(() => []))
+        } else {
+          apiCalls.push(Promise.resolve([]))
+        }
+        
+        if (selectedCategoryKey.value === 'all' || selectedCategoryKey.value === 'users') {
+          apiCalls.push(getUserListings(query, signal).catch(() => []))
+        } else {
+          apiCalls.push(Promise.resolve([]))
+        }
+
+        // Make API calls concurrently (only for selected categories)
+        const [listingsData, venuesData, producersData, usersData] = await Promise.all(apiCalls)
 
         // Update results
         results.listings = listingsData || []
@@ -534,7 +658,11 @@ export default {
       handleKeydown,
       handleBlur,
       selectItem,
-      getItemIndex
+      getItemIndex,
+      selectedCategoryKey,
+      selectedCategory,
+      searchPlaceholder,
+      selectCategory
     }
   }
 }
@@ -709,6 +837,73 @@ export default {
 
 .user-avatar {
   flex-shrink: 0;
+}
+
+/* Category Selector Styles */
+.category-selector {
+  border-right: none !important;
+  background-color: #0E6350 !important;
+  border-color: #0E6350 !important;
+  color: white !important;
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  min-width: 45px;
+}
+
+.category-selector:hover {
+  background-color: #0c5944 !important;
+  border-color: #0c5944 !important;
+  color: white !important;
+}
+
+.category-selector:focus {
+  border-color: #0c5944 !important;
+  box-shadow: 0 0 0 0.25rem rgba(14, 99, 80, 0.25) !important;
+  background-color: #0E6350 !important;
+  color: white !important;
+}
+
+.category-selector.show {
+  background-color: #0c5944 !important;
+  border-color: #0c5944 !important;
+  color: white !important;
+}
+
+.dropdown-menu {
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem 0;
+  min-width: 160px;
+}
+
+.dropdown-item {
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: #027562;
+}
+
+.dropdown-item.active {
+  background-color: #027562;
+  color: white;
+}
+
+.dropdown-item.active:hover {
+  background-color: #025d52;
+  color: white;
+}
+
+/* Responsive adjustments for category selector */
+@media (max-width: 768px) {
+  .category-selector {
+    min-width: 40px;
+    padding: 0.375rem 0.5rem;
+  }
 }
 
 </style>
