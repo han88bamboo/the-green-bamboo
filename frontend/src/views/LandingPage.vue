@@ -43,7 +43,7 @@
         <div class="container">
             <div class="text-center mb-4">
                 <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
-                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"See what others are sipping"</h3>
+                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">See what others are sipping!</h3>
             </div>
             
             <!-- Recent Reviews Grid - Always 5 columns with horizontal scroll -->
@@ -89,7 +89,8 @@
                                 
                                 <!-- Review excerpt -->
                                 <p class="card-text mb-3 flex-grow-1" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 40) }}"
+                                    "{{ truncateText(review.reviewDesc, 40) }}" 
+                                    <span class="text-danger text-decoration-none ms-1">Read Full Review</span>
                                 </p>
                                 
                                 <!-- Bottom row: Rated X★ by @username format -->
