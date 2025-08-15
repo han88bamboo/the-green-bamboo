@@ -42,71 +42,83 @@
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Latest Reviews</h2>
                 <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"See what others are sipping"</h3>
             </div>
             
             <!-- Recent Reviews Grid -->
-            <div class="reviews-scroll-container">
-                <div class="reviews-grid d-flex">
-                    <div v-for="review in recentReviews" :key="review.reviewId" class="review-col">
-                        <div class="review-card h-100 p-3 text-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px; cursor: pointer;"
-                             @click="goToListing(review)">
-                            <!-- Review Photo -->
-                            <div class="review-image-container mb-2">
-                                <img v-if="review.photo" 
-                                     :src="review.photo" 
-                                     class="img-fluid rounded" 
-                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                     :alt="review.listingName" />
-                                <img v-else-if="review.listingPhoto" 
-                                     :src="review.listingPhoto" 
-                                     class="img-fluid rounded" 
-                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                     :alt="review.listingName" />
-                                <img v-else
-                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                     class="img-fluid rounded" 
-                                     style="max-height: 80px; max-width: 100%; object-fit: cover;" 
-                                     alt="Default drink image" />
-                            </div>
-                            
-                            <!-- Listing Info -->
-                            <div class="listing-info mb-2">
-                                <h6 class="fw-bold mb-1 mobile-rating-smaller-text" style="color: #027562; font-size: 0.8rem;">
-                                    {{ truncateText(review.listingName, 20) }}
-                                </h6>
-                                <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
-                                    {{ review.drinkType }}<span v-if="review.originCountry">, {{ review.originCountry }}</span>
-                                </p>
-                                <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
-                                    {{ truncateText(review.producerName, 15) }}
-                                </p>
-                            </div>
-                            
-                            <!-- Review Description -->
-                            <div class="review-desc mb-2">
-                                <p class="mb-0 mobile-rating-smaller-text-2 fst-italic" style="font-size: 0.7rem; color: #333;">
-                                    "{{ truncateText(review.reviewDesc, 30) }}"
-                                </p>
-                            </div>
-                            
-                            <!-- Reviewer Info -->
-                            <div class="reviewer-info d-flex align-items-center justify-content-center">
-                                <img v-if="review.userPhoto" 
-                                     :src="review.userPhoto" 
-                                     class="rounded-circle me-2" 
-                                     style="width: 20px; height: 20px; object-fit: cover;" 
-                                     :alt="review.username" />
-                                <img v-else
-                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                     class="rounded-circle me-2" 
-                                     style="width: 20px; height: 20px; object-fit: cover;" 
-                                     alt="Default profile" />
-                                <span class="mobile-rating-smaller-text-2 fw-semibold" style="font-size: 0.7rem;">
-                                    {{ truncateText(review.username, 10) }}
+            <div class="row g-3 justify-content-center">
+                <div v-for="review in recentReviews" :key="review.reviewId" class="col-12 col-sm-6 col-md-4 col-lg-2">
+                    <div class="review-card h-100 p-3 text-center" style="background: white; border: 2px solid #f0b358; border-radius: 10px; cursor: pointer;"
+                         @click="goToListing(review)">
+                        <!-- Review Photo -->
+                        <div class="review-image-container mb-2">
+                            <img v-if="review.photo" 
+                                 :src="review.photo" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                 :alt="review.listingName" />
+                            <img v-else-if="review.listingPhoto" 
+                                 :src="review.listingPhoto" 
+                                 class="img-fluid rounded" 
+                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                 :alt="review.listingName" />
+                            <img v-else
+                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                 class="img-fluid rounded" 
+                                 style="max-height: 80px; max-width: 100%; object-fit: cover;" 
+                                 alt="Default drink image" />
+                        </div>
+                        
+                        <!-- Listing Info -->
+                        <div class="listing-info mb-2">
+                            <h6 class="fw-bold mb-1 mobile-rating-smaller-text" style="color: #027562; font-size: 0.8rem;">
+                                {{ truncateText(review.listingName, 20) }}
+                            </h6>
+                            <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
+                                {{ review.drinkType }}<span v-if="review.originCountry">, {{ review.originCountry }}</span>
+                            </p>
+                            <p class="mb-0 mobile-rating-smaller-text-2" style="font-size: 0.7rem; color: #666;">
+                                {{ truncateText(review.producerName, 15) }}
+                            </p>
+                        </div>
+                        
+                        <!-- Review Description -->
+                        <div class="review-desc mb-2">
+                            <p class="mb-0 mobile-rating-smaller-text-2 fst-italic" style="font-size: 0.7rem; color: #333;">
+                                "{{ truncateText(review.reviewDesc, 30) }}"
+                            </p>
+                        </div>
+                        
+                        <!-- Star Rating -->
+                        <div class="rating-display mb-2">
+                            <div class="d-flex justify-content-center align-items-center">
+                                <span v-for="n in 5" :key="n" class="star" 
+                                      :class="{ 'filled': n <= Math.floor(parseFloat(review.rating) || 0), 'half': n === Math.ceil(parseFloat(review.rating) || 0) && (parseFloat(review.rating) || 0) % 1 !== 0 }"
+                                      style="color: #ffc107; font-size: 0.9rem;">
+                                    ★
+                                </span>
+                                <span class="ms-1 mobile-rating-smaller-text-2 fw-bold" style="font-size: 0.7rem; color: #666;">
+                                    {{ parseFloat(review.rating) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}
                                 </span>
                             </div>
+                        </div>
+                        
+                        <!-- Reviewer Info -->
+                        <div class="reviewer-info d-flex align-items-center justify-content-center">
+                            <img v-if="review.userPhoto" 
+                                 :src="review.userPhoto" 
+                                 class="rounded-circle me-2" 
+                                 style="width: 20px; height: 20px; object-fit: cover;" 
+                                 :alt="review.username" />
+                            <img v-else
+                                 src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePicture.png?v=1750084739"
+                                 class="rounded-circle me-2" 
+                                 style="width: 20px; height: 20px; object-fit: cover;" 
+                                 alt="Default profile" />
+                            <span class="mobile-rating-smaller-text-2 fw-semibold" style="font-size: 0.7rem;">
+                                {{ truncateText(review.username, 10) }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -1030,49 +1042,9 @@ button.btn.selected {
     background-color: #f8f9fa;
 }
 
-.reviews-scroll-container {
-    overflow-x: auto;
-    padding: 0 15px;
-    margin: 0 -15px;
-    /* Custom scrollbar styling */
-    scrollbar-width: thin;
-    scrollbar-color: #027562 #f8f9fa;
-}
-
-.reviews-scroll-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.reviews-scroll-container::-webkit-scrollbar-track {
-    background: #f8f9fa;
-    border-radius: 4px;
-}
-
-.reviews-scroll-container::-webkit-scrollbar-thumb {
-    background: #027562;
-    border-radius: 4px;
-}
-
-.reviews-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #025850;
-}
-
-.reviews-grid {
-    gap: 1rem;
-    padding: 0 0 10px 0;
-    min-width: fit-content;
-}
-
-.review-col {
-    flex: 0 0 auto;
-    width: 200px;
-    min-width: 200px;
-}
-
 .review-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     min-height: 200px;
-    width: 100%;
 }
 
 .review-card:hover {
@@ -1095,6 +1067,25 @@ button.btn.selected {
     line-height: 1.3;
 }
 
+.rating-display .star {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.rating-display .star.filled {
+    color: #ffc107 !important;
+}
+
+.rating-display .star.half {
+    background: linear-gradient(90deg, #ffc107 50%, #e9ecef 50%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.rating-display .star:not(.filled):not(.half) {
+    color: #e9ecef !important;
+}
+
 .reviewer-info {
     border-top: 1px solid #eee;
     padding-top: 8px;
@@ -1103,11 +1094,6 @@ button.btn.selected {
 
 /* Responsive adjustments for review cards */
 @media (max-width: 576px) {
-    .review-col {
-        width: 160px;
-        min-width: 160px;
-    }
-    
     .review-card {
         min-height: 180px;
     }
@@ -1117,22 +1103,10 @@ button.btn.selected {
     }
 }
 
-/* For very large screens, center the grid when all 5 cards fit */
-@media (min-width: 1200px) {
-    .reviews-scroll-container {
-        display: flex;
-        justify-content: center;
-        overflow-x: visible;
-    }
-    
-    .reviews-grid {
-        justify-content: center;
-        max-width: 1200px;
-    }
-    
-    .review-col {
-        width: 220px;
-        min-width: 220px;
+@media (min-width: 992px) {
+    .recent-reviews-section .col-lg-2 {
+        flex: 0 0 20%;
+        max-width: 20%;
     }
 }
 
