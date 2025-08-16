@@ -43,7 +43,7 @@
         <div class="container">
             <div class="text-center mb-4">
                 <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
-                <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">See what others are sipping!</h3>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">See what others are sipping!</h3>
             </div>
             
             <!-- Recent Reviews Grid - Always 5 columns with horizontal scroll -->
@@ -73,12 +73,12 @@
                                     <img v-if="review.userPhoto" 
                                          :src="review.userPhoto" 
                                          class="rounded-circle me-1" 
-                                         style="width: 18px; height: 18px; object-fit: cover;" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
                                          :alt="review.username" />
                                     <img v-else
                                          src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
                                          class="rounded-circle me-1" 
-                                         style="width: 18px; height: 18px; object-fit: cover;" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
                                          alt="Default profile" />
                                     <span class="overlay-text">
                                         @{{ truncateText(review.username, 15) }} rated 
@@ -107,8 +107,8 @@
                                 
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 35) }}" 
-                                    <span class="text-danger text-decoration-none ms-1">Read Review</span>
+                                    "{{ truncateText(review.reviewDesc, 55) }}" 
+                                    <span class="badge bg-danger text-white ms-1">Read Review</span>
                                 </p>
                             </div>
                         </div>
@@ -1380,6 +1380,7 @@ button.btn.selected {
 .trending-review-col {
     flex: 0 0 240px; /* Fixed width for each column */
     width: 240px;
+    text-align: start;
 }
 
 .trending-review-col .review-card {
@@ -1421,7 +1422,7 @@ button.btn.selected {
 
 .overlay-text {
     color: #333;
-    font-size: 0.6rem;
+    font-size: 0.78rem;
     font-weight: 600;
     line-height: 1.2;
 }
