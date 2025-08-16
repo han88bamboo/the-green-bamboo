@@ -14,6 +14,7 @@ blueprint = Blueprint(file_name[:-3], __name__)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 logger.info(project_root)
 
+
 @blueprint.route("/", methods=['POST'])
 @blueprint.route("", methods=['POST'])
 def updateMenu():
@@ -21,20 +22,10 @@ def updateMenu():
     cur = conn.cursor()
     
     try:
-        # Debug: Print request details
-        # print("Request method:", request.method)
-        # print("Request headers:", dict(request.headers))
-        # print("Request args:", dict(request.args))
-        # print("Request JSON:", request.get_json())
-
-        data = request.get_json()  # Expecting your JSON array
-        venue_id = data.get("venueID")  # Extract venueID from the JSON data
-        # data = data.get("updatedMenu")
-
-        # print(f"Raw data: {data}")
-        # print(f"Venue ID: {venue_id}")
+        data = request.get_json()
+        venue_id = data.get("venueID")
         
-       # Handle both formats: direct array or wrapped in updatedMenu
+        # Handle both formats: direct array or wrapped in updatedMenu
         if isinstance(data, dict) and "updatedMenu" in data:
             menu_data = data.get("updatedMenu")
         elif isinstance(data, list):
@@ -49,57 +40,63 @@ def updateMenu():
             }), 400
 
         # Delete existing menu sections for this venue
-        print(f"About to delete sections for venue_id: {venue_id}")
+        # print(f"About to delete sections for venue_id: {venue_id}")
         cur.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venue_id,))
-        deleted_count = cur.rowcount
-        print(f"Deleted {deleted_count} rows")
+        # deleted_count = cur.rowcount
+        # print(f"Deleted {deleted_count} rows")
         
-        # --- Insert/update top-level sections ---
+        # Prepare data for batch inserts
+        sections_data = []
+        subsections_data = []
+        
+        # First, collect all sections
         for section in menu_data:
-            cur.execute("""
-                INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId", "parentSectionId")
-                VALUES (%s, %s, %s, NULL)
-                ON CONFLICT ("id") DO UPDATE
-                SET "sectionName" = EXCLUDED."sectionName",
-                    "sectionOrder" = EXCLUDED."sectionOrder",
-                    "venueId" = EXCLUDED."venueId";
-            """, (
-                # section.get("id"),
+            sections_data.append((
                 section.get("sectionName"),
                 section.get("sectionOrder"),
-                venue_id
+                venue_id,
+                None  # parentSectionId is NULL for top-level sections
             ))
-
-            # --- Insert/update sub-sections ---
-            sub_sections = section.get("subSections", [])
-            for idx, sub in enumerate(sub_sections):
-                # Check if sub-section has an ID, otherwise let database generate one
-                if sub.get("id"):
-                    cur.execute("""
-                        INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId", "parentSectionId")
-                        VALUES (%s, %s, %s, %s, %s)
-                        ON CONFLICT ("id") DO UPDATE
-                        SET "sectionName" = EXCLUDED."sectionName",
-                            "sectionOrder" = EXCLUDED."sectionOrder",
-                            "venueId" = EXCLUDED."venueId",
-                            "parentSectionId" = EXCLUDED."parentSectionId";
-                    """, (
-                        # sub.get("id"),
+        
+        # Batch insert sections and get their IDs
+        if sections_data:
+            section_ids = execute_values(
+                cur,
+                """
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+                VALUES %s
+                RETURNING "id";
+                """,
+                sections_data,
+                fetch=True
+            )
+            
+            # Create mapping of section index to generated ID
+            section_id_map = {i: section_id[0] for i, section_id in enumerate(section_ids)}
+            
+            # Now prepare subsections data
+            for section_index, section in enumerate(menu_data):
+                parent_id = section_id_map[section_index]
+                sub_sections = section.get("subSections", [])
+                
+                for sub in sub_sections:
+                    subsections_data.append((
                         sub.get("sectionName"),
-                        idx,             # sub-section order
+                        sub.get("sectionOrder"),
                         venue_id,
-                        section.get("id")
+                        parent_id
                     ))
-                else:
-                    cur.execute("""
-                        INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
-                        VALUES (%s, %s, %s, %s);
-                    """, (
-                        sub.get("sectionName"),
-                        idx,             # sub-section order
-                        venue_id,
-                        section.get("id")
-                    ))
+            
+            # Batch insert subsections
+            if subsections_data:
+                execute_values(
+                    cur,
+                    """
+                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+                    VALUES %s;
+                    """,
+                    subsections_data
+                )
         
         conn.commit()
         return jsonify({
@@ -110,12 +107,10 @@ def updateMenu():
     except Exception as e:
         import traceback
         traceback.print_exc()
-
         conn.rollback()
         return jsonify({
             "code": 500,
             "message": "An error occurred when updating the venue's menu."
         }), 500
-
     finally:
         cur.close()

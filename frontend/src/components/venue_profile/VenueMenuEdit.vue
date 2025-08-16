@@ -1,3 +1,4 @@
+
 <template>
     <div class="edit-menu-container p-3 bg-light rounded-3 mt-3">
         <!-- Header -->
@@ -24,7 +25,7 @@
         </div>
 
         <!-- Draggable Sections -->
-        <draggable v-model="localMenu" item-key="id" handle=".drag-handle" ghost-class="ghost">
+        <draggable v-model="localMenu" item-key="id" handle=".drag-handle" ghost-class="ghost" @end="updateSectionOrder">
             <template #item="{ element: section, index }">
                 <div class="mb-2">
                     <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
@@ -65,7 +66,7 @@
 
                             <!-- Sub-sections -->
                             <div class="ps-4"> <!-- Indentation for sub-sections -->
-                                <draggable v-model="section.subSections" item-key="id" handle=".drag-handle-subsection" ghost-class="ghost">
+                                <draggable v-model="section.subSections" item-key="id" handle=".drag-handle-subsection" ghost-class="ghost" @end="updateSubSectionOrder(section)">
                                     <template #item="{ element: subSection, index: subSectionIndex }">
                                         <div class="mb-2">
                                             <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded" style="background-color: #e9ecef; cursor: default;">
@@ -92,7 +93,14 @@
                                             <!-- Listings within sub-section -->
                                             <transition name="slide">
                                                 <div v-if="subSection.isExpanded" class="p-3 bg-white border border-top-0 rounded-bottom">
-                                                    <draggable v-if="subSection.sectionMenu && subSection.sectionMenu.length" v-model="subSection.sectionMenu" item-key="itemID" handle=".drag-handle-item" ghost-class="ghost">
+                                                    <draggable 
+                                                        v-if="subSection.sectionMenu && subSection.sectionMenu.length" 
+                                                        v-model="subSection.sectionMenu" 
+                                                        item-key="itemID" 
+                                                        handle=".drag-handle-item" 
+                                                        ghost-class="ghost" 
+                                                        group="menu-items"
+                                                        @change="onItemChange">
                                                         <template #item="{ element: item, index: itemIndex }">
                                                             <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                                                 <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
@@ -108,7 +116,36 @@
                                                             </div>
                                                         </template>
                                                     </draggable>
-                                                    <div v-else class="text-muted p-2">No items in this sub-section.</div>
+                                                    <!-- Empty state and drop zone for sub-sections -->
+                                                    <draggable 
+                                                        v-else 
+                                                        v-model="subSection.sectionMenu" 
+                                                        item-key="itemID" 
+                                                        handle=".drag-handle-item" 
+                                                        ghost-class="ghost" 
+                                                        group="menu-items"
+                                                        @change="onItemChange"
+                                                        class="empty-drop-zone">
+                                                        <template #item="{ element: item, index: itemIndex }">
+                                                            <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
+                                                                <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
+                                                                <span class="flex-grow-1">{{ item.name }}</span>
+                                                                <div class="d-flex gap-2">
+                                                                    <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
+                                                                        <i class="bi bi-arrow-up"></i>
+                                                                    </button>
+                                                                    <button class="btn btn-sm btn-outline-danger" title="Remove from section" @click="removeItem(subSection.sectionMenu, itemIndex)">
+                                                                        <i class="bi bi-x"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                        <template #footer>
+                                                            <div v-if="subSection.sectionMenu.length === 0" class="text-muted p-3 text-center border-2 border-dashed rounded" style="border-color: #dee2e6 !important;">
+                                                                Drop items here or click button below to add
+                                                            </div>
+                                                        </template>
+                                                    </draggable>
                                                     <div class="mt-2">
                                                         <button class="btn btn-sm btn-outline-success w-100" @click="addListing(subSection)">
                                                             <i class="bi bi-plus-lg"></i> Add Listing to Sub-section
@@ -128,7 +165,14 @@
                                 <div class="spinner-border spinner-border-sm me-2" role="status"></div>
                                 Loading all items...
                             </div>
-                            <draggable v-else-if="section.sectionMenu && section.sectionMenu.length" v-model="section.sectionMenu" item-key="itemID" handle=".drag-handle-item" ghost-class="ghost">
+                            <draggable 
+                                v-else-if="section.sectionMenu && section.sectionMenu.length" 
+                                v-model="section.sectionMenu" 
+                                item-key="itemID" 
+                                handle=".drag-handle-item" 
+                                ghost-class="ghost" 
+                                group="menu-items"
+                                @change="onItemChange">
                                 <template #item="{ element: item, index: itemIndex }">
                                     <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                         <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
@@ -141,6 +185,36 @@
                                                 <i class="bi bi-x"></i>
                                             </button>
                                         </div>
+                                    </div>
+                                </template>
+                            </draggable>
+                            <!-- Empty state for parent section -->
+                            <draggable 
+                                v-else-if="!section.isLoading" 
+                                v-model="section.sectionMenu" 
+                                item-key="itemID" 
+                                handle=".drag-handle-item" 
+                                ghost-class="ghost" 
+                                group="menu-items"
+                                @change="onItemChange"
+                                class="empty-drop-zone">
+                                <template #item="{ element: item, index: itemIndex }">
+                                    <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
+                                        <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
+                                        <span class="flex-grow-1">{{ item.name }}</span>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(section.sectionMenu, itemIndex)">
+                                                <i class="bi bi-arrow-up"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" title="Remove from section" @click="removeItem(section.sectionMenu, itemIndex)">
+                                                <i class="bi bi-x"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template #footer>
+                                    <div v-if="section.sectionMenu.length === 0 && (!section.subSections || section.subSections.length === 0)" class="text-muted p-3 text-center border-2 border-dashed rounded" style="border-color: #dee2e6 !important;">
+                                        Drop items here or click button above to add
                                     </div>
                                 </template>
                             </draggable>
@@ -196,6 +270,9 @@ export default {
                     if (!section.subSections) {
                         section.subSections = [];
                     }
+                    if (!section.sectionMenu) {
+                        section.sectionMenu = [];
+                    }
                     if (section.subSections) {
                         section.subSections.forEach(sub => {
                             sub.isExpanded = sub.isExpanded ?? false;
@@ -212,6 +289,11 @@ export default {
         },
     },
     methods: {
+        onItemChange(event) {
+            // This method is called whenever items are moved between draggable containers
+            // You can add additional logic here if needed for tracking changes
+            console.log('Item moved:', event);
+        },
         addSection() {
             const newSection = {
                 id: `new_${Date.now()}`,
@@ -261,6 +343,7 @@ export default {
         confirmDeleteSection(section, index) {
             if (window.confirm(`Are you sure you want to delete the section "${section.sectionName}"? This cannot be undone.`)) {
                 this.localMenu.splice(index, 1);
+                this.updateSectionOrder();
             }
         },
         moveToTop(list, itemIndex) {
@@ -277,6 +360,7 @@ export default {
             const newSubSection = {
                 id: `new_sub_${Date.now()}`,
                 sectionName: 'New Sub-section',
+                sectionOrder: section.subSections.length,
                 isExpanded: false,
                 sectionMenu: [],
                 isEditingName: true,
@@ -287,6 +371,7 @@ export default {
             const subsection = section.subSections[subSectionIndex];
             if (window.confirm(`Are you sure you want to delete the sub-section "${subsection.sectionName}"? This cannot be undone.`)) {
                 section.subSections.splice(subSectionIndex, 1);
+                this.updateSubSectionOrder(section);
             }
         },
         toggleSubSection(subsection) {
@@ -303,7 +388,19 @@ export default {
             };
             itemContainer.sectionMenu.push(newListing);
             itemContainer.isExpanded = true;
-        }
+        },
+        updateSectionOrder() {
+            this.localMenu.forEach((section, index) => {
+                section.sectionOrder = index;
+            });
+        },
+        updateSubSectionOrder(section) {
+            if (section.subSections) {
+                section.subSections.forEach((subSection, index) => {
+                    subSection.sectionOrder = index;
+                });
+            }
+        },
     }
 };
 </script>
