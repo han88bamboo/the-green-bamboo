@@ -38,6 +38,87 @@
 
     <!-- Hero End -->
 
+    <!-- Top Rated Reviews Section -->
+    <section class="recent-reviews-section py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Top Rated Reviews</h2>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Discover the highest rated drinks!</h3>
+            </div>
+            
+            <!-- Top Rated Reviews Grid - Always 5 columns with horizontal scroll -->
+            <div class="trending-reviews-container">
+                <div class="trending-reviews-grid">
+                    <div v-for="review in topRatedReviews" :key="review.reviewId" class="trending-review-col">
+                        <div class="card h-100 review-card border-light" 
+                             style="border: 2px solid #f0b358; cursor: pointer;"
+                             @click="goToListing(review)">
+                            <!-- Image at top with overlay -->
+                            <div class="card-img-top-wrapper position-relative">
+                                <img v-if="review.photo" 
+                                     :src="review.photo" 
+                                     class="card-img-top review-card-img"
+                                     :alt="review.listingName" />
+                                <img v-else-if="review.listingPhoto" 
+                                     :src="review.listingPhoto" 
+                                     class="card-img-top review-card-img"
+                                     :alt="review.listingName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                     class="card-img-top review-card-img"
+                                     alt="Default drink image" />
+                                
+                                <!-- User and Rating Overlay -->
+                                <div class="review-overlay position-absolute d-flex align-items-center">
+                                    <img v-if="review.userPhoto" 
+                                         :src="review.userPhoto" 
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         :alt="review.username" />
+                                    <img v-else
+                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         alt="Default profile" />
+                                    <span class="overlay-text">
+                                        @{{ truncateText(review.username, 15) }} rated 
+                                        <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <!-- Drink name -->
+                                <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
+                                    {{ truncateText(review.listingName, 30) }}
+                                </h6>
+                                
+                                <!-- Producer name -->
+                                <p class="text-muted small" v-if="review.producerName" style="margin-bottom:0px;" >
+                                    by {{ truncateText(review.producerName, 20) }}
+                                </p>
+                                
+                                <!-- Category and Country -->
+                                <p class="mb-2 small" style="color: #f0b358;" v-if="review.drinkType || review.originCountry">
+                                    <span v-if="review.drinkType">{{ review.drinkType }}</span>
+                                    <span v-if="review.drinkType && review.originCountry"> / </span>
+                                    <span v-if="review.originCountry">{{ review.originCountry }}</span>
+                                </p>
+                                
+                                <!-- Review excerpt -->
+                                <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
+                                    "{{ truncateText(review.reviewDesc, 55) }}" 
+                                    <span class="badge bg-danger text-white ms-1">Read Review</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Top Rated Reviews End -->
+
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
@@ -896,6 +977,7 @@ export default {
             articles: [], // This holds your RSS feed data
             reviews: [], // Stores reviews
             recentReviews: [], // Stores the 5 most recent reviews
+            topRatedReviews: [], // Stores the 5 most highly rated reviews
             venueMenus: [null, null, null], // Stores menu data for the 3 venues
             sectionTitles: {
                 latest_news: "Latest Drink News",
@@ -919,6 +1001,7 @@ export default {
         this.fetchTop8();
         this.fetchTopListings();
         this.fetchRecentReviews(); // Fetch 5 most recent reviews
+        this.fetchTopRatedReviews(); // Fetch 5 most highly rated reviews
         this.fetchVenueMenus(); // Fetch venue menus
 
         const accID = localStorage.getItem("88B_accID");
@@ -1090,6 +1173,17 @@ export default {
             } catch (error) {
                 console.error("Error fetching recent reviews:", error);
                 this.recentReviews = [];
+            }
+        },
+
+        async fetchTopRatedReviews() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/get5MostHighlyRatedReviews`);
+                this.topRatedReviews = response.data;
+                console.log("Top rated reviews:", this.topRatedReviews);
+            } catch (error) {
+                console.error("Error fetching top rated reviews:", error);
+                this.topRatedReviews = [];
             }
         },
 

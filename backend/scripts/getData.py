@@ -34,7 +34,7 @@
 #           /getRecentListingReviews/<id> (GET), /getAllUserReviews/<id> (GET), /getReviews (GET),
 #           /getReviewsByListingIDs (POST), /getReviewByTarget/<id> (GET), /getReviewsByUserIds (GET), 
 #           /getListingReviewsRating/<listing_id> (GET), /getTop5MostReviewedListings (GET),
-#           /get5MostRecentReviews (GET),
+#           /get5MostRecentReviews (GET), /get5MostHighlyRatedReviews (GET),
 
 #           [Producer Reviews]
 #           /getProducerTourReviews (GET), /getProducerReviewsByProducerId/<id> (GET),
@@ -1716,6 +1716,100 @@ def get5MostRecentReviews():
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching recent reviews."
+        }), 500
+
+
+# [GET] Get 5 most highly rated listing reviews for landing page
+@blueprint.route("/get5MostHighlyRatedReviews", methods=['GET'])
+def get5MostHighlyRatedReviews():
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                WITH highly_rated_reviews AS (
+                    SELECT 
+                        r."id" as "reviewId",
+                        r."userID",
+                        r."reviewTarget",
+                        r."rating",
+                        r."reviewDesc",
+                        r."reviewType",
+                        r."createdDate",
+                        r."observationTag",
+                        r."location",
+                        COALESCE(NULLIF(r."photo", ''), l."photo") as "photo",
+                        l."photo" as "listingPhoto",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        l."listingName",
+                        l."drinkType",
+                        l."originCountry",
+                        l."producerID",
+                        p."producerName",
+                        v."venueName"
+                    FROM "reviews" r
+                    LEFT JOIN "users" u ON r."userID" = u."id"
+                    LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                    LEFT JOIN "producers" p ON l."producerID" = p."id"
+                    LEFT JOIN "venues" v ON r."location" = v."id"
+                    WHERE r."reviewType" = 'Listing'
+                    AND r."rating" IS NOT NULL
+                    AND r."reviewDesc" IS NOT NULL
+                    AND r."reviewDesc" != ''
+                    ORDER BY r."rating" DESC, r."createdDate" DESC
+                    LIMIT 100
+                ),
+                ranked_reviews AS (
+                    SELECT *,
+                        ROW_NUMBER() OVER (PARTITION BY "drinkType" ORDER BY "rating" DESC, "createdDate" DESC) as rn
+                    FROM highly_rated_reviews
+                )
+                SELECT *
+                FROM ranked_reviews
+                WHERE rn = 1
+                ORDER BY "rating" DESC, "createdDate" DESC
+                LIMIT 5
+            """)
+            
+            reviews_data = cursor.fetchall()
+            
+            if not reviews_data:
+                return jsonify([]), 200
+            
+            # Convert each row to a dict and format the data
+            formatted_reviews = []
+            for review in reviews_data:
+                formatted_review = dict(review)
+                
+                # Ensure observationTag is properly formatted as a list
+                if formatted_review.get("observationTag"):
+                    if isinstance(formatted_review["observationTag"], str):
+                        # If it's a string, try to parse it as JSON or split by comma
+                        try:
+                            import json
+                            formatted_review["observationTag"] = json.loads(formatted_review["observationTag"])
+                        except:
+                            # If JSON parsing fails, split by comma and clean up
+                            formatted_review["observationTag"] = [tag.strip() for tag in formatted_review["observationTag"].split(',') if tag.strip()]
+                else:
+                    formatted_review["observationTag"] = []
+                
+                # Format date for frontend
+                if formatted_review.get("createdDate"):
+                    formatted_review["createdDate"] = formatted_review["createdDate"].isoformat() if hasattr(formatted_review["createdDate"], 'isoformat') else str(formatted_review["createdDate"])
+                
+                formatted_reviews.append(formatted_review)
+            
+            return jsonify(formatted_reviews), 200
+            
+    except Exception as e:
+        print(f"Error fetching 5 most highly rated reviews: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching highly rated reviews."
         }), 500
 
 
