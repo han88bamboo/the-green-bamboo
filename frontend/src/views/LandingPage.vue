@@ -192,6 +192,11 @@
                                                     {{ parseFloat(item.avgRating).toFixed(1) }}★
                                                 </span>
                                             </div>
+                                            <div v-else class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    -★
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -275,6 +280,11 @@
                                                     {{ parseFloat(item.avgRating).toFixed(1) }}★
                                                 </span>
                                             </div>
+                                            <div v-else class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    -★
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -356,6 +366,11 @@
                                             <div v-if="item.avgRating && item.avgRating > 0" class="rating-display text-end">
                                                 <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
                                                     {{ parseFloat(item.avgRating).toFixed(1) }}★
+                                                </span>
+                                            </div>
+                                            <div v-else class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    -★
                                                 </span>
                                             </div>
                                         </div>
