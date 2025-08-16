@@ -38,19 +38,25 @@ def updateMenu():
                 "code": 400,
                 "message": "Missing menu data or venue_id."
             }), 400
+        
+        # Validate menu_data format (can be empty array)
+        if menu_data is None or not isinstance(menu_data, list):
+            return jsonify({
+                "code": 400,
+                "message": "Invalid menu data format. Expected an array."
+            }), 400
 
         # Delete existing menu sections for this venue
-        # print(f"About to delete sections for venue_id: {venue_id}")
         cur.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venue_id,))
-        # deleted_count = cur.rowcount
-        # print(f"Deleted {deleted_count} rows")
         
         # Prepare data for batch inserts
         sections_data = []
-        subsections_data = []
         
         # First, collect all sections
         for section in menu_data:
+            if not isinstance(section, dict):
+                continue  # Skip invalid section data
+                
             sections_data.append((
                 section.get("sectionName"),
                 section.get("sectionOrder"),
@@ -58,45 +64,69 @@ def updateMenu():
                 None  # parentSectionId is NULL for top-level sections
             ))
         
+        # Check if we have any valid sections to insert
+        if not sections_data:
+            # No sections to insert - this is valid (user wants to clear all sections)
+            conn.commit()
+            return jsonify({
+                "code": 200,
+                "message": "Venue menu updated successfully. All sections removed."
+            }), 200
+        
         # Batch insert sections and get their IDs
-        if sections_data:
-            section_ids = execute_values(
+        section_ids = execute_values(
+            cur,
+            """
+            INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+            VALUES %s
+            RETURNING "id";
+            """,
+            sections_data,
+            fetch=True
+        )
+        
+        # Verify we got the expected number of section IDs
+        if not section_ids or len(section_ids) != len(sections_data):
+            raise Exception("Failed to insert sections or retrieve section IDs")
+
+        # for i in section_ids:
+        #     print(i)
+        
+        # Create mapping of section index to generated ID
+        section_id_map = {i: section_id["id"] for i, section_id in enumerate(section_ids)}
+        
+        # Now prepare subsections data
+        subsections_data = []
+        for section_index, section in enumerate(menu_data):
+            if not isinstance(section, dict):
+                continue  # Skip invalid section data
+                
+            parent_id = section_id_map.get(section_index)
+            if parent_id is None:
+                continue  # Skip if we don't have a parent ID
+                
+            sub_sections = section.get("subSections", [])
+            
+            if isinstance(sub_sections, list):
+                for sub in sub_sections:
+                    if isinstance(sub, dict):
+                        subsections_data.append((
+                            sub.get("sectionName"),
+                            sub.get("sectionOrder"),
+                            venue_id,
+                            parent_id
+                        ))
+        
+        # Batch insert subsections if any exist
+        if subsections_data:
+            execute_values(
                 cur,
                 """
                 INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
-                VALUES %s
-                RETURNING "id";
+                VALUES %s;
                 """,
-                sections_data,
-                fetch=True
+                subsections_data
             )
-            
-            # Create mapping of section index to generated ID
-            section_id_map = {i: section_id[0] for i, section_id in enumerate(section_ids)}
-            
-            # Now prepare subsections data
-            for section_index, section in enumerate(menu_data):
-                parent_id = section_id_map[section_index]
-                sub_sections = section.get("subSections", [])
-                
-                for sub in sub_sections:
-                    subsections_data.append((
-                        sub.get("sectionName"),
-                        sub.get("sectionOrder"),
-                        venue_id,
-                        parent_id
-                    ))
-            
-            # Batch insert subsections
-            if subsections_data:
-                execute_values(
-                    cur,
-                    """
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
-                    VALUES %s;
-                    """,
-                    subsections_data
-                )
         
         conn.commit()
         return jsonify({

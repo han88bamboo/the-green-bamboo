@@ -1,4 +1,3 @@
-
 <template>
     <div class="edit-menu-container p-3 bg-light rounded-3 mt-3">
         <!-- Header -->
@@ -10,7 +9,7 @@
                 <button class="btn btn-outline-secondary me-2" @click="$emit('cancel')">
                     <i class="bi bi-x-lg me-1"></i>Cancel
                 </button>
-                <button class="btn btn-primary" @click="$emit('save', localMenu)">
+                <button class="btn btn-primary" @click="saveChanges">
                     <i class="bi bi-check-lg me-1"></i>Save Changes
                 </button>
             </div>
@@ -291,8 +290,11 @@ export default {
     methods: {
         onItemChange(event) {
             // This method is called whenever items are moved between draggable containers
-            // You can add additional logic here if needed for tracking changes
+            // Update item orders after a change
             console.log('Item moved:', event);
+            
+            // Update all item orders after any change
+            this.updateAllItemOrders();
         },
         addSection() {
             const newSection = {
@@ -393,6 +395,7 @@ export default {
             this.localMenu.forEach((section, index) => {
                 section.sectionOrder = index;
             });
+            console.log('Section order updated:', this.localMenu.map(s => ({ name: s.sectionName, order: s.sectionOrder })));
         },
         updateSubSectionOrder(section) {
             if (section.subSections) {
@@ -400,6 +403,39 @@ export default {
                     subSection.sectionOrder = index;
                 });
             }
+        },
+        updateItemOrder(itemList) {
+            // Update order for items in a specific list
+            if (itemList && itemList.length) {
+                itemList.forEach((item, index) => {
+                    item.itemOrder = index;
+                });
+            }
+        },
+        updateAllItemOrders() {
+            // Update item orders for all sections and sub-sections
+            this.localMenu.forEach(section => {
+                // Update items in main section
+                this.updateItemOrder(section.sectionMenu);
+                
+                // Update items in sub-sections
+                if (section.subSections) {
+                    section.subSections.forEach(subSection => {
+                        this.updateItemOrder(subSection.sectionMenu);
+                    });
+                }
+            });
+        },
+        saveChanges() {
+            // Ensure all orders are up to date before saving
+            this.updateSectionOrder();
+            this.localMenu.forEach(section => {
+                this.updateSubSectionOrder(section);
+            });
+            this.updateAllItemOrders();
+            
+            console.log('Final data being saved:', JSON.stringify(this.localMenu, null, 2));
+            this.$emit('save', this.localMenu);
         },
     }
 };
@@ -432,5 +468,9 @@ export default {
 .slide-leave-from {
     max-height: 1000px; /* Adjust as needed */
     opacity: 1;
+}
+
+.empty-drop-zone {
+    min-height: 60px;
 }
 </style>
