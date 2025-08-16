@@ -563,7 +563,9 @@ export default {
 
       // [User]
       if (this.role == "user") {
-        this.$router.push({ path: "/" });
+        this.$router.push({ 
+          path: `/profile/user/${this.accountID}/${this.ID}`, 
+        });
       }
       // [Producer]
       if (this.role == "producer") {
