@@ -133,9 +133,8 @@ export default {
         claimStatus: Boolean,
         isSelfView: Boolean,
         menu: Array,
-        venueId: String,
     },
-    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated'],
+    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu'],
     data() {
         return {
             isEditMode: false,
@@ -148,6 +147,14 @@ export default {
                 if (section.isExpanded === undefined) {
                     Object.assign(section, { isExpanded: false });
                 }
+                // Initialize isExpanded for subSections
+                if (section.subSections) {
+                    section.subSections.forEach(sub => {
+                        if (sub.isExpanded === undefined) {
+                            Object.assign(sub, { isExpanded: false });
+                        }
+                    });
+                }
             });
         }
     },
@@ -159,20 +166,9 @@ export default {
             }
         },
         async handleSaveChanges(updatedMenu) {
-            console.log('Saving changes:', updatedMenu);
-            // NOTE: A backend endpoint is required here.
-            // This is a placeholder for the API call.
-            try {
-                // const response = await this.$axios.post(`/api/venues/${this.venueId}/menu/update`, {
-                //     menu: updatedMenu 
-                // });
-                // On success:
-                this.$emit('menu-updated', updatedMenu);
-                this.isEditMode = false;
-            } catch (error) {
-                console.error("Failed to save menu changes:", error);
-                // Optionally, show an error toast to the user
-            }
+            console.log('Emitting save-menu event:', updatedMenu);
+            this.$emit('save-menu', updatedMenu);
+            this.isEditMode = false;
         },
         async toggleSection(section, index) {
             section.isExpanded = !section.isExpanded;
@@ -240,6 +236,9 @@ export default {
                 section.isLoading = false;
             }
         },
+        toggleSubSection(subSection) {
+            subSection.isExpanded = !subSection.isExpanded;
+        }
     }
 };
 </script>

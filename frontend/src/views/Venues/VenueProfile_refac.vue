@@ -126,7 +126,7 @@ Normal User (Anonymous & Logged-In)
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
                         <VenueMenuTab :menu="menuSections" :is-self-view="isOwner"
-                            :claim-status="targetVenue.claimStatus"        
+                            :claim-status="targetVenue.claimStatus" @save-menu="handleMenuSave"        
                         />
                     </div>
 
@@ -963,6 +963,26 @@ export default {
         handlePhotoUpdate(newPhoto) {
             // Placeholder for handling photo updates
             this.targetVenue.photo = newPhoto;
+        },
+
+        async handleMenuSave(updatedMenu) {
+            console.log('Saving menu changes from VenueProfile_refac:', updatedMenu);
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/menu/`, {
+                    venueID: this.targetVenue.id, // Use the venue ID from VenueProfile_refac
+                    updatedMenu: updatedMenu 
+                });
+                if (response.data.code === 200) {
+                    console.log("Menu changes saved successfully via VenueProfile_refac!");
+                    // Optionally, re-fetch menu data or update local state
+                    this.getVenueData(); // Re-fetch all venue data to update menu
+                    this.contentMode = 'menu'; // Stay on menu tab
+                } else {
+                    console.error("Failed to save menu changes via VenueProfile_refac:", response.data.message);
+                }
+            } catch (error) {
+                console.error("Error saving menu changes via VenueProfile_refac:", error);
+            }
         },
 
         cleanup() {

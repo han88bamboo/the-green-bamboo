@@ -216,6 +216,7 @@ export default {
             const newSection = {
                 id: `new_${Date.now()}`,
                 sectionName: 'New Section',
+                sectionOrder: this.localMenu.length,
                 isExpanded: false,
                 sectionMenu: [],
                 subSections: [],
