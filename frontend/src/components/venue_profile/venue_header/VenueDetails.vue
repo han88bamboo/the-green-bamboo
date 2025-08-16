@@ -173,11 +173,6 @@
               </p> -->
               <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
                 {{ venue.venueDesc }}
-                <a @click="showFullDescription = false" 
-                   class="text-primary fw-bold text-decoration-none"
-                   style="cursor: pointer;">
-                  (Read Less)
-                </a>
               </p>
             </div>
             <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
