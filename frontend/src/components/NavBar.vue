@@ -22,6 +22,20 @@
             <AutocompleteSearch @select="handleSelection" />
           </div>
 
+          <!-- Login/Signup buttons for non-logged-in users -->
+          <div v-if="accType === ''" class="d-flex align-items-center gap-2 ms-3 me-3">
+            <router-link :to="'/login'">
+              <button class="btn btn-outline-secondary btn-sm px-3 fw-bold">
+                Log In
+              </button>
+            </router-link>
+            <router-link :to="'/signup'">
+              <button class="btn btn-danger btn-sm px-3 fw-bold">
+                Sign Up
+              </button>
+            </router-link>
+          </div>
+
           <div class="d-flex align-items-center ms-auto gap-2">
             <!-- help button -->
             <div class="me-2" v-if="accType != ''">
