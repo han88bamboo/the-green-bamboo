@@ -399,18 +399,18 @@
     </section>
     <!-- What's On Menu End -->
 
-    <!-- Trending Section -->
+    <!-- Trending Section
     <section >
         <div class="container p-4 pb-0">
             <div class="container pb-0">
-                <!-- Trending and Description in One Row -->
+                Trending and Description in One Row
                 <div class="d-md-flex text-start gap-3 mb-3">
                     <h2 class="mobile-fs-4 fw-bold mb-1" style="color: #027562;">Trending</h2>
                     <h3 class="mt-2 mobile-fs-6 fw-bold fst-italic h5" style="color: black;">"Who is saying what now?"
                     </h3>
                 </div>
 
-                <!-- Trending Observation Tags -->
+                Trending Observation Tags
                 <div class="d-none d-md-flex flex-wrap justify-content-start">
                     <button v-for="tag in tags" :key="tag" class="btn btn-warning rounded-pill m-2"
                         :class="{ selected: tag === selectedTag }" @click="goSearchTag(tag)">
@@ -445,7 +445,7 @@
                         </div>
                     </div>
 
-                    <!-- Carousel Controls -->
+                    Carousel Controls
                     <button class="carousel-control-prev custom-carousel-btn" type="button"
                         data-bs-target="#badgeCarousel" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -456,8 +456,8 @@
                     </button>
                 </div>
 
-                <!-- Trending Drink Listings -->
-                <!-- Mobile View -->
+                 Trending Drink Listings
+                 Mobile View
                 <div class="d-md-none">
                     <div class="d-flex flex-row flex-wrap justify-content-center w-100">
                         <div v-for="listing in listings.slice(0, 4)" :key="listing.id"
@@ -477,7 +477,7 @@
                     </div>
                 </div>
 
-                <!-- Desktop View -->
+                Desktop View
                 <div class="d-none d-md-flex justify-content-center flex-wrap pb-2 pt-4">
                     <div v-for="listing in listings.slice(0, 5)" :key="listing.id" class="text-center mx-1 listing-item"
                         style="width: 120px;" @click="goSearchListing(listing)">
@@ -492,7 +492,7 @@
             </div>
         </div>
     </section>
-    <!-- Trending End -->
+    Trending End -->
 
     <section class="hero-wrapper position-relative">
       <div class="container">
