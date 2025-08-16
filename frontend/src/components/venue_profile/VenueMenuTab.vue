@@ -25,8 +25,8 @@
 
             <!-- View Mode -->
             <div v-else>
-                <div v-if="menu && menu.length > 0">
-                    <div v-for="(section, index) in menu" :key="index" class="mb-2">
+                <div v-if="venue_menu.menu && venue_menu.menu.length > 0">
+                    <div v-for="(section, index) in venue_menu.menu" :key="index" class="mb-2">
                         <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
                             style="background-color: #f0b258; cursor: pointer; user-select: none;"
                             @click="toggleSection(section, index)">
@@ -132,7 +132,7 @@ export default {
     props: {
         claimStatus: Boolean,
         isSelfView: Boolean,
-        menu: Array,
+        venue_menu: Object,
     },
     emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu'],
     data() {
@@ -142,8 +142,8 @@ export default {
         }
     },
     mounted() {
-        if (this.menu && this.menu.length > 0) {
-            this.menu.forEach(section => {
+        if (this.venue_menu.menu && this.venue_menu.menu.length > 0) {
+            this.venue_menu.menu.forEach(section => {
                 if (section.isExpanded === undefined) {
                     Object.assign(section, { isExpanded: false });
                 }

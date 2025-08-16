@@ -125,7 +125,7 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
-                        <VenueMenuTab :menu="menuSections" :is-self-view="isOwner"
+                        <VenueMenuTab :venue_menu="venue_menu" :is-self-view="isOwner"
                             :claim-status="targetVenue.claimStatus" @save-menu="handleMenuSave"        
                         />
                     </div>
@@ -300,7 +300,11 @@ export default {
             unansweredQuestions: [],
             openingHours: {},
 
-            menuSections: [],
+            venue_menu: {
+                loading: false, 
+                error: null, 
+                menu: []
+            },
 
             overview: {
                 mp_loading: false, // most popular loading state
@@ -427,6 +431,7 @@ export default {
             try {
                 await Promise.all([
                     this.getVenueData(),
+                    this.getMenu(),
                     this.getOverview(), 
                     this.getReviews()
                 ]);
@@ -434,6 +439,36 @@ export default {
             } catch (error) {
                 console.error(error)
             } 
+        },
+
+        async getMenu() {
+            this.venue_menu.loading = true
+            this.venue_menu.menu = [];
+
+            try {
+                const response = await apiService.fetchWithRetry(
+                    this.$axios,
+                    `${process.env.VUE_APP_API_URL}/menu/${this.targetVenueID}`
+                );
+
+                // Transform the menu to nest subsections (one-liner approach)
+                this.venue_menu.menu = response.data
+                    .filter(item => !item.isSubSection)
+                    .map(section => ({
+                        ...section,
+                        subSections: response.data
+                            .filter(item => item.isSubSection && item.parentSectionId === section.id)
+                            .map(({id, sectionName, sectionOrder}) => ({id, sectionName, sectionOrder}))
+                    }));
+                
+                console.log(this.venue_menu);
+
+            } catch (error) {
+                // show error to user
+                this.venue_menu.error = error;
+            } finally {
+                this.venue_menu.loading = false;
+            }
         },
 
         async getOverview() {
@@ -464,8 +499,8 @@ export default {
                     this.processVenueBasicData(venueData),
                     this.processVenueQuestionsAnswers(venueData),
                     this.processVenueHours(venueData),
-                    this.processVenueMenu(venueData),
-                    this.processVenueUpdates(venueData),
+                    // this.processVenueMenu(venueData),
+                    // this.processVenueUpdates(venueData),
                     this.processMapData(venueData.address),
                     this.processClaimStatus(venueData)
                 ]);

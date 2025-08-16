@@ -4128,16 +4128,6 @@ def venue(id):
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
                 v.email, v."phoneNumber", v."whatsappNumber",
                 v.username, v."venueType", 
-                -- Build the menu JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', vm.id,
-                        'sectionName', vm."sectionName",
-                        'sectionOrder', vm."sectionOrder"
-                    ) ORDER BY vm."sectionOrder")
-                    FROM "venuesMenu" vm
-                    WHERE vm."venueId" = v.id
-                ), '[]') AS menu,
                 -- Build openingHours JSON
                 COALESCE((
                     SELECT row_to_json(oh)
@@ -4155,24 +4145,7 @@ def venue(id):
                     ))
                     FROM "venuesQuestionAnswers" qa
                     WHERE qa."venueId" = v.id
-                ), '[]') AS "questionsAnswers",
-                -- Build updates JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', u.id,
-                        'date', u.date,
-                        'text', u.text,
-                        'photo', u.photo,
-                        'venueId', u."venueId",
-                        'likes', COALESCE((
-                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
-                            FROM "venueUpdateLikes" l
-                            WHERE l."updateId" = u.id
-                        ), '[]')
-                    ) ORDER BY u.date DESC)
-                    FROM "venuesUpdates" u
-                    WHERE u."venueId" = v.id
-                ), '[]') AS updates
+                ), '[]') AS "questionsAnswers"
             FROM venues v
             WHERE v.id = %s
             GROUP BY v.id
@@ -4185,15 +4158,16 @@ def venue(id):
             return jsonify({"message": "Venue not found"}), 404
 
         venue = dict(venue_data)
-        venue['menu'] = venue['menu'] if venue['menu'] else []
+        # venue['menu'] = venue['menu'] if venue['menu'] else []
         venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
         venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
-        venue['updates'] = venue['updates'] if venue['updates'] else []
+        # venue['updates'] = venue['updates'] if venue['updates'] else []
 
         return jsonify(venue), 200
 
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
         return jsonify(
             {
                 "code": 500,

@@ -3,6 +3,7 @@ import os
 from psycopg2.extras import execute_values
 
 from flask import Blueprint, g, request, jsonify
+from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -13,6 +14,42 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 logger.info(project_root)
+
+
+@blueprint.route("/<int:venue_id>", methods=['GET'])
+def getMenuSections(venue_id: int):
+    conn = g.db
+
+    try: 
+        query = """
+            SELECT COALESCE((
+                SELECT json_agg(json_build_object(
+                    'id', vm.id,
+                    'sectionName', vm."sectionName",
+                    'sectionOrder', vm."sectionOrder",
+                    'parentSectionId', vm."parentSectionId",
+                    'isSubSection', vm."isSubSection"
+                ) ORDER BY vm."sectionOrder")
+                FROM "venuesMenu" vm
+                WHERE vm."venueId" = %s
+            ), '[]'::json) AS menu
+        """
+
+        # open connection to execute sql query
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(query, (venue_id,))
+            
+            menu_sections = cursor.fetchone()  # one row
+            return jsonify(menu_sections['menu'])  # just the array
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred when getting the venue's menu."
+        }), 500
 
 
 @blueprint.route("/", methods=['POST'])
