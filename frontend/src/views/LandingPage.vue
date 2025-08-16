@@ -179,9 +179,19 @@
                                             {{ truncateText(item.producerName, 20) }}
                                         </p>
                                         <div class="d-flex justify-content-between align-items-start mt-1">
-                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
-                                                {{ item.drinkType }}
-                                            </span>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                    {{ item.drinkType }}
+                                                </span>
+                                                <span v-if="item.typeCategory" class="badge bg-info" style="font-size: 0.7rem;">
+                                                    {{ item.typeCategory }}
+                                                </span>
+                                            </div>
+                                            <div v-if="item.avgRating && item.avgRating > 0" class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    {{ parseFloat(item.avgRating).toFixed(1) }}★
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -252,9 +262,19 @@
                                             {{ truncateText(item.producerName, 20) }}
                                         </p>
                                         <div class="d-flex justify-content-between align-items-start mt-1">
-                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
-                                                {{ item.drinkType }}
-                                            </span>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                    {{ item.drinkType }}
+                                                </span>
+                                                <span v-if="item.typeCategory" class="badge bg-info" style="font-size: 0.7rem;">
+                                                    {{ item.typeCategory }}
+                                                </span>
+                                            </div>
+                                            <div v-if="item.avgRating && item.avgRating > 0" class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    {{ parseFloat(item.avgRating).toFixed(1) }}★
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -322,12 +342,22 @@
                                             {{ truncateText(item.listingName, 25) }}
                                         </h6>
                                         <p class="mb-0 text-muted" style="font-size: 0.8rem;">
-                                            {{ truncateText(item.producerName,20) }}
+                                            {{ truncateText(item.producerName, 20) }}
                                         </p>
                                         <div class="d-flex justify-content-between align-items-start mt-1">
-                                            <span class="badge bg-secondary" style="font-size: 0.7rem;">
-                                                {{ item.drinkType }}
-                                            </span>
+                                            <div class="d-flex flex-wrap gap-1">
+                                                <span class="badge bg-secondary" style="font-size: 0.7rem;">
+                                                    {{ item.drinkType }}
+                                                </span>
+                                                <span v-if="item.typeCategory" class="badge bg-info" style="font-size: 0.7rem;">
+                                                    {{ item.typeCategory }}
+                                                </span>
+                                            </div>
+                                            <div v-if="item.avgRating && item.avgRating > 0" class="rating-display text-end">
+                                                <span class="rating-text" style="color: #f0b358; font-weight: bold; font-size: 0.8rem;">
+                                                    {{ parseFloat(item.avgRating).toFixed(1) }}★
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

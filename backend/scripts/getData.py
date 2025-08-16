@@ -8078,7 +8078,7 @@ def getWhatsOnMenu(venue_id):
                     "message": f"No venue found with ID {venue_id} or venue has no menu items with photos."
                 }), 404
             
-            # Get 3 menu items with deterministic selection that changes every 6 hours
+            # Get 5 menu items with deterministic selection that changes every 6 hours
             # Use hash-based ordering with time seed for consistent results within 6-hour windows
             cursor.execute("""
                 SELECT 
@@ -8086,21 +8086,27 @@ def getWhatsOnMenu(venue_id):
                     l."listingName",
                     l."photo" as "listingPhoto",
                     l."drinkType",
+                    l."typeCategory",
                     l."abv",
                     l."age",
                     p."producerName",
                     mi."itemPrice",
                     mi."variant",
                     st."servingType",
-                    vm."sectionName"
+                    vm."sectionName",
+                    COALESCE(ROUND(AVG(r."rating"), 1), 0) as "avgRating"
                 FROM "menuItems" mi
                 JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
                 JOIN "listings" l ON mi."itemID" = l."id"
                 LEFT JOIN "producers" p ON l."producerID" = p."id"
                 LEFT JOIN "servingTypes" st ON mi."itemServingType" = st."id"
+                LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
                 WHERE vm."venueId" = %s
                   AND l."photo" IS NOT NULL AND l."photo" != '' AND l."photo" != 'null'
                   AND mi."itemAvailability" = true
+                GROUP BY l."id", l."listingName", l."photo", l."drinkType", l."typeCategory", 
+                         l."abv", l."age", p."producerName", mi."itemPrice", mi."variant", 
+                         st."servingType", vm."sectionName"
                 ORDER BY ABS(HASHTEXT(l."id"::text || FLOOR(EXTRACT(EPOCH FROM NOW()) / 21600)::text || %s::text))
                 LIMIT 5;
             """, (venue_id, venue_id))
