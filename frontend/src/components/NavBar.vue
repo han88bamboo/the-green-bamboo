@@ -25,7 +25,7 @@
           <!-- Login/Signup buttons for non-logged-in users -->
           <div v-if="accType === ''" class="d-flex align-items-center gap-2 ms-3 me-3">
             <router-link :to="'/login'">
-              <button class="btn btn-outline-secondary btn-sm px-3 fw-bold">
+              <button class="btn btn-secondary btn-sm px-3 fw-bold">
                 Log In
               </button>
             </router-link>
@@ -36,7 +36,7 @@
             </router-link>
           </div>
 
-          <div class="d-flex align-items-center ms-auto gap-2">
+          <div class="d-flex align-items-center gap-2" :class="{ 'ms-auto': accType !== '' }">
             <!-- help button -->
             <div class="me-2" v-if="accType != ''">
               <button type="button" class="btn p-0 help-btn" data-bs-toggle="modal" data-bs-target="#help-modal">
