@@ -8102,7 +8102,7 @@ def getWhatsOnMenu(venue_id):
                   AND l."photo" IS NOT NULL AND l."photo" != '' AND l."photo" != 'null'
                   AND mi."itemAvailability" = true
                 ORDER BY ABS(HASHTEXT(l."id"::text || FLOOR(EXTRACT(EPOCH FROM NOW()) / 21600)::text || %s::text))
-                LIMIT 3;
+                LIMIT 5;
             """, (venue_id, venue_id))
             
             menu_items = cursor.fetchall()

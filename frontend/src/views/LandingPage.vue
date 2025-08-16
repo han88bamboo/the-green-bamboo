@@ -133,7 +133,17 @@
                     <!-- Menu Card 1 - Venue ID 11 -->
                     <div class="col-4 pe-4">
                         <div class="menu-card h-100" v-if="venueMenus[0]">
-                            <div class="menu-card-header p-3 ">
+                            <div class="menu-card-header p-3 text-center">
+                                <!-- Venue Profile Photo -->
+                                <div class="d-flex justify-content-center mb-2">
+                                    <img 
+                                        :src="venueMenus[0].venuePhoto" 
+                                        :alt="venueMenus[0].venueName"
+                                        class="rounded-circle"
+                                        style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #fff; cursor: pointer;"
+                                        @click="goToVenue(venueMenus[0])"
+                                    />
+                                </div>
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[0])"
                                     
@@ -196,7 +206,17 @@
                     <!-- Menu Card 2 - Venue ID 10 -->
                     <div class="col-4 ps-2 pe-2">
                         <div class="menu-card h-100" v-if="venueMenus[1]">
-                            <div class="menu-card-header p-3 ">
+                            <div class="menu-card-header p-3 text-center">
+                                <!-- Venue Profile Photo -->
+                                <div class="d-flex justify-content-center mb-2">
+                                    <img 
+                                        :src="venueMenus[1].venuePhoto" 
+                                        :alt="venueMenus[1].venueName"
+                                        class="rounded-circle"
+                                        style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #fff; cursor: pointer;"
+                                        @click="goToVenue(venueMenus[1])"
+                                    />
+                                </div>
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[1])"
                                     
@@ -259,7 +279,17 @@
                     <!-- Menu Card 3 - Venue ID 24 -->
                     <div class="col-4 ps-4">
                         <div class="menu-card h-100" v-if="venueMenus[2]">
-                            <div class="menu-card-header p-3 ">
+                            <div class="menu-card-header p-3 text-center">
+                                <!-- Venue Profile Photo -->
+                                <div class="d-flex justify-content-center mb-2">
+                                    <img 
+                                        :src="venueMenus[2].venuePhoto" 
+                                        :alt="venueMenus[2].venueName"
+                                        class="rounded-circle"
+                                        style="width: 60px; height: 60px; object-fit: cover; border: 2px solid #fff; cursor: pointer;"
+                                        @click="goToVenue(venueMenus[2])"
+                                    />
+                                </div>
                                 <h5 class="mb-1 fw-bold" 
                                     @click="goToVenue(venueMenus[2])"
                                     
