@@ -216,58 +216,38 @@
                              style="border: 2px solid #3CB371; cursor: pointer;"
                              @click="goToVenue(review)">
                             
-                            <!-- Venue Info Header with venue photo and name -->
-                            <div class="venue-header p-3 d-flex align-items-center" style="background-color: #f8f9fa;">
+                            <!-- Venue Info Header - Full width venue name -->
+                            <div class="venue-header p-3 text-center" style="background-color: #f8f9fa;">
                                 <!-- Venue Profile Photo -->
-                                <img v-if="review.venuePhoto" 
-                                     :src="review.venuePhoto" 
-                                     class="rounded-circle me-2" 
-                                     style="width: 32px; height: 32px; object-fit: cover;" 
-                                     :alt="review.venueName" />
-                                <img v-else
-                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                     class="rounded-circle me-2" 
-                                     style="width: 32px; height: 32px; object-fit: cover;" 
-                                     alt="Default venue" />
-                                
-                                <div class="venue-info flex-grow-1">
-                                    <!-- Venue name -->
-                                    <h6 class="mb-0 fw-bold" style="color: #223957;">
-                                        {{ truncateText(review.venueName, 20) }}
-                                    </h6>
-                                    <!-- Venue type -->
-                                    <p class="text-muted small mb-0" v-if="review.venueType">
-                                        {{ review.venueType }}
-                                    </p>
+                                <div class="d-flex justify-content-center mb-2">
+                                    <img v-if="review.venuePhoto" 
+                                         :src="review.venuePhoto" 
+                                         class="rounded-circle" 
+                                         style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
+                                         :alt="review.venueName" />
+                                    <img v-else
+                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                         class="rounded-circle" 
+                                         style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
+                                         alt="Default venue" />
                                 </div>
                                 
-                                <!-- User and Rating info -->
-                                <div class="user-rating-info text-end">
-                                    <div class="d-flex align-items-center justify-content-end mb-1">
-                                        <img v-if="review.userPhoto" 
-                                             :src="review.userPhoto" 
-                                             class="rounded-circle me-1" 
-                                             style="width: 18px; height: 18px; object-fit: cover;" 
-                                             :alt="review.username" />
-                                        <img v-else
-                                             src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                             class="rounded-circle me-1" 
-                                             style="width: 18px; height: 18px; object-fit: cover;" 
-                                             alt="Default profile" />
-                                        <span class="small text-muted">@{{ truncateText(review.username, 15) }}</span>
-                                    </div>
-                                    <span class="small fw-bold" style="color: #f0b358;">
-                                        {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
-                                    </span>
-                                </div>
+                                <!-- Venue name - Full width -->
+                                <h6 class="mb-0 fw-bold" style="color: #223957;">
+                                    {{ truncateText(review.venueName, 25) }}
+                                </h6>
+                                <!-- Venue type -->
+                                <p class="text-muted small mb-0" v-if="review.venueType">
+                                    {{ review.venueType }}
+                                </p>
                             </div>
 
-                            <!-- Review Photos (up to 3) -->
-                            <div class="venue-photos-container" v-if="review.photos && review.photos.length > 0">
-                                <div class="d-flex" style="height: 160px;">
-                                    <!-- First photo -->
+                            <!-- Review Photos (up to 3) with User/Rating Overlay -->
+                            <div class="venue-photos-container position-relative" v-if="review.photos && review.photos.length > 0">
+                                <div class="d-flex" style="height: 200px;">
+                                    <!-- First photo - more portrait like -->
                                     <div v-if="review.photos[0]" 
-                                         :class="getPhotoClass(review.photos.length, 0)"
+                                         :class="getVenuePhotoClass(review.photos.length, 0)"
                                          class="photo-container">
                                         <img :src="review.photos[0]" 
                                              class="w-100 h-100"
@@ -277,17 +257,17 @@
                                     
                                     <!-- Second and third photos stacked vertically -->
                                     <div v-if="review.photos[1] && review.photos.length >= 2" 
-                                         :class="getPhotoClass(review.photos.length, 1)"
-                                         class="d-flex flex-column">
+                                         :class="getVenuePhotoClass(review.photos.length, 1)"
+                                         class="d-flex flex-column h-100">
                                         <!-- Second photo -->
-                                        <div class="photo-container flex-grow-1 mb-1">
+                                        <div class="photo-container h-50 mb-1">
                                             <img :src="review.photos[1]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
                                                  :alt="'Review photo 2'" />
                                         </div>
                                         <!-- Third photo -->
-                                        <div v-if="review.photos[2]" class="photo-container flex-grow-1 mt-1">
+                                        <div v-if="review.photos[2]" class="photo-container h-50 mt-1">
                                             <img :src="review.photos[2]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
@@ -295,17 +275,53 @@
                                         </div>
                                     </div>
                                 </div>
+                                
+                                <!-- User and Rating Overlay -->
+                                <div class="review-overlay position-absolute d-flex align-items-center">
+                                    <img v-if="review.userPhoto" 
+                                         :src="review.userPhoto" 
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         :alt="review.username" />
+                                    <img v-else
+                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         alt="Default profile" />
+                                    <span class="overlay-text">
+                                        @{{ truncateText(review.username, 15) }} rated 
+                                        <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
+                                    </span>
+                                </div>
                             </div>
                             
                             <!-- Default image if no photos -->
-                            <div v-else class="default-venue-image" style="height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                            <div v-else class="default-venue-image position-relative" style="height: 200px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                                 <i class="fas fa-store text-muted" style="font-size: 3rem;"></i>
+                                
+                                <!-- User and Rating Overlay on default image -->
+                                <div class="review-overlay position-absolute d-flex align-items-center">
+                                    <img v-if="review.userPhoto" 
+                                         :src="review.userPhoto" 
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         :alt="review.username" />
+                                    <img v-else
+                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                         class="rounded-circle me-1" 
+                                         style="width: 22px; height: 22px; object-fit: cover;" 
+                                         alt="Default profile" />
+                                    <span class="overlay-text">
+                                        @{{ truncateText(review.username, 15) }} rated 
+                                        <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
+                                    </span>
+                                </div>
                             </div>
                             
                             <div class="card-body d-flex flex-column">
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 100) }}" 
+                                    "{{ truncateText(review.reviewDesc, 120) }}" 
                                     <span class="badge text-white ms-1" style="background-color: #3CB371;">Read Review</span>
                                 </p>
                             </div>
@@ -1366,6 +1382,21 @@ export default {
             return 'w-100';
         },
 
+        getVenuePhotoClass(totalPhotos, photoIndex) {
+            if (totalPhotos === 1) {
+                return 'w-100';
+            } else if (totalPhotos === 2) {
+                return photoIndex === 0 ? 'w-50 pe-1' : 'w-50 ps-1';
+            } else if (totalPhotos >= 3) {
+                if (photoIndex === 0) {
+                    return 'w-60 pe-1'; // First photo takes 60% width for more portrait-like view
+                } else if (photoIndex === 1) {
+                    return 'w-40 ps-1'; // Container for 2nd and 3rd photos takes 40% width
+                }
+            }
+            return 'w-100';
+        },
+
         // Navigate to listing page when clicking on a review or menu item
         goToListing(item) {
             // Handle both review objects and menu item objects
@@ -1993,8 +2024,18 @@ button.btn.selected {
     border-bottom: 1px solid #e9ecef;
 }
 
-.user-rating-info {
-    min-width: 60px;
+/* Venue Review specific styles for improved 3-image layout */
+.venue-review-col .venue-photos-container {
+    height: 200px; /* Increased height */
+}
+
+.venue-review-col .default-venue-image {
+    height: 200px; /* Match photo container height */
+}
+
+/* Ensure proper height distribution for stacked photos */
+.venue-review-col .h-50 {
+    height: calc(50% - 4px) !important; /* Account for margin between photos */
 }
 
 /* Responsive adjustments for venue reviews */
@@ -2003,16 +2044,12 @@ button.btn.selected {
         padding: 0.75rem !important;
     }
     
-    .venue-photos-container {
-        height: 140px !important;
+    .venue-review-col .venue-photos-container {
+        height: 180px !important;
     }
     
-    .default-venue-image {
-        height: 140px !important;
-    }
-    
-    .user-rating-info {
-        min-width: 50px;
+    .venue-review-col .default-venue-image {
+        height: 180px !important;
     }
 }
 
