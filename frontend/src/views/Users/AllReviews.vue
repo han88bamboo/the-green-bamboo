@@ -26,8 +26,8 @@
           <!-- Header -->
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
-              <h2 class="mb-1"><b>Drinks Reviewed by {{ displayUser.displayName || displayUser.username }}</b></h2>
-              <p class="text-muted mb-0">
+              <h3 class="mb-1 mobile-mt-3 mobile-fs-5"><b>Drinks Reviewed by {{ displayUser.displayName || displayUser.username }}</b></h3>
+              <p class="text-muted mb-0 mobile-rating-smaller-text-2">
                 {{ totalReviews }} drink{{ totalReviews !== 1 ? 's' : '' }} reviewed
               </p>
             </div>
@@ -46,7 +46,7 @@
           </div>
 
           <!-- Actions row (mobile-first): View toggle + Sort + Filters -->
-          <div class="d-flex align-items-center justify-content-between mb-2 d-md-none">
+          <div class="d-flex align-items-center justify-content-between mb-3 d-md-none">
             <!-- View toggle -->
             <div class="btn-group me-2" role="group" aria-label="View toggle">
               <button
@@ -75,7 +75,7 @@
 
             <!-- Sort (compact) -->
             <div class="flex-grow-1 mx-2">
-              <select v-model="sortBy" @change="applyFilters" class="form-select form-select-sm">
+              <select v-model="sortBy" @change="applyFilters" class="form-select form-select-md">
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="highest">Highest ★</option>
@@ -85,7 +85,7 @@
 
             <!-- Filters trigger -->
             <button
-              class="btn btn-outline-secondary btn-sm"
+              class="btn btn-outline-secondary btn-md"
               data-bs-toggle="offcanvas"
               data-bs-target="#filtersSheet"
               type="button"
