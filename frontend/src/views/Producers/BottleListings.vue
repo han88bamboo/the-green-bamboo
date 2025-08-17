@@ -2355,6 +2355,12 @@
     <BookmarkModal v-if="user" :user="user" :listingID="listingIDAsInt"
       :key="bookmarkListingID ? 'modal-' + bookmarkListingID : 'modal-default'" />
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
   <!-- end of your drinks shelf & brands you follow -->
 
 </template>
@@ -2372,9 +2378,11 @@ import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
+import BadgePopup from '@/components/BadgePopup.vue';
 
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
+
 
 export default {
   components: {
@@ -2383,6 +2391,7 @@ export default {
     BookmarkModal,
     LoadingWithFunFact,
     VintageList,
+    BadgePopup
   },
   setup() {
     // Create reactive references for meta data
@@ -2837,6 +2846,9 @@ export default {
       isSubmittingReview: false, 
 
       VARIANT_DRNK_TYP,
+
+      earnedBadges: [],
+      showBadgePopup: false,
     };
   },
   mounted() {
@@ -4104,6 +4116,12 @@ export default {
         .put(submitAPI, submitData)
         .then((response) => {
           this.reviewResponseCode = response.data.code;
+
+          const badges = response.data.badgesAwarded || response.data.badgesUpdated;
+          if (badges && badges.length > 0) {
+            this.earnedBadges = badges;
+            this.showBadgePopup = true;
+          }
         })
         .catch((error) => {
           console.error(error);
@@ -4135,6 +4153,12 @@ export default {
         .post(submitAPI, submitData)
         .then((response) => {
           this.reviewResponseCode = response.data.code;
+
+          // Handle badges if they were awarded
+          if (response.data.badgesAwarded && response.data.badgesAwarded.length > 0) {
+            this.earnedBadges = response.data.badgesAwarded;
+            this.showBadgePopup = true;
+          }
         })
         .catch((error) => {
           console.error(error);
@@ -4299,7 +4323,7 @@ export default {
       }
 
       try {
-        await this.$axios.post(
+        const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editReview/voteReview`,
           {
             reviewID: review.id,
@@ -4313,6 +4337,24 @@ export default {
             },
           }
         );
+
+        if (response.data.badgeUpdate) {
+          const badge = response.data.badgeUpdate;
+          
+          // Show popup only for positive changes
+          const shouldShowPopup = 
+            badge.isNewBadge ||           // New badge earned
+            badge.isLevelUp ||            // Level up
+            (!badge.removed &&           // Not removed
+            badge.change !== "decrease" && // Not a decrease
+            !badge.isLevelDown);         // Not a level down
+            
+          if (shouldShowPopup) {
+            this.earnedBadges = [badge];
+            this.showBadgePopup = true;
+          }
+        }
+
       } catch (error) {
         console.error(error);
       }
@@ -5068,7 +5110,12 @@ export default {
 
     onVintageSelected(value) {
       this.selectedVintage = value;
-    }
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
+    },
 
   },
 };

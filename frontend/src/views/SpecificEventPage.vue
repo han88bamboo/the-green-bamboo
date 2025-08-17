@@ -771,6 +771,12 @@
         <!-- Invite Friend Modal End -->
     </div>
     <!-- Footer End -->
+
+     <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <style scoped>
@@ -818,11 +824,13 @@ import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
 import Quill from 'quill';
 import DOMPurify from 'dompurify';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
     name: 'SpecificEventPage',
     components: {
-        NavBar
+        NavBar,
+        BadgePopup,
     },
     data() {
         return {
@@ -876,6 +884,9 @@ export default {
 
             // Variable to store clipboard item for copy confirmation
             clipboardItem: null,
+
+            earnedBadges: [],
+            showBadgePopup: false,
         }
     },
     methods: {
@@ -1356,12 +1367,17 @@ export default {
         // Update attendee payment status
         async updatePaymentStatus(attendeeId, hasPaid) {
             try {
-                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
                     attendeeId: attendeeId,
                     hasPaid: hasPaid,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });
+
+                if (response.data.badgeAwarded) {
+                    this.earnedBadges = [response.data.badgeAwarded];
+                    this.showBadgePopup = true;
+                }
                 
                 const toast = useToast();
                 toast.success('Payment status updated successfully!');
@@ -1375,12 +1391,17 @@ export default {
         // Update attendee attendance status
         async updateAttendanceStatus(attendeeId, attendanceStatus) {
             try {
-                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
                     attendeeId: attendeeId,
                     attendanceStatus: attendanceStatus,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });
+
+                if (response.data.badgeAwarded) {
+                    this.earnedBadges = [response.data.badgeAwarded];
+                    this.showBadgePopup = true;
+                }
                 
                 const toast = useToast();
                 toast.success('Attendance status updated successfully!');
@@ -1403,6 +1424,11 @@ export default {
             .catch(err => {
                 console.error('Failed to copy text: ', err);
             });
+        },
+
+        closeBadgePopup() {
+            this.showBadgePopup = false;
+            this.earnedBadges = [];
         },
     },
 

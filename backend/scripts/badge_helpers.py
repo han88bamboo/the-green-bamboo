@@ -740,6 +740,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                 
                 conn.commit()
                 
+                # ONLY return for new badge earned
                 return {
                     "badgeId": badge_id,
                     "badgeName": badge['badgeName'],
@@ -749,11 +750,9 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     "isNewBadge": True
                 }
                 
-            # User already has this badge - update progress
             current_level = user_badge['currentLevel']
             current_progress = user_badge['currentProgress'] + 1
             
-            # Get rule for this level
             cur.execute("""
                 SELECT * FROM "badgeRules"
                 WHERE "actionType" = 'Upvote'
@@ -767,9 +766,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                 
             actions_required = rule['actionsRequired']
             
-            # Check if user has enough actions to level up
             if current_progress >= actions_required and current_level < 100:
-                # Level up!
                 cur.execute("""
                     UPDATE "userBadges"
                     SET "currentLevel" = %s, "currentProgress" = 0, "lastUpdated" = CURRENT_TIMESTAMP
@@ -788,10 +785,9 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                     "newLevel": new_level,
                     "previousLevel": current_level,
                     "isNewBadge": False,
-                    "change": "increase"
+                    "isLevelUp": True
                 }
             else:
-                # Just update progress
                 cur.execute("""
                     UPDATE "userBadges"
                     SET "currentProgress" = %s, "lastUpdated" = CURRENT_TIMESTAMP
@@ -800,16 +796,7 @@ def process_upvote_badge(conn, cur, user_id, is_new_upvote=False, is_removed_upv
                 
                 conn.commit()
                 
-                return {
-                    "badgeId": badge_id,
-                    "badgeName": badge['badgeName'],
-                    "badgeDesc": badge['badgeDesc'],
-                    "badgePhoto": badge['badgePhoto'],
-                    "newLevel": current_level,
-                    "newProgress": current_progress,
-                    "isNewBadge": False,
-                    "change": "increase"
-                }
+                return None
         
         # Handle removing an upvote (decreasing badge progress)
         elif is_removed_upvote and user_badge:

@@ -506,7 +506,7 @@ def updateReview(id):
             "code": 200,
             "data": data.get('reviewDesc', ''),
             "pointsChange": modify_point,
-            "badgesUpdated": badges_updated
+            "badgesAwarded": badges_updated
         }), 200
 
     except Exception as e:

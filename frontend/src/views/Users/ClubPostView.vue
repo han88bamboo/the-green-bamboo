@@ -824,12 +824,19 @@
       </div>
     </div>
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
 </template>
 
 <script>
 // import the necessary components
 import NavBar from "@/components/NavBar.vue";
 import { useToast } from "vue-toastification";
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
   name: "ClubPostView",
@@ -870,10 +877,15 @@ export default {
 
       // Variable to store the selected comment for deletion
       selectedCommentDelete: null,
+
+      // Badge Popup variables
+      earnedBadges: [],
+      showBadgePopup: false,
     };
   },
   components: {
     NavBar,
+    BadgePopup,
   },
   computed: {
     totalLikes() {
@@ -1136,6 +1148,10 @@ export default {
 
         // Check if the comment is successful
         if (commentData.status == 201) {
+          if (commentData.data.badgeAwarded) {
+            this.earnedBadges = [commentData.data.badgeAwarded];
+            this.showBadgePopup = true;
+          }
           // Add the comment to the front of the comments array
           this.comments.unshift(commentData.data.comment_obj);
 
@@ -1166,6 +1182,16 @@ export default {
             postID: this.postID,
           }
         );
+
+        // Handle badges if updated
+        if (likeData.data.badgeUpdate) {
+          const badge = likeData.data.badgeUpdate;
+          
+          if (badge.isNewBadge || badge.isLevelUp) {
+            this.earnedBadges = [badge];
+            this.showBadgePopup = true;
+          }
+        }
 
         // Check if the comment is liked
         if (likeData.data.liked) {
@@ -1338,6 +1364,11 @@ export default {
           "An error occurred while deleting the comment. Please try again later."
         );
       }
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
     },
   },
   mounted() {

@@ -3777,6 +3777,12 @@
       :listingID="bookmarkListingID"
     />
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
   <!-- end of main content -->
 </template>
 
@@ -3795,6 +3801,7 @@ import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
   components: {
@@ -3804,6 +3811,7 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     LoadingWithFunFact,
+    BadgePopup
   },
   setup() {
     // Create reactive references for meta data
@@ -4282,6 +4290,9 @@ export default {
       selfView: false,
       targetProducer: '',
       targetProducerID: '',
+
+      earnedBadges: [],
+      showBadgePopup: false,
     
     };
   }, 
@@ -5447,18 +5458,25 @@ export default {
             },
           }
         );
+
+        // Handle badges if awarded
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
+
         const toast = useToast();
         toast.success("Your question has been successfully sent!");
         console.log(response.data);
+
       } catch (error) {
         console.error(error);
         alert(
           "An error occurred while attempting to send your question, please try again!"
         );
       }
-
-      // force page to reload
-      window.location.reload();
     },
 
     // send answer that producers give to users
@@ -6595,7 +6613,14 @@ Please find my details below:
 Thank you!`
     );
     window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
-  }
+  },
+
+  closeBadgePopup() {
+    this.showBadgePopup = false;
+    this.earnedBadges = [];
+    // Reload the page when user closes the popup
+    window.location.reload();
+  },
   },
   watch:{
      '$route.params.producerID': function(newId, oldId) {

@@ -4697,6 +4697,12 @@
             </div>
         </div>
     </div>
+
+    <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <script>
@@ -4710,6 +4716,7 @@ import BookmarkModal from '@/components/BookmarkModal.vue';
 import EventBox from '@/components/EventBox.vue';
 import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 // Import Phosphor Icons
 import { 
@@ -4740,6 +4747,7 @@ export default {
         PhBrandy,
         PhFlowerLotus,
         PhChampagne,
+        BadgePopup
     },
   setup() {
     // Create reactive references for meta data
@@ -5247,6 +5255,10 @@ export default {
             venues: [],
 
             VARIANT_DRNK_TYP, 
+
+            // badge popup related
+            earnedBadges: [],
+            showBadgePopup: false,
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -7382,7 +7394,7 @@ export default {
         // Send Question
         async sendQuestion() {
             try {
-                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/sendQuestions`,
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/sendQuestions`,
                     {
                         venueID: this.targetVenue['id'],
                         question: this.qaQuestion,
@@ -7396,16 +7408,22 @@ export default {
                         }
                     });
 
+                if (response.data.badgeAwarded) {
+                    this.earnedBadges = [response.data.badgeAwarded];
+                    this.showBadgePopup = true;
+                } else {
+                    this.$router.go(0);
+                }
+
                 alert("Your question has been successfully sent!");
             }
             catch (error) {
                 alert("An error occurred while attempting to send your question, please try again!\nWe have tried to copy your question's text to your clipboard.");
                 // Copy answer text to clipboard
                 this.copyToClipboard(this.qaQuestion);
+                // Reload page
+                this.$router.go(0);
             }
-
-            // Reload page
-            this.$router.go(0);
         },
 
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -8285,7 +8303,13 @@ Thank you!`
         // Reload the current page (called when user clicks Close on success modal)
         reloadRoute() {
             this.$router.go(0);
-        }
+        },
+        closeBadgePopup() {
+            this.showBadgePopup = false;
+            this.earnedBadges = [];
+            // Reload the page when user closes the popup
+            this.$router.go(0);
+        },
     },
     watch: {
     '$route.params.venueID': function(newId, oldId) {

@@ -3761,6 +3761,12 @@
     </div>
 
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
 </template>
 
 <script>
@@ -3771,6 +3777,7 @@ import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
   name: "UserProfileRefactor",
@@ -3781,6 +3788,7 @@ export default {
     BookmarkModal,
     ListingRowDisplayUserProfile,
     LoadingWithFunFact,
+    BadgePopup
   },
   data() {
     return {
@@ -3994,6 +4002,10 @@ export default {
       newVenueListNameError: "",
       newVenueListDesc: "",
       currentListType: "drinks",
+
+      // badge popup related
+      earnedBadges: [],
+      showBadgePopup: false,
 
     };
   },
@@ -5660,12 +5672,19 @@ export default {
             },
           }
         );
+
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
         console.log("bookmark: " + response.data);
       } catch (error) {
         console.error(error);
+        window.location.reload();
       }
 
-      window.location.reload();
     },
 
     async addNewProducerList() {
@@ -5786,12 +5805,19 @@ export default {
             },
           }
         );
+
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
         console.log(response.data);
       } catch (error) {
         console.error(error);
+        window.location.reload();
       }
 
-      window.location.reload();
     },
 
     // add producer to list
@@ -6578,6 +6604,12 @@ export default {
         console.error(error);
       }
 
+      window.location.reload();
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
       window.location.reload();
     },
   },
