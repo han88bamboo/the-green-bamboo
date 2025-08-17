@@ -443,6 +443,12 @@
         </div>
     </div>
     <!-- Footer End -->
+
+    <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <script>
@@ -455,11 +461,13 @@ import { useSearch } from '@/composables/navbar/useSearch';
 // Import the necessary libraries
 import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
     name: "BrowseClubs",
     components: {
-        NavBar
+        NavBar,
+        BadgePopup
     },
     setup() {
         // Computed property for structured data
@@ -661,7 +669,10 @@ export default {
             cannotCreateClubMsg: "",
             disableCreateClubBtn: false,
 
-             showClubLimitError: false
+            showClubLimitError: false,
+
+            earnedBadges: [],
+            showBadgePopup: false,
 
         }
     },
@@ -1033,6 +1044,10 @@ export default {
                 if (commentData.status == 201) {
                     // Add the comment to the front of the comments array
                     // this.comments.unshift(commentData.data.comment_obj); 
+                    if (commentData.data.badgeAwarded) {
+                        this.earnedBadges = [commentData.data.badgeAwarded];
+                        this.showBadgePopup = true;
+                    }
 
                     // Clear the comment input
                     this.newComment = "";
@@ -1047,6 +1062,11 @@ export default {
                 "An error occurred while adding the comment. Please try again later."
                 );
             }
+        },
+
+        closeBadgePopup() {
+            this.showBadgePopup = false;
+            this.earnedBadges = [];
         },
     },
 

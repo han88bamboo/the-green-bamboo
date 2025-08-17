@@ -493,6 +493,12 @@
             </div>
         </div>
     </div>
+
+    <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <script>
@@ -500,12 +506,14 @@
     import AutocompleteSearch from './AutocompleteSearch.vue';
     import CreateProducerModal from './CreateProducerModal.vue';
     import { useSearch } from '@/composables/navbar/useSearch'
+    import BadgePopup from "@/components/BadgePopup.vue";
 
     export default {
         name: "SubmitListingNew",
         components: {
             AutocompleteSearch,
-            CreateProducerModal
+            CreateProducerModal,
+            BadgePopup
         },
         props: {
             formType: String,
@@ -598,6 +606,9 @@
                 },
                 producerDebounceTimer: null,
                 bottlerDebounceTimer: null,
+
+                earnedBadges: [],
+                showBadgePopup: false,
             };
         },
         async mounted() {
@@ -1646,6 +1657,11 @@
                 .catch((error)=>{
                     responseCode = error.response.data.code
                     console.error("API error response:", error.response.data);
+
+                    if (responseCode === 201 && response.data.badgeAwarded) {
+                        this.earnedBadges = [response.data.badgeAwarded];
+                        this.showBadgePopup = true;
+                    }
                 });
 
                 // [Replace with Backend Fix] Response Code Transformation for Edit Listing
@@ -1750,6 +1766,11 @@
                 }
                 return response
 
+            },
+
+            closeBadgePopup() {
+                this.showBadgePopup = false;
+                this.earnedBadges = [];
             },
         }
     }

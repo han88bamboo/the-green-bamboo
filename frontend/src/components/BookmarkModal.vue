@@ -40,11 +40,21 @@
             </div>
         </div>
     </div>
-                
+           
+    <BadgePopup 
+      :badges="earnedBadges" 
+      :show="showBadgePopup" 
+      @close="closeBadgePopup"
+    />
 </template>
 
 <script>
+import BadgePopup from "@/components/BadgePopup.vue";
+
 export default {
+  components: {
+    BadgePopup
+  },
   name: "BookmarkModal",
   props: {
     user: Object,
@@ -59,7 +69,11 @@ export default {
       othersListName: '',
       othersListNameError: '',
       saveToNewList: false,
-      validListingId: null
+      validListingId: null,
+
+      // Badge popup related
+      earnedBadges: [],
+      showBadgePopup: false,
     };
   },
   mounted() {
@@ -177,12 +191,24 @@ export default {
           }
         );
         console.log("Bookmark update success:", response.data);
+
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
       } catch (error) {
         console.error("Bookmark update failed:", error);
+        window.location.reload();
       }
+    },
 
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
       window.location.reload();
-    }
+    },
   }
 };
 </script>
