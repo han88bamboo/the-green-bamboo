@@ -208,10 +208,10 @@
                 <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">See where others are sipping at!</h3>
             </div>
             
-            <!-- Recent Venue Reviews Grid - 3 columns with horizontal scroll -->
-            <div class="trending-reviews-container">
-                <div class="trending-reviews-grid">
-                    <div v-for="review in venueReviews" :key="review.reviewId" class="trending-review-col">
+            <!-- Recent Venue Reviews Grid - 3 columns with proper spacing -->
+            <div class="venue-reviews-container">
+                <div class="venue-reviews-grid">
+                    <div v-for="review in venueReviews" :key="review.reviewId" class="venue-review-col">
                         <div class="card h-100 review-card border-light" 
                              style="border: 2px solid #3CB371; cursor: pointer;"
                              @click="goToVenue(review)">
@@ -256,7 +256,7 @@
                                              alt="Default profile" />
                                         <span class="small text-muted">@{{ truncateText(review.username, 15) }}</span>
                                     </div>
-                                    <span class="small fw-bold" style="color: #3CB371;">
+                                    <span class="small fw-bold" style="color: #f0b358;">
                                         {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
                                     </span>
                                 </div>
@@ -305,7 +305,7 @@
                             <div class="card-body d-flex flex-column">
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 80) }}" 
+                                    "{{ truncateText(review.reviewDesc, 100) }}" 
                                     <span class="badge text-white ms-1" style="background-color: #3CB371;">Read Review</span>
                                 </p>
                             </div>
@@ -1921,6 +1921,56 @@ button.btn.selected {
 }
 
 /* Venue Reviews Section Specific Styles */
+.venue-reviews-container {
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.venue-reviews-grid {
+    display: flex;
+    gap: 2rem;
+    min-width: fit-content;
+    padding: 0 15px;
+}
+
+.venue-review-col {
+    /* flex: 0 0 350px; Fixed width for each column */
+    width: 33.33333333%;
+    text-align: start;
+}
+
+/* Scrollbar styling for venue reviews */
+.venue-reviews-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.venue-reviews-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.venue-reviews-container::-webkit-scrollbar-thumb {
+    background: #3CB371;
+    border-radius: 4px;
+}
+
+.venue-reviews-container::-webkit-scrollbar-thumb:hover {
+    background: #2E8B57;
+}
+
+/* Responsive adjustments for venue reviews */
+@media (max-width: 576px) {
+    .venue-review-col {
+        flex: 0 0 300px;
+        width: 300px;
+    }
+    
+    .venue-reviews-grid {
+        padding: 0 10px;
+        gap: 1rem;
+    }
+}
+
 .venue-header {
     border-bottom: 1px solid #e9ecef;
 }
