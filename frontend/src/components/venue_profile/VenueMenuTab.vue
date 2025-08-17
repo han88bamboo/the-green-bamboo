@@ -20,8 +20,17 @@
             </div>
 
             <!-- Edit Mode -->
-            <VenueMenuEdit v-if="isEditMode" :menu-data="editableMenu" @cancel="toggleEditMode"
-                @save="handleSaveChanges" @request-add-listing="$emit('request-add-listing', $event)" />
+            <div v-if="isEditMode">
+                <VenueMenuEdit ref="venueMenuEdit" :menu-data="editableMenu" @cancel="toggleEditMode"
+                    @save="handleSaveChanges" @request-add-listing="handleRequestAddListing" />
+
+                <VenueMenuItems
+                    v-if="sectionToAddTo"
+                    :target-section="sectionToAddTo"
+                    @items-selected="handleItemsSelected"
+                    @hidden="sectionToAddTo = null"
+                />
+            </div>
 
             <!-- View Mode -->
             <div v-else>
@@ -156,21 +165,24 @@
 
 <script>
 import VenueMenuEdit from './VenueMenuEdit.vue';
+import VenueMenuItems from './VenueMenuItems.vue';
 
 export default {
     components: {
-        VenueMenuEdit
+        VenueMenuEdit,
+        VenueMenuItems
     },
     props: {
         claimStatus: Boolean,
         isSelfView: Boolean,
         venue_menu: Object,
     },
-    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu', 'request-add-listing'],
+    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu'],
     data() {
         return {
             isEditMode: false,
             editableMenu: [],
+            sectionToAddTo: null,
         }
     },
     mounted() {
@@ -201,6 +213,16 @@ export default {
             console.log('Emitting save-menu event:', updatedMenu);
             this.$emit('save-menu', updatedMenu);
             this.isEditMode = false;
+        },
+        handleRequestAddListing(section) {
+            this.sectionToAddTo = section;
+        },
+        handleItemsSelected({ newItems, targetSection }) {
+            if (this.$refs.venueMenuEdit) {
+                newItems.forEach(item => {
+                    this.$refs.venueMenuEdit.addListingItem(item, targetSection);
+                });
+            }
         },
         async toggleSection(section, index) {
             section.isExpanded = !section.isExpanded;
@@ -274,32 +296,6 @@ export default {
                 // The index is not critical here, passing a placeholder
                 this.loadSectionMenu(subSection, -1);
             }
-        },
-        addItemsToLocalMenu({ newItems, targetSection }) {
-          // Find the target section in the main sections
-          let section = this.editableMenu.find(s => s.id === targetSection.id);
-
-          if (section) {
-            // If found in main sections, add items there
-            if (!section.sectionMenu) {
-              section.sectionMenu = [];
-            }
-            section.sectionMenu.push(...newItems);
-          } else {
-            // If not in main sections, search in sub-sections
-            for (const mainSection of this.editableMenu) {
-              if (mainSection.subSections) {
-                let subSection = mainSection.subSections.find(sub => sub.id === targetSection.id);
-                if (subSection) {
-                  if (!subSection.sectionMenu) {
-                    subSection.sectionMenu = [];
-                  }
-                  subSection.sectionMenu.push(...newItems);
-                  break; // Exit loop once found and updated
-                }
-              }
-            }
-          }
         }
     }
 };
