@@ -211,11 +211,11 @@
                                         </div>
                                     </div>
                                 </template>
-                                <template #footer>
+                                <!-- <template #footer>
                                     <div v-if="section.sectionMenu.length === 0 && (!section.subSections || section.subSections.length === 0)" class="text-muted p-3 text-center border-2 border-dashed rounded" style="border-color: #dee2e6 !important;">
                                         Drop items here or click button above to add
                                     </div>
-                                </template>
+                                </template> -->
                             </draggable>
                             
                             <div v-if="!section.isLoading && (!section.sectionMenu || section.sectionMenu.length === 0) && (!section.subSections || section.subSections.length === 0)" class="text-muted p-2">
@@ -255,7 +255,7 @@ export default {
             required: true,
         },
     },
-    emits: ['save', 'cancel'],
+        emits: ['save', 'cancel', 'request-add-listing'],
     data() {
         return {
             localMenu: [],
@@ -380,16 +380,8 @@ export default {
             if (subsection.isEditingName) return;
             subsection.isExpanded = !subsection.isExpanded;
         },
-        addListing(itemContainer) {
-            if (!itemContainer.sectionMenu) {
-                itemContainer.sectionMenu = [];
-            }
-            const newListing = {
-                itemID: `new_item_${Date.now()}`,
-                name: 'New Item (Placeholder)',
-            };
-            itemContainer.sectionMenu.push(newListing);
-            itemContainer.isExpanded = true;
+                addListing(itemContainer) {
+            this.$emit('request-add-listing', itemContainer);
         },
         updateSectionOrder() {
             this.localMenu.forEach((section, index) => {

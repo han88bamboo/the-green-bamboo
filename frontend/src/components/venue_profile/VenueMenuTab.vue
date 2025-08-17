@@ -21,7 +21,7 @@
 
             <!-- Edit Mode -->
             <VenueMenuEdit v-if="isEditMode" :menu-data="editableMenu" @cancel="toggleEditMode"
-                @save="handleSaveChanges" />
+                @save="handleSaveChanges" @request-add-listing="$emit('request-add-listing', $event)" />
 
             <!-- View Mode -->
             <div v-else>
@@ -166,7 +166,7 @@ export default {
         isSelfView: Boolean,
         venue_menu: Object,
     },
-    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu'],
+    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu', 'request-add-listing'],
     data() {
         return {
             isEditMode: false,
@@ -274,6 +274,32 @@ export default {
                 // The index is not critical here, passing a placeholder
                 this.loadSectionMenu(subSection, -1);
             }
+        },
+        addItemsToLocalMenu({ newItems, targetSection }) {
+          // Find the target section in the main sections
+          let section = this.editableMenu.find(s => s.id === targetSection.id);
+
+          if (section) {
+            // If found in main sections, add items there
+            if (!section.sectionMenu) {
+              section.sectionMenu = [];
+            }
+            section.sectionMenu.push(...newItems);
+          } else {
+            // If not in main sections, search in sub-sections
+            for (const mainSection of this.editableMenu) {
+              if (mainSection.subSections) {
+                let subSection = mainSection.subSections.find(sub => sub.id === targetSection.id);
+                if (subSection) {
+                  if (!subSection.sectionMenu) {
+                    subSection.sectionMenu = [];
+                  }
+                  subSection.sectionMenu.push(...newItems);
+                  break; // Exit loop once found and updated
+                }
+              }
+            }
+          }
         }
     }
 };
