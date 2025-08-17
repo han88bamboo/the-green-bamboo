@@ -1632,7 +1632,7 @@
                         <img
                           :src="user.photo || defaultProfilePhoto"
                           alt="user profile photo"
-                          class="rounded-circle border border-dark user-img"
+                          class="rounded-circle user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
                         />
                         <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
@@ -1677,7 +1677,7 @@
                         <img
                           :src="user.photo || defaultProfilePhoto"
                           alt="user profile photo"
-                          class="rounded-circle border border-dark user-img"
+                          class="rounded-circle user-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
                         />
                         <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
@@ -3757,7 +3757,7 @@
                         <img 
                           :src="badge.badgePhoto || defaultProfilePhoto"
                           alt=""
-                          class="rounded-circle-white-bg border border-dark badge-img mb-2"
+                          class="rounded-circle-white-bg  badge-img mb-2"
                           style="width: 100px; height: 100px;"
                         />
                         
