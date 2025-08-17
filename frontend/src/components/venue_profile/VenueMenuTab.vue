@@ -77,7 +77,7 @@
                                                                                 <i class="bi bi-star text-warning flex-shrink-0"></i>
                                                                             </div>
                                                                             <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV' }}</p>
-                                                                            <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice === -1 ? '-' : `$ ${item.itemPrice} / ${item.servingTypeText}` }}</p>
+                                                                            <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice <= 0 ? '-' : `$ ${item.itemPrice} / ${item.servingTypeText}` }}</p>
                                                                             <p v-if="item.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">Temporarily Unavailable</p>
                                                                         </div>
                                                                     </div>
@@ -123,7 +123,7 @@
                                                                 <i class="bi bi-star text-warning flex-shrink-0"></i>
                                                             </div>
                                                             <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV' }}</p>
-                                                            <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice === -1 ? '-' : `$ ${item.itemPrice} / ${item.servingTypeText}` }}</p>
+                                                            <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice <= 0 ? '-' : `$ ${item.itemPrice} / ${item.servingTypeText}` }}</p>
                                                             <p v-if="item.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">Temporarily Unavailable</p>
                                                         </div>
                                                     </div>
