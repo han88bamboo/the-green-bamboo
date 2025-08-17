@@ -1058,7 +1058,7 @@ html {
 }
 
 .modal-backdrop {
-  z-index: 1049;
+  z-index: 98;
 }
 
 .pac-container pac-logo hdpi {
