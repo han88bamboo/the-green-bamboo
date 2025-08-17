@@ -42,7 +42,7 @@
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Reviews</h2>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Drinks</h2>
                 <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">See what others are sipping!</h3>
             </div>
             
@@ -123,7 +123,7 @@
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Top Rated Reviews</h2>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Top Rated Drinks</h2>
                 <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Discover the highest rated drinks!</h3>
             </div>
             
@@ -199,6 +199,123 @@
         </div>
     </section>
     <!-- Top Rated Reviews End -->
+
+    <!-- Recent Venue Reviews Section -->
+    <section class="recent-reviews-section py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Venues</h2>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">See where others are sipping at!</h3>
+            </div>
+            
+            <!-- Recent Venue Reviews Grid - 3 columns with horizontal scroll -->
+            <div class="trending-reviews-container">
+                <div class="trending-reviews-grid">
+                    <div v-for="review in venueReviews" :key="review.reviewId" class="trending-review-col">
+                        <div class="card h-100 review-card border-light" 
+                             style="border: 2px solid #3CB371; cursor: pointer;"
+                             @click="goToVenue(review)">
+                            
+                            <!-- Venue Info Header with venue photo and name -->
+                            <div class="venue-header p-3 d-flex align-items-center" style="background-color: #f8f9fa;">
+                                <!-- Venue Profile Photo -->
+                                <img v-if="review.venuePhoto" 
+                                     :src="review.venuePhoto" 
+                                     class="rounded-circle me-2" 
+                                     style="width: 32px; height: 32px; object-fit: cover;" 
+                                     :alt="review.venueName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                     class="rounded-circle me-2" 
+                                     style="width: 32px; height: 32px; object-fit: cover;" 
+                                     alt="Default venue" />
+                                
+                                <div class="venue-info flex-grow-1">
+                                    <!-- Venue name -->
+                                    <h6 class="mb-0 fw-bold" style="color: #223957;">
+                                        {{ truncateText(review.venueName, 20) }}
+                                    </h6>
+                                    <!-- Venue type -->
+                                    <p class="text-muted small mb-0" v-if="review.venueType">
+                                        {{ review.venueType }}
+                                    </p>
+                                </div>
+                                
+                                <!-- User and Rating info -->
+                                <div class="user-rating-info text-end">
+                                    <div class="d-flex align-items-center justify-content-end mb-1">
+                                        <img v-if="review.userPhoto" 
+                                             :src="review.userPhoto" 
+                                             class="rounded-circle me-1" 
+                                             style="width: 18px; height: 18px; object-fit: cover;" 
+                                             :alt="review.username" />
+                                        <img v-else
+                                             src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                             class="rounded-circle me-1" 
+                                             style="width: 18px; height: 18px; object-fit: cover;" 
+                                             alt="Default profile" />
+                                        <span class="small text-muted">@{{ truncateText(review.username, 15) }}</span>
+                                    </div>
+                                    <span class="small fw-bold" style="color: #3CB371;">
+                                        {{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Review Photos (up to 3) -->
+                            <div class="venue-photos-container" v-if="review.photos && review.photos.length > 0">
+                                <div class="d-flex" style="height: 160px;">
+                                    <!-- First photo -->
+                                    <div v-if="review.photos[0]" 
+                                         :class="getPhotoClass(review.photos.length, 0)"
+                                         class="photo-container">
+                                        <img :src="review.photos[0]" 
+                                             class="w-100 h-100"
+                                             style="object-fit: cover;" 
+                                             :alt="'Review photo 1'" />
+                                    </div>
+                                    
+                                    <!-- Second and third photos stacked vertically -->
+                                    <div v-if="review.photos[1] && review.photos.length >= 2" 
+                                         :class="getPhotoClass(review.photos.length, 1)"
+                                         class="d-flex flex-column">
+                                        <!-- Second photo -->
+                                        <div class="photo-container flex-grow-1 mb-1">
+                                            <img :src="review.photos[1]" 
+                                                 class="w-100 h-100"
+                                                 style="object-fit: cover;" 
+                                                 :alt="'Review photo 2'" />
+                                        </div>
+                                        <!-- Third photo -->
+                                        <div v-if="review.photos[2]" class="photo-container flex-grow-1 mt-1">
+                                            <img :src="review.photos[2]" 
+                                                 class="w-100 h-100"
+                                                 style="object-fit: cover;" 
+                                                 :alt="'Review photo 3'" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Default image if no photos -->
+                            <div v-else class="default-venue-image" style="height: 160px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-store text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <!-- Review excerpt -->
+                                <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
+                                    "{{ truncateText(review.reviewDesc, 80) }}" 
+                                    <span class="badge text-white ms-1" style="background-color: #3CB371;">Read Review</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Recent Venue Reviews End -->
 
 
     <!-- What's On Menu Section -->
@@ -979,6 +1096,7 @@ export default {
             reviews: [], // Stores reviews
             recentReviews: [], // Stores the 5 most recent reviews
             topRatedReviews: [], // Stores the 5 most highly rated reviews
+            venueReviews: [], // Stores the 3 most recent venue reviews
             venueMenus: [null, null, null], // Stores menu data for the 3 venues
             sectionTitles: {
                 latest_news: "Latest Drink News",
@@ -1003,6 +1121,7 @@ export default {
         this.fetchTopListings();
         this.fetchRecentReviews(); // Fetch 5 most recent reviews
         this.fetchTopRatedReviews(); // Fetch 5 most highly rated reviews
+        this.fetchVenueReviews(); // Fetch 3 most recent venue reviews
         this.fetchVenueMenus(); // Fetch venue menus
 
         const accID = localStorage.getItem("88B_accID");
@@ -1188,6 +1307,17 @@ export default {
             }
         },
 
+        async fetchVenueReviews() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getMostRecentVenueReviews`);
+                this.venueReviews = response.data;
+                console.log("Venue reviews:", this.venueReviews);
+            } catch (error) {
+                console.error("Error fetching venue reviews:", error);
+                this.venueReviews = [];
+            }
+        },
+
         async fetchVenueMenus() {
             const venueIds = [11, 10, 24]; // Hard-coded venue IDs as requested
             
@@ -1221,6 +1351,21 @@ export default {
             }
         },
 
+        getPhotoClass(totalPhotos, photoIndex) {
+            if (totalPhotos === 1) {
+                return 'w-100';
+            } else if (totalPhotos === 2) {
+                return photoIndex === 0 ? 'w-50 pe-1' : 'w-50 ps-1';
+            } else if (totalPhotos >= 3) {
+                if (photoIndex === 0) {
+                    return 'w-50 pe-1'; // First photo takes 50% width
+                } else if (photoIndex === 1) {
+                    return 'w-50 ps-1'; // Container for 2nd and 3rd photos takes 50% width
+                }
+            }
+            return 'w-100';
+        },
+
         // Navigate to listing page when clicking on a review or menu item
         goToListing(item) {
             // Handle both review objects and menu item objects
@@ -1240,10 +1385,13 @@ export default {
 
         // Navigate to venue profile page
         goToVenue(venue) {
-            if (venue && venue.venueId && venue.venueName) {
+            if (venue && ((venue.venueId && venue.venueName) || (venue.venueID && venue.venueName))) {
                 try {
+                    const venueId = venue.venueId || venue.venueID; // Handle both property names
+                    const venueName = venue.venueName;
+                    
                     this.$router.push({ 
-                        path: `/profile/venue/${venue.venueId}/${this.slugify(venue.venueName)}` 
+                        path: `/profile/venue/${venueId}/${this.slugify(venueName)}` 
                     });
                 } catch (error) {
                     console.error("Error navigating to venue:", error);
@@ -1769,6 +1917,52 @@ button.btn.selected {
     
     .menu-items-list {
         max-height: 270px;
+    }
+}
+
+/* Venue Reviews Section Specific Styles */
+.venue-header {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.venue-photos-container {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.photo-container img {
+    border-radius: 0;
+    transition: transform 0.2s ease;
+}
+
+.photo-container:hover img {
+    transform: scale(1.02);
+}
+
+.default-venue-image {
+    border-bottom: 1px solid #e9ecef;
+}
+
+.user-rating-info {
+    min-width: 60px;
+}
+
+/* Responsive adjustments for venue reviews */
+@media (max-width: 576px) {
+    .venue-header {
+        padding: 0.75rem !important;
+    }
+    
+    .venue-photos-container {
+        height: 140px !important;
+    }
+    
+    .default-venue-image {
+        height: 140px !important;
+    }
+    
+    .user-rating-info {
+        min-width: 50px;
     }
 }
 

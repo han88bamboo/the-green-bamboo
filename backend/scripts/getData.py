@@ -40,7 +40,8 @@
 #           /getProducerTourReviews (GET), /getProducerReviewsByProducerId/<id> (GET),
 
 #           [Venue Reviews]
-#           /getVenueReviews (GET), /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), /getHomeReviews (GET), 
+#           /getVenueReviews (GET), /getVenueReviewsByVenueId/<id>/<lastReviewID> (GET), /getHomeReviews (GET),
+#           /getMostRecentVenueReviews (GET), 
 
 #           [User Bookmarks]
 #           /getBookmarkListings (POST), 
@@ -1804,6 +1805,98 @@ def get5MostHighlyRatedReviews():
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching highly rated reviews."
+        }), 500
+
+
+# [GET] Get 3 most recent venue reviews for landing page
+@blueprint.route("/getMostRecentVenueReviews", methods=['GET'])
+def getMostRecentVenueReviews():
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                WITH recent_venue_reviews AS (
+                    SELECT 
+                        vr."id" as "reviewId",
+                        vr."userID",
+                        vr."venueID",
+                        vr."rating",
+                        vr."reviewDesc",
+                        vr."createdDate",
+                        vr."photos",
+                        u."username",
+                        u."photo" as "userPhoto",
+                        v."venueName",
+                        v."venueType",
+                        v."address",
+                        v."photo" as "venuePhoto"
+                    FROM "venueReviews" vr
+                    LEFT JOIN "users" u ON vr."userID" = u."id"
+                    LEFT JOIN "venues" v ON vr."venueID" = v."id"
+                    WHERE vr."rating" IS NOT NULL
+                    AND vr."reviewDesc" IS NOT NULL
+                    AND vr."reviewDesc" != ''
+                    ORDER BY vr."createdDate" DESC
+                    LIMIT 20
+                ),
+                ranked_venue_reviews AS (
+                    SELECT *,
+                        ROW_NUMBER() OVER (PARTITION BY "venueID" ORDER BY "createdDate" DESC) as rn
+                    FROM recent_venue_reviews
+                )
+                SELECT *
+                FROM ranked_venue_reviews
+                WHERE rn = 1
+                ORDER BY "createdDate" DESC
+                LIMIT 3
+            """)
+            
+            reviews_data = cursor.fetchall()
+            
+            if not reviews_data:
+                return jsonify([]), 200
+            
+            # Convert each row to a dict and format the data
+            formatted_reviews = []
+            for review in reviews_data:
+                formatted_review = dict(review)
+                
+                # Handle photos in {www.x.com,www.y.com,www.z.com} format
+                if formatted_review.get("photos"):
+                    photos_str = formatted_review["photos"]
+                    if isinstance(photos_str, str):
+                        # Handle PostgreSQL array format {url1,url2,url3}
+                        if photos_str.startswith('{') and photos_str.endswith('}'):
+                            # Remove curly braces and split by comma
+                            photos_str = photos_str[1:-1]  # Remove { and }
+                            formatted_review["photos"] = [photo.strip() for photo in photos_str.split(',') if photo.strip()]
+                        else:
+                            # Try to parse as JSON or split by comma
+                            try:
+                                import json
+                                formatted_review["photos"] = json.loads(photos_str)
+                            except:
+                                # If JSON parsing fails, split by comma and clean up
+                                formatted_review["photos"] = [photo.strip() for photo in photos_str.split(',') if photo.strip()]
+                else:
+                    formatted_review["photos"] = []
+                
+                # Format date for frontend
+                if formatted_review.get("createdDate"):
+                    formatted_review["createdDate"] = formatted_review["createdDate"].isoformat() if hasattr(formatted_review["createdDate"], 'isoformat') else str(formatted_review["createdDate"])
+                
+                formatted_reviews.append(formatted_review)
+            
+            return jsonify(formatted_reviews), 200
+            
+    except Exception as e:
+        print(f"Error fetching 3 most recent venue reviews: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recent venue reviews."
         }), 500
 
 
