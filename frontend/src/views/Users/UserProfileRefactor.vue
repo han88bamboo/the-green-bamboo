@@ -1448,7 +1448,7 @@
                         <img
                           :src="review.photo || defaultDrinkImage"
                           alt="review image"
-                          class="rounded border border-dark review-img"
+                          class="rounded review-img"
                           style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
                         />
                         <div class="review-text mt-2" style="font-size: 0.8rem; text-align: center;">
