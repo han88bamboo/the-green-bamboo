@@ -58,7 +58,7 @@
                                 <button class="btn btn-sm btn-outline-primary" @click="addSubsection(section)">
                                     <i class="bi bi-plus-lg"></i> Add Sub-section
                                 </button>
-                                <button class="btn btn-sm btn-outline-success" @click="addListing(section)">
+                                <button class="btn btn-sm btn-outline-success" @click="addListing(section)" :disabled="section.isLoading">
                                     <i class="bi bi-plus-lg"></i> Add Listing
                                 </button>
                             </div>
@@ -146,7 +146,7 @@
                                                         </template>
                                                     </draggable>
                                                     <div class="mt-2">
-                                                        <button class="btn btn-sm btn-outline-success w-100" @click="addListing(subSection)">
+                                                        <button class="btn btn-sm btn-outline-success w-100" @click="addListing(subSection)" :disabled="subSection.isLoading">
                                                             <i class="bi bi-plus-lg"></i> Add Listing to Sub-section
                                                         </button>
                                                     </div>
@@ -376,9 +376,14 @@ export default {
                 this.updateSubSectionOrder(section);
             }
         },
-        toggleSubSection(subsection) {
+        async toggleSubSection(subsection) {
             if (subsection.isEditingName) return;
             subsection.isExpanded = !subsection.isExpanded;
+            if (subsection.isExpanded && (!subsection.sectionMenu || subsection.sectionMenu.length === 0)) {
+                if (!String(subsection.id).startsWith('new_')) {
+                    await this.loadAllSectionItems(subsection);
+                }
+            }
         },
                 addListing(itemContainer) {
             this.$emit('request-add-listing', itemContainer);
