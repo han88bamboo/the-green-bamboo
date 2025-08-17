@@ -217,7 +217,7 @@
                              @click="goToVenue(review)">
                             
                             <!-- Venue Info Header - Horizontal layout with venue photo and name -->
-                            <div class="venue-header p-3 d-flex align-items-center" style="background-color: #f8f9fa;">
+                            <div class="venue-header p-3 d-flex align-items-center" style="background-color: #f8f9fa; width:100%; min-width:250px;">
                                 <!-- Venue Profile Photo -->
                                 <img v-if="review.venuePhoto" 
                                      :src="review.venuePhoto" 
@@ -233,7 +233,7 @@
                                 <!-- Venue name and type - Left aligned -->
                                 <div class="venue-info text-start flex-grow-1">
                                     <h6 class="mb-0 fw-bold" style="color: #223957;">
-                                        {{ truncateText(review.venueName, 25) }}
+                                        {{ truncateText(review.venueName, 30) }}
                                     </h6>
                                     <!-- Venue type -->
                                     <p class="text-muted small mb-0" v-if="review.venueType">
@@ -255,13 +255,13 @@
                                     
                                     <!-- Two photos - side by side -->
                                     <template v-else-if="review.photos.length === 2">
-                                        <div class="photo-container w-50 pe-1">
+                                        <div class="photo-container" style="width: 50%; margin-right: 2px;">
                                             <img :src="review.photos[0]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
                                                  :alt="'Review photo 1'" />
                                         </div>
-                                        <div class="photo-container w-50 ps-1">
+                                        <div class="photo-container" style="width: 50%; margin-left: 2px;">
                                             <img :src="review.photos[1]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
@@ -271,22 +271,22 @@
                                     
                                     <!-- Three photos - first photo portrait, second and third stacked -->
                                     <template v-else-if="review.photos.length >= 3">
-                                        <div class="photo-container w-60 pe-1">
+                                        <div class="photo-container" style="width: 60%; margin-right: 2px;">
                                             <img :src="review.photos[0]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
                                                  :alt="'Review photo 1'" />
                                         </div>
-                                        <div class="w-40 ps-1 d-flex flex-column h-100">
+                                        <div class="d-flex flex-column h-100" style="width: 40%; margin-left: 2px;">
                                             <!-- Second photo -->
-                                            <div class="photo-container h-50 mb-1">
+                                            <div class="photo-container" style="height: calc(50% - 2px); margin-bottom: 2px;">
                                                 <img :src="review.photos[1]" 
                                                      class="w-100 h-100"
                                                      style="object-fit: cover;" 
                                                      :alt="'Review photo 2'" />
                                             </div>
                                             <!-- Third photo -->
-                                            <div class="photo-container h-50 mt-1">
+                                            <div class="photo-container" style="height: calc(50% - 2px); margin-top: 2px;">
                                                 <img :src="review.photos[2]" 
                                                      class="w-100 h-100"
                                                      style="object-fit: cover;" 
@@ -341,7 +341,7 @@
                             <div class="card-body d-flex flex-column">
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
-                                    "{{ truncateText(review.reviewDesc, 120) }}" 
+                                    "{{ truncateText(review.reviewDesc, 135) }}" 
                                     <span class="badge text-white ms-1" style="background-color: #3CB371;">Read Review</span>
                                 </p>
                             </div>
@@ -2024,12 +2024,18 @@ button.btn.selected {
 
 .venue-header {
     border-bottom: 1px solid #e9ecef;
+    text-align: left !important; /* Force left alignment */
+}
+
+.venue-header .venue-info {
+    text-align: left !important; /* Ensure venue info is left aligned */
 }
 
 .venue-photos-container {
     background-color: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
     padding: 0; /* Remove padding to make image container full width */
+    width:100%;
 }
 
 .photo-container img {
