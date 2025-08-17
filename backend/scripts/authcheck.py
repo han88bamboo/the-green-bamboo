@@ -9,8 +9,6 @@ import random
 import string
 
 from scripts.mail import send_email, send_email_aws
-# from bson import json_util
-# from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request, jsonify, g, Blueprint
 
@@ -36,9 +34,6 @@ PURPOSE = os.getenv('PURPOSE')
 #         return jsonify(results)  # Convert the results to JSON and return
 #     except Exception as e:
 #         return jsonify({"error": str(e)})
-
-# def parse_json(data):
-#     return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [POST] Authenticates an account

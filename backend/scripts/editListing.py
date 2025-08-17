@@ -6,18 +6,12 @@
 import os
 import json
 import s3Images
-from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
 import pip._vendor.requests as requests
 import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [PUT] Updates a listing

@@ -59,7 +59,6 @@
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET),
 # -----------------------------------------------------------------------------------------
 
-# pip install python-bsonjs
 # pip install Flask
 # pip install Flask Flask-PyMongo
 # pip install pymongo
@@ -75,7 +74,6 @@ import hashlib
 import traceback
 from urllib.parse import unquote
 from bs4 import BeautifulSoup
-from bson import json_util
 from flask import Blueprint, g, jsonify, request
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from decimal import Decimal
@@ -151,10 +149,6 @@ def get_og_image(url):
     except requests.exceptions.RequestException:
         return None  # Request failed
 
-
-# converts BSON to JSON
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # Helper function to fetch drink lists for a user
 def fetch_drink_lists(cursor, user_id):
@@ -3059,7 +3053,7 @@ def getReviewsByUserIds():
         return jsonify({
             'code': 200,
             'message': 'Latest reviews fetched successfully.',
-            'data': parse_json(latest_reviews)
+            'data': latest_reviews
         })
 
 

@@ -8,9 +8,7 @@ import s3Images
 import os
 
 from scripts.mail import send_email, send_email_aws
-from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from dotenv import load_dotenv # ADDED BY SMU GROUP 3
 import psycopg2 # ADDED BY SMU GROUP 3
@@ -25,9 +23,6 @@ load_dotenv()
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an Account
