@@ -1939,3 +1939,13 @@ Purpose of the changes:
 Nature of the changes (frontend / backend / database):
 frontend, backend
 
+# Update as of 18th Aug
+Coder: Kai  
+
+Purpose of the changes:
+front end changes to beautify Individual Profile for mobile comptability
+All reviews page - better spacing 
+Landing page - minor colour tweak 
+
+Nature of the changes (frontend / backend / database):
+frontend

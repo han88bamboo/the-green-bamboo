@@ -108,7 +108,7 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="badge bg-danger text-white ms-1">Read Review</span>
+                                    <span class="badge primary-btn-less-round-blue text-decoration-none mt-2 fw-bold ">Read Review</span>
                                 </p>
                             </div>
                         </div>
@@ -189,7 +189,7 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="badge bg-danger text-white ms-1">Read Review</span>
+                                    <span class="badge primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
                                 </p>
                             </div>
                         </div>

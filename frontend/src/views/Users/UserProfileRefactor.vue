@@ -29,7 +29,7 @@
     <div class="container text-start">
       <div class="row">
         <!-- user profile -->
-        <div class="col-12 col-md-4 mb-3">
+        <div class="col-12 col-md-4 mb-0">
           <div class="container">
             <!-- basic information -->
             <div class="row">
@@ -123,8 +123,8 @@
 
             <!-- additional information -->
             <div class="mt-3">
-              <div class="row">
-                <div class="col-5">
+              <div class="row mobile-view-hide">
+                <div class="col-5 ">
                   <b>Member Since</b>
                 </div>
                 <div class="col-7 text-end">
@@ -151,7 +151,7 @@
                 </div>
               </div>
               <!-- Display Chosen Flavour Tag End -->
-              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) -->
+              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) 
               <div class="row mobile-view-hide">
                 <div class="col-5">
                   <b>Observation Tags</b>
@@ -163,7 +163,7 @@
                   <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
                 </div>
               </div>
-              <!-- Display Chosen Observation Tag End -->
+               -->
               <div class="row">
                 <div class="col-5">
                   <b> Points Earned </b>
@@ -184,37 +184,88 @@
               </div>
             </div>
 
-            <!-- buttons -->
-            <div class="row mt-3 ">
-              <router-link
-                v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user/' + userID }"
-                class="btn primary-btn-less-round-blue btn-md mt-3"
-                style="font-weight: bold"
-              >
-                View My Stats
-              </router-link>
-              <button
-                v-else-if="following && user"
-                type="button"
-                class="btn primary-btn-outline-less-round"
-                @click="editFollow('unfollow')"
-              >
-                Following
-              </button>
-              <button
-                v-else-if="user"
-                type="button"
-                class="btn primary-btn-less-round-blue"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow User
-              </button>
+            <!-- Top row -->
+            <div class="row mt-0 gx-2"> <!-- use gx-2 to match bottom if you like -->
+              <div class="col-12">
+                <router-link
+                  v-if="ownProfile && user"
+                  :to="{ path: '/dashboard/user/' + userID }"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 mobile-view-hide"
+                  style="font-weight: bold"
+                >
+                  View My Stats
+                </router-link>
+
+                <button
+                  v-else-if="following && user"
+                  type="button"
+                  class="mt-3 btn primary-btn-outline-less-round w-100"
+                  @click="editFollow('unfollow')"
+                >
+                  Following
+                </button>
+
+                <button
+                  v-else-if="user"
+                  type="button"
+                  class="mt-3 btn primary-btn-less-round-blue w-100"
+                  @click="editFollow('follow')"
+                  style="font-weight: bold"
+                >
+                  + Follow User
+                </button>
+              </div>
+            </div>
+            <!-- buttons for MOBILE -->
+            <div class="row mobile-view-show">
+              <div class="col-6" v-if="ownProfile && user">
+                <router-link
+                  :to="{ path: '/dashboard/user/' + userID }"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  style="font-weight: bold"
+                >
+                  View My Drink Stats
+                <i class="bi bi-arrow-up-right"></i>
+                </router-link>
+                
+              </div>
+              <div class="col-6">
+                <router-link 
+                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
+                    class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                    style="font-weight: bold"
+                  >
+                    View All Reviews
+                  <i class="bi bi-arrow-up-right"></i>
+                  </router-link>
+              </div>
+              <div class="col-6" v-if="ownProfile && user">
+                <div>
+                  <button class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                          type="button" 
+                          data-bs-toggle="collapse" 
+                          data-bs-target="#recentactivityCollapse"
+                          aria-expanded="false" 
+                          aria-controls="recentactivityCollapse">
+                    <span class="fw-bold">Recent Activity</span>
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-6">
+                <router-link
+                  :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  style="font-weight: bold"
+                >
+                  View All Friends
+                <i class="bi bi-arrow-up-right"></i>
+                </router-link>
+                
+              </div>
             </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
-              
               <span
                 style="position: relative; display: inline-block"
                 class="m-0 p-0"
@@ -240,8 +291,6 @@
                   Edit Moderators
                 </button>-->
               </span>
-              
-              
             </div>
 
             <!-- editProfileModal start -->
@@ -461,7 +510,7 @@
                       class="mt-1 mobile-fs-6"
                       style="cursor: pointer; font-weight:bold"
                     >
-                      Producers List: {{ name }}
+                      Brands List: {{ name }}
                     </h5>
                     <span v-if="bookmarkList.listItems.length > 1">
                       {{ bookmarkList.listItems.length }} items in list
@@ -1331,10 +1380,12 @@
             <!-- badges -->
             <div class="mt-4 mobile-view-hide">
               <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
-              <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
               <hr />
               <div v-if="!userBadges || userBadges.length === 0">
-                You have no badges yet.
+                No badges unlocked yet. 
+                <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
+                  Click here to find out how badges are earned on Drink-X.
+                </router-link>
               </div>
 
               <div v-else class="container text-center mb-3">
@@ -1360,18 +1411,25 @@
                 </div>
               </div>
 
-              <div>
-                <a href="#" @click.prevent="switchTab('badges')" style="color: black">View all badges</a>
+              <div v-if="userBadges && userBadges.length > 0">
+                <a 
+                  href="#" 
+                  @click.prevent="switchTab('badges')" 
+                  style="color: black"
+                >
+                  View all badges
+                </a>
               </div>
             </div>
 
-            <!-- My Recent Reviews -->
+            <!-- Drink I've Reviewed -->
             <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? 'My Recent Reviews' : 'Recent Reviews' }}</h5>
-              <p class="mobile-view-show"><strong>{{ ownProfile ? 'My Recent Reviews' : 'Recent Reviews' }}</strong></p>
+              
+             <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? "Drinks I've Reviewed" : "Drinks Reviewed" }}: {{ totalReviews }}</h5>
+              <p class="mobile-view-show"><strong>{{ ownProfile ? "Drinks I've Reviewed" : "Drinks Reviewed" }}: {{ totalReviews }}</strong></p>
               <hr />
               <div v-if="!recentReviews || recentReviews.length === 0">
-                {{ ownProfile ? 'You have no reviews yet.' : 'No reviews yet.' }}
+                {{ ownProfile ? 'You have no drink reviews added yet. Get started by searching for a drink and adding your review!' : 'No drink reviews logged yet.' }}
               </div>
 
               <div v-else class="container text-center mb-3">
@@ -1405,118 +1463,14 @@
               </div>
 
               <div>
-                <a :href="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View all reviews</a>
+                <a :href="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View all reviewed drinks</a>
               </div>
             </div>
 
-            <!-- Recently Followed Users -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
-              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
-              <hr />
-              <div v-if="loadingFollowingUsers" class="text-center">
-                Loading following users...
-              </div>
-              <div v-else-if="errorFollowingUsers" class="text-danger">
-                {{ errorFollowingUsers }}
-              </div>
-              <div v-else-if="!followingUsers || followingUsers.length === 0">
-                {{ ownProfile ? 'You haven\'t followed anyone yet.' : 'No recent follows yet.' }}
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followingUsers.slice(0, 3)" 
-                    :key="`following-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle border border-dark user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recent Followers -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
-              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
-              <hr />
-              <div v-if="loadingFollowersUsers" class="text-center">
-                Loading followers...
-              </div>
-              <div v-else-if="errorFollowersUsers" class="text-danger">
-                {{ errorFollowersUsers }}
-              </div>
-              <div v-else-if="!followersUsers || followersUsers.length === 0">
-                {{ ownProfile ? 'No recent followers yet.' : 'No recent followers yet.' }}
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followersUsers.slice(0, 3)" 
-                    :key="`follower-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle border border-dark user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- View All Friends Link -->
-            <div class="mt-4 mobile-view-hide">
-              <div>
-                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
-              </div>
-            </div>
-
+            <!-- My Recent ACtivity -->
             <div v-if="ownProfile" class="mt-4">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
-              <div v-if="ownProfile" class="row mt-3 mobile-view-show">
-                <button class="btn primary-btn-outline-less-round d-flex justify-content-between align-items-center " 
-                        type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target="#recentactivityCollapse"
-                        aria-expanded="false" 
-                        aria-controls="recentactivityCollapse">
-                  <span class="fw-bold">Recent Activity</span>
-                  <i class="bi bi-chevron-down"></i>
-                </button>
-              </div>
+              
               
               <div class="mb-4 Xmobile-view-hide collapse d-lg-block" id="recentactivityCollapse">
               <hr>
@@ -1647,6 +1601,104 @@
               </div> 
             </div>
 
+            <!-- Recently Followed Users -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
+              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
+              <hr />
+              <div v-if="loadingFollowingUsers" class="text-center">
+                Loading following users...
+              </div>
+              <div v-else-if="errorFollowingUsers" class="text-danger">
+                {{ errorFollowingUsers }}
+              </div>
+              <div v-else-if="!followingUsers || followingUsers.length === 0">
+                {{ ownProfile ? 'You have not followed anyone yet. Invite your friends to Drink-X to see what they are drinking lately!' : 'User is not following anyone yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followingUsers.slice(0, 3)" 
+                    :key="`following-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle border border-dark user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Followers -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
+              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
+              <hr />
+              <div v-if="loadingFollowersUsers" class="text-center">
+                Loading followers...
+              </div>
+              <div v-else-if="errorFollowersUsers" class="text-danger">
+                {{ errorFollowersUsers }}
+              </div>
+              <div v-else-if="!followersUsers || followersUsers.length === 0">
+                {{ ownProfile ? `Don't drink alone! Start inviting friends on Drink-X.` : "No followers yet." }}
+
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followersUsers.slice(0, 3)" 
+                    :key="`follower-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle border border-dark user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View All Friends Link -->
+            <div class="mt-4 mobile-view-hide">
+              <div>
+                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
+              </div>
+            </div>
+
+
+
             <!-- Events-->
             <div class="mt-3 mobile-view-hide">
               <EventBox
@@ -1659,19 +1711,24 @@
         </div>
 
         <!-- Mobile Toggle Button (only visible below 992px) -->
-        <div v-if="ownProfile" class="d-lg-none px-3 py-2">
-          <button class="btn w-100 text-start d-flex justify-content-between align-items-center welcome-toggle" 
-                  type="button" 
-                  data-bs-toggle="collapse" 
-                  data-bs-target="#welcomeCollapse" 
-                  aria-expanded="false" 
-                  aria-controls="welcomeCollapse">
-            <span class="fw-bold">Welcome to Drink-X. Let's get started!</span>
-            <i class="bi bi-chevron-down"></i>
-          </button>
+        <div v-if="ownProfile" class="row d-lg-none">
+          <div class="col-12">
+            <button 
+              class="ms-3 btn primary-btn-outline-less-round w-100 text-start d-flex justify-content-between align-items-center welcome-toggle"
+              type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#welcomeCollapse" 
+              aria-expanded="false" 
+              aria-controls="welcomeCollapse"
+            >
+              <span class="fw-bold">Get started on Drink-X!</span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
+          </div>
         </div>
+
         <!-- Welcome section and Reviews/Lists -->
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-8 mobile-mt-3">
           <!-- Welcome Section -->
           <div v-if="ownProfile"
             style="
@@ -2142,14 +2199,22 @@
             <div class="tab-content container mt-2 mobile-py-2">
               <!-- reviews tab -->
               <div v-if="activeTab == 'reviews'" id="reviews">
-                <h5 class="text-body-secondary text-start py-2">
-                  <b> Recent Reviews </b>
+                <!-- View All Reviews Button -->
+                <div v-if="recentReviews && recentReviews.length > 0" class="mb-4 mobile-view-hide">
+                  <router-link 
+                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
+                    class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round"
+                  >
+                    View All Reviews
+                  </router-link>
+                </div>
+                <h5 class="text-body-secondary text-start pb-2">
+                  <b> Latest Reviewed Drinks </b>
                 </h5>
                 <div v-if="recentReviews && recentReviews.length > 0">
                   <div v-for="review in recentReviews" :key="review.id">
                     <div style="display: flex" class="row mb-2">
                       <div class="col-3 mobile-col-3 mobile-pe-0">
-                        <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
                         <img
                           :src="review.photo || defaultDrinkImage"
                           alt=""
@@ -2215,31 +2280,24 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="mb-2 mobile-rating-smaller-text-2">
-                  No reviews yet. To explore more drinks in the home page,
+                <div v-else class="my-2 mobile-rating-smaller-text-2">
+                  No drinks reviewed yet! To explore more drinks in the home page,
                   <router-link to="/" style="color: inherit"
                     >click here</router-link
                   >.
                 </div>
+                <br>
 
                 <ListingRowDisplayUserProfile
                   :topRatedReviews="topRatedReviews"
                   :producers="producers"
                   :subTags="subTags"
                   :flavourTags="flavourTags"
-                  displayName="Favourite Listings"
+                  displayName="Highest Rated Drinks"
                   columnWidth="165px"
                 />
                 
-                <!-- View All Reviews Button -->
-                <div v-if="recentReviews && recentReviews.length > 0" class="text-center mb-4">
-                  <router-link 
-                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
-                    class="btn primary-btn-green"
-                  >
-                    View All Reviews
-                  </router-link>
-                </div>
+                
                 
                 <br>
               </div>
@@ -2257,27 +2315,27 @@
                     }"
                     @click="switchListType('drinks')"
                   >
-                    Drinks Lists
+                    Drinks
                   </button>
                   <button
-                    class="btn btn-sm mx-1"
+                    class="btn btn-sm mx-1 mb-1 fw-bold"
                     :class="{
                       'primary-btn-green': currentListType === 'producers',
                       'primary-btn-green-thin-outline': currentListType !== 'producers'
                     }"
                     @click="switchListType('producers')"
                   >
-                    Producers Lists
+                    Brands
                   </button>
                   <button
-                    class="btn btn-sm mx-1"
+                    class="btn btn-sm mx-1 mb-1 fw-bold"
                     :class="{
                       'primary-btn-green': currentListType === 'venues',
                       'primary-btn-green-thin-outline': currentListType !== 'venues'
                     }"
                     @click="switchListType('venues')"
                   >
-                    Venues Lists
+                    Venues
                   </button>
                 </div>
 
@@ -3002,7 +3060,7 @@
                       data-bs-toggle="modal"
                       data-bs-target="#createNewProducerListModal"
                     >
-                      Create New Producers List
+                      Create New Brands List
                     </button>
 
                     <!-- display all producer lists -->
@@ -3126,7 +3184,7 @@
                         <div class="modal-content">
                           <div class="modal-header">
                             <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Create New Producers List
+                              Create New Brands List
                             </h1>
                             <button
                               type="button"
@@ -3209,7 +3267,7 @@
                           class="btn primary-btn-green-thin-outline mb-2"
                           @click="switchListType('producers')"
                         >
-                          <i class="bi bi-arrow-left"></i> Back to Producer Lists
+                          <i class="bi bi-arrow-left"></i> Back to Brand Lists
                         </button>
                       </div>
                       <div class="col-12 col-md-6 text-end">
@@ -3219,7 +3277,7 @@
                           data-bs-toggle="modal"
                           data-bs-target="#addProducerModal"
                         >
-                          <i class="bi bi-plus"></i> Add Producer
+                          <i class="bi bi-plus"></i> Add Brand
                         </button>
                         <button
                           class="btn primary-btn-green-thin-outline mx-1"
@@ -3287,18 +3345,18 @@
                       <div class="modal-dialog modal-dialog-centered modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h5 class="modal-title" id="addProducerModalLabel">Add Producer to List</h5>
+                            <h5 class="modal-title" id="addProducerModalLabel">Add Brand to List</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                           </div>
                           <div class="modal-body">
                             <div class="mb-3">
-                              <label for="producerSearch" class="form-label">Search for producers</label>
+                              <label for="producerSearch" class="form-label">Search for brand</label>
                               <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
                                     @input="searchProducerResult" placeholder="Enter producer name">
                             </div>
                             <div class="search-results mt-2">
                               <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
-                                No producers found.
+                                No brands found.
                               </div>
                               <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
@@ -3310,9 +3368,9 @@
                               </div>
                             </div>
                             <hr />
-                            <h6 class="mb-3">Selected Producers:</h6>
+                            <h6 class="mb-3">Selected Brands:</h6>
                             <div v-if="producersToAdd.length === 0" class="text-muted">
-                              No producers selected.
+                              No brands selected.
                             </div>
                             <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
                               <div class="d-flex justify-content-between align-items-center">
@@ -3684,7 +3742,10 @@
                 </h5>
                 
                 <div v-if="!userBadges || userBadges.length === 0" class="container">
-                  No badges unlocked yet. Keep reviewing drinks and participating to earn badges!
+                  No badges unlocked yet. 
+                <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
+                  Click here to find out how badges are earned on Drink-X.
+                </router-link>
                 </div>
                 
                 <div v-else class="container">
@@ -3778,6 +3839,7 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
+
 
 export default {
   name: "UserProfileRefactor",
@@ -4013,7 +4075,28 @@ export default {
     // Get the count of users this person is following
     followingCount() {
       return this.displayUser?.followLists?.users?.length || 0;
+    },
+    totalReviews() {
+    // If the summary already returns a total, prefer it.
+    if (this.reviewsSummary && typeof this.reviewsSummary.totalReviews === 'number') {
+      return this.reviewsSummary.totalReviews;
     }
+
+    // Otherwise, sum all subcategory counts inside categoriesReviewed
+    if (this.reviewsSummary && this.reviewsSummary.categoriesReviewed) {
+      return Object.values(this.reviewsSummary.categoriesReviewed).reduce((sum, subcats) => {
+        const subTotal = Object.values(subcats || {}).reduce(
+          (a, b) => a + (Number(b) || 0),
+          0
+        );
+        return sum + subTotal;
+      }, 0);
+    }
+
+    // Fallback: count what you loaded as "recentReviews"
+    return Array.isArray(this.recentReviews) ? this.recentReviews.length : 0;
+  },
+  
   },
   mounted() {
     // get local storage
@@ -5866,7 +5949,7 @@ export default {
         
         // Show success message
         const toast = useToast();
-        toast.success("Producers added to list successfully!");
+        toast.success("Brand added to list successfully!");
         
         // Reset variables
         this.producersToAdd = [];
@@ -5878,7 +5961,7 @@ export default {
       } catch (error) {
         console.error("Error updating producer bookmark:", error);
         const toast = useToast();
-        toast.error("Failed to add producers to list. Please try again.");
+        toast.error("Failed to add brand to list. Please try again.");
       }
     },    
 
@@ -6251,7 +6334,7 @@ export default {
         this.producers = response.data;
         console.log("Producers loaded:", this.producers.length);
       } catch (error) {
-        console.error("Error fetching producers:", error);
+        console.error("Error fetching brand:", error);
       }
     },
 
