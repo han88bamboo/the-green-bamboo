@@ -216,64 +216,84 @@
                              style="border: 2px solid #3CB371; cursor: pointer;"
                              @click="goToVenue(review)">
                             
-                            <!-- Venue Info Header - Full width venue name -->
-                            <div class="venue-header p-3 text-center" style="background-color: #f8f9fa;">
+                            <!-- Venue Info Header - Horizontal layout with venue photo and name -->
+                            <div class="venue-header p-3 d-flex align-items-center" style="background-color: #f8f9fa;">
                                 <!-- Venue Profile Photo -->
-                                <div class="d-flex justify-content-center mb-2">
-                                    <img v-if="review.venuePhoto" 
-                                         :src="review.venuePhoto" 
-                                         class="rounded-circle" 
-                                         style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
-                                         :alt="review.venueName" />
-                                    <img v-else
-                                         src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
-                                         class="rounded-circle" 
-                                         style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
-                                         alt="Default venue" />
-                                </div>
+                                <img v-if="review.venuePhoto" 
+                                     :src="review.venuePhoto" 
+                                     class="rounded-circle me-3 flex-shrink-0" 
+                                     style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
+                                     :alt="review.venueName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                     class="rounded-circle me-3 flex-shrink-0" 
+                                     style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
+                                     alt="Default venue" />
                                 
-                                <!-- Venue name - Full width -->
-                                <h6 class="mb-0 fw-bold" style="color: #223957;">
-                                    {{ truncateText(review.venueName, 25) }}
-                                </h6>
-                                <!-- Venue type -->
-                                <p class="text-muted small mb-0" v-if="review.venueType">
-                                    {{ review.venueType }}
-                                </p>
+                                <!-- Venue name and type - Left aligned -->
+                                <div class="venue-info text-start flex-grow-1">
+                                    <h6 class="mb-0 fw-bold" style="color: #223957;">
+                                        {{ truncateText(review.venueName, 25) }}
+                                    </h6>
+                                    <!-- Venue type -->
+                                    <p class="text-muted small mb-0" v-if="review.venueType">
+                                        {{ review.venueType }}
+                                    </p>
+                                </div>
                             </div>
 
                             <!-- Review Photos (up to 3) with User/Rating Overlay -->
                             <div class="venue-photos-container position-relative" v-if="review.photos && review.photos.length > 0">
-                                <div class="d-flex" style="height: 200px;">
-                                    <!-- First photo - more portrait like -->
-                                    <div v-if="review.photos[0]" 
-                                         :class="getVenuePhotoClass(review.photos.length, 0)"
-                                         class="photo-container">
+                                <div class="d-flex w-100" style="height: 200px;">
+                                    <!-- Single photo - takes full width -->
+                                    <div v-if="review.photos.length === 1" class="photo-container w-100">
                                         <img :src="review.photos[0]" 
                                              class="w-100 h-100"
                                              style="object-fit: cover;" 
                                              :alt="'Review photo 1'" />
                                     </div>
                                     
-                                    <!-- Second and third photos stacked vertically -->
-                                    <div v-if="review.photos[1] && review.photos.length >= 2" 
-                                         :class="getVenuePhotoClass(review.photos.length, 1)"
-                                         class="d-flex flex-column h-100">
-                                        <!-- Second photo -->
-                                        <div class="photo-container h-50 mb-1">
+                                    <!-- Two photos - side by side -->
+                                    <template v-else-if="review.photos.length === 2">
+                                        <div class="photo-container w-50 pe-1">
+                                            <img :src="review.photos[0]" 
+                                                 class="w-100 h-100"
+                                                 style="object-fit: cover;" 
+                                                 :alt="'Review photo 1'" />
+                                        </div>
+                                        <div class="photo-container w-50 ps-1">
                                             <img :src="review.photos[1]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
                                                  :alt="'Review photo 2'" />
                                         </div>
-                                        <!-- Third photo -->
-                                        <div v-if="review.photos[2]" class="photo-container h-50 mt-1">
-                                            <img :src="review.photos[2]" 
+                                    </template>
+                                    
+                                    <!-- Three photos - first photo portrait, second and third stacked -->
+                                    <template v-else-if="review.photos.length >= 3">
+                                        <div class="photo-container w-60 pe-1">
+                                            <img :src="review.photos[0]" 
                                                  class="w-100 h-100"
                                                  style="object-fit: cover;" 
-                                                 :alt="'Review photo 3'" />
+                                                 :alt="'Review photo 1'" />
                                         </div>
-                                    </div>
+                                        <div class="w-40 ps-1 d-flex flex-column h-100">
+                                            <!-- Second photo -->
+                                            <div class="photo-container h-50 mb-1">
+                                                <img :src="review.photos[1]" 
+                                                     class="w-100 h-100"
+                                                     style="object-fit: cover;" 
+                                                     :alt="'Review photo 2'" />
+                                            </div>
+                                            <!-- Third photo -->
+                                            <div class="photo-container h-50 mt-1">
+                                                <img :src="review.photos[2]" 
+                                                     class="w-100 h-100"
+                                                     style="object-fit: cover;" 
+                                                     :alt="'Review photo 3'" />
+                                            </div>
+                                        </div>
+                                    </template>
                                 </div>
                                 
                                 <!-- User and Rating Overlay -->
@@ -2009,6 +2029,7 @@ button.btn.selected {
 .venue-photos-container {
     background-color: #f8f9fa;
     border-bottom: 1px solid #e9ecef;
+    padding: 0; /* Remove padding to make image container full width */
 }
 
 .photo-container img {
@@ -2024,9 +2045,19 @@ button.btn.selected {
     border-bottom: 1px solid #e9ecef;
 }
 
+/* Custom width classes for venue photo layout */
+.w-60 {
+    width: 60% !important;
+}
+
+.w-40 {
+    width: 40% !important;
+}
+
 /* Venue Review specific styles for improved 3-image layout */
 .venue-review-col .venue-photos-container {
     height: 200px; /* Increased height */
+    padding: 0; /* Ensure no padding around images */
 }
 
 .venue-review-col .default-venue-image {
