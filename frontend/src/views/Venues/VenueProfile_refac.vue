@@ -125,9 +125,8 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
-                        <VenueMenuTab ref="menuTab" :venue_menu="venue_menu" :is-self-view="isOwner"
-                            :claim-status="targetVenue.claimStatus" @save-menu="handleMenuSave"
-                            @request-add-listing="openAddItemsModal"        
+                        <VenueMenuTab :venue_menu="venue_menu" :is-self-view="isOwner"
+                            :claim-status="targetVenue.claimStatus" @save-menu="handleMenuSave"        
                         />
                     </div>
 
@@ -159,15 +158,6 @@ Normal User (Anonymous & Logged-In)
     <VenueQRModal 
       :pageURL="pageURL"
     /> 
-
-    <VenueMenuItems
-      v-if="activeSectionForModal"
-      :target-section="activeSectionForModal"
-      @items-selected="onItemsSelected"
-      @hidden="activeSectionForModal = null"
-    /> 
-
-
 </template>
 
 <script>
@@ -177,7 +167,6 @@ import VenueHeader from '@/components/venue_profile/VenueHeader.vue';
 import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
 import VenueOverviewTab from '@/components/venue_profile/VenueOverviewTab.vue';
 import VenueMenuTab from '@/components/venue_profile/VenueMenuTab.vue';
-import VenueMenuItems from '@/components/venue_profile/VenueMenuItems.vue';
 import VenueReviewsTab from '@/components/venue_profile/VenueReviewsTab.vue';
 import ProfileSidebar from '@/components/elements/ProfileSidebar.vue';
 
@@ -255,7 +244,6 @@ export default {
         VenueContentTabs,
         VenueOverviewTab,
         VenueMenuTab,
-        VenueMenuItems,
         VenueReviewsTab,
         ProfileSidebar,
         VenueReviewModal,
@@ -333,7 +321,6 @@ export default {
             // Properties to hold data from the child component
             updateText: '',
             updatePhoto: null,
-            activeSectionForModal: null,
         };
     },
     mounted() {
@@ -1023,7 +1010,7 @@ export default {
                 if (response.data.code === 200) {
                     console.log("Menu changes saved successfully via VenueProfile_refac!");
                     // Optionally, re-fetch menu data or update local state
-                    this.getMenu(); // Re-fetch all venue data to update menu
+                    this.getVenueData(); // Re-fetch all venue data to update menu
                     this.contentMode = 'menu'; // Stay on menu tab
                 } else {
                     console.error("Failed to save menu changes via VenueProfile_refac:", response.data.message);
@@ -1087,20 +1074,6 @@ export default {
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
                 });
-        },
-
-
-        // Option 1: Pure Vue approach (Recommended)
-        openAddItemsModal(section) {
-            this.activeSectionForModal = section;
-            // The VenueMenuItems component will automatically show when activeSectionForModal is set
-            // No need for DOM manipulation - let Vue's reactivity handle it
-        },
-
-        onItemsSelected({ newItems, targetSection }) {
-          if (this.$refs.menuTab) {
-            this.$refs.menuTab.addItemsToLocalMenu({ newItems, targetSection });
-          }
         },
         
     },
