@@ -2583,3 +2583,21 @@ nav a.router-link-exact-active.dropdown-item {
   padding-top: 1.625rem !important;
   padding-bottom: .625rem !important;
 }
+
+/* Fix iOS Safari auto-zoom on inputs */
+@media (max-width: 991px) {
+  .form-control,
+  .form-select,
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Optional: keep compact 14px on desktop only */
+@media (min-width: 992px) {
+  .form-control {
+    font-size: 0.875rem !important; /* 14px */
+  }
+}
