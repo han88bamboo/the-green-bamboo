@@ -83,6 +83,15 @@ def updateMenu():
                 "message": "Invalid menu data format. Expected an array."
             }), 400
 
+        # Delete existing menu items and sections for this venue
+        # Delete menu items first due to foreign key constraints
+        cur.execute('''
+            DELETE FROM "menuItems" 
+            WHERE "sectionId" IN (
+                SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s
+            )
+        ''', (venue_id,))
+        
         # Delete existing menu sections for this venue
         cur.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venue_id,))
         
@@ -125,15 +134,15 @@ def updateMenu():
         # Verify we got the expected number of section IDs
         if not section_ids or len(section_ids) != len(sections_data):
             raise Exception("Failed to insert sections or retrieve section IDs")
-
-        # for i in section_ids:
-        #     print(i)
         
         # Create mapping of section index to generated ID
         section_id_map = {i: section_id["id"] for i, section_id in enumerate(section_ids)}
         
-        # Now prepare subsections data
+        # Now prepare subsections data and collect menu items for main sections
         subsections_data = []
+        menu_items_data = []
+        
+        # Process main sections and their items
         for section_index, section in enumerate(menu_data):
             if not isinstance(section, dict):
                 continue  # Skip invalid section data
@@ -141,9 +150,24 @@ def updateMenu():
             parent_id = section_id_map.get(section_index)
             if parent_id is None:
                 continue  # Skip if we don't have a parent ID
-                
-            sub_sections = section.get("subSections", [])
             
+            # Process items for main sections
+            section_menu = section.get("sectionMenu", [])
+            if isinstance(section_menu, list):
+                for item in section_menu:
+                    if isinstance(item, dict):
+                        menu_items_data.append((
+                            item.get("itemOrder", 0),
+                            item.get("itemPrice"),
+                            item.get("itemAvailability", True),
+                            item.get("itemID"),
+                            item.get("servingType"),
+                            parent_id,
+                            item.get("variant")
+                        ))
+            
+            # Process subsections
+            sub_sections = section.get("subSections", [])
             if isinstance(sub_sections, list):
                 for sub in sub_sections:
                     if isinstance(sub, dict):
@@ -154,15 +178,60 @@ def updateMenu():
                             parent_id
                         ))
         
-        # Batch insert subsections if any exist
+        # Batch insert subsections if any exist and get their IDs
+        subsection_id_map = {}
         if subsections_data:
-            execute_values(
+            subsection_ids = execute_values(
                 cur,
                 """
                 INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+                VALUES %s
+                RETURNING "id";
+                """,
+                subsections_data,
+                fetch=True
+            )
+            
+            # Create mapping for subsection IDs
+            subsection_id_map = {i: subsection_id["id"] for i, subsection_id in enumerate(subsection_ids)}
+        
+        # Process items for subsections
+        subsection_index = 0
+        for section_index, section in enumerate(menu_data):
+            if not isinstance(section, dict):
+                continue
+                
+            sub_sections = section.get("subSections", [])
+            if isinstance(sub_sections, list):
+                for sub in sub_sections:
+                    if isinstance(sub, dict):
+                        subsection_id = subsection_id_map.get(subsection_index)
+                        if subsection_id:
+                            # Process items for this subsection
+                            section_menu = sub.get("sectionMenu", [])
+                            if isinstance(section_menu, list):
+                                for item in section_menu:
+                                    if isinstance(item, dict):
+                                        menu_items_data.append((
+                                            item.get("itemOrder", 0),
+                                            item.get("itemPrice"),
+                                            item.get("itemAvailability", True),
+                                            item.get("itemID"),
+                                            item.get("servingType"),
+                                            subsection_id,
+                                            item.get("variant")
+                                        ))
+                        subsection_index += 1
+        
+        # Batch insert menu items if any exist
+        if menu_items_data:
+            execute_values(
+                cur,
+                """
+                INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId", "variant")
                 VALUES %s;
                 """,
-                subsections_data
+                menu_items_data
             )
         
         conn.commit()
@@ -172,6 +241,7 @@ def updateMenu():
         }), 200
 
     except Exception as e:
+        print(e)
         import traceback
         traceback.print_exc()
         conn.rollback()

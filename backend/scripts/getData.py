@@ -4220,7 +4220,7 @@ def getVenueMenu(section_id):
             SELECT 
                 mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
                 lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
-                srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
+                mi."itemServingType", srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
                 ON mi."itemID" = lst."id"
@@ -4254,7 +4254,8 @@ def getVenueMenu(section_id):
                     "abv": row['abv'],
                     "itemAvailability": row['itemAvailability'],
                     "variant": row['variant'],
-                    "servingType": row['servingType'],
+                    "servingType": row['itemServingType'],
+                    "servingTypeText": row['servingType'],
                     "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
                 }
                 for row in rows

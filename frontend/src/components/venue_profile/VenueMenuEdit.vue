@@ -211,11 +211,11 @@
                                         </div>
                                     </div>
                                 </template>
-                                <!-- <template #footer>
-                                    <div v-if="section.sectionMenu.length === 0 && (!section.subSections || section.subSections.length === 0)" class="text-muted p-3 text-center border-2 border-dashed rounded" style="border-color: #dee2e6 !important;">
+                                <template #footer>
+                                    <!--<div v-if="section.sectionMenu.length === 0 && (!section.subSections || section.subSections.length === 0)" class="text-muted p-3 text-center border-2 border-dashed rounded" style="border-color: #dee2e6 !important;">
                                         Drop items here or click button above to add
-                                    </div>
-                                </template> -->
+                                    </div> -->
+                                </template> 
                             </draggable>
                             
                             <div v-if="!section.isLoading && (!section.sectionMenu || section.sectionMenu.length === 0) && (!section.subSections || section.subSections.length === 0)" class="text-muted p-2">
