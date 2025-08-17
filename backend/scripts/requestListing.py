@@ -7,7 +7,6 @@ import os
 import json
 import pytz
 import s3Images
-from bson import json_util
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers, notifications
@@ -15,9 +14,6 @@ import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [POST] Request for listing creation

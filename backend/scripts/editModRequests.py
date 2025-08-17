@@ -17,7 +17,7 @@ import os
 from flask import Blueprint, g, request, jsonify
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------
-from bson.objectid import ObjectId
+# from bson.objectid import ObjectId (REMOVED - not needed for PostgreSQL)
 # ======================================================
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)

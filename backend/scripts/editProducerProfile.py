@@ -5,7 +5,6 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
