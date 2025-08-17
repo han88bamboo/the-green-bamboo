@@ -103,7 +103,7 @@
                                                         <template #item="{ element: item, index: itemIndex }">
                                                             <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                                                 <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
-                                                                <span class="flex-grow-1">{{ item.name }}</span>
+                                                                <span class="flex-grow-1">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</span>
                                                                 <div class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
                                                                         <i class="bi bi-arrow-up"></i>
@@ -128,7 +128,7 @@
                                                         <template #item="{ element: item, index: itemIndex }">
                                                             <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                                                 <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
-                                                                <span class="flex-grow-1">{{ item.name }}</span>
+                                                                <span class="flex-grow-1">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</span>
                                                                 <div class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
                                                                         <i class="bi bi-arrow-up"></i>
@@ -175,7 +175,7 @@
                                 <template #item="{ element: item, index: itemIndex }">
                                     <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                         <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
-                                        <span class="flex-grow-1">{{ item.name }}</span>
+                                        <span class="flex-grow-1">{{ item.name }} {{ item.itemVintage ? ' [' + item.itemVintage + ' Vintage]' : '' }}</span>
                                         <div class="d-flex gap-2">
                                             <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(section.sectionMenu, itemIndex)">
                                                 <i class="bi bi-arrow-up"></i>
@@ -200,7 +200,7 @@
                                 <template #item="{ element: item, index: itemIndex }">
                                     <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                         <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
-                                        <span class="flex-grow-1">{{ item.name }}</span>
+                                        <span class="flex-grow-1">{{ item.name }} {{ item.itemVintage ? ' [' + item.itemVintage + ' Vintage]' : '' }}</span>
                                         <div class="d-flex gap-2">
                                             <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(section.sectionMenu, itemIndex)">
                                                 <i class="bi bi-arrow-up"></i>
@@ -238,6 +238,17 @@
 
 <script>
 import draggable from 'vuedraggable';
+
+/*
+* Parent Component Implementation Note:
+* To add a new listing, this component now exposes an `addListingItem(newItem, container)` method.
+* 1. Add a ref to this component in your parent template: <VenueMenuEdit ref="venueMenuEdit" ... />
+* 2. When your "add listing" modal successfully returns a new item, call this method:
+*    this.$refs.venueMenuEdit.addListingItem(newItem, container);
+*    - `newItem` is the new menu item object from your modal.
+*    - `container` is the section/sub-section object you received from the `@request-add-listing` event.
+* This approach ensures new items are added reliably without data loss.
+*/
 
 const focus = {
   mounted: (el) => el.focus()
@@ -288,6 +299,65 @@ export default {
         },
     },
     methods: {
+        /**
+         * Adds a new listing item to the specified container within the localMenu.
+         * This method should be called by the parent component via a ref.
+         * @param {object} newItem - The new menu item object to add.
+         * @param {object} itemContainer - The container (section or sub-section) to add the item to.
+         */
+        addListingItem(newItem, itemContainer) {
+            if (!newItem || !itemContainer || !itemContainer.id) {
+                console.error('addListingItem: Invalid newItem or itemContainer provided.');
+                return;
+            }
+
+            // Ensure the new item has a unique key for vuedraggable.
+            if (!newItem.itemID) {
+                newItem.itemID = `new_item_${Date.now()}`;
+            }
+
+            let targetContainer = null;
+
+            // Find the container in the current localMenu using its ID to ensure we're not using a stale object.
+            for (const section of this.localMenu) {
+                if (section.id === itemContainer.id) {
+                    targetContainer = section;
+                    break;
+                }
+                if (section.subSections) {
+                    const foundSub = section.subSections.find(sub => sub.id === itemContainer.id);
+                    if (foundSub) {
+                        targetContainer = foundSub;
+                        break;
+                    }
+                }
+            }
+
+            if (targetContainer) {
+                // Initialize sectionMenu if it doesn't exist.
+                if (!targetContainer.sectionMenu) {
+                    // Use Vue.set or this.$set to ensure reactivity if adding a new property.
+                    this.$set(targetContainer, 'sectionMenu', []);
+                }
+                
+                targetContainer.sectionMenu.push(newItem);
+
+                // Expand the container to show the newly added item.
+                if (!targetContainer.isExpanded) {
+                    // Check if it's a main section or a sub-section to call the correct toggle method.
+                    if (this.localMenu.some(section => section.id === targetContainer.id)) {
+                        this.toggleSection(targetContainer);
+                    } else {
+                        this.toggleSubSection(targetContainer);
+                    }
+                }
+                
+                this.updateAllItemOrders();
+                console.log('New item added successfully:', newItem);
+            } else {
+                console.error('Could not find the container in localMenu to add the new item.');
+            }
+        },
         onItemChange(event) {
             // This method is called whenever items are moved between draggable containers
             // Update item orders after a change

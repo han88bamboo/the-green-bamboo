@@ -320,7 +320,7 @@ export default {
           name: item.newMenuItemTarget.listingName,
           itemPrice: item.newMenuItemPrice,
           servingType: item.newMenuItemServingType,
-          itemVintage: item.newMenuItemVintage,
+          variant: item.newMenuItemVintage,
           itemAvailability: true,
           photo: item.newMenuItemTarget.photo,
           bottler: item.newMenuItemTarget.producerName,

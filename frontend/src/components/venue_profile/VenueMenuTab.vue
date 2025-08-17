@@ -73,7 +73,7 @@
                                                                         </div>
                                                                         <div class="flex-grow-1" style="min-width: 0;">
                                                                             <div class="d-flex justify-content-between align-items-start mb-1">
-                                                                                <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }}</h5>
+                                                                                <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</h5>
                                                                                 <i class="bi bi-star text-warning flex-shrink-0"></i>
                                                                             </div>
                                                                             <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV' }}</p>
@@ -119,7 +119,7 @@
                                                         </div>
                                                         <div class="flex-grow-1" style="min-width: 0;">
                                                             <div class="d-flex justify-content-between align-items-start mb-1">
-                                                                <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }}</h5>
+                                                                <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</h5>
                                                                 <i class="bi bi-star text-warning flex-shrink-0"></i>
                                                             </div>
                                                             <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV' }}</p>
