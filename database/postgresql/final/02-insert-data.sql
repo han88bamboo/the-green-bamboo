@@ -2789,6 +2789,7 @@ INSERT INTO "venues" (
     "stripeCustomerId", 
     "pin"
 ) VALUES (
+    11,
     'Orh Gao Taproom Craft Beer Bar', 
     '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 
     'Bar', 
@@ -2804,8 +2805,9 @@ INSERT INTO "venues" (
     NULL, 
     NULL
 ), 
-(
-    'Test Venue',
+(   
+    10,
+    'Omu Nomu Craft Sake & Raw Bar',
     '1 Dragon City',
     'Bar',
     'Singapore',
@@ -2818,6 +2820,23 @@ INSERT INTO "venues" (
     'testvenueuser', 
     'Not open on Christmas', 
     NULL, 
+    NULL
+),
+VALUES (
+    24,
+    'Smith Street Taps',
+    '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
+    'Bar',
+    'Singapore',
+    'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
+    '128937465', -- hashed password
+    NULL,
+    true,
+    NULL,
+    'Walk-in only, no reservations.',
+    'smithstreettaps',
+    'Closed on Lunar New Year',
+    NULL,
     NULL
 );
 
