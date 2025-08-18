@@ -1010,7 +1010,7 @@ export default {
                 if (response.data.code === 200) {
                     console.log("Menu changes saved successfully via VenueProfile_refac!");
                     // Optionally, re-fetch menu data or update local state
-                    this.getVenueData(); // Re-fetch all venue data to update menu
+                    this.getMenu(); // Re-fetch all venue data to update menu
                     this.contentMode = 'menu'; // Stay on menu tab
                 } else {
                     console.error("Failed to save menu changes via VenueProfile_refac:", response.data.message);
