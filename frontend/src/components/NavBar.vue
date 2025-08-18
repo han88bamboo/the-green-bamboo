@@ -391,6 +391,13 @@
                   </span>
                 </li>
 
+                <!-- My Cellar -->
+                <li class="drawer-section-title pt-2 text-start">
+                  <router-link to="/my-cellar" style="text-decoration: none">
+                    My Cellar
+                  </router-link>
+                </li>
+
                 <!-- Moderator Controls (Collapsible) -->
                 <li v-if="(accType === isAdmin || isModerator)"
                   class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleAdmin">
@@ -581,9 +588,11 @@
           </button>
         </router-link>
 
-        <li>
-          <router-link :to="'/my-cellar'" class="dropdown-item">My Cellar</router-link>
-        </li>
+        <router-link :to="'/my-cellar'">
+          <button class="btn primary-btn border-0 fw-bold" type="button">
+            My Cellar
+          </button>
+        </router-link>
       </div>
     </div>
 

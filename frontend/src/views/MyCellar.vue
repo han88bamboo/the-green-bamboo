@@ -3,7 +3,7 @@
     <NavBar />
     
     <!-- Hero Section -->
-    <section class="hero-section position-relative">
+    <section class="hero-section position-relative" style="padding-top:0%">
       <div class="container">
         <div class="row align-items-center min-vh-75">
           <!-- Cellar Image Column -->
@@ -24,7 +24,7 @@
               </h1>
               
               <p class="hero-subtitle lead mb-4">
-                Cellars Aren't Just For Wines, Fridges Are More Than Beers. A universal collection across spirits, wines, beers, sakes and more calls for a universal cellar. Drink-X is bringing that to you.
+                Cellars aren't just for wines. Fridges are for more than beers. A universal collection across spirits, wines, beers, sakes and more calls for a universal cellar. Drink-X is bringing that to you.
               </p>
               
               <div class="coming-soon-badge">
@@ -90,7 +90,7 @@
           <!-- Feature 2 -->
           <div class="col-md-4">
             <div class="feature-card h-100 p-4 text-center">
-              <div class="feature-icon mb-3">🍷</div>
+              <div class="feature-icon mb-3">🍷🥃🍺🍶🥂</div>
               <h4 class="fw-bold mb-3">Universal Support</h4>
               <p>From vintage wines to craft beers, premium spirits to artisanal sakes - manage it all.</p>
             </div>
@@ -109,7 +109,7 @@
     </section>
     
     <!-- Notify Me Section -->
-    <section class="notify-section py-5" style="background-color: wheat;">
+    <!-- <section class="notify-section py-5" style="background-color: wheat;">
       <div class="container">
         <div class="row justify-content-center">
           <div class="col-md-8 text-center">
@@ -124,7 +124,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
     
   </div>
 </template>

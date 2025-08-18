@@ -815,6 +815,17 @@
             </div>
           </div>
         </div>
+        
+        <!-- Sign Up Button -->
+        <div class="text-center mt-4">
+          <router-link :to="'/signup'">
+            <button class="btn btn-lg fw-bold px-5 py-3" 
+                    style="background-color: white; color: #f04444; border: 2px solid white; border-radius: 10px;"
+                    aria-label="Sign Up for Drink-X">
+              Sign Up
+            </button>
+          </router-link>
+        </div>
       </div>
     </section>
 
