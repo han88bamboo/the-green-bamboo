@@ -1467,6 +1467,104 @@
               </div>
             </div>
 
+
+            <!-- Recently Followed Users -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
+              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
+              <hr />
+              <div v-if="loadingFollowingUsers" class="text-center">
+                Loading following users...
+              </div>
+              <div v-else-if="errorFollowingUsers" class="text-danger">
+                {{ errorFollowingUsers }}
+              </div>
+              <div v-else-if="!followingUsers || followingUsers.length === 0">
+                {{ ownProfile ? 'You have not followed anyone yet. Invite your friends to Drink-X to see what they are drinking lately!' : 'User is not following anyone yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followingUsers.slice(0, 3)" 
+                    :key="`following-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Followers -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
+              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
+              <hr />
+              <div v-if="loadingFollowersUsers" class="text-center">
+                Loading followers...
+              </div>
+              <div v-else-if="errorFollowersUsers" class="text-danger">
+                {{ errorFollowersUsers }}
+              </div>
+              <div v-else-if="!followersUsers || followersUsers.length === 0">
+                {{ ownProfile ? `Don't drink alone! Invite your friends on Drink-X to share what you're drinking lately!` : "No followers yet." }}
+
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followersUsers.slice(0, 3)" 
+                    :key="`follower-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View All Friends Link -->
+            <div class="mt-4 mobile-view-hide">
+              <div>
+                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
+              </div>
+            </div>
+
+
             <!-- My Recent ACtivity -->
             <div v-if="ownProfile" class="mt-4">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
@@ -1601,102 +1699,7 @@
               </div> 
             </div>
 
-            <!-- Recently Followed Users -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
-              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
-              <hr />
-              <div v-if="loadingFollowingUsers" class="text-center">
-                Loading following users...
-              </div>
-              <div v-else-if="errorFollowingUsers" class="text-danger">
-                {{ errorFollowingUsers }}
-              </div>
-              <div v-else-if="!followingUsers || followingUsers.length === 0">
-                {{ ownProfile ? 'You have not followed anyone yet. Invite your friends to Drink-X to see what they are drinking lately!' : 'User is not following anyone yet.' }}
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followingUsers.slice(0, 3)" 
-                    :key="`following-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recent Followers -->
-            <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
-              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
-              <hr />
-              <div v-if="loadingFollowersUsers" class="text-center">
-                Loading followers...
-              </div>
-              <div v-else-if="errorFollowersUsers" class="text-danger">
-                {{ errorFollowersUsers }}
-              </div>
-              <div v-else-if="!followersUsers || followersUsers.length === 0">
-                {{ ownProfile ? `Don't drink alone! Start inviting friends on Drink-X.` : "No followers yet." }}
-
-              </div>
-
-              <div v-else class="container text-center mb-3">
-                <div class="row">
-                  <div 
-                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(user, index) in followersUsers.slice(0, 3)" 
-                    :key="`follower-${user.id || index}`"
-                  >
-                    <!-- User profile with circular border -->
-                    <div class="position-relative user-container" :key="index">
-                      <a
-                        :href="`/profile/user/${user.id}/${user.username}`"
-                        style="text-decoration: none; color: inherit;"
-                      >
-                        <img
-                          :src="user.photo || defaultProfilePhoto"
-                          alt="user profile photo"
-                          class="rounded-circle user-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
-                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
-                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- View All Friends Link -->
-            <div class="mt-4 mobile-view-hide">
-              <div>
-                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
-              </div>
-            </div>
-
+            
 
 
             <!-- Events-->

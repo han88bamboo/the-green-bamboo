@@ -21,7 +21,7 @@
   <!-- Main Content -->
   <div v-if="dataLoaded" class="userprofile mt-5 mobile-mt-3">
     <div class="container text-start">
-      <div class="row mobile-mx-1">
+      <div class="row mobile-px-3">
         <div class="col-12 col-md-10 mx-auto mobile-px-3">
           <!-- Header -->
           <div class="d-flex justify-content-between align-items-center mb-3">

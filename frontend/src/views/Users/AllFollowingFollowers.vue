@@ -27,23 +27,29 @@
     class="userprofile mt-5 mobile-mt-3"
   >
     <div class="container text-start">
-      <div class="row">
-        <div class="col-12 col-md-10 mx-auto">
+      <div class="row mobile-px-3">
+        <div class="col-12 col-md-10 mx-auto px-2">
           <!-- Header Section -->
           <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-              <h2 class="mb-1">
-                <b>{{ displayUser.displayName || displayUser.username }} - {{ currentView === 'following' ? 'Following' : 'Followers' }}</b>
-              </h2>
-              <p class="text-muted mb-0">
+              <h3 class="mb-1 mobile-fs-5">
+                <b>{{ displayUser.displayName || displayUser.username }}'s {{ currentView === 'following' ? 'Following' : 'Followers' }}</b>
+              </h3>
+              <p class="text-muted mb-0 mobile-rating-smaller-text-2">
                 {{ totalUsers }} {{ currentView === 'following' ? 'following' : 'follower' }}{{ totalUsers !== 1 ? 's' : '' }} total
               </p>
             </div>
             <button
-              class="btn primary-btn"
+              class="mobile-view-hide btn btn-sm primary-btn"
               @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
             >
               Back to Profile
+            </button>
+            <button
+              class="mobile-view-show btn primary-btn btn-sm fw-bold"
+              @click="$router.push(`/profile/user/${displayUserID}/${routeUsername}`)"
+            >
+              <i class="bi bi-arrow-return-left"></i>
             </button>
           </div>
 
@@ -53,7 +59,7 @@
             <div class="btn-group" role="group" aria-label="Following/Followers toggle">
               <button 
                 type="button" 
-                class="btn btn-outline-secondary"
+                class="btn btn-outline-secondary mobile-rating-smaller-text-2"
                 :class="{ active: currentView === 'following' }"
                 @click="switchView('following')"
                 title="Following"
@@ -62,7 +68,7 @@
               </button>
               <button 
                 type="button" 
-                class="btn btn-outline-secondary"
+                class="btn btn-outline-secondary mobile-rating-smaller-text-2"
                 :class="{ active: currentView === 'followers' }"
                 @click="switchView('followers')"
                 title="Followers"
@@ -70,7 +76,7 @@
                 Followers ({{ followersCount }})
               </button>
             </div>
-
+            
             <!-- Grid/List View Toggle -->
             <div class="btn-group" role="group" aria-label="View toggle">
               <button 
@@ -97,11 +103,12 @@
               </button>
             </div>
           </div>
-
+          
+          
           <!-- Filter and Sort Controls -->
-          <div class="row mb-4">
+          <div class="d-flex justify-content-between mb-4 gap-2">
             <div class="col-md-4">
-              <label class="form-label">Search by Name:</label>
+              <label class="form-label mobile-rating-smaller-text-2">Search by Name:</label>
               <input 
                 v-model="searchFilter" 
                 @input="applyFilters" 
@@ -109,8 +116,9 @@
                 placeholder="Search by name, drinks, or flavours..."
               />
             </div>
+            
             <div class="col-md-4">
-              <label class="form-label">Sort by:</label>
+              <label class="form-label mobile-rating-smaller-text-2">Sort by:</label>
               <select v-model="sortBy" @change="applyFilters" class="form-select">
                 <option value="name">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
@@ -121,6 +129,25 @@
                 <option value="points">Most Points</option>
                 <option value="points-desc">Least Points</option>
               </select>
+            </div>
+            
+          </div>
+
+          <div class="offcanvas offcanvas-bottom d-md-none" tabindex="-1" id="sortSheet" style="max-height: 60vh;">
+            <div class="offcanvas-header">
+              <h6 class="offcanvas-title">Sort by</h6>
+              <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+              <div class="list-group">
+                <label v-for="opt in sortOptions" :key="opt.value" class="list-group-item d-flex align-items-center gap-2">
+                  <input class="form-check-input me-2" type="radio" name="sort" :value="opt.value" v-model="sortBy">
+                  <span>{{ opt.label }}</span>
+                </label>
+              </div>
+            </div>
+            <div class="border-top p-3 d-flex justify-content-end bg-white">
+              <button class="btn primary-btn" data-bs-dismiss="offcanvas" @click="applyFilters">Apply</button>
             </div>
           </div>
 
@@ -152,14 +179,12 @@
 
                   <!-- User Stats -->
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <p class="text-muted small mb-0">
-                      Joined {{ formatDate(user.joinDate) }}
-                    </p>
+                    
                     <div class="d-flex align-items-center">
-                      <p class="text-muted small mb-0 me-3">
+                      <p class="mb-2 small fw-bold" style="color: #f0b358;">
                         <i class="fas fa-wine-glass me-1"></i>{{ user.reviewCount || 0 }} reviews
                       </p>
-                      <p class="text-muted small mb-0">
+                      <p class="mb-2 small fw-bold" style="color: #f0b358;">
                         <i class="fas fa-users me-1"></i>{{ user.followerCount || 0 }} followers
                       </p>
                     </div>
@@ -210,9 +235,12 @@
                       {{ [user.firstName, user.lastName].filter(Boolean).join(' ') }}
                     </p>
                   </div> -->
-
+                  <p class="text-muted small mb-2">
+                      Joined {{ formatDate(user.joinDate) }}
+                    </p>
                   <!-- Action buttons -->
-                  <div class="d-flex justify-content-end align-items-center">
+                  <div class="d-flex justify-content-between align-items-center">
+                    
                     <button 
                       class="btn btn-sm primary-btn"
                       @click="visitProfile(user.id, user.username)"
@@ -256,7 +284,7 @@
                   </p>
                   
                   <!-- Stats -->
-                  <p class="mb-2 small" style="color: #f0b358;">
+                  <p class="mb-2 small fw-bold" style="color: #f0b358;">
                     {{ user.reviewCount || 0 }} reviews / {{ user.followerCount || 0 }} followers
                   </p>
                   
@@ -302,11 +330,15 @@
             </div>
           </div>
 
-          <!-- No Users Message -->
-          <div v-else-if="dataLoaded" class="text-center py-5">
-            <h4 class="text-muted">No {{ currentView }} found</h4>
+          <!-- Empty state (standalone, not chained) -->
+          <div
+            v-if="dataLoaded && (!filteredUsers || filteredUsers.length === 0)"
+            class="text-center py-5"
+          >
+            <h5 class="text-muted">No {{ currentView }} yet.</h5>
             <p class="text-muted">
-              {{ displayUser.displayName || displayUser.username }} {{ currentView === 'following' ? "isn't following anyone yet" : "doesn't have any followers yet" }}.
+              {{ displayUser.displayName || displayUser.username }}
+              {{ currentView === 'following' ? "isn't following anyone yet" : "doesn't have any followers yet" }}.
             </p>
           </div>
 
@@ -395,6 +427,18 @@ export default {
     };
   },
   computed: {
+    sortOptions() {
+      return [
+        { value: 'name', label: 'Name (A–Z)' },
+        { value: 'name-desc', label: 'Name (Z–A)' },
+        { value: 'join-date', label: 'Newest Members' },
+        { value: 'join-date-desc', label: 'Oldest Members' },
+        { value: 'reviews', label: 'Most Reviews' },
+        { value: 'followers', label: 'Most Followers' },
+        { value: 'points', label: 'Most Points' },
+        { value: 'points-desc', label: 'Least Points' },
+      ];
+    },
     followingCount() {
       return this.allFollowing.length;
     },
