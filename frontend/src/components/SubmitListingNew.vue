@@ -1649,16 +1649,18 @@
                 console.log("writeListing called. API:", submitAPI);
                 console.log("Payload being sent:", submitData);
 
-                const response = await this.$axios.post(submitAPI, submitData)
-                .then((response)=>{
-                    responseCode = response.data.code
-                    console.log("API response received:", response.data);
+                let response;
+                await this.$axios.post(submitAPI, submitData)
+                .then((res)=>{
+                    response = res;
+                    responseCode = res.data.code
+                    console.log("API response received:", res.data);
                 })
                 .catch((error)=>{
                     responseCode = error.response.data.code
                     console.error("API error response:", error.response.data);
 
-                    if (responseCode === 201 && response.data.badgeAwarded) {
+                    if (responseCode === 201 && response && response.data.badgeAwarded) {
                         this.earnedBadges = [response.data.badgeAwarded];
                         this.showBadgePopup = true;
                     }
@@ -1686,6 +1688,35 @@
                     localStorage.removeItem('cachedListingTempDrinkType');
                     localStorage.removeItem('cachedListingTempTypeCategory');
                     localStorage.removeItem('cachedListingTempDrinkStyle');
+                    
+                    // Redirect to new listing page for users creating new listings
+                    if (this.formMode === "new" && response && response.data && response.data.data) {
+                        const responseData = response.data.data;
+                        let listingId = null;
+                        let listingName = null;
+                        
+                        // For power users (direct listing creation)
+                        if (this.formType === "power" && responseData.id && responseData.listingName) {
+                            listingId = responseData.id;
+                            listingName = responseData.listingName;
+                        }
+                        // For regular users (request listings with auto-approval)
+                        else if (this.formType === "req" && responseData.listingId && responseData.listingName && responseData.autoApproved) {
+                            listingId = responseData.listingId;
+                            listingName = responseData.listingName;
+                        }
+                        
+                        // Redirect if we have both listing ID and name
+                        if (listingId && listingName) {
+                            // Create URL-safe slug (same logic as backend)
+                            const slug = listingName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+                            const listingUrl = `/listing/view/${listingId}/${slug}`;
+                            
+                            console.log("Redirecting to new listing:", listingUrl);
+                            this.$router.push(listingUrl);
+                            return response; // Early return to avoid showing success message
+                        }
+                    }
                 } else {
                     this.errorSubmission = true; // Display error message
                     this.submitForm = false; // Hide submission in progress message
