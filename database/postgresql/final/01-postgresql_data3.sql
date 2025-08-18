@@ -631,13 +631,36 @@ CREATE TABLE "tokens" (
 );
 
 -- ========= "venuesMenu" =========
+-- CREATE TABLE "venuesMenu" (
+--     "id" SERIAL PRIMARY KEY,
+--     "sectionName" VARCHAR(255),
+--     "sectionOrder" VARCHAR(255),
+--     -- "sectionMenu" TEXT[], -- [!] Contains listings(id)
+--     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
+-- );
+-- 1. Rename existing table
+ALTER TABLE "venuesMenu" RENAME TO "venuesMenu_old";
+
+-- 2. Create the new table with updated schema
 CREATE TABLE "venuesMenu" (
     "id" SERIAL PRIMARY KEY,
-    "sectionName" VARCHAR(255),
-    "sectionOrder" VARCHAR(255),
-    -- "sectionMenu" TEXT[], -- [!] Contains listings(id)
-    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL -- [!] References venues FK
+    "sectionName" VARCHAR(255) NOT NULL,
+    "sectionOrder" INTEGER,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL,
+    "parentSectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
+    "isSubSection" BOOLEAN GENERATED ALWAYS AS ("parentSectionId" IS NOT NULL) STORED
 );
+
+-- 3. Copy data from old table
+INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId")
+SELECT "id",
+       "sectionName",
+       "sectionOrder"::INTEGER,
+       "venueId"
+FROM "venuesMenu_old";
+
+-- 4. remove the old table
+DROP TABLE "venuesMenu_old";
 
 -- ========= "menuItems" =========
 CREATE TABLE "menuItems" (
