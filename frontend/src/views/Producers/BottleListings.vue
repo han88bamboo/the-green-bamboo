@@ -1549,7 +1549,17 @@
 
         <!-- reviews -->
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
-        <div class="container no-right-padding-large-screen">
+        <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
+          <!-- Paywall Overlay for Non-Logged in Users -->
+          <div v-if="userID === 'defaultUser'" class="paywall-overlay">
+            <div class="paywall-gradient"></div>
+            <div class="paywall-content">
+              <button class="btn paywall-signup-btn" @click="$router.push('/signup')">
+                Sign Up to Log Your Review
+              </button>
+            </div>
+          </div>
+          
           <hr />
           <!-- photos posted by other users -->
           <h5 class="text-start" style="font-weight: bold; color: black">
@@ -2356,6 +2366,8 @@
       :key="bookmarkListingID ? 'modal-' + bookmarkListingID : 'modal-default'" />
   </div>
 
+
+
   <BadgePopup 
     :badges="earnedBadges" 
     :show="showBadgePopup" 
@@ -2849,6 +2861,9 @@ export default {
 
       earnedBadges: [],
       showBadgePopup: false,
+
+      // Paywall controls
+      paywallScrollHandler: null,
     };
   },
   mounted() {
@@ -2871,9 +2886,16 @@ export default {
       this.$nextTick(() => {
         this.setupAutoResize();
       });
+
+      // Initialize paywall scroll control for non-logged in users
+      this.initializePaywallControls();
     } catch (error) {
       console.error(error);
     }
+  },
+  beforeUnmount() {
+    // Clean up paywall scroll controls
+    this.cleanupPaywallControls();
   },
   computed: {
     filteredOptions() {
@@ -2943,6 +2965,21 @@ export default {
         
         // Clear review cache for the previous listing
         this.clearReviewCache();
+      }
+    },
+
+    // Watch for user login/logout changes
+    userID: function(newUserID, oldUserID) {
+      if (newUserID !== oldUserID) {
+        if (newUserID === 'defaultUser') {
+          // User logged out, setup paywall
+          this.$nextTick(() => {
+            this.initializePaywallControls();
+          });
+        } else {
+          // User logged in, remove paywall
+          this.cleanupPaywallControls();
+        }
       }
     },
 
@@ -5112,6 +5149,48 @@ export default {
       this.selectedVintage = value;
     },
 
+    // Paywall Controls
+    initializePaywallControls() {
+      if (this.userID === 'defaultUser') {
+        this.$nextTick(() => {
+          this.setupPaywallScrollLimit();
+        });
+      }
+    },
+
+    setupPaywallScrollLimit() {
+      const paywallContainer = document.querySelector('.paywall-container');
+      if (!paywallContainer) return;
+
+      const containerTop = paywallContainer.offsetTop;
+      const maxScrollPosition = containerTop + 1500; // 1500px below container start
+
+      const handleScroll = () => {
+        if (this.userID === 'defaultUser') {
+          const currentScrollY = window.scrollY;
+          if (currentScrollY > maxScrollPosition) {
+            window.scrollTo({
+              top: maxScrollPosition,
+              behavior: 'smooth'
+            });
+          }
+        }
+      };
+
+      // Add scroll event listener
+      window.addEventListener('scroll', handleScroll, { passive: false });
+
+      // Store the handler for cleanup
+      this.paywallScrollHandler = handleScroll;
+    },
+
+    cleanupPaywallControls() {
+      if (this.paywallScrollHandler) {
+        window.removeEventListener('scroll', this.paywallScrollHandler);
+        this.paywallScrollHandler = null;
+      }
+    },
+
     closeBadgePopup() {
       this.showBadgePopup = false;
       this.earnedBadges = [];
@@ -5380,6 +5459,112 @@ export default {
     width: 16px !important;
     height: 16px !important;
     margin-right: 1px !important;
+  }
+}
+
+/* Paywall Styles */
+.paywall-container {
+  position: relative;
+  overflow: hidden;
+  max-height: 800px;
+}
+
+.paywall-container > *:not(.paywall-overlay) {
+  pointer-events: none;
+  user-select: none;
+}
+
+.paywall-overlay {
+  position: absolute;
+  top: 0;
+  left: -100vw;
+  right: -100vw;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+  width: 300vw;
+  height: 100%;
+  min-height: 600px;
+}
+
+.paywall-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.1) 75%,
+    rgba(255, 255, 255, 0.3) 80%,
+    rgba(255, 255, 255, 0.6) 85%,
+    rgba(255, 255, 255, 0.8) 90%,
+    rgba(255, 255, 255, 0.95) 95%,
+    rgba(255, 255, 255, 1) 100%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  backdrop-filter: blur(2px);
+}
+
+.paywall-content {
+  position: absolute;
+  top: 60%;
+  left: 43%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: all !important;
+  z-index: 10001;
+}
+
+.paywall-signup-btn {
+  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: all !important;
+  cursor: pointer;
+}
+
+.paywall-signup-btn {
+  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.paywall-signup-btn:hover {
+  background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
+  color: white;
+}
+
+.paywall-signup-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
+}
+
+/* Responsive adjustments for paywall */
+@media (max-width: 768px) {
+  .paywall-signup-btn {
+    font-size: 1rem;
+    padding: 14px 28px;
   }
 }
 </style>
