@@ -304,6 +304,9 @@
                   <li>
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
+                  <li>
+                    <router-link :to="'/my-cellar'" class="dropdown-item">My Cellar</router-link>
+                  </li>
                 </div>
 
                 <li>
@@ -577,6 +580,10 @@
             Edit Menu
           </button>
         </router-link>
+
+        <li>
+          <router-link :to="'/my-cellar'" class="dropdown-item">My Cellar</router-link>
+        </li>
       </div>
     </div>
 

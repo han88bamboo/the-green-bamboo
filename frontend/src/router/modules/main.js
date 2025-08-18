@@ -57,6 +57,11 @@ const routes = [
     name: "successfulOnboarding",
     component: () => import(/* webpackChunkName: "main" */ "@/views/SuccessfulOnboarding.vue"),
   },
+  {
+    path: "/my-cellar",
+    name: "myCellar",
+    component: () => import(/* webpackChunkName: "main" */ "@/views/MyCellar.vue"),
+  },
 ];
 
 export default routes;
