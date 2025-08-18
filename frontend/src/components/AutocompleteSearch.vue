@@ -219,6 +219,23 @@
             </div>
           </div>
         </div>
+
+        <!-- Full Search Option -->
+        <div class="dropdown-divider my-1"></div>
+        <div
+          :class="[
+            'dropdown-item search-item py-3 px-3 full-search-item w-100',
+            { 'active': selectedIndex === getTotalItems() }
+          ]"
+          @mousedown="handleFullSearch($event)"
+          @mouseenter="selectedIndex = getTotalItems()"
+          role="button"
+        >
+          <div class="d-flex align-items-center justify-content-center w-100">
+            <i class="bi bi-search me-4 text-muted"></i>
+            <span class="text-muted full-search-text">Can't find what you're looking for? Click for full search</span>
+          </div>
+        </div>
       </div>
 
       <!-- No Results -->
@@ -299,6 +316,11 @@ export default {
     // Calculate total items for keyboard navigation
     const getTotalItems = () => {
       return results.listings.length + results.venues.length + results.producers.length + results.users.length
+    }
+
+    // Calculate total items including the full search option
+    const getTotalItemsWithFullSearch = () => {
+      return getTotalItems() + 1
     }
 
     const getItemIndex = (section, index) => {
@@ -530,6 +552,26 @@ export default {
       }
     }
 
+    // Handle full search option click
+    const handleFullSearch = (event) => {
+      if (event) {
+        event.preventDefault()
+      }
+      
+      const query = searchQuery.value.trim()
+      if (query.length > 0) {
+        // Create a custom search item for full search
+        const customItem = {
+          name: query,
+        }
+        
+        emit('select', { item: customItem, type: 'FullSearch' })
+        showResults.value = false
+        isMousedOverResults.value = false
+        searchInput.value.blur()
+      }
+    }
+
     // Keyboard navigation
     const handleKeydown = (event) => {
       // if (!showResults.value || getTotalItems() === 0) return
@@ -555,7 +597,7 @@ export default {
       switch (event.key) {
         case 'ArrowDown':
           event.preventDefault()
-          selectedIndex.value = selectedIndex.value < getTotalItems() - 1 
+          selectedIndex.value = selectedIndex.value < getTotalItemsWithFullSearch() - 1 
             ? selectedIndex.value + 1 
             : 0
           break
@@ -563,14 +605,17 @@ export default {
           event.preventDefault()
           selectedIndex.value = selectedIndex.value > 0 
             ? selectedIndex.value - 1 
-            : getTotalItems() - 1
+            : getTotalItemsWithFullSearch() - 1
           break
         case 'Enter':
           event.preventDefault()
-          if (selectedIndex.value >= 0) {
-            // Select from dropdown
+          if (selectedIndex.value >= 0 && selectedIndex.value < getTotalItems()) {
+            // Select from dropdown items
             const { item, type } = getItemByIndex(selectedIndex.value)
             selectItem(item, type)
+          } else if (selectedIndex.value === getTotalItems()) {
+            // Select full search option
+            handleFullSearch()
           } else {
             // No item selected, perform manual search
             handleManualSearch()
@@ -662,7 +707,9 @@ export default {
       selectedCategoryKey,
       selectedCategory,
       searchPlaceholder,
-      selectCategory
+      selectCategory,
+      getTotalItems,
+      handleFullSearch
     }
   }
 }
@@ -903,6 +950,57 @@ export default {
   .category-selector {
     min-width: 40px;
     padding: 0.375rem 0.5rem;
+  }
+}
+
+/* Full Search Item Styles */
+.full-search-item {
+  background-color: #f8f9fa !important;
+  border-top: 1px solid #e9ecef;
+  font-style: italic;
+  transition: all 0.15s ease;
+  width: 100% !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  min-width: 0; /* Allow flexbox to shrink */
+}
+
+.full-search-item:hover {
+  background-color: #e9ecef !important;
+}
+
+.full-search-item.active {
+  background-color: #027562 !important;
+  color: white !important;
+}
+
+.full-search-item.active .text-muted {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.full-search-item .text-muted {
+  font-size: 0.85rem;
+}
+
+.full-search-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Ensure full width on mobile */
+@media (max-width: 768px) {
+  .full-search-item {
+    padding: 0.75rem 1rem !important;
+  }
+  
+  .full-search-text {
+    white-space: normal;
+    text-overflow: unset;
+    overflow: visible;
+    font-size: 0.8rem;
+    line-height: 1.3;
   }
 }
 
