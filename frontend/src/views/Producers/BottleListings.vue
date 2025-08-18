@@ -5466,7 +5466,7 @@ export default {
 .paywall-container {
   position: relative;
   overflow: hidden;
-  max-height: 800px;
+  max-height: 1000px;
 }
 
 .paywall-container > *:not(.paywall-overlay) {
@@ -5505,7 +5505,7 @@ export default {
     rgba(255, 255, 255, 1) 100%,
     rgba(255, 255, 255, 1) 100%
   );
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(1.15px);
 }
 
 .paywall-content {
