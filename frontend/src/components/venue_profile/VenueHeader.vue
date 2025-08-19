@@ -66,6 +66,7 @@
             />
 
             <!-- Amenity badge section -->
+            <VenueAmenities :amenities="venue.amenities"/>
         </div>
 
         <!-- Empty State -->
@@ -80,6 +81,7 @@
 import VenueImage from './venue_header/VenueImage.vue';
 import VenueDetails from './venue_header/VenueDetails.vue'
 import VenueAddDetails from './venue_header/VenueAddDetails.vue';
+import VenueAmenities from './venue_header/VenueAmenities.vue';
 
 export default {
     name: 'VenueHeader',
@@ -87,7 +89,8 @@ export default {
     components: {
         VenueImage,
         VenueDetails,
-        VenueAddDetails
+        VenueAddDetails,
+        VenueAmenities
     },
     props: {
         isLoading: Boolean,

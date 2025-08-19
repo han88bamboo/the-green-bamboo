@@ -9,7 +9,7 @@
             </router-link>
 
             <!-- v-if admincreated account, if yes dont show -->
-            <router-link v-if="!adminCreated" class="d-grid pb-3 text-decoration-none"
+            <!-- <router-link v-if="!adminCreated" class="d-grid pb-3 text-decoration-none"
                 :to="{ path: '/business/settings' }">
                 <button type="button" class="btn secondary-btn-not-rounded rounded-0" style=" font-weight: bold;">
                     Settings
@@ -21,7 +21,7 @@
                     disabled>
                     Settings 
                 </button>
-            </div>
+            </div> -->
 
             <!-- Button for change/reset password -->
             <div class="d-grid pb-0 text-decoration-none">

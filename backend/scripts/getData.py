@@ -4267,6 +4267,12 @@ def venue(id):
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
                 v.email, v."phoneNumber", v."whatsappNumber",
                 v.username, v."venueType", 
+                -- Build amenities JSON
+                COALESCE((
+                    SELECT row_to_json(va)
+                    FROM "venueAmenities" va
+                    WHERE va."venueId" = v.id
+                ), '{}'::json) AS amenities,
                 -- Build openingHours JSON
                 COALESCE((
                     SELECT row_to_json(oh)
@@ -4298,6 +4304,7 @@ def venue(id):
 
         venue = dict(venue_data)
         # venue['menu'] = venue['menu'] if venue['menu'] else []
+        venue['amenities'] = venue['amenities'] if venue['amenities'] else {}
         venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
         venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
         # venue['updates'] = venue['updates'] if venue['updates'] else []

@@ -53,7 +53,7 @@
                                     <div v-for="(subSection, subIndex) in section.subSections" :key="subIndex" class="mb-2">
                                         <!-- Sub-section Header -->
                                         <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
-                                            style="background-color: #e9ecef; cursor: pointer; user-select: none;"
+                                            style="background-color: #f0b258; cursor: pointer; user-select: none;"
                                             @click="toggleSubSection(subSection)">
                                             <div class="d-flex align-items-center">
                                                 <h6 class="mb-0 fw-semibold text-dark">{{ subSection.sectionName }}</h6>
