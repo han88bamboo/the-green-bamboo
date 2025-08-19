@@ -108,7 +108,7 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="badge primary-btn-less-round-blue text-decoration-none mt-2 fw-bold ">Read Review</span>
+                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold ">Read Review</span>
                                 </p>
                             </div>
                         </div>
@@ -189,7 +189,7 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="badge primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
+                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
                                 </p>
                             </div>
                         </div>
@@ -204,8 +204,8 @@
     <section class="recent-reviews-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Trending Venues</h2>
-                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">See where others are sipping at!</h3>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Recently Reviewed Venues</h2>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Find Top Rated Bars and Restaurants</h3>
             </div>
             
             <!-- Recent Venue Reviews Grid - 3 columns with proper spacing -->
@@ -338,11 +338,11 @@
                                 </div>
                             </div>
                             
-                            <div class="card-body d-flex flex-column">
+                            <div class="card-body d-flex flex-column mobile-mt-3">
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 135) }}" 
-                                    <span class="badge text-white ms-1" style="background-color: #3CB371;">Read Review</span>
+                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
                                 </p>
                             </div>
                         </div>
@@ -358,7 +358,7 @@
     <section class="whats-on-menu-section py-4">
         <div class="container">
             <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">What's On Menu</h2>
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">What's On The Menu</h2>
                 <!-- <h3 class="mobile-fs-6 fw-bold fst-italic h5" style="color: black;">Featured menus from our partner venues</h3> -->
             </div>
             
@@ -366,7 +366,7 @@
             <div class="menu-cards-container">
                 <div class="menu-cards-grid pt-1">
                     <!-- Menu Card 1 - Venue ID 11 -->
-                    <div class="col-4 pe-4">
+                    <div class="col-4 pe-2">
                         <div class="menu-card h-100" v-if="venueMenus[0]">
                             <div class="menu-card-header p-3 text-center">
                                 <!-- Venue Profile Photo -->
@@ -379,7 +379,7 @@
                                         @click="goToVenue(venueMenus[0])"
                                     />
                                 </div>
-                                <h5 class="mb-1 fw-bold" 
+                                <h5 class="mb-1 fw-bold mobile-fs-6" 
                                     @click="goToVenue(venueMenus[0])"
                                     
                                     @mouseover="$event.target.style.color = '#E9ECEF'"
@@ -392,9 +392,9 @@
                                 <div 
                                     v-for="item in venueMenus[0].menuItems" 
                                     :key="`${venueMenus[0].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-0 rounded"
                                     @click="goToListing(item)"
-                                     style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                     style="cursor: pointer; transition: background-color 0.2s ease;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
                                     @mouseout="$event.target.style.backgroundColor = 'transparent'"
                                 >
@@ -467,7 +467,7 @@
                                         @click="goToVenue(venueMenus[1])"
                                     />
                                 </div>
-                                <h5 class="mb-1 fw-bold" 
+                                <h5 class="mb-1 fw-bold mobile-fs-6" 
                                     @click="goToVenue(venueMenus[1])"
                                     
                                     @mouseover="$event.target.style.color = '#E9ECEF'"
@@ -480,9 +480,9 @@
                                 <div 
                                     v-for="item in venueMenus[1].menuItems" 
                                     :key="`${venueMenus[1].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-0 rounded"
                                     @click="goToListing(item)"
-                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                    style="cursor: pointer; transition: background-color 0.2s ease;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
                                     @mouseout="$event.target.style.backgroundColor = 'transparent'"
                                 >
@@ -542,7 +542,7 @@
                     </div>
 
                     <!-- Menu Card 3 - Venue ID 24 -->
-                    <div class="col-4 ps-4">
+                    <div class="col-4 ps-2">
                         <div class="menu-card h-100" v-if="venueMenus[2]">
                             <div class="menu-card-header p-3 text-center">
                                 <!-- Venue Profile Photo -->
@@ -555,7 +555,7 @@
                                         @click="goToVenue(venueMenus[2])"
                                     />
                                 </div>
-                                <h5 class="mb-1 fw-bold" 
+                                <h5 class="mb-1 fw-bold mobile-fs-6" 
                                     @click="goToVenue(venueMenus[2])"
                                     
                                     @mouseover="$event.target.style.color = '#E9ECEF'"
@@ -568,13 +568,13 @@
                                 <div 
                                     v-for="item in venueMenus[2].menuItems" 
                                     :key="`${venueMenus[2].venueId}-${item.listingId}`"
-                                    class="menu-item d-flex align-items-start mb-3 p-2 rounded"
+                                    class="menu-item d-flex align-items-start mb-3 p-0 rounded"
                                     @click="goToListing(item)"
-                                    style="cursor: pointer; transition: background-color 0.2s ease; border: 1px solid #e9ecef;"
+                                    style="cursor: pointer; transition: background-color 0.2s ease;"
                                     @mouseover="$event.target.style.backgroundColor = '#f8f9fa'"
                                     @mouseout="$event.target.style.backgroundColor = 'transparent'"
                                 >
-                                    <div class="menu-item-image me-3">
+                                    <div class="menu-item-image me-2">
                                         <img 
                                             :src="item.listingPhoto" 
                                             :alt="item.listingName"
@@ -1846,7 +1846,7 @@ button.btn.selected {
 /* Menu Cards - Always 3 columns with horizontal scroll */
 .menu-cards-container {
     overflow-x: auto;
-    padding-bottom: 10px;
+    padding-bottom: 5px;
 }
 
 .menu-cards-grid {
