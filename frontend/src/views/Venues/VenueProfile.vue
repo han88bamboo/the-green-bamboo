@@ -8322,6 +8322,45 @@ Thank you!`
             // Reset data
             this.targetVenue = newId;
             this.targetVenueID = newId;
+
+            // Reset review-related data
+            this.filteredVenueReviews = [];
+            this.filteredVenueReviewsWithImages = [];
+            this.bottleReviews = [];
+            this.combinedReviewImages = [];
+            this.venueReviews = [];
+            this.users = [];
+            this.venues = [];
+            this.bottleListings = {};
+            this.lastReviewID = 0;
+            this.noMoreReviews = false;
+
+            // Reset other venue-specific data
+            this.loadedListings = [];
+            this.loadedProducers = [];
+            this.mostPopular = [];
+            this.mostDiscussed = [];
+            this.recentlyAdded = [];
+            this.answeredQuestions = [];
+            this.unansweredQuestions = [];
+            this.detailedMenu = [];
+            this.editMenu = [];
+            this.searchMenuResults = [];
+            
+            // Reset user-specific data
+            this.userInfo = {};
+            this.userFollowing = false;
+            this.userBookmarks = [];
+            
+            // Reset modal and form states
+            this.selectedDetailedReview = {};
+            this.reviewDesc = "";
+            this.reviewDescError = "";
+            this.rating = 5;
+            this.reviewImages64 = [];
+            this.selectedImagesForReview = [];
+            this.inEdit = false;
+            this.specificReview = [];
             
             // Check if it's own profile
             if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
