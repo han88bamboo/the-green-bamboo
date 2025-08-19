@@ -670,10 +670,15 @@ CREATE TABLE "menuItems" (
     "itemAvailability" BOOLEAN,
     "itemID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL,
     "itemServingType" INTEGER REFERENCES "servingTypes"("id") ON DELETE SET NULL,
-    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
+    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE, -- temporarily changed to ON DELETE SET NULL
     "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 -- ALTER TABLE "menuItems" ADD COLUMN "variant" SMALLINT DEFAULT NULL;
+
+-- Drop the old FK (likely points to venuesMenu_old)
+ALTER TABLE "menuItems"
+DROP CONSTRAINT IF EXISTS "menuItems_sectionId_fkey";
+
 
 -- ========= "venuesOpeningHours" =========
 CREATE TABLE "venuesOpeningHours" (
