@@ -66,7 +66,10 @@
             />
 
             <!-- Amenity badge section -->
-            <VenueAmenities :amenities="venue.amenities"/>
+            <VenueAmenities :amenities="venue.amenities" :is-editing="isEditing"
+                @update:editData="handleVenueDetailsUpdate"
+                ref="venueAmenitiesRef"
+            />
         </div>
 
         <!-- Empty State -->
@@ -261,6 +264,7 @@ export default {
          */
         initializeEditMode() {
             this.editProfile = true
+            const amenities = this.venue.amenities || {};
 
             // Initialize edit data with current venue values
             this.venueEditData = {
@@ -276,7 +280,55 @@ export default {
                 email: this.venue.email || '',
                 phoneNumber: this.venue.phoneNumber || '',
                 whatsappNumber: this.venue.whatsappNumber || '',
-                openForReservations: this.venue.openForReservations || false
+                openForReservations: this.venue.openForReservations || false,
+
+                // Payment Methods (match database schema)
+                paymentCash: amenities.paymentCash || false,
+                paymentVisa: amenities.paymentVisa || false,
+                paymentMasterCard: amenities.paymentMasterCard || false,
+                paymentAmericanExpress: amenities.paymentAmericanExpress || false,
+                paymentDiscover: amenities.paymentDiscover || false,
+                paymentApplePay: amenities.paymentApplePay || false,
+                paymentPayNow: amenities.paymentPayNow || false,
+                paymentGooglePay: amenities.paymentGooglePay || false,
+                paymentSamsungPay: amenities.paymentSamsungPay || false,
+                // Beverage Offerings (match database schema)
+                beverageCocktails: amenities.beverageCocktails || false,
+                beverageWine: amenities.beverageWine || false,
+                beverageBeer: amenities.beverageBeer || false,
+                beverageWhisky: amenities.beverageWhisky || false,
+                beverageBrandy: amenities.beverageBrandy || false,
+                beverageTequila: amenities.beverageTequila || false,
+                beverageMezcal: amenities.beverageMezcal || false,
+                beverageRum: amenities.beverageRum || false,
+                beverageSake: amenities.beverageSake || false,
+                beverageShochu: amenities.beverageShochu || false,
+                beverageSoju: amenities.beverageSoju || false,
+                beverageBaijiu: amenities.beverageBaijiu || false,
+                beverageGin: amenities.beverageGin || false,
+                beverageVodka: amenities.beverageVodka || false,
+                beverageAbsinthe: amenities.beverageAbsinthe || false,
+                beverageArrack: amenities.beverageArrack || false,
+                // Other Amenities (match database schema)
+                foodServed: amenities.foodServed || false,
+                outdoorSeating: amenities.outdoorSeating || false,
+                indoorSeating: amenities.indoorSeating || false,
+                petFriendly: amenities.petFriendly || false,
+                childFriendly: amenities.childFriendly || false,
+                familyFriendly: amenities.familyFriendly || false,
+                smokeFriendly: amenities.smokeFriendly || false,
+                wheelchairAccessibility: amenities.wheelchairAccessibility || false,
+                freeWiFi: amenities.freeWiFi || false,
+                happyHourDrinks: amenities.happyHourDrinks || false,
+                liveMusic: amenities.liveMusic || false,
+                barGames: amenities.barGames || false,
+                sommelierService: amenities.sommelierService || false,
+                deliveryAvailable: amenities.deliveryAvailable || false,
+                lgbtqFriendly: amenities.lgbtqFriendly || false,
+                reservationsRequired: amenities.reservationsRequired || false,
+                membershipRequired: amenities.membershipRequired || false,
+                inStoreScheduling: amenities.inStoreScheduling || false,
+                otherAmenities: amenities.otherAmenities || ''
             }
 
             // Reset validation state
@@ -314,7 +366,54 @@ export default {
                 email: '',
                 phoneNumber: '',
                 whatsappNumber: '',
-                openForReservations: false
+                openForReservations: false,
+                // Payment Methods (match database schema)
+                paymentCash: false,
+                paymentVisa: false,
+                paymentMasterCard: false,
+                paymentAmericanExpress: false,
+                paymentDiscover: false,
+                paymentApplePay: false,
+                paymentPayNow: false,
+                paymentGooglePay: false,
+                paymentSamsungPay: false,
+                // Beverage Offerings (match database schema)
+                beverageCocktails: false,
+                beverageWine: false,
+                beverageBeer: false,
+                beverageWhisky: false,
+                beverageBrandy: false,
+                beverageTequila: false,
+                beverageMezcal: false,
+                beverageRum: false,
+                beverageSake: false,
+                beverageShochu: false,
+                beverageSoju: false,
+                beverageBaijiu: false,
+                beverageGin: false,
+                beverageVodka: false,
+                beverageAbsinthe: false,
+                beverageArrack: false,
+                // Other Amenities (match database schema)
+                foodServed: false,
+                outdoorSeating: false,
+                indoorSeating: false,
+                petFriendly: false,
+                childFriendly: false,
+                familyFriendly: false,
+                smokeFriendly: false,
+                wheelchairAccessibility: false,
+                freeWiFi: false,
+                happyHourDrinks: false,
+                liveMusic: false,
+                barGames: false,
+                sommelierService: false,
+                deliveryAvailable: false,
+                lgbtqFriendly: false,
+                reservationsRequired: false,
+                membershipRequired: false,
+                inStoreScheduling: false,
+                otherAmenities: ''
             }
 
             // Reset component states if they have reset methods
@@ -342,24 +441,18 @@ export default {
         consolidateAndEmitData() {
             const venueDetailsData = this.$refs.venueDetailsRef.getEditData();
             const venueAddDetailsData = this.$refs.venueAddDetailsRef.getEditData();
+            const venueAmenitiesData = this.$refs.venueAmenitiesRef.getEditData();
 
             const consolidatedData = {
                 ...venueDetailsData,
                 ...venueAddDetailsData,
+                ...venueAmenitiesData,
                 photo: this.editedProfilePhoto, // The file object
                 deleteImage: this.imageToDelete,
                 venueId: this.venue.id || this.venue.venueId
             };
 
             this.$emit('save-profile', consolidatedData);
-        },
-
-        /**
-         * Handle additional fields update (for fields not in VenueDetails)
-         */
-        handleAdditionalFieldsUpdate() {
-            // This will be moved to VenueContactInfo component later
-            console.log('Additional fields updated')
         },
 
         // Claim Venue Account
