@@ -31,7 +31,7 @@
                     </div>
                     <!-- Edit Profile Toggle -->
                     <div class="d-grid no-padding text-end" v-else>
-                        <button v-if="!isEditing" type="button"
+                        <button v-if="!isEditing" type="button" :disabled="isLoading"
                             class="btn tertiary-btn-blue-outline rounded-0 reverse-clickable-text"
                             @click="toggleEditProfile">
                             <i class="bi bi-pencil-square"></i>

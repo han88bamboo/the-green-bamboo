@@ -18,23 +18,48 @@
           </a>
           |
           <strong>Instagram:</strong> 
-          {{ venue.instagram && venue.instagram.toString().trim() ? venue.instagram : 'n/a' }}
+          <template v-if="formatSocialHandle(venue.instagram, 'instagram')">
+            <a :href="venue.instagram" target="_blank">
+              {{ formatSocialHandle(venue.instagram, 'instagram') }}
+            </a>
+          </template>
+          <template v-else>
+            n/a
+          </template>
           | 
           <strong>Facebook:</strong>
-          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
-          | 
-          <strong>Facebook:</strong>
-          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
+          <template v-if="formatSocialHandle(venue.facebook, 'facebook')">
+            <a :href="venue.facebook" target="_blank">
+              {{ formatSocialHandle(venue.facebook, 'facebook') }}
+            </a>
+          </template>
+          <template v-else>
+            n/a
+          </template>
           | 
           <strong>tiktok:</strong>
-          {{ venue.facebook && venue.facebook.toString().trim() ? venue.facebook : 'n/a' }}
+          <template v-if="formatSocialHandle(venue.tiktok, 'tiktok')">
+            <a :href="venue.tiktok" target="_blank">
+              {{ formatSocialHandle(venue.tiktok, 'tiktok') }}
+            </a>
+          </template>
+          <template v-else>
+            n/a
+          </template>
         </p>
         <p class="mb-0">
           <strong>Phone:</strong> 
           {{ venue.phone && venue.phone.toString().trim() ? venue.phone : 'n/a' }}
           | 
           <strong>WhatsApp:</strong>
-          {{ venue.whatsappNumber && venue.whatsappNumber.toString().trim() ? venue.whatsappNumber : 'n/a' }}
+          <a 
+            v-if="venue.whatsappNumber && venue.whatsappNumber.toString().trim()" 
+            :href="`https://wa.me/${venue.whatsappNumber.replace(/[^0-9]/g, '')}`" 
+            target="_blank"
+          >
+            {{ venue.whatsappNumber }}
+          </a>
+          <span v-else>n/a</span>
         </p>
       </div>
 
@@ -195,6 +220,30 @@ export default {
     },
     handleInputChange() {
       this.$emit('update:editData', this.localEditData);
+    },
+    formatSocialHandle(url, platform) {
+        if (!url) return null;
+        
+        const patterns = {
+            instagram: {
+                regex: /instagram\.com\/([^/?]+)/,
+                format: (handle) => `@${handle}`
+            },
+            facebook: {
+                regex: /facebook\.com\/([^/?]+)/,
+                format: (handle) => handle
+            },
+            tiktok: {
+                regex: /tiktok\.com\/@([^/?]+)/,
+                format: (handle) => `@${handle}`
+            }
+        };
+
+        const config = patterns[platform.toLowerCase()];
+        if (!config) return null;
+        
+        const match = url.match(config.regex);
+        return match ? config.format(match[1]) : null;
     }
   },
   expose: ['getEditData']
