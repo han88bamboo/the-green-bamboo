@@ -2820,7 +2820,7 @@ INSERT INTO "venues" (
     'Bar',
     'Singapore',
     'A popular test venue for unit testing and staging purposes.',
-    '934896143', -- hashed password
+    '1033881401', -- hashed password
     'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cd89b487-172d-4db8-8202-049b5cddc256.jpg', 
     true, 
     NULL, 
@@ -2943,6 +2943,7 @@ INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Austra
 INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
 
 
+
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
     VALUES 
@@ -2985,6 +2986,14 @@ INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37, NULL, DEFAU
 INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11, NULL, DEFAULT);
 INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11, NULL, DEFAULT);
 
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (5, 'Test new section 1 (Omu Nomu)', 0, 10, NULL, DEFAULT);
+INSERT INTO "venuesMenu" VALUES (6, 'Test new section 2 (Omu Nomu)', 1, 10, NULL, DEFAULT);
+
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0, 24, NULL, DEFAULT);
+INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24, NULL, DEFAULT);
+
 
 INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
 INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
@@ -2998,6 +3007,8 @@ INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
 INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
 INSERT INTO "menuItems" VALUES (13115, 0, 0.00, true, 1040419, 1, 4, NULL);
 
+INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
+INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
