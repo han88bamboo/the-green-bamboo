@@ -453,6 +453,7 @@ export default {
             };
 
             this.$emit('save-profile', consolidatedData);
+            this.toggleEditProfile();
         },
 
         // Claim Venue Account

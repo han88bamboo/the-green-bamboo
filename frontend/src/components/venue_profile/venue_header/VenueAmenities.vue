@@ -2,7 +2,7 @@
   <!-- Amenities Section -->
   <div v-if="!isEditing">
     <div v-if="amenityBadges.length > 0" class="mt-3">
-      <h6 class="fw-bold mb-2">Amenities & Features</h6>
+      <h6 class="fw-bold mb-2" style="text-align:left">Amenities & Features</h6>
       <div class="d-flex flex-wrap gap-1">
         <span v-for="amenity in amenityBadges" :key="amenity.key"
           :class="['badge', `bg-${amenity.color}`, amenity.textClass, 'me-1', 'mb-1']">
@@ -22,39 +22,39 @@
         <h6 class="text-muted mb-2">Payment Methods</h6>
         <div class="d-flex flex-wrap gap-2">
           <span :class="getBadgeClasses('paymentCash', localEditAmenities.paymentCash)"
-            @click="localEditAmenities.paymentCash = !localEditAmenities.paymentCash">
+            @click="localEditAmenities.paymentCash = !localEditAmenities.paymentCash" style="cursor: pointer;">
             <i class="bi bi-cash me-1"></i>Cash Payment
           </span>
           <span :class="getBadgeClasses('paymentVisa', localEditAmenities.paymentVisa)"
-            @click="localEditAmenities.paymentVisa = !localEditAmenities.paymentVisa">
+            @click="localEditAmenities.paymentVisa = !localEditAmenities.paymentVisa" style="cursor: pointer;">
             <i class="bi bi-credit-card me-1"></i>Visa
           </span>
           <span :class="getBadgeClasses('paymentMasterCard', localEditAmenities.paymentMasterCard)"
-            @click="localEditAmenities.paymentMasterCard = !localEditAmenities.paymentMasterCard">
+            @click="localEditAmenities.paymentMasterCard = !localEditAmenities.paymentMasterCard" style="cursor: pointer;">
             <i class="bi bi-credit-card me-1"></i>MasterCard
           </span>
           <span :class="getBadgeClasses('paymentAmericanExpress', localEditAmenities.paymentAmericanExpress)"
-            @click="localEditAmenities.paymentAmericanExpress = !localEditAmenities.paymentAmericanExpress">
+            @click="localEditAmenities.paymentAmericanExpress = !localEditAmenities.paymentAmericanExpress" style="cursor: pointer;">
             <i class="bi bi-credit-card me-1"></i>American Express
           </span>
           <span :class="getBadgeClasses('paymentDiscover', localEditAmenities.paymentDiscover)"
-            @click="localEditAmenities.paymentDiscover = !localEditAmenities.paymentDiscover">
+            @click="localEditAmenities.paymentDiscover = !localEditAmenities.paymentDiscover" style="cursor: pointer;">
             <i class="bi bi-credit-card me-1"></i>Discover
           </span>
           <span :class="getBadgeClasses('paymentApplePay', localEditAmenities.paymentApplePay)"
-            @click="localEditAmenities.paymentApplePay = !localEditAmenities.paymentApplePay">
+            @click="localEditAmenities.paymentApplePay = !localEditAmenities.paymentApplePay" style="cursor: pointer;">
             <i class="bi bi-phone me-1"></i>Apple Pay
           </span>
           <span :class="getBadgeClasses('paymentGooglePay', localEditAmenities.paymentGooglePay)"
-            @click="localEditAmenities.paymentGooglePay = !localEditAmenities.paymentGooglePay">
+            @click="localEditAmenities.paymentGooglePay = !localEditAmenities.paymentGooglePay" style="cursor: pointer;">
             <i class="bi bi-google me-1"></i>Google Pay
           </span>
           <span :class="getBadgeClasses('paymentPayNow', localEditAmenities.paymentPayNow)"
-            @click="localEditAmenities.paymentPayNow = !localEditAmenities.paymentPayNow">
+            @click="localEditAmenities.paymentPayNow = !localEditAmenities.paymentPayNow" style="cursor: pointer;">
             <i class="bi bi-qr-code me-1"></i>PayNow
           </span>
           <span :class="getBadgeClasses('paymentSamsungPay', localEditAmenities.paymentSamsungPay)"
-            @click="localEditAmenities.paymentSamsungPay = !localEditAmenities.paymentSamsungPay">
+            @click="localEditAmenities.paymentSamsungPay = !localEditAmenities.paymentSamsungPay" style="cursor: pointer;">
             <i class="bi bi-phone me-1"></i>Samsung Pay
           </span>
         </div>
@@ -65,67 +65,67 @@
         <h6 class="text-muted mb-2">Beverage Offerings</h6>
         <div class="d-flex flex-wrap gap-2">
           <span :class="getBadgeClasses('beverageCocktails', localEditAmenities.beverageCocktails)"
-            @click="localEditAmenities.beverageCocktails = !localEditAmenities.beverageCocktails">
+            @click="localEditAmenities.beverageCocktails = !localEditAmenities.beverageCocktails" style="cursor: pointer;">
             <PhMartini :size="16" class="me-1" />Cocktails
           </span>
           <span :class="getBadgeClasses('beverageWine', localEditAmenities.beverageWine)"
-            @click="localEditAmenities.beverageWine = !localEditAmenities.beverageWine">
+            @click="localEditAmenities.beverageWine = !localEditAmenities.beverageWine" style="cursor: pointer;">
             <PhChampagne :size="16" class="me-1" />Wine
           </span>
           <span :class="getBadgeClasses('beverageBeer', localEditAmenities.beverageBeer)"
-            @click="localEditAmenities.beverageBeer = !localEditAmenities.beverageBeer">
+            @click="localEditAmenities.beverageBeer = !localEditAmenities.beverageBeer" style="cursor: pointer;">
             <PhBeerStein :size="16" class="me-1" />Beer
           </span>
           <span :class="getBadgeClasses('beverageWhisky', localEditAmenities.beverageWhisky)"
-            @click="localEditAmenities.beverageWhisky = !localEditAmenities.beverageWhisky">
+            @click="localEditAmenities.beverageWhisky = !localEditAmenities.beverageWhisky" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Whisky
           </span>
           <span :class="getBadgeClasses('beverageBrandy', localEditAmenities.beverageBrandy)"
-            @click="localEditAmenities.beverageBrandy = !localEditAmenities.beverageBrandy">
+            @click="localEditAmenities.beverageBrandy = !localEditAmenities.beverageBrandy" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Brandy
           </span>
           <span :class="getBadgeClasses('beverageTequila', localEditAmenities.beverageTequila)"
-            @click="localEditAmenities.beverageTequila = !localEditAmenities.beverageTequila">
+            @click="localEditAmenities.beverageTequila = !localEditAmenities.beverageTequila" style="cursor: pointer;">
             <PhFlowerLotus :size="16" class="me-1" />Tequila
           </span>
           <span :class="getBadgeClasses('beverageMezcal', localEditAmenities.beverageMezcal)"
-            @click="localEditAmenities.beverageMezcal = !localEditAmenities.beverageMezcal">
+            @click="localEditAmenities.beverageMezcal = !localEditAmenities.beverageMezcal" style="cursor: pointer;">
             <PhFlowerLotus :size="16" class="me-1" />Mezcal
           </span>
           <span :class="getBadgeClasses('beverageRum', localEditAmenities.beverageRum)"
-            @click="localEditAmenities.beverageRum = !localEditAmenities.beverageRum">
+            @click="localEditAmenities.beverageRum = !localEditAmenities.beverageRum" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Rum
           </span>
           <span :class="getBadgeClasses('beverageSake', localEditAmenities.beverageSake)"
-            @click="localEditAmenities.beverageSake = !localEditAmenities.beverageSake">
+            @click="localEditAmenities.beverageSake = !localEditAmenities.beverageSake" style="cursor: pointer;">
             <PhWine :size="16" class="me-1" />Sake
           </span>
           <span :class="getBadgeClasses('beverageShochu', localEditAmenities.beverageShochu)"
-            @click="localEditAmenities.beverageShochu = !localEditAmenities.beverageShochu">
+            @click="localEditAmenities.beverageShochu = !localEditAmenities.beverageShochu" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Shochu
           </span>
           <span :class="getBadgeClasses('beverageSoju', localEditAmenities.beverageSoju)"
-            @click="localEditAmenities.beverageSoju = !localEditAmenities.beverageSoju">
+            @click="localEditAmenities.beverageSoju = !localEditAmenities.beverageSoju" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Soju
           </span>
           <span :class="getBadgeClasses('beverageBaijiu', localEditAmenities.beverageBaijiu)"
-            @click="localEditAmenities.beverageBaijiu = !localEditAmenities.beverageBaijiu">
+            @click="localEditAmenities.beverageBaijiu = !localEditAmenities.beverageBaijiu" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Baijiu
           </span>
           <span :class="getBadgeClasses('beverageGin', localEditAmenities.beverageGin)"
-            @click="localEditAmenities.beverageGin = !localEditAmenities.beverageGin">
+            @click="localEditAmenities.beverageGin = !localEditAmenities.beverageGin" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Gin
           </span>
           <span :class="getBadgeClasses('beverageVodka', localEditAmenities.beverageVodka)"
-            @click="localEditAmenities.beverageVodka = !localEditAmenities.beverageVodka">
+            @click="localEditAmenities.beverageVodka = !localEditAmenities.beverageVodka" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Vodka
           </span>
           <span :class="getBadgeClasses('beverageAbsinthe', localEditAmenities.beverageAbsinthe)"
-            @click="localEditAmenities.beverageAbsinthe = !localEditAmenities.beverageAbsinthe">
+            @click="localEditAmenities.beverageAbsinthe = !localEditAmenities.beverageAbsinthe" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Absinthe
           </span>
           <span :class="getBadgeClasses('beverageArrack', localEditAmenities.beverageArrack)"
-            @click="localEditAmenities.beverageArrack = !localEditAmenities.beverageArrack">
+            @click="localEditAmenities.beverageArrack = !localEditAmenities.beverageArrack" style="cursor: pointer;">
             <PhBrandy :size="16" class="me-1" />Arrack
           </span>
         </div>
@@ -136,75 +136,75 @@
         <h6 class="text-muted mb-2">General Amenities</h6>
         <div class="d-flex flex-wrap gap-2">
           <span :class="getBadgeClasses('foodServed', localEditAmenities.foodServed)"
-            @click="localEditAmenities.foodServed = !localEditAmenities.foodServed">
+            @click="localEditAmenities.foodServed = !localEditAmenities.foodServed" style="cursor: pointer;">
             <i class="bi bi-egg-fried me-1"></i>Food Served
           </span>
           <span :class="getBadgeClasses('outdoorSeating', localEditAmenities.outdoorSeating)"
-            @click="localEditAmenities.outdoorSeating = !localEditAmenities.outdoorSeating">
+            @click="localEditAmenities.outdoorSeating = !localEditAmenities.outdoorSeating" style="cursor: pointer;">
             <i class="bi bi-tree me-1"></i>Outdoor Seating
           </span>
           <span :class="getBadgeClasses('indoorSeating', localEditAmenities.indoorSeating)"
-            @click="localEditAmenities.indoorSeating = !localEditAmenities.indoorSeating">
+            @click="localEditAmenities.indoorSeating = !localEditAmenities.indoorSeating" style="cursor: pointer;">
             <i class="bi bi-house me-1"></i>Indoor Seating
           </span>
           <span :class="getBadgeClasses('petFriendly', localEditAmenities.petFriendly)"
-            @click="localEditAmenities.petFriendly = !localEditAmenities.petFriendly">
+            @click="localEditAmenities.petFriendly = !localEditAmenities.petFriendly" style="cursor: pointer;">
             <i class="bi bi-heart me-1"></i>Pet Friendly
           </span>
           <span :class="getBadgeClasses('childFriendly', localEditAmenities.childFriendly)"
-            @click="localEditAmenities.childFriendly = !localEditAmenities.childFriendly">
+            @click="localEditAmenities.childFriendly = !localEditAmenities.childFriendly" style="cursor: pointer;">
             <i class="bi bi-people me-1"></i>Child Friendly
           </span>
           <span :class="getBadgeClasses('familyFriendly', localEditAmenities.familyFriendly)"
-            @click="localEditAmenities.familyFriendly = !localEditAmenities.familyFriendly">
+            @click="localEditAmenities.familyFriendly = !localEditAmenities.familyFriendly" style="cursor: pointer;">
             <i class="bi bi-house-heart me-1"></i>Family Friendly
           </span>
           <span :class="getBadgeClasses('smokeFriendly', localEditAmenities.smokeFriendly)"
-            @click="localEditAmenities.smokeFriendly = !localEditAmenities.smokeFriendly">
+            @click="localEditAmenities.smokeFriendly = !localEditAmenities.smokeFriendly" style="cursor: pointer;">
             <i class="bi bi-cloud me-1"></i>Smoking Friendly
           </span>
           <span :class="getBadgeClasses('wheelchairAccessibility', localEditAmenities.wheelchairAccessibility)"
-            @click="localEditAmenities.wheelchairAccessibility = !localEditAmenities.wheelchairAccessibility">
+            @click="localEditAmenities.wheelchairAccessibility = !localEditAmenities.wheelchairAccessibility" style="cursor: pointer;">
             <i class="bi bi-universal-access me-1"></i>Wheelchair Accessible
           </span>
           <span :class="getBadgeClasses('freeWiFi', localEditAmenities.freeWiFi)"
-            @click="localEditAmenities.freeWiFi = !localEditAmenities.freeWiFi">
+            @click="localEditAmenities.freeWiFi = !localEditAmenities.freeWiFi" style="cursor: pointer;">
             <i class="bi bi-wifi me-1"></i>Free WiFi
           </span>
           <span :class="getBadgeClasses('liveMusic', localEditAmenities.liveMusic)"
-            @click="localEditAmenities.liveMusic = !localEditAmenities.liveMusic">
+            @click="localEditAmenities.liveMusic = !localEditAmenities.liveMusic" style="cursor: pointer;">
             <i class="bi bi-music-note me-1"></i>Live Music
           </span>
           <span :class="getBadgeClasses('barGames', localEditAmenities.barGames)"
-            @click="localEditAmenities.barGames = !localEditAmenities.barGames">
+            @click="localEditAmenities.barGames = !localEditAmenities.barGames" style="cursor: pointer;">
             <i class="bi bi-controller me-1"></i>Bar Games
           </span>
           <span :class="getBadgeClasses('happyHourDrinks', localEditAmenities.happyHourDrinks)"
-            @click="localEditAmenities.happyHourDrinks = !localEditAmenities.happyHourDrinks">
+            @click="localEditAmenities.happyHourDrinks = !localEditAmenities.happyHourDrinks" style="cursor: pointer;">
             <i class="bi bi-clock me-1"></i>Happy Hour
           </span>
           <span :class="getBadgeClasses('deliveryAvailable', localEditAmenities.deliveryAvailable)"
-            @click="localEditAmenities.deliveryAvailable = !localEditAmenities.deliveryAvailable">
+            @click="localEditAmenities.deliveryAvailable = !localEditAmenities.deliveryAvailable" style="cursor: pointer;">
             <i class="bi bi-truck me-1"></i>Delivery Available
           </span>
           <span :class="getBadgeClasses('lgbtqFriendly', localEditAmenities.lgbtqFriendly)"
-            @click="localEditAmenities.lgbtqFriendly = !localEditAmenities.lgbtqFriendly">
+            @click="localEditAmenities.lgbtqFriendly = !localEditAmenities.lgbtqFriendly" style="cursor: pointer;">
             <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
           </span>
           <span :class="getBadgeClasses('reservationsRequired', localEditAmenities.reservationsRequired)"
-            @click="localEditAmenities.reservationsRequired = !localEditAmenities.reservationsRequired">
+            @click="localEditAmenities.reservationsRequired = !localEditAmenities.reservationsRequired" style="cursor: pointer;">
             <i class="bi bi-calendar-check me-1"></i>Reservations Required
           </span>
           <span :class="getBadgeClasses('membershipRequired', localEditAmenities.membershipRequired)"
-            @click="localEditAmenities.membershipRequired = !localEditAmenities.membershipRequired">
+            @click="localEditAmenities.membershipRequired = !localEditAmenities.membershipRequired" style="cursor: pointer;">
             <i class="bi bi-person-badge me-1"></i>Membership Required
           </span>
           <span :class="getBadgeClasses('sommelierService', localEditAmenities.sommelierService)"
-            @click="localEditAmenities.sommelierService = !localEditAmenities.sommelierService">
+            @click="localEditAmenities.sommelierService = !localEditAmenities.sommelierService" style="cursor: pointer;">
             <i class="bi bi-award me-1"></i>Sommelier Service
           </span>
           <span :class="getBadgeClasses('inStoreScheduling', localEditAmenities.inStoreScheduling)"
-            @click="localEditAmenities.inStoreScheduling = !localEditAmenities.inStoreScheduling">
+            @click="localEditAmenities.inStoreScheduling = !localEditAmenities.inStoreScheduling" style="cursor: pointer;">
             <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
           </span>
         </div>
@@ -367,6 +367,12 @@ export default {
         }
       }
     },
+    localEditAmenities: {
+      deep: true,
+      handler(newVal) {
+        this.$emit('update:editData', newVal);
+      }
+    }
   },
 
   methods: {
@@ -431,4 +437,5 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>

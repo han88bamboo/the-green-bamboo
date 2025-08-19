@@ -135,7 +135,6 @@ Normal User (Anonymous & Logged-In)
                         <VenueReviewsTab :venue-reviews="filteredVenueReviews" :bottle-reviews="bottleReviews"
                             :user-id="user_id" :can-mod="isAdmin" />
                     </div>
-
                 </div>
             </div>
 
@@ -286,7 +285,8 @@ export default {
                 loc: {
                     long: 0,
                     lat: 0,
-                }
+                },
+                amenities: {}
             },
 
             userInfo: {},
@@ -461,7 +461,7 @@ export default {
                             .map(({id, sectionName, sectionOrder}) => ({id, sectionName, sectionOrder}))
                     }));
                 
-                console.log(this.venue_menu);
+                // console.log(this.venue_menu);
 
             } catch (error) {
                 // show error to user
@@ -488,7 +488,7 @@ export default {
 
             try {
                 const venueData = await this.fetchVenueDetails();
-                // console.log(venueData);
+                console.log(venueData);
                 if (!venueData) {
                     this.venueExists = false;
                     return;
