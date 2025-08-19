@@ -2780,11 +2780,6 @@ INSERT INTO "producers" VALUES (9540, 'Oso Brew Co', '', 'Spain', false, '{}', '
 
 
 
-
-
-
-
-
 INSERT INTO "venues" (
     "id",
     "venueName", 
@@ -2825,7 +2820,7 @@ INSERT INTO "venues" (
     'Bar',
     'Singapore',
     'A popular test venue for unit testing and staging purposes.',
-    '1033881401', -- hashed password
+    '934896143', -- hashed password
     'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cd89b487-172d-4db8-8202-049b5cddc256.jpg', 
     true, 
     NULL, 
@@ -2843,6 +2838,23 @@ INSERT INTO "venues" (
     'Singapore',
     'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
     '-1480099335', -- hashed password
+    'https://lh3.googleusercontent.com/p/AF1QipOkmPzzgvObRr4u33kneFeT00b3sQkRBVkqhVut=s1360-w1360-h1020-rw',
+    true,
+    NULL,
+    'Walk-in only, no reservations.',
+    'smithstreettaps',
+    'Closed on Lunar New Year',
+    NULL,
+    NULL
+),
+(
+    1,
+    'Test Street Taps',
+    '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
+    'Bar',
+    'Singapore',
+    'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
+    '128937465', -- hashed password
     'https://lh3.googleusercontent.com/p/AF1QipOkmPzzgvObRr4u33kneFeT00b3sQkRBVkqhVut=s1360-w1360-h1020-rw',
     true,
     NULL,
@@ -2967,6 +2979,11 @@ INSERT INTO "venuesMenu" VALUES (6, 'Test new section 2 (Omu Nomu)', 1, 10);
 -- Venue menu sections for 
 INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0, 24);
 INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24);
+INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37, NULL, DEFAULT);
+
+-- Venue menu sections for Orh Gao (venue ID 11)
+INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11, NULL, DEFAULT);
+INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11, NULL, DEFAULT);
 
 
 INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
@@ -2979,6 +2996,8 @@ INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 4, NULL);
 
 INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
 INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
+INSERT INTO "menuItems" VALUES (13115, 0, 0.00, true, 1040419, 1, 4, NULL);
+
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
