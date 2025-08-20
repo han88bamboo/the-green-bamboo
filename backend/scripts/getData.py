@@ -4556,7 +4556,7 @@ def getVenue(id):
                 v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
-                v.email, v."phoneNumber", v."whatsappNumber",
+                v.email, v."phoneNumber", v."whatsappNumber", v."pdfMenuUrl",
                 v.username, v."venueType", v."stripeCustomerId", v.pin,
                 -- Build amenities JSON
                 COALESCE((

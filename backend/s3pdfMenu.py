@@ -34,7 +34,7 @@ def uploadBase64PDFToS3(base64_string):
     # Decode the base64 string
     try:
         pdf_data = base64.b64decode(base64_string)
-    except base64.binascii.Error as e:
+    except Exception as e:
         print(f"Error decoding base64 string: {e}")
         return None
 
@@ -92,10 +92,10 @@ def deletePDFFromS3(url):
         return None
 
     # Initialize S3 client
-    if purpose == 'development':
-        s3 = boto3.client('s3', region_name=region, **credentials) if credentials else boto3.client('s3', region_name=region)
-    else:
+    if purpose == 'production':
         s3 = boto3.client('s3')
+    else:
+        s3 = boto3.client('s3', region_name=region, **credentials) if credentials else boto3.client('s3', region_name=region)
 
     try:
         # Check if object exists and delete it

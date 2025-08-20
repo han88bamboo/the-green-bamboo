@@ -1110,18 +1110,29 @@
                             </div>
                         </div>
 
-                        <!-- PDF Menu Section -->
+                        <!-- PDF Menu Section 
                         <div v-if="targetVenue.pdfMenuUrl" class="mt-3">
                             <h6 class="fw-bold mb-2">Menu</h6>
                             <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-file-earmark-pdf me-1"></i>View PDF Menu
                             </a>
-                        </div>
+                        </div>-->
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
                     <div
                         class="col-5 d-flex flex-column flex-lg-row justify-content-start justify-content-lg-end align-items-start align-items-lg-center gap-2">
+                        
+                        <!-- Dining Menu Button (conditional) -->
+                        <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100">
+                            <button class="btn btn-outline-custom-orange btn-sm text-nowrap" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    style="font-size: 0.875rem; font-weight: 500;">
+                                Dining Menu
+                            </button>
+                        </div>
+
                         <div class="d-flex gap-2">
                             <!-- Follow Button -->
                             <button v-if="viewerType === 'user' && !userFollowing"
@@ -4812,6 +4823,46 @@
                         class="btn btn-primary" @click="hideModal">
                         View Listing Page
                     </router-link>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dining Menu Modal -->
+    <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="diningMenuModalLabel">
+                        <i class="bi bi-file-earmark-pdf me-2 text-warning"></i>
+                        {{ targetVenue.venueName }} - Dining Menu
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- PDF Viewer Container -->
+                    <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                        <iframe 
+                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            :src="targetVenue.pdfMenuUrl + '#toolbar=1&navpanes=1&scrollbar=1'"
+                            width="100%" 
+                            height="600px"
+                            style="border: none; background: #f8f9fa;"
+                            title="Dining Menu PDF"
+                            @error="handlePdfError">
+                        </iframe>
+                        <div v-else class="text-center text-muted p-5">
+                            <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
+                            <p class="fs-5">Menu not available at the moment.</p>
+                            <p class="text-secondary">Please check back later or contact the venue directly.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Close
                     </button>
@@ -8695,7 +8746,7 @@ Thank you!`
             
             try {
                 const response = await this.$axios.put(
-                    '/api/venue/pdf-menu',
+                    `${process.env.VUE_APP_API_URL}/editVenueProfile/uploadPDFMenu`,
                     {
                         venueID: this.targetVenueID,
                         pdfMenuData: this.pdfMenuBase64
@@ -8714,6 +8765,12 @@ Thank you!`
                 console.error('Error uploading PDF menu:', error);
                 alert('An error occurred while uploading the PDF menu.');
             }
+        },
+
+        // Handle PDF loading errors
+        handlePdfError() {
+            console.warn('PDF failed to load');
+            // Could add error state handling here if needed
         }
     },
     watch: {
