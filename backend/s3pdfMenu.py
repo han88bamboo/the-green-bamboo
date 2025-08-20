@@ -39,7 +39,7 @@ def uploadBase64PDFToS3(base64_string):
         return None
 
     # Validate PDF file
-    if not validatePDFFile(base64_string):
+    if not validatePDFFile(pdf_data):
         return None
 
     # Initialize S3 client
@@ -114,12 +114,11 @@ def deletePDFFromS3(url):
         return None
 
 
-def validatePDFFile(base64_string):
+def validatePDFFile(pdf_data):
     """
     Validate that the uploaded file is actually a PDF
     """
     try:
-        pdf_data = base64.b64decode(base64_string)
         # Check PDF magic number (first 4 bytes should be %PDF)
         if pdf_data[:4] == b'%PDF':
             return True

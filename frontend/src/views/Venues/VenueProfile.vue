@@ -5303,10 +5303,6 @@ export default {
             // for bookmark component
             bookmarkListingID: {},
 
-            // PDF Menu Upload
-            selectedPDFName: null,
-            pdfMenuBase64: null,
-
             // lazy loading variables 
             noMoreReviews: false,
             reviewsPerLoad: 20, // similar to the limit in backend
@@ -8626,6 +8622,99 @@ Thank you!`
             // Reload the page when user closes the popup
             this.$router.go(0);
         },
+
+        // PDF Menu Upload Methods
+        handlePDFMenuSelect(event) {
+            try {
+                console.log('PDF file selection started');
+                const file = event.target.files[0];
+                
+                if (!file) {
+                    console.log('No file selected');
+                    return;
+                }
+                
+                console.log('File details:', {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                });
+                
+                // Validate file type
+                if (file.type !== 'application/pdf') {
+                    console.log('Invalid file type:', file.type);
+                    alert('Please select a PDF file only.');
+                    return;
+                }
+                
+                // Validate file size (max 10MB)
+                const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+                if (file.size > maxSize) {
+                    console.log('File too large:', file.size);
+                    alert('PDF file size must be less than 10MB.');
+                    return;
+                }
+                
+                console.log('File validation passed, reading file...');
+                const reader = new FileReader();
+                reader.onload = () => {
+                    console.log('File read successfully');
+                    // Store the preview filename
+                    this.selectedPDFName = file.name;
+                    // Store base64 data (remove data URL prefix)
+                    this.pdfMenuBase64 = reader.result.split(',')[1];
+                    console.log('PDF data stored, button should be enabled now');
+                    console.log('pdfMenuBase64 length:', this.pdfMenuBase64 ? this.pdfMenuBase64.length : 'null');
+                };
+                reader.onerror = (error) => {
+                    console.error('FileReader error:', error);
+                    this.removePDFPreview();
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error("Error reading PDF file:", error);
+                this.removePDFPreview();
+            }
+        },
+
+        // Remove PDF preview
+        removePDFPreview() {
+            this.selectedPDFName = null;
+            this.pdfMenuBase64 = null;
+            if (this.$refs.pdfMenuInput) {
+                this.$refs.pdfMenuInput.value = '';
+            }
+        },
+
+        // Submit PDF menu
+        async submitPDFMenu() {
+            if (!this.pdfMenuBase64) {
+                alert('Please select a PDF file first.');
+                return;
+            }
+            
+            try {
+                const response = await this.$axios.put(
+                    '/api/venue/pdf-menu',
+                    {
+                        venueID: this.targetVenueID,
+                        pdfMenuData: this.pdfMenuBase64
+                    }
+                );
+                
+                if (response.data.success) {
+                    alert('PDF menu uploaded successfully!');
+                    this.removePDFPreview();
+                    // Refresh the page to show the new menu
+                    this.$router.go(0);
+                } else {
+                    alert('Failed to upload PDF menu.');
+                }
+            } catch (error) {
+                console.error('Error uploading PDF menu:', error);
+                alert('An error occurred while uploading the PDF menu.');
+            }
+        }
     },
     watch: {
     '$route.params.venueID': function(newId, oldId) {
@@ -8708,77 +8797,6 @@ Thank you!`
             });
         }
     },
-
-    // PDF Menu Upload Methods
-    handlePDFMenuSelect(event) {
-        try {
-            const file = event.target.files[0];
-            
-            // Validate file type
-            if (file.type !== 'application/pdf') {
-                alert('Please select a PDF file only.');
-                return;
-            }
-            
-            // Validate file size (max 10MB)
-            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-            if (file.size > maxSize) {
-                alert('PDF file size must be less than 10MB.');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = () => {
-                // Store the preview filename
-                this.selectedPDFName = file.name;
-                // Store base64 data (remove data URL prefix)
-                this.pdfMenuBase64 = reader.result.split(',')[1];
-            };
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error("Error reading PDF file:", error);
-            this.removePDFPreview();
-        }
-    },
-
-    // Remove PDF preview
-    removePDFPreview() {
-        this.selectedPDFName = null;
-        this.pdfMenuBase64 = null;
-        if (this.$refs.pdfMenuInput) {
-            this.$refs.pdfMenuInput.value = '';
-        }
-    },
-
-    // Submit PDF menu
-    async submitPDFMenu() {
-        if (!this.pdfMenuBase64) {
-            alert('Please select a PDF file first.');
-            return;
-        }
-        
-        try {
-            const response = await this.$axios.put(
-                `${process.env.VUE_APP_API_URL}/editVenueProfile/uploadPDFMenu`,
-                {
-                    venueID: this.targetVenue.id,
-                    pdfMenuData: this.pdfMenuBase64
-                }
-            );
-            
-            if (response.data.success) {
-                alert('PDF menu uploaded successfully!');
-                // Update the venue data with new menu URL
-                this.targetVenue.pdfMenuUrl = response.data.menuUrl;
-                this.removePDFPreview();
-            } else {
-                alert('Failed to upload PDF menu. Please try again.');
-            }
-        } catch (error) {
-            console.error('Error uploading PDF menu:', error);
-            alert('An error occurred while uploading the PDF menu.');
-        }
-    }
     }
     }    
 </script>
