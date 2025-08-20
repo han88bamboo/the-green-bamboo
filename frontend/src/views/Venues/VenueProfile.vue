@@ -1125,8 +1125,8 @@
                     <div class="col-5 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
-                        <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100">
-                            <button class="btn btn-outline-custom-orange btn-lg text-nowrap" 
+                        <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100 mobile-justify-content-start">
+                            <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
                                     style="font-weight: bold;">
@@ -4834,25 +4834,25 @@
     </div>
 
     <!-- Dining Menu Modal -->
-    <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
+    <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl h-100 d-flex align-items-center">
+            <div class="modal-content h-75">
+                <div class="modal-header flex-shrink-0">
                     <h5 class="modal-title" id="diningMenuModalLabel">
                         {{ targetVenue.venueName }} - Dining Menu
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0">
+                <div class="modal-body p-0 flex-grow-1 overflow-hidden">
                     <!-- PDF Viewer Container -->
-                    <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+                    <div class="h-100 d-flex justify-content-center align-items-center">
                         <iframe 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
                             :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1'"
                             width="100%" 
-                            height="750px"
+                            height="100%"
                             style="border: none; background: #f8f9fa;"
-                            title="Dining Menu"
+                            title="Dining Menu PDF"
                             @error="handlePdfError">
                         </iframe>
                         <div v-else class="text-center text-muted p-5">
@@ -4861,6 +4861,11 @@
                             <p class="text-secondary">Please check back later or contact the venue directly.</p>
                         </div>
                     </div>
+                </div>
+                <div class="modal-footer flex-shrink-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
                 </div>
             </div>
         </div>
@@ -8854,6 +8859,14 @@ Thank you!`
 </script>
 
 <style>
+
+
+
+@media (max-width: 991px) {
+.mobile-justify-content-start {
+    justify-content: flex-start !important;
+}
+}
 .ghost {
     opacity: 0.5;
     background: #c8ebfb;
@@ -9115,5 +9128,65 @@ Thank you!`
     color: #fff;
     background-color: #e28100;
     border-color: #e28100;
+}
+
+/* Dining Menu Modal Mobile Fixes */
+#diningMenuModal .modal-dialog {
+    margin: 0;
+    max-height: 100vh;
+}
+
+#diningMenuModal .modal-content {
+    border-radius: 0;
+    border: none;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#diningMenuModal .modal-body {
+    flex: 1;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: auto;
+    position: relative;
+}
+
+#diningMenuModal iframe {
+    touch-action: auto;
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+}
+
+/* Prevent body scroll when modal is open - more targeted approach */
+body.modal-open {
+    overflow: hidden !important;
+}
+
+/* Fix for iOS Safari specifically */
+@supports (-webkit-touch-callout: none) {
+    #diningMenuModal .modal-body {
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    #diningMenuModal iframe {
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Desktop adjustments */
+@media (min-width: 768px) {
+    #diningMenuModal .modal-dialog {
+        margin: 1.75rem auto;
+        max-height: calc(100vh - 3.5rem);
+    }
+    
+    #diningMenuModal .modal-content {
+        border-radius: 0.375rem;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        height: 85vh;
+    }
 }
 </style>
