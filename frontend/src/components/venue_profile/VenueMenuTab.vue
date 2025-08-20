@@ -11,13 +11,16 @@
         <div v-else>
             <!-- Menu header -->
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <p class="fs-5 fw-bold m-0">{{ (venue_menu.menu && venue_menu.menu.length) || 0 }} Sections On The Menu</p>
+                <!-- <p class="fs-5 fw-bold m-0">{{ (venue_menu.menu && venue_menu.menu.length) || 0 }} Sections On The Menu</p> -->
+                <p class="fs-5 fw-bold m-0">{{ (displayMenu.menu && displayMenu.menu.length) || 0 }} Sections On The Menu</p>
                 <div v-if="isSelfView" class="d-flex gap-2">
                     <button v-if="!isEditMode" class="btn btn-outline-primary" @click="toggleEditMode"><i class="bi bi-pencil me-1"></i>Edit Menu</button>
                     <button v-if="!isEditMode" class="btn btn-outline-secondary" data-bs-toggle="modal"
                         data-bs-target="#shareMenuModal"><i class="bi bi-share me-1"></i>Share Menu</button>
                 </div>
             </div>
+
+            <input id="menu_searchbar" type="text" class="form-control mb-3" placeholder="Search menu..." v-model="searchQuery"/>
 
             <!-- Edit Mode -->
             <div v-if="isEditMode">
@@ -34,8 +37,10 @@
 
             <!-- View Mode -->
             <div v-else>
-                <div v-if="venue_menu.menu && venue_menu.menu.length > 0">
-                    <div v-for="(section, index) in venue_menu.menu" :key="index" class="mb-2">
+                <!-- <div v-if="venue_menu.menu && venue_menu.menu.length > 0">
+                    <div v-for="(section, index) in venue_menu.menu" :key="index" class="mb-2"> -->
+                <div v-if="displayMenu.menu && displayMenu.menu.length > 0">
+                    <div v-for="(section, index) in displayMenu.menu" :key="index" class="mb-2">
                         <!-- Section Header -->
                         <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded"
                             style="background-color: #f0b258; cursor: pointer; user-select: none;"
@@ -167,6 +172,18 @@
 import VenueMenuEdit from './VenueMenuEdit.vue';
 import VenueMenuItems from './VenueMenuItems.vue';
 
+function debounce(fn, delay) {
+    var timeoutID = null;
+    return function () {
+        clearTimeout(timeoutID);
+        var args = arguments;
+        var that = this;
+        timeoutID = setTimeout(function () {
+            fn.apply(that, args);
+        }, delay);
+    };
+}
+
 export default {
     components: {
         VenueMenuEdit,
@@ -175,18 +192,79 @@ export default {
     props: {
         claimStatus: Boolean,
         isSelfView: Boolean,
+        venue_id: Number,
         venue_menu: Object,
     },
-    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu'],
+    emits: ['section-load-error', 'share-menu-clicked', 'menu-updated', 'save-menu', 'update:venue_menu'],
     data() {
         return {
             isEditMode: false,
             editableMenu: [],
             sectionToAddTo: null,
+            searchQuery: '',
+            original_venue_menu: null,
+            // Add local menu data
+            localMenu: null,
+            isSearchActive: false,
         }
     },
+
+    // Add computed property:
+    computed: {
+        displayMenu() {
+            // Use local menu if search is active, otherwise use the prop
+            if (this.isSearchActive && this.localMenu) {
+                return this.localMenu;
+            }
+            return this.venue_menu;
+        }
+    },
+
+    watch: {
+        searchQuery() {
+            this.debouncedSearch();
+        },
+
+        // Add watcher for venue_menu prop
+        venue_menu: {
+            handler(newMenu) {
+                console.log('venue_menu prop changed:', newMenu);
+                
+                // Save original menu if not already saved and menu data is available
+                if (newMenu && newMenu.menu && newMenu.menu.length > 0 && !this.original_venue_menu) {
+                    this.original_venue_menu = JSON.parse(JSON.stringify(newMenu));
+                    console.log('Saved original menu from prop update:', this.original_venue_menu);
+                    
+                    // Initialize expanded states
+                    newMenu.menu.forEach(section => {
+                        if (section.isExpanded === undefined) {
+                            Object.assign(section, { isExpanded: false });
+                        }
+                        if (section.subSections) {
+                            section.subSections.forEach(sub => {
+                                if (sub.isExpanded === undefined) {
+                                    Object.assign(sub, { isExpanded: false });
+                                }
+                            });
+                        }
+                    });
+                }
+            },
+            immediate: true,
+            deep: false
+        }
+    },
+    created() {
+        this.debouncedSearch = debounce(this.searchMenu, 500);
+    },
     mounted() {
-        if (this.venue_menu.menu && this.venue_menu.menu.length > 0) {
+        console.log('Component mounted, venue_menu:', this.venue_menu);
+        
+        // Save original menu state
+        if (this.venue_menu && this.venue_menu.menu) {
+            this.original_venue_menu = JSON.parse(JSON.stringify(this.venue_menu));
+            console.log('Saved original menu:', this.original_venue_menu);
+            
             this.venue_menu.menu.forEach(section => {
                 if (section.isExpanded === undefined) {
                     Object.assign(section, { isExpanded: false });
@@ -200,9 +278,166 @@ export default {
                     });
                 }
             });
+        } else {
+            console.warn('No venue_menu data available at mount time');
+            // Try to save it later when it becomes available
+            this.$nextTick(() => {
+                if (this.venue_menu && this.venue_menu.menu && !this.original_venue_menu) {
+                    this.original_venue_menu = JSON.parse(JSON.stringify(this.venue_menu));
+                    console.log('Delayed save of original menu:', this.original_venue_menu);
+                }
+            });
         }
     },
     methods: {
+        
+        async searchMenu() {
+            if (this.searchQuery.trim() === '') {
+                // Reset to original menu
+                this.isSearchActive = false;
+                this.localMenu = null;
+                return;
+            }
+
+            try {
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getVenueMenuBySearch/${this.venue_id}`,
+                    {
+                        params: { searchTerm: this.searchQuery },
+                        timeout: 10000,
+                        headers: { 'Accept': 'application/json' }
+                    }
+                );
+                
+                if (response.data && response.data.menu) {
+                    console.log('Search results:', response.data.menu);
+                    
+                    // Use current venue_menu as source
+                    const sourceMenu = this.venue_menu?.menu || [];
+                    console.log('Using source menu:', sourceMenu);
+                    
+                    // Clone the menu structure
+                    const menuWithState = JSON.parse(JSON.stringify(sourceMenu));
+                    
+                    // Clear all menu items first
+                    menuWithState.forEach(section => {
+                        section.sectionMenu = [];
+                        section.isExpanded = false;
+                        if (section.subSections) {
+                            section.subSections.forEach(sub => {
+                                sub.sectionMenu = [];
+                                sub.isExpanded = false;
+                            });
+                        }
+                    });
+                    
+                    // Populate with search results
+                    response.data.menu.forEach(searchSection => {
+                        console.log(`Processing search section: ${searchSection.sectionName} (ID: ${searchSection.id}, Order: ${searchSection.sectionOrder})`);
+                        
+                        // Find matching section in original menu
+                        const matchingSection = menuWithState.find(originalSection => {
+                            const idMatch = originalSection.id === searchSection.id;
+                            const nameMatch = originalSection.sectionName === searchSection.sectionName;
+                            const orderMatch = originalSection.sectionOrder === searchSection.sectionOrder;
+                            
+                            return idMatch || nameMatch || orderMatch;
+                        });
+                        
+                        if (matchingSection) {
+                            console.log(`✓ Found match: ${matchingSection.sectionName}`);
+                            
+                            // Handle direct section menu items
+                            matchingSection.sectionMenu = searchSection.sectionMenu || [];
+                            let sectionHasContent = matchingSection.sectionMenu.length > 0;
+                            
+                            console.log(`✓ Section direct items: ${matchingSection.sectionMenu.length}`);
+                            
+                            // Handle subsections
+                            if (searchSection.subSections && searchSection.subSections.length > 0) {
+                                console.log(`Processing ${searchSection.subSections.length} subsections for ${searchSection.sectionName}`);
+                                
+                                searchSection.subSections.forEach(searchSub => {
+                                    console.log(`  Processing subsection: ${searchSub.sectionName} (ID: ${searchSub.id})`);
+                                    
+                                    // Find matching subsection
+                                    if (matchingSection.subSections) {
+                                        const matchingSubSection = matchingSection.subSections.find(originalSub => {
+                                            const idMatch = originalSub.id === searchSub.id;
+                                            const nameMatch = originalSub.sectionName === searchSub.sectionName;
+                                            const orderMatch = originalSub.sectionOrder === searchSub.sectionOrder;
+                                            
+                                            return idMatch || nameMatch || orderMatch;
+                                        });
+                                        
+                                        if (matchingSubSection) {
+                                            matchingSubSection.sectionMenu = searchSub.sectionMenu || [];
+                                            const subHasContent = matchingSubSection.sectionMenu.length > 0;
+                                            matchingSubSection.isExpanded = subHasContent;
+                                            
+                                            console.log(`  ✓ Subsection "${matchingSubSection.sectionName}" has ${matchingSubSection.sectionMenu.length} items, expanded: ${subHasContent}`);
+                                            
+                                            if (subHasContent) {
+                                                sectionHasContent = true;
+                                            }
+                                        } else {
+                                            console.log(`  ✗ No matching subsection found for "${searchSub.sectionName}"`);
+                                        }
+                                    }
+                                });
+                            }
+                            
+                            // Also check if the search section itself might be a subsection result
+                            // (API might return subsections as top-level sections in search results)
+                            if (searchSection.parentSectionId) {
+                                console.log(`Search section ${searchSection.sectionName} has parentSectionId: ${searchSection.parentSectionId}`);
+                                
+                                // Find the parent section
+                                const parentSection = menuWithState.find(section => section.id === searchSection.parentSectionId);
+                                if (parentSection && parentSection.subSections) {
+                                    const targetSubSection = parentSection.subSections.find(sub => 
+                                        sub.id === searchSection.id || 
+                                        sub.sectionName === searchSection.sectionName ||
+                                        sub.sectionOrder === searchSection.sectionOrder
+                                    );
+                                    
+                                    if (targetSubSection) {
+                                        targetSubSection.sectionMenu = searchSection.sectionMenu || [];
+                                        targetSubSection.isExpanded = targetSubSection.sectionMenu.length > 0;
+                                        
+                                        // Expand parent section too
+                                        if (targetSubSection.isExpanded) {
+                                            parentSection.isExpanded = true;
+                                        }
+                                        
+                                        console.log(`✓ Updated subsection "${targetSubSection.sectionName}" in parent "${parentSection.sectionName}"`);
+                                    }
+                                }
+                            }
+                            
+                            matchingSection.isExpanded = sectionHasContent;
+                            console.log(`✓ Section "${matchingSection.sectionName}" final state - expanded: ${sectionHasContent}, direct items: ${matchingSection.sectionMenu.length}`);
+                        } else {
+                            console.log(`✗ No matching section found for "${searchSection.sectionName}"`);
+                        }
+                    });
+                    
+                    console.log('Final menu state:', menuWithState.map(s => ({
+                        name: s.sectionName,
+                        expanded: s.isExpanded,
+                        itemCount: s.sectionMenu?.length || 0
+                    })));
+
+                    // Set local menu and activate search mode
+                    this.localMenu = { ...this.venue_menu, menu: menuWithState };
+                    this.isSearchActive = true;
+                }
+
+            } catch (error) {
+                console.error('Error searching menu:', error);
+            }
+        },
+
         toggleEditMode() {
             this.isEditMode = !this.isEditMode;
             if (this.isEditMode) {
@@ -226,7 +461,7 @@ export default {
         },
         async toggleSection(section, index) {
             section.isExpanded = !section.isExpanded;
-            if (section.isExpanded && (!section.sectionMenu || section.sectionMenu.length === 0)) {
+            if (this.searchQuery.trim() === '' && section.isExpanded && (!section.sectionMenu || section.sectionMenu.length === 0)) {
                 await this.loadSectionMenu(section, index);
             }
         },
@@ -292,7 +527,7 @@ export default {
         },
         toggleSubSection(subSection) {
             subSection.isExpanded = !subSection.isExpanded;
-            if (subSection.isExpanded && (!subSection.sectionMenu || subSection.sectionMenu.length === 0)) {
+            if (this.searchQuery.trim() === '' && subSection.isExpanded && (!subSection.sectionMenu || subSection.sectionMenu.length === 0)) {
                 // The index is not critical here, passing a placeholder
                 this.loadSectionMenu(subSection, -1);
             }

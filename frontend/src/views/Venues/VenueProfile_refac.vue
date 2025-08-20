@@ -126,6 +126,7 @@ Normal User (Anonymous & Logged-In)
                     <!-- Menu Tab -->
                     <div v-show="contentMode === 'menu'" id="menu-section">
                         <VenueMenuTab :venue_menu="venue_menu" :is-self-view="isOwner"
+                            :venue_id="targetVenue.id"
                             :claim-status="targetVenue.claimStatus" @save-menu="handleMenuSave"        
                         />
                     </div>

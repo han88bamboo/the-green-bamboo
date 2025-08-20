@@ -4443,6 +4443,106 @@ def getVenueMenu(section_id):
             cur.close()
 
 
+# [GET] Specific Venue Menu by Search Term
+@blueprint.route("/getVenueMenuBySearch/<venue_id>")
+def getVenueMenuBySearch(venue_id):
+    """Get all menu items for a venue by search term, preserving menu structure."""
+    
+    search_term = request.args.get("searchTerm", "").strip()
+
+    if not search_term:
+        return jsonify({"menu": []})
+
+    # Add this debug check
+    if not hasattr(g, 'db') or g.db is None:
+        print("ERROR: No database connection available")
+        return jsonify({"code": 500, "message": "Database connection error"}), 500
+
+    conn = g.db
+    cur = conn.cursor()
+
+    try:
+        # Get all sections for the venue first
+        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
+        all_sections_rows = cur.fetchall()
+        
+        sections = {s['id']: {**s, 'sectionMenu': [], 'subSections': [], 'isExpanded': True} for s in all_sections_rows if not s['parentSectionId']}
+        subsections = {s['id']: {**s, 'sectionMenu': [], 'isExpanded': True} for s in all_sections_rows if s['parentSectionId']}
+
+        # Get all matching menu items
+        sql = '''
+            SELECT 
+                mi."sectionId",
+                mi.id AS "menuItemId",
+                mi."itemID",
+                mi."itemOrder",
+                l."listingName",
+                l.photo,
+                l.bottler,
+                l."drinkType",
+                l.abv,
+                mi."itemPrice",
+                mi."itemAvailability",
+                mi."itemServingType",
+                st."servingType",
+                mi.variant
+            FROM "menuItems" mi
+            JOIN "venuesMenu" vm ON mi."sectionId" = vm.id
+            JOIN listings l ON mi."itemID" = l.id
+            LEFT JOIN "servingTypes" st ON mi."itemServingType" = st.id
+            WHERE vm."venueId" = %s AND (
+                LOWER(l."listingName") LIKE %s OR
+                LOWER(l."drinkType") LIKE %s
+            )
+        '''
+        search_like = f"%{search_term.lower()}%"
+        cur.execute(sql, (venue_id, search_like, search_like))
+        
+        rows = cur.fetchall()
+
+        for row in rows:
+            item = {
+                "id": row['menuItemId'],
+                "sectionId": row['sectionId'],
+                "itemID": row['itemID'],
+                "itemOrder": row['itemOrder'],
+                "name": row['listingName'],
+                "photo": row['photo'],
+                "bottler": row['bottler'],
+                "drinkType": row['drinkType'],
+                "abv": row['abv'],
+                "itemAvailability": row['itemAvailability'],
+                "variant": row['variant'],
+                "servingType": row['itemServingType'],
+                "servingTypeText": row['servingType'],
+                "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
+            }
+            if row['sectionId'] in subsections:
+                subsections[row['sectionId']]['sectionMenu'].append(item)
+            elif row['sectionId'] in sections:
+                sections[row['sectionId']]['sectionMenu'].append(item)
+
+        # Assemble the final menu
+        final_menu = []
+        for sec_id, sec_data in sections.items():
+            for sub_id, sub_data in subsections.items():
+                if sub_data['parentSectionId'] == sec_id:
+                    if sub_data['sectionMenu']: # Only add subsection if it has items
+                        sec_data['subSections'].append(sub_data)
+            
+            if sec_data['sectionMenu'] or sec_data['subSections']: # Only add section if it has items or subsections with items
+                final_menu.append(sec_data)
+        
+        return jsonify({"menu": final_menu})
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"code": 500, "message": "An error occurred retrieving menu items."}), 500
+    finally:
+        if cur:
+            cur.close()
+
 # [GET] Specific Venue
 @blueprint.route("/getVenue/<id>")
 def getVenue(id):
