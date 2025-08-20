@@ -4150,23 +4150,26 @@
                                                 class="btn btn-sm btn-outline-primary"
                                                 @click="addTimeSlot(day)"
                                                 title="Add another time slot">
-                                                <span style="font-size: 14px; font-weight: bold;">+</span>
+                                                <span style="font-size: 14px; font-weight: bold;">+ Time Slot</span>
                                             </button>
                                         </div>
                                         <div class="pb-1" v-for="(slot, slotIndex) in daySlots" :key="slotIndex">
                                             <div class="d-flex align-items-center">
                                                 <input type="time" class="form-control " 
-                                                    :id="day + 'start' + slotIndex"
+                                                    :id="day + 'start' + slotIndex" 
+                                                    style="padding-left:5px !important; padding-right:5px !important;"
                                                     v-model="slot[0]" 
                                                     @change="checkOpeningHours">
                                                 <span class="mx-2">-</span>
                                                 <input type="time" class="form-control " 
                                                     :id="day + 'end' + slotIndex"
+                                                    style="padding-left:5px !important; padding-right:5px !important;"
                                                     v-model="slot[1]" 
                                                     @change="checkOpeningHours">
                                                 <button v-if="daySlots.length > 1" 
                                                     type="button" 
-                                                    class="btn btn-sm btn-outline-danger ms-2"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    style="margin-left:5px !important;"
                                                     @click="removeTimeSlot(day, slotIndex)"
                                                     title="Remove this time slot">
                                                     <span style="font-size: 14px; font-weight: bold;">×</span>
@@ -4174,6 +4177,15 @@
                                             </div>
                                             <!-- for error message -->
                                             <span :id="day + 'error' + slotIndex" class="text-danger ms-1 fst-italic d-none"></span>
+                                        </div>
+                                        <!-- Indicate Closure Button -->
+                                        <div class="d-flex justify-content-center mt-2 mb-3">
+                                            <button type="button" 
+                                                class="btn btn-sm btn-warning"
+                                                @click="indicateClosure(day)"
+                                                title="Mark this day as closed">
+                                                <span style="font-size: 12px; font-weight: bold;">Mark {{ day }} as closed.</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -4186,7 +4198,7 @@
                                         <div v-if="isClosedDay(daySlots)" class="ms-3">
                                             <p class="d-inline">Closed</p>
                                         </div>
-                                        <div v-else class="ms-3">
+                                        <div v-else class="ms-2">
                                             <div v-for="(slot, slotIndex) in daySlots" :key="slotIndex" class="mb-1">
                                                 <p class="d-inline">{{ formatTime(slot[0]) }} - {{ formatTime(slot[1]) }}</p>
                                             </div>
@@ -6849,6 +6861,16 @@ export default {
                 this.newOpeningHours[day].splice(slotIndex, 1);
                 this.checkOpeningHours();
             }
+        },
+
+        // Indicate closure for a specific day
+        indicateClosure(day) {
+            if (!this.newOpeningHours[day]) {
+                this.newOpeningHours[day] = [];
+            }
+            // Clear all time slots and set a single closed slot (00:00 - 00:00)
+            this.newOpeningHours[day] = [['00:00', '00:00']];
+            this.checkOpeningHours();
         },
 
         // Check if day is closed (all slots are 00:00-00:00)
