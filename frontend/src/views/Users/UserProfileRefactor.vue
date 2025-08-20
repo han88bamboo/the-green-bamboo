@@ -1470,8 +1470,8 @@
 
             <!-- Recently Followed Users -->
             <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Following: {{ followingCount }}</h5>
-              <p class="mobile-view-show"><strong>Following: {{ followingCount }}</strong></p>
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followingCount }} Following</h5>
+              <p class="mobile-view-show"><strong>{{ followingCount }} Following</strong></p>
               <hr />
               <div v-if="loadingFollowingUsers" class="text-center">
                 Loading following users...
@@ -1514,8 +1514,8 @@
 
             <!-- Recent Followers -->
             <div class="mt-4 mobile-view-hide">
-              <h5 class="mobile-view-hide" style="font-weight:bold">Followers: {{ followersCount }}</h5>
-              <p class="mobile-view-show"><strong>Followers: {{ followersCount }}</strong></p>
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followersCount }} Followers</h5>
+              <p class="mobile-view-show"><strong>{{ followersCount }} Followers</strong></p>
               <hr />
               <div v-if="loadingFollowersUsers" class="text-center">
                 Loading followers...
