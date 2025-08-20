@@ -619,6 +619,45 @@
                         </label>
                     </div>
 
+
+                        <div class="col-12 mt-4">
+                            <h6 class="fw-bold mb-3">Dining/Food Menu Upload</h6>
+                            <div class="mb-3">
+                                <input 
+                                    ref="pdfMenuInput"
+                                    type="file" 
+                                    class="form-control" 
+                                    accept=".pdf"
+                                    @change="handlePDFMenuSelect"
+                                >
+                                <div class="form-text">Upload your dining menu as a PDF file (max 10MB)</div>
+                            </div>
+                            
+                            <!-- PDF Preview -->
+                            <div v-if="selectedPDFName" class="alert alert-info">
+                                <strong>Selected:</strong> {{ selectedPDFName }}
+                                <button type="button" class="btn btn-sm btn-secondary ms-2" @click="removePDFPreview">
+                                    Remove
+                                </button>
+                            </div>
+                            
+                            <!-- Current PDF Menu -->
+                            <div v-if="targetVenue.pdfMenuUrl" class="mb-3">
+                                <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                                    View existing dining menu.
+                                </a>
+                            </div>
+                            
+                            <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                @click="submitPDFMenu"
+                                :disabled="!pdfMenuBase64"
+                            >
+                                Upload PDF Menu
+                            </button>
+                        </div>
+
                     <!-- Amenities Edit Section -->
                     <div class="col-12 mt-4">
                         <h6 class="fw-bold mb-3">Amenities & Features</h6>
@@ -762,6 +801,7 @@
                             </div>
                         </div>
 
+
                         <!-- General Amenities -->
                         <div class="mb-3">
                             <h6 class="text-muted mb-2">General Amenities</h6>
@@ -859,52 +899,14 @@
                             </div>
                         </div>
 
-                        <!-- Other Amenities Text Field -->
+                        <!-- Other Amenities Text Field 
                         <div class="mb-3">
                             <h6 class="text-muted mb-2">Other Amenities</h6>
                             <textarea class="form-control" id="otherAmenities" v-model="editAmenities.otherAmenities" 
                                      rows="3" placeholder="Describe any other amenities not listed above..."></textarea>
-                        </div>
+                        </div>-->
 
-                        <!-- PDF Menu Upload Section -->
-                        <div class="mb-3">
-                            <h6 class="text-muted mb-2">PDF Menu Upload</h6>
-                            <div class="mb-3">
-                                <input 
-                                    ref="pdfMenuInput"
-                                    type="file" 
-                                    class="form-control" 
-                                    accept=".pdf"
-                                    @change="handlePDFMenuSelect"
-                                >
-                                <div class="form-text">Upload your venue's menu as a PDF file (max 10MB)</div>
-                            </div>
-                            
-                            <!-- PDF Preview -->
-                            <div v-if="selectedPDFName" class="alert alert-info">
-                                <strong>Selected:</strong> {{ selectedPDFName }}
-                                <button type="button" class="btn btn-sm btn-secondary ms-2" @click="removePDFPreview">
-                                    Remove
-                                </button>
-                            </div>
-                            
-                            <!-- Current PDF Menu -->
-                            <div v-if="targetVenue.pdfMenuUrl" class="mb-3">
-                                <strong>Current Menu:</strong>
-                                <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
-                                    View Current PDF Menu
-                                </a>
-                            </div>
-                            
-                            <button 
-                                type="button" 
-                                class="btn btn-primary" 
-                                @click="submitPDFMenu"
-                                :disabled="!pdfMenuBase64"
-                            >
-                                Upload PDF Menu
-                            </button>
-                        </div>
+
                     </div>
                 </div>
 
@@ -958,7 +960,7 @@
                             </span>
                             <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.phoneNumber">
-                                <strong>Phone:&nbsp;</strong> {{ targetVenue.phoneNumber }}
+                                <strong>Phone:&nbsp;</strong>{{ targetVenue.phoneNumber }}
                             </span>
                             <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
                             <span v-if="targetVenue.whatsappNumber">
@@ -1120,19 +1122,19 @@
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
-                    <div
-                        class="col-5 d-flex flex-column flex-lg-row justify-content-start justify-content-lg-end align-items-start align-items-lg-center gap-2">
+                    <div class="col-5 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
-                        <!-- Dining Menu Button (conditional) -->
+                        <!-- Dining Menu Button (conditional) - Top Row -->
                         <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100">
-                            <button class="btn btn-outline-custom-orange btn-sm text-nowrap" 
+                            <button class="btn btn-outline-custom-orange btn-lg text-nowrap" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
-                                    style="font-size: 0.875rem; font-weight: 500;">
+                                    style="font-weight: bold;">
                                 Dining Menu
                             </button>
                         </div>
 
+                        <!-- Follow and Review Buttons - Bottom Row -->
                         <div class="d-flex gap-2">
                             <!-- Follow Button -->
                             <button v-if="viewerType === 'user' && !userFollowing"
@@ -4837,7 +4839,6 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="diningMenuModalLabel">
-                        <i class="bi bi-file-earmark-pdf me-2 text-warning"></i>
                         {{ targetVenue.venueName }} - Dining Menu
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -4847,11 +4848,11 @@
                     <div class="d-flex justify-content-center align-items-center" style="min-height: 70vh;">
                         <iframe 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                            :src="targetVenue.pdfMenuUrl + '#toolbar=1&navpanes=1&scrollbar=1'"
+                            :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1'"
                             width="100%" 
-                            height="600px"
+                            height="750px"
                             style="border: none; background: #f8f9fa;"
-                            title="Dining Menu PDF"
+                            title="Dining Menu"
                             @error="handlePdfError">
                         </iframe>
                         <div v-else class="text-center text-muted p-5">
@@ -4860,12 +4861,6 @@
                             <p class="text-secondary">Please check back later or contact the venue directly.</p>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Close
-                    </button>
                 </div>
             </div>
         </div>
