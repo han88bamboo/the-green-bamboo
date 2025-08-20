@@ -1149,6 +1149,17 @@
                             @click="contentMode = 'venueReviews'">
                             Venue Reviews
                         </button>
+                        <!-- Toggle Recent Activity -->
+                        <button v-if="contentMode == 'recentActivity'"
+                            class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                            @click="contentMode = 'recentActivity'">
+                            Recent Activity
+                        </button>
+                        <button v-else
+                            class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+                            @click="contentMode = 'recentActivity'">
+                            Recent Activity
+                        </button>
                     </div>
 
                 </div>
@@ -4296,6 +4307,100 @@
                     </div>
                 </div>
 
+                <!-- Recent Activity -->
+                <div v-if="contentMode == 'recentActivity'">
+                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-3">
+                        Recent Activity
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <!-- Recent Activity Feed -->
+                            <div v-if="recentActivities.length > 0">
+                                <div v-for="activity in recentActivities" :key="activity.id" 
+                                     class="card mb-3 border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-start">
+                                            <!-- Activity Icon -->
+                                            <div class="me-3">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center" 
+                                                     :style="{ backgroundColor: getActivityTypeColor(activity.type), width: '40px', height: '40px' }">
+                                                    <i :class="getActivityTypeIcon(activity.type)" class="text-white"></i>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Activity Content -->
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-bold">{{ activity.title }}</h6>
+                                                        <p class="mb-1 text-muted">{{ activity.description }}</p>
+                                                        <small class="text-muted">{{ formatActivityDate(activity.createdAt) }}</small>
+                                                    </div>
+                                                    
+                                                    <!-- Activity Actions -->
+                                                    <div v-if="activity.actionUrl" class="ms-3">
+                                                        <router-link :to="activity.actionUrl" class="btn btn-sm btn-outline-primary">
+                                                            View
+                                                        </router-link>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Activity Details -->
+                                                <div v-if="activity.metadata" class="mt-2">
+                                                    <div v-if="activity.type === 'new_review'" class="d-flex align-items-center">
+                                                        <span class="me-2">Rating:</span>
+                                                        <div class="text-warning">
+                                                            <span v-for="n in activity.metadata.rating" :key="n">★</span>
+                                                            <span v-for="n in (5 - activity.metadata.rating)" :key="'empty-' + n" class="text-muted">☆</span>
+                                                        </div>
+                                                    </div>
+                                                    <div v-if="activity.metadata.images && activity.metadata.images.length > 0" class="mt-2">
+                                                        <div class="d-flex flex-wrap gap-2">
+                                                            <img v-for="image in activity.metadata.images.slice(0, 3)" 
+                                                                 :key="image" 
+                                                                 :src="image" 
+                                                                 alt="Activity image" 
+                                                                 class="rounded" 
+                                                                 style="width: 60px; height: 60px; object-fit: cover;">
+                                                            <div v-if="activity.metadata.images.length > 3" 
+                                                                 class="d-flex align-items-center justify-content-center rounded bg-light text-muted"
+                                                                 style="width: 60px; height: 60px; font-size: 12px;">
+                                                                +{{ activity.metadata.images.length - 3 }} more
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div v-else class="text-center py-5">
+                                <div class="text-muted mb-3">
+                                    <i class="fas fa-clock fa-3x"></i>
+                                </div>
+                                <h5 class="text-muted">No Recent Activity</h5>
+                                <p class="text-muted">Activity from recent reviews, menu updates, and events will appear here.</p>
+                            </div>
+                            
+                            <!-- Load More Button -->
+                            <div v-if="recentActivities.length > 0 && hasMoreActivities" class="text-center mt-4">
+                                <button @click="loadMoreActivities" 
+                                        :disabled="loadingMoreActivities"
+                                        class="btn btn-outline-primary">
+                                    <span v-if="loadingMoreActivities">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading...
+                                    </span>
+                                    <span v-else>Load More Activity</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
 
@@ -4987,6 +5092,13 @@ export default {
             unansweredQuestions: [],
             openingHours: {},
             detailedMenu: [],
+
+            // Recent Activity
+            recentActivities: [],
+            hasMoreActivities: false,
+            loadingMoreActivities: false,
+            activitiesPage: 1,
+            activitiesPerPage: 10,
 
             // flags
             dataLoaded: false,
@@ -6136,6 +6248,9 @@ export default {
             } catch (error) {
                 console.error("Error loading flavorTags:", error);
             }
+
+            // Load recent activities
+            await this.loadRecentActivities();
 
         },
 
@@ -8304,6 +8419,149 @@ Thank you!`
         reloadRoute() {
             this.$router.go(0);
         },
+
+        // Recent Activity Methods
+        async loadRecentActivities() {
+            try {
+                // Mock data for now - replace with actual API call
+                this.recentActivities = [
+                    {
+                        id: 1,
+                        type: 'new_review',
+                        title: 'New Review Posted',
+                        description: 'John Doe left a 5-star review for your venue',
+                        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+                        actionUrl: '/reviews/123',
+                        metadata: {
+                            rating: 5,
+                            username: 'John Doe',
+                            images: ['https://via.placeholder.com/60']
+                        }
+                    },
+                    {
+                        id: 2,
+                        type: 'menu_update',
+                        title: 'Menu Updated',
+                        description: 'Your menu was updated with 3 new items',
+                        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+                        actionUrl: null,
+                        metadata: {
+                            itemsAdded: 3,
+                            section: 'Cocktails'
+                        }
+                    },
+                    {
+                        id: 3,
+                        type: 'new_follower',
+                        title: 'New Follower',
+                        description: 'Sarah Smith started following your venue',
+                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+                        actionUrl: '/profile/sarah-smith',
+                        metadata: {
+                            username: 'Sarah Smith'
+                        }
+                    },
+                    {
+                        id: 4,
+                        type: 'event_created',
+                        title: 'Event Created',
+                        description: 'New event "Wine Tasting Night" was created',
+                        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+                        actionUrl: '/events/wine-tasting-night',
+                        metadata: {
+                            eventName: 'Wine Tasting Night',
+                            eventDate: '2025-08-25'
+                        }
+                    }
+                ];
+                this.hasMoreActivities = this.recentActivities.length >= this.activitiesPerPage;
+            } catch (error) {
+                console.error('Error loading recent activities:', error);
+                this.recentActivities = [];
+                this.hasMoreActivities = false;
+            }
+        },
+
+        async loadMoreActivities() {
+            if (this.loadingMoreActivities) return;
+            
+            this.loadingMoreActivities = true;
+            this.activitiesPage += 1;
+            
+            try {
+                // Mock additional data - replace with actual API call
+                const moreActivities = [
+                    {
+                        id: 5,
+                        type: 'profile_update',
+                        title: 'Profile Updated',
+                        description: 'Your venue profile information was updated',
+                        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
+                        actionUrl: null,
+                        metadata: {}
+                    }
+                ];
+                
+                this.recentActivities.push(...moreActivities);
+                this.hasMoreActivities = moreActivities.length >= this.activitiesPerPage;
+            } catch (error) {
+                console.error('Error loading more activities:', error);
+            } finally {
+                this.loadingMoreActivities = false;
+            }
+        },
+
+        getActivityTypeIcon(type) {
+            const icons = {
+                new_review: 'fas fa-star',
+                menu_update: 'fas fa-utensils',
+                new_follower: 'fas fa-user-plus',
+                event_created: 'fas fa-calendar-plus',
+                profile_update: 'fas fa-edit',
+                booking: 'fas fa-bookmark',
+                default: 'fas fa-bell'
+            };
+            return icons[type] || icons.default;
+        },
+
+        getActivityTypeColor(type) {
+            const colors = {
+                new_review: '#f0b358',
+                menu_update: '#28a745',
+                new_follower: '#007bff',
+                event_created: '#6f42c1',
+                profile_update: '#6c757d',
+                booking: '#17a2b8',
+                default: '#6c757d'
+            };
+            return colors[type] || colors.default;
+        },
+
+        formatActivityDate(date) {
+            if (!date) return '';
+            
+            const now = new Date();
+            const activityDate = new Date(date);
+            const diffInMs = now - activityDate;
+            const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+            const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+            const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+            if (diffInMinutes < 60) {
+                return diffInMinutes <= 1 ? 'Just now' : `${diffInMinutes} minutes ago`;
+            } else if (diffInHours < 24) {
+                return diffInHours === 1 ? '1 hour ago' : `${diffInHours} hours ago`;
+            } else if (diffInDays < 7) {
+                return diffInDays === 1 ? '1 day ago' : `${diffInDays} days ago`;
+            } else {
+                return activityDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        },
+
         closeBadgePopup() {
             this.showBadgePopup = false;
             this.earnedBadges = [];
@@ -8346,6 +8604,12 @@ Thank you!`
             this.detailedMenu = [];
             this.editMenu = [];
             this.searchMenuResults = [];
+            
+            // Reset recent activities
+            this.recentActivities = [];
+            this.hasMoreActivities = false;
+            this.loadingMoreActivities = false;
+            this.activitiesPage = 1;
             
             // Reset user-specific data
             this.userInfo = {};
