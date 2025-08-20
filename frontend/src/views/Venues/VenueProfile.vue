@@ -4118,13 +4118,13 @@
                                     <!-- [if] not editing -->
                                     <button v-if="!editOpeningHours" type="button"
                                         class="btn btn-warning rounded-0 reverse-clickable-text  mobile-rating-smaller-text-2"
-                                        @click="editOpeningHours = true; newOpeningHours = Object.keys(openingHours).length ? JSON.parse(JSON.stringify(openingHours)) : { 'Monday': ['09:00', '18:00'], 'Tuesday': ['09:00', '18:00'], 'Wednesday': ['09:00', '18:00'], 'Thursday': ['09:00', '18:00'], 'Friday': ['09:00', '18:00'], 'Saturday': ['09:00', '18:00'], 'Sunday': ['09:00', '18:00'] }; checkOpeningHours()">
+                                        @click="initializeEditOpeningHours()">
                                         Edit
                                     </button>
                                     <!-- [else] if editing -->
                                     <button v-if="editOpeningHours" type="button"
                                         class="btn btn-warning rounded-0 reverse-clickable-text ms-1  mobile-rating-smaller-text-2"
-                                        @click="newOpeningHours = JSON.parse(JSON.stringify(openingHours)); checkOpeningHours()">
+                                        @click="resetOpeningHours()">
                                         Reset
                                     </button>
                                     <button v-if="editOpeningHours" type="button"
@@ -4142,32 +4142,55 @@
 
                                 <!-- Section Content (Edit Mode) -->
                                 <div v-if="editOpeningHours">
-                                    <div class="default-text-no-background  mobile-rating-smaller-text-2"
-                                        v-for="(hours, day) in newOpeningHours" v-bind:key="day">
-                                        <span>{{ day }}: </span>
-                                        <div class="pb-1">
+                                    <div class="default-text-no-background mobile-rating-smaller-text-2"
+                                        v-for="(daySlots, day) in newOpeningHours" v-bind:key="day">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="fw-bold">{{ day }}: </span>
+                                            <button type="button" 
+                                                class="btn btn-sm btn-outline-primary"
+                                                @click="addTimeSlot(day)"
+                                                title="Add another time slot">
+                                                <span style="font-size: 14px; font-weight: bold;">+</span>
+                                            </button>
+                                        </div>
+                                        <div class="pb-1" v-for="(slot, slotIndex) in daySlots" :key="slotIndex">
                                             <div class="d-flex align-items-center">
-                                                <input type="time" class="form-control" :id="day + 'start'"
-                                                    v-model="hours[0]" @change="checkOpeningHours">
+                                                <input type="time" class="form-control " 
+                                                    :id="day + 'start' + slotIndex"
+                                                    v-model="slot[0]" 
+                                                    @change="checkOpeningHours">
                                                 <span class="mx-2">-</span>
-                                                <input type="time" class="form-control" :id="day + 'end'"
-                                                    v-model="hours[1]" @change="checkOpeningHours">
+                                                <input type="time" class="form-control " 
+                                                    :id="day + 'end' + slotIndex"
+                                                    v-model="slot[1]" 
+                                                    @change="checkOpeningHours">
+                                                <button v-if="daySlots.length > 1" 
+                                                    type="button" 
+                                                    class="btn btn-sm btn-outline-danger ms-2"
+                                                    @click="removeTimeSlot(day, slotIndex)"
+                                                    title="Remove this time slot">
+                                                    <span style="font-size: 14px; font-weight: bold;">×</span>
+                                                </button>
                                             </div>
                                             <!-- for error message -->
-                                            <span :id="day + 'error'" class="text-danger ms-1 fst-italic d-none"></span>
+                                            <span :id="day + 'error' + slotIndex" class="text-danger ms-1 fst-italic d-none"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Section Content (View Mode) -->
                                 <div v-else>
-                                    <div class="default-text-no-background  mobile-rating-smaller-text-2"
-                                        v-for="(hours, day) in openingHours" v-bind:key="day">
-                                        <span>{{ day }}: </span>
-                                        <p class="d-inline" v-if="hours[0] === '00:00' && hours[1] === '00:00'">Closed
-                                        </p>
-                                        <p class="d-inline" v-else>{{ formatTime(hours[0]) }} - {{ formatTime(hours[1])
-                                            }}</p>
+                                    <div class="default-text-no-background mobile-rating-smaller-text-2"
+                                        v-for="(daySlots, day) in openingHours" v-bind:key="day">
+                                        <p class="mb-0 fw-bold">{{ day }}: </p>
+                                        <div v-if="isClosedDay(daySlots)" class="ms-3">
+                                            <p class="d-inline">Closed</p>
+                                        </div>
+                                        <div v-else class="ms-3">
+                                            <div v-for="(slot, slotIndex) in daySlots" :key="slotIndex" class="mb-1">
+                                                <p class="d-inline">{{ formatTime(slot[0]) }} - {{ formatTime(slot[1]) }}</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -5641,6 +5664,9 @@ export default {
                             .map(key => [key, this.openingHours[key]]) // Map each key to its corresponding value
                     );
                     this.openingHours = sortedOpeningHours;
+                    
+                    // Ensure opening hours are in the correct format for display
+                    this.openingHours = this.convertToMultiSlotFormat(this.openingHours);
                     this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
 
                     // Set and sort menu data
@@ -6762,33 +6788,106 @@ export default {
 
         },
 
+        // Initialize Opening Hours Edit Mode
+        initializeEditOpeningHours() {
+            this.editOpeningHours = true;
+            
+            if (Object.keys(this.openingHours).length) {
+                // Convert existing data to new format if needed
+                this.newOpeningHours = this.convertToMultiSlotFormat(JSON.parse(JSON.stringify(this.openingHours)));
+            } else {
+                // Default single slot for each day
+                this.newOpeningHours = {
+                    'Monday': [['09:00', '18:00']],
+                    'Tuesday': [['09:00', '18:00']],
+                    'Wednesday': [['09:00', '18:00']],
+                    'Thursday': [['09:00', '18:00']],
+                    'Friday': [['09:00', '18:00']],
+                    'Saturday': [['09:00', '18:00']],
+                    'Sunday': [['09:00', '18:00']]
+                };
+            }
+            this.checkOpeningHours();
+        },
+
+        // Reset Opening Hours
+        resetOpeningHours() {
+            this.newOpeningHours = this.convertToMultiSlotFormat(JSON.parse(JSON.stringify(this.openingHours)));
+            this.checkOpeningHours();
+        },
+
+        // Convert legacy format to multi-slot format
+        convertToMultiSlotFormat(hours) {
+            const converted = {};
+            for (const [day, timeSlot] of Object.entries(hours)) {
+                // If it's already an array of arrays, keep it
+                if (Array.isArray(timeSlot) && Array.isArray(timeSlot[0])) {
+                    converted[day] = timeSlot;
+                } else if (Array.isArray(timeSlot)) {
+                    // Legacy format: ['09:00', '18:00'] -> [['09:00', '18:00']]
+                    converted[day] = [timeSlot];
+                } else {
+                    // Fallback
+                    converted[day] = [['09:00', '18:00']];
+                }
+            }
+            return converted;
+        },
+
+        // Add time slot to a specific day
+        addTimeSlot(day) {
+            if (!this.newOpeningHours[day]) {
+                this.newOpeningHours[day] = [];
+            }
+            this.newOpeningHours[day].push(['09:00', '18:00']);
+            this.checkOpeningHours();
+        },
+
+        // Remove time slot from a specific day
+        removeTimeSlot(day, slotIndex) {
+            if (this.newOpeningHours[day] && this.newOpeningHours[day].length > 1) {
+                this.newOpeningHours[day].splice(slotIndex, 1);
+                this.checkOpeningHours();
+            }
+        },
+
+        // Check if day is closed (all slots are 00:00-00:00)
+        isClosedDay(daySlots) {
+            if (!Array.isArray(daySlots)) return false;
+            return daySlots.every(slot => slot[0] === '00:00' && slot[1] === '00:00');
+        },
+
         // Check Opening Hours
         checkOpeningHours() {
             // Reset error flag
             this.editOpeningHoursError = false;
 
             for (let day in this.newOpeningHours) {
-                // Get the error span
-                let errorSpan = document.getElementById(day + 'error');
+                const daySlots = this.newOpeningHours[day];
+                
+                for (let slotIndex = 0; slotIndex < daySlots.length; slotIndex++) {
+                    // Get the error span
+                    let errorSpan = document.getElementById(day + 'error' + slotIndex);
 
-                // Hide the error message initially
-                if (errorSpan) {
-                    errorSpan.classList.add('d-none');
-                }
-
-                // Get the start and end times for this day
-                let start = this.newOpeningHours[day][0];
-                let end = this.newOpeningHours[day][1];
-
-                // Allow "Closed"
-                if (start && end && start === "00:00" && end === "00:00") continue;
-
-
-                if (start && end && start >= end && !(end > "00:00" && end <= "03:00") && end !== "00:00") {
-                    this.editOpeningHoursError = true;
+                    // Hide the error message initially
                     if (errorSpan) {
-                        errorSpan.textContent = "Start time must be before end time!";
-                        errorSpan.classList.remove('d-none');
+                        errorSpan.classList.add('d-none');
+                    }
+
+                    // Get the start and end times for this slot
+                    let start = daySlots[slotIndex][0];
+                    let end = daySlots[slotIndex][1];
+
+                    // Allow "Closed" (00:00 - 00:00)
+                    if (start && end && start === "00:00" && end === "00:00") continue;
+
+                    // Validate that start time is before end time
+                    if (start && end && start >= end && !(end > "00:00" && end <= "03:00") && end !== "00:00") {
+                        this.editOpeningHoursError = true;
+                        if (errorSpan) {
+                            errorSpan.textContent = "Start time must be before end time!";
+                            errorSpan.classList.remove('d-none');
+                        }
                     }
                 }
             }
@@ -6800,10 +6899,14 @@ export default {
             this.editOpeningHours = false;
 
             try {
+                // Convert multi-slot format back to backend format if needed
+                // For now, we'll send the full multi-slot format to maintain compatibility
+                const dataToSend = this.newOpeningHours;
+
                 await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editOpeningHours`,
                     {
                         venueID: this.targetVenue['id'],
-                        updatedOpeningHours: this.newOpeningHours,
+                        updatedOpeningHours: dataToSend,
                     },
                     {
                         headers: {
@@ -8868,5 +8971,23 @@ Thank you!`
 .auto-resize-textarea:focus {
     border-color: #006A50;
     box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+}
+
+/* Opening Hours Multiple Time Slots Styling */
+.time-slot-controls {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: #fafafa;
+}
+
+.time-slot-controls .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+.time-slot-controls input[type="time"] {
+    max-width: 120px;
 }
 </style>
