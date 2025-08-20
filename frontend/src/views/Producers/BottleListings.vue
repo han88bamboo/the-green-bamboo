@@ -35,6 +35,23 @@
 
   <!-- main content -->
   <div class="container pt-5 mobile-pt-4" v-if="dataLoaded">
+      <!-- Master Listing Banner for Wine/Sake -->
+        <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row container mb-4">
+          <div class="col-12">
+            <div class="alert alert-info d-flex align-items-center" role="alert" style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc" class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+              </svg>
+              <div class="text-start mobile-view-hide">
+                <span class="fw-bold text-dark">Master Listing for all vintages.</span> <span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed under "Add Your Review".</span>
+              </div>
+               <div class="text-start mobile-view-show fs-8">
+                <span class="fw-bold text-dark">Master Listing.</span><span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed in "Add Your Review".</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
     <div class="row">
       <!-- producer information -->
       <div class="col-12 col-md-9 no-margin no-right-padding-large-screen">
@@ -579,7 +596,7 @@
             <span v-if="specified_listing['drinkStyle']" class="text-decoration-none">{{ specified_listing["drinkStyle"]
             }} |
             </span>
-            <span class="text-decoration-none">{{ specified_listing["abv"] }}% |
+            <span v-if="specified_listing['abv']" class="text-decoration-none">{{ specified_listing["abv"] }}% |
             </span>
             <span class="text-decoration-none">{{
               specified_listing["originCountry"]
@@ -603,12 +620,11 @@
               </div>
 
               <!-- drink styles -->
-              <div class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['drinkStyle']" class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
-                  <b v-if="specified_listing['drinkStyle']">
+                  <b>
                     {{ specified_listing["drinkStyle"] }}
                   </b>
-                  <b v-else> N/A </b>
                 </h5>
                 <p class="mb-3"><u> Drink Style </u></p>
               </div>
@@ -639,7 +655,7 @@
               </div>
 
               <!-- abv -->
-              <div class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['abv']" class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
                   <b> {{ specified_listing["abv"] }}% </b>
                 </h5>
@@ -823,20 +839,7 @@
           </div>
         </div>
 
-        <!-- Master Listing Banner for Wine/Sake -->
-        <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row pt-3 container mobile-pt-2">
-          <div class="col-12">
-            <div class="alert alert-info d-flex align-items-center" role="alert" style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc" class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
-                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
-              </svg>
-              <div class="text-start">
-                <span class="fw-bold text-dark">Master Listing for all vintages.</span> <span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed under "Add Your Review".</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
+      
         <!-- Modal -->
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
           aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -1097,7 +1100,7 @@
                   <div class="col-md-6 mb-3 text-start">
                     <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
                     <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
-                      <option :value="null" selected disabled>
+                      <option value="" selected disabled>
                         Select Yes / No
                       </option>
                       <option :value="true">Yes</option>
@@ -1110,7 +1113,7 @@
                   <div class="col-md-6 mb-3 text-start">
                     <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
                     <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
-                      <option :value="null" disabled selected>
+                      <option value="" disabled selected>
                         Select Yes / No
                       </option>
                       <option :value="true">Yes</option>
@@ -2765,8 +2768,8 @@ export default {
       aroma: "",
       taste: "",
       finish: "",
-      wouldRecommend: null,
-      wouldBuyAgain: null,
+      wouldRecommend: "",
+      wouldBuyAgain: "",
       extendReview: false,
       locationOptions: [], // Your list of options
       locationSearchTerm: "",
@@ -4094,6 +4097,10 @@ export default {
         this.finish = this.finish.trim();
       }
 
+      // Convert empty strings to null for boolean fields
+      let willRecommend = this.wouldRecommend === "" ? null : this.wouldRecommend;
+      let wouldBuyAgain = this.wouldBuyAgain === "" ? null : this.wouldBuyAgain;
+
       // // Add console log here to debug the rating value before submission
       // console.log("Rating before submission:", this.rating);
 
@@ -4114,9 +4121,9 @@ export default {
         finish: this.finish,
         location: this.selectedLocation,
         address: this.selectedLocationAddress,
-        willRecommend: this.wouldRecommend,
+        willRecommend: willRecommend,
         taggedUsers: this.friendTagList,
-        wouldBuyAgain: this.wouldBuyAgain,
+        wouldBuyAgain: wouldBuyAgain,
         observationTag: this.selectedObservations,
         createdDate: createdDate,
         userVotes: {
@@ -4162,6 +4169,10 @@ export default {
         this.finish = this.finish.trim();
       }
 
+      // Convert empty strings to null for boolean fields
+      let willRecommend = this.wouldRecommend === "" ? null : this.wouldRecommend;
+      let wouldBuyAgain = this.wouldBuyAgain === "" ? null : this.wouldBuyAgain;
+
       // Add console log here to debug the rating value before submission
       // console.log("Rating before submission:", this.rating);
 
@@ -4184,8 +4195,8 @@ export default {
         location: this.selectedLocation,
         address: this.selectedLocationAddress,
         taggedUsers: this.friendTagList,
-        willRecommend: this.wouldRecommend,
-        wouldBuyAgain: this.wouldBuyAgain,
+        willRecommend: willRecommend,
+        wouldBuyAgain: wouldBuyAgain,
         observationTag: this.selectedObservations,
         createdDate: this.specificReview[0].createdDate,
       };
