@@ -108,8 +108,17 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold ">Read Review</span>
                                 </p>
+                            </div>
+                            
+                            <!-- Read Review Button Footer -->
+                            <div class="text-center pb-3">
+                                <button 
+                                    class="btn fw-semibold px-4"
+                                    @click="goToListing(review)"
+                                    style="background-color: #f04444; border-color: #f04444; color: white;">
+                                    Read Review
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -189,8 +198,17 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 55) }}" 
-                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
                                 </p>
+                            </div>
+                            
+                            <!-- Read Review Button Footer -->
+                            <div class="text-center pb-3">
+                                <button 
+                                    class="btn fw-semibold px-4"
+                                    @click="goToListing(review)"
+                                    style="background-color: #f04444; border-color: #f04444; color: white;">
+                                    Read Review
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -342,8 +360,17 @@
                                 <!-- Review excerpt -->
                                 <p class="card-text flex-grow-1 small" v-if="review.reviewDesc">
                                     "{{ truncateText(review.reviewDesc, 135) }}" 
-                                    <span class="btn btn-sm  primary-btn-less-round-blue text-decoration-none mt-2 fw-bold">Read Review</span>
                                 </p>
+                            </div>
+                            
+                            <!-- Read Review Button Footer -->
+                            <div class="text-center pb-3">
+                                <button 
+                                    class="btn fw-semibold px-4"
+                                    @click="goToVenue(review)"
+                                    style="background-color: #3CB371; border-color: #3CB371; color: white;">
+                                    Read Review
+                                </button>
                             </div>
                         </div>
                     </div>
