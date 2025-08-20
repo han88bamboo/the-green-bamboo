@@ -25,12 +25,12 @@
           <!-- Login/Signup buttons for non-logged-in users -->
           <div v-if="accType === ''" class="d-flex align-items-center gap-2 ms-3 me-3">
             <router-link :to="'/login'">
-              <button class="btn btn-secondary btn-sm px-3 fw-bold">
+              <button class="btn btn-secondary btn-sm px-2 fw-bold mobile-view-small">
                 Log In
               </button>
             </router-link>
             <router-link :to="'/signup'">
-              <button class="btn btn-danger btn-sm px-3 fw-bold">
+              <button class="btn btn-danger btn-sm px-2 fw-bold">
                 Sign Up
               </button>
             </router-link>
