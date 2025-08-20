@@ -142,7 +142,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             <nav class="pb-0 mobile-px-0">
                 <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
                     <!-- Listings -->
-                    <button class="nav-link active col-lg-2 mobile-col-2 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
+                    <button class="nav-link active col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
                         <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
                             Drinks &nbsp;
                             <span v-if="resultListings.length > 0" class="rounded-circle mobile-mx-0 mx-3 d-flex align-items-center justify-content-center"> 
@@ -154,7 +154,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </span>
                     </button>
                     <!-- Producers -->
-                    <button class="nav-link col-lg-2 mobile-col-2 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
                         <span class="d-flex align-items-center justify-content-center mb-0  fw-bold">
                             Brands &nbsp;
                             <span v-if="producerListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
@@ -166,7 +166,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </span>
                     </button>
                     <!-- Venues -->
-                    <button class="nav-link col-lg-2 mobile-col-2 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
                         <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
                             Venues &nbsp;
                             <span v-if="venueListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
@@ -178,7 +178,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </span>
                     </button>
                     <!-- Users -->
-                    <button class="nav-link col-lg-2 mobile-col-2 xcol-12 px-1" id="nav-users-tab" data-bs-toggle="tab" data-bs-target="#nav-users" type="button" role="tab" aria-controls="nav-users" aria-selected="false" @click="changeActiveTabStatus('users')">
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-users-tab" data-bs-toggle="tab" data-bs-target="#nav-users" type="button" role="tab" aria-controls="nav-users" aria-selected="false" @click="changeActiveTabStatus('users')">
                         <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
                             Users &nbsp;
                             <span v-if="userListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
