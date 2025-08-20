@@ -3475,7 +3475,7 @@
                 <div v-if="contentMode == 'recentActivity'">
                     <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
                         style="font-weight: bold; color: black;">
-                        Drink Reviews from this Venue
+                        Drinks tasted at this Venue
                     </h4>
 
                     <div class="row text-start" style="padding-left: 0.75em">
@@ -3501,11 +3501,11 @@
 
                     <hr />
 
-                    <!-- Reviews of drinks tasted here -->
+                    <!-- Reviews of drinks tasted here 
                     <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2 mt-4"
                         style="font-weight: bold; color: black;">
                         Reviews of Drinks Tasted Here
-                    </h4>
+                    </h4> -->
 
                     <div v-if="bottleReviews && bottleReviews.length > 0">
                         <!-- Loop through each bottle review that tags this venue -->
@@ -3653,93 +3653,6 @@
                                         Delete Review
                                     </button>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-12">
-                            <!-- Recent Activity Feed -->
-                            <div v-if="recentActivities.length > 0">
-                                <div v-for="activity in recentActivities" :key="activity.id" 
-                                     class="card mb-3 border-0 shadow-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex align-items-start">
-                                            <!-- Activity Icon -->
-                                            <div class="me-3">
-                                                <div class="rounded-circle d-flex align-items-center justify-content-center" 
-                                                     :style="{ backgroundColor: getActivityTypeColor(activity.type), width: '40px', height: '40px' }">
-                                                    <i :class="getActivityTypeIcon(activity.type)" class="text-white"></i>
-                                                </div>
-                                            </div>
-                                            
-                                            <!-- Activity Content -->
-                                            <div class="flex-grow-1">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <h6 class="mb-1 fw-bold">{{ activity.title }}</h6>
-                                                        <p class="mb-1 text-muted">{{ activity.description }}</p>
-                                                        <small class="text-muted">{{ formatActivityDate(activity.createdAt) }}</small>
-                                                    </div>
-                                                    
-                                                    <!-- Activity Actions -->
-                                                    <div v-if="activity.actionUrl" class="ms-3">
-                                                        <router-link :to="activity.actionUrl" class="btn btn-sm btn-outline-primary">
-                                                            View
-                                                        </router-link>
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Activity Details -->
-                                                <div v-if="activity.metadata" class="mt-2">
-                                                    <div v-if="activity.type === 'new_review'" class="d-flex align-items-center">
-                                                        <span class="me-2">Rating:</span>
-                                                        <div class="text-warning">
-                                                            <span v-for="n in activity.metadata.rating" :key="n">★</span>
-                                                            <span v-for="n in (5 - activity.metadata.rating)" :key="'empty-' + n" class="text-muted">☆</span>
-                                                        </div>
-                                                    </div>
-                                                    <div v-if="activity.metadata.images && activity.metadata.images.length > 0" class="mt-2">
-                                                        <div class="d-flex flex-wrap gap-2">
-                                                            <img v-for="image in activity.metadata.images.slice(0, 3)" 
-                                                                 :key="image" 
-                                                                 :src="image" 
-                                                                 alt="Activity image" 
-                                                                 class="rounded" 
-                                                                 style="width: 60px; height: 60px; object-fit: cover;">
-                                                            <div v-if="activity.metadata.images.length > 3" 
-                                                                 class="d-flex align-items-center justify-content-center rounded bg-light text-muted"
-                                                                 style="width: 60px; height: 60px; font-size: 12px;">
-                                                                +{{ activity.metadata.images.length - 3 }} more
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Empty State -->
-                            <div v-else class="text-center py-5">
-                                <div class="text-muted mb-3">
-                                    <i class="fas fa-clock fa-3x"></i>
-                                </div>
-                                <h5 class="text-muted">No Recent Activity</h5>
-                                <p class="text-muted">Activity from recent reviews, menu updates, and events will appear here.</p>
-                            </div>
-                            
-                            <!-- Load More Button -->
-                            <div v-if="recentActivities.length > 0 && hasMoreActivities" class="text-center mt-4">
-                                <button @click="loadMoreActivities" 
-                                        :disabled="loadingMoreActivities"
-                                        class="btn btn-outline-primary">
-                                    <span v-if="loadingMoreActivities">
-                                        <i class="fas fa-spinner fa-spin me-2"></i>Loading...
-                                    </span>
-                                    <span v-else>Load More Activity</span>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -8569,58 +8482,10 @@ Thank you!`
         // Recent Activity Methods
         async loadRecentActivities() {
             try {
-                // Mock data for now - replace with actual API call
-                this.recentActivities = [
-                    {
-                        id: 1,
-                        type: 'new_review',
-                        title: 'New Review Posted',
-                        description: 'John Doe left a 5-star review for your venue',
-                        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-                        actionUrl: '/reviews/123',
-                        metadata: {
-                            rating: 5,
-                            username: 'John Doe',
-                            images: ['https://via.placeholder.com/60']
-                        }
-                    },
-                    {
-                        id: 2,
-                        type: 'menu_update',
-                        title: 'Menu Updated',
-                        description: 'Your menu was updated with 3 new items',
-                        createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
-                        actionUrl: null,
-                        metadata: {
-                            itemsAdded: 3,
-                            section: 'Cocktails'
-                        }
-                    },
-                    {
-                        id: 3,
-                        type: 'new_follower',
-                        title: 'New Follower',
-                        description: 'Sarah Smith started following your venue',
-                        createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
-                        actionUrl: '/profile/sarah-smith',
-                        metadata: {
-                            username: 'Sarah Smith'
-                        }
-                    },
-                    {
-                        id: 4,
-                        type: 'event_created',
-                        title: 'Event Created',
-                        description: 'New event "Wine Tasting Night" was created',
-                        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
-                        actionUrl: '/events/wine-tasting-night',
-                        metadata: {
-                            eventName: 'Wine Tasting Night',
-                            eventDate: '2025-08-25'
-                        }
-                    }
-                ];
-                this.hasMoreActivities = this.recentActivities.length >= this.activitiesPerPage;
+                // TODO: Replace with actual API call to fetch recent activities
+                // For now, return empty array to show "No Recent Activity" message
+                this.recentActivities = [];
+                this.hasMoreActivities = false;
             } catch (error) {
                 console.error('Error loading recent activities:', error);
                 this.recentActivities = [];
@@ -8635,18 +8500,9 @@ Thank you!`
             this.activitiesPage += 1;
             
             try {
-                // Mock additional data - replace with actual API call
-                const moreActivities = [
-                    {
-                        id: 5,
-                        type: 'profile_update',
-                        title: 'Profile Updated',
-                        description: 'Your venue profile information was updated',
-                        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
-                        actionUrl: null,
-                        metadata: {}
-                    }
-                ];
+                // TODO: Replace with actual API call to fetch more activities
+                // For now, return empty array since there are no activities
+                const moreActivities = [];
                 
                 this.recentActivities.push(...moreActivities);
                 this.hasMoreActivities = moreActivities.length >= this.activitiesPerPage;
