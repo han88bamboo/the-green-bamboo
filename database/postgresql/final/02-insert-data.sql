@@ -2873,6 +2873,8 @@ INSERT INTO "venues" (
 INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 
+INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") VALUES (3, 11, 5.0, 'test review i''ll delete almost immediately i promise', '2025-08-20T19:45:56.344000'::timestamp, '{https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Orh_Gao_Tap_Room_Young_Master_480x480.png?v=1684943445}');
+
 INSERT INTO "producersQuestionAnswers" (
     "question", "answer", "date", "userId", "producerId")
     VALUES ('When are you going to release the next promotion?', 'SOON! CHECK FOR UPDATES!', '2024-10-04 16:08:59.899', 1, 1);
@@ -2992,7 +2994,7 @@ INSERT INTO "reviews" (
 (3, 18, 9.3, 'Average experience, decent aftertaste.', 'Listing', '2024-02-06 09:15:00', 'English', 'medium', TRUE, FALSE, ARRAY[4,2], ARRAY['berry'], null, '#DC143C', 'fruity', 1, 'dry', ARRAY['light'], '890 Street F'),
 (3, 10, 4.0, 'Good balance of flavors.', 'Listing', '2024-02-07 13:05:00', 'English', 'medium', TRUE, TRUE, ARRAY[5], ARRAY['spice'], null, '#8B4513', 'warm', 1, 'smooth', ARRAY['balanced'], '234 Street G'),
 (3, 3, 3.0, 'A bit too strong for me.', 'Listing', '2024-02-08 17:40:00', 'English', 'short', FALSE, FALSE, ARRAY[2,3], ARRAY['citrus'], null, '#ADD8E6', 'sharp', 1, 'intense', ARRAY['burn'], '678 Street H'),
-(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], null, '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
+(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/photo_2023-12-24_01.50.09.jpg?v=1703353821', '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
 (3, 9, 3.2, 'A bit underwhelming, expected more.', 'Listing', '2024-02-10 08:55:00', 'English', 'medium', FALSE, FALSE, ARRAY[3], ARRAY['oak'], null, '#800000', 'dry', 1, 'muted', ARRAY['flat'], '202 Street J'),
 (1, 5, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{2, 3, 36, 37}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
 (2, 12, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{23, 35, 36, 77}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
