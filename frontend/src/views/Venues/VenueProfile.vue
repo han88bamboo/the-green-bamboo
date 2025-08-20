@@ -3298,22 +3298,17 @@
                                     </svg>
                                 </div>
 
-                                <!-- Updated: Display combined images from both venue and bottle reviews -->
-                                <div v-for="(imageData, index) in combinedReviewImages.slice(0, 5)"
-                                    :key="`combined-${index}`"
+                                <!-- Display only venue review images -->
+                                <div v-for="(imageData, index) in combinedReviewImages.filter(img => img.reviewType === 'venue').slice(0, 5)"
+                                    :key="`venue-${index}`"
                                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
-                                    style="position: relative;"
-                                    :style="{ cursor: imageData.reviewType === 'bottle' ? 'pointer' : 'default' }"
-                                    @click="imageData.reviewType === 'bottle' ? openDetailedReviewModal(imageData) : null">
+                                    style="position: relative;">
                                     <img :src="imageData.photo || defaultPhoto" alt="" class="review-image"
                                         loading="lazy" />
 
-                                    <!-- Optional: Add a small badge to indicate review type -->
+                                    <!-- Badge to indicate venue review -->
                                     <div class="position-absolute top-0 end-0 m-1">
-                                        <span v-if="imageData.reviewType === 'venue'" class="badge bg-primary"
-                                            style="font-size: 0.6rem;">V</span>
-                                        <span v-if="imageData.reviewType === 'bottle'" class="badge bg-success"
-                                            style="font-size: 0.6rem;">B</span>
+                                        <span class="badge bg-primary" style="font-size: 0.6rem;">V</span>
                                     </div>
                                 </div>
                             </div>
@@ -3471,161 +3466,6 @@
                     <div class="d-flex justify-content-center mb-3"
                         v-if="filteredVenueReviews.length > 0 && !noMoreReviews">
                         <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
-                    </div>
-                    <!-- Reviews of drinks tasted here -->
-                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2 mt-4"
-                        style="font-weight: bold; color: black;">
-                        Reviews of Drinks Tasted Here
-                    </h4>
-
-                    <div v-if="bottleReviews && bottleReviews.length > 0">
-                        <!-- Loop through each bottle review that tags this venue -->
-                        <div class="row mb-3" v-for="review in bottleReviews" v-bind:key="review.id">
-                            <div class="col-12 col-lg-9">
-                                <div class="row">
-                                    <div class="text-start mb-3">
-                                        <div class="row align-items-center">
-                                            <!-- Profile Photo -->
-                                            <div class="col-12 col-lg-1 mobile-col-2 text-start">
-                                                <router-link :to="`/profile/user/${review.userID}`">
-                                                    <img :src="getPhotoFromReview(review) || defaultProfilePhoto" alt=""
-                                                        class="profile-image" />
-                                                </router-link>
-                                            </div>
-
-                                            <!-- Username and Rating -->
-                                            <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
-                                                <router-link :to="`/profile/user/${review.userID}`"
-                                                    class="text-decoration-none text-dark">
-                                                    <b>@{{ getUsernameFromReview(review) }}</b>
-                                                </router-link>
-                                                <span class="ms-2">
-                                                    {{ getUserPointsFromReview(review) }}
-                                                </span>
-                                                <span :style="{ color: getUserRankColor(review) }">
-                                                    {{ getUserRankFromReview(review) }}
-                                                </span>
-                                                &nbsp;rated <span style="color: #f0b358">★</span>
-                                                <b>{{ review.rating }}</b> Stars
-
-                                                <!-- Drink Name -->
-                                                <span>
-                                                    for
-                                                    <router-link :to="`/listing/view/${review.reviewTarget}/${getBottleNameFromReview(review).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`"
-                                                        class="text-decoration-none text-dark">
-                                                        <b>{{ getBottleNameFromReview(review) }} </b>
-                                                    </router-link>
-                                                </span>
-
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- User's Review -->
-                                    <div class="text-start mb-2">
-                                        {{ review.reviewDesc }}
-                                    </div>
-
-                                    <!-- Detailed Review Button Only -->
-                                    <div class="text-start mb-3" style="display: flex !important">
-                                        <a href="#" class="text-decoration-underline text-secondary me-3"
-                                            @click="openDetailedReviewModal({ reviewType: 'bottle', reviewData: review })">
-                                            Detailed Review >
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Review photo (desktop view) -->
-                            <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
-                                <div data-bs-toggle="modal"
-                                    :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`"
-                                    style="cursor: pointer">
-                                    <img :src="review.photo || defaultPhoto" alt="" class="review-image"
-                                        style="width: 125px; height: 125px" />
-                                </div>
-                            </div>
-
-                            <!-- Modal for review image -->
-                            <div class="modal fade" :id="`bottleReviewImageModal${getUsernameFromReview(review)}`"
-                                tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
-                                    <div class="modal-content">
-                                        <div class="modal-body p-4">
-                                            <img :src="review.photo || defaultPhoto" alt=""
-                                                style="width: 100%; height: auto" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Review photo (mobile view) -->
-                            <div class="row">
-                                <div class="col-3 xcol-lg-3 text-start mobile-view-show">
-                                    <div data-bs-toggle="modal"
-                                        :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`"
-                                        style="cursor: pointer">
-                                        <img :src="review.photo || defaultPhoto" alt="" class="review-image"
-                                            style="width: 200%; height: 200%" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="mt-4 mb-2" />
-                        </div>
-
-                        <!-- Load More Button -->
-                        <div class="d-flex justify-content-center mb-3"
-                            v-if="bottleReviews.length > 0 && !noMoreBottleReviews">
-                            <button class="btn primary-btn btn-lg" @click="loadMoreBottleReviews">Load More Drink
-                                Reviews</button>
-                        </div>
-                    </div>
-
-                    <!-- No reviews message -->
-                    <div v-else class="text-center py-4">
-                        <p class="text-secondary">No drink reviews found for this venue yet.</p>
-                    </div>
-
-                    <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
-                    <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="exampleModalLabel"
-                        aria-hidden="true">
-                        <div class="modal-dialog">
-                            <!-- ... replicate your existing 'deleteProducerReview' structure,
-                            but referencing 'deleteVenueReview' with successDelete, errorDelete, etc. -->
-                            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successDelete">
-                                <span>Your review has successfully been deleted!</span>
-                                <div class="modal-footer">
-                                    <button type="button" @click="reloadRoute" class="btn btn-secondary"
-                                        data-bs-dismiss="modal">
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- If error, etc... -->
-                            <div v-if="errorDelete" class="text-danger fst-italic fw-bold fs-3 modal-content">
-                                <!-- ... etc. -->
-                            </div>
-                            <!-- Deleting in progress -->
-                            <div v-if="deletingReview" class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteReview">Delete Review</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                        aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    Are you sure you want to delete your review?
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                        Close
-                                    </button>
-                                    <button type="button" class="btn btn-danger" @click="deleteReview">
-                                        Delete Review
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -4345,9 +4185,189 @@
 
                 <!-- Recent Activity -->
                 <div v-if="contentMode == 'recentActivity'">
-                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-3">
-                        Recent Activity
+                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
+                        style="font-weight: bold; color: black;">
+                        Drink Reviews from this Venue
                     </h4>
+
+                    <div class="row text-start" style="padding-left: 0.75em">
+                        <div class="col">
+                            <div class="row justify-content-start align-items-start mt-2">
+                                <!-- Display only bottle review images -->
+                                <div v-for="(imageData, index) in combinedReviewImages.filter(img => img.reviewType === 'bottle').slice(0, 5)"
+                                    :key="`bottle-${index}`"
+                                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1"
+                                    style="position: relative; cursor: pointer;"
+                                    @click="openDetailedReviewModal(imageData)">
+                                    <img :src="imageData.photo || defaultPhoto" alt="" class="review-image"
+                                        loading="lazy" />
+
+                                    <!-- Badge to indicate bottle review -->
+                                    <div class="position-absolute top-0 end-0 m-1">
+                                        <span class="badge bg-success" style="font-size: 0.6rem;">B</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <!-- Reviews of drinks tasted here -->
+                    <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2 mt-4"
+                        style="font-weight: bold; color: black;">
+                        Reviews of Drinks Tasted Here
+                    </h4>
+
+                    <div v-if="bottleReviews && bottleReviews.length > 0">
+                        <!-- Loop through each bottle review that tags this venue -->
+                        <div class="row mb-3" v-for="review in bottleReviews" v-bind:key="review.id">
+                            <div class="col-12 col-lg-9">
+                                <div class="row">
+                                    <div class="text-start mb-3">
+                                        <div class="row align-items-center">
+                                            <!-- Profile Photo -->
+                                            <div class="col-12 col-lg-1 mobile-col-2 text-start">
+                                                <router-link :to="`/profile/user/${review.userID}`">
+                                                    <img :src="getPhotoFromReview(review) || defaultProfilePhoto" alt=""
+                                                        class="profile-image" />
+                                                </router-link>
+                                            </div>
+
+                                            <!-- Username and Rating -->
+                                            <div class="col-10 pe-0 mobile-fs-6 mobile-ps-4">
+                                                <router-link :to="`/profile/user/${review.userID}`"
+                                                    class="text-decoration-none text-dark">
+                                                    <b>@{{ getUsernameFromReview(review) }}</b>
+                                                </router-link>
+                                                <span class="ms-2">
+                                                    {{ getUserPointsFromReview(review) }}
+                                                </span>
+                                                <span :style="{ color: getUserRankColor(review) }">
+                                                    {{ getUserRankFromReview(review) }}
+                                                </span>
+                                                &nbsp;rated <span style="color: #f0b358">★</span>
+                                                <b>{{ review.rating }}</b> Stars
+
+                                                <!-- Drink Name -->
+                                                <span>
+                                                    for
+                                                    <router-link :to="`/listing/view/${review.reviewTarget}/${getBottleNameFromReview(review).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`"
+                                                        class="text-decoration-none text-dark">
+                                                        <b>{{ getBottleNameFromReview(review) }} </b>
+                                                    </router-link>
+                                                </span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- User's Review -->
+                                    <div class="text-start mb-2">
+                                        {{ review.reviewDesc }}
+                                    </div>
+
+                                    <!-- Detailed Review Button Only -->
+                                    <div class="text-start mb-3" style="display: flex !important">
+                                        <a href="#" class="text-decoration-underline text-secondary me-3"
+                                            @click="openDetailedReviewModal({ reviewType: 'bottle', reviewData: review })">
+                                            Detailed Review >
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Review photo (desktop view) -->
+                            <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
+                                <div data-bs-toggle="modal"
+                                    :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`"
+                                    style="cursor: pointer">
+                                    <img :src="review.photo || defaultPhoto" alt="" class="review-image"
+                                        style="width: 125px; height: 125px" />
+                                </div>
+                            </div>
+
+                            <!-- Modal for review image -->
+                            <div class="modal fade" :id="`bottleReviewImageModal${getUsernameFromReview(review)}`"
+                                tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
+                                    <div class="modal-content">
+                                        <div class="modal-body p-4">
+                                            <img :src="review.photo || defaultPhoto" alt=""
+                                                style="width: 100%; height: auto" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Review photo (mobile view) -->
+                            <div class="row">
+                                <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+                                    <div data-bs-toggle="modal"
+                                        :data-bs-target="`#bottleReviewImageModal${getUsernameFromReview(review)}`"
+                                        style="cursor: pointer">
+                                        <img :src="review.photo || defaultPhoto" alt="" class="review-image"
+                                            style="width: 200%; height: 200%" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="mt-4 mb-2" />
+                        </div>
+
+                        <!-- Load More Button -->
+                        <div class="d-flex justify-content-center mb-3"
+                            v-if="bottleReviews.length > 0 && !noMoreBottleReviews">
+                            <button class="btn primary-btn btn-lg" @click="loadMoreBottleReviews">Load More Drink
+                                Reviews</button>
+                        </div>
+                    </div>
+
+                    <!-- No reviews message -->
+                    <div v-else class="text-center py-4">
+                        <p class="text-secondary">No drink reviews found for this venue yet.</p>
+                    </div>
+
+                    <!-- Example "Delete Review" Modal (similar to ProducerProfile) -->
+                    <div class="modal fade" id="deleteReview" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <!-- ... replicate your existing 'deleteProducerReview' structure,
+                            but referencing 'deleteVenueReview' with successDelete, errorDelete, etc. -->
+                            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successDelete">
+                                <span>Your review has successfully been deleted!</span>
+                                <div class="modal-footer">
+                                    <button type="button" @click="reloadRoute" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- If error, etc... -->
+                            <div v-if="errorDelete" class="text-danger fst-italic fw-bold fs-3 modal-content">
+                                <!-- ... etc. -->
+                            </div>
+                            <!-- Deleting in progress -->
+                            <div v-if="deletingReview" class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteReview">Delete Review</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete your review?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                        Close
+                                    </button>
+                                    <button type="button" class="btn btn-danger" @click="deleteReview">
+                                        Delete Review
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="row">
                         <div class="col-12">
@@ -5321,6 +5341,7 @@ export default {
             // lazy loading variables 
             noMoreReviews: false,
             reviewsPerLoad: 20, // similar to the limit in backend
+            reviewLimit: 20, // limit for pagination checking
 
             // for venueReviews
             lastReviewID: 0,
@@ -5349,6 +5370,10 @@ export default {
             // Filtered arrays
             filteredVenueReviews: [],
             filteredVenueReviewsWithImages: [],
+
+            // for bottle reviews (used in Recent Activity tab)
+            noMoreBottleReviews: false,
+            bottleReviewsPerLoad: 20,
 
             // for change/reset password
             oldPassword: "",
@@ -5813,10 +5838,20 @@ export default {
 
         async loadBottleReviews() {
             try {
+                // Reset pagination state
+                this.noMoreBottleReviews = false;
+                
+                // Load first batch with pagination
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/getData/getBottleReviewsByVenueId/${this.targetVenue.id}`
+                    `${process.env.VUE_APP_API_URL}/getData/getBottleReviewsByVenueId/${this.targetVenue.id}?offset=0&limit=${this.bottleReviewsPerLoad}`
                 );
-                this.bottleReviews = response.data;
+                
+                this.bottleReviews = response.data || [];
+
+                // Check if we need to flag as "no more reviews"
+                if (this.bottleReviews.length < this.bottleReviewsPerLoad) {
+                    this.noMoreBottleReviews = true;
+                }
 
                 // Preload bottle details for all reviews
                 const listingIds = [...new Set(this.bottleReviews.map(review => review.reviewTarget))];
@@ -5843,6 +5878,35 @@ export default {
 
             } catch (error) {
                 console.error("Error fetching bottle reviews for venue:", error);
+                // If pagination API doesn't exist, fall back to loading all reviews
+                try {
+                    const fallbackResponse = await this.$axios.get(
+                        `${process.env.VUE_APP_API_URL}/getData/getBottleReviewsByVenueId/${this.targetVenue.id}`
+                    );
+                    this.bottleReviews = fallbackResponse.data || [];
+                    this.noMoreBottleReviews = true; // No pagination available
+                    
+                    // Continue with the same logic for preloading bottle details
+                    const listingIds = [...new Set(this.bottleReviews.map(review => review.reviewTarget))];
+                    if (listingIds.length > 0) {
+                        await Promise.all(listingIds.map(async (listingId) => {
+                            try {
+                                const response = await this.$axios.get(
+                                    `${process.env.VUE_APP_API_URL}/getData/getListing/${listingId}`
+                                );
+                                if (response.data) {
+                                    this.bottleListings[listingId] = response.data;
+                                }
+                            } catch (error) {
+                                console.error(`Error fetching name for listing ${listingId}:`, error);
+                                this.bottleListings[listingId] = { listingName: 'Unknown Bottle' };
+                            }
+                        }));
+                    }
+                    this.getCombinedReviewImages();
+                } catch (fallbackError) {
+                    console.error("Error with fallback bottle reviews fetch:", fallbackError);
+                }
             }
         },
 
@@ -6363,6 +6427,65 @@ export default {
                 this.getFilteredVenueReviewsWithImages();
             } catch (error) {
                 console.error("Error fetching more venue reviews:", error);
+            }
+        },
+
+        async loadMoreBottleReviews() {
+            // Check if there are more bottle reviews to load
+            if (this.noMoreBottleReviews) {
+                return;
+            }
+
+            try {
+                // Get current count to calculate offset for pagination
+                const currentCount = this.bottleReviews.length;
+                
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getBottleReviewsByVenueId/${this.targetVenue.id}?offset=${currentCount}&limit=${this.bottleReviewsPerLoad}`
+                );
+                
+                // If the API doesn't support pagination, you might need to handle it differently
+                // For now, assuming the response has the next batch of reviews
+                const newBottleReviews = response.data;
+                
+                if (newBottleReviews && newBottleReviews.length > 0) {
+                    // Append the new reviews to the existing array
+                    this.bottleReviews.push(...newBottleReviews);
+
+                    // Preload bottle details for new reviews
+                    const listingIds = [...new Set(newBottleReviews.map(review => review.reviewTarget))];
+
+                    if (listingIds.length > 0) {
+                        await Promise.all(listingIds.map(async (listingId) => {
+                            if (!this.bottleListings[listingId]) { // Only fetch if not already cached
+                                try {
+                                    const response = await this.$axios.get(
+                                        `${process.env.VUE_APP_API_URL}/getData/getListing/${listingId}`
+                                    );
+                                    if (response.data) {
+                                        this.bottleListings[listingId] = response.data;
+                                    }
+                                } catch (error) {
+                                    console.error(`Error fetching name for listing ${listingId}:`, error);
+                                    this.bottleListings[listingId] = { listingName: 'Unknown Bottle' };
+                                }
+                            }
+                        }));
+                    }
+
+                    // Check if we've reached the end
+                    if (newBottleReviews.length < this.bottleReviewsPerLoad) {
+                        this.noMoreBottleReviews = true;
+                    }
+                } else {
+                    this.noMoreBottleReviews = true;
+                }
+
+                // Update combined review images
+                this.getCombinedReviewImages();
+
+            } catch (error) {
+                console.error("Error fetching more bottle reviews:", error);
             }
         },
 
