@@ -4181,7 +4181,7 @@
                                         <!-- Indicate Closure Button -->
                                         <div class="d-flex justify-content-center mt-2 mb-3">
                                             <button type="button" 
-                                                class="btn btn-sm btn-warning"
+                                                class="btn btn-sm btn-outline-custom-orange"
                                                 @click="indicateClosure(day)"
                                                 title="Mark this day as closed">
                                                 <span style="font-size: 12px; font-weight: bold;">Mark {{ day }} as closed.</span>
@@ -9011,5 +9011,36 @@ Thank you!`
 
 .time-slot-controls input[type="time"] {
     max-width: 120px;
+}
+
+/* Custom Orange Outline Button */
+.btn-outline-custom-orange {
+    color: #e28100;
+    border-color: #e28100;
+    background-color: transparent;
+}
+
+.btn-outline-custom-orange:hover {
+    color: #fff;
+    background-color: #e28100;
+    border-color: #e28100;
+}
+
+.btn-outline-custom-orange:focus,
+.btn-outline-custom-orange.focus {
+    box-shadow: 0 0 0 0.2rem rgba(226, 129, 0, 0.5);
+}
+
+.btn-outline-custom-orange.disabled,
+.btn-outline-custom-orange:disabled {
+    color: #e28100;
+    background-color: transparent;
+}
+
+.btn-outline-custom-orange:not(:disabled):not(.disabled):active,
+.btn-outline-custom-orange:not(:disabled):not(.disabled).active {
+    color: #fff;
+    background-color: #e28100;
+    border-color: #e28100;
 }
 </style>
