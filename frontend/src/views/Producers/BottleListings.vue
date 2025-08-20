@@ -995,7 +995,7 @@
 
                       <div class="form-group mb-2">
                         <!-- Enhanced Location Input with Home Option and Google Maps -->
-                        <div class="location-input-container" style="position: relative;">
+                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }" style="position: relative;">
                           <!-- Home Option Dropdown (appears when typing) -->
                           <div v-if="showHomeOption" class="home-option-dropdown">
                             <div class="home-option-item" @click="selectHomeLocation">
@@ -2899,6 +2899,7 @@ export default {
       // Initialize auto-resize functionality for textareas
       this.$nextTick(() => {
         this.setupAutoResize();
+        this.setupGoogleMapsObserver();
       });
 
       // Initialize paywall scroll control for non-logged in users
@@ -2910,6 +2911,11 @@ export default {
   beforeUnmount() {
     // Clean up paywall scroll controls
     this.cleanupPaywallControls();
+    
+    // Clean up Google Maps observer
+    if (this._googleMapsObserver) {
+      this._googleMapsObserver.disconnect();
+    }
   },
   computed: {
     filteredOptions() {
@@ -3097,6 +3103,30 @@ export default {
       this.$nextTick(() => {
         this.setupAutoResize();
       });
+    },
+
+    // Setup observer to watch for Google Maps autocomplete container
+    setupGoogleMapsObserver() {
+      // Create a mutation observer to watch for the PAC container
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.classList && node.classList.contains('pac-container')) {
+              // Google Maps autocomplete container was added, apply our positioning
+              this.adjustGoogleMapsPosition();
+            }
+          });
+        });
+      });
+
+      // Start observing the document body for new elements
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Store observer for cleanup
+      this._googleMapsObserver = observer;
     },
 
     // load data from database
@@ -4808,6 +4838,11 @@ export default {
         this.selectedLocation = '';
         this.selectedLocationAddress = '';
       }
+
+      // Adjust Google Maps position when user starts typing
+      this.$nextTick(() => {
+        this.adjustGoogleMapsPosition();
+      });
     },
 
     // Method to handle focus on location input - triggers home option
@@ -4815,7 +4850,10 @@ export default {
       // Always show home option when field is focused
       this.showHomeOption = true;
       
-      // No need to manually initialize Google Maps autocomplete - GMapAutocomplete handles this
+      // Adjust Google Maps autocomplete position after DOM update
+      this.$nextTick(() => {
+        this.adjustGoogleMapsPosition();
+      });
     },
 
     // Method to handle blur (with delay to allow clicking on home option)
@@ -4823,6 +4861,10 @@ export default {
       // Delay hiding to allow click on home option
       setTimeout(() => {
         this.showHomeOption = false;
+        // Reset Google Maps position when home option is hidden
+        this.$nextTick(() => {
+          this.adjustGoogleMapsPosition();
+        });
       }, 200);
     },
 
@@ -4850,6 +4892,46 @@ export default {
       this.selectedLocationAddress = 'Home';
       this.locationInputValue = 'Home';
       this.showHomeOption = false;
+    },
+
+    // Method to adjust Google Maps autocomplete position
+    adjustGoogleMapsPosition() {
+      // Wait a bit for the DOM to update and Google Maps to create its container
+      setTimeout(() => {
+        const pacContainer = document.querySelector('.pac-container');
+        if (pacContainer) {
+          console.log('Adjusting Google Maps position, showHomeOption:', this.showHomeOption); // Debug log
+          
+          if (this.showHomeOption) {
+            // Get the input field position to calculate proper offset
+            const inputField = this.$refs.locationInput?.$el || document.querySelector('[placeholder="Tag where you tasted this drink"]');
+            if (inputField) {
+              const inputRect = inputField.getBoundingClientRect();
+              const homeDropdown = document.querySelector('.home-option-dropdown');
+              const homeDropdownHeight = homeDropdown ? homeDropdown.offsetHeight : 60;
+              
+              // Move the autocomplete dropdown below the home option dropdown
+              pacContainer.style.position = 'absolute';
+              pacContainer.style.top = (inputRect.bottom + homeDropdownHeight + window.scrollY) + 'px';
+              pacContainer.style.left = inputRect.left + 'px';
+              pacContainer.style.width = inputRect.width + 'px';
+              pacContainer.style.marginTop = '0px';
+            } else {
+              // Fallback: use margin-top
+              pacContainer.style.marginTop = '60px';
+            }
+          } else {
+            // Reset to normal position when home option is hidden
+            pacContainer.style.position = '';
+            pacContainer.style.top = '';
+            pacContainer.style.left = '';
+            pacContainer.style.width = '';
+            pacContainer.style.marginTop = '0px';
+          }
+        } else {
+          console.log('PAC container not found'); // Debug log
+        }
+      }, 100);
     },
 
     // return place id
@@ -5312,14 +5394,14 @@ export default {
 
 .home-option-dropdown {
   position: absolute;
-  top: -50px;
+  top: 100%;
   left: 0;
   right: 0;
   background: white;
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000;
+  z-index: 1001;
   max-height: 200px;
   overflow-y: auto;
 }
@@ -5343,9 +5425,10 @@ export default {
   border-bottom: none;
 }
 
-/* Ensure the Google Maps autocomplete dropdown appears below the input */
+/* Ensure the Google Maps autocomplete dropdown appears below the home option dropdown */
 .pac-container {
-  z-index: 999 !important;
+  z-index: 1000 !important;
+  transition: margin-top 0.2s ease !important;
 }
 
 /* Style for the location input wrapper */
