@@ -4843,16 +4843,18 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0 flex-grow-1 overflow-hidden">
+                <div class="modal-body p-0 flex-grow-1" style="overflow: auto; -webkit-overflow-scrolling: touch;">
                     <!-- PDF Viewer Container -->
-                    <div class="h-100 d-flex justify-content-center align-items-center">
+                    <div class="h-100">
                         <iframe 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                            :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1'"
+                            :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitV&zoom=page-width'"
                             width="100%" 
                             height="100%"
-                            style="border: none; background: #f8f9fa;"
+                            style="border: none; background: #f8f9fa; display: block;"
                             title="Dining Menu PDF"
+                            frameborder="0"
+                            scrolling="yes"
                             @error="handlePdfError">
                         </iframe>
                         <div v-else class="text-center text-muted p-5">
@@ -9146,34 +9148,39 @@ Thank you!`
 
 #diningMenuModal .modal-body {
     flex: 1;
-    overflow: auto;
+    overflow: auto !important;
     -webkit-overflow-scrolling: touch;
-    touch-action: auto;
     position: relative;
+    padding: 0;
 }
 
 #diningMenuModal iframe {
-    touch-action: auto;
-    -webkit-overflow-scrolling: touch;
-    overflow: auto;
+    border: none !important;
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100%;
 }
 
-/* Prevent body scroll when modal is open - more targeted approach */
-body.modal-open {
-    overflow: hidden !important;
-}
-
-/* Fix for iOS Safari specifically */
-@supports (-webkit-touch-callout: none) {
+/* Mobile-specific fixes */
+@media (max-width: 767px) {
     #diningMenuModal .modal-body {
-        overflow: scroll;
+        overflow: auto !important;
         -webkit-overflow-scrolling: touch;
+        touch-action: auto;
     }
     
     #diningMenuModal iframe {
-        overflow: scroll;
+        touch-action: auto;
         -webkit-overflow-scrolling: touch;
     }
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+    position: fixed;
+    width: 100%;
 }
 
 /* Desktop adjustments */
