@@ -2773,7 +2773,20 @@ INSERT INTO "producers" (
     ('Elixir Distillers', 'Boutique bottler and creator of Port Askaig.', 'United Kingdom', true, '{}', NULL, '47291837', false, NULL, NULL, 2017, 'active', 'Sukhinder Singh', 'London, UK', false, 'https://www.elixirdistillers.com', 'elixirdistillers', '', NULL),
     ('The Whisky Trail', 'Independent bottler of rare and vintage Scotch.', 'Scotland', true, '{}', NULL, '75839201', false, NULL, NULL, 2006, 'active', 'Whiskybase B.V.', 'Edinburgh, Scotland', false, 'https://www.whiskybase.com/whiskies/brand/whisky-trail', 'whiskytrail', '', NULL);
 
+INSERT INTO "producers" VALUES (10302, 'Brewlander (Singapore)', '', 'Singapore', false, '{}', '', '1276727242', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+INSERT INTO "producers" VALUES (11236, 'Polly''s Brew Co.', '', 'Wales', false, '{}', '', '-826823437', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+INSERT INTO "producers" VALUES (10880, 'Mountain Culture Beer Co.', '', 'Australia', false, '{}', '', '-2049109702', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+
+
+
+
+
+
+
+
+
 INSERT INTO "venues" (
+    "id",
     "venueName", 
     "address", 
     "venueType", 
@@ -2796,7 +2809,7 @@ INSERT INTO "venues" (
     'Singapore', 
     'Best venue for drinks', 
     '-1918297408', 
-    NULL, 
+    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b4e600aa-fac1-4aeb-b6b4-3f6eb6d740b2.jpg', 
     true, 
     NULL, 
     'Cannot reserve anything', 
@@ -2812,19 +2825,36 @@ INSERT INTO "venues" (
     'Bar',
     'Singapore',
     'A popular test venue for unit testing and staging purposes.',
-    '934896143', -- hashed password
-    NULL, 
+    '1033881401', -- hashed password
+    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cd89b487-172d-4db8-8202-049b5cddc256.jpg', 
     true, 
     NULL, 
     'Cannot reserve anything', 
-    'testvenueuser', 
+    'omunomu', 
     'Not open on Christmas', 
     NULL, 
     NULL
 ),
-VALUES (
+(
     24,
     'Smith Street Taps',
+    '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
+    'Bar',
+    'Singapore',
+    'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
+    '-1480099335', -- hashed password
+    'https://lh3.googleusercontent.com/p/AF1QipOkmPzzgvObRr4u33kneFeT00b3sQkRBVkqhVut=s1360-w1360-h1020-rw',
+    true,
+    NULL,
+    'Walk-in only, no reservations.',
+    'smithstreettaps',
+    'Closed on Lunar New Year',
+    NULL,
+    NULL
+),
+(
+    1,
+    'Test Street Taps',
     '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
     'Bar',
     'Singapore',
@@ -2834,11 +2864,14 @@ VALUES (
     true,
     NULL,
     'Walk-in only, no reservations.',
-    'smithstreettaps',
+    'smithstreettapstest',
     'Closed on Lunar New Year',
     NULL,
     NULL
 );
+
+INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
 
 INSERT INTO "producersQuestionAnswers" (
     "question", "answer", "date", "userId", "producerId")
@@ -2890,6 +2923,12 @@ INSERT INTO "listings" (
     ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
     ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2024-02-02', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
 
+INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, it’s the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and you’ll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-');
+INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles');
+INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
+
+
+
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
     VALUES 
@@ -2912,13 +2951,32 @@ INSERT INTO "usersDrinkLists" (
     (4, 'Drinks I Have Tried', ''), 
     (4, 'Drinks I Want To Try', '');
 
-INSERT INTO "venuesMenu" (
-    "sectionName", "sectionOrder","venueId")
-    VALUES('Created1', '0', 1);
     
-INSERT INTO "menuItems"(
-    "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-VALUES(0, 12.00, true, 1, 1, 1);
+INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37);
+
+-- Venue menu sections for Orh Gao (venue ID 11)
+INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11);
+INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11);
+
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (5, 'Test new section 1 (Omu Nomu)', 0, 10);
+INSERT INTO "venuesMenu" VALUES (6, 'Test new section 2 (Omu Nomu)', 1, 10);
+
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0, 24);
+INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24);
+
+
+INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
+INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
+INSERT INTO "menuItems" VALUES (13113, 2, 18.00, true, 1037431, 1, 2540, NULL);
+
+-- Menu items for Orh Gao sections
+INSERT INTO "menuItems" VALUES (13114, 0, 0.00, true, 1177334, 1, 3, NULL);
+INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 4, NULL);
+
+INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
+INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
