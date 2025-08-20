@@ -31,9 +31,14 @@ def updateListing(id):
     elif 'bottlerID' in updatedListing and updatedListing['bottlerID']:
         updatedListing['bottlerID'] = int(updatedListing['bottlerID'])
 
+    # Convert abv from string to float if necessary
     if 'abv' in updatedListing:
-        abv_value = updatedListing['abv'].replace('%', '')
-        updatedListing['abv'] = float(abv_value)
+        abv_value = updatedListing['abv'].replace('%', '')  # Remove the '%' sign
+        if abv_value.strip():  # Check if the string is not empty
+            updatedListing['abv'] = float(abv_value)
+        else:
+            # Handle empty ABV - set to NULL in database
+            updatedListing['abv'] = None
 
     updatedListingName = updatedListing["listingName"]
 
