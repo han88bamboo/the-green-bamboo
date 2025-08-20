@@ -257,7 +257,8 @@ CREATE TABLE "venues" (
     "tiktok" TEXT,
     "email" TEXT,
     "phoneNumber" TEXT,
-    "whatsappNumber" TEXT
+    "whatsappNumber" TEXT,
+    "pdfMenuUrl" TEXT DEFAULT NULL
 );
 
 -- ========= "venueAmenities" =========

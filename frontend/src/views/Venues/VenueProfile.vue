@@ -865,6 +865,46 @@
                             <textarea class="form-control" id="otherAmenities" v-model="editAmenities.otherAmenities" 
                                      rows="3" placeholder="Describe any other amenities not listed above..."></textarea>
                         </div>
+
+                        <!-- PDF Menu Upload Section -->
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-2">PDF Menu Upload</h6>
+                            <div class="mb-3">
+                                <input 
+                                    ref="pdfMenuInput"
+                                    type="file" 
+                                    class="form-control" 
+                                    accept=".pdf"
+                                    @change="handlePDFMenuSelect"
+                                >
+                                <div class="form-text">Upload your venue's menu as a PDF file (max 10MB)</div>
+                            </div>
+                            
+                            <!-- PDF Preview -->
+                            <div v-if="selectedPDFName" class="alert alert-info">
+                                <strong>Selected:</strong> {{ selectedPDFName }}
+                                <button type="button" class="btn btn-sm btn-secondary ms-2" @click="removePDFPreview">
+                                    Remove
+                                </button>
+                            </div>
+                            
+                            <!-- Current PDF Menu -->
+                            <div v-if="targetVenue.pdfMenuUrl" class="mb-3">
+                                <strong>Current Menu:</strong>
+                                <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                                    View Current PDF Menu
+                                </a>
+                            </div>
+                            
+                            <button 
+                                type="button" 
+                                class="btn btn-primary" 
+                                @click="submitPDFMenu"
+                                :disabled="!pdfMenuBase64"
+                            >
+                                Upload PDF Menu
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -5154,6 +5194,10 @@ export default {
             defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
             defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
 
+            // PDF Menu Upload
+            selectedPDFName: null,
+            pdfMenuBase64: null,
+
             // Updates
             newUpdateText: '',
             newUpdatePhoto: '',
@@ -5250,6 +5294,10 @@ export default {
 
             // for bookmark component
             bookmarkListingID: {},
+
+            // PDF Menu Upload
+            selectedPDFName: null,
+            pdfMenuBase64: null,
 
             // lazy loading variables 
             noMoreReviews: false,
@@ -8650,6 +8698,77 @@ Thank you!`
             this.$nextTick(() => {
                 this.setupAutoResize();
             });
+        }
+    },
+
+    // PDF Menu Upload Methods
+    handlePDFMenuSelect(event) {
+        try {
+            const file = event.target.files[0];
+            
+            // Validate file type
+            if (file.type !== 'application/pdf') {
+                alert('Please select a PDF file only.');
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+            if (file.size > maxSize) {
+                alert('PDF file size must be less than 10MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = () => {
+                // Store the preview filename
+                this.selectedPDFName = file.name;
+                // Store base64 data (remove data URL prefix)
+                this.pdfMenuBase64 = reader.result.split(',')[1];
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error("Error reading PDF file:", error);
+            this.removePDFPreview();
+        }
+    },
+
+    // Remove PDF preview
+    removePDFPreview() {
+        this.selectedPDFName = null;
+        this.pdfMenuBase64 = null;
+        if (this.$refs.pdfMenuInput) {
+            this.$refs.pdfMenuInput.value = '';
+        }
+    },
+
+    // Submit PDF menu
+    async submitPDFMenu() {
+        if (!this.pdfMenuBase64) {
+            alert('Please select a PDF file first.');
+            return;
+        }
+        
+        try {
+            const response = await this.$axios.put(
+                `${process.env.VUE_APP_API_URL}/editVenueProfile/uploadPDFMenu`,
+                {
+                    venueID: this.targetVenue.id,
+                    pdfMenuData: this.pdfMenuBase64
+                }
+            );
+            
+            if (response.data.success) {
+                alert('PDF menu uploaded successfully!');
+                // Update the venue data with new menu URL
+                this.targetVenue.pdfMenuUrl = response.data.menuUrl;
+                this.removePDFPreview();
+            } else {
+                alert('Failed to upload PDF menu. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error uploading PDF menu:', error);
+            alert('An error occurred while uploading the PDF menu.');
         }
     }
     }

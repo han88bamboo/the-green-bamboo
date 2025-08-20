@@ -7,6 +7,7 @@
 
 import os
 import s3Images
+import s3pdfMenu
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
@@ -1767,3 +1768,94 @@ def updateVenueClaimStatusCheckDate():
     
     finally:
         cur.close()
+
+
+@blueprint.route('/uploadPDFMenu', methods=['PUT'])
+def uploadPDFMenu():
+    """Upload PDF menu for venue."""
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Get request data
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                "code": 400,
+                "message": "No data provided"
+            }), 400
+        
+        venue_id = data.get('venueID')
+        pdf_menu_data = data.get('pdfMenuData')
+        
+        # Validate required fields
+        if not venue_id:
+            return jsonify({
+                "code": 400,
+                "message": "Venue ID is required"
+            }), 400
+            
+        if not pdf_menu_data:
+            return jsonify({
+                "code": 400,
+                "message": "PDF menu data is required"
+            }), 400
+        
+        # Check if venue exists
+        cursor.execute('SELECT id, "pdfMenuUrl" FROM venues WHERE id = %s', (venue_id,))
+        venue = cursor.fetchone()
+        
+        if not venue:
+            return jsonify({
+                "code": 404,
+                "message": "Venue not found"
+            }), 404
+        
+        # Get current PDF URL for cleanup if exists
+        current_pdf_url = venue.get('pdfMenuUrl') if isinstance(venue, dict) else venue[1]
+        
+        # Upload new PDF to S3
+        pdf_url = s3pdfMenu.uploadBase64PDFToS3(pdf_menu_data)
+        
+        if not pdf_url:
+            return jsonify({
+                "code": 500,
+                "message": "Failed to upload PDF to S3"
+            }), 500
+        
+        # Delete old PDF from S3 if exists
+        if current_pdf_url:
+            try:
+                s3pdfMenu.deletePDFFromS3(current_pdf_url)
+            except Exception as e:
+                print(f"Warning: Failed to delete old PDF: {e}")
+        
+        # Update venue with new PDF URL
+        cursor.execute(
+            'UPDATE venues SET "pdfMenuUrl" = %s WHERE id = %s',
+            (pdf_url, venue_id)
+        )
+        
+        conn.commit()
+        
+        return jsonify({
+            "code": 201,
+            "success": True,
+            "message": "PDF menu uploaded successfully!",
+            "menuUrl": pdf_url
+        }), 201
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error uploading PDF menu: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while uploading PDF menu"
+        }), 500
+    
+    finally:
+        cursor.close()
