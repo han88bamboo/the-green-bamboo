@@ -3279,6 +3279,7 @@
                         style="font-weight: bold; color: black;">
                         Average Venue Rating:&nbsp;{{ getAverageVenueRatings() }}
                         <span style="color: #f0b358">★</span>
+                        ({{ filteredVenueReviews.length }} {{ filteredVenueReviews.length === 1 ? 'Review' : 'Reviews' }})
                     </h4>
 
                     <div class="row text-start" style="padding-left: 0.75em">
