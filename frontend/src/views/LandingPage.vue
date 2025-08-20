@@ -393,7 +393,7 @@
             <div class="menu-cards-container">
                 <div class="menu-cards-grid pt-1">
                     <!-- Menu Card 1 - Venue ID 11 -->
-                    <div class="col-4 pe-2">
+                    <div class="col-4 ">
                         <div class="menu-card h-100" v-if="venueMenus[0]">
                             <div class="menu-card-header p-3 text-center">
                                 <!-- Venue Profile Photo -->
@@ -481,7 +481,7 @@
                     </div>
 
                     <!-- Menu Card 2 - Venue ID 10 -->
-                    <div class="col-4 ps-2 pe-2">
+                    <div class="col-4 ">
                         <div class="menu-card h-100" v-if="venueMenus[1]">
                             <div class="menu-card-header p-3 text-center">
                                 <!-- Venue Profile Photo -->
@@ -569,7 +569,7 @@
                     </div>
 
                     <!-- Menu Card 3 - Venue ID 24 -->
-                    <div class="col-4 ps-2">
+                    <div class="col-4">
                         <div class="menu-card h-100" v-if="venueMenus[2]">
                             <div class="menu-card-header p-3 text-center">
                                 <!-- Venue Profile Photo -->
@@ -1878,7 +1878,7 @@ button.btn.selected {
 
 .menu-cards-grid {
     display: flex;
-    /* gap: 1.5rem; */
+    gap: 1.5rem; 
     min-width: fit-content;
     padding: 0 10px;
 }
@@ -2127,6 +2127,20 @@ button.btn.selected {
         height: 180px !important;
     }
 }
+
+/* Make What's On The Menu cards same width as venueReview cards */
+.menu-cards-grid { display: flex; gap: 1rem; }                /* match venue grid spacing */
+.menu-cards-grid > .col-4 { flex: 0 0 300px; max-width: 300px; }  /* mobile */
+
+@media (min-width: 768px) {
+  .menu-cards-grid > .col-4 {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+  }
+}
+
+/* make sure the card fills its column */
+.menu-cards-grid .menu-card { width: 100%; }
 
 
 </style>
