@@ -3994,7 +3994,7 @@ export default {
     // Function to update meta tags
     const updateAllMetaTags = (producerData, reviewStats = null) => {
       const producerName = producerData ? ` ${producerData.producerName}` : ''
-      const rating = reviewStats?.averageRating ? ` (${reviewStats.averageRating}★)` : ''
+      // const rating = reviewStats?.averageRating ? ` (${reviewStats.averageRating}★)` : ''
       const reviewCount = reviewStats?.totalReviews ? ` - ${reviewStats.totalReviews} reviews` : ''
 
       // Create rich description
@@ -4018,7 +4018,7 @@ export default {
 
       // Update the reactive metaData object
       metaData.value = {
-        title: `${producerName}${producerData.originCountry}${rating}`,
+        title: `${producerName}, ${producerData.originCountry}`,
         image: producerData.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739',
         description: description,
         url: typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '',

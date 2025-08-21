@@ -630,7 +630,7 @@
                                     accept=".pdf"
                                     @change="handlePDFMenuSelect"
                                 >
-                                <div class="form-text">Upload your dining menu as a PDF file (max 10MB)</div>
+                                <div class="form-text">Upload your dining/food menu as a PDF file – we recommend 1 page! (Max 10MB)</div>
                             </div>
                             
                             <!-- PDF Preview -->
@@ -4834,37 +4834,40 @@
     </div>
 
     <!-- Dining Menu Modal -->
-    <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true" data-bs-backdrop="static">
-        <div class="modal-dialog modal-xl h-100 d-flex align-items-center">
-            <div class="modal-content h-75">
-                <div class="modal-header flex-shrink-0">
+    <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
                     <h5 class="modal-title" id="diningMenuModalLabel">
                         {{ targetVenue.venueName }} - Dining Menu
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0 flex-grow-1" style="overflow: auto; -webkit-overflow-scrolling: touch;">
+                <div class="modal-body p-0">
                     <!-- PDF Viewer Container -->
-                    <div class="h-100">
+                    <div class="pdf-container">
                         <iframe 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
                             :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitV&zoom=page-width'"
                             width="100%" 
-                            height="100%"
-                            style="border: none; background: #f8f9fa; display: block;"
-                            title="Dining Menu PDF"
-                            frameborder="0"
-                            scrolling="yes"
+                            height="650px"
                             @error="handlePdfError">
                         </iframe>
-                        <div v-else class="text-center text-muted p-5">
-                            <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
-                            <p class="fs-5">Menu not available at the moment.</p>
-                            <p class="text-secondary">Please check back later or contact the venue directly.</p>
-                        </div>
+                    </div>
+                    
+                    <div v-if="!targetVenue.pdfMenuUrl || targetVenue.pdfMenuUrl.trim() === ''" class="text-center text-muted p-5">
+                        <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
+                        <p class="fs-5">Menu not available at the moment.</p>
+                        <p class="text-secondary">Please check back later or contact the venue directly.</p>
                     </div>
                 </div>
-                <div class="modal-footer flex-shrink-0">
+                <div class="modal-footer">
+                    <a v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" 
+                       :href="targetVenue.pdfMenuUrl" 
+                       target="_blank" 
+                       class="btn btn-primary me-auto mobile-view-show">
+                        View Full Menu
+                    </a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Close
                     </button>
@@ -4927,7 +4930,7 @@ export default {
   setup() {
     // Create reactive references for meta data
     const metaData = ref({
-      title: 'Producer Page',
+      title: 'Venue Page',
       image: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998",
       description: '',
       url: '',
@@ -5113,7 +5116,7 @@ export default {
 
       // Update the reactive metaData object
       metaData.value = {
-        title: `${venueName}${venueData.originLocation}`,
+        title: `${venueName}, ${venueData.originLocation}`,
         image: venueData.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739',
         description: description,
         url: typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '',
@@ -9132,55 +9135,30 @@ Thank you!`
     border-color: #e28100;
 }
 
-/* Dining Menu Modal Mobile Fixes */
-#diningMenuModal .modal-dialog {
-    margin: 0;
-    max-height: 100vh;
+/* PDF Container Styling */
+.pdf-container {
+    min-height: 400px;
 }
 
-#diningMenuModal .modal-content {
-    border-radius: 0;
-    border: none;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-#diningMenuModal .modal-body {
-    flex: 1;
-    overflow: auto !important;
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-    padding: 0;
-}
-
-#diningMenuModal iframe {
-    border: none !important;
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100%;
-}
-
-/* Mobile-specific fixes */
+/* Mobile PDF viewing improvements */
 @media (max-width: 767px) {
-    #diningMenuModal .modal-body {
-        overflow: auto !important;
-        -webkit-overflow-scrolling: touch;
-        touch-action: auto;
+    .pdf-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+        margin: 1rem;
     }
     
-    #diningMenuModal iframe {
-        touch-action: auto;
-        -webkit-overflow-scrolling: touch;
+    .pdf-container .btn-primary {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        transition: all 0.3s ease;
     }
-}
-
-/* Prevent body scroll when modal is open */
-body.modal-open {
-    overflow: hidden !important;
-    position: fixed;
-    width: 100%;
+    
+    .pdf-container .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+    }
 }
 
 /* Desktop adjustments */
