@@ -736,20 +736,20 @@ def getListingsByFilters():
     limit = int(request.args.get('limit', 30))
 
     try:
-        # Build WHERE conditions
+        # Build WHERE conditions (case-insensitive matching)
         where_conditions = []
         params = []
 
         if drink_type:
-            where_conditions.append('l."drinkType" = %s')
+            where_conditions.append('l."drinkType" ILIKE %s')
             params.append(drink_type)
         
         if type_category:
-            where_conditions.append('l."typeCategory" = %s')
+            where_conditions.append('l."typeCategory" ILIKE %s')
             params.append(type_category)
         
         if origin_country:
-            where_conditions.append('l."originCountry" = %s')
+            where_conditions.append('l."originCountry" ILIKE %s')
             params.append(origin_country)
 
         # Build rating conditions

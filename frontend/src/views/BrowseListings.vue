@@ -159,7 +159,7 @@
                     <!-- Image -->
                     <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                         <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                            <img :src="resultListing.photo || '/default-drink.jpg'" 
+                            <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
                                  class="img-fluid rounded" 
                                  :alt="resultListing.listingName"
                                  style="width: 100%; height: 120px; object-fit: cover;">
@@ -203,7 +203,7 @@
                     <!-- Image  -->
                     <div class="d-flex justify-content-end col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
                         <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                            <img :src="resultListing.photo || '/default-drink.jpg'" 
+                            <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
                                  class="img-fluid rounded" 
                                  :alt="resultListing.listingName"
                                  style="width: 200px; height: 200px; object-fit: cover;">
