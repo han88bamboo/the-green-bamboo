@@ -68,7 +68,7 @@
                                 <draggable v-model="section.subSections" item-key="id" handle=".drag-handle-subsection" ghost-class="ghost" @end="updateSubSectionOrder(section)">
                                     <template #item="{ element: subSection, index: subSectionIndex }">
                                         <div class="mb-2">
-                                            <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded" style="background-color: #e9ecef; cursor: default;">
+                                            <div class="d-flex justify-content-between align-items-center py-2 px-3 rounded" style="background-color: #f0b258; cursor: default;">
                                                 <div class="d-flex align-items-center flex-grow-1">
                                                     <i class="bi bi-grip-vertical drag-handle-subsection me-2" style="cursor: grab;"></i>
                                                     <input v-if="subSection.isEditingName" v-model="subSection.sectionName" 
@@ -103,7 +103,32 @@
                                                         <template #item="{ element: item, index: itemIndex }">
                                                             <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                                                 <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
+                                                                <div class="flex-shrink-0 me-3">
+                                                                    <div class="d-flex align-items-center justify-content-center rounded-2" style="width: 50px; height: 50px; background-color: #f8f6f0;">
+                                                                        <img v-if="item.photo && item.photo.trim() !== ''" :src="item.photo" :alt="item.name" class="img-fluid rounded" style="max-width: 45px; max-height: 45px; object-fit: contain;">
+                                                                        <i v-else class="bi bi-cup-straw" style="font-size: 20px; color: #d4941e;"></i>
+                                                                    </div>
+                                                                </div>
                                                                 <span class="flex-grow-1">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</span>
+
+                                                                <!-- Toggle Item Availability -->
+                                                                <div class="col-4">
+                                                                    <div class="form-check form-switch form-check-inline">
+                                                                        <input 
+                                                                            class="form-check-input"
+                                                                            type="checkbox" 
+                                                                            role="switch"
+                                                                            :id="`avail-${item.itemID}`"
+                                                                            v-model="item.itemAvailability">
+                                                                        <label 
+                                                                            class="form-check-label fst-italic"
+                                                                            :class="item.itemAvailability ? 'text-success' : 'text-danger'"
+                                                                            :for="`avail-${item.itemID}`">
+                                                                            {{ item.itemAvailability ? 'Item Available' : 'Temporarily Unavailable' }}
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+
                                                                 <div class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
                                                                         <i class="bi bi-arrow-up"></i>
@@ -128,6 +153,12 @@
                                                         <template #item="{ element: item, index: itemIndex }">
                                                             <div class="d-flex align-items-center p-2 border-bottom listing-edit-item">
                                                                 <i class="bi bi-grip-vertical drag-handle-item me-2" style="cursor: grab;"></i>
+                                                                <div class="flex-shrink-0 me-3">
+                                                                    <div class="d-flex align-items-center justify-content-center rounded-2" style="width: 50px; height: 50px; background-color: #f8f6f0;">
+                                                                        <img v-if="item.photo && item.photo.trim() !== ''" :src="item.photo" :alt="item.name" class="img-fluid rounded" style="max-width: 45px; max-height: 45px; object-fit: contain;">
+                                                                        <i v-else class="bi bi-cup-straw" style="font-size: 20px; color: #d4941e;"></i>
+                                                                    </div>
+                                                                </div>
                                                                 <span class="flex-grow-1">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</span>
                                                                 <div class="d-flex gap-2">
                                                                     <button class="btn btn-sm btn-outline-secondary" title="Move to Top" @click="moveToTop(subSection.sectionMenu, itemIndex)">
@@ -446,9 +477,14 @@ export default {
                 this.updateSubSectionOrder(section);
             }
         },
-        toggleSubSection(subsection) {
+        async toggleSubSection(subsection) {
             if (subsection.isEditingName) return;
             subsection.isExpanded = !subsection.isExpanded;
+            if (subsection.isExpanded && (!subsection.sectionMenu || subsection.sectionMenu.length === 0)) {
+                if (!String(subsection.id).startsWith('new_')) {
+                    await this.loadAllSectionItems(subsection);
+                }
+            }
         },
                 addListing(itemContainer) {
             this.$emit('request-add-listing', itemContainer);
