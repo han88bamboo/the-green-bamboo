@@ -1425,8 +1425,8 @@
             <!-- Drink I've Reviewed -->
             <div class="mt-4 mobile-view-hide">
               
-             <h5 class="mobile-view-hide" style="font-weight:bold">{{ ownProfile ? "Drinks I've Reviewed" : "Drinks Reviewed" }}: {{ totalReviews }}</h5>
-              <p class="mobile-view-show"><strong>{{ ownProfile ? "Drinks I've Reviewed" : "Drinks Reviewed" }}: {{ totalReviews }}</strong></p>
+             <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviews }} Drinks Reviewed</h5>
+              <p class="mobile-view-show"><strong>{{ totalReviews }} Drinks Reviewed</strong></p>
               <hr />
               <div v-if="!recentReviews || recentReviews.length === 0">
                 {{ ownProfile ? 'You have no drink reviews added yet. Get started by searching for a drink and adding your review!' : 'No drink reviews logged yet.' }}
