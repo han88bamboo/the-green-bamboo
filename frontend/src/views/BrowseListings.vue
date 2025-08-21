@@ -292,8 +292,8 @@
                 role: localStorage.getItem('88B_accType'),
                 
                 // Browse parameters from route
-                browseDrinkType: this.$route.params.drinkType, // Main drink type (e.g., 'Whisky')
-                browseTypeCategory: this.$route.params.typeCategory, // Optional subcategory (e.g., 'Single Malt')
+                browseDrinkType: this.$route.params.browseDrinkType, // Main drink type (e.g., 'Whisky')
+                browseTypeCategory: this.$route.params.browseTypeCategory, // Optional subcategory (e.g., 'Single Malt')
                 
                 // Filter options
                 browseFilters: {
