@@ -736,88 +736,76 @@ def getListingsByFilters():
     limit = int(request.args.get('limit', 30))
 
     try:
-        # Build WHERE conditions for the CTE
+        # Build WHERE conditions
         where_conditions = []
-        where_params = []
+        params = []
 
         if drink_type:
             where_conditions.append('l."drinkType" = %s')
-            where_params.append(drink_type)
+            params.append(drink_type)
         
         if type_category:
             where_conditions.append('l."typeCategory" = %s')
-            where_params.append(type_category)
+            params.append(type_category)
         
         if origin_country:
             where_conditions.append('l."originCountry" = %s')
-            where_params.append(origin_country)
+            params.append(origin_country)
 
-        # Build the WHERE clause for the CTE
-        where_clause = ""
-        if where_conditions:
-            where_clause = "WHERE " + " AND ".join(where_conditions)
-
-        # Build rating filters for the outer query
+        # Build rating conditions
         rating_conditions = []
-        rating_params = []
         
         if min_rating:
             try:
                 min_rating_val = float(min_rating)
-                rating_conditions.append("average_rating >= %s")
-                rating_params.append(min_rating_val)
+                rating_conditions.append("COALESCE(avg_rating, 0) >= %s")
+                params.append(min_rating_val)
             except ValueError:
                 pass
         
         if max_rating:
             try:
                 max_rating_val = float(max_rating)
-                rating_conditions.append("average_rating <= %s")
-                rating_params.append(max_rating_val)
+                rating_conditions.append("COALESCE(avg_rating, 0) <= %s")
+                params.append(max_rating_val)
             except ValueError:
                 pass
 
-        # Build the outer WHERE clause for ratings
-        rating_where = ""
-        if rating_conditions:
-            rating_where = " AND " + " AND ".join(rating_conditions)
+        # Build WHERE clause
+        where_clause = ""
+        if where_conditions or rating_conditions:
+            all_conditions = where_conditions + rating_conditions
+            where_clause = "WHERE " + " AND ".join(all_conditions)
 
-        # Construct the complete query
+        # Add pagination parameters
+        params.extend([limit, offset])
+
+        # Simplified query without CTE
         query = f"""
-            WITH listing_stats AS (
+            SELECT 
+                l.*,
+                p."producerName",
+                COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN (
                 SELECT 
-                    l.*,
-                    p."producerName",
-                    COALESCE(r.review_count, 0) AS review_count,
-                    COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
-                FROM "listings" l
-                JOIN "producers" p ON l."producerID" = p."id"
-                LEFT JOIN (
-                    SELECT 
-                        "reviewTarget",
-                        COUNT(*) AS review_count,
-                        AVG("rating") AS avg_rating
-                    FROM "reviews"
-                    WHERE "reviewType" = 'Listing'
-                    GROUP BY "reviewTarget"
-                ) r ON l."id" = r."reviewTarget"
-                {where_clause}
-            )
-            SELECT * FROM listing_stats
-            WHERE 1=1{rating_where}
+                    "reviewTarget",
+                    COUNT(*) AS review_count,
+                    AVG("rating") AS avg_rating
+                FROM "reviews"
+                WHERE "reviewType" = 'Listing'
+                GROUP BY "reviewTarget"
+            ) r ON l."id" = r."reviewTarget"
+            {where_clause}
             ORDER BY 
-                review_count DESC,
-                average_rating DESC,
-                ("producerID" * 7) % 23 ASC,
-                (id * 13) % 97 ASC,
-                id ASC
+                COALESCE(r.review_count, 0) DESC,
+                COALESCE(r.avg_rating, 0) DESC,
+                l."id" ASC
             LIMIT %s OFFSET %s
         """
 
-        # Combine all parameters in the correct order
-        all_params = where_params + rating_params + [limit, offset]
-
-        cursor.execute(query, all_params)
+        cursor.execute(query, params)
         listings_data = cursor.fetchall()
 
         if not listings_data:
@@ -834,9 +822,8 @@ def getListingsByFilters():
             else:
                 listing_dict['averageRating'] = listing_dict['average_rating']
             
-            # Remove temporary fields that don't exist in search results
+            # Remove temporary fields
             listing_dict.pop('average_rating', None)
-            listing_dict.pop('review_count', None)
             
             result.append(listing_dict)
 
