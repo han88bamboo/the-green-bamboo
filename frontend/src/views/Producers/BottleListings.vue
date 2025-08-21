@@ -5619,7 +5619,7 @@ export default {
 .paywall-content {
   position: absolute;
   top: 60%;
-  left: 43%;
+  left: 48%;
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: all !important;
