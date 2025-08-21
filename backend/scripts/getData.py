@@ -7,7 +7,7 @@
 #           /getCountries (GET), 
 
 #           [Listings]
-#           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET),
+#           /getListings (GET), /getListingsByIDs (POST), /getListing/<id> (GET), /getListingsBySearch (GET), /getListingsByFilters (GET),
 #           /getListingsDetailedByID/<id> (GET), /getListingNamesDynamicSearch/<searchTerm> (GET), /getListingsNames/<search_term> (GET),
 #           /getRecentlyAddedListings (POST), /getListingByName/<listing_name> (GET), /getListingNamesByProducer/<searchTerm>/<producerId> (GET)
 
@@ -717,6 +717,137 @@ def getListingsBySearch():
     except Exception as e:
         print(f"Error fetching listings by search: {str(e)}")
         return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
+
+
+# [GET] Listings by filters with smart ordering
+# Parameters: drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int)
+@blueprint.route("/getListingsByFilters")
+def getListingsByFilters():
+    conn = g.db
+    cursor = conn.cursor()
+    
+    # Get filter parameters
+    drink_type = request.args.get('drinkType', '').strip()
+    type_category = request.args.get('typeCategory', '').strip()
+    origin_country = request.args.get('originCountry', '').strip()
+    min_rating = request.args.get('minRating', '').strip()
+    max_rating = request.args.get('maxRating', '').strip()
+    offset = int(request.args.get('offset', 0))
+    limit = int(request.args.get('limit', 30))
+
+    try:
+        # Build WHERE conditions
+        where_conditions = []
+        params = []
+
+        if drink_type:
+            where_conditions.append('l."drinkType" = %s')
+            params.append(drink_type)
+        
+        if type_category:
+            where_conditions.append('l."typeCategory" = %s')
+            params.append(type_category)
+        
+        if origin_country:
+            where_conditions.append('l."originCountry" = %s')
+            params.append(origin_country)
+
+        # Build the main query with subquery for review stats
+        base_query = """
+            WITH listing_stats AS (
+                SELECT 
+                    l.*,
+                    p."producerName",
+                    COALESCE(r.review_count, 0) AS review_count,
+                    COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN (
+                    SELECT 
+                        "reviewTarget",
+                        COUNT(*) AS review_count,
+                        AVG("rating") AS avg_rating
+                    FROM "reviews"
+                    GROUP BY "reviewTarget"
+                ) r ON l."id" = r."reviewTarget"
+                {where_clause}
+            )
+            SELECT * FROM listing_stats
+            WHERE 1=1
+        """
+
+        # Add WHERE clause if there are conditions
+        where_clause = ""
+        if where_conditions:
+            where_clause = "WHERE " + " AND ".join(where_conditions)
+        
+        # Add rating filters to the outer query
+        rating_conditions = []
+        if min_rating:
+            try:
+                min_rating_val = float(min_rating)
+                rating_conditions.append("average_rating >= %s")
+                params.append(min_rating_val)
+            except ValueError:
+                pass
+        
+        if max_rating:
+            try:
+                max_rating_val = float(max_rating)
+                rating_conditions.append("average_rating <= %s")
+                params.append(max_rating_val)
+            except ValueError:
+                pass
+
+        if rating_conditions:
+            base_query += " AND " + " AND ".join(rating_conditions)
+
+        # Add ordering logic:
+        # 1. Most number of reviews (DESC)
+        # 2. Highest average rating (DESC) 
+        # 3. Producer diversity - rotate through producers more evenly for better distribution
+        # 4. Listing diversity - use full ID for randomization (no collisions, better distribution)
+        ordering = """
+            ORDER BY 
+                review_count DESC,
+                average_rating DESC,
+                ("producerID" * 7) % 23 ASC,
+                (id * 13) % 97 ASC,
+                id ASC
+            LIMIT %s OFFSET %s
+        """
+
+        final_query = base_query.format(where_clause=where_clause) + ordering
+        params.extend([limit, offset])
+
+        cursor.execute(final_query, params)
+        listings_data = cursor.fetchall()
+
+        if not listings_data:
+            return jsonify([])
+
+        # Process results to match getListingsBySearch format
+        result = []
+        for listing in listings_data:
+            listing_dict = dict(listing)
+            
+            # Format averageRating to match search endpoint format
+            if listing_dict['average_rating'] == 0:
+                listing_dict['averageRating'] = '-'
+            else:
+                listing_dict['averageRating'] = listing_dict['average_rating']
+            
+            # Remove temporary fields that don't exist in search results
+            listing_dict.pop('average_rating', None)
+            listing_dict.pop('review_count', None)
+            
+            result.append(listing_dict)
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Error fetching listings by filters: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching filtered listings."}), 500
 
 
 # [GET] Get detailed listing information by listing ID
