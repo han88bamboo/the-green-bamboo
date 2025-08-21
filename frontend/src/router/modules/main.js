@@ -42,6 +42,12 @@ const routes = [
     component: () => import(/* webpackChunkName: "main" */ "@/views/SearchView.vue"),
   },
   {
+    path: "/browse/:browseDrinkType/:browseTypeCategory?",
+    name: "browse",
+    component: () => import(/* webpackChunkName: "main" */ "@/views/BrowseListings.vue"),
+    props: true,
+  },
+  {
     path: "/getListingsByObservationTag/:tag?",
     name: "getListingsByObservationTag",
     component: () => import(/* webpackChunkName: "main" */ "@/views/ListingsByTag.vue"),

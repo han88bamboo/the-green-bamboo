@@ -736,24 +736,54 @@ def getListingsByFilters():
     limit = int(request.args.get('limit', 30))
 
     try:
-        # Build WHERE conditions
+        # Build WHERE conditions for the CTE
         where_conditions = []
-        params = []
+        where_params = []
 
         if drink_type:
             where_conditions.append('l."drinkType" = %s')
-            params.append(drink_type)
+            where_params.append(drink_type)
         
         if type_category:
             where_conditions.append('l."typeCategory" = %s')
-            params.append(type_category)
+            where_params.append(type_category)
         
         if origin_country:
             where_conditions.append('l."originCountry" = %s')
-            params.append(origin_country)
+            where_params.append(origin_country)
 
-        # Build the main query with subquery for review stats
-        base_query = """
+        # Build the WHERE clause for the CTE
+        where_clause = ""
+        if where_conditions:
+            where_clause = "WHERE " + " AND ".join(where_conditions)
+
+        # Build rating filters for the outer query
+        rating_conditions = []
+        rating_params = []
+        
+        if min_rating:
+            try:
+                min_rating_val = float(min_rating)
+                rating_conditions.append("average_rating >= %s")
+                rating_params.append(min_rating_val)
+            except ValueError:
+                pass
+        
+        if max_rating:
+            try:
+                max_rating_val = float(max_rating)
+                rating_conditions.append("average_rating <= %s")
+                rating_params.append(max_rating_val)
+            except ValueError:
+                pass
+
+        # Build the outer WHERE clause for ratings
+        rating_where = ""
+        if rating_conditions:
+            rating_where = " AND " + " AND ".join(rating_conditions)
+
+        # Construct the complete query
+        query = f"""
             WITH listing_stats AS (
                 SELECT 
                     l.*,
@@ -768,46 +798,13 @@ def getListingsByFilters():
                         COUNT(*) AS review_count,
                         AVG("rating") AS avg_rating
                     FROM "reviews"
+                    WHERE "reviewType" = 'Listing'
                     GROUP BY "reviewTarget"
                 ) r ON l."id" = r."reviewTarget"
                 {where_clause}
             )
             SELECT * FROM listing_stats
-            WHERE 1=1
-        """
-
-        # Add WHERE clause if there are conditions
-        where_clause = ""
-        if where_conditions:
-            where_clause = "WHERE " + " AND ".join(where_conditions)
-        
-        # Add rating filters to the outer query
-        rating_conditions = []
-        if min_rating:
-            try:
-                min_rating_val = float(min_rating)
-                rating_conditions.append("average_rating >= %s")
-                params.append(min_rating_val)
-            except ValueError:
-                pass
-        
-        if max_rating:
-            try:
-                max_rating_val = float(max_rating)
-                rating_conditions.append("average_rating <= %s")
-                params.append(max_rating_val)
-            except ValueError:
-                pass
-
-        if rating_conditions:
-            base_query += " AND " + " AND ".join(rating_conditions)
-
-        # Add ordering logic:
-        # 1. Most number of reviews (DESC)
-        # 2. Highest average rating (DESC) 
-        # 3. Producer diversity - rotate through producers more evenly for better distribution
-        # 4. Listing diversity - use full ID for randomization (no collisions, better distribution)
-        ordering = """
+            WHERE 1=1{rating_where}
             ORDER BY 
                 review_count DESC,
                 average_rating DESC,
@@ -817,10 +814,10 @@ def getListingsByFilters():
             LIMIT %s OFFSET %s
         """
 
-        final_query = base_query.format(where_clause=where_clause) + ordering
-        params.extend([limit, offset])
+        # Combine all parameters in the correct order
+        all_params = where_params + rating_params + [limit, offset]
 
-        cursor.execute(final_query, params)
+        cursor.execute(query, all_params)
         listings_data = cursor.fetchall()
 
         if not listings_data:
@@ -847,6 +844,8 @@ def getListingsByFilters():
 
     except Exception as e:
         print(f"Error fetching listings by filters: {str(e)}")
+        import traceback
+        traceback.print_exc()  # This will print the full stack trace to help debug
         return jsonify({"code": 500, "message": "An error occurred while fetching filtered listings."}), 500
 
 

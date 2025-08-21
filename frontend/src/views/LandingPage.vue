@@ -38,6 +38,104 @@
 
     <!-- Hero End -->
 
+    <!-- Browse Categories Section -->
+    <section class="browse-categories-section py-4" style="background-color: #f8f9fa;">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Browse by Category</h2>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Explore drinks by type</h3>
+            </div>
+            
+            <!-- Category Cards -->
+            <div class="row justify-content-center">
+                <!-- Whisky -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #83a9e8;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-white fw-bold mb-0">Whisky</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                
+                <!-- Beer -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #f0b358;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-white fw-bold mb-0">Beer</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                
+                <!-- Wine -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #027562;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-white fw-bold mb-0">Wine</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                
+                <!-- Gin -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #f04444;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-white fw-bold mb-0">Gin</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                
+                <!-- Vodka -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Vodka' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #BAC9E5;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-dark fw-bold mb-0">Vodka</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+                
+                <!-- Cocktail -->
+                <div class="col-6 col-md-4 col-lg-2 mb-3">
+                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Cocktail' } }" class="text-decoration-none">
+                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #6c757d;">
+                            <div class="card-body d-flex flex-column justify-content-center">
+                                <h6 class="card-title text-white fw-bold mb-0">Cocktail</h6>
+                            </div>
+                        </div>
+                    </router-link>
+                </div>
+            </div>
+            
+            <!-- Subcategory Examples -->
+            <div class="row justify-content-center mt-3">
+                <div class="col-12 text-center">
+                    <p class="mb-2" style="color: #6c757d;">Or explore specific types:</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Malt' } }" 
+                                     class="badge bg-light text-dark text-decoration-none border">Single Malt</router-link>
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'IPA' } }" 
+                                     class="badge bg-light text-dark text-decoration-none border">IPA</router-link>
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Red Wine' } }" 
+                                     class="badge bg-light text-dark text-decoration-none border">Red Wine</router-link>
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'London Dry' } }" 
+                                     class="badge bg-light text-dark text-decoration-none border">London Dry</router-link>
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Bourbon' } }" 
+                                     class="badge bg-light text-dark text-decoration-none border">Bourbon</router-link>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
@@ -2141,6 +2239,58 @@ button.btn.selected {
 
 /* make sure the card fills its column */
 .menu-cards-grid .menu-card { width: 100%; }
+
+/* Browse Categories Section */
+.browse-categories-section {
+    background-color: #f8f9fa !important;
+}
+
+.category-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 80px;
+    border-radius: 8px !important;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.category-card .card-body {
+    padding: 1rem;
+}
+
+.category-card .card-title {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+/* Responsive adjustments for category cards */
+@media (max-width: 576px) {
+    .category-card {
+        height: 70px;
+    }
+    
+    .category-card .card-title {
+        font-size: 0.8rem;
+    }
+}
+
+/* Subcategory badges */
+.browse-categories-section .badge {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.browse-categories-section .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background-color: #027562 !important;
+    color: white !important;
+}
 
 
 </style>
