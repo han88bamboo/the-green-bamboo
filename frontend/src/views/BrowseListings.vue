@@ -84,8 +84,7 @@
                         <!-- Clear All Filters Button -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2">
                             <button class="btn btn-outline-danger btn-sm w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
-                                <span class="mobile-view-hide">Clear</span>
-                                <span class="mobile-view-show">Clear</span>
+                                <span >Clear</span>
                             </button>
                         </div>
 
@@ -96,8 +95,8 @@
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <span class="mobile-view-hide">{{ browseFilters.drinkType || 'Type' }}</span>
-                                <span class="mobile-view-show">{{ browseFilters.drinkType ? browseFilters.drinkType.substring(0, 4) + '...' : 'Type' }}</span>
+                                <span >{{ browseFilters.drinkType || 'Type' }}</span>
+                                
                             </button>
                             <ul class="dropdown-menu">
                                 <li><span class="dropdown-item text-muted" @click="toggleFilter('drinkType', '')">
@@ -126,8 +125,8 @@
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <span class="mobile-view-hide">{{ browseFilters.typeCategory || 'Category' }}</span>
-                                <span class="mobile-view-show">{{ browseFilters.typeCategory ? browseFilters.typeCategory.substring(0, 4) + '...' : 'Cat' }}</span>
+                                <span >{{ browseFilters.typeCategory || 'Category' }}</span>
+                                
                             </button>
                             <ul class="dropdown-menu">
                                 <li v-if="!browseFilters.drinkType">
@@ -160,8 +159,8 @@
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <span class="mobile-view-hide">{{ browseFilters.originCountry || 'Country' }}</span>
-                                <span class="mobile-view-show">{{ browseFilters.originCountry ? browseFilters.originCountry.substring(0, 4) + '...' : 'Country' }}</span>
+                                <span >{{ browseFilters.originCountry || 'Country' }}</span>
+                                
                             </button>
                             <ul class="dropdown-menu dropdown-menu-scrollable">
                                 <li>
@@ -185,8 +184,8 @@
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <span class="mobile-view-hide">{{ formatRatingRange() || 'Rating' }}</span>
-                                <span class="mobile-view-show">{{ formatRatingRange() || 'Rate' }}</span>
+                                <span >{{ formatRatingRange() || 'Rating' }}</span>
+                                
                             </button>
                             <ul class="dropdown-menu">
                                 <li class="px-3 py-2">
@@ -221,11 +220,9 @@
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-sort-down me-1" viewBox="0 0 16 16">
-                                    <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
-                                </svg>
-                                <span class="mobile-view-hide">{{ sortSelection.category || 'Sort' }}</span>
-                                <span class="mobile-view-show">Sort</span>
+                               
+                                <span >{{ sortSelection.category || 'Sort' }}</span>
+                                
                             </button>
                             <ul class="dropdown-menu">
                                 <li><span class="dropdown-item" @click="sortByCategory('')">Smart Order (Default)</span></li>
