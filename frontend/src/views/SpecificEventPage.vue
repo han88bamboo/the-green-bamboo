@@ -35,10 +35,24 @@
                     :key="index"
                     :class="['carousel-item', index === 0 ? 'active' : '']"
                     >
-                    <div
-                        class="d-flex align-items-center justify-content-center event-hero"
-                        :style="{ backgroundImage: `url(${banner})` }"
-                    >
+                    <div class="hero-stack">
+                        <!-- blurred background fill -->
+                        <img
+                            class="hero-bg"
+                            :src="banner || defaultEventBanner"
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        <!-- foreground image (show whole image) -->
+                        <img
+                            class="hero-fore"
+                            :src="banner || defaultEventBanner"
+                            :alt="event.eventName"
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <!-- Overlay Content 
                         <div class="event-hero-overlay text-white text-center">
                         <h2 class="fw-bold">{{ event.eventName }}</h2>
@@ -201,9 +215,21 @@
                                 </router-link>
                             </div>
                             <!-- Edit Event and Delete Event Buttons -->
-                            <div v-if="selfView">
-                                <button class="btn primary-btn btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
-                                <button class="btn primary-btn-red btn-sm " data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+                            <div v-if="selfView" class="d-flex gap-2">
+                            <button
+                                class="btn primary-btn btn-sm mobile-rating-smaller-text-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editEventModal"
+                            >
+                                Edit Event
+                            </button>
+                            <button
+                                class="btn primary-btn-red btn-sm mobile-rating-smaller-text-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteEventModal"
+                            >
+                                Delete Event
+                            </button>
                             </div>
                             <div v-if="!followStatus && !selfView">
                                 <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
@@ -792,13 +818,52 @@
     height: 20px;
     }
 
-.event-hero {
-  width: 100%;
+/* Hero container with a fixed aspect ratio */
+.hero-stack {
   position: relative;
-  background-size: cover;
-  background-position: center;
-  padding-bottom: 50%; /* Default: 4:6 on mobile */
+  width: 100%;
+  aspect-ratio: 4 / 1;      /* desktop default */
+  overflow: hidden;
 }
+
+/* Make hero taller on mobile */
+@media (max-width: 767px) {
+  .hero-stack { aspect-ratio: 2 / 1; }
+}
+
+/* Both layers fill the box */
+.hero-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Background: cover + blur to fill empty space */
+.hero-stack .hero-bg {
+  object-fit: cover;
+  filter: blur(24px) brightness(0.9);
+  transform: scale(1.1);      /* hide blur edges */
+}
+
+/* Foreground: contain (no cropping) */
+.hero-stack .hero-fore {
+  object-fit: contain;         /* key: shows entire vertical poster */
+  z-index: 1;
+}
+
+/* Keep your overlay styles if you use them */
+.event-hero-overlay {
+  position: relative;          /* so it sits above the images */
+  z-index: 2;
+  background: rgba(0,0,0,0.35);
+  padding: 40px;
+  width: 100%;
+  height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+
 
 @media (min-width: 768px) {
   .event-hero {
