@@ -1327,7 +1327,7 @@
                   />
                 </svg>
 
-                <!-- Member name -->
+                <!-- Member name
                 <router-link :to="profileURL(member.id, member.userType)">
                   <p v-if="member.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
                     {{ member.displayName }}
@@ -1339,7 +1339,7 @@
                     {{ member.producerName }}
                   </p>
                   <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ member.venueName }}</p>
-                </router-link>
+                </router-link> -->
               </div>
             </div>
             
