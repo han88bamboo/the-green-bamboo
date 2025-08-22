@@ -83,19 +83,19 @@
 
                         <!-- Clear All Filters Button -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2">
-                            <button class="btn btn-outline-danger btn-sm w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
-                                <span >Clear</span>
+                            <button class="btn btn-outline-danger w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
+                                <span>Clear</span>
                             </button>
                         </div>
 
                         <!-- Drink Type Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
-                                    :class="browseFilters.drinkType ? 'btn-primary' : 'btn-outline-primary'" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
-                                <span >{{ browseFilters.drinkType || 'Type' }}</span>
+                                    aria-expanded="false"
+                                    style="color: whitesmoke; background-color: #83a9e8; border-radius: 10px; font-weight: bold;">
+                                <span>{{ browseFilters.drinkType || 'Type' }}</span>
                                 
                             </button>
                             <ul class="dropdown-menu">
@@ -120,12 +120,12 @@
                         <!-- Type Category Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
-                                    :class="browseFilters.typeCategory ? 'btn-success' : 'btn-outline-success'" 
                                     :disabled="!browseFilters.drinkType"
                                     type="button" 
                                     data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
-                                <span >{{ browseFilters.typeCategory || 'Category' }}</span>
+                                    aria-expanded="false"
+                                    style="color: whitesmoke; background-color: #83a9e8; border-radius: 10px; font-weight: bold;">
+                                <span>{{ browseFilters.typeCategory || 'Category' }}</span>
                                 
                             </button>
                             <ul class="dropdown-menu">
@@ -155,11 +155,11 @@
                         <!-- Country Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
-                                    :class="browseFilters.originCountry ? 'btn-warning' : 'btn-outline-warning'" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
-                                <span >{{ browseFilters.originCountry || 'Country' }}</span>
+                                    aria-expanded="false"
+                                    style="color: whitesmoke; background-color: #83a9e8; border-radius: 10px; font-weight: bold;">
+                                <span>{{ browseFilters.originCountry || 'Country' }}</span>
                                 
                             </button>
                             <ul class="dropdown-menu dropdown-menu-scrollable">
@@ -180,11 +180,11 @@
                         <!-- Rating Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
-                                    :class="(browseFilters.minRating || browseFilters.maxRating) ? 'btn-warning' : 'btn-outline-warning'" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
-                                <span >{{ formatRatingRange() || 'Rating' }}</span>
+                                    aria-expanded="false"
+                                    style="color: whitesmoke; background-color: #83a9e8; border-radius: 10px; font-weight: bold;">
+                                <span>{{ formatRatingRange() || 'Rating' }}</span>
                                 
                             </button>
                             <ul class="dropdown-menu">
