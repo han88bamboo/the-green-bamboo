@@ -2539,6 +2539,7 @@ button.btn.selected {
     position: relative;
     white-space: nowrap;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
 }
 
 .category-link:last-child {
@@ -2627,7 +2628,7 @@ button.btn.selected {
     .category-ribbon-nav {
         display: flex;
         flex-direction: row;
-        justify-content: flex-start;
+        justify-content: center;
         align-items: center;
         gap: 0;
         overflow-x: auto;
