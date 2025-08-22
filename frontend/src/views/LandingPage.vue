@@ -1465,29 +1465,53 @@ export default {
         // Handle mobile mega menu positioning
         handleMobileMegaMenuPosition(categoryId) {
             if (window.innerWidth <= 991) {
+                const categoryItem = document.querySelector(`.category-item[data-category="${categoryId}"]`);
                 const activeItem = document.querySelector(`.category-item[data-category="${categoryId}"] .mega-menu`);
-                if (!activeItem) return;
+                if (!activeItem || !categoryItem) return;
                 
                 const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
                 
-                // Reset positioning
+                // Reset positioning and classes
                 activeItem.style.left = '50%';
                 activeItem.style.right = 'auto';
                 activeItem.style.transform = 'translateX(-50%)';
+                activeItem.classList.remove('position-top');
+                
+                // Get positions after reset
+                const categoryRect = categoryItem.getBoundingClientRect();
+                const menuRect = activeItem.getBoundingClientRect();
+                
+                // Check for vertical overflow (similar to desktop logic)
+                const wouldOverflowBottom = (categoryRect.bottom + menuRect.height + 20) > viewportHeight;
+                
+                if (wouldOverflowBottom) {
+                    activeItem.classList.add('position-top');
+                    // Adjust transform for top positioning
+                    activeItem.style.transform = 'translateX(-50%) translateY(0)';
+                }
                 
                 // Check if menu would overflow right edge
-                const menuRect = activeItem.getBoundingClientRect();
-                if (menuRect.right > viewportWidth - 10) {
+                const updatedMenuRect = activeItem.getBoundingClientRect();
+                if (updatedMenuRect.right > viewportWidth - 10) {
                     activeItem.style.left = 'auto';
                     activeItem.style.right = '0';
-                    activeItem.style.transform = 'translateX(0)';
+                    if (wouldOverflowBottom) {
+                        activeItem.style.transform = 'translateX(0) translateY(0)';
+                    } else {
+                        activeItem.style.transform = 'translateX(0)';
+                    }
                 }
                 
                 // Check if menu would overflow left edge
-                if (menuRect.left < 10) {
+                if (updatedMenuRect.left < 10) {
                     activeItem.style.left = '0';
                     activeItem.style.right = 'auto';
-                    activeItem.style.transform = 'translateX(0)';
+                    if (wouldOverflowBottom) {
+                        activeItem.style.transform = 'translateX(0) translateY(0)';
+                    } else {
+                        activeItem.style.transform = 'translateX(0)';
+                    }
                 }
             }
         },
@@ -2630,7 +2654,7 @@ button.btn.selected {
         justify-content: center;
         align-items: center;
         gap: 0;
-        overflow-x: auto;
+        /* overflow-x: auto; */
         overflow-y: visible;
         scroll-behavior: smooth;
         -webkit-overflow-scrolling: touch;
@@ -2682,7 +2706,21 @@ button.btn.selected {
         transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     }
     
+    /* Mobile top positioning */
+    .mega-menu.position-top {
+        top: auto;
+        bottom: 100%;
+        border-top: none;
+        border-bottom: 3px solid #027562;
+    }
+    
     .category-item.active .mega-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    .category-item.active .mega-menu.position-top {
         opacity: 1;
         visibility: visible;
         transform: translateX(-50%) translateY(0);
