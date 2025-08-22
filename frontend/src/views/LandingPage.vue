@@ -42,6 +42,7 @@
     <section class="category-ribbon-section pt-5">
         <div class="category-ribbon-bar">
             <div class="container">
+                <h3 class="mb-0 pt-2 fw-bold" style="color:#F4DBA2;">I'm looking for:</h3>
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
                     <div class="category-item" 
@@ -123,7 +124,7 @@
                                      @click="toggleMobileCategoryMenu('whisky', $event)">
                             Whisky
                         </router-link>
-                        <div class="mega-menu">
+                        <div class="mega-menu whisky-menu">
                             <div class="mega-menu-content">
                                 <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" class="subcategory-link main-category">Whisky</router-link>
                                 <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Malt' } }" class="subcategory-link">Single Malt</router-link>
@@ -214,7 +215,7 @@
                                      @click="toggleMobileCategoryMenu('baijiu', $event)">
                             Baijiu
                         </router-link>
-                        <div class="mega-menu">
+                        <div class="mega-menu baijiu-menu">
                             <div class="mega-menu-content">
                                 <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" class="subcategory-link main-category">Baijiu</router-link>
                                 <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Strong Aroma (Nong Xiang)' } }" class="subcategory-link">Strong Aroma</router-link>
@@ -2747,6 +2748,14 @@ button.btn.selected {
         color: #027562;
         padding-left: 16px;
         border-left: none;
+    }
+
+    .baijiu-menu {
+        transform: translateX(-35%) !important;
+    }
+
+    .whisky-menu {
+        transform: translateX(-35%) !important;
     }
 }
 
