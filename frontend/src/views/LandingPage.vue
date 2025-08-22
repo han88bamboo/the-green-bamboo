@@ -2,7 +2,7 @@
     <NavBar />
     <main>
     <!-- Hero Section with Search -->
-    <section class="hero-section text-center">
+    <section class="hero-section text-center mb-5">
         <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
@@ -11,7 +11,7 @@
                 A World of Drinks. Just Look It Up.
             </h1>
             <h4 class=" mobile-fs-6 mobile-px-4 pb-4">
-                Drink X lets you search, discover, review and share any drink you want.
+                Drink-X lets you search, discover, review and share any drink you want.
             </h4>
             
             <div class="row justify-content-center w-100">
@@ -39,7 +39,7 @@
     <!-- Hero End -->
 
     <!-- Category Navigation Ribbon -->
-    <section class="category-ribbon-section">
+    <section class="category-ribbon-section pt-5">
         <div class="category-ribbon-bar">
             <div class="container">
                 <div class="category-ribbon-nav">
@@ -1967,7 +1967,7 @@ button.btn.selected {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 150%;  /* to make it fill the whole space */
     object-fit: cover;
     filter: brightness(0.7);
     z-index: -1;
@@ -2505,7 +2505,7 @@ button.btn.selected {
 /* Category Ribbon Styles */
 .category-ribbon-section {
     position: relative;
-    z-index: 999;
+    z-index: 9999;
 }
 
 .category-ribbon-bar {
@@ -2564,7 +2564,7 @@ button.btn.selected {
     visibility: hidden;
     transform: translateY(-10px);
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 1000;
+    z-index: 10000;
     border-top: 3px solid #027562;
 }
 
@@ -2678,7 +2678,7 @@ button.btn.selected {
         border-top: 3px solid #027562;
         background: white;
         min-width: 180px;
-        z-index: 1001;
+        z-index: 10001;
         transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     }
     
