@@ -42,7 +42,7 @@
     <section class="category-ribbon-section pt-5">
         <div class="category-ribbon-bar">
             <div class="container">
-                <h3 class="mb-0 pt-2 fw-bold" style="color:#F4DBA2;">I'm looking for:</h3>
+                <h3 class="mb-0 pt-2 fw-bold" style="color:#F4DBA2;">I'm Looking For</h3>
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
                     <div class="category-item" 
