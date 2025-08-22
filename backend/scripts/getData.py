@@ -813,7 +813,7 @@ def getListingsByFilters():
             ORDER BY 
                 COALESCE(r.review_count, 0) DESC,
                 COALESCE(r.avg_rating, 0) DESC,
-                MOD(l."producerID" * 31 + l."id" * 17, 1000000),
+                ABS(HASHTEXT(l."id"::text || '-' || l."producerID"::text)),
                 l."id" ASC
             LIMIT %s OFFSET %s
         """

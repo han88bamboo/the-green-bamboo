@@ -454,7 +454,7 @@ CREATE TABLE "listings" (
 CREATE INDEX idx_listings_name_trgm ON "listings" USING gin ("listingName" gin_trgm_ops);
 
 -- Create index for producer-aware randomized sorting
-CREATE INDEX idx_listings_producer_random_sort ON "listings" (MOD("producerID" * 31 + "id" * 17, 1000000));
+CREATE INDEX idx_listings_producer_random_sort ON "listings" (ABS(HASHTEXT("id"::text || '-' || "producerID"::text)));
 
 -- ========= "listingVariants" ========= to store user's favourite
 -- CREATE TABLE "listingVariants" (
