@@ -30,7 +30,7 @@
             <div class="row mt-2">
 
                 <!-- BACK BUTTON, FORM TITLE, BROWSE TERM -->
-                <div class="col-md-8 col-12">
+                <div class="col-md-4 col-12">
 
                     <div class="row">
                     
@@ -64,76 +64,164 @@
 
                 </div>
 
-                <div class="col-md-4 col-12">
+                <div class="col-md-8 col-12">
 
                     <div class="row d-flex justify-content-center">
 
-                        <div class="col-8 mobile-view-show mobile-pe-0 mt-2">
+                        <!-- Mobile View: Create/Request Link -->
+                        <div class="col-12 mobile-view-show mobile-pe-0 mt-2 mb-3">
                             <router-link class="text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
+                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Create a new listing here!</p>
                             </router-link>
                             <router-link class="text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
+                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Request a new listing here!</p>
                             </router-link>
                             <router-link class="text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
-                                <p class="mobile-rating-smaller-text-2 fst-italic text-start">Don't see what you're looking for? Login to request a new listing!</p>
+                                <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Login to request a new listing!</p>
                             </router-link>
                         </div>
 
-                        <!-- Filter Options -->
-                        <div class="mt-2 mobile-col-2 mobile-pe-0 col-xxl-3 col-md-6 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
-                            <div class="d-grid gap-1">
-                                <button class="btn primary-light-dropdown-homepage btn-lg dropdown-toggle mobile-view-remove-toggle d-flex align-items-center fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-funnel funnel-svg-dimensions" viewBox="0 0 16 16">
-                                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5zm1 .5v1.308l4.372 4.858A.5.5 0 0 1 7 8.5v5.306l2-.666V8.5a.5.5 0 0 1 .128-.334L13.5 3.308V2z"/>
-                                    </svg>
-                                    <span class="mobile-view-hide" style="margin-left: 5px;">{{ getFilterDisplayText() }}</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><span class="dropdown-item" @click="clearAllFilters()">Clear All Filters</span></li>
+                        <!-- Clear All Filters Button -->
+                        <div class="col-lg-2 col-md-3 col-6 mb-2">
+                            <button class="btn btn-outline-danger btn-sm w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
+                                <span class="mobile-view-hide">Clear</span>
+                                <span class="mobile-view-show">Clear</span>
+                            </button>
+                        </div>
+
+                        <!-- Drink Type Filter -->
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                            <button class="btn dropdown-toggle w-100" 
+                                    :class="browseFilters.drinkType ? 'btn-primary' : 'btn-outline-primary'" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <span class="mobile-view-hide">{{ browseFilters.drinkType || 'Type' }}</span>
+                                <span class="mobile-view-show">{{ browseFilters.drinkType ? browseFilters.drinkType.substring(0, 4) + '...' : 'Type' }}</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><span class="dropdown-item text-muted" @click="toggleFilter('drinkType', '')">
+                                    <input type="radio" :checked="!browseFilters.drinkType" class="form-check-input me-2">
+                                    All Types
+                                </span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li v-for="drinkType in drinkTypeList" :key="drinkType.id">
+                                    <span class="dropdown-item" 
+                                          :class="{ 'active': browseFilters.drinkType === drinkType['drinkType'] }"
+                                          @click="toggleFilter('drinkType', drinkType['drinkType'])">
+                                        <input type="radio" 
+                                               :checked="browseFilters.drinkType === drinkType['drinkType']" 
+                                               class="form-check-input me-2">
+                                        {{ drinkType['drinkType'] }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Type Category Filter -->
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                            <button class="btn dropdown-toggle w-100" 
+                                    :class="browseFilters.typeCategory ? 'btn-success' : 'btn-outline-success'" 
+                                    :disabled="!browseFilters.drinkType"
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <span class="mobile-view-hide">{{ browseFilters.typeCategory || 'Category' }}</span>
+                                <span class="mobile-view-show">{{ browseFilters.typeCategory ? browseFilters.typeCategory.substring(0, 4) + '...' : 'Cat' }}</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li v-if="!browseFilters.drinkType">
+                                    <span class="dropdown-item-text text-muted small">Select drink type first</span>
+                                </li>
+                                <template v-else>
+                                    <li><span class="dropdown-item text-muted" @click="toggleFilter('typeCategory', '')">
+                                        <input type="radio" :checked="!browseFilters.typeCategory" class="form-check-input me-2">
+                                        All Categories
+                                    </span></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    
-                                    <!-- Drink Type Filter -->
-                                    <li><h6 class="dropdown-header">Drink Type</h6></li>
-                                    <li v-for="drinkType in drinkTypeList" :key="drinkType.id">
-                                        <span class="dropdown-item" @click="filterByDrinkType(drinkType['drinkType'])">{{ drinkType['drinkType'] }}</span>
+                                    <li v-for="category in getFilteredTypeCategories()" :key="category.id">
+                                        <span class="dropdown-item" 
+                                              :class="{ 'active': browseFilters.typeCategory === category['typeCategory'] }"
+                                              @click="toggleFilter('typeCategory', category['typeCategory'])">
+                                            <input type="radio" 
+                                                   :checked="browseFilters.typeCategory === category['typeCategory']" 
+                                                   class="form-check-input me-2">
+                                            {{ category['typeCategory'] }}
+                                        </span>
                                     </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    
-                                    <!-- Type Category Filter -->
-                                    <li><h6 class="dropdown-header">Category</h6></li>
-                                    <li v-for="category in typeCategoryList" :key="category.id">
-                                        <span class="dropdown-item" @click="filterByTypeCategory(category['typeCategory'])">{{ category['typeCategory'] }}</span>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    
-                                    <!-- Country Filter -->
-                                    <li><h6 class="dropdown-header">Country</h6></li>
-                                    <li v-for="country in countryList" :key="country.id">
-                                        <span class="dropdown-item" @click="filterByCountry(country['originCountry'])">{{ country['originCountry'] }}</span>
-                                    </li>
-                                </ul>
-                            </div>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <!-- Country Filter -->
+                                                <!-- Country Filter -->
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                            <button class="btn dropdown-toggle w-100" 
+                                    :class="browseFilters.country ? 'btn-warning' : 'btn-outline-warning'" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <span class="mobile-view-hide">{{ browseFilters.country || 'Country' }}</span>
+                                <span class="mobile-view-show">{{ browseFilters.country ? browseFilters.country.substring(0, 4) + '...' : 'Country' }}</span>
+                            </button>
+
+                        <!-- Rating Filter -->
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                            <button class="btn dropdown-toggle w-100" 
+                                    :class="(browseFilters.minRating || browseFilters.maxRating) ? 'btn-warning' : 'btn-outline-warning'" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <span class="mobile-view-hide">{{ formatRatingRange() || 'Rating' }}</span>
+                                <span class="mobile-view-show">{{ formatRatingRange() || 'Rate' }}</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li class="px-3 py-2">
+                                    <div class="mb-2">
+                                        <label class="form-label small mb-1">Min Rating:</label>
+                                        <select v-model="browseFilters.minRating" @change="applyFilters()" class="form-select form-select-sm">
+                                            <option value="">Any</option>
+                                            <option value="1">1.0+</option>
+                                            <option value="2">2.0+</option>
+                                            <option value="3">3.0+</option>
+                                            <option value="4">4.0+</option>
+                                            <option value="4.5">4.5+</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label small mb-1">Max Rating:</label>
+                                        <select v-model="browseFilters.maxRating" @change="applyFilters()" class="form-select form-select-sm">
+                                            <option value="">Any</option>
+                                            <option value="2">≤ 2.0</option>
+                                            <option value="3">≤ 3.0</option>
+                                            <option value="4">≤ 4.0</option>
+                                            <option value="5">≤ 5.0</option>
+                                        </select>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
 
                         <!-- Sort Options -->
-                        <div class="mt-2 mobile-col-2 mobile-ps-0 col-xxl-3 col-md-6 col-sm-5 col-12 mb-xxl-0 mb-md-2 mb-sm-0 mb-2 dropdown">
-                            <div class="d-grid gap-2">
-                                <button class="btn primary-light-dropdown-homepage dropdown-toggle mobile-view-remove-toggle d-flex align-items-center fw-bold" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-sort-down funnel-svg-dimensions" viewBox="0 0 16 16">
-                                        <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
-                                    </svg>
-                                    <span class="mobile-view-hide" style="margin-left: 5px;">Sort: {{ sortSelection.category != '' ? sortSelection.category : 'Smart Order' }}</span>
-                                </button>
-                                <ul class="dropdown-menu">
-                                    <li><span class="dropdown-item" @click="sortByCategory('')">Smart Order (Default)</span></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li v-for="category in sortCategoryList" :key="category">
-                                        <span class="dropdown-item" @click="sortByCategory(category)">{{ category }}</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div> 
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100" 
+                                    type="button" 
+                                    data-bs-toggle="dropdown" 
+                                    aria-expanded="false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-sort-down me-1" viewBox="0 0 16 16">
+                                    <path d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"/>
+                                </svg>
+                                <span class="mobile-view-hide">{{ sortSelection.category || 'Sort' }}</span>
+                                <span class="mobile-view-show">Sort</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><span class="dropdown-item" @click="sortByCategory('')">Smart Order (Default)</span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li v-for="category in sortCategoryList" :key="category">
+                                    <span class="dropdown-item" @click="sortByCategory(category)">{{ category }}</span>
+                                </li>
+                            </ul>
+                        </div>
                     
                     </div>
 
@@ -152,7 +240,7 @@
             </div>
 
             <!-- Display Listings -->
-            <div class="container text-start">
+            <div class="text-start">
                 <div class="row" v-for="resultListing in resultListings" :key="resultListing.id">
                     
                     <!-- MOBILE VIEW-->
@@ -265,11 +353,13 @@
                 </div>
             </div>
 
-            <BookmarkModal 
-                v-if="user"
-                :user="user" 
-                :listingID="bookmarkListingID" />
         </div>
+            </div>
+
+        <BookmarkModal 
+            v-if="user"
+            :user="user" 
+            :listingID="bookmarkListingID" />
     </div>
 </template>
 
@@ -540,8 +630,53 @@
             },
 
             // Filter functions
+            toggleFilter(filterType, value) {
+                // Toggle the filter - if it's already selected, clear it; otherwise, set it
+                if (this.browseFilters[filterType] === value) {
+                    this.browseFilters[filterType] = '';
+                } else {
+                    this.browseFilters[filterType] = value;
+                }
+
+                // Clear type category if drink type is changed
+                if (filterType === 'drinkType' && value !== this.browseFilters.drinkType) {
+                    this.browseFilters.typeCategory = '';
+                }
+
+                this.applyFilters();
+            },
+
+            // Check if any filters are active
+            hasActiveFilters() {
+                return !!(this.browseFilters.drinkType || 
+                         this.browseFilters.typeCategory || 
+                         this.browseFilters.originCountry || 
+                         this.browseFilters.minRating || 
+                         this.browseFilters.maxRating);
+            },
+
+            // Get filtered type categories based on selected drink type
+            getFilteredTypeCategories() {
+                if (!this.browseFilters.drinkType) return [];
+                
+                return this.typeCategoryList.filter(category => {
+                    // Find the drink type that matches our selected one
+                    const matchingDrinkType = this.drinkTypeList.find(dt => 
+                        dt.drinkType === this.browseFilters.drinkType
+                    );
+                    
+                    if (!matchingDrinkType) return false;
+                    
+                    // Check if this category belongs to the selected drink type
+                    // This assumes your backend data structure links drink types to categories
+                    return category.drinkType === this.browseFilters.drinkType ||
+                           category.typeCategory; // Fallback to show all if no specific linking
+                });
+            },
+
             filterByDrinkType(drinkType) {
                 this.browseFilters.drinkType = drinkType;
+                this.browseFilters.typeCategory = ''; // Clear category when type changes
                 this.applyFilters();
             },
 
@@ -583,10 +718,25 @@
                 if (this.browseFilters.drinkType) activeFilters.push(this.browseFilters.drinkType);
                 if (this.browseFilters.typeCategory) activeFilters.push(this.browseFilters.typeCategory);
                 if (this.browseFilters.originCountry) activeFilters.push(this.browseFilters.originCountry);
+                if (this.browseFilters.minRating || this.browseFilters.maxRating) {
+                    activeFilters.push(this.formatRatingRange());
+                }
                 
                 if (activeFilters.length === 0) return 'Filter';
                 if (activeFilters.length === 1) return `Filter: ${activeFilters[0]}`;
                 return `Filter: ${activeFilters.length} active`;
+            },
+
+            // Format rating range display
+            formatRatingRange() {
+                if (this.browseFilters.minRating && this.browseFilters.maxRating) {
+                    return `${this.browseFilters.minRating}-${this.browseFilters.maxRating}★`;
+                } else if (this.browseFilters.minRating) {
+                    return `${this.browseFilters.minRating}★+`;
+                } else if (this.browseFilters.maxRating) {
+                    return `≤${this.browseFilters.maxRating}★`;
+                }
+                return '';
             },
 
             // Sort functions
@@ -683,12 +833,68 @@
     width: 20px;
 }
 
+.dropdown-menu-scrollable {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.dropdown-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item.active:hover {
+    background-color: #0b5ed7;
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: #495057;
+}
+
 .mobile-fs-6 {
     font-size: 0.9rem;
 }
 
 .mobile-fs-7 {
     font-size: 0.8rem;
+}
+
+/* Custom button sizing for filter buttons */
+.btn {
+    font-size: 0.85rem;
+    padding: 0.375rem 0.5rem;
+}
+
+.btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.4rem;
+}
+
+/* Ensure consistent button heights */
+.dropdown-toggle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Better spacing for mobile */
+@media (max-width: 576px) {
+    .btn {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.4rem;
+    }
+    
+    .col-6.mb-2 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
 }
 
 @media (max-width: 768px) {
