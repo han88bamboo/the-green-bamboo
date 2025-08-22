@@ -46,6 +46,7 @@
                     <!-- Wine -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('wine') }"
+                         data-category="wine"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" 
                                      class="category-link"
@@ -68,6 +69,7 @@
                     <!-- Beer -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('beer') }"
+                         data-category="beer"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" 
                                      class="category-link"
@@ -91,6 +93,7 @@
                     <!-- Sake -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('sake') }"
+                         data-category="sake"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake' } }" 
                                      class="category-link"
@@ -113,6 +116,7 @@
                     <!-- Whisky -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('whisky') }"
+                         data-category="whisky"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" 
                                      class="category-link"
@@ -136,6 +140,7 @@
                     <!-- Rum -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('rum') }"
+                         data-category="rum"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum' } }" 
                                      class="category-link"
@@ -157,6 +162,7 @@
                     <!-- Tequila -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('tequila') }"
+                         data-category="tequila"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila' } }" 
                                      class="category-link"
@@ -178,6 +184,7 @@
                     <!-- Gin -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('gin') }"
+                         data-category="gin"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" 
                                      class="category-link"
@@ -200,6 +207,7 @@
                     <!-- Baijiu -->
                     <div class="category-item" 
                          :class="{ 'active': isMobileCategoryActive('baijiu') }"
+                         data-category="baijiu"
                          @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" 
                                      class="category-link"
@@ -1439,10 +1447,47 @@ export default {
             // Only handle mobile behavior (screen width <= 991px)
             if (window.innerWidth <= 991) {
                 event.preventDefault();
+                
+                // Close any currently open mobile menu first
                 if (this.activeMobileCategoryId === categoryId) {
                     this.activeMobileCategoryId = null;
                 } else {
                     this.activeMobileCategoryId = categoryId;
+                    
+                    // Position the dropdown to avoid viewport overflow
+                    this.$nextTick(() => {
+                        this.handleMobileMegaMenuPosition(categoryId);
+                    });
+                }
+            }
+        },
+
+        // Handle mobile mega menu positioning
+        handleMobileMegaMenuPosition(categoryId) {
+            if (window.innerWidth <= 991) {
+                const activeItem = document.querySelector(`.category-item[data-category="${categoryId}"] .mega-menu`);
+                if (!activeItem) return;
+                
+                const viewportWidth = window.innerWidth;
+                
+                // Reset positioning
+                activeItem.style.left = '50%';
+                activeItem.style.right = 'auto';
+                activeItem.style.transform = 'translateX(-50%)';
+                
+                // Check if menu would overflow right edge
+                const menuRect = activeItem.getBoundingClientRect();
+                if (menuRect.right > viewportWidth - 10) {
+                    activeItem.style.left = 'auto';
+                    activeItem.style.right = '0';
+                    activeItem.style.transform = 'translateX(0)';
+                }
+                
+                // Check if menu would overflow left edge
+                if (menuRect.left < 10) {
+                    activeItem.style.left = '0';
+                    activeItem.style.right = 'auto';
+                    activeItem.style.transform = 'translateX(0)';
                 }
             }
         },
@@ -2575,51 +2620,95 @@ button.btn.selected {
 
 /* Mobile Responsive */
 @media (max-width: 991px) {
+    .category-ribbon-bar {
+        position: relative;
+    }
+    
     .category-ribbon-nav {
-        flex-direction: column;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
         gap: 0;
+        overflow-x: auto;
+        overflow-y: visible;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 0 10px;
+    }
+    
+    .category-ribbon-nav::-webkit-scrollbar {
+        display: none;
     }
     
     .category-item {
-        width: 100%;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        flex: 0 0 auto;
+        min-width: auto;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: none;
+        position: relative;
+    }
+    
+    .category-item:last-child {
+        border-right: none;
     }
     
     .category-link {
-        width: 100%;
-        text-align: center;
+        padding: 12px 16px;
+        font-size: 13px;
+        white-space: nowrap;
         border-right: none;
-        padding: 14px 20px;
-        font-size: 14px;
+        text-align: center;
+        min-width: 70px;
     }
     
     .mega-menu {
-        position: static;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 0;
-        border-top: none;
-        background: rgba(255, 255, 255, 0.95);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        visibility: hidden;
+        max-height: none;
+        overflow: visible;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        border-radius: 8px;
+        border-top: 3px solid #027562;
+        background: white;
+        min-width: 180px;
+        z-index: 1001;
+        transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     }
     
-    .category-item:hover .mega-menu,
     .category-item.active .mega-menu {
-        max-height: 300px;
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
     }
     
     .subcategory-link {
-        padding: 8px 30px;
-        font-size: 13px;
+        padding: 8px 16px;
+        font-size: 12px;
+        display: block;
+        color: #333;
+        border-left: none;
     }
     
     .subcategory-link.main-category {
-        background-color: rgba(2, 117, 98, 0.1);
+        background-color: #f8f9fa;
+        color: #027562;
+        font-weight: 700;
         margin-bottom: 4px;
+        border-left: none;
+    }
+    
+    .subcategory-link:hover {
+        background-color: #f8f9fa;
+        color: #027562;
+        padding-left: 16px;
+        border-left: none;
     }
 }
 
