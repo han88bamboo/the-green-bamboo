@@ -154,16 +154,29 @@
                         </div>
 
                         <!-- Country Filter -->
-                                                <!-- Country Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
-                                    :class="browseFilters.country ? 'btn-warning' : 'btn-outline-warning'" 
+                                    :class="browseFilters.originCountry ? 'btn-warning' : 'btn-outline-warning'" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
                                     aria-expanded="false">
-                                <span class="mobile-view-hide">{{ browseFilters.country || 'Country' }}</span>
-                                <span class="mobile-view-show">{{ browseFilters.country ? browseFilters.country.substring(0, 4) + '...' : 'Country' }}</span>
+                                <span class="mobile-view-hide">{{ browseFilters.originCountry || 'Country' }}</span>
+                                <span class="mobile-view-show">{{ browseFilters.originCountry ? browseFilters.originCountry.substring(0, 4) + '...' : 'Country' }}</span>
                             </button>
+                            <ul class="dropdown-menu dropdown-menu-scrollable">
+                                <li>
+                                    <span class="dropdown-item" @click="filterByCountry('')">All Countries</span>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li v-for="country in countryList" :key="country.originCountry">
+                                    <span class="dropdown-item" 
+                                          :class="{ 'active': browseFilters.originCountry === country.originCountry }"
+                                          @click="filterByCountry(country.originCountry)">
+                                        {{ country.originCountry }}
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
 
                         <!-- Rating Filter -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
@@ -224,8 +237,6 @@
                         </div>
                     
                     </div>
-
-                </div>
 
             </div>
             
