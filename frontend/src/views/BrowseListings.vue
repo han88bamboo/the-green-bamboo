@@ -216,12 +216,13 @@
 
                         <!-- Sort Options -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
-                            <button class="btn btn-outline-secondary dropdown-toggle w-100" 
+                            <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
-                                    aria-expanded="false">
+                                    aria-expanded="false"
+                                    style="color: whitesmoke; background-color: #83a9e8; border-radius: 10px; font-weight: bold;">
                                
-                                <span >{{ sortSelection.category || 'Sort' }}</span>
+                                <span>{{ sortSelection.category || 'Sort' }}</span>
                                 
                             </button>
                             <ul class="dropdown-menu">
