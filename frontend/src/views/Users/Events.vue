@@ -369,9 +369,7 @@
                             </p>
 
                             <!-- Description -->
-                            <p class="text-muted small mb-2">
-                            {{ event.eventDesc }}
-                            </p>
+                            <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                             <!-- CTA -->
                             <router-link
@@ -474,9 +472,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">
-                                    {{ event.eventDesc }}
-                                    </p>
+                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -583,9 +579,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">
-                                    {{ event.eventDesc }}
-                                    </p>
+                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -682,9 +676,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -744,9 +736,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -807,9 +797,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -863,9 +851,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -981,6 +967,16 @@ export default {
         }
     },
     methods: {
+        plainText(desc) {
+            if (!desc) return '';
+            return desc
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/?p[^>]*>/gi, '\n')
+            .replace(/<[^>]*>/g, '')
+            .replace(/\s+\n/g, '\n')
+            .replace(/\n+/g, ' ')
+            .trim();
+        },
         slugify(text) {
                 return text
                     .toString()
