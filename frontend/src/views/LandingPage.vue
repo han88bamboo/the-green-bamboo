@@ -2505,7 +2505,7 @@ button.btn.selected {
 /* Category Ribbon Styles */
 .category-ribbon-section {
     position: relative;
-    z-index: 9999;
+    z-index: 98;
 }
 
 .category-ribbon-bar {
