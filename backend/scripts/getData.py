@@ -758,7 +758,13 @@ def getListingsByFilters():
         if min_rating:
             try:
                 min_rating_val = float(min_rating)
-                rating_conditions.append("COALESCE(avg_rating, 0) >= %s")
+                rating_conditions.append("""l."id" IN (
+                    SELECT "reviewTarget" 
+                    FROM "reviews" 
+                    WHERE "reviewType" = 'Listing'
+                    GROUP BY "reviewTarget"
+                    HAVING AVG("rating") >= %s
+                )""")
                 params.append(min_rating_val)
             except ValueError:
                 pass
@@ -766,7 +772,13 @@ def getListingsByFilters():
         if max_rating:
             try:
                 max_rating_val = float(max_rating)
-                rating_conditions.append("COALESCE(avg_rating, 0) <= %s")
+                rating_conditions.append("""l."id" IN (
+                    SELECT "reviewTarget" 
+                    FROM "reviews" 
+                    WHERE "reviewType" = 'Listing'
+                    GROUP BY "reviewTarget"
+                    HAVING AVG("rating") <= %s
+                )""")
                 params.append(max_rating_val)
             except ValueError:
                 pass
@@ -801,6 +813,7 @@ def getListingsByFilters():
             ORDER BY 
                 COALESCE(r.review_count, 0) DESC,
                 COALESCE(r.avg_rating, 0) DESC,
+                MOD(l."producerID" * 31 + l."id" * 17, 1000000),
                 l."id" ASC
             LIMIT %s OFFSET %s
         """
