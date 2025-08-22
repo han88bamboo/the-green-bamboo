@@ -51,15 +51,15 @@
 
                     <!-- Request / Create Listing Link (font size reduced at smaller screen width) -->
                     <div class="row mt-2 mobile-view-hide">
-                        <router-link class="col-12 text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Create a new listing here!</p>
-                        </router-link>
-                        <router-link class="col-12 text-decoration-none" v-if="role == 'user'" :to="{ path: '/request/new/' }">
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Request a new listing here!</p>
-                        </router-link>
-                        <router-link class="col-12 text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Login to request a new listing!</p>
-                        </router-link>
+                        <div class="col-12 text-decoration-none" v-if="role == 'producer'" >
+                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
+                        </div>
+                        <div class="col-12 text-decoration-none" v-if="role == 'user'" >
+                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
+                        </div>
+                        <div class="col-12 text-decoration-none" v-if="role != 'producer' && role != 'user'" >
+                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
+                        </div>
                     </div>
 
                 </div>
