@@ -44,7 +44,9 @@
             <div class="container">
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('wine') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('wine') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('wine', $event)">
@@ -64,7 +66,9 @@
                     </div>
                     
                     <!-- Beer -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('beer') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('beer') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('beer', $event)">
@@ -85,7 +89,9 @@
                     </div>
                     
                     <!-- Sake -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('sake') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('sake') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('sake', $event)">
@@ -105,7 +111,9 @@
                     </div>
                     
                     <!-- Whisky -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('whisky') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('whisky') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('whisky', $event)">
@@ -126,7 +134,9 @@
                     </div>
                     
                     <!-- Rum -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('rum') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('rum') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('rum', $event)">
@@ -145,7 +155,9 @@
                     </div>
                     
                     <!-- Tequila -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('tequila') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('tequila') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('tequila', $event)">
@@ -164,7 +176,9 @@
                     </div>
                     
                     <!-- Gin -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('gin') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('gin') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('gin', $event)">
@@ -184,7 +198,9 @@
                     </div>
                     
                     <!-- Baijiu -->
-                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('baijiu') }">
+                    <div class="category-item" 
+                         :class="{ 'active': isMobileCategoryActive('baijiu') }"
+                         @mouseenter="handleMegaMenuPosition">
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('baijiu', $event)">
@@ -1376,6 +1392,26 @@ export default {
             this.userType = userType
         }
         this.loadData();
+
+        // Initialize mega menu positioning
+        this.$nextTick(() => {
+            this.handleMegaMenuPosition();
+            
+            // Add resize listener with debouncing
+            this.debouncedPositionHandler = this.debounce(this.handleMegaMenuPosition, 150);
+            window.addEventListener('resize', this.debouncedPositionHandler);
+            
+            // Add scroll listener for repositioning on scroll
+            window.addEventListener('scroll', this.debouncedPositionHandler, { passive: true });
+        });
+    },
+    
+    beforeUnmount() {
+        // Clean up event listeners
+        if (this.debouncedPositionHandler) {
+            window.removeEventListener('resize', this.debouncedPositionHandler);
+            window.removeEventListener('scroll', this.debouncedPositionHandler);
+        }
     },
     computed: {
         safeProfileRoute() {
@@ -1414,6 +1450,46 @@ export default {
         // Check if mobile category is active
         isMobileCategoryActive(categoryId) {
             return this.activeMobileCategoryId === categoryId;
+        },
+
+        // Smart positioning for mega menu to avoid viewport overflow
+        handleMegaMenuPosition() {
+            if (window.innerWidth >= 992) { // Only for desktop
+                const categoryItems = document.querySelectorAll('.category-item');
+                
+                categoryItems.forEach(item => {
+                    const megaMenu = item.querySelector('.mega-menu');
+                    if (megaMenu) {
+                        // Reset positioning
+                        megaMenu.classList.remove('position-top');
+                        
+                        // Get positions
+                        const itemRect = item.getBoundingClientRect();
+                        const menuRect = megaMenu.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        
+                        // Check if menu would overflow bottom of viewport
+                        const wouldOverflow = (itemRect.bottom + menuRect.height + 20) > viewportHeight;
+                        
+                        if (wouldOverflow) {
+                            megaMenu.classList.add('position-top');
+                        }
+                    }
+                });
+            }
+        },
+
+        // Debounced version of position handler for performance
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
         },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
@@ -2447,9 +2523,22 @@ button.btn.selected {
     border-top: 3px solid #027562;
 }
 
+/* Smart positioning - show above when would overflow */
+.mega-menu.position-top {
+    top: auto;
+    bottom: 100%;
+    transform: translateY(10px);
+    border-top: none;
+    border-bottom: 3px solid #027562;
+}
+
 .category-item:hover .mega-menu {
     opacity: 1;
     visibility: visible;
+    transform: translateY(0);
+}
+
+.category-item:hover .mega-menu.position-top {
     transform: translateY(0);
 }
 
@@ -2569,6 +2658,14 @@ button.btn.selected {
         border-bottom: 8px solid white;
         opacity: 0;
         transition: opacity 0.3s ease;
+    }
+    
+    /* Arrow for top-positioned menus */
+    .mega-menu.position-top::before {
+        top: auto;
+        bottom: -8px;
+        border-bottom: none;
+        border-top: 8px solid white;
     }
     
     .category-item:hover .mega-menu::before {
