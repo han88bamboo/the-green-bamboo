@@ -338,12 +338,24 @@
                     <div v-for="event in searchResults" class="col-6 mb-2" :key="event.eventID">
                         <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                             <!-- Event Image -->
+                            <div class="banner-stack">
+                            <!-- blurred background fill -->
                             <img
-                            :src="event.eventBanners?.[0] || defaultEventBanner"
-                            class="img-fluid w-100 mb-3"
-                            style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                            alt="Event Banner"
+                                class="banner-bg"
+                                :src="event.eventBanners?.[0] || defaultEventBanner"
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
                             />
+                            <!-- foreground image: show the whole thing -->
+                            <img
+                                class="banner-fore"
+                                :src="event.eventBanners?.[0] || defaultEventBanner"
+                                :alt="event.eventName"
+                                loading="lazy"
+                            />
+                            </div>
+
                             
                             <!-- Event Name -->
                             <p class="fw-bold mb-1">
@@ -441,12 +453,21 @@
                                 >
                                 <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                     <!-- Event Image -->
+                                    <div class="banner-stack mb-3">
+                                    <!-- blurred background -->
                                     <img
-                                    :src="event.eventBanners?.[0] || defaultEventBanner"
-                                    class="img-fluid w-100 mb-3"
-                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                    alt="Event Banner"
+                                        class="banner-bg"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        alt=""
+                                        aria-hidden="true"
                                     />
+                                    <!-- foreground full image -->
+                                    <img
+                                        class="banner-fore"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        :alt="event.eventName"
+                                    />
+                                    </div>
 
                                     <!-- Event Name -->
                                     <p class="fw-bold mb-1">
@@ -548,12 +569,21 @@
                                 >
                                 <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                     <!-- Banner -->
+                                    <div class="banner-stack mb-3">
+                                    <!-- blurred background -->
                                     <img
-                                    :src="event.eventBanners?.[0] || defaultEventBanner"
-                                    class="img-fluid w-100 mb-3"
-                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                    alt="Event Banner"
+                                        class="banner-bg"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        alt=""
+                                        aria-hidden="true"
                                     />
+                                    <!-- foreground full image -->
+                                    <img
+                                        class="banner-fore"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        :alt="event.eventName"
+                                    />
+                                    </div>
 
                                     <!-- Event Name -->
                                     <p class="fw-bold mb-1">
@@ -650,12 +680,21 @@
                                         >
                                             <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                                 <!-- Event Image -->
+                                                <div class="banner-stack mb-3">
+                                                <!-- blurred background -->
                                                 <img
+                                                    class="banner-bg"
                                                     :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                    class="img-fluid w-100 mb-3"
-                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                    alt="Event Banner"
+                                                    alt=""
+                                                    aria-hidden="true"
                                                 />
+                                                <!-- foreground full image -->
+                                                <img
+                                                    class="banner-fore"
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    :alt="event.eventName"
+                                                />
+                                                </div>
                                                 
                                                 <!-- Event Name -->
                                                 <p class="fw-bold mb-1">
@@ -702,12 +741,21 @@
                                             <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
                                                 <!-- Event Image with overlay -->
                                                 <div class="position-relative mb-3">
+                                                    <div class="banner-stack mb-3">
+                                                    <!-- blurred background -->
                                                     <img
+                                                        class="banner-bg"
                                                         :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                        class="img-fluid w-100"
-                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                        alt="Event Banner"
+                                                        alt=""
+                                                        aria-hidden="true"
                                                     />
+                                                    <!-- foreground full image -->
+                                                    <img
+                                                        class="banner-fore"
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        :alt="event.eventName"
+                                                    />
+                                                    </div>
                                                     <div class="past-event-overlay"></div>
                                                 </div>
                                                 
@@ -771,12 +819,21 @@
                                         >
                                             <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                                 <!-- Event Image -->
+                                                <div class="banner-stack mb-3">
+                                                <!-- blurred background -->
                                                 <img
+                                                    class="banner-bg"
                                                     :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                    class="img-fluid w-100 mb-3"
-                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                    alt="Event Banner"
+                                                    alt=""
+                                                    aria-hidden="true"
                                                 />
+                                                <!-- foreground full image -->
+                                                <img
+                                                    class="banner-fore"
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    :alt="event.eventName"
+                                                />
+                                                </div>
                                                 
                                                 <!-- Event Name -->
                                                 <p class="fw-bold mb-1">
@@ -823,12 +880,21 @@
                                             <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
                                                 <!-- Event Image with overlay -->
                                                 <div class="position-relative mb-3">
+                                                    <div class="banner-stack mb-3">
+                                                    <!-- blurred background -->
                                                     <img
+                                                        class="banner-bg"
                                                         :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                        class="img-fluid w-100"
-                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                        alt="Event Banner"
+                                                        alt=""
+                                                        aria-hidden="true"
                                                     />
+                                                    <!-- foreground full image -->
+                                                    <img
+                                                        class="banner-fore"
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        :alt="event.eventName"
+                                                    />
+                                                    </div>
                                                     <div class="past-event-overlay"></div>
                                                 </div>
                                                 
@@ -1418,4 +1484,36 @@ export default {
 .nav-tabs {
     border-bottom: 1px solid #dee2e6;
 }
+
+.banner-stack {
+  position: relative;
+  width: 100%;
+  height: 160px;            /* your card height */
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f3f3;      /* fallback while image loads */
+}
+
+/* both layers fill the box */
+.banner-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* background: covers and blurs to fill any empty space */
+.banner-stack .banner-bg {
+  object-fit: cover;
+  filter: blur(20px) brightness(0.9); /* tweak blur/brightness to taste */
+  transform: scale(1.1);              /* hides blur edges */
+}
+
+/* foreground: show the entire image (no cropping) */
+.banner-stack .banner-fore {
+  object-fit: contain;  /* key: prevents cropping for vertical images */
+  z-index: 1;
+}
+
 </style>
