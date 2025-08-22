@@ -2539,7 +2539,6 @@ button.btn.selected {
     position: relative;
     white-space: nowrap;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
 }
 
 .category-link:last-child {
