@@ -38,98 +38,168 @@
 
     <!-- Hero End -->
 
-    <!-- Browse Categories Section -->
-    <section class="browse-categories-section py-4" style="background-color: #f8f9fa;">
-        <div class="container">
-            <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Browse by Category</h2>
-                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Explore drinks by type</h3>
-            </div>
-            
-            <!-- Category Cards -->
-            <div class="row justify-content-center">
-                <!-- Whisky -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #83a9e8;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-white fw-bold mb-0">Whisky</h6>
+    <!-- Category Navigation Ribbon -->
+    <section class="category-ribbon-section">
+        <div class="category-ribbon-bar">
+            <div class="container">
+                <div class="category-ribbon-nav">
+                    <!-- Wine -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('wine') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('wine', $event)">
+                            Wine
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" class="subcategory-link main-category">Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Red Wine' } }" class="subcategory-link">Red Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'White Wine' } }" class="subcategory-link">White Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Rosé Wine' } }" class="subcategory-link">Rosé Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Sparkling Wine' } }" class="subcategory-link">Sparkling Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Fortified Wine' } }" class="subcategory-link">Fortified Wine</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Dessert Wine' } }" class="subcategory-link">Dessert Wine</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-                
-                <!-- Beer -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #f0b358;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-white fw-bold mb-0">Beer</h6>
+                    </div>
+                    
+                    <!-- Beer -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('beer') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('beer', $event)">
+                            Beer
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" class="subcategory-link main-category">Beer</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'IPA (India Pale Ale)' } }" class="subcategory-link">IPA (India Pale Ale)</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Lager' } }" class="subcategory-link">Lager</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Stout' } }" class="subcategory-link">Stout</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Pale Ale' } }" class="subcategory-link">Pale Ale</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Wheat Beer' } }" class="subcategory-link">Wheat Beer</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Porter' } }" class="subcategory-link">Porter</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Sour' } }" class="subcategory-link">Sour</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-                
-                <!-- Wine -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #027562;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-white fw-bold mb-0">Wine</h6>
+                    </div>
+                    
+                    <!-- Sake -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('sake') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('sake', $event)">
+                            Sake
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake' } }" class="subcategory-link main-category">Sake</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Junmai' } }" class="subcategory-link">Junmai</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Junmai Ginjo' } }" class="subcategory-link">Junmai Ginjo</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Junmai Daiginjo' } }" class="subcategory-link">Junmai Daiginjo</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Honjozo (Alcohol added)' } }" class="subcategory-link">Honjozo</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Nigori' } }" class="subcategory-link">Nigori</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Sparkling' } }" class="subcategory-link">Sparkling</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-                
-                <!-- Gin -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #f04444;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-white fw-bold mb-0">Gin</h6>
+                    </div>
+                    
+                    <!-- Whisky -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('whisky') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('whisky', $event)">
+                            Whisky
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" class="subcategory-link main-category">Whisky</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Malt' } }" class="subcategory-link">Single Malt</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Grain' } }" class="subcategory-link">Single Grain</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Blended' } }" class="subcategory-link">Blended</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Bourbon' } }" class="subcategory-link">Bourbon</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Rye Whiskey' } }" class="subcategory-link">Rye Whiskey</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Irish Pot Still Whiskey' } }" class="subcategory-link">Irish Pot Still</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Tennessee Whiskey' } }" class="subcategory-link">Tennessee Whiskey</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-                
-                <!-- Vodka -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Vodka' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #BAC9E5;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-dark fw-bold mb-0">Vodka</h6>
+                    </div>
+                    
+                    <!-- Rum -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('rum') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('rum', $event)">
+                            Rum
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum' } }" class="subcategory-link main-category">Rum</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Molasses - Traditional Rum (Column Still)' } }" class="subcategory-link">Traditional Rum</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Molasses - Pure Single Rum (Pot Still)' } }" class="subcategory-link">Pure Single Rum</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Molasses - White Unaged' } }" class="subcategory-link">White Unaged</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Syrup / Juice - Clairin / Cachaça / Aguardiente / Grogue' } }" class="subcategory-link">Clairin / Cachaça</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Flavoured / Spiced' } }" class="subcategory-link">Flavoured / Spiced</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-                
-                <!-- Cocktail -->
-                <div class="col-6 col-md-4 col-lg-2 mb-3">
-                    <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Cocktail' } }" class="text-decoration-none">
-                        <div class="card h-100 text-center border-0 shadow-sm category-card" style="background-color: #6c757d;">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <h6 class="card-title text-white fw-bold mb-0">Cocktail</h6>
+                    </div>
+                    
+                    <!-- Tequila -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('tequila') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('tequila', $event)">
+                            Tequila
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila' } }" class="subcategory-link main-category">Tequila</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Blanco (Unaged / White)' } }" class="subcategory-link">Blanco</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Reposado (Aged)' } }" class="subcategory-link">Reposado</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Añejo (Extra Aged)' } }" class="subcategory-link">Añejo</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Extra Añejo (Ultra Aged)' } }" class="subcategory-link">Extra Añejo</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Cristalino' } }" class="subcategory-link">Cristalino</router-link>
                             </div>
                         </div>
-                    </router-link>
-                </div>
-            </div>
-            
-            <!-- Subcategory Examples -->
-            <div class="row justify-content-center mt-3">
-                <div class="col-12 text-center">
-                    <p class="mb-2" style="color: #6c757d;">Or explore specific types:</p>
-                    <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Malt' } }" 
-                                     class="badge bg-light text-dark text-decoration-none border">Single Malt</router-link>
-                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer', browseTypeCategory: 'IPA' } }" 
-                                     class="badge bg-light text-dark text-decoration-none border">IPA</router-link>
-                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Red Wine' } }" 
-                                     class="badge bg-light text-dark text-decoration-none border">Red Wine</router-link>
-                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'London Dry' } }" 
-                                     class="badge bg-light text-dark text-decoration-none border">London Dry</router-link>
-                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Bourbon' } }" 
-                                     class="badge bg-light text-dark text-decoration-none border">Bourbon</router-link>
+                    </div>
+                    
+                    <!-- Gin -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('gin') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('gin', $event)">
+                            Gin
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" class="subcategory-link main-category">Gin</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'London Dry' } }" class="subcategory-link">London Dry</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Contemporary' } }" class="subcategory-link">Contemporary</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Plymouth Gin' } }" class="subcategory-link">Plymouth Gin</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Old Tom' } }" class="subcategory-link">Old Tom</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Genever' } }" class="subcategory-link">Genever</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Navy Strength' } }" class="subcategory-link">Navy Strength</router-link>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Baijiu -->
+                    <div class="category-item" :class="{ 'active': isMobileCategoryActive('baijiu') }">
+                        <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" 
+                                     class="category-link"
+                                     @click="toggleMobileCategoryMenu('baijiu', $event)">
+                            Baijiu
+                        </router-link>
+                        <div class="mega-menu">
+                            <div class="mega-menu-content">
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" class="subcategory-link main-category">Baijiu</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Strong Aroma (Nong Xiang)' } }" class="subcategory-link">Strong Aroma</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Light Aroma (Qing Xiang)' } }" class="subcategory-link">Light Aroma</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Sauce Aroma (Jiang Xiang)' } }" class="subcategory-link">Sauce Aroma</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Rice Aroma (Mi Xiang)' } }" class="subcategory-link">Rice Aroma</router-link>
+                                <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Phoenix Aroma (Feng Xiang)' } }" class="subcategory-link">Phoenix Aroma</router-link>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1283,6 +1353,7 @@ export default {
             user: null,
             userID: null,
             username: '',
+            activeMobileCategoryId: null, // Track which mobile category menu is open
         };
     },
     mounted() {
@@ -1325,6 +1396,24 @@ export default {
         truncateText(text, maxLength = 30) {
             if (!text) return '';
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        },
+
+        // Mobile category menu toggle for tap-to-open behavior
+        toggleMobileCategoryMenu(categoryId, event) {
+            // Only handle mobile behavior (screen width <= 991px)
+            if (window.innerWidth <= 991) {
+                event.preventDefault();
+                if (this.activeMobileCategoryId === categoryId) {
+                    this.activeMobileCategoryId = null;
+                } else {
+                    this.activeMobileCategoryId = categoryId;
+                }
+            }
+        },
+
+        // Check if mobile category is active
+        isMobileCategoryActive(categoryId) {
+            return this.activeMobileCategoryId === categoryId;
         },
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
@@ -2290,6 +2379,201 @@ button.btn.selected {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     background-color: #027562 !important;
     color: white !important;
+}
+
+/* Category Ribbon Styles */
+.category-ribbon-section {
+    position: relative;
+    z-index: 999;
+}
+
+.category-ribbon-bar {
+    background: linear-gradient(135deg, #027562 0%, #025951 100%);
+    box-shadow: 0 2px 10px rgba(2, 117, 98, 0.3);
+    padding: 0;
+}
+
+.category-ribbon-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+}
+
+.category-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.category-link {
+    display: block;
+    padding: 16px 24px;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    position: relative;
+    white-space: nowrap;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.category-link:last-child {
+    border-right: none;
+}
+
+.category-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Mega Menu Styles */
+.mega-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 1000;
+    border-top: 3px solid #027562;
+}
+
+.category-item:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.mega-menu-content {
+    padding: 12px 0;
+}
+
+.subcategory-link {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.subcategory-link.main-category {
+    font-weight: 700;
+    color: #027562;
+    background-color: #f8f9fa;
+    border-left: 3px solid #027562;
+    margin-bottom: 8px;
+}
+
+.subcategory-link:hover {
+    background-color: #f8f9fa;
+    color: #027562;
+    text-decoration: none;
+    border-left: 3px solid #027562;
+    padding-left: 24px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .category-ribbon-nav {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .category-item {
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .category-link {
+        width: 100%;
+        text-align: center;
+        border-right: none;
+        padding: 14px 20px;
+        font-size: 14px;
+    }
+    
+    .mega-menu {
+        position: static;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 0;
+        border-top: none;
+        background: rgba(255, 255, 255, 0.95);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .category-item:hover .mega-menu,
+    .category-item.active .mega-menu {
+        max-height: 300px;
+    }
+    
+    .subcategory-link {
+        padding: 8px 30px;
+        font-size: 13px;
+    }
+    
+    .subcategory-link.main-category {
+        background-color: rgba(2, 117, 98, 0.1);
+        margin-bottom: 4px;
+    }
+}
+
+@media (max-width: 576px) {
+    .category-ribbon-bar {
+        padding: 0;
+    }
+    
+    .category-link {
+        padding: 12px 16px;
+        font-size: 13px;
+    }
+    
+    .subcategory-link {
+        padding: 6px 25px;
+        font-size: 12px;
+    }
+}
+
+/* Smooth hover animation for desktop */
+@media (min-width: 992px) {
+    .category-item {
+        overflow: visible;
+    }
+    
+    .mega-menu::before {
+        content: '';
+        position: absolute;
+        top: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid white;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .category-item:hover .mega-menu::before {
+        opacity: 1;
+    }
 }
 
 
