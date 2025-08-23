@@ -630,15 +630,16 @@
               </div>
 
               <!-- age -->
-              <div class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
-                <!-- <div v-if="specified_listing['drinkType'] == 'Wine'">
+              <div v-if="specified_listing['age']" class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+                <!-- this code was only relevant before we had new vintage feature for reviews
+                  <div v-if="specified_listing['drinkType'] == 'Wine'">
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
                   <p class="mb-3"><u> Vintage (Year)</u></p>
                 </div>
                 <div v-else> -->
-                <div v-if="specified_listing['drinkType'] != 'Wine'">
+                <div  >
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
