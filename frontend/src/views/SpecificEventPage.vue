@@ -135,8 +135,8 @@
                                             style="font-weight:bold" 
                                             @click="rsvpEvent" 
                                             :disabled="rsvpButtonStatus" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#promptPurchaseModal">I'm interested
+                                            :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" 
+                                            :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested
                                         </button>
                                     </div>
                                 </div>
@@ -260,9 +260,10 @@
 
                             <!-- Ticketed but free of charge -->
                             <div v-if="event.paidEvent == false">
-                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
+                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free, but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
                                 <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
@@ -271,7 +272,8 @@
                             <div v-else> 
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                             </div>
                             
                         </div>
@@ -424,15 +426,17 @@
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
                                 <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
 
                             <!-- Ticketed and require payment -->
                             <div v-else> 
-                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket!</p>
+                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket! <Span class="text-muted">(Payment on separate system.)</Span></p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                             </div>
                             
                         </div>
@@ -499,8 +503,8 @@
                                     <tr>
                                         <th>Attendee Name</th>
                                         <th>RSVP Date</th>
-                                        <th v-if="event.paidEvent">Has Paid?</th>
-                                        <th>Attendance</th>
+                                        <th v-if="event.paidEvent">Has Paid? <span class="text-muted">(Marked by Organiser)</span></th>
+                                        <th>Attendance <span class="text-muted">(Marked by Organiser)</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -570,7 +574,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="fw-bold">Thank you for RSVP-ing. As this is a paid ticketed event, remember to click "Buy Tickets" to secure your tickets for the event!.</p>
+                        <p class="fw-bold">Thank you for RSVP-ing. As this is a paid event, remember to purchase your tickets!</p>
                         <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">Buy Ticket</a>
                     </div>
                     <div class="modal-footer">
@@ -952,6 +956,11 @@ export default {
 
             earnedBadges: [],
             showBadgePopup: false,
+        }
+    },
+    computed: {
+        isUserLoggedIn() {
+            return this.userType && this.userType !== 'defaultUser' && this.userID;
         }
     },
     methods: {
