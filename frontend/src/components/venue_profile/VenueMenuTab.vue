@@ -88,7 +88,11 @@
                                                                         <div class="flex-grow-1" style="min-width: 0;">
                                                                             <div class="d-flex justify-content-between align-items-start mb-1">
                                                                                 <h5 class="card-title fw-semibold mb-0 me-2 item-title">{{ item.name }} {{ item.variant ? ' [' + item.variant + ' Vintage]' : '' }}</h5>
-                                                                                <i class="bi bi-star text-warning flex-shrink-0"></i>
+                                                                                <!-- avg rating 0 show empty star -->
+                                                                                <i v-if="item.averageRating == 0" class="bi bi-star text-warning flex-shrink-0"></i>
+                                                                                <div v-else>
+                                                                                    <b>{{ item.averageRating }}</b> <i class="bi bi-star-fill text-warning flex-shrink-0"></i>
+                                                                                </div>
                                                                             </div>
                                                                             <p class="card-text text-muted small mb-2 lh-sm text-start">{{ item.bottler ? item.bottler : 'Unknown Producer' }} | {{ item.drinkType ? item.drinkType : 'N/A type' }} | {{ item.abv ? item.abv + '%' : 'N/A ABV' }}</p>
                                                                             <p class="card-text fw-medium mb-0 text-start">{{ item.itemPrice <= 0 ? '-' : `$ ${item.itemPrice} / ${item.servingTypeText}` }}</p>

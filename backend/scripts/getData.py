@@ -4492,18 +4492,63 @@ def getVenueMenu(section_id):
         
         # Use a single query with window function for better performance
         # This eliminates the need for a separate COUNT query
+        # sql = f"""
+        #     SELECT 
+        #         mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
+        #         lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
+        #         mi."itemServingType", srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
+        #     FROM "menuItems" mi
+        #     INNER JOIN "listings" lst
+        #         ON mi."itemID" = lst."id"
+        #     LEFT JOIN "servingTypes" srvTyp
+        #         ON mi."itemServingType" = srvTyp."id"
+        #     WHERE {where_clause}
+        #     ORDER BY mi."itemOrder" ASC -- , mi."id" ASC  Add secondary sort for consistency
+        #     LIMIT %s OFFSET %s;
+        # """
         sql = f"""
             SELECT 
-                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
-                lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
-                mi."itemServingType", srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
+                mi."id", 
+                mi."sectionId", 
+                mi."itemID", 
+                mi."itemOrder", 
+                lst."listingName", 
+                lst."photo", 
+                lst."bottler", 
+                lst."drinkType", 
+                lst."abv", 
+                mi."itemPrice", 
+                mi."itemAvailability", 
+                mi."itemServingType", 
+                srvTyp."servingType", 
+                mi."variant", 
+                COALESCE(ROUND(AVG(r."rating"), 1), 0) as "averageRating",
+                COUNT(r."rating") as "reviewCount",
+                COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
                 ON mi."itemID" = lst."id"
             LEFT JOIN "servingTypes" srvTyp
                 ON mi."itemServingType" = srvTyp."id"
+            LEFT JOIN "reviews" r
+                ON lst."id" = r."reviewTarget"
             WHERE {where_clause}
-            ORDER BY mi."itemOrder" ASC -- , mi."id" ASC  Add secondary sort for consistency
+            GROUP BY 
+                mi."id", 
+                mi."sectionId", 
+                mi."itemID", 
+                mi."itemOrder", 
+                lst."listingName", 
+                lst."photo", 
+                lst."bottler", 
+                lst."drinkType", 
+                lst."abv", 
+                mi."itemPrice", 
+                mi."itemAvailability", 
+                mi."itemServingType", 
+                srvTyp."servingType", 
+                mi."variant"
+            ORDER BY mi."itemOrder" ASC
             LIMIT %s OFFSET %s;
         """
         
@@ -4533,6 +4578,7 @@ def getVenueMenu(section_id):
                     "servingType": row['itemServingType'],
                     "servingTypeText": row['servingType'],
                     "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
+                    "averageRating": row['averageRating'],
                 }
                 for row in rows
             ]
