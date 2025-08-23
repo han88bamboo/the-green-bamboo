@@ -2776,7 +2776,7 @@ INSERT INTO "producers" (
 INSERT INTO "producers" VALUES (10302, 'Brewlander (Singapore)', '', 'Singapore', false, '{}', '', '1276727242', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
 INSERT INTO "producers" VALUES (11236, 'Polly''s Brew Co.', '', 'Wales', false, '{}', '', '-826823437', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
 INSERT INTO "producers" VALUES (10880, 'Mountain Culture Beer Co.', '', 'Australia', false, '{}', '', '-2049109702', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
-
+INSERT INTO "producers" VALUES (9540, 'Oso Brew Co', '', 'Spain', false, '{}', '', '-2049109702', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
 
 
 
@@ -2928,7 +2928,7 @@ INSERT INTO "listings" (
 INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, it’s the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and you’ll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-');
 INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles');
 INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
-
+INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
 
 
 INSERT INTO "usersFollowLists" (
