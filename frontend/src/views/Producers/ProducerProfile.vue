@@ -6446,11 +6446,11 @@ export default {
     },
     async confirmUpdatePassword() {
       let oldHash = this.hashPassword(
-        this.specified_producer.producerName,
+        this.specified_producer.username,
         this.oldPassword
       );
       let newHash = this.hashPassword(
-        this.specified_producer.producerName,
+        this.specified_producer.username,
         this.newPassword
       );
       let submitURL =
