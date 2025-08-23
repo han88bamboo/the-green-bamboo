@@ -8000,8 +8000,8 @@ export default {
 
         // Need refactor
         async confirmUpdatePassword() {
-            let oldHash = this.hashPassword(this.targetVenue.venueName, this.oldPassword)
-            let newHash = this.hashPassword(this.targetVenue.venueName, this.newPassword)
+            let oldHash = this.hashPassword(this.targetVenue.username, this.oldPassword)
+            let newHash = this.hashPassword(this.targetVenue.username, this.newPassword)
             let submitURL = `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.targetVenue.id
             let submitData = {
                 oldHash: oldHash.toString(),
