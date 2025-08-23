@@ -92,7 +92,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-start mt-2">
+                        <div class="d-md-flex justify-content-between align-items-start mt-2">
                             <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
                                 <!-- Event Name -->
                                 <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
