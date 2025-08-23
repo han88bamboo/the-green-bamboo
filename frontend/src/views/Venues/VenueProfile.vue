@@ -376,11 +376,18 @@
                                         Edit Profile
                                     </button>
                                     <!-- [else] if editing -->
-                                    <button v-else type="button"
-                                        class="btn success-btn rounded-0 reverse-clickable-text"
-                                        @click="saveProfileEdits">
-                                        Save
-                                    </button>
+                                    <div v-else class="d-flex gap-2">
+                                        <button type="button"
+                                            class="btn btn-danger rounded-0 reverse-clickable-text flex-fill"
+                                            @click="exitProfileEdit">
+                                            Exit
+                                        </button>
+                                        <button type="button"
+                                            class="btn success-btn rounded-0 reverse-clickable-text flex-fill"
+                                            @click="saveProfileEdits">
+                                            Save
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -6638,6 +6645,39 @@ export default {
         },
 
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        // Exit Profile Edit (without saving)
+        exitProfileEdit() {
+            // Reset all edit fields to their original values
+            this.editVenueName = this.targetVenue.venueName || '';
+            this.editVenueType = this.targetVenue.venueType || '';
+            this.editVenueDesc = this.targetVenue.venueDesc || '';
+            this.editCountry = this.targetVenue.originLocation || '';
+            this.editYearOpened = this.targetVenue.yearOpened || '';
+            this.editOpenForReservations = this.targetVenue.openForReservations || false;
+            this.editWebsite = this.targetVenue.website || '';
+            this.editInstagram = this.targetVenue.instagram || '';
+            this.editFacebook = this.targetVenue.facebook || '';
+            this.editTiktok = this.targetVenue.tiktok || '';
+            this.editEmail = this.targetVenue.email || '';
+            this.editPhoneNumber = this.targetVenue.phoneNumber || '';
+            this.editWhatsappNumber = this.targetVenue.whatsappNumber || '';
+            
+            // Reset photo-related fields
+            this.editProfilePhoto = '';
+            this.selectedImage = '';
+            this.targetVenueOriginalPhoto = this.targetVenue.photo || '';
+            
+            // Reset amenities to original state
+            this.editAmenities = JSON.parse(JSON.stringify(this.targetVenue.amenities || {}));
+            
+            // Reset PDF menu fields
+            this.pdfMenuBase64 = '';
+            this.selectedPDFName = '';
+            
+            // Exit edit mode
+            this.editProfile = false;
+        },
 
         // Save Profile Edits
         async saveProfileEdits() {
