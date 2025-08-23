@@ -3787,8 +3787,28 @@
                                         placeholder="Enter Previous Password">
                                     <p class="text-start mt-3 mb-1"> New Password: <span class="text-danger">*</span>
                                     </p>
-                                    <input type='password' v-model="newPassword" class="form-control" id="newPassword"
-                                        placeholder="Enter New Password">
+                                    <PWStrengthChecker 
+                                        @password-change="newPassword = $event"
+                                        @strength-change="passwordStrength = $event"
+                                    />
+                                    <span v-if="weakPassword" class="text-danger text-start d-block mt-1">
+                                        Please use a password that meets all requirements.
+                                    </span>
+
+                                    <p class="text-start mt-3 mb-1"> Repeat New Password: <span class="text-danger">*</span></p>
+                                    <div class="form-floating">
+                                        <input
+                                            type="password"
+                                            v-model="newPasswordRepeat"
+                                            class="form-control form-box-outline"
+                                            id="newPasswordRepeat"
+                                            placeholder="Repeat New Password"
+                                        />
+                                        <label for="newPasswordRepeat">Repeat New Password</label>
+                                    </div>
+                                    <span v-if="passwordRepeatMismatch" class="text-danger text-start d-block mt-1">
+                                        Passwords do not match.
+                                    </span>
                                 </div>
                                 <div
                                     v-if="confirmChangePassword && !(passwordError || passwordSuccess || passwordMismatch)">
@@ -4895,6 +4915,7 @@ import EventBox from '@/components/EventBox.vue';
 import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
+import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 
 // Import Phosphor Icons
 import { 
@@ -4918,6 +4939,7 @@ export default {
         BookmarkModal,
         EventBox,
         LoadingWithFunFact,
+        PWStrengthChecker,
         // Add Phosphor Icons as components
         PhWine,
         PhBeerStein, 
@@ -5394,6 +5416,10 @@ export default {
             // for change/reset password
             oldPassword: "",
             newPassword: "",
+            newPasswordRepeat: "",
+            passwordStrength: 0,
+            weakPassword: false,
+            passwordRepeatMismatch: false,
             changingPassword: "",
             confirmChangePassword: false,
             confirmResetPassword: false,
@@ -7972,15 +7998,57 @@ export default {
                 this.confirmResetPassword = false
                 this.changingPassword = ""
                 this.verifyErrorMessage = ""
+                
+                // Reset password strength validation
+                this.oldPassword = ""
+                this.newPassword = ""
+                this.newPasswordRepeat = ""
+                this.passwordStrength = 0
+                this.weakPassword = false
+                this.passwordRepeatMismatch = false
             }
         },
 
         updatePassword() {
-            if (this.oldPassword == "" || this.newPassword == "") {
-                alert("One of the passwords is empty, please check again")
-                return null
+            // Reset validation errors
+            this.weakPassword = false;
+            this.passwordRepeatMismatch = false;
+            
+            let errorCount = 0;
+
+            // Check if fields are empty
+            if (this.oldPassword == "") {
+                alert("Please enter your old password");
+                return null;
             }
-            this.confirmChangePassword = true
+            
+            if (this.newPassword == "") {
+                alert("Please enter a new password");
+                return null;
+            }
+            
+            if (this.newPasswordRepeat == "") {
+                alert("Please repeat your new password");
+                return null;
+            }
+            
+            // Check password strength
+            if (this.passwordStrength < 5) {
+                this.weakPassword = true;
+                errorCount++;
+            }
+            
+            // Check password match
+            if (this.newPassword !== this.newPasswordRepeat) {
+                this.passwordRepeatMismatch = true;
+                errorCount++;
+            }
+            
+            if (errorCount > 0) {
+                return null;
+            }
+            
+            this.confirmChangePassword = true;
         },
 
         // Function to hash password
