@@ -168,53 +168,41 @@ def deleteListing(id):
     conn = g.db
     cur = conn.cursor()
     
-    try:
-        # Find the listing entry with the specified id
-        cur.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
-        existingListing = cur.fetchone()
+    # Find the listing entry with the specified id
+    cur.execute('SELECT * FROM listings WHERE "id" = %s', (id,))
+    existingListing = cur.fetchone()
 
-        if existingListing is None:
-            return jsonify(
-                {   
-                    "code": 400,
-                    "data": {
-                        "id": id
-                    },
-                    "message": "Listing doesn't exist."
-                }
-            ), 400
-        
+    if existingListing is None:
+        return jsonify(
+            {   
+                "code": 400,
+                "data": {
+                    "id": id
+                },
+                "message": "Listing doesn't exist."
+            }
+        ), 400
+    
+    try:
         # Delete image from S3 bucket only if it exists
         if existingListing['photo'] is not None and existingListing['photo'] != '':
-            try:
-                s3Images.deleteImageFromS3(existingListing['photo'])
-            except Exception as s3_error:
-                print(f"S3 deletion error: {str(s3_error)}")
-                # Continue with database deletion even if S3 fails
+            s3Images.deleteImageFromS3(existingListing['photo'])
 
         # Find and delete associated reviews and votes
-        cur.execute('SELECT "id" FROM "reviews" WHERE "reviewTarget" = %s', (id,))
+        cur.execute('SELECT "id" FROM reviews WHERE "reviewTarget" = %s', (id,))
         reviews = cur.fetchall()
 
         for review in reviews:
             review_id = review['id']
+
             # Delete associated votes for each review
             cur.execute('DELETE FROM "reviewsUserVotes" WHERE "reviewId" = %s', (review_id,))
 
         # Delete associated reviews
-        cur.execute('DELETE FROM "reviews" WHERE "reviewTarget" = %s', (id,))
-
-        # Clean up orphaned references in other tables (ON DELETE SET NULL tables)
-        # Note: usersDrinkListItems and userLeaderboard have CASCADE so they're auto-deleted
-        cur.execute('DELETE FROM "menuItems" WHERE "itemID" = %s', (id,))
-        cur.execute('DELETE FROM "requestInaccuracy" WHERE "listingId" = %s', (id,))
-        cur.execute('DELETE FROM "requestEdits" WHERE "listingID" = %s', (id,))
-        cur.execute('DELETE FROM "grails" WHERE "listingID" = %s', (id,))
-        cur.execute('DELETE FROM "upAndComing" WHERE "listingID" = %s', (id,))
-        cur.execute('DELETE FROM "goats" WHERE "listingID" = %s', (id,))
+        cur.execute('DELETE FROM reviews WHERE "reviewTarget" = %s', (id,))
 
         # Delete the listing
-        cur.execute('DELETE FROM "listings" WHERE "id" = %s', (id,))
+        cur.execute('DELETE FROM listings WHERE "id" = %s', (id,))
 
         conn.commit()
 
@@ -226,7 +214,7 @@ def deleteListing(id):
         ), 201
     
     except Exception as e:
-        print(f"Database deletion error: {str(e)}")
+        print(str(e))
         conn.rollback()
         return jsonify(
             {
@@ -234,12 +222,9 @@ def deleteListing(id):
                 "data": {
                     "id": id
                 },
-                "message": f"An error occurred deleting listing: {str(e)}"
+                "message": "An error occurred deleting listing!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get distance between two locations
