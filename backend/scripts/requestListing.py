@@ -32,19 +32,20 @@ def requestListing():
     auto_approve = auto_approve and auto_approve['settingValue'].lower() == 'true'
 
     rawRequestName = rawRequest["listingName"]
-    cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
-    existingBottle = cursor.fetchone()
+    # commented out duplicate check - as consistent with listing submission by admin
+    # cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
+    # existingBottle = cursor.fetchone()
 
-    if existingBottle is not None:
-        return jsonify(
-            {
-                "code": 400,
-                "data": {
-                    "listingName": rawRequestName
-                },
-                "message": "Bottle with the same name already exists."
-            }
-        ), 400
+    # if existingBottle is not None:
+    #     return jsonify(
+    #         {
+    #             "code": 400,
+    #             "data": {
+    #                 "listingName": rawRequestName
+    #             },
+    #             "message": "Bottle with the same name already exists."
+    #         }
+    #     ), 400
 
     try:
         if rawRequest['photo'] and rawRequest['photo'] != "":
@@ -318,19 +319,19 @@ def requestListingModify(requestID):
             rawRequest[field] = None
 
     rawRequestName = rawRequest["listingName"]
-    cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
-    existingBottle = cursor.fetchone()
+    # cursor.execute('SELECT id FROM listings WHERE "listingName" = %s', (rawRequestName,))
+    # existingBottle = cursor.fetchone()
 
-    if existingBottle is not None:
-        return jsonify(
-            {
-                "code": 400,
-                "data": {
-                    "listingName": rawRequestName
-                },
-                "message": "Bottle with the same name already exists."
-            }
-        ), 400
+    # if existingBottle is not None:
+    #     return jsonify(
+    #         {
+    #             "code": 400,
+    #             "data": {
+    #                 "listingName": rawRequestName
+    #             },
+    #             "message": "Bottle with the same name already exists."
+    #         }
+    #     ), 400
         
 
     # If rawRequest has photo, check if existingRequest has photo, delete if found, else upload image to s3 and save image in db
