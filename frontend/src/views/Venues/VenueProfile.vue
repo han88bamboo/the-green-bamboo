@@ -3861,7 +3861,7 @@
 
                             <div class="modal-footer">
                                 <!-- To return to previous select change password or reset password -->
-                                <button v-if="changingPassword != '' && !resettingPassword" type="button"
+                                <button v-if="changingPassword != '' && !resettingPassword && !passwordSuccess" type="button"
                                     @click="selectPasswordMode" class="btn btn-secondary">Return</button>
 
                                 <!-- Close modal-->
