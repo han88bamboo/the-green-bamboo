@@ -5455,7 +5455,7 @@ def getMoreColours():
     conn = g.db
 
     with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "moreColours"')
+        cursor.execute('SELECT * FROM "moreColours" ORDER BY "id" ASC')
         more_colours_data = cursor.fetchall()
 
     if not more_colours_data:
