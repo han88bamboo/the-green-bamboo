@@ -515,8 +515,8 @@
                                         <td>
                                             {{ formatRSVPDate(attendee.rsvpDate) }}
                                         </td>
-                                        <td v-if="event.paidEvent">
-                                            <div class="form-check">
+                                        <td v-if="event.paidEvent" class="text-center">
+                                            <div class="form-check d-flex justify-content-center">
                                                 <input 
                                                     class="form-check-input" 
                                                     type="checkbox" 
