@@ -1849,6 +1849,15 @@ export default {
                         break;
                 }
             }
+        },
+
+        // Add Menu Section - moved from parent
+        addMenuSection() {
+            this.editMenu.push({
+                sectionName: "New Section " + (this.editMenu.length + 1),
+                sectionOrder: this.editMenu.length,
+                sectionMenu: [],
+            });
         }
 
     }

@@ -7007,37 +7007,6 @@ export default {
 
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        // Reset Edit Menu
-        resetEditMenu() {
-            this.editMenu = [];
-
-            for (let section of this.detailedMenu) {
-                let sectionMenu = [];
-                for (let item of section.sectionMenu) {
-                    sectionMenu.push(JSON.parse(JSON.stringify(item)));
-                }
-
-                this.editMenu.push({
-                    sectionName: section.sectionName,
-                    sectionOrder: section.sectionOrder,
-                    sectionMenu: sectionMenu,
-                });
-            }
-
-            // Sort editMenu numerically by sectionOrder
-            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
-
-        },
-
-        // Add Menu Section
-        addMenuSection() {
-            this.editMenu.push({
-                sectionName: "New Section " + (this.editMenu.length + 1),
-                sectionOrder: this.editMenu.length,
-                sectionMenu: [],
-            });
-        },
-
         // Delete Menu Section
         deleteMenuSection(index) {
             // Remove section from editMenu
