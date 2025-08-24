@@ -37,7 +37,13 @@
                     <div class="image-container" style="float: right; margin-left: 15px; margin-bottom: 10px; margin-top: -60px;">
                         <router-link :to="{ path: '/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(review.listingName || 'unknown-listing') }">
                             <img 
-                                v-if="review.listingPhoto && review.listingPhoto !== ''" 
+                                v-if="review.photo && review.photo !== ''" 
+                                :src="review.photo" 
+                                class="review-image rounded"
+                                style="width: 120px; height: 120px; object-fit: cover; display: block;"
+                            />
+                            <img 
+                                v-else-if="review.listingPhoto && review.listingPhoto !== ''"
                                 :src="review.listingPhoto" 
                                 class="review-image rounded"
                                 style="width: 120px; height: 120px; object-fit: cover; display: block;"
