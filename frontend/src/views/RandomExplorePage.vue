@@ -9,6 +9,22 @@
   min-height: 193px !important; 
 }
 
+
+
+.square::-webkit-scrollbar {
+  width: 8px;
+}
+
+.square::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+.square::-webkit-scrollbar-thumb {
+  background-color: wheat; /* butter yellow */
+  border-radius: 10px;
+  opacity: 0.5;
+}
+
 @media (max-width: 768px) {
   /* Make card properly handle overflow */
   .card {
@@ -175,7 +191,7 @@
             <div v-if="userType == 'user' || userType == ''" class="row">
               <!-- [moderator] listing requests -->
               <div v-if="isAdmin || isModerator" class="col-12">
-                <div class="square primary-square-green-outline mb-3 shelf">
+                <div class="square primary-square-green-outline mb-3 shelf" style="min-height: 240px; max-height: 400px; overflow-y: auto;">
                   <!-- header text -->
                   <div class="p-3 square-inline text-start">
                     <span
@@ -228,7 +244,7 @@
               <!-- your drinks shelf -->
               <div class="col-12">
                 <div class="shelf mb-3 primary-square-green">
-                  <div class="square p-3 mb-3 text-start" style="height: 300px">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto; ">
                     <!-- header text -->
                     <div class="square-inline">
                       <router-link
@@ -331,7 +347,7 @@
               <!-- brands you follow -->
               <div class="col-12 ">
                 <div class="shelf primary-square-green">
-                  <div class="square p-3 mb-3 text-start" style="height: 300px">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto;">
                     <!-- header text -->
                     <div class="square-inline">
                       <h5 class="square-inline text-start mr-auto fw-bold">
@@ -450,9 +466,9 @@
             <!-- [producer] listing requests / fan questions / activity -->
             <div v-else-if="userType == 'producer'" class="row">
               <!-- listing requests -->
-              <div class="col-12 mb-5 shelf">
+              <div class="col-12">
                 <div
-                  class="square primary-square-green-outline rounded p-3 mb-3"
+                  class="square primary-square-green-outline shelf rounded p-3 mb-3"
                 >
                   <!--tzh changed to green outline -->
                   <!-- header text -->
@@ -512,30 +528,36 @@
                   <!-- header text -->
                   <div class="square-inline">
                     <span
-                      v-if="unansweredQuestions.length != 0"
+                      
                       class="square-inline text-start mr-auto"
                     >
-                      <h4>
-                        <span class="title-card-text">
-                          {{ unansweredQuestions.length }}
-                        </span>
-                        Pending Fan Questions For You
-                      </h4>
+                      <h5>
+                        Q&A With Your Fans 💬
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
-                      No New Fan Questions!
-                    </h4>
+                    
                   </div>
                   <!-- body -->
                   <div v-if="unansweredQuestions.length != 0">
-                    <div
+                    <div class="row"
                       style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
                       "
                     >
-                      <router-link
+                      <span
+                        class="square-inline text-start mr-auto"
+                      >
+                        <p class="fw-normal">
+                          You Have Received
+                          <span class="title-card-text">
+                            {{ unansweredQuestions.length }}
+                          </span>
+                          Fan Submitted Question!
+                        </p>
+                      </span>                      
+                      <router-link                       
                         :to="{ path: '/Producers/ProducersQA/' + userID }"
                       >
                         <button
@@ -544,7 +566,33 @@
                         >
                           Respond to Q&A
                         </button>
+                      </router-link>                      
+                    </div>
+                  </div>
+                  <div v-else>
+                    <div class="row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <p class="square-inline text-start mr-auto fw-normal">
+                        No new fan questions at the moment! Post an update and get engaged!
+                      </p>  
+                      <router-link
+                        
+                        :to="profileURL"
+                      >
+                        <button
+                          class="btn secondary-btn-border btn-sm py-2 px-3"
+                          style="font-weight: bold"
+                        >
+                        Head to My Profile
+                        </button>
                       </router-link>
+
+                      
                     </div>
                   </div>
                 </div>
@@ -557,9 +605,9 @@
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
-                    <h4 class="square-inline text-start mr-auto">
-                      Activity on Your Listings
-                    </h4>
+                    <h5 class="square-inline text-start mr-auto">
+                      Activity on Your Listings 🔥
+                    </h5>
                   </div>
                   <!-- body -->
                   <div>
@@ -571,7 +619,7 @@
                       "
                     >
                       <router-link
-                        :to="{ path: '/profile/producer/' + userID }"
+                        :to="dashboardURL"
                       >
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
@@ -591,35 +639,41 @@
               <!-- fan questions -->
               <div class="col-12">
                 <div
-                  class="square primary-square-green-outline rounded p-3 mb-3"
+                  class="square primary-square-green-outline rounded p-3 mb-3" style="min-height: 100px; max-height: 400px; overflow-y: auto;"
                 >
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
                     <span
-                      v-if="unansweredQuestions.length != 0"
+                      
                       class="square-inline text-start mr-auto"
                     >
-                      <h4>
-                        <span class="title-card-text">
-                          {{ unansweredQuestions.length }}
-                        </span>
-                        Pending Fan Questions For You
-                      </h4>
+                      <h5>
+                        Q&A With Your Fans 💬
+                      </h5>
                     </span>
-                    <h4 v-else class="square-inline text-start mr-auto">
-                      No New Fan Questions!
-                    </h4>
+                    
                   </div>
                   <!-- body -->
                   <div v-if="unansweredQuestions.length != 0">
-                    <div
+                    <div class="row"
                       style="
                         display: flex;
                         align-items: center;
                         justify-content: center;
                       "
                     >
+                      <span
+                        class="square-inline text-start mr-auto"
+                      >
+                        <p class="fw-normal">
+                          You Have Received
+                          <span class="title-card-text">
+                            {{ unansweredQuestions.length }}
+                          </span>
+                          Fan Submitted Question!
+                        </p>
+                      </span>    
                       <router-link :to="{ path: '/Venues/VenuesQA/' + userID }">
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
@@ -630,6 +684,29 @@
                       </router-link>
                     </div>
                   </div>
+                  <div v-else>
+                    <div class="row"
+                      style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      "
+                    >
+                      <p class="square-inline text-start mr-auto fw-normal">
+                        No new fan questions at the moment! Post an update and get engaged!
+                      </p>  
+                      <router-link
+                        :to="profileURL"
+                      >
+                        <button
+                          class="btn secondary-btn-border btn-sm py-2 px-3"
+                          style="font-weight: bold"
+                        >
+                        Head to My Profile
+                        </button>
+                      </router-link>
+                    </div>
+                    </div>
                 </div>
               </div>
               <!-- check ins at your venue -->
@@ -640,9 +717,9 @@
                   <!--tzh changed to green outline -->
                   <!-- header text -->
                   <div class="square-inline">
-                    <h4 class="square-inline text-start mr-auto">
-                      Activity on Your Listings
-                    </h4>
+                    <h5 class="square-inline text-start mr-auto">
+                      Activity at Your Venue 📍
+                    </h5>
                   </div>
                   <!-- body -->
                   <div>
@@ -653,7 +730,9 @@
                         justify-content: center;
                       "
                     >
-                      <router-link :to="{ path: '/profile/venue/' + userID }">
+                      <router-link
+                        :to="dashboardURL"
+                      >
                         <button
                           class="btn secondary-btn-border btn-sm py-2 px-3"
                           style="font-weight: bold"
@@ -661,6 +740,71 @@
                           View Dashboard
                         </button>
                       </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- [non-logged in] your drinks shelf & brands you follow -->
+            <div v-else class="row">
+              <!-- your drinks shelf -->
+              <div class="col-12">
+                <div class="shelf mb-3 primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto; ">
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <router-link
+                        :to="{
+                          path: '/profile/user/' + userID + '/' + username,
+                        }"
+                        class="reverse-clickable-text"
+                      >
+                        <h5
+                          class="square-inline text-start mr-auto reverse-clickable-text fw-bold"
+                        >
+                          Your Drinks Shelf
+                        </h5>
+                      </router-link>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85%">
+                      <!-- [if] drinks in drink shelf -->
+                      <p class="text-white">Create your account to start adding drink to your shelf. 🧃</p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Sign Up For Free
+                          </button>
+                        </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- brands you follow -->
+              <div class="col-12 ">
+                <div class="shelf primary-square-green">
+                  <div class="square p-3 mb-3 text-start" style="min-height: 250px; max-height: 400px; overflow-y: auto;">
+                    <!-- header text -->
+                    <div class="square-inline">
+                      <h5 class="square-inline text-start mr-auto fw-bold">
+                        Brands You Follow
+                      </h5>
+                    </div>
+                    <!-- body -->
+                    <div style="height: 85% ">
+                      
+                      <p class="text-white">Create your account to follow your favourite brands! ⭐</p>
+                        <router-link :to="{ path: '/login' }">
+                          <button
+                            class="btn btn-shelf-login py-2 px-3"
+                            style="font-weight: bold"
+                          >
+                            Sign Up For Free
+                          </button>
+                        </router-link>
                     </div>
                   </div>
                 </div>
@@ -1262,17 +1406,18 @@
                   class="mobile-ps-0 mobile-pe-0"
                 >
                   <!-- latest reviews from users the current user is following -->
-                  <h5 class="text-body-secondary text-start pt-3">
+                  <h5 class="text-body-secondary text-start pt-3 mobile-ms-2">
                     <b> Latest Reviews from Followed Users</b>
                   </h5>
                   <!-- v-loop for each review -->
                   <div class="containerS text-start">
-                    <h5
+                    <p
                       v-if="latestReviews.length == 0"
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2 mobile-ms-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
+                    </p>
                     
                     <!-- NEW CARD LAYOUT FOR LATEST REVIEWS -->
                     <div
@@ -1429,26 +1574,28 @@
                   </div>
 
                   <!-- recently added  -->
-                  <h5 class="text-body-secondary text-start pt-3 mt-3">
+                  <h5 class="text-body-secondary text-start pt-3 mt-3 mobile-ms-2">
                     <b> Recently Added </b>
                   </h5>
                   <!-- v-loop for each listing -->
                   <div class="container text-start">
-                    <h5
+                    <p
                       v-if="recentlyAdded == ''"
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
-                    <h5
+                    </p>
+                    <p
                       v-if="
                         recentlyAdded == '' ||
                         (selectedDrinkType != '' && filteredRecentlyAdded == '')
                       "
                       style="display: inline-block"
+                      class="mobile-rating-smaller-text-2"
                     >
                       There is no listing available for the selected filter
-                    </h5>
+                    </p>
                     
                     <!-- NEW CARD LAYOUT FOR RECENTLY ADDED -->
                     
@@ -1587,17 +1734,20 @@
       :listingID="bookmarkListingID"
     />
   </div>
-  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 
 <!-- JavaScript -->
 <script>
+// important for SEO mangament
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { computed } from 'vue'
+import { useSearch } from '@/composables/navbar/useSearch'; 
+
+
 import NavBar from "@/components/NavBar.vue";
-// import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
 export default {
@@ -1605,10 +1755,149 @@ export default {
     NavBar,
     // BookmarkIcon,
     BookmarkModal,
-    FooterBar,
     LoadingWithFunFact
   },
+  setup() {
+        // Computed property for structured data
+        const structuredData = computed(() => {
+            const data = {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "name": 'Drink-X | Find Your Next Great Drink & See What Your Friends Are Sipping!',
+                "image": 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                "description": 'Find your next great drink and see what your friends are loving at the moment!',
+                "url": 'https://www.drink-x.com/explore',
+                "potentialAction": {
+                "@type": "SearchAction",
+                "target": "https://www.drink-x.com/search?q={search_term_string}",
+                "query-input": "required name=search_term_string"
+                }
+            }
+            return JSON.stringify(data)
+        })
 
+        // Computed property for dynamic robots content
+        const robotsContent = computed(() => {
+            const robots = []
+
+            // Basic indexing
+            robots.push('index')
+            robots.push('follow')
+
+            // Image indexing
+            robots.push('max-image-preview:large')
+
+            // Snippet control
+            robots.push('max-snippet:-1') // No limit on snippet length
+            robots.push('max-video-preview:-1') // No limit on video preview
+
+            return robots.join(', ')
+        })
+
+        /* SEO section Starts */
+        useHead({
+            title: 'Drink-X | Find Your Next Great Drink, See What Your Friends Are Sipping!',
+            // Custom meta tags that useSeoMeta doesn't cover
+            meta: [
+                {
+                    name: 'keywords',
+                    content: 'drink-x, drink reviews, wine reviews, spirit, whiskey, bourbon, whisky, gin, rum, vodka, tequila, bars, producers, alcohol, beverages'
+                },
+                {
+                    name: 'author',
+                    content: 'drink-x'
+                },
+                {
+                    name: 'robots',
+                    content: robotsContent
+                },
+                {
+                    name: 'googlebot',
+                    content: robotsContent // Specific for Google
+                },
+                {
+                    name: 'bingbot',
+                    content: robotsContent // Specific for Bing
+                },
+                // Additional SEO meta tags
+                {
+                    name: 'distribution',
+                    content: 'global'
+                }
+            ],
+
+            // Link tags
+            link: [
+                {
+                    rel: 'canonical',
+                    href: 'https://drink-x.com/explore'
+                },
+                {
+                    rel: 'preload',
+                    href: '../../Images/Background/landing_page_hero_image.webp',
+                    as: 'image'
+                }
+            ],
+
+            // JSON-LD structured data for rich snippets
+            script: [
+                {
+                    type: 'application/ld+json',
+                    innerHTML: structuredData
+                }
+            ],
+            htmlAttrs: { lang: 'en-US' }, // BCP 47 language code
+        }),
+            // useSeoMeta for SEO and social media optimization
+            useSeoMeta({
+                // Basic SEO
+                title: 'Drink-X | A World of Drinks - Just Look It Up!',
+                description: 'Find your next great drink and see what your friends are sipping lately! Sign up for free.',
+
+                // Open Graph (Facebook, LinkedIn, etc.)
+                ogTitle: 'Drink-X | A World of Drinks - Just Look It Up!',
+                ogDescription: 'Find your next great drink and see what your friends are sipping lately! Sign up for free.',
+                ogImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                ogImageWidth: '1200',
+                ogImageHeight: '630',
+                ogUrl: 'https://www.drink-x.com/explore',
+                ogType: 'website',
+                ogSiteName: 'drink-x',
+                ogLocale: 'en_US',
+
+                // Twitter Card
+                twitterCard: 'summary_large_image',
+                twitterSite: '@yourhandle',
+                twitterCreator: '@yourhandle',
+                twitterTitle: 'https://www.drink-x.com/explore',
+                twitterDescription: 'Find your next great drink and see what your friends are sipping lately! Sign up for free.',
+                twitterImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Drink-X_Banner_Image.png?v=1751344950',
+                twitterImageAlt: computed(() => `Drink-X banner`),
+
+                // Additional social platforms
+                articleAuthor: 'drink-x.com',
+                articlePublisher: '88bamboo.com',
+
+                // Canonical URL
+                canonical: 'https://drink-x.com/explore',
+
+                // Robots
+                // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+                // Enhanced robots directive
+                robots: robotsContent
+        })
+        /* SEO section Ends */
+
+        /* Searchbar handler functions stars here */
+        const { handleSelection } = useSearch()
+        /* Searchbar handler functions ends here */    
+
+        return {
+            // Search functionality
+            handleSelection
+        }
+  },
+   
   data() {
     return {
       dataLoaded: false,
@@ -1702,23 +1991,54 @@ export default {
       // for bookmark component
       bookmarkListingID: {},
 
+      //for redirecting to url:
+      profileURL: "",
+      dashboardURL: "",
+      dashboardWord: "",
+
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
     };
   },
   mounted() {
-    // Load local storage variables
-    const accID = localStorage.getItem("88B_accID");
-    if (accID !== null) {
-      this.userID = localStorage.getItem("88B_accID");
+  // Load local storage variables
+  const accID = localStorage.getItem("88B_accID");
+  const accType = localStorage.getItem("88B_accType");
+  const accUsername = localStorage.getItem("88B_accUsername");
+
+  if (accID) {
+    this.userID = accID;
+  }
+
+  if (accType) {
+    this.userType = accType;
+  }
+
+  if (accUsername) {
+    this.username = accUsername;
+  }
+
+  // Define profileURL, dashboardURL, and dashboardWord
+  if (accID && accType && accUsername) {
+    if (accType === "user") {
+      this.profileURL = `/profile/user/${accID}/${accUsername}`;
+      this.dashboardURL = `/dashboard/user/${accID}`;
+      this.dashboardWord = "My Drink";
+    } else if (accType === "producer") {
+      this.profileURL = `/profile/producer/${accID}/${accUsername}`;
+      this.dashboardURL = `/Producers/ProducersDashboard/${accID}`;
+      this.dashboardWord = "My Brand";
+    } else if (accType === "venue") {
+      this.profileURL = `/profile/venue/${accID}/${accUsername}`;
+      this.dashboardURL = `/dashboard/venue/${accID}`;
+      this.dashboardWord = "My Venue";
     }
-    let userType = localStorage.getItem("88B_accType");
-    if (userType != null) {
-      this.userType = userType;
-    }
-    this.loadData();
-  },
-  methods: {
+  }
+
+  this.loadData();
+},
+
+methods: {
     //remove %20 from url
     slugify(text) {
       if (!text) return "";
@@ -1788,10 +2108,11 @@ export default {
             `${process.env.VUE_APP_API_URL}/getData/getRequestsCount`,
             data
           );
+          
           this.requestListingsCount = response.data.requestListings;
           this.requestEditsCount = response.data.requestEdits;
           this.requestDupesCount = response.data.requestDupes;
-          this.totalRequests = this.requestListingsCount + this.requestEditsCount + this.requestDupesCount;
+          this.totalRequests = Number(this.requestListingsCount) + Number(this.requestEditsCount) + Number(this.requestDupesCount);
         }
 
       } catch (error) {

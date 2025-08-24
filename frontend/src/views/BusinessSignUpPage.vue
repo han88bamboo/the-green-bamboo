@@ -1,6 +1,8 @@
 <template>
     <NavBar />
-
+    <div class="login-header-banner mobile-view-show">
+      <img src="@/assets/business-signup.jpg" alt="Banner" />
+    </div>
     <!-- Display when data is still loading -->
     <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == false">
         <span>Loading page, please wait...</span>
@@ -11,15 +13,15 @@
     </div>
 
     <!-- Display when data fails to load -->
-    <div class="text-danger fst-italic fw-bold fs-5 pt-5" v-if="dataLoaded == null"> 
+    <div class="text-danger fw-bold fs-6 my-5" v-if="dataLoaded == null"> 
         <span>An error occurred while loading this page, please try again!</span>
-        <br>
+        <br><br>
         <button class="btn primary-btn btn-sm" @click="this.$router.go(-1)">
-            <span class="fs-5 fst-italic"> Return to previous page </span>
+            <span class="fs-6 "> Return to previous page </span>
         </button>
         <router-link :to="'/'" class="mx-1">
             <button class="btn primary-btn btn-sm">
-                <span class="fs-5 fst-italic"> Go to Home page </span>
+                <span class="fs-6 "> Go to Home page </span>
             </button>
         </router-link>
     </div>
@@ -33,31 +35,33 @@
         </div>
     </div>
 
-    <!-- Display when bottle listing is successfully submitted -->
-    <div class="text-success fst-italic fw-bold fs-5"  v-if="successSubmission"> 
-        <span>The sign up details has successfully been submitted to our admins for approval!</span> <!-- for user -->
-        <br>
-        <button class="btn primary-btn btn-sm">
-            <router-link :to="{ path: '/login' }" class="primary-clickable-text">
-                <span class="fs-5 fst-italic" style="color: white;"> Click to login here! </span>
-            </router-link>
+    <!-- Display when sign up  is successfully submitted -->
+    
+    
+    <div class="text-success fw-bold fs-6 my-5"  v-if="successSubmission"> 
+        <span>Your sign up details has been submitted and we are currently reviewing your details! Keep a lookout for an email from Drink-X shortly.</span> <!-- for user -->
+        <br><br>
+        <router-link :to="'/'" class="mx-1">
+            <button class="btn primary-btn btn-sm">
+                <span class="fs-6 "> Return to Home page </span>
+            </button>
+        </router-link>
+    </div>
+    
+   
+    
+    <!-- Display when bottle listing submission encounters an error -->
+    <div class="text-danger fw-bold fs-6 my-5" v-if="errorSubmission"> 
+        <span v-if="errorMessage">An error occurred while attempting to send sign up details, please try again!</span>
+        <span v-if="duplicateEntry">Your email address has already been submitted to Drink-X, or used for another account. Please contact us at hello@drink-x.com for help!</span>
+        <br><br>
+        <button class="btn primary-btn btn-sm" @click="reset">
+            <span class="fs-6" style="color: white;"> Click to retry! </span>
         </button>
     </div>
     
-    <!-- Display when bottle listing submission encounters an error -->
-    <div class="text-danger fst-italic fw-bold fs-5" v-if="errorSubmission"> 
-        <span v-if="errorMessage">An error occurred while attempting to send sign up details, please try again!</span>
-        <span v-if="duplicateEntry">The sign up details have already been sent.</span>
-        <br>
-        <button class="btn primary-btn btn-sm" @click="reset">
-            <span class="fs-5 fst-italic"> Retry sign up again! </span>
-        </button>
-    </div>
-    <div class="login-header-banner mobile-view-show">
-      <img src="@/assets/business-signup.jpg" alt="Banner" />
-    </div>
-    <div class="body-login background-login" v-if="dataLoaded">
-        <div class="container py-5 mobile-ps-0 mobile-pe-0 mobile-pt-0">
+    <div class="body-login background-login" v-if="dataLoaded && !errorSubmission && !successSubmission && !submitForm">
+        <div class="align-items-center container py-5 px-mobile-ps-0 mobile-pe-0 mobile-pt-0">
 
             <div class="rounded px-5 py-2 mobile-px-4" v-if="fillForm" style="background-color: wheat; opacity:0.95;">
 
@@ -72,28 +76,103 @@
                             </p>
                         </div>
                         <h5 class="text-start mt-2 mb-3 mobile-fs-6">Apply for a Business Account to connect to a community of drink lovers and grow your business!</h5>
+                        <div class="container p-0 mt-3 mb-4">
+                        
+                        <div class="feature-table">
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start fw-bold">
+                                    Feature
+                                </div>
+                                <div class="col-3 text-center fw-bold">
+                                    Drink-X for Business
+                                </div>
+                            </div>
+                            <!-- Feature Row 1 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Be instantly found by numerous drinks lovers searching for venues, brands or their next favourite drink.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 2 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Showcase your offerings/menu on a live, easy-to-update menu.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 3 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Announce promotions and brand news directly to your fans.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 4 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Host and promote events with seamless RSVP tracking.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 5 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Manage your own brand community.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 6 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Directly address your customers' questions and build trust.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature Row 7 -->
+                            <div class="row feature-row align-items-center py-2">
+                                <div class="col-9 text-start">
+                                    Gain actionable insights to see what's working – track views and identify your most popular offerings.
+                                </div>
+                                <div class="col-3 text-center">
+                                    <i class="bi bi-check-circle-fill" style="color: #3CB371; font-size: 1.2rem;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                         <div class="row justify-content-center mobile-view-show">
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedMonthlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <span>
+                            <p class="fw-bold" style="color: red;">Please select a plan.</p> <br>
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 me-2 pricing-plan-card strong-shadow" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', color: selectedMonthlyPricing ? 'white' :'black', borderColor: '#DD9E54', borderWidth:'3px' }"> <span>
                                     <h6> <b> Monthly plan </b> </h6>
-                                    <p class="m-0"> $65 / Month </p> 
+                                    <p class="m-0"> US$95 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
                                     <h6 class="mt-2" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
                             </button>
-                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
-                                                                                                                                color: selectedYearlyPricing ? 'white' :'black', 
-                                                                                                                                borderColor: '#DD9E54', 
-                                                                                                                                borderWidth:'3px' }">
-                                <span>
+                            <button class="btn rounded p-3 text-start mx-0 mb-3 col-5 pricing-plan-card strong-shadow" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', color: selectedYearlyPricing ? 'white' :'black',  borderColor: '#DD9E54', borderWidth:'3px' }">  <span>
                                     <h6> <b> Yearly plan </b> </h6> 
-                                    <p class="m-0"> $50 / Month </p> 
-                                    <small class="fst-italic p-0"> $600 Billed annually </small>
-                                    <h5 class="mt-2" style="color: green;"><b>Save 23%!</b></h5>
+                                    <p class="m-0"> US$80 / Month </p> 
+                                    <small class="fst-italic p-0"> US$960 Billed annually </small>
+                                    <h5 class="mt-2" style="color: green;"><b>Save 15%!</b></h5>
                                 </span>
                             
                             </button>
@@ -121,7 +200,7 @@
 
                         <!-- Input: Independent Bottler -->
                             <div v-if="businessType=='producer'" class="row justify-content-start mb-3 text-start">
-                                <p class="text-start mb-1">Is your business an Independent Bottler? <span style="color: red;">*</span></p>
+                                <p class="text-start mb-1">Is your business an Independent Bottler? <span style="color: red;">*</span> (If you're unsure, you're most likely not an Independent Bottler — please select “No” by default.)</p>
                                 <div class="col-md-12 justify-content-between">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" id="inlineCheckbox1" v-model="isIndependentBottler" :value="true" name="Yes">
@@ -164,9 +243,6 @@
                                 </div>
                             </div>
 
-
-
-                        
                         <!-- Input: Is business account on the site already, provide link -->
                             <div class="form-group mb-3">
                                 <p class="text-start mb-1">Is your brand/venue profile already on the site? If yes, Enter Link:</p>
@@ -244,15 +320,16 @@
                         <div class="d-grid gap-2 mt-4">
                             <p class="fs-6 fw-bold px-4 mobile-view-hide">Subscribe to a Business Account to connect directly with your fans and grow your business.</p>
                         </div>
+                        <div class="row fw-bold justify-content-center mb-2" style="color:#FF3E31">Please select a plan.</div>
                         <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8 pricing-plan-card strong-shadow" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedMonthlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">
                                 <span>
                                     <h6> <b> Monthly plan </b> </h6>
-                                    <p class="m-0"> $65 / Month </p> 
+                                    <p class="m-0"> US$95 / Month </p> 
                                     <small class="fst-italic p-0"> Billed monthly </small>
                                     <h6 class="mt-1" style="color: green;"><b>Cancel anytime.</b></h6>
                                 </span>
@@ -260,7 +337,7 @@
                         </div>
                         <div class="row justify-content-center mobile-view-hide">
                             <!-- <div class="col-xl-2 col-lg-1 col-md-1"></div> -->
-                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
+                            <button class="btn rounded p-3 text-start mx-3 mb-3 col-8 pricing-plan-card strong-shadow" @click="toggleYearlyPricing" :style="{ backgroundColor: selectedYearlyPricing ? '#DD9E54' :'white', 
                                                                                                                                 color: selectedYearlyPricing ? 'white' :'black', 
                                                                                                                                 borderColor: '#DD9E54', 
                                                                                                                                 borderWidth:'3px' }">
@@ -269,9 +346,9 @@
                                     
                                 </div>
                                 <span>
-                                    <p class="m-0"> $50 / Month </p> 
-                                    <small class="fst-italic p-0"> $600 Billed annually </small>
-                                    <h6 class="mt-2" style="color: green;"><b>Save 23%!</b></h6>
+                                    <p class="m-0"> US$80 / Month </p> 
+                                    <small class="fst-italic p-0"> US$960 Billed annually </small>
+                                    <h6 class="mt-2" style="color: green;"><b>Save 15%!</b></h6>
                                 </span>
                             
                             </button>
@@ -294,7 +371,6 @@
     </div>
 
   <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <!-- ------------------------------------------------------------------------------ -->
@@ -302,13 +378,11 @@
 <script>
     // import components used
     import NavBar from '@/components/NavBar.vue';
-    import FooterBar from "@/components/FooterBar.vue";
 
     export default{
         name: 'BusinessSignUpPage',
         components: {
-            NavBar,
-            FooterBar
+            NavBar
         },
         data(){
             return{
@@ -507,7 +581,7 @@
                     errorCount++
                 }
 
-                console.log(1)
+                // console.log(1)
 
                 // First name validation
                 if(this.firstName == ''){
@@ -540,7 +614,8 @@
                 let businessId =null
 
                 if(this.businessLink!=''){
-                    businessId = this.businessLink.split("/").pop()
+                    // businessId = this.businessLink.split("/").pop()
+                    businessId = parseInt(this.businessLink.match(/\d+/)[0])
                 }
                 if (this.businessType == 'venue'){
                     this.isIndependentBottler = false
@@ -569,8 +644,8 @@
                     "isNew": true
                 }
                 this.createAccount(submitAPI,submitData)
-                console.log(submitData)
-                console.log(errorCount)
+                // console.log(submitData)
+                // console.log(errorCount)
             },
 
             async createAccount(submitAPI,submitData){
@@ -582,7 +657,7 @@
                         this.reviewResponseCode = response.data.code
                     })
                     .catch((error)=>{
-                        console.log(error);
+                        // console.log(error);
                         this.reviewResponseCode = error.response.data.code
                         this.submitForm = false
                     });
@@ -671,5 +746,61 @@
     background-image: none;
     background-color: wheat;
   }
+}
+
+.feature-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.feature-row:last-child {
+  border-bottom: none;
+}
+
+.feature-table {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0 10px;
+  background-color: white;
+}
+
+
+.pricing-plan-card {
+  background-color: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.pricing-plan-card:hover {
+  border-color: #3CB371;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.pricing-plan-card.selected {
+  background-color: #f8fff9;
+  border: 2px solid #3CB371;
+  box-shadow: 0 4px 12px rgba(60,179,113,0.2);
+}
+
+.pricing-plan-card.selected::before {
+  content: "Selected";
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background-color: #3CB371;
+  color: white;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.strong-shadow {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5) !important;
 }
 </style>

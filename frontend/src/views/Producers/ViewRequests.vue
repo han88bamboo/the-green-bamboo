@@ -205,6 +205,7 @@
                     loadError: false,
                     accID: localStorage.getItem('88B_accID'),
                     role: localStorage.getItem('88B_accType'),
+                    isAdmin: localStorage.getItem('88B_accType') === 'admin', // Add this line
                     types: [],
                     // Default Photo
                     defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
@@ -221,30 +222,58 @@
             methods: {
                 // load data from database
                 async loadData() {
+                    console.log("========== ViewRequests.vue loadData() ==========");
+                    console.log(`Loading data for user type: ${this.role} with ID: ${this.accID}`);
+    
+                // First, fetch user data to check actual admin status
+                    try {
+                        console.log("Fetching user data to check admin status...");
+                        const userResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/${this.accID}`);
+                        console.log("User data response:", userResponse);
+                        
+                        // Update admin status based on database value
+                        if (userResponse.data && userResponse.data.isAdmin) {
+                            console.log("User has admin privileges in database, setting isAdmin = true");
+                            this.isAdmin = true;
+                        }
+                        
+                        // If user is a moderator, load their drink types
+                        if (userResponse.data && userResponse.data.modType) {
+                            console.log("User is a moderator for drink types:", userResponse.data.modType);
+                            this.types = userResponse.data.modType;
+                        }
+                    } catch (error) {
+                        console.error("Error fetching user data:", error);
+                    }
                     
                     // Request Listings
                     try {
+                        console.log("Fetching request listings data...");
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListingsByRole/${this.role}/${this.accID}`);
+                        console.log("Request listings API URL:", response);
 
                         this.requestListings = response.data
                         console.log("component data loaded successfully");
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("ERROR LOADING REQUEST LISTINGS:",error);
                         this.loadError = true;
                     }
                     // Request Edits
                     try {
                         console.log("loading request edits");
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestEditsByRole/${this.role}/${this.accID}`);
-                        
+                        console.log("Request edits API URL:", response);
+
                         if ('requestEdits' in response.data) {
+                            console.log(`Loaded ${response.data.requestEdits.length} request edits`);
                             this.requestEdits = response.data['requestEdits'];
+                            console.log(`Loaded ${response.data.requestDups.length} request duplicates`);
                             this.requestDupes = response.data['requestDups'];
                         }
                     } 
                     catch (error) {
-                        console.error(error);
+                        console.error("ERROR LOADING REQUEST EDITS:",error);
                         this.loadError = true;
                     }
 

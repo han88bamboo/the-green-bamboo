@@ -45,7 +45,7 @@
                             v-if="showNoResultsMsg">
                             <ul class="list-group">
                                 <li class="list-group-item list-group-item-action text-start">
-                                    No results found. Try a different search.
+                                     
                                 </li>
                             </ul>
                         </div>

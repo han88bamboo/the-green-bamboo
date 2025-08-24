@@ -128,12 +128,12 @@ def remove_listing_from_table(cursor, table_name, listing_name):
 def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
     if drink_type in ['Whisky', 'Whiskey']:
-        drink_type = ['Whisky', 'Whiskey']  
+        drink_type_list = ['Whisky', 'Whiskey']  
 
     
     # If drink_type is a string, convert it to a list
     if isinstance(drink_type, str):
-        drink_type = [drink_type]
+        drink_type_list = [drink_type]
 
     try:
         if drink_type and drink_type != "Show All Types":
@@ -145,7 +145,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
                     WHERE "drinkType" IN %s
                     ORDER BY "counter" DESC
                     LIMIT 5
-                ''', (tuple(drink_type),))
+                ''', (tuple(drink_type_list),))
             else:
                 # If a specific type category is provided, filter by both drink type and type category
                 cursor.execute(f'''
@@ -154,7 +154,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
                     WHERE "drinkType" IN %s AND "typeCategory" = %s
                     ORDER BY "counter" DESC
                     LIMIT 5
-                ''', (tuple(drink_type), type_category,))
+                ''', (tuple(drink_type_list), type_category,))
         else:
             # If drink type is Show All Types, fetch top 5 without filtering by drink type
             cursor.execute(f'''
@@ -212,6 +212,105 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
 
 # ==========================================================================================
+# [POST] Update user's Grails, Up & Coming, and GOATs selections
+# helper function to dynamically generate SQL inserts
+def generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids):
+    """
+    Generate SQL INSERT statement and values for userLeaderboard table
+    
+    Args:
+        user_id: User ID
+        grails_ids: List of grails listing IDs
+        up_and_coming_ids: List of up and coming listing IDs
+        goats_ids: List of goats listing IDs
+    
+    Returns:
+        tuple: (sql_query, values_list)
+    """
+    values = []
+    
+    # Add grails entries
+    for i, listing_id in enumerate(grails_ids, 1):
+        values.append((user_id, listing_id, 'grails', i))
+    
+    # Add up and coming entries
+    for i, listing_id in enumerate(up_and_coming_ids, 1):
+        values.append((user_id, listing_id, 'upAndComing', i))
+    
+    # Add goats entries
+    for i, listing_id in enumerate(goats_ids, 1):
+        values.append((user_id, listing_id, 'goats', i))
+    
+    # Generate SQL with proper number of placeholders
+    if not values:
+        return None, []
+    
+    # Create placeholder string for each row: (%s, %s, %s, %s)
+    placeholders = ', '.join(['(%s, %s, %s, %s)' for _ in range(len(values))])
+    
+    sql = f'''INSERT INTO "userLeaderboard" 
+                (user_id, listing_id, category, sort_order) VALUES {placeholders}'''
+    
+    # Flatten the values list for cursor.execute
+    flattened_values = [item for sublist in values for item in sublist]
+    
+    return sql, flattened_values
+
+@blueprint.route("/addLeaderBoard", methods=['POST'])
+def addLeaderBoard():
+    """
+    Update a user's Grails, Up & Coming, and GOATs drink selections.
+    
+    Request body should include:
+    - userID: User ID
+    - selectedGrails: Array of drink names for Grails section
+    - selectedUpAndComing: Array of drink names for Up & Coming section
+    - selectedGOATs: Array of drink names for GOATs section
+    - selectedCategory: Category selected during the update
+    - selectedDrinkIDs: Array of drink IDs corresponding to the selected drinks pending update
+    
+    Returns:
+    - 201: User's selections updated successfully
+    - 400: Missing user ID
+    - 404: User not found
+    - 410: Error updating Grails, Up & Coming, or GOATs
+    - 500: Server error
+    """
+    conn = g.db
+
+    try: 
+        data = request.json
+        user_id = data.get('userID')
+        grails_ids = data.get('grails', [])
+        up_and_coming_ids = data.get('upAndComing', [])
+        goats_ids = data.get('goats', [])
+
+        # user missing
+        if not user_id:
+            return jsonify({"code": 400, "message": "User ID must be logged in."}), 400
+
+        # dynamically generates SQL and value pair based on the payload
+        sql, values = generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids)
+
+        with conn.cursor() as cursor:
+            # Clear existing entries for this user
+            cursor.execute('DELETE FROM "userLeaderboard" WHERE user_id = %s', (user_id,))
+            # Insert latest entry
+            cursor.execute(sql, values)
+            # Get number of rows affected
+            rows_affected = cursor.rowcount
+            # commit the transaction 
+            conn.commit()
+
+            return jsonify({
+                "code": 201, 
+                "message": "User selections updated successfully.",
+                "rows_inserted": rows_affected
+            }), 201
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": e}), 500
 
 # [POST] Update user's Grails, Up & Coming, and GOATs selections
 @blueprint.route("/editTop3", methods=['POST'])

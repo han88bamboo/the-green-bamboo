@@ -185,7 +185,7 @@ class requestListings:
 class reviews:
     userID: object
     reviewTarget: object
-    rating: int
+    rating: float
     reviewDesc: str
     reviewType: str
     createdDate: datetime

@@ -108,7 +108,7 @@
                             <!-- Buttons to expand -->
                             <div v-if="!extendReview" class = 'row justify-content-start mb-3 text-start'>
                                 <div class = "col-md-12 text-center">
-                                    <button class="btn primary-btn-less-round btn-sm" @click="controlModal"> 
+                                    <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal"> 
                                         Extend Review <span style="color: white;">&#9660;</span>
                                     </button>                                                                  
                                 </div>                                         
@@ -117,7 +117,7 @@
                             <!-- Button to collapse -->
                             <div v-if="extendReview" class = 'row justify-content-start mb-3 text-start'>
                                 <div class = "col-md-12 text-center">
-                                    <button class="btn primary-btn-less-round btn-sm" @click="controlModal"> 
+                                    <button class="btn primary-btn-less-round-blue btn-md fw-bold" style="color:white" @click="controlModal"> 
                                         Condense Review <span style="color: white;">&#9650;</span>
                                     </button>                                                                  
                                 </div>                                         
@@ -156,7 +156,7 @@
                                         <button class="btn text-start mb-1" :style="{ width: '30px', height: '30px', borderRadius: '0', borderColor:'grey', borderWidth:'1px', backgroundImage: `linear-gradient(to bottom right, ${specialColours[selectedColour][0]}, ${specialColours[selectedColour][1]}`}"></button>
                                     </div>
                                     <div v-if="selectedColour!== ''" class="col-md-4">
-                                        <button @click="clearColour" class="btn text-start mb-1" style="background-color: #535C72;color: white;">Clear Selection</button>
+                                        <button @click="clearColour" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2">Clear Selection</button>
                                     </div>
                                 </div>                                   
                                 <div class="row justify-content-start mb-1 text-start">
@@ -226,7 +226,7 @@
                                         <label for="customRange" class="form-label fw-bold">1</label>
                                     </div>
                                     <div class="col">
-                                        <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.5" id="customRange">
+                                        <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1" id="customRange">
                                     </div>
                                     <div class="col-auto">
                                         <label for="customRange" class="form-label fw-bold">10</label>
@@ -310,7 +310,7 @@
                                     <option v-for="option in filteredOptions" :key="option.id" :value="option.name">{{ option.name }}</option>
                                 </select>
                             </div>
-                            <button v-if="selectedLocation!==''" class="btn text-start mb-1" style="background-color: #535C72;color: white;" @click="clearLocation">Clear Selection</button>
+                            <button v-if="selectedLocation!==''" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2"  @click="clearLocation">Clear Selection</button>
                         </div>
 
 

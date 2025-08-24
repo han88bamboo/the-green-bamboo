@@ -9,8 +9,6 @@ import random
 import string
 
 from scripts.mail import send_email, send_email_aws
-# from bson import json_util
-# from bson.objectid import ObjectId
 from datetime import datetime
 from flask import request, jsonify, g, Blueprint
 
@@ -37,9 +35,6 @@ PURPOSE = os.getenv('PURPOSE')
 #     except Exception as e:
 #         return jsonify({"error": str(e)})
 
-# def parse_json(data):
-#     return json.loads(json_util.dumps(data))
-
 # -----------------------------------------------------------------------------------------
 # [POST] Authenticates an account
 # - Check if account exists in the "users", "producers", or "venues" collection. If so, check if the password matches.
@@ -56,7 +51,8 @@ def authcheck():
         password = loginInfo["password"]
 
         # Check if user exists in the "users" table
-        cur.execute('SELECT * FROM users WHERE username = %s', (username,))
+        cur.execute('SELECT * FROM users WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+
         user = cur.fetchone()
         if user is not None:
             if(str(user["hashedPassword"]) == str(password)):
@@ -79,7 +75,7 @@ def authcheck():
                 ), 401
 
         # Check if producer exists in the "producers" table
-        cur.execute('SELECT * FROM producers WHERE username = %s', (username,))
+        cur.execute('SELECT * FROM producers WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
         producer = cur.fetchone()
         if (producer is not None):
             # Producer exists, check if password matches
@@ -103,7 +99,7 @@ def authcheck():
                 ), 401
 
         # Check if venue exists in the "venues" table
-        cur.execute('SELECT * FROM venues WHERE username = %s', (username,))
+        cur.execute('SELECT * FROM venues WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
         venue = cur.fetchone()
         if (venue is not None):
 

@@ -7,16 +7,205 @@
 
 import os
 import s3Images
+import s3pdfMenu
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
-
+import re
+from typing import Dict, Any, Optional, Tuple
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
 # TODO: Create function using BOTO Library to upload images to the S3 bucket
 # TODO: Create function using BOTO Library to delete images from the S3 bucket
+
+# Amenities field mapping for dynamic processing
+AMENITIES_FIELDS = [
+    'paymentCash', 'paymentVisa', 'paymentMasterCard', 'paymentAmericanExpress',
+    'paymentDiscover', 'paymentApplePay', 'paymentPayNow', 'paymentGooglePay',
+    'paymentSamsungPay', 'beverageCocktails', 'beverageWine', 'beverageBeer',
+    'beverageWhisky', 'beverageBrandy', 'beverageTequila', 'beverageMezcal',
+    'beverageRum', 'beverageSake', 'beverageShochu', 'beverageSoju',
+    'beverageBaijiu', 'beverageGin', 'beverageVodka', 'beverageAbsinthe',
+    'beverageArrack', 'foodServed', 'outdoorSeating', 'indoorSeating',
+    'petFriendly', 'childFriendly', 'familyFriendly', 'smokeFriendly',
+    'wheelchairAccessibility', 'freeWiFi', 'happyHourDrinks', 'liveMusic',
+    'barGames', 'sommelierService', 'deliveryAvailable', 'lgbtqFriendly',
+    'reservationsRequired', 'membershipRequired', 'inStoreScheduling'
+]
+
+def process_image_upload(form_data: Dict[str, Any], current_photo: Optional[str]) -> Optional[str]:
+    """Handle image upload processing."""
+    if not form_data.get('image64'):
+        return current_photo
+    
+    try:
+        # Clean base64 string
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', form_data['image64'])
+        
+        # Delete old image if exists
+        if current_photo:
+            s3Images.deleteImageFromS3(current_photo)
+        
+        # Upload new image
+        return s3Images.uploadBase64ImageToS3(base64_string)
+    
+    except Exception as e:
+        print(f"Error processing image upload: {e}")
+        return current_photo
+
+def get_venue_by_id(cursor, venue_id: int) -> Optional[Dict[str, Any]]:
+    """Retrieve venue by ID."""
+    cursor.execute('SELECT * FROM venues WHERE id = %s', (venue_id,))
+    return cursor.fetchone()
+
+def validate_venue_data(data: Dict[str, Any]) -> Tuple[bool, str]:
+    """Validate required venue data fields."""
+    try:
+        venue_id = int(data.get('venueId'))
+        if venue_id <= 0:
+            return False, "Invalid venue ID"
+        return True, ""
+    except (ValueError, TypeError):
+        return False, "Venue ID is required and must be a valid integer"
+
+def extract_venue_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract and clean venue data from form."""
+    return {
+        'venueName': form_data.get('venueName', '').strip(),
+        'venueType': form_data.get('venueType', '').strip(),
+        'venueDesc': form_data.get('venueDesc', '').strip(),
+        'originLocation': form_data.get('originLocation', '').strip(),
+        'yearOpened': form_data.get('yearOpened') or None,
+        'openForReservations': form_data.get('openForReservations', 'false').lower() == 'true',
+        'website': form_data.get('website', '').strip(),
+        'instagram': form_data.get('instagram', '').strip(),
+        'facebook': form_data.get('facebook', '').strip(),
+        'tiktok': form_data.get('tiktok', '').strip(),
+        'email': form_data.get('email', '').strip(),
+        'phoneNumber': form_data.get('phoneNumber', '').strip(),
+        'whatsappNumber': form_data.get('whatsappNumber', '').strip()
+    }
+
+def update_venue_details(cursor, venue_data: Dict[str, Any], photo_url: str, venue_id: int):
+    """Update venue basic information."""
+    update_query = """
+        UPDATE venues 
+        SET "venueName" = %s, "venueType" = %s, "venueDesc" = %s, 
+            "originLocation" = %s, "yearOpened" = %s, "openForReservations" = %s,
+            "website" = %s, "instagram" = %s, "facebook" = %s, "tiktok" = %s,
+            "email" = %s, "phoneNumber" = %s, "whatsappNumber" = %s, "photo" = %s
+        WHERE id = %s
+    """
+    
+    cursor.execute(update_query, (
+        venue_data['venueName'], venue_data['venueType'], venue_data['venueDesc'],
+        venue_data['originLocation'], venue_data['yearOpened'], venue_data['openForReservations'],
+        venue_data['website'], venue_data['instagram'], venue_data['facebook'], venue_data['tiktok'],
+        venue_data['email'], venue_data['phoneNumber'], venue_data['whatsappNumber'], 
+        photo_url, venue_id
+    ))
+
+def extract_amenities_data(form_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract amenities data from form with dynamic field processing."""
+    amenities = {}
+    
+    # Process boolean fields
+    for field in AMENITIES_FIELDS:
+        amenities[field] = form_data.get(field, 'false').lower() == 'true'
+    
+    # Handle text field
+    amenities['otherAmenities'] = form_data.get('otherAmenities', '').strip()
+    
+    return amenities
+
+def upsert_venue_amenities(cursor, amenities: Dict[str, Any], venue_id: int):
+    """Insert or update venue amenities using efficient upsert."""
+    if not amenities:
+        return
+    
+    # Check if amenities exist
+    cursor.execute('SELECT EXISTS(SELECT 1 FROM "venueAmenities" WHERE "venueId" = %s)', (venue_id,))
+    result = cursor.fetchone()
+    exists = result['exists'] if isinstance(result, dict) else result[0]
+    
+    # Prepare amenities values
+    amenities_values = [amenities.get(field, False) for field in AMENITIES_FIELDS]
+    amenities_values.append(amenities.get('otherAmenities', ''))
+    
+    if exists:
+        # Update existing record
+        set_clause = ', '.join([f'"{field}" = %s' for field in AMENITIES_FIELDS + ['otherAmenities']])
+        update_query = f'UPDATE "venueAmenities" SET {set_clause} WHERE "venueId" = %s'
+        cursor.execute(update_query, amenities_values + [venue_id])
+    else:
+        # Insert new record
+        fields = '", "'.join(['venueId'] + AMENITIES_FIELDS + ['otherAmenities'])
+        placeholders = ', '.join(['%s'] * (len(AMENITIES_FIELDS) + 2))
+        insert_query = f'INSERT INTO "venueAmenities" ("{fields}") VALUES ({placeholders})'
+        cursor.execute(insert_query, [venue_id] + amenities_values)
+
+@blueprint.route('/venueInfo', methods=['POST'])
+def updateVenueInformation():
+    """Main endpoint for updating venue details."""
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Validate input data
+        form_data = request.form.to_dict()
+        is_valid, error_message = validate_venue_data(form_data)
+        if not is_valid:
+            return jsonify({"code": 400, "message": error_message}), 400
+        
+        venue_id = int(form_data['venueId'])
+        
+        # Check if venue exists
+        existing_venue = get_venue_by_id(cursor, venue_id)
+        if not existing_venue:
+            return jsonify({"code": 404, "message": "Venue not found."}), 404
+        
+        # Extract and process data
+        venue_data = extract_venue_data(form_data)
+        amenities_data = extract_amenities_data(form_data)
+        
+        # Handle image upload
+        photo_url = process_image_upload(form_data, existing_venue.get('photo'))
+        
+        # Update venue details
+        update_venue_details(cursor, venue_data, photo_url, venue_id)
+        
+        # Update amenities if provided
+        if amenities_data:
+            upsert_venue_amenities(cursor, amenities_data, venue_id)
+        
+        # Commit transaction
+        conn.commit()
+        
+        return jsonify({
+            "code": 201,
+            "message": "Updated profile successfully!"
+        }), 201
+        
+    except ValueError as e:
+        conn.rollback()
+        return jsonify({"code": 400, "message": f"Invalid data: {str(e)}"}), 400
+    
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating venue: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred updating profile!"
+        }), 500
+    
+    finally:
+        cursor.close()
+
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit venue profile
@@ -27,16 +216,23 @@ def editDetails():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
 
     venueID = int(data['venueID'])
     venueName = data['venueName']
+    venueType = data['venueType']
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
     yearOpened = data.get('yearOpened', None)
     openForReservations = data.get('openForReservations')
     website = data.get('website', '')
+    instagram = data.get('instagram', '')
+    facebook = data.get('facebook', '')
+    tiktok = data.get('tiktok', '')
+    email = data.get('email', '')
+    phoneNumber = data.get('phoneNumber', '')
+    whatsappNumber = data.get('whatsappNumber', '')
+    amenities = data.get('amenities', {})
 
     try:
         # Find existing venue
@@ -44,28 +240,167 @@ def editDetails():
         existingVenue = cur.fetchone()
 
         if existingVenue:
-            if existingVenue['photo']:
-                s3Images.deleteImageFromS3(existingVenue['photo'])
-
-            if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
-
+            if data.get('image64'):  # Only process image if one was provided
+                # Only delete old image if we're replacing it
+                if existingVenue['photo']:
+                    s3Images.deleteImageFromS3(existingVenue['photo'])
+                
+                # Process and upload the new image
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
+            else:
+                # Keep existing photo if no new one was provided
+                image64 = existingVenue['photo']
             # Update the venue details in the database
             cur.execute(
                 """
                 UPDATE venues 
                 SET 
                     "venueName" = %s,
+                    "venueType" = %s,
                     "venueDesc" = %s,
                     "originLocation" = %s,
                     "yearOpened" = %s,
                     "openForReservations" = %s,
                     "website" = %s,
+                    "instagram" = %s,
+                    "facebook" = %s,
+                    "tiktok" = %s,
+                    "email" = %s,
+                    "phoneNumber" = %s,
+                    "whatsappNumber" = %s,
                     "photo" = %s
                 WHERE id = %s
                 """,
-                (venueName, venueDesc, originLocation, yearOpened, openForReservations, website, image64, venueID)
+                (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, 
+                 website, instagram, facebook, tiktok, email, phoneNumber, whatsappNumber, image64, venueID)
             )
+
+            # Update or insert amenities data
+            if amenities:
+                # Check if amenities record exists
+                cur.execute('SELECT id FROM "venueAmenities" WHERE "venueId" = %s', (venueID,))
+                existing_amenities = cur.fetchone()
+
+                amenities_data = (
+                    amenities.get('paymentCash', False),
+                    amenities.get('paymentVisa', False),
+                    amenities.get('paymentMasterCard', False),
+                    amenities.get('paymentAmericanExpress', False),
+                    amenities.get('paymentDiscover', False),
+                    amenities.get('paymentApplePay', False),
+                    amenities.get('paymentPayNow', False),
+                    amenities.get('paymentGooglePay', False),
+                    amenities.get('paymentSamsungPay', False),
+                    amenities.get('beverageCocktails', False),
+                    amenities.get('beverageWine', False),
+                    amenities.get('beverageBeer', False),
+                    amenities.get('beverageWhisky', False),
+                    amenities.get('beverageBrandy', False),
+                    amenities.get('beverageTequila', False),
+                    amenities.get('beverageMezcal', False),
+                    amenities.get('beverageRum', False),
+                    amenities.get('beverageSake', False),
+                    amenities.get('beverageShochu', False),
+                    amenities.get('beverageSoju', False),
+                    amenities.get('beverageBaijiu', False),
+                    amenities.get('beverageGin', False),
+                    amenities.get('beverageVodka', False),
+                    amenities.get('beverageAbsinthe', False),
+                    amenities.get('beverageArrack', False),
+                    amenities.get('foodServed', False),
+                    amenities.get('outdoorSeating', False),
+                    amenities.get('indoorSeating', False),
+                    amenities.get('petFriendly', False),
+                    amenities.get('childFriendly', False),
+                    amenities.get('familyFriendly', False),
+                    amenities.get('smokeFriendly', False),
+                    amenities.get('wheelchairAccessibility', False),
+                    amenities.get('freeWiFi', False),
+                    amenities.get('happyHourDrinks', False),
+                    amenities.get('liveMusic', False),
+                    amenities.get('barGames', False),
+                    amenities.get('sommelierService', False),
+                    amenities.get('deliveryAvailable', False),
+                    amenities.get('lgbtqFriendly', False),
+                    amenities.get('reservationsRequired', False),
+                    amenities.get('membershipRequired', False),
+                    amenities.get('inStoreScheduling', False),
+                    amenities.get('otherAmenities', '')
+                )
+
+                if existing_amenities:
+                    # Update existing amenities
+                    cur.execute(
+                        """
+                        UPDATE "venueAmenities" 
+                        SET 
+                            "paymentCash" = %s,
+                            "paymentVisa" = %s,
+                            "paymentMasterCard" = %s,
+                            "paymentAmericanExpress" = %s,
+                            "paymentDiscover" = %s,
+                            "paymentApplePay" = %s,
+                            "paymentPayNow" = %s,
+                            "paymentGooglePay" = %s,
+                            "paymentSamsungPay" = %s,
+                            "beverageCocktails" = %s,
+                            "beverageWine" = %s,
+                            "beverageBeer" = %s,
+                            "beverageWhisky" = %s,
+                            "beverageBrandy" = %s,
+                            "beverageTequila" = %s,
+                            "beverageMezcal" = %s,
+                            "beverageRum" = %s,
+                            "beverageSake" = %s,
+                            "beverageShochu" = %s,
+                            "beverageSoju" = %s,
+                            "beverageBaijiu" = %s,
+                            "beverageGin" = %s,
+                            "beverageVodka" = %s,
+                            "beverageAbsinthe" = %s,
+                            "beverageArrack" = %s,
+                            "foodServed" = %s,
+                            "outdoorSeating" = %s,
+                            "indoorSeating" = %s,
+                            "petFriendly" = %s,
+                            "childFriendly" = %s,
+                            "familyFriendly" = %s,
+                            "smokeFriendly" = %s,
+                            "wheelchairAccessibility" = %s,
+                            "freeWiFi" = %s,
+                            "happyHourDrinks" = %s,
+                            "liveMusic" = %s,
+                            "barGames" = %s,
+                            "sommelierService" = %s,
+                            "deliveryAvailable" = %s,
+                            "lgbtqFriendly" = %s,
+                            "reservationsRequired" = %s,
+                            "membershipRequired" = %s,
+                            "inStoreScheduling" = %s,
+                            "otherAmenities" = %s
+                        WHERE "venueId" = %s
+                        """,
+                        amenities_data + (venueID,)
+                    )
+                else:
+                    # Insert new amenities record
+                    cur.execute(
+                        """
+                        INSERT INTO "venueAmenities" 
+                        ("venueId", "paymentCash", "paymentVisa", "paymentMasterCard", "paymentAmericanExpress", "paymentDiscover",
+                         "paymentApplePay", "paymentPayNow", "paymentGooglePay", "paymentSamsungPay", "beverageCocktails",
+                         "beverageWine", "beverageBeer", "beverageWhisky", "beverageBrandy", "beverageTequila", "beverageMezcal",
+                         "beverageRum", "beverageSake", "beverageShochu", "beverageSoju", "beverageBaijiu", "beverageGin", 
+                         "beverageVodka", "beverageAbsinthe", "beverageArrack", "foodServed", "outdoorSeating", "indoorSeating",
+                         "petFriendly", "childFriendly", "familyFriendly", "smokeFriendly", "wheelchairAccessibility",
+                         "freeWiFi", "happyHourDrinks", "liveMusic", "barGames", "sommelierService", "deliveryAvailable", 
+                         "lgbtqFriendly", "reservationsRequired", "membershipRequired", "inStoreScheduling", "otherAmenities")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """,
+                        (venueID,) + amenities_data
+                    )
+
             conn.commit()
 
             return jsonify(
@@ -84,7 +419,9 @@ def editDetails():
             ), 404
         
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
+
         return jsonify(
             {
                 "code": 500,
@@ -115,10 +452,13 @@ def addUpdates():
         # Find existing venue
         cur.execute('SELECT * FROM venues WHERE id = %s', (venueID,))
         existingVenue = cur.fetchone()
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         if existingVenue:
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the venue details in the database
             cur.execute(
@@ -131,6 +471,32 @@ def addUpdates():
                 (venueID, date, text, image64)
             )
             conn.commit()
+
+            # Fetch venue name
+            cur.execute('SELECT "venueName" FROM venues WHERE id = %s', (venueID,))
+            venue_row = cur.fetchone()
+            venueName = venue_row['venueName'] if venue_row else "This venue"
+
+            # Notify all users who follow this venue
+            cur.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("venues")',
+                (str(venueID),)
+            )
+            followers = cur.fetchall()
+
+            for row in followers:
+                notification_data = {
+                    "userId":   row['userId'],
+                    "userType": "user",
+                    "notiTabs": "venues & producers",
+                    "notiType": "venue_update",
+                    "image":    image64 or None,
+                    "link":     f"/profile/venue/{venueID}/{venueName}",
+                    "message":  f"{venueName} posted a new announcement.",
+                    "createdAt": current_time,
+                }
+                print("Notification data for venue update:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
             return jsonify(
                 {
@@ -175,6 +541,7 @@ def sendQuestions():
     answer = data['answer']
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
     userID = int(data['userID'])
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute(
@@ -208,7 +575,8 @@ def sendQuestions():
             "notiType": "venue_question",
             "image": None,                          # optional: you can pass an icon/thumbnail if desired
             "link": f"/Venues/VenuesQA/{venueID}",  # wherever you display the new question
-            "message": f"@{user_username} asked you a question"
+            "message": f"@{user_username} asked you a question",
+            "createdAt": current_time,
         }
         print("Notification data for venue:", notification_data)
         
@@ -248,7 +616,8 @@ def sendQuestions():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time,
             }
             print("Notification data for badge:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -294,6 +663,8 @@ def sendAnswers():
     venueID = int(data['venueID'])
     questionsAnswersID = int(data['questionsAnswersID'])
     answer = data['answer']
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute(
@@ -305,6 +676,37 @@ def sendAnswers():
             (answer, venueID, questionsAnswersID)
         )
         conn.commit()
+
+        # Fetch the original asker
+        cur.execute(
+            'SELECT "userId" FROM "venuesQuestionAnswers" WHERE id = %s',
+            (questionsAnswersID,)
+        )
+        asker_row = cur.fetchone()
+        asker_id = asker_row['userId'] if asker_row else None
+
+        # Fetch venue's username for the notification message
+        cur.execute(
+            'SELECT username FROM venues WHERE id = %s',
+            (venueID,)
+        )
+        venue_row = cur.fetchone()
+        venue_username = venue_row['username'] if venue_row else ''
+
+        # Send notification back to the user who asked
+        if asker_id:
+            notification_data = {
+                "userId":   asker_id,
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "venue_answer",
+                "image":    None,
+                "link":     f"/profile/venue/{venueID}/{venue_username}",
+                "message":  f"@{venue_username} answered your question",
+                "createdAt": current_time,
+            }
+            print("Notification data for asker:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {
@@ -643,7 +1045,7 @@ def addListingToMenu():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print("Received data for adding listing to menu:", data)
+    # print("Received data for adding listing to menu:", data)
 
     venueID = int(data['venueID'])
     menuOrder = int(data['menuOrder'])
@@ -651,6 +1053,16 @@ def addListingToMenu():
     itemPrice = data['itemPrice']
     servingType = int(data['servingType'])
     sectionName = data['sectionName']
+
+    itemVintage = data['itemVintage']
+    if itemVintage and str(itemVintage).strip():
+        # print("vintage data:", itemVintage)
+        itemVintage = int(itemVintage)
+    else:
+        # print("vintage NULL")
+        itemVintage = None
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Get sectionId based on the sectionName
@@ -670,15 +1082,22 @@ def addListingToMenu():
         
         sectionId = section['id']
 
+        columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+        values = [menuOrder, itemPrice, True, listingID, servingType, sectionId]
+
+        if itemVintage is not None:
+            columns.append("variant")
+            values.append(itemVintage)
+
+        column_names = ", ".join(f'"{col}"' for col in columns)
+        placeholders = ", ".join(["%s"] * len(values))
+
         cur.execute(
-            """
-                INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (menuOrder, itemPrice, True, listingID, servingType, sectionId)
+            f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
+            values
         )
         conn.commit()
-        
+
         # ---------------------------------------------------------
         # Build and insert notification for the producer whose bottle listing was added
         # ---------------------------------------------------------
@@ -703,7 +1122,8 @@ def addListingToMenu():
             "notiType": "listingIncluded",
             "image": None,  # optional: e.g. listing_row["photo"] if you want the bottle’s image
             "link": f"/profile/venue/{venueID}/{venueName}",
-            "message": f"Your listing “{listingName}” has been added to {venueName}’s menu."
+            "message": f"Your listing “{listingName}” has been added to {venueName}’s menu.",
+            "createdAt": current_time,
         }
 
         notifications.add_notification_to_db(notification_data)
@@ -810,12 +1230,30 @@ def editMenu():
 
             # Insert items for each section
             for item in section.get('sectionMenu', []):
+                # dynamically add vintage
+                columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+                values = [item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), sectionId]
+
+                # only add when you find vintage maintained by user
+                itemVintage = item.get('itemVintage')
+                if itemVintage and str(itemVintage).strip():
+                    # print("vintage data:", itemVintage)
+                    itemVintage = int(itemVintage)
+                else:
+                    # print("vintage NULL")
+                    itemVintage = None
+
+                if itemVintage is not None:
+                    columns.append("variant")
+                    values.append(itemVintage)
+
+                # append it back as string to be passed for execution
+                column_names = ", ".join(f'"{col}"' for col in columns)
+                placeholders = ", ".join(["%s"] * len(values))
+
                 cur.execute(
-                    '''
-                    INSERT INTO "menuItems" ("itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    ''',
-                    (item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), sectionId)
+                    f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
+                    values
                 )
 
         conn.commit()
@@ -854,14 +1292,43 @@ def updateVenueStatus():
     venueID = int(data['businessID'])
     venueName = data['newBusinessData']["businessName"]
     venueDesc = data['newBusinessData']["businessDesc"]
-    originLocation = data['newBusinessData']["country"]
+    originLocation = data['newBusinessData']["originCountry"]
+    image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
     requestId = int(data['newBusinessData']["requestId"])
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         cur.execute('UPDATE venues SET "venueName" = %s, "venueDesc" = %s, "originLocation" = %s, "hashedPassword" = %s, "claimStatus" = %s, "requestId" = %s WHERE "id" = %s', (venueName, venueDesc, originLocation, hashedPassword, claimStatus, requestId, venueID))
         conn.commit()
+        
+        # Find all users who follow this venue
+        cur.execute(
+            '''
+            SELECT "userId"
+            FROM "usersFollowLists"
+            WHERE %s = ANY("venues")
+            ''',
+            (str(venueID),)
+        )
+        followers = cur.fetchall()
+
+        # Notify each follower
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],
+                "userType": "user",
+                "notiTabs":"venues & producers",
+                "notiType":"status_update",
+                "image":   image,
+                "link":    f"/profile/venue/{venueID}/{venueName}",
+                "message": f"{venueName} updated their status.",
+                "createdAt": current_time,
+            }
+            print("Notification data for venue status update:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {
@@ -872,13 +1339,12 @@ def updateVenueStatus():
     
     except Exception as e:
         conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
+        import traceback
+        traceback.print_exc()
+        return jsonify({
                 "code": 500,
                 "message": "An error occurred updating claim status!"
-            }
-        ), 500
+        }), 500
     
     finally:
         cur.close()
@@ -911,7 +1377,8 @@ def editUpdate():
                 s3Images.deleteImageFromS3(existingUpdate['photo'])
 
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the venue details in the database
             cur.execute(
@@ -1301,3 +1768,94 @@ def updateVenueClaimStatusCheckDate():
     
     finally:
         cur.close()
+
+
+@blueprint.route('/uploadPDFMenu', methods=['PUT'])
+def uploadPDFMenu():
+    """Upload PDF menu for venue."""
+    conn = g.db
+    cursor = conn.cursor()
+
+    try:
+        # Get request data
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                "code": 400,
+                "message": "No data provided"
+            }), 400
+        
+        venue_id = data.get('venueID')
+        pdf_menu_data = data.get('pdfMenuData')
+        
+        # Validate required fields
+        if not venue_id:
+            return jsonify({
+                "code": 400,
+                "message": "Venue ID is required"
+            }), 400
+            
+        if not pdf_menu_data:
+            return jsonify({
+                "code": 400,
+                "message": "PDF menu data is required"
+            }), 400
+        
+        # Check if venue exists
+        cursor.execute('SELECT id, "pdfMenuUrl" FROM venues WHERE id = %s', (venue_id,))
+        venue = cursor.fetchone()
+        
+        if not venue:
+            return jsonify({
+                "code": 404,
+                "message": "Venue not found"
+            }), 404
+        
+        # Get current PDF URL for cleanup if exists
+        current_pdf_url = venue.get('pdfMenuUrl') if isinstance(venue, dict) else venue[1]
+        
+        # Upload new PDF to S3
+        pdf_url = s3pdfMenu.uploadBase64PDFToS3(pdf_menu_data)
+        
+        if not pdf_url:
+            return jsonify({
+                "code": 500,
+                "message": "Failed to upload PDF to S3"
+            }), 500
+        
+        # Delete old PDF from S3 if exists
+        if current_pdf_url:
+            try:
+                s3pdfMenu.deletePDFFromS3(current_pdf_url)
+            except Exception as e:
+                print(f"Warning: Failed to delete old PDF: {e}")
+        
+        # Update venue with new PDF URL
+        cursor.execute(
+            'UPDATE venues SET "pdfMenuUrl" = %s WHERE id = %s',
+            (pdf_url, venue_id)
+        )
+        
+        conn.commit()
+        
+        return jsonify({
+            "code": 201,
+            "success": True,
+            "message": "PDF menu uploaded successfully!",
+            "menuUrl": pdf_url
+        }), 201
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error uploading PDF menu: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while uploading PDF menu"
+        }), 500
+    
+    finally:
+        cursor.close()

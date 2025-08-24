@@ -30,8 +30,35 @@
               >
                 Discover new juice, find friends and log your tasting notes!
               </p>
+
+              <p class="text-muted small mx-4 mb-2">
+                Choose how you want to log in
+              </p>
+
+              <!-- Login method toggle -->
+              <div class="row">
+                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                  <div class="login-toggle-container">
+                    <div 
+                      class="login-toggle-option" 
+                      :class="{ 'login-toggle-active': loginMethod === 'username' }" 
+                      @click="setLoginMethod('username')"
+                    >
+                      Username
+                    </div>
+                    <div 
+                      class="login-toggle-option" 
+                      :class="{ 'login-toggle-active': loginMethod === 'email' }" 
+                      @click="setLoginMethod('email')"
+                    >
+                      Email Address
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- username -->
-              <div class="row pt-2">
+              <div class="row pt-3" v-if="loginMethod === 'username'">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                   <div class="form-floating">
                     <input
@@ -45,6 +72,22 @@
                   </div>
                 </div>
               </div>
+              <!-- email -->
+              <div class="row pt-3" v-if="loginMethod === 'email'" >
+                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                  <div class="form-floating">
+                    <input
+                      type="email"
+                      class="form-control form-box-outline"
+                      id="email"
+                      placeholder="Email Address"
+                      v-model="email"
+                    />
+                    <label for="email"> Email Address </label>
+                  </div>
+                </div>
+              </div>
+
               <!-- password -->
               <div class="row pt-2">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
@@ -156,29 +199,36 @@
                     :to="{ path: '/signup' }"
                     class="default-text-no-background"
                   >
-                    <button class="btn secondary-btn btn-sm px-5 fw-bold">
-                      Sign Up
+                    <button class="btn secondary-btn btn-sm px-5 fw-bold w-50">
+                      Sign Up for Free!
                     </button>
                   </router-link>
                 </div>
               </div>
-
+              <br>
               <!-- Business sign up -->
-              <div class="row pt-4 pb-3 mx-3">
-                <div class="col">
-                  <p class="fs-6 mobile-fs-7 fw-bold">
-                    
-                      <i>
-                        If you are a drinks brand, bottler or venue owner trying
-                        to create an account,
-                        <router-link
-                          :to="{ path: '/businessSignup' }"
-                          class="default-body-text-no-background"
-                          >click here</router-link
-                        >.
-                      </i>
-                    
-                  </p>
+              <div class="row pt-4 pb-3">
+                <div class="col-10 col-md-8 mx-auto">
+                  <div class="business-signup-card">
+                    <div class="row">
+                      <div class="col-md-8">
+                        <h5 class="text-start fw-bold mb-2">Brand or Venue Owner?</h5>
+                        <p class="text-start mb-2">Grow your business with a dedicated business profile.</p>
+                        <ul class="text-start ps-3 mb-3">
+                          <li>Be found by drinks lovers searching for new experiences</li>
+                          <li>Showcase your offerings with a customizable menu</li>
+                          <li>Connect with your audience and build your community</li>
+                        </ul>
+                      </div>
+                      <div class="col-md-4 d-flex align-items-center justify-content-center">
+                        <router-link :to="{ path: '/businessSignup' }" class="d-block w-100">
+                          <button class="btn secondary-btn fw-bold py-2 w-100">
+                            Drink-X for Business
+                          </button>
+                        </router-link>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </form>
@@ -195,7 +245,6 @@
         </div>
       </div>
     </div>
-    <FooterBar />
   </div>
 </template>
 
@@ -248,6 +297,71 @@
     background-color: white;
   }
 }
+
+
+.business-signup-card {
+  background-color: white;
+  border: 2px solid #3CB371;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.business-signup-card::before {
+  content: "Business";
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background-color: #3CB371;
+  color: white;
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+@media (max-width: 767px) {
+  .business-signup-card {
+    padding: 15px;
+  }
+  
+  .business-signup-card ul {
+    margin-bottom: 15px;
+  }
+}
+
+.login-toggle-container {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.login-toggle-option {
+  flex: 1;
+  text-align: center;
+  padding: 10px 0;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  color: #6c757d;
+}
+
+.login-toggle-active {
+  background-color: #EBA446;
+  color: black;
+  font-weight: bold;
+}
+
+.login-toggle-option:hover:not(.login-toggle-active) {
+  background-color: #e9ecef;
+}
+
 </style>
 
 <script>
@@ -255,7 +369,6 @@
 import NavBar from "@/components/NavBar.vue";
 import GoogleSignIn from "@/components/GoogleSignIn.vue";
 import ForgotPasswordForm from "@/components/ForgotPasswordForm.vue";
-import FooterBar from "@/components/FooterBar.vue";
 
 // specify components used
 export default {
@@ -264,7 +377,6 @@ export default {
     NavBar,
     GoogleSignIn,
     ForgotPasswordForm,
-    FooterBar,
   },
 
   data() {
@@ -272,10 +384,12 @@ export default {
       authPending: false,
       accountID: {},
       errors: [],
+      loginMethod: 'username',
 
       // form values
       role: "",
       ID: "",
+      email: "",
       password: "",
 
       // variable to toggle password reset form
@@ -312,14 +426,18 @@ export default {
       this.authPending = true;
       // clear previous values
       this.errors = [];
+
       // check if user is already logged in
       this.loginCheck();
 
-      // [if] check if all details keyed in
-      if (this.ID == "" || this.password == "") {
-        // check if ID keyed in
-        if (this.ID == "") {
-          this.errors.push("No username entered");
+      // // Normalize username: trim, remove all spaces and convert to lowercase
+      // this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
+      
+      // Check if either username or email is provided
+      if ((this.ID == "" && this.email == "") || this.password == "") {
+        // check if both ID and email are empty
+        if (this.ID == "" && this.email == "") {
+          this.errors.push("Please enter either a username or email address");
         }
         // check if password keyed in
         if (this.password == "") {
@@ -330,15 +448,68 @@ export default {
         this.authPending = false;
       }
 
-      // [else] all details keyed in
+      // [else] required details keyed in
       else {
-        // Check login validity
-        let hashedPassword = this.hashPassword(this.ID, this.password);
-        let loginInfo = { username: this.ID, password: hashedPassword };
-        this.auth(
-          loginInfo,
-          `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
+        // If email is provided, get username from email first
+        if (this.email != "") {
+          this.getUsernameFromEmail();
+        } else {
+          // Use username directly
+          this.proceedWithLogin(this.ID);
+        }
+      }
+    },
+
+    // Get username from email address
+    async getUsernameFromEmail() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUsernameFromEmail/${this.email}`
         );
+        
+        if (response.data.username) {
+          // Save the username to this.ID so it will be stored in localStorage
+          this.ID = response.data.username;
+          this.proceedWithLogin(response.data.username);
+        } else {
+          this.errors.push("No account found with this email address");
+          this.authPending = false;
+        }
+      } catch (error) {
+        this.errors.push("Error verifying email address");
+        this.authPending = false;
+      }
+    },
+
+    // Proceed with login using username
+    async proceedWithLogin(username) {
+      try {
+        // First get the canonical username from the database
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getCanonicalUsername/${username}`
+        );
+        if (response.data.username) {
+          // Use the canonical username from database for hashing
+          const canonicalUsername = response.data.username;
+
+          // Check login validity using the canonical username
+          let hashedPassword = this.hashPassword(canonicalUsername, this.password);
+          let loginInfo = { 
+            username: username, 
+            password: hashedPassword, 
+            canonicalUsername: canonicalUsername // Send canonical username for verification
+          };
+          this.auth(
+            loginInfo,
+            `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
+          );
+        } else {
+          this.errors.push("Error retrieving account information");
+          this.authPending = false;
+        }
+      } catch (error) {
+        this.errors.push("Error verifying account information");
+        this.authPending = false;
       }
     },
 
@@ -392,7 +563,9 @@ export default {
 
       // [User]
       if (this.role == "user") {
-        this.$router.push({ path: "/" });
+        this.$router.push({ 
+          path: `/profile/user/${this.accountID}/${this.ID}`, 
+        });
       }
       // [Producer]
       if (this.role == "producer") {
@@ -412,6 +585,18 @@ export default {
     hideResetForm() {
       this.showResetPWForm = false;
     },
+
+    // Set login method (username or email)
+    setLoginMethod(method) {
+      this.loginMethod = method;
+      // Clear both fields when switching
+      if (method === 'username') {
+        this.email = '';
+      } else {
+        this.ID = '';
+      }
+    },
+    
   },
 };
 </script>

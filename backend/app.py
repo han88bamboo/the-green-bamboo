@@ -69,13 +69,13 @@ app.config["MAIL_USE_TLS"] = True
 app.config['MAIL_USE_SSL'] = False
 app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
-# app.config['MAIL_DEFAULT_SENDER'] = 'Drink-X <noreply@drink-x.com>'
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv("hellodrinkx@gmail.com")
+app.config['MAIL_DEFAULT_SENDER'] = 'Drink-X <noreply@drink-x.com>'
+# app.config['MAIL_DEFAULT_SENDER'] = os.getenv("hellodrinkx@gmail.com")
 
 mail = Mail(app)
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
+stripe.api_version = "2025-05-28.basil"
 
 # Make `db` accessible via Flask's `g` object
 @app.before_request
@@ -105,7 +105,6 @@ def create_routes():
                     blueprint, url_prefix=f'/{script_name.replace("_", "-")}'
                 )
                 print(f"Registered blueprint: /{script_name.replace('_', '-')}")
-
 
 # FUNCTION TO CLOSE CONNECTION WITH POSTGRESQL
 # NEW

@@ -5,9 +5,9 @@
 import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -43,7 +43,9 @@ def editDetails():
             if data['image64']:
                 if(existingProducer['photo']):
                     s3Images.deleteImageFromS3(existingProducer['photo'])
-                image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
             else:
                 image64 = existingProducer['photo']
             cur.execute(
@@ -114,11 +116,40 @@ def addUpdates():
     image64 = ''
 
     if data.get('image64'):
-        image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+        image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
     try:
         cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
         conn.commit()
+
+        # Fetch producer name
+        cur.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
+        producer_row = cur.fetchone()
+        producerName = producer_row['producerName'] if producer_row else "This producer"
+
+        # Notify all users who follow this producer
+        cur.execute(
+            'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("producers")',
+            (str(producerID),)
+        )
+        followers = cur.fetchall()
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "producer_update",
+                "image":    image64 or None,
+                "link":     f"/profile/producer/{producerID}/{producerName}",
+                "message":  f"{producerName} posted a new announcement.",
+                "createdAt": current_time
+            }
+            print("Sending notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {   
@@ -180,6 +211,8 @@ def sendQuestions():
         # producer_row = cur.fetchone()
         # producer_username = producer_row['username'] if producer_row else ""
 
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         notification_data = {
             "userId":   producerID,
             "userType": "producer",
@@ -187,7 +220,8 @@ def sendQuestions():
             "notiType": "producer_question",
             "image":    None,
             "link":     f"/Producers/ProducersQA/{producerID}",
-            "message":  f"@{user_username} asked you a question"
+            "message":  f"@{user_username} asked you a question",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
 
@@ -225,7 +259,8 @@ def sendQuestions():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time
             }
             print("Sending badge notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -274,6 +309,39 @@ def sendAnswers():
     try:
         cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
         conn.commit()
+
+        # Fetch the original asker
+        cur.execute(
+            'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
+            (questionsAnswersID,)
+        )
+        asker_row = cur.fetchone()
+        asker_id = asker_row['userId'] if asker_row else None
+
+        # Fetch producer's username for the notification message
+        cur.execute(
+            'SELECT username FROM producers WHERE id = %s',
+            (producerID,)
+        )
+        producer_row = cur.fetchone()
+        producer_username = producer_row['username'] if producer_row else ''
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Send notification back to the user who asked
+        if asker_id:
+            notification_data = {
+                "userId":   asker_id,
+                "userType": "user",
+                "notiTabs": "venues & producers",
+                "notiType": "producer_answer",
+                "image":    None,
+                "link":     f"/profile/producer/{producerID}/{producer_username}",
+                "message":  f"@{producer_username} answered your question",
+                "createdAt": current_time
+            }
+            print("Sending answer notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
         return jsonify(
             {   
@@ -420,7 +488,8 @@ def updateProducerStatus():
     producerID = int(data['businessID'])
     producerName = data['newBusinessData']["businessName"]
     producerDesc = data['newBusinessData']["businessDesc"]
-    originCountry = data['newBusinessData']["country"]
+    originCountry = data['newBusinessData']["originCountry"]
+    image = data['newBusinessData']["photo"]
     hashedPassword = data['newBusinessData']["hashedPassword"]
     claimStatus = data['newBusinessData']["claimStatus"]
 
@@ -440,23 +509,48 @@ def updateProducerStatus():
         )
         conn.commit()
 
-        return jsonify(
-            {
-                "code": 201,
-                "message": "Updated claim status successfully!"
+        # Find all users who follow this producer
+        cur.execute(
+            '''
+            SELECT "userId"
+            FROM "usersFollowLists"
+            WHERE %s = ANY("producers")
+            ''',
+            (str(producerID),)
+        )
+        followers = cur.fetchall()
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Send each of them a notification
+        for row in followers:
+            notification_data = {
+                "userId":   row['userId'],        # the follower’s user ID
+                "userType": "user",
+                "notiTabs":"venues & producers",
+                "notiType":"status_update",
+                "image":   image,
+                "link":    f"/profile/producer/{producerID}/{producerName}",
+                "message": f"{producerName} updated their status.",
+                "createdAt": current_time
             }
-        ), 201
+            print("Sending notification:", notification_data)
+            notifications.add_notification_to_db(notification_data)
+
+        return jsonify({
+            "code": 201,
+            "message": "Updated claim status successfully!"
+        }), 201
     
     except Exception as e:
         conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred updating claim status!"
-            }
-        ), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "data": data,
+            "message": "An error occurred updating claim status!"
+        }), 500
     
     finally:
         cur.close()
@@ -580,7 +674,8 @@ def editUpdate():
 
             # Upload new image to S3 if it exists
             if image64:
-                image64 = s3Images.uploadBase64ImageToS3(image64)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             # Update the producer's update in the database
             cur.execute(

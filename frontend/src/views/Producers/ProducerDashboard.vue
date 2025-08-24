@@ -531,7 +531,7 @@
 
                     <!-- col 2: your most reviewed expressions -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
-                        <h6> Your Most Reviewed Expressions </h6>
+                        <h6 class="fw-bold"> Your Most Reviewed Expressions </h6>
                         <div class="text-start pb-2" v-for="listing in mostDiscussed" v-bind:key="listing.id">
                             <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
@@ -554,24 +554,36 @@
 
                     <!-- col 2: your most reviewed categories -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold"> Your Most Reviewed Categories </h6>
-                        <div class="text-start pb-2" v-for="(object, index) in topCategoriesData" v-bind:key="index">
+                    <h6 class="fw-bold">Your Most Reviewed Categories</h6>
 
-                            <div v-for="(value, key) in object" v-bind:key="key">
-                                <div class="row ms-0 default-clickable-text"  style="color:black;"> 
-                                    <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3" >
-                                        <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                    </div>
-                                    <div class="col-10 shrink-width-on-dashboard">
-                                        <b> {{ key }} </b> 
-                                        <br>
-                                        {{ value == 0 ? '-' : value }} reviews
-                                    </div>
-                                </div>
+                    <div
+                        class="text-start pb-2"
+                        v-for="(object, index) in topCategoriesData"
+                        :key="index"
+                    >
+                        <div
+                        v-for="(value, key) in object"
+                        :key="key"
+                        >
+                        <div class="d-flex align-items-start" style="color:black;">
+                            <!-- Number circle -->
+                            <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                            >
+                            {{ index + 1 }}
                             </div>
-                            
+
+                            <!-- Category name and value -->
+                            <div>
+                            <p class="mb-1 fw-bold">{{ key }}</p>
+                            <p class="mb-0">{{ value == 0 ? '-' : value }} reviews</p>
+                            </div>
+                        </div>
                         </div>
                     </div>
+                    </div>
+
 
                 </div>
 
@@ -582,7 +594,6 @@
         
     </div> <!-- end of main content -->
     </div>
-    <FooterBar />
 
 </template>
 
@@ -596,7 +607,6 @@
     import { Line } from 'vue-chartjs'
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
     import { LineElement, PointElement } from 'chart.js'
-    import FooterBar from "@/components/FooterBar.vue";
     import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -607,7 +617,6 @@
             NavBar,
             Bar,
             Line,
-            FooterBar,
             LoadingWithFunFact,
         },
         computed: {

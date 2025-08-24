@@ -1400,7 +1400,6 @@
       </div>
       <!-- end of row -->
     </div>
-    <FooterBar />
   </div>
 
   <!-- [else] with search inputs -->
@@ -1421,14 +1420,12 @@
 import NavBar from "@/components/NavBar.vue";
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 
 export default {
   components: {
     NavBar,
     BookmarkIcon,
     BookmarkModal,
-    FooterBar,
   },
 
   data() {

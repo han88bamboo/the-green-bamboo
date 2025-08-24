@@ -142,7 +142,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             <nav class="pb-0 mobile-px-0">
                 <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
                     <!-- Listings -->
-                    <button class="nav-link active col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
+                    <button class="nav-link active col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
                         <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
                             Drinks &nbsp;
                             <span v-if="resultListings.length > 0" class="rounded-circle mobile-mx-0 mx-3 d-flex align-items-center justify-content-center"> 
@@ -154,7 +154,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </span>
                     </button>
                     <!-- Producers -->
-                    <button class="nav-link col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
                         <span class="d-flex align-items-center justify-content-center mb-0  fw-bold">
                             Brands &nbsp;
                             <span v-if="producerListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
@@ -166,7 +166,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         </span>
                     </button>
                     <!-- Venues -->
-                    <button class="nav-link col-lg-3 mobile-col-4 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
                         <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
                             Venues &nbsp;
                             <span v-if="venueListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
@@ -174,6 +174,18 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             </span>
                             <span v-else class="rounded-circle-no-results mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
+                            </span> 
+                        </span>
+                    </button>
+                    <!-- Users -->
+                    <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-users-tab" data-bs-toggle="tab" data-bs-target="#nav-users" type="button" role="tab" aria-controls="nav-users" aria-selected="false" @click="changeActiveTabStatus('users')">
+                        <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
+                            Users &nbsp;
+                            <span v-if="userListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
+                                <p class="m-0">{{ userListings.length }}</p>
+                            </span>
+                            <span v-else class="rounded-circle-no-results mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
+                                <p class="m-0">{{ userListings.length }}</p>
                             </span> 
                         </span>
                     </button>
@@ -195,7 +207,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image -->
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:256px; height:256px">
+                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:100px; height:100px">
                                     <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
@@ -225,7 +237,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image  -->
                             <div class="d-flex justify-content-end col-3  image-container mb-3 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:300px; height:300px">
+                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:200px; height:200px">
                                     <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
                                 </router-link>
                             </div>
@@ -327,7 +339,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image  -->
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/profile/producer/' + producer.id + '/' + slugify(producer.producerName)}">
-                                    <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
+                                    <img v-if="producer['photo']" :src="producer['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:100px; height:100px*/">
                                     <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
@@ -339,23 +351,22 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                 </router-link>
                                 <!-- Country of Origin -->
                                 <p class="m-0  mobile-fs-7">
-                                        <b> Origin: </b>
-                                        {{ producer['originCountry'] }}
+                                    <b> Origin: </b>
+                                    {{ producer['originCountry'] }}
                                 </p>
                                 <p class="m-0  mobile-fs-7">
                                     <b> Average Drink Rating: </b>
-                                    {{ producer["averageRating"] }} ★
+                                    {{ producer["averageDrinkRating"] || '-' }} ★
                                 </p>
                                 <p class="m-0  mobile-fs-7"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{ producer['averageRating'] }} ★
-                                    </p>
+                                    {{ producer['averageTourRating'] || '-' }} ★
+                                </p>
 
                                 <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
                                 {{ producer["producerDesc"]?.length > 60 
                                     ? producer["producerDesc"].slice(0, 60) + '...' 
                                     : producer["producerDesc"] }}
                                 </p>
-
                             </div>
                             <!-- DESKTOP VIEW -->
                             <!-- Image -->
@@ -379,29 +390,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     </p>
                                     <p class="m-0">
                                         <b> Average Drink Rating: </b>
-                                        {{ producer['averageRating'] }} ★
+                                        {{ producer['averageDrinkRating'] || '-' }} ★
                                     </p>
                                     <p class="m-0"><b>Average Tour & Experience Rating:&nbsp;</b>
-                                    {{ producer['averageRating']}} ★
+                                    {{ producer['averageTourRating'] || '-' }} ★
                                     </p>
-                                    <!-- Main Drinks 
-                                    <div class="m-0">
-                                        <b> Main Drinks: </b>
-                                        <div class="d-inline" v-for="(drink, index) in producer['mainDrinks']" v-bind:key="drink">
-                                            {{ index > 0 ? ', ' : '' }}{{ drink }}
-                                        </div>
-                                    </div>-->
                                 </div>
                                 <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                    <!-- Claim Status 
-                                    <div class="m-0 mt-2">
-                                        <div v-if="producer['claimStatus']"> 
-                                            <button type="button" class="btn secondary-btn-less-round"> Verified </button>
-                                        </div>
-                                        <div v-else>
-                                            <button type="button" class="btn primary-btn-less-round"> Unverified </button>
-                                        </div>
-                                    </div>-->
+                                    <!-- Additional content can go here -->
                                 </div>
                                 <!-- Description -->
                                 <p class="fst-italic scrollable-long">{{ producer["producerDesc"] }}</p>
@@ -429,8 +425,13 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image -->
                             <div class="d-flex justify-content-end col-4  image-container mb-4 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
-                                    <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
-                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-if="venue['photo']" :src="venue['photo']" 
+                                    class="img-border img-fluid object-fit-cover review-image" 
+                                    style="/*width:256px; height:256px*/">
+
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" 
+                                    class="img-border img-fluid object-fit-cover review-image" 
+                                    style="/*width:256px; height:256px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
@@ -492,15 +493,15 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image -->
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
-                                    <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/">
-                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-if="venue['photo']" :src="venue['photo']" class="img-border img-fluid object-fit-cover review-image" style="/*width:100px; height:100px*/">
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="img-border img-fluid object-fit-cover review-image" style="/*width:100px; height:100px*/"> 
                                 </router-link>
                             </div>
                             <!-- Details -->
                             <div class=" ps-3 mobile-col-8 mobile-pe-0 mobile-ps-1 mobile-view-show">
                                 <div class="col-lg-8 col-12">
                                     <!-- Venue Name + Router Link -->
-                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id }">
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/venue/' + venue.id + '/' + slugify(venue.venueName)}">
                                         <h4 class="fw-bold my-1">{{ venue['venueName'] }}</h4>
                                     </router-link>
                                     <!-- Country of Origin -->
@@ -535,6 +536,117 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     </div>
                 </div>
 
+                <!-- ------------------------------------------------------------------------------------------------------- -->
+
+                <!-- NAVTAB 4: USERS -->
+                <div class="tab-pane fade show" id="nav-users" role="tabpanel" aria-labelledby="nav-users-tab" style="color:black;">
+                    <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide" v-if="userListings.length > 0">Viewing: {{ userListings.length }} User Search Results</p>
+                    <p class="fw-bold fs-6 m-0 py-2" v-else>No User Results Found!</p>
+                    
+                    <div class="container text-start">
+                        <div class="row" v-for="userResult in userListings" :key="userResult.id">
+                            
+                            <!-- MOBILE VIEW  -->
+                            <!-- Image  -->
+                            <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
+                                <router-link :to="{ path: '/profile/user/' + userResult.id + '/' + slugify(userResult.username)}">
+                                    <img v-if="userResult['photo']" :src="userResult['photo']" class="img-border img-fluid object-fit-cover review-image rounded-circle" style="width:100px; height:100px;">
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288" class="img-border img-fluid object-fit-cover review-image rounded-circle" style="width:100px; height:100px;"> 
+                                </router-link>
+                            </div>
+                            <!-- Details -->
+                            <div class=" ps-3 mobile-col-8 mobile-pe-0 mobile-ps-1 mobile-view-show">
+                                <!-- Username + Router Link -->
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/profile/user/' + userResult.id + '/' + slugify(userResult.username)}">
+                                    <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>@{{ userResult['username'] }}</u></b></p>
+                                </router-link>
+                                <!-- Display Name -->
+                                <p class="m-0 mobile-fs-7" v-if="userResult['displayName']">
+                                    <b> Name: </b>
+                                    {{ userResult['displayName'] }}
+                                </p>
+                                <!-- Reviews Count -->
+                                <p class="m-0 mobile-fs-7">
+                                    <b> Reviews: </b>
+                                    {{ userResult['reviewCount'] }}
+                                </p>
+                                <!-- Followers Count -->
+                                <p class="m-0 mobile-fs-7">
+                                    <b> Followers: </b>
+                                    {{ userResult['followerCount'] }}
+                                </p>
+                                <!-- Proof Points & Rank -->
+                                <p class="m-0 mobile-fs-7" v-if="userResult['currentPoints']">
+                                    <b> Proof Points: </b>
+                                    {{ userResult['currentPoints'] }} ({{ getUserRankName(userResult['proofRank']) }})
+                                </p>
+                            </div>
+
+                            <!-- DESKTOP VIEW -->
+                            <!-- Image -->
+                            <div class="d-flex justify-content-end col-4 image-container mb-4 mobile-px-0 mobile-view-hide">
+                                <router-link :to="{ path: '/profile/user/' + userResult.id + '/' + slugify(userResult.username)}">
+                                    <img v-if="userResult['photo']" :src="userResult['photo']" class="img-border img-fluid object-fit-cover review-image rounded-circle" style="width:150px; height:150px;">
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288" class="img-border img-fluid object-fit-cover review-image rounded-circle" style="width:150px; height:150px;"> 
+                                </router-link>
+                            </div>
+                            <!-- Details -->
+                            <div class="row col-8 mobile-view-hide">
+                                <div class="col-lg-8 col-12">
+                                    <!-- Username + Router Link -->
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/profile/user/' + userResult.id + '/' + slugify(userResult.username)}">
+                                        <h4 class="fw-bold my-1">@{{ userResult['username'] }}</h4>
+                                    </router-link>
+                                    <!-- Display Name -->
+                                    <p class="m-0" v-if="userResult['displayName']">
+                                        <b> Name: </b>
+                                        {{ userResult['displayName'] }}
+                                    </p>
+                                    <!-- Join Date -->
+                                    <p class="m-0">
+                                        <b> Member since: </b>
+                                        {{ formatDate(userResult['joinDate']) }}
+                                    </p>
+                                    <!-- Reviews Count -->
+                                    <p class="m-0">
+                                        <b> Reviews: </b>
+                                        {{ userResult['reviewCount'] }}
+                                    </p>
+                                    <!-- Followers Count -->
+                                    <p class="m-0">
+                                        <b> Followers: </b>
+                                        {{ userResult['followerCount'] }}
+                                    </p>
+                                    <!-- Proof Points & Rank -->
+                                    <p class="m-0" v-if="userResult['currentPoints']">
+                                        <b> Proof Points: </b>
+                                        {{ userResult['currentPoints'] }} ({{ getUserRankName(userResult['proofRank']) }})
+                                    </p>
+                                </div>
+                                <div class="col-lg-4 col-12 text-xl-end text-start" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    <!-- Additional content can go here -->
+                                </div>
+                                <!-- Favorite Drinks -->
+                                <div class="mt-2" v-if="userResult['choiceDrinks'] && userResult['choiceDrinks'].length > 0">
+                                    <p class="m-0 fst-italic">
+                                        <b>Favourite Drinks: </b>
+                                        <span v-for="(drink, index) in userResult['choiceDrinks'].slice(0, 3)" :key="index">
+                                            {{ drink }}<span v-if="index < Math.min(2, userResult['choiceDrinks'].length - 1)">, </span>
+                                        </span>
+                                        <span v-if="userResult['choiceDrinks'].length > 3">...</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <hr>
+                        </div>
+
+                        <!-- Load More User Result Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="userListings.length > 0 && !noMoreUsers">
+                            <button class="btn primary-btn btn-lg" @click="searchUsersLazy(searchTerm)">Load More Users</button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <BookmarkModal 
@@ -544,22 +656,19 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
         </div>
     </div>
     <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <script>
     import NavBar from '@/components/NavBar.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
-    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: "SearchView",
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal,
-            FooterBar
+            BookmarkModal
         },
         data() {
             return {
@@ -575,14 +684,18 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 resultListings: [],
                 producerListings: [],
                 venueListings: [],
+                userListings: [],
 
                 // lazy loading tracker last id 
                 noMoreListings: false,
+                offsetListings: 0,
                 lastListingID: 0,
                 noMoreProducers: false,
                 lastProducerID: 0,
                 noMoreVenues: false,
                 lastVenueID: 0,
+                noMoreUsers: false,
+                lastUserID: 0,
                 recordsPerLoad: 30,
 
                 // reviews
@@ -606,12 +719,24 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                         'Alphabetical (Z - A)',
                         'Ratings (Highest - Lowest)',
                         'Ratings (Lowest - Highest)',
+                        'Tour & Experience Ratings (Highest - Lowest)',
+                        'Tour & Experience Ratings (Lowest - Highest)',
                     ],
                     venues: [
                         'Alphabetical (A - Z)',
                         'Alphabetical (Z - A)',
                         'Ratings (Highest - Lowest)',
                         'Ratings (Lowest - Highest)',
+                    ],
+                    users: [
+                        'Alphabetical (A - Z)',
+                        'Alphabetical (Z - A)',
+                        'Reviews (Most - Least)',
+                        'Reviews (Least - Most)',
+                        'Followers (Most - Least)',
+                        'Followers (Least - Most)',
+                        'Join Date (Newest - Oldest)',
+                        'Join Date (Oldest - Newest)',
                     ]
                 },
                 sortedListings: [],
@@ -687,29 +812,25 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 // - [NOT IMPLEMENTED, TO BE CONSIDERED] Producers: producerName, originCountry
                 // - [NOT IMPLEMENTED, TO BE CONSIDERED] Venues: venueName, originCountry, address
 
-                // Drink Types
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
-                    this.drinkTypeList = response.data;
+                    // Drink Types
+                    const drinkTypesResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getDrinkTypes`);
+                    this.drinkTypeList = drinkTypesResponse.data;
+
+                    // Wait for all search operations to complete
+                    await Promise.all([
+                        this.searchListings(this.searchTerm),
+                        this.searchProducers(this.searchTerm),
+                        this.searchVenues(this.searchTerm),
+                        this.searchUsers(this.searchTerm)
+                    ]);
+
+                    this.dataLoaded = true;
                 }
                 catch (error) {
                     console.error(error);
                     this.loadError = true;
                 }
-
-                // Listings
-                this.searchListings(this.searchTerm);
-                
-                // Producers
-                this.searchProducers(this.searchTerm);
-
-                // Venues
-                this.searchVenues(this.searchTerm);
-
-                // Users
-                
-
-                this.dataLoaded = true;
             },
 
             // Get user data
@@ -746,15 +867,16 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             // Search search term in listings 
             async searchListings(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&lastID=0`);
+                    // Use offset=0 for the first search
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&offset=0`);
                     
                     // If listings result are less than recordsPerLoad, set noMoreListings to true
                     if (response.data.length <= this.recordsPerLoad - 1) {
                         this.noMoreListings = true;
                     } 
 
-                    // Update lastListingID to the last ID of the response
-                    this.lastListingID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+                    // Update offsetListings to the number of results loaded
+                    this.offsetListings = response.data.length;
 
                     // clear previous results
                     this.resultListings = response.data;
@@ -771,16 +893,16 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
             // Search search term in listings [lazy loading]
             async searchListingsLazy(searchTerm) {
                 try {
-                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListings/getListingsBySearch?searchTerm=${searchTerm}&lastID=${this.lastListingID}`);
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsBySearch?searchTerm=${searchTerm}&offset=${this.offsetListings}`);
                     
                     this.resultListings = this.resultListings.concat(response.data);
                     this.originalResults = this.originalResults.concat(response.data);
 
-                    // Update lastListingID to the last ID of the response
-                    this.lastListingID += response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+                    // Update offsetListings to the new total number of results loaded
+                    this.offsetListings += response.data.length;
 
                     // If no more listings, set noMoreListings to true
-                    if (response.data.length <= this.recordsPerLoad - 1) {
+                    if (response.data.length < this.recordsPerLoad) {
                         this.noMoreListings = true;
                     }
                 } 
@@ -863,6 +985,46 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     // If no more venues, set noMoreVenues to true
                     if (response.data.length <= this.recordsPerLoad - 1) {
                         this.noMoreVenues = true;
+                    }
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in users
+            async searchUsers(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsersBySearch?searchTerm=${searchTerm}&lastID=0`);
+                    
+                    // If users result are less than recordsPerLoad, set noMoreUsers to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreUsers = true;
+                    }
+                    this.userListings = response.data;
+
+                    // Update lastUserID to the last ID of the response
+                    this.lastUserID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                } 
+                catch (error) {
+                    console.error(error);
+                }
+            },
+
+            // Search search term in users [lazy loading]
+            async searchUsersLazy(searchTerm) {
+                try {
+                    const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUsersBySearch?searchTerm=${searchTerm}&lastID=${this.lastUserID}`);
+
+                    this.userListings = this.userListings.concat(response.data);
+
+                    // Update lastUserID to the last ID of the response
+                    this.lastUserID = response.data.length > 0 ? response.data[response.data.length - 1].id : 0;
+
+                    // If no more users, set noMoreUsers to true
+                    if (response.data.length <= this.recordsPerLoad - 1) {
+                        this.noMoreUsers = true;
                     }
                 } 
                 catch (error) {
@@ -962,19 +1124,35 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             return b.producerName.localeCompare(a.producerName);
                         });
                     }
-                    // #3: Ratings (Highest - Lowest)
-                    else if (category == 'Ratings (Highest - Lowest)') {
+                    // #3: Drink Ratings (Highest - Lowest)
+                    else if (category == 'Drink Ratings (Highest - Lowest)') {
                         this.producerListings.sort((a, b) => {
-                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            const aRating = a.averageDrinkRating === '-' ? 0 : parseFloat(a.averageDrinkRating);
+                            const bRating = b.averageDrinkRating === '-' ? 0 : parseFloat(b.averageDrinkRating);
                             return bRating - aRating;
                         });
                     }
-                    // #4: Ratings (Lowest - Highest)
-                    else if (category == 'Ratings (Lowest - Highest)') {
+                    // #4: Drink Ratings (Lowest - Highest)
+                    else if (category == 'Drink Ratings (Lowest - Highest)') {
                         this.producerListings.sort((a, b) => {
-                            const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                            const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
+                            const aRating = a.averageDrinkRating === '-' ? 0 : parseFloat(a.averageDrinkRating);
+                            const bRating = b.averageDrinkRating === '-' ? 0 : parseFloat(b.averageDrinkRating);
+                            return aRating - bRating;
+                        });
+                    }
+                    // #5: Tour & Experience Ratings (Highest - Lowest)
+                    else if (category == 'Tour & Experience Ratings (Highest - Lowest)') {
+                        this.producerListings.sort((a, b) => {
+                            const aRating = a.averageTourRating === '-' ? 0 : parseFloat(a.averageTourRating);
+                            const bRating = b.averageTourRating === '-' ? 0 : parseFloat(b.averageTourRating);
+                            return bRating - aRating;
+                        });
+                    }
+                    // #6: Tour & Experience Ratings (Lowest - Highest)
+                    else if (category == 'Tour & Experience Ratings (Lowest - Highest)') {
+                        this.producerListings.sort((a, b) => {
+                            const aRating = a.averageTourRating === '-' ? 0 : parseFloat(a.averageTourRating);
+                            const bRating = b.averageTourRating === '-' ? 0 : parseFloat(b.averageTourRating);
                             return aRating - bRating;
                         });
                     }
@@ -1008,6 +1186,58 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
                             const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
                             return aRating - bRating;
+                        });
+                    }
+                }
+
+                // ------ SORT USERS ------
+                else if (this.tabActive == 'users') {
+                    // #1: [DEFAULT] Alphabetical (A - Z)
+                    if (category == '' || category == 'Alphabetical (A - Z)') {
+                        this.userListings.sort((a, b) => {
+                            return a.username.localeCompare(b.username);
+                        });
+                    }
+                    // #2: Alphabetical (Z - A)
+                    else if (category == 'Alphabetical (Z - A)') {
+                        this.userListings.sort((a, b) => {
+                            return b.username.localeCompare(a.username);
+                        });
+                    }
+                    // #3: Reviews (Most - Least)
+                    else if (category == 'Reviews (Most - Least)') {
+                        this.userListings.sort((a, b) => {
+                            return b.reviewCount - a.reviewCount;
+                        });
+                    }
+                    // #4: Reviews (Least - Most)
+                    else if (category == 'Reviews (Least - Most)') {
+                        this.userListings.sort((a, b) => {
+                            return a.reviewCount - b.reviewCount;
+                        });
+                    }
+                    // #5: Followers (Most - Least)
+                    else if (category == 'Followers (Most - Least)') {
+                        this.userListings.sort((a, b) => {
+                            return b.followerCount - a.followerCount;
+                        });
+                    }
+                    // #6: Followers (Least - Most)
+                    else if (category == 'Followers (Least - Most)') {
+                        this.userListings.sort((a, b) => {
+                            return a.followerCount - b.followerCount;
+                        });
+                    }
+                    // #7: Join Date (Newest - Oldest)
+                    else if (category == 'Join Date (Newest - Oldest)') {
+                        this.userListings.sort((a, b) => {
+                            return new Date(b.joinDate) - new Date(a.joinDate);
+                        });
+                    }
+                    // #8: Join Date (Oldest - Newest)
+                    else if (category == 'Join Date (Oldest - Newest)') {
+                        this.userListings.sort((a, b) => {
+                            return new Date(a.joinDate) - new Date(b.joinDate);
                         });
                     }
                 }
@@ -1059,6 +1289,14 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 // formatting the date
                 let formattedDate = `${day}/${month}/${year}`;
                 return formattedDate;
+            },
+
+            // Helper method to extract rank name from proof rank tuple
+            getUserRankName(proofRank) {
+                if (Array.isArray(proofRank) && proofRank.length > 0) {
+                    return proofRank[0]; // First element is the rank name
+                }
+                return proofRank || 'Unranked';
             },
 
             checkDrinkLists(listing) {

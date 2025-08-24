@@ -19,9 +19,9 @@ def get_rank(proof_points):
     if proof_points >= 800:
         return (emoji + "Imperial", "#027562")
     elif proof_points >= 400:
-        return (emoji + "Over Proof", "#83A9E8")
+        return (emoji + "Over-Proof", "#83A9E8")
     elif proof_points >= 200:
-        return (emoji + "Full Proof", "#F0B358")
+        return (emoji + "Full-Proof", "#F0B358")
     elif proof_points >= 101:
         return (emoji + "Aperitif", "#6C348B")
     else:
@@ -102,7 +102,7 @@ def check_max_proof_points(user_id):
 
 
 # Check if user has achieved the minumum proof points to create a club 
-max_number_of_clubs = 1
+max_number_of_clubs = 2
 min_points = 100
 
 def check_user_can_create_club(user_id):
@@ -124,6 +124,11 @@ def check_user_can_create_club(user_id):
     cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
     current_points = cur.fetchone()
 
+    # Check if user exists in the points system
+    if current_points is None:
+        return (False, 'user not found', 0)
+
+
     # Check if the user has reached the minimum proof points to create a club
     if current_points['currentPoints'] >= min_points:
         
@@ -131,12 +136,57 @@ def check_user_can_create_club(user_id):
         cur.execute('SELECT COUNT(*) FROM "clubs" WHERE "createdByID" = %s AND "createdByType" = %s', (user_id, 'user',))
         club_count = cur.fetchone()
 
-        if not club_count and club_count['count'] < max_number_of_clubs:
-            return (True)
+        if club_count['count'] < max_number_of_clubs:
+            return (True, None, None)
         else:
             return (False, 'max clubs reached', max_number_of_clubs)
     else:
         return (False, 'insufficient points', min_points)
+
+
+###############################################################################################################
+
+
+# Check if user has achieved the minimum proof points to create an event
+max_number_of_events = 2
+min_points_event = 100
+
+def check_user_can_create_event(user_id):
+    """
+    Check if the user has achieved the minimum proof points to create an event.
+
+    Args:
+        user_id (int): The ID of the user.
+
+    Returns:
+        tuple: (bool, str, int) - (can_create, reason, value)
+    """
+
+    # Retrieve the minimum proof points from the database
+    conn = g.db
+    cur = conn.cursor()
+
+    # Retrieve the user's current proof points from the database
+    cur.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user',))
+    current_points = cur.fetchone()
+
+    # Check if user exists in the points system
+    if current_points is None:
+        return (False, 'user not found', 0)
+
+    # Check if the user has reached the minimum proof points to create an event
+    if current_points['currentPoints'] >= min_points_event:
+        
+        # Check if the user has reached the maximum number of events they can create
+        cur.execute('SELECT COUNT(*) FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s AND "createdDate" >= date_trunc(\'month\', CURRENT_DATE)', (user_id, 'user',))
+        event_count = cur.fetchone()
+
+        if event_count['count'] < max_number_of_events:
+            return (True, None, None)
+        else:
+            return (False, 'max events reached', max_number_of_events)
+    else:
+        return (False, 'insufficient points', min_points_event)
 
 
 ###############################################################################################################
@@ -210,6 +260,28 @@ def get_current_proof_points(user_id):
                 total_producer_review_upvotes += 0
                 total_producer_review_downvotes += 0
 
+
+    # Get the venue review id for producer reviews made by user
+    cursor.execute('SELECT id FROM "venueReviews" WHERE "userID" = %s', (user_id,))
+    venue_review_ids = cursor.fetchall()
+
+    # Loop through each venue review id and compile number of upvotes and downvotes for each venue review
+    total_venue_review_upvotes = 0
+    total_venue_review_downvotes = 0
+
+    if venue_review_ids:
+        for venue_review_id in venue_review_ids:
+            vr_id = venue_review_id['id']
+            cursor.execute('SELECT "upvotes", "downvotes" FROM "venueReviewsUserVotes" WHERE "reviewId" = %s', (vr_id,))
+            votes = cursor.fetchone()
+
+            if votes:
+                total_venue_review_upvotes += len(votes['upvotes'])
+                total_venue_review_downvotes += len(votes['downvotes'])
+            else:
+                total_venue_review_upvotes += 0
+                total_venue_review_downvotes += 0
+
     # Get the member ids of the user 
     cursor.execute('SELECT id FROM "clubMembers" WHERE "userID" = %s', (user_id,))
     member_ids = cursor.fetchall()
@@ -265,8 +337,8 @@ def get_current_proof_points(user_id):
     cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 9')
     downvote_points = cursor.fetchone()['proofPoints']
 
-    overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_member_likes
-    overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_member_dislikes
+    overall_total_upvotes = total_review_upvotes + total_producer_review_upvotes + total_venue_review_upvotes + total_member_likes
+    overall_total_downvotes = total_review_downvotes + total_producer_review_downvotes + total_venue_review_downvotes + total_member_dislikes
 
     # Calculate total points
     total_points = user_points['currentPoints'] + (overall_total_upvotes * upvote_points) + (overall_total_downvotes * downvote_points)

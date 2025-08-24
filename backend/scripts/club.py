@@ -159,7 +159,14 @@ def getClubwSearch(id, search):
 
         # Step 1: Get the 20 clubs
         # ID: Used to define the starting ID to retrieve from
-        cur.execute('''SELECT * FROM "clubs" WHERE "clubName" ILIKE %s AND id >= %s ORDER BY "clubName" ILIKE %s DESC, "id" ASC LIMIT 20''', (f'%{search}%', id, f'%{search}%'))
+        cur.execute('''
+            SELECT * FROM "clubs"
+            WHERE ("clubName" ILIKE %s OR "clubDesc" ILIKE %s)
+            AND id >= %s
+            ORDER BY ("clubName" ILIKE %s OR "clubDesc" ILIKE %s) DESC, "id" ASC
+            LIMIT 20
+            ''', (f'%{search}%', f'%{search}%', id, f'%{search}%', f'%{search}%'))
+
         clubs_info = cur.fetchall()
 
         if not clubs_info:
@@ -1204,6 +1211,7 @@ def canCreate(userID, userType):
     cur = conn.cursor()
 
     try:
+        
         # Step 1: Check if the user is a valid type user
         if userType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -1359,6 +1367,8 @@ def addClubMembers():
 
     try:
         data = request.get_json()
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Get all the required data
         club_id = data['clubID']
@@ -1418,7 +1428,8 @@ def addClubMembers():
                 "notiType": "club_invite",
                 "image":    None,
                 "link":     f"/club/view/{club_id}/{club_name}",
-                "message":  f"You have been invited to join '{club_name}'"
+                "message":  f"You have been invited to join '{club_name}' club",
+                "createdAt": current_time
             }
             print("Notification data:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -1465,6 +1476,8 @@ def joinClub():
         club_id = data['clubID']
         user_id = data['userID']
         user_type = data['userType']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not user_id or not user_type:
@@ -1533,7 +1546,8 @@ def joinClub():
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"@{member_username} joined your club: {club_name}",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
         
@@ -1574,6 +1588,7 @@ def addPost():
 
     try:
         data = request.get_json()
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Get all the required data
         poster_id = data['posterID']  # The member's ID in the clubMembers table
@@ -1648,6 +1663,26 @@ def addPost():
                 
                 # Process the ClubPost badge
                 badge_result = badge_helpers.process_club_post_badge(conn, cur, user_id)
+                
+                # Send badge notification 
+                if badge_result:
+                    # fetch username
+                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                    row = cur.fetchone()
+                    member_username = row['username'] if row else 'Someone'
+            
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{member_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
+                    }
+                    print("Badge notification data:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {
@@ -1697,6 +1732,8 @@ def addComment():
         commenter_id = data['commenterID']
         post_id = data['postID']
         comment_content = data['commentContent']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not commenter_id or not post_id or not comment_content:
@@ -1759,7 +1796,8 @@ def addComment():
                     "notiType": "club_post_comment",
                     "image":    None,
                     "link":     f"/club/{club_id}/post/{post_id}",
-                    "message":  f"{commenter_name} commented on your post"
+                    "message":  f"{commenter_name} commented on your post",
+                    "createdAt": current_time
                 }
                 print("Notification data:", notification_data)
                 notifications.add_notification_to_db(notification_data)
@@ -1797,6 +1835,23 @@ def addComment():
                 
                 # Process the Comment badge
                 badge_result = badge_helpers.process_comment_badge(conn, cur, user_id)
+                
+                if badge_result:
+                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                    row = cur.fetchone()
+                    commenter_username = row['username'] if row else 'Someone'
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{commenter_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
+                    }
+                    print("Badge notification data:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {
@@ -1857,6 +1912,8 @@ def requestToJoinClub():
         club_id = data['clubID']
         user_id = data['userID']
         user_type = data['userType']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not user_id or not user_type:
@@ -1886,6 +1943,44 @@ def requestToJoinClub():
         request_date = datetime.now()
         cur.execute('INSERT INTO "clubRequests" ("clubID", "userID", "userType", "requestDate") VALUES (%s, %s, %s, %s)', (club_id, user_id, user_type, request_date,))
         conn.commit()
+
+        # Step 4: Get the club admins
+        cur.execute('''SELECT "userID"
+                    FROM "clubMembers"
+                    WHERE "clubID" = %s
+                    AND "isAdmin" = TRUE;
+                    ''', (club_id,))
+        
+        club_admins = cur.fetchall()
+
+        if club_admins:
+            # Build notification data for each admin
+            club_name = club['clubName']
+
+            # Get the requester's username
+            if user_type == 'user':
+                username = user.get('username', 'Someone')
+            elif user_type == 'producer':
+                username = user.get('producerName', 'Someone')
+            else:  # user_type == 'venue'
+                username = user.get('venueName', 'Someone')
+
+            for admin in club_admins:
+                user_id = admin['userID']
+                user_type = 'user'  # Assuming all admins are users, adjust if needed
+
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": user_type,
+                    "notiTabs": "forYou",
+                    "notiType": "club_request",
+                    "image":    None,
+                    "link":     f"/club/view/{club_id}/{club_name}",
+                    "message":  f"{username} have requested to join '{club_name}'",
+                    "createdAt": current_time
+                }
+        
+                notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             'message': 'Request to join the club sent successfully'
@@ -1929,6 +2024,8 @@ def acceptClubRequest():
         requester_id = data['requesterID']
         user_type = data['userType']
         admin_id = data['adminID']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not club_id or not requester_id or not user_type or not admin_id:
@@ -1976,32 +2073,18 @@ def acceptClubRequest():
         conn.commit()
 
         # Step 7: Build and insert the notification
-        owner_id   = club['createdByID']
-        owner_type = club['createdByType']
         club_name  = club['clubName']
 
-        # Look up the new member’s username
-        if user_type == 'user':
-            cur.execute('SELECT username FROM "users" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        elif user_type == 'producer':
-            cur.execute('SELECT username FROM "producers" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        else:  # 'venue'
-            cur.execute('SELECT username FROM "venues" WHERE id = %s', (requester_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-
+        # Might be wrong because this should be for the person who requested to join the club
         notification_data = {
-            "userId":   owner_id,
-            "userType": owner_type,
+            "userId":   requester_id,
+            "userType": user_type,
             "notiTabs": "forYou",
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"You have been accepted to join {club_name} club",
+            "createdAt": current_time
         }
         notifications.add_notification_to_db(notification_data)
 
@@ -2044,7 +2127,8 @@ def acceptClubInvite():
         user_type = data['userType']
         club_id = data['clubID']
 
-
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         # Check if all the required data is provided
         if not user_id or not user_type or not club_id:
             return jsonify({
@@ -2118,7 +2202,8 @@ def acceptClubInvite():
             "notiType": "club_join",
             "image":    None,
             "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}"
+            "message":  f"@{member_username} joined your club: {club_name}",
+            "createdAt": current_time
         }
         print("Notification data:", notification_data)
         notifications.add_notification_to_db(notification_data)
@@ -2599,6 +2684,8 @@ def likeUnlikeComment():
         post_id = data['postID']
         comment_id = data['commentID']
         member_id = data['memberID']
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Check if all the required data is provided
         if not post_id or not comment_id or not member_id:
@@ -2674,6 +2761,29 @@ def likeUnlikeComment():
                     is_new_upvote=is_new_like, 
                     is_removed_upvote=is_removed_like
                 )
+                
+        if badge_result:
+            # badge goes to the comment-owner:
+            cur.execute('SELECT "userID" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+            owner = cur.fetchone()
+            if owner and owner['userID']:
+                user_id = owner['userID']
+                cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                row = cur.fetchone()
+                owner_username = row['username'] if row else 'Someone'
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{user_id}/{owner_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Badge notification data:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
         # Fetch club_id for notification link
         cur.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
@@ -2713,7 +2823,8 @@ def likeUnlikeComment():
                         "notiType": "club_comment_upvote",
                         "image":    None,
                         "link":     f"/club/{club_id}/post/{post_id}",
-                        "message":  f"{upvoter_name} upvoted your comment"
+                        "message":  f"{upvoter_name} upvoted your comment",
+                        "createdAt": current_time
                     }
                     print("Notification data:", notification_data)
                     notifications.add_notification_to_db(notification_data)

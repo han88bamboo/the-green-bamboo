@@ -23,6 +23,9 @@ else:
     bucket_name = 'drinkximages'
     region='us-east-1'
 
+# bucket_name = 'tf-drinkx-prod-fe-images'
+# region='ap-southeast-1'
+
 
 def uploadBase64ImageToS3(base64_string):
     credentials = None # Initialize credentials to avoid reference error

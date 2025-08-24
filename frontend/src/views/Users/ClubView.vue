@@ -1327,7 +1327,7 @@
                   />
                 </svg>
 
-                <!-- Member name -->
+                <!-- Member name
                 <router-link :to="profileURL(member.id, member.userType)">
                   <p v-if="member.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
                     {{ member.displayName }}
@@ -1339,7 +1339,7 @@
                     {{ member.producerName }}
                   </p>
                   <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ member.venueName }}</p>
-                </router-link>
+                </router-link> -->
               </div>
             </div>
             
@@ -1481,8 +1481,12 @@
       />
     </div>
   </div>
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
   <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <script>
@@ -1490,14 +1494,14 @@
 import NavBar from "@/components/NavBar.vue";
 import ClubSettings from "@/components/ClubSettings.vue";
 import { useToast } from "vue-toastification";
-import FooterBar from "@/components/FooterBar.vue";
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
   name: "ClubView",
   components: {
     NavBar,
     ClubSettings,
-    FooterBar
+    BadgePopup,
   },
   data() {
     return {
@@ -1561,6 +1565,10 @@ export default {
 
       // Variable to store clipboard item for copy confirmation
       clipboardItem: null,
+      
+      // Badge popup variables
+      earnedBadges: [],
+      showBadgePopup: false,
     };
   },
 
@@ -1804,6 +1812,12 @@ export default {
             clubID: this.clubId,
           }
         );
+
+        // Handle badges if updated
+        if (likeData.data.badgeUpdate) {
+          this.earnedBadges = [likeData.data.badgeUpdate];
+          this.showBadgePopup = true;
+        }
 
         // Get the post object from the posts array
         const post = this.posts.find((post) => post.id == postID);
@@ -2055,6 +2069,11 @@ export default {
           this.newPostContent = null;
           this.newPostPhotos = [];
 
+          if (response.data.badgeAwarded) {
+            this.earnedBadges = [response.data.badgeAwarded];
+            this.showBadgePopup = true;
+          }
+
           // Reload the posts
           this.getPosts();
 
@@ -2162,6 +2181,11 @@ export default {
 
         // Check if the comment is successful
         if (commentData.status == 201) {
+          // Handle badges if awarded
+          if (commentData.data.badgeAwarded) {
+            this.earnedBadges = [commentData.data.badgeAwarded];
+            this.showBadgePopup = true;
+          }
           // Clear the comment input
           this.newComment = "";
 
@@ -2193,6 +2217,11 @@ export default {
         .catch(err => {
             console.error('Failed to copy text: ', err);
         });
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
     },
   },
 

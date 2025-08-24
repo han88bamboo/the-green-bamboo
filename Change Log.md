@@ -967,3 +967,985 @@ switched off faulty duplicate checking mechanism - it was causing photo misalign
 
 Nature of the changes (frontend / backend / database):
 backend
+
+
+
+# Update as of 22 June
+
+Coder: CP
+
+Purpose of the changes:
+bugfixes
+
+Nature of the changes (frontend / backend / database):
+front / backend
+
+# Update as of 23 June
+
+Coder: Kai
+
+Purpose of the changes:
+Explore page front end
+Fixed the spacing and height issues in the boxes "Drink Shelf", "Pending Listings", "Brands you Follow" 
+
+Nature of the changes (frontend / backend / database):
+front end
+
+
+
+# Update as of 23 June
+
+Coder: Han
+
+Purpose of the changes:
+helptopics.vue - about, support, FAQ
+changes to business sign up page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 24 June
+
+Coder: Kai
+
+Purpose of the changes:
+fixed spacing and alignment on the user , venue, producer dashboards
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 26 June
+
+Coder: Han
+
+Purpose of the changes:
+Partner Center + Legal terms
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 28 June - deployed with no issues
+
+Coder: Han
+
+Purpose of the changes:
+fixed bug where venue link wasn't working / usernames weren't showing up for non-logged in user
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 29 June 
+
+Coder: Jun Wei
+
+Purpose of the changes:
+- Enabled users to key in coupon code for Stripe payment, applying the appropriate discounts
+- Fixed Stripe api version usage to prevent bugs from appearing due to change in response format by Stripe (Version being used is "2025-05-28.basil")
+
+Nature of the changes (frontend / backend / database):
+frontend
+backend
+
+# Update as of 29 June 
+
+Coder: Ming Sheng
+
+Purpose of the changes:
+fixed code allowing for the claiming of business profiles
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# a ton of other changes 
+
+# Update as of 30 June - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+fixed error where by points aren't showing up for reviews
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 30th June 
+
+Coder: Kai
+
+Purpose of the changes:
+- Hide where to buy on the bottle listings (Kai) 
+- To start tagging friends, follow them first!  (Kai) 
+- Ride or Die - change to The Essentials  (kai) 
+- “No results found” in the search bar - to remove it  (kai) 
+- “Please select a plan” - make it bold, bigger, above the options (Kai) 
+- Successful signup “mb-10” (Kai) 
+- Venue Edit Menu: Add in a section to explain the sequence to adding new menu times  (Kai) 
+
+Nature of the changes (frontend / backend / database):
+front end
+
+# Update as of 1 Jul - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+minor fix to allow logged-out users to see points
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 4 Jul - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+minor frontend bugfixes:
+for the mobile nav bar for a normal logged in  set "My Drink Profile" to redirect to the user profile instead of the user dashboard 
+mobile version link for venues searched was broken
+"Add list" button on mobile doesn't show the pop up window.
+
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 4 July
+
+Coder: Kai
+
+Purpose of the changes:
+Fixed the following front end errors 
+- Menu Itme Preview on Add Menu Modal on Mobile
+- Fix Anchoring issue (hopefully)
+- Fix Photo Constrained Rendering on Venue / Brand 
+- Fixed Photo not loading on Mobile for Venue / Brand Overview
+- Fixed Photo Constrained On Venue / Brand Profile Pictures
+
+Swapped ordering of menu and venue overview on Venue Profile 
+
+Implemented scrollable Pop Up Modals CSS styling because some pop up windows are not scrollable on Mobile View 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 6 July
+
+Coder: MS
+
+Purpose of the changes:
+search bar funtionality and postgresql search optimization 
+
+Nature of the changes (frontend / backend / database):
+postgresql - create trigram index strategry to index based on listing, producer, venue name
+backend - getData.py - implement fuzzy search with similarity score function for bottle,producer and venue listing search
+frontend - AutocompleteSearch.vue, NavBar.vue, LandingPage.vue 
+introduce new search component to return bottle producer and venue listing.
+parallel api calling with promise.all 
+logic handling in landing page. 
+
+# Update as of 6 July
+
+Coder: Han
+
+Purpose of the changes:
+new partner center pages
+
+Nature of the changes (frontend / backend / database):
+frontend + index plus creation of new files in view
+
+# Update as of 6 July
+
+Coder: Kai 
+
+Purpose of the changes:
+- Created a new partner center with links to Drink-X for Brands / Venue / Festival Organisers. 
+- Adjusted the footer bar to reflect new links 
+- I've adjusted the links in the footer header accordingly to the Partner Centre pages : So now all the stuff like FAQs, Privacy Policy, Terms of Use stuff remains under www.drink-x.com/help , but the Business account related stuff goes under www.drink-x.com/partner
+
+Nature of the changes:
+Frontend
+
+
+
+# Update as of 7 July
+
+Coder: Han
+
+Purpose of the changes:
+error handling for dragging and dropping menu operations
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+
+Coder : MS 
+
+Purpose of the changes:
+Moved search selection and navigation logic from LandingPage.vue to a new composable (useSearch.js) and updated NavBar.vue to use this composable. 
+finding SQL search query bottle neck of not utilizing indexed column, adjusted SQL query to optimize search time
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+Coder : Kai 
+
+Purpose of the changes:
+Created new Badges and Point System page and populated it with visual elements. Still work in progress but main content is now there. 
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 8 July
+
+Coder: Kai
+
+Purpose of the changes:
+Finalising content on Badges and Points
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 9 July
+
+Coder: Han
+
+Purpose of the changes:
+to allow ratings to be stored as decimals
+
+Nature of the changes (frontend / backend / database):
+frontend , backend, database
+
+# Update as of 9 July
+
+Coder: Han
+
+Purpose of the changes:
+applied autocomplete search to onboarding flow
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 10 July 
+
+Coder: MS 
+
+Purpose of the changes:
+- revamp userDashboard.vue
+  front end:
+  - rework on overall flow to better managed view and optimize for speed
+  - removed all irrelevant codes from all components
+  - break down into components and migrate into user_dashboard folder for better folder structure
+  backend:
+  - refactored endpoints for better efficiency and readability. (introduced CTE, merged SQL for better calling effeciency)
+- Updates AutocompleteSearch to use 'drinkType' instead of 'typeCategory'.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend and database 
+
+# Update as of 10 July 
+
+Coder: Han
+
+Purpose of the changes:
+making welcome sections collapsible in the ProducerProfile, UserProfileRefactor and VenueProfile
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 11 July 
+
+Coder : MS 
+
+Purpose of the changes:
+- Added loading and error states to ActivityFeed component and integrated them into UserDashboard. Backend query for recent follower activity now returns username and limits results in SQL. 
+- removed block wise loading state introduced component wise loading state to keep modern application build design
+- tag activity fix to return username
+- fix for follower activity assigning to the wrong api 
+- fix leaderboard listing racing issue causing the dashboard to fail 
+
+Nature of the changes (frontend / backend / database):
+frontend , backend
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+find friends feature on navbar
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+added support help button in navbar 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 12 July 
+
+Coder: Han
+
+Purpose of the changes:
+ambassador badge functionality for bottlelistings and user profile 
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 13 July 
+
+Coder: Han
+
+Purpose of the changes:
+Venue type field
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 13 July 
+
+Coder: Han
+
+Purpose of the changes:
+Venue opening hours fix
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 14 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+partial dev for producer list
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 14 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+caching of fields for new listing submission
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 14 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+recent activity copied over to userProfileRefactor.vue
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+news notifications
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 July 
+Coder: MS 
+
+Purpose of the changes:
+Admin dashboard, some code fixes pending and online regression test needed for existing components.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 15 July 
+Coder: Kai 
+
+Purpose of the changes:
+- 88 Bamboo's Review on Drink Listing now pulling Article Title instead of URL 
+- Text wrap for Venue Resvation / Opening hours Details and for 88 Bamboo's Review 
+- Removed "at" for reviews
+- Removed "Venue Type" words, and just show the type in italics with a margin under before the description
+- Enlarging “Extend Review” button to widen across the page and bold and increase text size
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+bottle review submission failure data caching 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 July  - deployed 
+
+Coder: Han
+
+Purpose of the changes:
+fixed 88b reviews on bottleListings not resolving to chinese / jap characters and permitting venue hours beyond midnight
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 15 July 
+
+Coder: Kai
+
+Purpose of the changes:
+tweaked the rendering of bottle images on the search results 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+ensure caching and pulling of data from listings while editing works
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+ensuring admin can upload images for listings
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 16 July 
+
+Coder: Han
+
+Purpose of the changes:
+claim free brand / venue account
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 16 July -deployed with no issues
+
+Coder: Han
+
+Purpose of the changes:
+update of autocomplete and search logic
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 16 July
+
+Coder: MS
+
+Purpose of the changes:
+- Reworks backend endpoints and frontend components to separate and clarify business account and review statistics. 
+- Updates chart rendering logic for improved reactivity and performance, adds cumulative review and business account growth charts, and cleans up data structure usage in both backend and frontend. 
+- optimize Chart.js bundling in vue.config.js.
+- merging of admin_dashboard still a WIP as a side project for now.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 16 July
+
+Coder: Kai
+
+Purpose of the changes:
+neatening up front end font sizing 
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+getting search listings / autocomplete to factor in producer name
+
+Nature of the changes (frontend / backend / database):
+frontend (searchView), backend
+
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixing submission error for listing details on submitListingNew.vue
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixing error where requested listing details don't get populated
+
+Nature of the changes (frontend / backend / database):
+frontend 
+
+# Update as of 17 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+extra colours for reviews
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 19 July - deployed
+
+Coder: MS
+
+Purpose of the changes:
+dashboard refector test code
+
+Improves producer account creation with better validation, error handling, and related table initialization in the backend. Updates admin dashboard modals to provide user feedback, success messages, and CSV download for login details. Refines business management UI with more detailed request info, loading states, and improved request review logic. Also includes minor bug fixes and consistency improvements across admin dashboard components.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 19 July 
+
+Coder: Kai
+
+Purpose of the changes:
+adding Google analytics tag - Now tracking
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 19 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+fixed:
+–unable to allow ordinary users to submit drinks description in listing requests
+–unable to edit listing requests
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 19 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+logic for auto-approval of listing requests
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 20 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+frontend logic for auto-approval of listing requests toggle
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 20 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+search bar modal for submission of requests for users
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 21 July - deployed
+
+Coder: Han
+
+Purpose of the changes:
+updated fav listings, combined venue revs and bugs
+added venues list, fixed venue reviews tags
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+
+
+# Update as of 22nd July
+
+Coder: Kai
+
+Purpose of the changes:
+Added meta tags to various pages for SEO 
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+
+# Update as of 23rd July, 12:30am
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak frontend of the "Recent Activity" data
+- Tweak Navbar to include "Find a Friend" on mobile
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+
+
+# Update as of 23rd July, 10am
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak sizing of post-submission buttons 
+- correct front end errors in "Recent Acitivity" toggle button 
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+Coder: MS 
+
+Purpose of the changes:
+- fix image not showing properly on bottlelistings
+- add lazy loading to add image elements
+- introduce vintage list table for bottle listing and add basic filtering option for vintage reviews.
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+# Update as of 23rd 
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+fixed venue profile edit route
+
+Nature of the changes (frontend / backend / database):
+backend 
+
+# Update as of 23rd
+
+Coder: Han 
+
+Purpose of the changes:
+-fixed error where venue profile cannot update data
+-to get events page working even when events are cleared
+-ux changes for review modal slider
+-get review ratings to show up on load more on following tab of explore page
+
+Nature of the changes (frontend / backend / database):
+frontend, backend 
+
+
+# Update as of 23rd July, 4pm
+
+Coder: Han (Danish)
+
+Purpose of the changes:
+-user lists fix, venue unknown username fix
+
+Nature of the changes (frontend / backend / database):
+front end , backend mostly
+
+
+# Update as of 24th July
+
+Coder: Han 
+
+Purpose of the changes:
+-making search unaccented + allowing for clicking directly into listings on autocomplete
+-allowing producers to freely select producers + removing requirement for source link
+-allow for user's creation of producers
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 25th July
+
+Coder: Han 
+
+Purpose of the changes:
+-removed requirement to fill in official description
+-removed need to view listing submission requests (since auto approved now)
+-When photo is added in review form, it's now in the + box
+-adjusting clear image button
+-guidance for selection of producers in submit drinks page
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 25th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fix fullstop encoding in search url
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 26th July
+
+Coder: Han (Ming Sheng)
+
+Purpose of the changes:
+-added vintage support for wine reviews and listings
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+
+# Update as of 27th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fetching reviews of drinks tasted and putting them on venue profile
+-lazyloading for venue bottle images
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+
+# Update as of 28th July
+
+Coder: Han 
+
+Purpose of the changes:
+-sending notifications when someone follows you
+-improving context of  autocomplete search
+-remove need for ABV + add debounced search for producers and bottlers for submit review form
+-allow 20 items to be added to menu at once
+-make venue item search more robust
+-pullihng abv info for venue menu search
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+
+# Update as of 28th July, 4pm
+
+Coder: Kai
+
+Purpose of the changes:
+- Tweak positioning of average rating of producers
+- add scroll bar to producer listings and venue menu on producer and venue pages 
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+# Update as of 28th July, 10pm
+
+Coder: Kai
+
+Purpose of the changes:
+- Add "earn 200 points" to welcome message
+
+Nature of the changes (frontend / backend / database):
+front end 
+
+
+# Update as of 29th July
+
+Coder: Han 
+
+Purpose of the changes:
+-fix styling for review modal image
+-allow for 5pm to 12am cases
+-bugfix for vintaging feature on bottle listing
+-made signup page and login page ignore spacing, ignore casing, make duplicate check more robust
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 30th July
+
+Coder: Han 
+
+Purpose of the changes:
+-authcheck - ensure user names are case insensitive when logging in
+-remove case sensitivity, spacing in usernames
+-prevent duplicates for venue usernames
+-allow for either email / username login
+
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+Coder: MS
+
+Purpose of the changes:
+Add vintage support for venue profile menu mangement
+- Add 'variant' (vintage) column to the menuItems table and updates backend, SQL, and frontend to support vintage for wine items. 
+- Add input and display of vintage support, and the backend getVenue, addListingToMenu API updated accordingly for variants retrieval. 
+- hides edit button and debugging code in bottlelistings.
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, databse 
+
+
+# Update as of 31st July
+
+Coder: Han 
+
+Purpose of the changes:
+-venues to show socials, have clickable website urls
+-"earn 100 points to create your own club"
+–add producer search to menu items
+-attempted update to vue-gtag library
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+
+# Update as of 1st Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-listing names (of reviewed drinks) not showing up on venues
+-review submission loading wheel
+-badges and points explainer
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 4th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-fixed multi item submission on menu - disabled feedback message for now
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 5th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-fix bug where validation of user doesnt work properly for club creation
+-zoom in picture for browsing clubs
+
+Nature of the changes (frontend / backend / database):
+backend, frontend
+
+# Update as of 6th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-longer "read more" section for venues
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 6th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-venue menu sorting - sorting lexicographically to numerically 
+-disable duplicate check when submitting listings
+-getting review bar to grow in height as more words go in
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 7th Aug
+
+Coder: Han 
+
+Purpose of the changes:
+-add a drink modal was not present (Danish's error)
+-sake expert, or champagne expert, etc badge implementation
+-allow autocomplete to work on popup
+-removing the FooterBar/> component from every vue page since it is added by JS
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 8th Aug
+Coder: Han 
+
+Purpose of the changes:
+-adding selection drawers for producer and IB selection on submit a listing
+-amenities badges for venues
+
+Nature of the changes (frontend / backend / database):
+frontend, backend, database
+
+# Update as of 9th Aug
+
+Coder: Kai  
+
+Purpose of the changes:
+-Added new "Drink X Features" section to landing page, swapped out more legible cover image, added SEO text on landing page, minor spacing adjustments to events and bottle listings page. 
+
+
+Nature of the changes (frontend / backend / database):
+frontend
+
+# Update as of 9th Aug
+Coder: Han 
+
+Purpose of the changes:
+-fix to allow venues to submit listings too
+
+Nature of the changes (frontend / backend / database):
+backend
+
+# Update as of 10th Aug
+Coder: Han 
+
+Purpose of the changes:
+-allow for tagging of home in bottle reviews
+-enable intuitive selection of home tagging
+-fixed delete button for wine reviews
+-change Name of Bottle at submission to Name of Drink / Bottle / Cocktails
+
+Nature of the changes (frontend / backend / database):
+frontend, backend
+
+# Update as of 18th Aug
+Coder: Kai  
+
+Purpose of the changes:
+front end changes to beautify Individual Profile for mobile comptability
+All reviews page - better spacing 
+Landing page - minor colour tweak 
+
+Nature of the changes (frontend / backend / database):
+frontend

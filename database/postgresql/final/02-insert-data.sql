@@ -15,6 +15,37 @@ INSERT INTO "colours" ("hexcode") VALUES
 ('#4A1C0C'),
 ('#000000');
 
+INSERT INTO "moreColours" ("hexcode") VALUES
+('#f6f8e9'),
+('#f6f8c9'),
+('#f6f3b8'),
+('#f4e48e'),
+('#f0e56c'),
+('#f5d760'),
+('#efc853'),
+('#ebcd35'),
+('#eea179'),
+('#e98063'),
+('#e06242'),
+('#d64641'),
+('#e31c37'),
+('#d53918'),
+('#7b212a'),
+('#711d24'),
+('#5c1620'),
+('#490c15'),
+('#490b18'),
+('#55111a'),
+('#6b101f'),
+('#7d1a28'),
+('#891923'),
+('#851d32'),
+('#811e38'),
+('#68192e'),
+('#500f23'),
+('#330710');
+
+
 -- Insert country values into the "countries" table
 INSERT INTO "countries" ("originCountry", "legalAge") VALUES
 ('Afghanistan', 21),
@@ -675,28 +706,28 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Netflix & Chill 🍆');
 
 
-INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences") VALUES
-	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}'),
-	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',false,'1995-08-11 00:00:00',NULL, '{}', '{}'),
-	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}'),
-	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}'),
-     ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL, '{}', '{}'),
-     ('user1', 'User One', '{}', '{}', '', '-1799326735', '2024-02-02', 'John', 'Doe', 'user1@example.com', false, '1990-01-01', NULL, '{}', '{}'),
-     ('user2', 'User Two', '{}', '{}', '', '-1670244015', '2024-02-02', 'Jane', 'Smith', 'user2@example.com', false, '1992-05-12', NULL, '{}', '{}'),
-     ('user3', 'User Three', '{}', '{}', '', '-1541161295', '2024-02-02', 'Mike', 'Johnson', 'user3@example.com', false, '1988-07-24', NULL, '{}', '{}'),
-     ('user4', 'User Four', '{}', '{}', '', '-1412078575', '2024-02-02', 'Emily', 'Davis', 'user4@example.com', false, '1995-09-14', NULL, '{}', '{}'),
-     ('user5', 'User Five', '{}', '{}', '', '-1282995855', '2024-02-02', 'Chris', 'Brown', 'user5@example.com', false, '1987-03-08', NULL, '{}', '{}'),
-     ('user6', 'User Six', '{}', '{}', '', '-1153913135', '2024-02-02', 'Sarah', 'Wilson', 'user6@example.com', false, '1991-06-30', NULL, '{}', '{}'),
-     ('user7', 'User Seven', '{}', '{}', '', '-1024830415', '2024-02-02', 'David', 'Martinez', 'user7@example.com', false, '1994-12-10', NULL, '{}', '{}'),
-     ('user8', 'User Eight', '{}', '{}', '', '-895747695', '2024-02-02', 'Laura', 'Anderson', 'user8@example.com', false, '1993-08-20', NULL, '{}', '{}'),
-     ('user9', 'User Nine', '{}', '{}', '', '-766664975', '2024-02-02', 'James', 'Garcia', 'user9@example.com', false, '1986-04-15', NULL, '{}', '{}'),
-     ('user10', 'User Ten', '{}', '{}', '', '-1500753877', '2024-02-02', 'Olivia', 'Taylor', 'user10@example.com', false, '1996-11-22', NULL, '{}', '{}'),
-     ('user11', 'User Eleven', '{}', '{}', '', '-1371671157', '2024-02-02', 'Ethan', 'Harris', 'user11@example.com', false, '1990-10-05', NULL, '{}', '{}'),
-     ('user12', 'User Twelve', '{}', '{}', '', '-1242588437', '2024-02-02', 'Sophia', 'Clark', 'user12@example.com', false, '1989-02-18', NULL, '{}', '{}'),
-     ('user13', 'User Thirteen', '{}', '{}', '', '-1113505717', '2024-02-02', 'Daniel', 'Lewis', 'user13@example.com', false, '1997-07-07', NULL, '{}', '{}'),
-     ('user14', 'User Fourteen', '{}', '{}', '', '-984422997', '2024-02-02', 'Isabella', 'Robinson', 'user14@example.com', false, '1998-01-25', NULL, '{}', '{}'),
-     ('user15', 'User Fifteen', '{}', '{}', '', '-855340277', '2024-02-02', 'Matthew', 'Walker', 'user15@example.com', false, '1993-03-14', NULL, '{}', '{}'),
-     ('user16', 'User Sixteen', '{}', '{}', '', '-726257557', '2024-02-02', 'Mia', 'Young', 'user16@example.com', false, '1994-06-28', NULL, '{}', '{}');
+INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert") VALUES
+	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}',NULL),
+	 ('Lotusroot518','Lotusroot518','{}','{}','','-289780632','2024-10-29 01:31:56.379','Lotusroot518','Lotusroot518','Kailinchoo@gmail.com',false,'1995-08-11 00:00:00',NULL, '{}', '{}',NULL),
+	 ('charsiucharlie','charsiucharlie','{}','{beer}','','-65180891','2024-10-30 13:48:46.277','charsiucharlie','charsiucharlie','tzhehan@gmail.com',true,'1993-06-29 00:00:00',NULL, '{}', '{}',NULL),
+	 ('DumplingBoy','DumplingBoy','{}','{}','','2108394495','2024-11-03 09:49:51.179','DumplingBoy','DumplingBoy','jwleong.199@gmail.com',false,'1999-10-21 00:00:00',NULL, '{}', '{}',NULL),
+     ('cp', 'cp', '{}', '{}', '', '-301000982', '2024-11-03 09:49:51.179', 'cheng', 'pong', 'cpdeveloper101@gmail.com', false, '1999-10-21 00:00:00', NULL, '{}', '{}',NULL),
+     ('user1', 'User One', '{}', '{}', '', '-1799326735', '2024-02-02', 'John', 'Doe', 'user1@example.com', false, '1990-01-01', NULL, '{}', '{}',NULL),
+     ('user2', 'User Two', '{}', '{}', '', '-1670244015', '2024-02-02', 'Jane', 'Smith', 'user2@example.com', false, '1992-05-12', NULL, '{}', '{}',NULL),
+     ('user3', 'User Three', '{}', '{}', '', '-1541161295', '2024-02-02', 'Mike', 'Johnson', 'user3@example.com', false, '1988-07-24', NULL, '{}', '{}',NULL),
+     ('user4', 'User Four', '{}', '{}', '', '-1412078575', '2024-02-02', 'Emily', 'Davis', 'user4@example.com', false, '1995-09-14', NULL, '{}', '{}',NULL),
+     ('user5', 'User Five', '{}', '{}', '', '-1282995855', '2024-02-02', 'Chris', 'Brown', 'user5@example.com', false, '1987-03-08', NULL, '{}', '{}',NULL),
+     ('user6', 'User Six', '{}', '{}', '', '-1153913135', '2024-02-02', 'Sarah', 'Wilson', 'user6@example.com', false, '1991-06-30', NULL, '{}', '{}',NULL),
+     ('user7', 'User Seven', '{}', '{}', '', '-1024830415', '2024-02-02', 'David', 'Martinez', 'user7@example.com', false, '1994-12-10', NULL, '{}', '{}',NULL),
+     ('user8', 'User Eight', '{}', '{}', '', '-895747695', '2024-02-02', 'Laura', 'Anderson', 'user8@example.com', false, '1993-08-20', NULL, '{}', '{}',NULL),
+     ('user9', 'User Nine', '{}', '{}', '', '-766664975', '2024-02-02', 'James', 'Garcia', 'user9@example.com', false, '1986-04-15', NULL, '{}', '{}',NULL),
+     ('user10', 'User Ten', '{}', '{}', '', '-1500753877', '2024-02-02', 'Olivia', 'Taylor', 'user10@example.com', false, '1996-11-22', NULL, '{}', '{}',NULL),
+     ('user11', 'User Eleven', '{}', '{}', '', '-1371671157', '2024-02-02', 'Ethan', 'Harris', 'user11@example.com', false, '1990-10-05', NULL, '{}', '{}',NULL),
+     ('user12', 'User Twelve', '{}', '{}', '', '-1242588437', '2024-02-02', 'Sophia', 'Clark', 'user12@example.com', false, '1989-02-18', NULL, '{}', '{}',NULL),
+     ('user13', 'User Thirteen', '{}', '{}', '', '-1113505717', '2024-02-02', 'Daniel', 'Lewis', 'user13@example.com', false, '1997-07-07', NULL, '{}', '{}',NULL),
+     ('user14', 'User Fourteen', '{}', '{}', '', '-984422997', '2024-02-02', 'Isabella', 'Robinson', 'user14@example.com', false, '1998-01-25', NULL, '{}', '{}',NULL),
+     ('user15', 'User Fifteen', '{}', '{}', '', '-855340277', '2024-02-02', 'Matthew', 'Walker', 'user15@example.com', false, '1993-03-14', NULL, '{}', '{}',NULL),
+     ('user16', 'User Sixteen', '{}', '{}', '', '-726257557', '2024-02-02', 'Mia', 'Young', 'user16@example.com', false, '1994-06-28', NULL, '{}', '{}',NULL);
 
 INSERT INTO "drinkTypes" ("drinkType", "badgePhoto", "typeCategory")
 VALUES (
@@ -2742,7 +2773,20 @@ INSERT INTO "producers" (
     ('Elixir Distillers', 'Boutique bottler and creator of Port Askaig.', 'United Kingdom', true, '{}', NULL, '47291837', false, NULL, NULL, 2017, 'active', 'Sukhinder Singh', 'London, UK', false, 'https://www.elixirdistillers.com', 'elixirdistillers', '', NULL),
     ('The Whisky Trail', 'Independent bottler of rare and vintage Scotch.', 'Scotland', true, '{}', NULL, '75839201', false, NULL, NULL, 2006, 'active', 'Whiskybase B.V.', 'Edinburgh, Scotland', false, 'https://www.whiskybase.com/whiskies/brand/whisky-trail', 'whiskytrail', '', NULL);
 
+INSERT INTO "producers" VALUES (10302, 'Brewlander (Singapore)', '', 'Singapore', false, '{}', '', '1276727242', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+INSERT INTO "producers" VALUES (11236, 'Polly''s Brew Co.', '', 'Wales', false, '{}', '', '-826823437', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+INSERT INTO "producers" VALUES (10880, 'Mountain Culture Beer Co.', '', 'Australia', false, '{}', '', '-2049109702', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+INSERT INTO "producers" VALUES (9540, 'Oso Brew Co', '', 'Spain', false, '{}', '', '-2049109702', false, NULL, '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', NULL);
+
+
+
+
+
+
+
+
 INSERT INTO "venues" (
+    "id",
     "venueName", 
     "address", 
     "venueType", 
@@ -2758,13 +2802,14 @@ INSERT INTO "venues" (
     "stripeCustomerId", 
     "pin"
 ) VALUES (
-    'Orh Gao Taproom', 
-    'Singapore', 
+    11,
+    'Orh Gao Taproom Craft Beer Bar', 
+    '10 Jln Serene, #01-03 Serene Centre, Singapore 258748', 
     'Bar', 
     'Singapore', 
     'Best venue for drinks', 
     '-1918297408', 
-    NULL, 
+    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b4e600aa-fac1-4aeb-b6b4-3f6eb6d740b2.jpg', 
     true, 
     NULL, 
     'Cannot reserve anything', 
@@ -2772,7 +2817,63 @@ INSERT INTO "venues" (
     'Not open on Christmas', 
     NULL, 
     NULL
+), 
+(   
+    10,
+    'Omu Nomu Craft Sake & Raw Bar',
+    '1 Dragon City',
+    'Bar',
+    'Singapore',
+    'A popular test venue for unit testing and staging purposes.',
+    '1033881401', -- hashed password
+    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/cd89b487-172d-4db8-8202-049b5cddc256.jpg', 
+    true, 
+    NULL, 
+    'Cannot reserve anything', 
+    'omunomu', 
+    'Not open on Christmas', 
+    NULL, 
+    NULL
+),
+(
+    24,
+    'Smith Street Taps',
+    '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
+    'Bar',
+    'Singapore',
+    'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
+    '-1480099335', -- hashed password
+    'https://lh3.googleusercontent.com/p/AF1QipOkmPzzgvObRr4u33kneFeT00b3sQkRBVkqhVut=s1360-w1360-h1020-rw',
+    true,
+    NULL,
+    'Walk-in only, no reservations.',
+    'smithstreettaps',
+    'Closed on Lunar New Year',
+    NULL,
+    NULL
+),
+(
+    1,
+    'Test Street Taps',
+    '3 Smith St, #02-62 Chinatown Complex, Singapore 058937',
+    'Bar',
+    'Singapore',
+    'One of the first craft beer taprooms in Singapore, famous for rotating taps and rare imports.',
+    '128937465', -- hashed password
+    NULL,
+    true,
+    NULL,
+    'Walk-in only, no reservations.',
+    'smithstreettapstest',
+    'Closed on Lunar New Year',
+    NULL,
+    NULL
 );
+
+INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+
+INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") VALUES (3, 11, 5.0, 'test review i''ll delete almost immediately i promise', '2025-08-20T19:45:56.344000'::timestamp, '{https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Orh_Gao_Tap_Room_Young_Master_480x480.png?v=1684943445}');
 
 INSERT INTO "producersQuestionAnswers" (
     "question", "answer", "date", "userId", "producerId")
@@ -2781,7 +2882,7 @@ INSERT INTO "producersQuestionAnswers" (
 INSERT INTO "listings" (
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo", "drinkStyle")
 	VALUES 
-    ('Hennessy VS', 1, 'OB', 'Japan', 'Whisky', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', '', ''),
+    ('Hennessy VS', 1, 'OB', 'Japan', 'Whisky', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/96165a5d-45ce-48fb-ada1-4a3445d73181.jpg', ''),
     ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whisky', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
     ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whisky', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
     ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whisky', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', '', ''),
@@ -2820,20 +2921,20 @@ INSERT INTO "listings" (
     ('Grey Goose Vodka', 18, 'Grey Goose', 'France', 'Vodka', 40, 'A premium French vodka made from high-quality wheat.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
-    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2025-08-24', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
-    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2025-08-24', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
-    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2025-08-24', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
+    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
+    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
+    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2024-02-02', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
 
 INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, it’s the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and you’ll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-');
 INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles');
 INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
-
+INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
 
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
     VALUES 
-    (1, '{}', '{}', '{}'), 
+    (1, '{3,2,5}', '{}', '{}'), 
     (2, '{}', '{}', '{}'), 
     (3, '{}', '{}', '{}'), 
     (4, '{}', '{}', '{}'),
@@ -2852,13 +2953,32 @@ INSERT INTO "usersDrinkLists" (
     (4, 'Drinks I Have Tried', ''), 
     (4, 'Drinks I Want To Try', '');
 
-INSERT INTO "venuesMenu" (
-    "sectionName", "sectionOrder","venueId")
-    VALUES('Created1', '0', 1);
     
-INSERT INTO "menuItems"(
-    "itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId")
-VALUES(0, 12.00, true, 1, 1, 1);
+INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37);
+
+-- Venue menu sections for Orh Gao (venue ID 11)
+INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11);
+INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11);
+
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (5, 'Test new section 1 (Omu Nomu)', 0, 10);
+INSERT INTO "venuesMenu" VALUES (6, 'Test new section 2 (Omu Nomu)', 1, 10);
+
+-- Venue menu sections for 
+INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0, 24);
+INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24);
+
+
+INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
+INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
+INSERT INTO "menuItems" VALUES (13113, 2, 18.00, true, 1037431, 1, 2540, NULL);
+
+-- Menu items for Orh Gao sections
+INSERT INTO "menuItems" VALUES (13114, 0, 0.00, true, 1177334, 1, 3, NULL);
+INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 4, NULL);
+
+INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
+INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
@@ -2874,7 +2994,7 @@ INSERT INTO "reviews" (
 (3, 18, 9.3, 'Average experience, decent aftertaste.', 'Listing', '2024-02-06 09:15:00', 'English', 'medium', TRUE, FALSE, ARRAY[4,2], ARRAY['berry'], null, '#DC143C', 'fruity', 1, 'dry', ARRAY['light'], '890 Street F'),
 (3, 10, 4.0, 'Good balance of flavors.', 'Listing', '2024-02-07 13:05:00', 'English', 'medium', TRUE, TRUE, ARRAY[5], ARRAY['spice'], null, '#8B4513', 'warm', 1, 'smooth', ARRAY['balanced'], '234 Street G'),
 (3, 3, 3.0, 'A bit too strong for me.', 'Listing', '2024-02-08 17:40:00', 'English', 'short', FALSE, FALSE, ARRAY[2,3], ARRAY['citrus'], null, '#ADD8E6', 'sharp', 1, 'intense', ARRAY['burn'], '678 Street H'),
-(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], null, '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
+(3, 14, 9.7, 'Very refreshing and crisp.', 'Listing', '2024-02-09 22:10:00', 'English', 'short', TRUE, TRUE, ARRAY[4], ARRAY['floral'], 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/photo_2023-12-24_01.50.09.jpg?v=1703353821', '#00FF00', 'fresh', 1, 'light', ARRAY['crisp'], '101 Street I'),
 (3, 9, 3.2, 'A bit underwhelming, expected more.', 'Listing', '2024-02-10 08:55:00', 'English', 'medium', FALSE, FALSE, ARRAY[3], ARRAY['oak'], null, '#800000', 'dry', 1, 'muted', ARRAY['flat'], '202 Street J'),
 (1, 5, 5, 'This was absolutely fantastic!', 'Listing', '2025-01-13 18:27:38.498', 'English', 'Long, alittle more oaky now', true, false, '{}', '{2, 3, 36, 37}', '', '', '', null, '', '{Beginner Friendly, OverHyped!}', ''),
 (2, 12, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{23, 35, 36, 77}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
@@ -3636,7 +3756,7 @@ INSERT INTO "badgeMappings" ("badgeId", "mappingType", "primaryValue") VALUES
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Whisky Explorer'), 'DrinkType', 'Whiskey'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'El Tequila Supremo'), 'DrinkType', 'Tequila'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'A-Gave It All'), 'DrinkType', 'Mezcal'),
-((SELECT id FROM "badges" WHERE "badgeName" = 'Botanical Gin-ius! / Juniper Junkie'), 'DrinkType', 'Gin'),
+((SELECT id FROM "badges" WHERE "badgeName" = 'Botanical Gin-ius!'), 'DrinkType', 'Gin'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Rumaniac'), 'DrinkType', 'Rum'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Hop Head'), 'DrinkType', 'Beer'),
 ((SELECT id FROM "badges" WHERE "badgeName" = 'Sho-chu Love Shochu'), 'DrinkType', 'Shochu'),
@@ -4081,6 +4201,18 @@ INSERT INTO "venuesUpdates" ("date", "text", "photo", "venueId") VALUES
 ('2025-08-20 14:30:00', 'Hosting a local food truck festival in our courtyard.', NULL, 1),
 ('2025-08-22 18:20:00', 'Friday night trivia—teams welcome.', NULL, 1),
 ('2025-08-24 15:40:00', 'Wrapping up the weekend with a community barbecue.', NULL, 1);
+
+
+-- Insert default settings
+INSERT INTO "systemSettings" ("settingName", "settingValue", "settingDescription")
+VALUES ('autoListingApproval', 'false', 'When set to true, new listing requests are automatically approved and created');
+
+
+-- [NEW!] "latestUserFollowers" - ADDED BY CP
+INSERT INTO "latestUserFollowers"(
+    "userId", "followingId", "followDate")
+VALUES
+    (5, 1, '2025-07-11 18:45:31.403');
 
 
 -- Insert default settings

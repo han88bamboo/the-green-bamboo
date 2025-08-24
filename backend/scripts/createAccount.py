@@ -8,22 +8,21 @@ import s3Images
 import os
 
 from scripts.mail import send_email, send_email_aws
-from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 from dotenv import load_dotenv # ADDED BY SMU GROUP 3
 import psycopg2 # ADDED BY SMU GROUP 3
+import re
 
 import secrets
 
 from psycopg2 import sql
 
+# load env variables
+load_dotenv()
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [POST] Creates an Account
@@ -43,7 +42,8 @@ def createAccount():
     
     # Check for existing account with the same username
     with db_conn.cursor() as cursor:
-        cursor.execute('SELECT "id" FROM "users" WHERE "username" = %s', (rawUsername,))
+        # 1. First check users table
+        cursor.execute('SELECT "id" FROM "users" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
         existingAccount = cursor.fetchone()
         
         if existingAccount is not None:
@@ -53,13 +53,77 @@ def createAccount():
                     "data": {
                         "userName": rawUsername
                     },
-                    "message": "Username already exists."
+                    "message": "Username already exists (Code: users)."
                 }
             ), 400
     
+        # 2. Then check venues table
+        cursor.execute('SELECT "id" FROM "venues" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
+        existingVenue = cursor.fetchone()
+        
+        if existingVenue is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawUsername
+                    },
+                    "message": "Username already exists (Code: venues)."
+                }
+            ), 400
+
+        # 3. Finally check producers table
+        cursor.execute('SELECT "id" FROM "producers" WHERE LOWER("username") = LOWER(%s)', (rawUsername,))
+        existingProducer = cursor.fetchone()
+        
+        if existingProducer is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "userName": rawUsername
+                    },
+                    "message": "Username already exists (Code: producers)."
+                }
+            ), 400
+
+        # Now check for duplicate emails
+        rawEmail = rawAccount['email']
+        
+        # 1. Check if email exists in users table
+        cursor.execute('SELECT * FROM "users" WHERE email = %s', (rawEmail,))
+        existingUserEmail = cursor.fetchone()
+        
+        if existingUserEmail is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "email": rawEmail
+                    },
+                    "message": "Email already exists in user accounts."
+                }
+            ), 400
+        
+        # 2. Check if email exists in accountRequests table
+        cursor.execute('SELECT * FROM "accountRequests" WHERE email = %s', (rawEmail,))
+        existingRequestEmail = cursor.fetchone()
+        
+        if existingRequestEmail is not None:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {
+                        "email": rawEmail
+                    },
+                    "message": "This email has a pending account request."
+                }
+            ), 400
+
     # Handle photo upload if present
     if rawAccount['photo']:
-        rawAccount['photo'] = s3Images.uploadBase64ImageToS3(rawAccount['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawAccount['photo'])
+        rawAccount['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     # Prepare data for insertion
     columns = ['username', 'displayName', 'firstName', 'lastName', 'email', 'choiceDrinks', 'modType', 
@@ -146,11 +210,12 @@ def createAccountRequest():
     conn = g.db
     cur = conn.cursor()
     rawAccount = request.get_json()
-    rawEmail = rawAccount['email']
 
+    rawEmail = rawAccount['email']
     rawAccount['joinDate'] = datetime.strptime(rawAccount['joinDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
+        # Check if email already exists in accountRequests table
         cur.execute('SELECT * FROM "accountRequests" WHERE email = %s', (rawEmail,))
         existingAccount = cur.fetchone()
 
@@ -165,11 +230,26 @@ def createAccountRequest():
                 }
             ), 400
         
-        columns = ', '.join(f'"{key}"' for key in rawAccount.keys())
+        # Check if email exists in users table
+        cur.execute('SELECT * FROM "users" WHERE email = %s', (rawEmail,))
+        existingUser = cur.fetchone()
+        
+        if existingUser is not None:
+            return jsonify({
+                "code": 400,
+                "data": {"email": rawEmail},
+                "message": "Email already exists in user accounts."
+            }), 400
+
+        # Extract only the values that correspond to database columns
+        values = [rawAccount.get(col) for col in rawAccount]
+
+        # Create the SQL with explicit column names
+        columns = ', '.join(f'"{col}"' for col in rawAccount)
         placeholders = ', '.join(['%s'] * len(rawAccount))
         sql = f'INSERT INTO "accountRequests" ({columns}) VALUES ({placeholders})'
 
-        cur.execute(sql, list(rawAccount.values()))
+        cur.execute(sql, values)
         conn.commit()
 
         return jsonify( 
@@ -304,172 +384,182 @@ def updateAccountRequestBusinessID():
 def createProducerAccount():
     conn = g.db
     cur = conn.cursor()
-    data = request.get_json()
-    print(data)
-    newBusinessData = data["newBusinessData"]
-
+    
     try:
-        # Check if producerName already exists
-        cur.execute('SELECT id FROM producers WHERE "producerName" = %s', (newBusinessData['producerName'],))
-        existingAccount = cur.fetchone()
-
-        if existingAccount:
-            return jsonify(
-                {
-                    "code": 400,
-                    "data": {
-                        "producerName": newBusinessData['producerName']
-                    },
-                    "message": "Producer Name already exists."
-                }
-            ), 400
-
-        # Insert new producer
+        # Validate request data
+        data = request.get_json()
+        if not data or 'newBusinessData' not in data:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid request data. 'newBusinessData' is required."
+            }), 400
+        
+        newBusinessData = data["newBusinessData"]
+        
+        # Validate required fields
+        # required_fields = ['producerName', 'producerDesc', 'originCountry', 'mainDrinks', 'hashedPassword']
+        # missing_fields = [field for field in required_fields if not newBusinessData.get(field)]
+        # if missing_fields:
+        #     return jsonify({
+        #         "code": 400,
+        #         "message": f"Missing required fields: {', '.join(missing_fields)}"
+        #     }), 400
+        
+        # Validate producerName length and format
+        producer_name = newBusinessData['producerName'].strip()
+        if len(producer_name) < 2 or len(producer_name) > 100:
+            return jsonify({
+                "code": 400,
+                "message": "Producer name must be between 2 and 100 characters."
+            }), 400
+        
+        # Check if producerName already exists (case-insensitive)
+        cur.execute('SELECT id FROM producers WHERE LOWER("producerName") = LOWER(%s)', (producer_name,))
+        existing_account = cur.fetchone()
+        
+        if existing_account:
+            return jsonify({
+                "code": 400,
+                "data": {"producerName": producer_name},
+                "message": "Producer name already exists."
+            }), 400
+        
+        # Prepare producer data with defaults
+        producer_data = {
+            'producerName': producer_name,
+            'producerDesc': newBusinessData['producerDesc'].strip(),
+            'originCountry': newBusinessData['originCountry'].strip(),
+            'mainDrinks': newBusinessData['mainDrinks'],
+            'photo': newBusinessData.get('photo', ''),
+            'hashedPassword': newBusinessData['hashedPassword'],
+            'claimStatus': newBusinessData.get('claimStatus', 'pending'),
+            'statusOB': newBusinessData.get('statusOB', 'active'),
+            'username': newBusinessData.get('username', '').strip() or None,
+            'producerLink': newBusinessData.get('producerLink', '').strip() or None,
+            'stripeCustomerId': newBusinessData.get('stripeCustomerId', '').strip() or None,
+            'isIndependentBottler': bool(newBusinessData.get('isIndependentBottler', False)),
+            'location': newBusinessData.get('location', '').strip() or 'Location not specified'
+        }
+        
+        # Insert new producer with all fields including location
         cur.execute("""
             INSERT INTO producers (
-                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword", 
-                "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
+                "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", 
+                "hashedPassword", "claimStatus", "statusOB", "username", "producerLink", 
+                "stripeCustomerId", "isIndependentBottler", "location"
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-        """, (
-            newBusinessData['producerName'], newBusinessData['producerDesc'], newBusinessData['originCountry'],
-            newBusinessData['mainDrinks'], newBusinessData['photo'], newBusinessData['hashedPassword'],
-            newBusinessData['claimStatus'], newBusinessData['statusOB'], newBusinessData.get('username', None),
-            newBusinessData.get('producerLink', None), newBusinessData.get('stripeCustomerId', None), newBusinessData.get('isIndependentBottler', False)
-        ))
-
-        # Extract the new producer ID
+            VALUES (%(producerName)s, %(producerDesc)s, %(originCountry)s, %(mainDrinks)s, 
+                   %(photo)s, %(hashedPassword)s, %(claimStatus)s, %(statusOB)s, 
+                   %(username)s, %(producerLink)s, %(stripeCustomerId)s, %(isIndependentBottler)s, 
+                   %(location)s) 
+            RETURNING id
+        """, producer_data)
+        
         result = cur.fetchone()
-
-        if result is None:
-            raise Exception("Failed to retrieve new producer ID")
-
-        newProducerId = result['id']
-        conn.commit()
-
-        # Handle related data: questionsAnswers
+        if not result:
+            raise Exception("Failed to create producer account")
+        
+        new_producer_id = result['id']
+        
+        # Handle questions and answers
         questions_answers = newBusinessData.get('questionsAnswers', [])
-        for qa in questions_answers:
-            cur.execute(
-                """
-                INSERT INTO "producersQuestionAnswers" (
-                    "question", "answer", "date", "userId", "producerId"
-                ) 
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (qa['question'], qa['answer'], qa['date'], qa.get('userId', None), newProducerId)
-            )
+        if questions_answers:
+            qa_values = []
+            for qa in questions_answers:
+                # Validate QA data
+                if not qa.get('question') or not qa.get('answer'):
+                    continue
+                qa_values.append((
+                    qa['question'],  # Limit question length
+                    qa['answer'],   # Limit answer length
+                    qa.get('date', 'NOW()'),
+                    qa.get('userId'),
+                    new_producer_id
+                ))
+            
+            if qa_values:
+                cur.executemany("""
+                    INSERT INTO "producersQuestionAnswers" (
+                        "question", "answer", "date", "userId", "producerId"
+                    ) 
+                    VALUES (%s, %s, %s, %s, %s)
+                """, qa_values)
+        
+        # Handle updates
+        updates = newBusinessData.get('updates', [])
+        if updates:
+            update_values = []
+            for update in updates:
+                # Validate update data
+                if not update.get('text'):
+                    continue
+                update_values.append((
+                    update.get('date', 'NOW()'),
+                    update['text'][:2000],  # Limit text length
+                    update.get('photo', ''),
+                    new_producer_id
+                ))
+            
+            if update_values:
+                cur.executemany("""
+                    INSERT INTO "producersUpdates" (
+                        "date", "text", "photo", "producerId"
+                    ) 
+                    VALUES (%s, %s, %s, %s)
+                """, update_values)
+        
+        # Initialize related tables efficiently
+        init_queries = []
+        
+        # Check and initialize producer reviews
+        cur.execute('SELECT COUNT(*) AS count FROM "producerReviews" WHERE "producerID" = %s', (new_producer_id,))
+        if cur.fetchone()['count'] == 0:
+            init_queries.append(('INSERT INTO "producerReviews" ("producerID") VALUES (%s)', (new_producer_id,)))
+        
+        # Check and initialize profile views
+        cur.execute('SELECT COUNT(*) AS count FROM "producersProfileViews" WHERE "producerId" = %s', (new_producer_id,))
+        if cur.fetchone()['count'] == 0:
+            init_queries.append((
+                'INSERT INTO "producersProfileViews" ("producerId", "date", "count") VALUES (%s, CURRENT_DATE, 0)',
+                (new_producer_id,)
+            ))
+        
+        # Execute initialization queries
+        for query, params in init_queries:
+            cur.execute(query, params)
+        
+        # Commit transaction
         conn.commit()
         
-        # Handle related data: updates
-        updates = newBusinessData.get('updates', [])
-        for update in updates:
-            cur.execute(
-                """
-                INSERT INTO "producersUpdates" (
-                    "date", "text", "photo", "producerId"
-                ) 
-                VALUES (%s, %s, %s, %s)
-                """,
-                (update['date'], update['text'], update['photo'], newProducerId)
-            )
-        # Add debug information about what we created
-        print(f"DEBUG: Successfully created producer with ID {newProducerId}")
-        print(f"DEBUG: Producer name: {newBusinessData['producerName']}")
-        print(f"DEBUG: Added {len(questions_answers)} question/answer entries")
-        print(f"DEBUG: Added {len(updates)} updates")
+        # Prepare response data
+        response_data = {
+            "code": 201,
+            "data": {
+                "producerId": new_producer_id,
+                "producerName": producer_name
+            },
+            "message": "Producer account created successfully"
+        }
         
-        # Initialize empty tables that the profile page needs
-        try:
-            # Ensure location has a default value if not provided
-            if not newBusinessData.get('location') or newBusinessData.get('location').strip() == '':
-                print("DEBUG: Setting default location since none was provided")
-                cur.execute(
-                    """
-                    UPDATE producers
-                    SET "location" = %s
-                    WHERE id = %s
-                    """,
-                    ("Location not specified", newProducerId)
-                )
-                
-            # Create an empty reviews entry for this producer
-            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producerReviews')")
-            if cur.fetchone()[0]:
-                print("DEBUG: Creating empty review record for new producer")
-                # Check if this producer already has reviews
-                cur.execute("SELECT COUNT(*) FROM \"producerReviews\" WHERE \"producerID\" = %s", (newProducerId,))
-                if cur.fetchone()[0] == 0:
-                    # Create an empty review record
-                    cur.execute("INSERT INTO \"producerReviews\" (\"producerID\") VALUES (%s)", (newProducerId,))
-                    print(f"DEBUG: Created empty review record for producer {newProducerId}")
-            
-            # Create empty profile views table
-            cur.execute("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'producersProfileViews')")
-            if cur.fetchone()[0]:
-                print("DEBUG: Creating profile view record for new producer")
-                # Check if this producer already has profile views
-                cur.execute("SELECT COUNT(*) FROM \"producersProfileViews\" WHERE \"producerId\" = %s", (newProducerId,))
-                if cur.fetchone()[0] == 0:
-                    # Create empty profile views record with current date
-                    cur.execute(
-                        """
-                        INSERT INTO "producersProfileViews" ("producerId", "date", "count") 
-                        VALUES (%s, CURRENT_DATE, 0)
-                        """, 
-                        (newProducerId,)
-                    )
-                    print(f"DEBUG: Created profile views record for producer {newProducerId}")
-            
-            # Initialize arrays as empty if they don't exist already
-            if len(questions_answers) == 0:
-                print("DEBUG: No questions/answers provided, ensuring field exists")
-                newBusinessData['questionsAnswers'] = []
-                
-            if len(updates) == 0:
-                print("DEBUG: No updates provided, ensuring field exists")
-                newBusinessData['updates'] = []
-            
-            conn.commit()
-            print("DEBUG: Successfully initialized related tables")
-        except Exception as init_error:
-            print(f"DEBUG ERROR: Failed to initialize related tables: {str(init_error)}")
-            import traceback
-            print(f"DEBUG TRACE: {traceback.format_exc()}")
-            # Don't fail the whole operation if this initialization fails
-            pass
-
-        return jsonify( 
-            {   
-                "code": 201,
-                "data": newProducerId,
-                "debug_info": {
-                    "producerName": newBusinessData['producerName'],
-                    "hasQA": len(questions_answers) > 0,
-                    "hasUpdates": len(updates) > 0
-                }
-            }
-        ), 201
-
+        return jsonify(response_data), 201
+        
     except Exception as e:
+        # Rollback transaction on error
         conn.rollback()
-        print(f"DEBUG ERROR: Failed to create producer account: {str(e)}")
-        # Print the full stack trace to help with debugging
-        import traceback
-        print(f"DEBUG TRACE: {traceback.format_exc()}")
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
-                    "producerName": newBusinessData['producerName']
-                },
-                "message": "An error occurred creating the producer account.",
-                "error_details": str(e)
-            }
-        ), 500
-
+        
+        # Log error for debugging
+        import logging
+        logging.error(f"Error creating producer account: {str(e)}", exc_info=True)
+        
+        # Return generic error response
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while creating the producer account. Please try again."
+        }), 500
+        
     finally:
-        cur.close()
+        if cur:
+            cur.close()
         
 
 # -----------------------------------------------------------------------------------------
@@ -813,6 +903,12 @@ def updateUsernamePassword():
 def sendEmail():
     data = request.json
     print(data)
+
+    # skip the email process if we are on local env
+    if os.getenv("PURPOSE") == "development":
+        return jsonify({'message': 'Local dev skip Email successfully!'}), 200
+
+    # else we will send out emails as usual
     send_email_aws(
         subject=data['subject'],
         recipient=data['recipient'],

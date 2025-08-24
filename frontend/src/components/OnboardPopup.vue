@@ -12,20 +12,34 @@
         class="popup-image"
       />
       <p class="popup-message">{{ message }}</p>
-      <input
+      <!-- <input
         type="text"
         class="popup-input"
         placeholder="Search for a drink"
         v-model="searchText"
       />
-      <button class="popup-search" @click="onSearch">Search</button>
+      <button class="popup-search" @click="onSearch">Search</button> -->
+       <!-- With AutocompleteSearch component -->
+      <div class="search-wrapper">
+        <AutocompleteSearch @select="handleSearchSelection" />
+      </div>
+      
+      <!-- Optional: Add a skip button if needed -->
+      <button class="popup-skip mt-3" @click="onClose">Skip for now</button>
+ 
     </div>
   </div>
 </template>
 
 <script>
+
+import AutocompleteSearch from './AutocompleteSearch.vue';
+
 export default {
 name: "OnboardPopup",
+components: {
+  AutocompleteSearch
+},
 props: {
   isVisible: {
     type: Boolean,
@@ -48,10 +62,26 @@ data() {
 methods: {
   onSearch() {
     this.$emit("search", this.searchText);
-    console.log("Search Text:", this.searchText);
   },
   async onClose() {
     this.$emit("close");
+  },
+  // Add a new method to handle AutocompleteSearch selections
+  handleSearchSelection(selection) {
+    let searchQuery = '';
+    
+    if (selection.type === 'listings') {
+      searchQuery = selection.item.listingName;
+    } else if (selection.type === 'venues') {
+      searchQuery = selection.item.venueName;
+    } else if (selection.type === 'producers') {
+      searchQuery = selection.item.producerName;
+    } else if (selection.type === 'Any') {
+      searchQuery = selection.item.name;
+    }
+    
+    // Emit the search event with the selected item's name
+    this.$emit("search", searchQuery);
   },
 },
 };
@@ -80,7 +110,7 @@ text-align: center;
 width: 90%;
 max-width: 400px;
 max-height: 90vh;
-overflow-y: auto;
+/* overflow-y: auto; */
 box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 position: relative;
 }
@@ -183,4 +213,34 @@ background: #025d4f;
   right: -5px;
 }
 }
+/* New styles for AutocompleteSearch integration */
+.search-wrapper {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+/* Make dropdown appear properly in the popup context */
+:deep(.dropdown-menu) {
+  max-height: 250px;
+  width: 100% !important;
+  left: 0 !important;
+}
+
+/* Style for the skip button */
+.popup-skip {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.popup-skip:hover {
+  background: #e0e0e0;
+}
+
 </style>
