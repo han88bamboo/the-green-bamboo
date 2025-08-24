@@ -4923,6 +4923,7 @@ import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
+import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
 
 // Import Phosphor Icons
 import { 
@@ -4947,6 +4948,7 @@ export default {
         EventBox,
         LoadingWithFunFact,
         PWStrengthChecker,
+        VenueMenuTabOriginal,
         // Add Phosphor Icons as components
         PhWine,
         PhBeerStein, 
@@ -6037,132 +6039,6 @@ export default {
         // Load other data
         async loadData() {
 
-            // Get listing data for each item in menu
-            try {
-                for (let section of this.detailedMenu) {
-                    for (let item of section.sectionMenu) {
-
-                        // Find item in loadedListings
-                        let listingData = this.loadedListings.find(i => i.id == item.itemID);
-
-                        // If not found, get from server
-                        if (listingData == undefined) {
-
-                            try {
-                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
-                                listingData = response.data;
-
-                                if (Array.isArray(listingData) && listingData.length == 0) {
-                                    // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                }
-                                // If found, obtain additional data and add to loadedListings
-                                else if (listingData != null && listingData != "") {
-
-                                    try {
-                                        // Get average rating 
-                                        let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/` + item.itemID);
-                                        listingData['avgRating'] = reviewResponse.data['averageRating'];
-                                        listingData['reviewCount'] = reviewResponse.data['reviewCount'];
-
-                                        // Find producer in loadedProducers
-                                        let producerData = this.loadedProducers.find(p => p.id == listingData["producerID"]);
-
-                                        try {
-                                            // If not found, get from server
-                                            if (producerData == undefined) {
-                                                let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
-                                                producerData = producerResponse.data;
-
-                                                if (Array.isArray(producerData) && producerData.length == 0) {
-                                                    // Remove item from section
-                                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                                }
-                                                // If found, add to loadedProducers
-                                                else if (producerData != null && producerData != "") {
-                                                    this.loadedProducers.push(producerData);
-                                                }
-                                            }
-
-                                            // Set producer data (producerData should either be valid or [] here)
-                                            if (!(Array.isArray(producerData) && producerData.length == 0)) {
-                                                listingData["producerName"] = producerData["producerName"];
-
-                                                // Add to loadedListings
-                                                this.loadedListings.push(listingData);
-                                            }
-                                            else {
-                                                listingData = [];
-                                            }
-                                        }
-                                        catch (error) {
-                                            console.error("Error fetching producer data: ", error);
-                                            listingData = [];
-                                        }
-                                    }
-                                    catch (error) {
-                                        console.error("Error fetching listing reviews rating: ", error);
-                                        listingData = [];
-                                    }
-                                }
-                            }
-                            catch (error) {
-                                console.error("Error fetching listing data: ", error);
-                                listingData = [];
-                            }
-
-                        }
-
-                        // Set item data (listingData should either be valid or [] here)
-                        if (!(Array.isArray(listingData) && listingData.length == 0)) {
-
-                            item.itemDetails = {
-                                itemPhoto: listingData["photo"],
-                                itemName: listingData["listingName"],
-                                itemType: listingData["drinkType"],
-                                itemTypeCategory: listingData["typeCategory"],
-                                itemABV: listingData["abv"],
-                                itemCountry: listingData["originCountry"],
-                                itemDesc: listingData["officialDesc"],
-                                itemRating: listingData["avgRating"],
-                                itemProducer: listingData["producerName"],
-                                itemProducerID: listingData["producerID"],
-                            };
-
-                            // Get serving type name
-                            let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
-                            if (servingTypeData != undefined) {
-                                item.itemDetails.itemServingTypeName = servingTypeData["servingType"];
-                            }
-                            else {
-                                item.itemDetails.itemServingTypeName = "(Unknown)";
-                            }
-                        }
-                    }
-                }
-
-                // Obtain mostPopular listings
-                this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
-
-                // Obtain mostDiscussed listings
-                this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
-
-                // Obtain recentlyAdded listings
-                this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
-
-                // Set editMenu and searchMenuResults
-                this.resetEditMenu();
-                this.searchMenuResults = this.detailedMenu;
-                this.searchMenuResults = this.detailedMenu.sort((a, b) => 
-                    parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
-                ); 
-
-            }
-            catch (error) {
-                console.error("Error", error);
-                this.dataLoaded = null;
-            }
-
             // Check if viewer is logged in
             if (this.viewerID != null && this.viewerID != "") {
                 this.loggedIn = true;
@@ -6365,6 +6241,28 @@ export default {
             // Load recent activities
             await this.loadRecentActivities();
 
+        },
+
+        // Handle menu data processed by child component
+        handleMenuDataProcessed(menuData) {
+            console.log('Menu data processed by child component:', menuData);
+            
+            // Update parent arrays with processed data
+            this.loadedListings = menuData.loadedListings;
+            this.loadedProducers = menuData.loadedProducers;
+            this.editMenu = menuData.editMenu;
+            this.searchMenuResults = menuData.searchMenuResults;
+            
+            // Generate sidebar data from processed listings
+            this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
+            this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
+            this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
+        },
+
+        // Handle menu data processing errors
+        handleMenuDataError(error) {
+            console.error('Error processing menu data:', error);
+            this.dataLoaded = null;
         },
 
         onFilesChange(event) {

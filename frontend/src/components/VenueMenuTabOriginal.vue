@@ -1475,14 +1475,41 @@ export default {
         VenueMenuEditOriginal
     },
     props: {
+        // Props passed from parent component
+        detailedMenu: {
+            type: Array,
+            default: () => []
+        },
+        servingTypes: {
+            type: Array,
+            default: () => []
+        },
+        targetVenue: {
+            type: Object,
+            default: () => ({})
+        },
+        selfView: {
+            type: Boolean,
+            default: false
+        },
+        loadedListings: {
+            type: Array,
+            default: () => []
+        },
+        loadedProducers: {
+            type: Array,
+            default: () => []
+        },
+        editMenuMode: {
+            type: Boolean,
+            default: false
+        }
     },
     data() {
         return {
             drag: false,
-            detailedMenu: [],
             
             // Menu Editing
-            editMenuMode: false,
             editMenu: [],
 
             showMenuLoadingOverlay: false,
@@ -1501,7 +1528,6 @@ export default {
                 'Price (Low to High)',
                 'Price (High to Low)',
             ],
-
 
             newMenuItemID: '', // selected item ID to add to menu
             newMenuItemTarget: {},
@@ -1533,24 +1559,297 @@ export default {
             renameMenuSectionModalOld: '',
             renameMenuSectionModalNew: '',
 
-            
-
-
+            // Internal copies of props for manipulation
+            internalLoadedListings: [],
+            internalLoadedProducers: [],
         }
     },
     watch: {
+        // Watch for changes in detailedMenu from parent
+        detailedMenu: {
+            handler(newMenu) {
+                if (newMenu && newMenu.length > 0) {
+                    this.loadMenuData();
+                }
+            },
+            deep: true,
+            immediate: true
+        }
     },
     mounted() {
-
+        // Initialize menu data when component mounts
+        if (this.detailedMenu.length > 0) {
+            this.loadMenuData();
+        }
+        
+        // Initialize internal arrays from props
+        this.internalLoadedListings = [...this.loadedListings];
+        this.internalLoadedProducers = [...this.loadedProducers];
     },
     methods: {
 
-        // Load other data
-        async loadData() {
-            
-        }
+        // Load menu data - moved from parent's loadData method
+        async loadMenuData() {
+            try {
+                // Get listing data for each item in menu
+                for (let section of this.detailedMenu) {
+                    for (let item of section.sectionMenu) {
 
-        
+                        // Find item in loadedListings
+                        let listingData = this.internalLoadedListings.find(i => i.id == item.itemID);
+
+                        // If not found, get from server
+                        if (listingData == undefined) {
+
+                            try {
+                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
+                                listingData = response.data;
+
+                                if (Array.isArray(listingData) && listingData.length == 0) {
+                                    // Remove item from section
+                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                }
+                                // If found, obtain additional data and add to loadedListings
+                                else if (listingData != null && listingData != "") {
+
+                                    try {
+                                        // Get average rating 
+                                        let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/` + item.itemID);
+                                        listingData['avgRating'] = reviewResponse.data['averageRating'];
+                                        listingData['reviewCount'] = reviewResponse.data['reviewCount'];
+
+                                        // Find producer in loadedProducers
+                                        let producerData = this.internalLoadedProducers.find(p => p.id == listingData["producerID"]);
+
+                                        try {
+                                            // If not found, get from server
+                                            if (producerData == undefined) {
+                                                let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
+                                                producerData = producerResponse.data;
+
+                                                if (Array.isArray(producerData) && producerData.length == 0) {
+                                                    // Remove item from section
+                                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
+                                                }
+                                                // If found, add to loadedProducers
+                                                else if (producerData != null && producerData != "") {
+                                                    this.internalLoadedProducers.push(producerData);
+                                                }
+                                            }
+
+                                            // Set producer data (producerData should either be valid or [] here)
+                                            if (!(Array.isArray(producerData) && producerData.length == 0)) {
+                                                listingData["producerName"] = producerData["producerName"];
+
+                                                // Add to loadedListings
+                                                this.internalLoadedListings.push(listingData);
+                                            }
+                                            else {
+                                                listingData = [];
+                                            }
+                                        }
+                                        catch (error) {
+                                            console.error("Error fetching producer data: ", error);
+                                            listingData = [];
+                                        }
+                                    }
+                                    catch (error) {
+                                        console.error("Error fetching listing reviews rating: ", error);
+                                        listingData = [];
+                                    }
+                                }
+                            }
+                            catch (error) {
+                                console.error("Error fetching listing data: ", error);
+                                listingData = [];
+                            }
+
+                        }
+
+                        // Set item data (listingData should either be valid or [] here)
+                        if (!(Array.isArray(listingData) && listingData.length == 0)) {
+
+                            item.itemDetails = {
+                                itemPhoto: listingData["photo"],
+                                itemName: listingData["listingName"],
+                                itemType: listingData["drinkType"],
+                                itemTypeCategory: listingData["typeCategory"],
+                                itemABV: listingData["abv"],
+                                itemCountry: listingData["originCountry"],
+                                itemDesc: listingData["officialDesc"],
+                                itemRating: listingData["avgRating"],
+                                itemProducer: listingData["producerName"],
+                                itemProducerID: listingData["producerID"],
+                            };
+
+                            // Get serving type name
+                            let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
+                            if (servingTypeData != undefined) {
+                                item.itemDetails.itemServingTypeName = servingTypeData["servingType"];
+                            }
+                            else {
+                                item.itemDetails.itemServingTypeName = "(Unknown)";
+                            }
+                        }
+                    }
+                }
+
+                // Set editMenu and searchMenuResults
+                this.resetEditMenu();
+                this.searchMenuResults = this.detailedMenu;
+                this.searchMenuResults = this.detailedMenu.sort((a, b) => 
+                    parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
+                );
+
+                // Emit the processed data back to parent
+                this.$emit('menu-data-processed', {
+                    loadedListings: this.internalLoadedListings,
+                    loadedProducers: this.internalLoadedProducers,
+                    editMenu: this.editMenu,
+                    searchMenuResults: this.searchMenuResults,
+                    processedDetailedMenu: this.detailedMenu
+                });
+
+            }
+            catch (error) {
+                console.error("Error processing menu data:", error);
+                this.$emit('menu-data-error', error);
+            }
+        },
+
+        // Reset Edit Menu - moved from parent
+        resetEditMenu() {
+            this.editMenu = [];
+
+            for (let section of this.detailedMenu) {
+                let sectionMenu = [];
+                for (let item of section.sectionMenu) {
+                    sectionMenu.push(JSON.parse(JSON.stringify(item)));
+                }
+
+                this.editMenu.push({
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    sectionMenu: sectionMenu,
+                });
+            }
+
+            // Sort editMenu numerically by sectionOrder
+            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+        },
+
+        // Search Menu - moved from parent
+        searchMenu() {
+            console.log("Searching menu with term: " + this.searchMenuTerm);
+            // Trim search term, set to lowercase. If empty, set searchMenuResults to detailedMenu
+            this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
+            if (this.searchMenuTerm == '') {
+                this.searchMenuResults = this.detailedMenu;
+            }
+            else {
+                // Reset searchMenuResults
+                this.searchMenuResults = [];
+
+                // Filter sections
+                for (let menuSection of this.detailedMenu) {
+
+                    let menuSectionFiltered = {
+                        sectionName: menuSection.sectionName,
+                        sectionOrder: menuSection.sectionOrder,
+                        sectionMenu: []
+                    };
+
+                    // Retain sections that match search term
+                    if (menuSection.sectionName.toLowerCase().includes(this.searchMenuTerm)) {
+                        menuSectionFiltered.sectionMenu = menuSection.sectionMenu;
+                    }
+                    else {
+                        // Filter items within sections
+                        for (let menuItem of menuSection.sectionMenu) {
+                            if (menuItem.itemDetails && 
+                                (menuItem.itemDetails.itemName.toLowerCase().includes(this.searchMenuTerm) ||
+                                 menuItem.itemDetails.itemProducer.toLowerCase().includes(this.searchMenuTerm))) {
+                                menuSectionFiltered.sectionMenu.push(menuItem);
+                            }
+                        }
+                    }
+
+                    // Add section to searchMenuResults if it contains items
+                    if (menuSectionFiltered.sectionMenu.length > 0) {
+                        this.searchMenuResults.push(menuSectionFiltered);
+                    }
+                }
+            }
+
+            // Sort searchMenuResults
+            this.sortMenu(this.sortMenuTerm);
+        },
+
+        // Sort Menu - moved from parent
+        sortMenu(sortTerm) {
+            // Set sortMenuTerm
+            this.sortMenuTerm = sortTerm;
+
+            // Sort searchMenuResults
+            if (this.searchMenuResults.length > 0) {
+                switch (sortTerm) {
+                    case 'Alphabetical (A-Z)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const nameA = a.itemDetails?.itemName || '';
+                                const nameB = b.itemDetails?.itemName || '';
+                                return nameA.localeCompare(nameB);
+                            });
+                        });
+                        break;
+                    case 'Alphabetical (Z-A)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const nameA = a.itemDetails?.itemName || '';
+                                const nameB = b.itemDetails?.itemName || '';
+                                return nameB.localeCompare(nameA);
+                            });
+                        });
+                        break;
+                    case 'Rating (Low to High)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const ratingA = a.itemDetails?.itemRating || 0;
+                                const ratingB = b.itemDetails?.itemRating || 0;
+                                return ratingA - ratingB;
+                            });
+                        });
+                        break;
+                    case 'Rating (High to Low)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const ratingA = a.itemDetails?.itemRating || 0;
+                                const ratingB = b.itemDetails?.itemRating || 0;
+                                return ratingB - ratingA;
+                            });
+                        });
+                        break;
+                    case 'Price (High to Low)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const priceA = a.itemPrice || 0;
+                                const priceB = b.itemPrice || 0;
+                                return priceB - priceA;
+                            });
+                        });
+                        break;
+                    case 'Price (Low to High)':
+                        this.searchMenuResults.forEach(section => {
+                            section.sectionMenu.sort((a, b) => {
+                                const priceA = a.itemPrice || 0;
+                                const priceB = b.itemPrice || 0;
+                                return priceA - priceB;
+                            });
+                        });
+                        break;
+                }
+            }
+        }
 
     }
 }
