@@ -1870,7 +1870,7 @@
 
                 <!-- ------- END Bar Overview / START Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                <!-- Bar Menu -->
+                <!-- Bar Menu TO BE DELETED, SHIFTED TO COMPONENT -->
                 <div v-if="contentMode == 'menu'" id="menu">
                     <!-- Menu section wrapper with relative positioning -->
                     <div class="menu-wrapper position-relative">
