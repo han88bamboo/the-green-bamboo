@@ -1962,6 +1962,97 @@ export default {
             } catch (error) {
                 console.error(error);
             }
+        },
+
+        // Add Menu Item - moved from parent
+        async addMenuItem() {
+
+            // Add item to section
+            this.newMenuItemTargetSection.sectionMenu.push({
+                itemID: this.newMenuItemTarget['id'],
+                itemOrder: this.newMenuItemTargetSection.sectionMenu.length,
+                itemVintage: this.newMenuItemVintage,
+                itemPrice: this.newMenuItemPrice,
+                itemServingType: this.newMenuItemServingType,
+                itemAvailability: true,
+                itemDetails: {
+                    itemPhoto: this.newMenuItemTarget.photo,
+                    itemName: this.newMenuItemTarget.listingName,
+                    itemType: this.newMenuItemTarget.drinkType,
+                    itemTypeCategory: this.newMenuItemTarget.typeCategory,
+                    itemABV: this.newMenuItemTarget.abv,
+                    itemCountry: this.newMenuItemTarget.originCountry,
+                    itemDesc: this.newMenuItemTarget.officialDesc,
+                    itemRating: this.newMenuItemTarget.avgRating,
+                    itemProducer: this.newMenuItemTarget.producerName,
+                    itemProducerID: this.newMenuItemTarget.producerID,
+                    itemServingTypeName: "Serving",
+                }
+            });
+
+            if (!this.newMenuItemPrice || this.newMenuItemPrice == "") {
+                this.newMenuItemPrice = -1;
+            }
+
+            try {
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
+                    {
+                        venueID: this.targetVenue['id'],
+                        menuOrder: this.newMenuItemTargetSection.sectionMenu.length - 1,
+                        listingID: this.newMenuItemTarget['id'],
+                        itemVintage: this.newMenuItemVintage,
+                        itemPrice: this.newMenuItemPrice,
+                        servingType: this.newMenuItemServingType,
+                        sectionName: this.newMenuItemTargetSection.sectionName,
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                if (response.status == 201) {
+                    const toast = useToast();
+                    toast.success("Successfully added listing to menu.");
+
+                    // Reload page
+                    this.$router.go(0);
+                }
+            }
+            catch (error) {
+                alert("An error occurred while attempting to add the item, please try again! You may have tried to add a Drink Item to a new Menu Section that has not been saved yet. Please save the new Menu Section first, then click 'Edit Menu' again to add your drink item.");
+                // console.error(error);
+            }
+
+            this.editMenuMode = false;
+
+            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
+            this.newMenuItemID = "";
+            this.newMenuItemTarget = {};
+            this.newMenuItemTargetSection = {};
+            this.newMenuItemPrice = '';
+            this.getDefaultServingType();
+        },
+
+        // Add Additional Item (for multiple items modal) - moved from parent
+        addAdditionalItem() {
+            if (this.multipleMenuItems.length < 20) {
+                const defaultServingId = this.servingTypes.find(type => type.servingType === "-")?.id || 1;
+
+                this.multipleMenuItems.push({
+                    producerSearchQuery: '',
+                    producerSearchResults: [],
+                    selectedProducer: {},
+                    searchQuery: '',
+                    searchResults: [],
+                    newMenuItemID: '',
+                    newMenuItemTarget: {},
+                    newMenuItemPrice: -1,
+                    newMenuItemServingType: defaultServingId,
+                    debounceTimer: null,
+                    producerDebounceTimer: null
+                });
+            }
         }
 
     }
