@@ -3471,7 +3471,6 @@ import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
-import VenueMenuEditOriginal from '@/components/VenueMenuEditOriginal.vue';
 
 // Import Phosphor Icons
 import { 
@@ -3497,7 +3496,6 @@ export default {
         LoadingWithFunFact,
         PWStrengthChecker,
         VenueMenuTabOriginal,
-        VenueMenuEditOriginal,
         // Add Phosphor Icons as components
         PhWine,
         PhBeerStein, 
