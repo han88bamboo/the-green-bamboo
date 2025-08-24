@@ -227,6 +227,44 @@
             </div>
         </div>
 
+        <!-- Edit Mode -->
+        <div v-if="editMode && venueData['claimStatus']">
+            <VenueMenuEditOriginal 
+                ref="venueMenuEdit"
+                :edit-menu-mode="editMode"
+                :edit-menu="editMenu"
+                :serving-types="servingTypes"
+                :target-venue="venueData"
+                :multiple-menu-items="multipleMenuItems"
+                :global-menu-item-target-section="globalMenuItemTargetSection"
+                :rename-menu-section-modal-target="renameMenuSectionModalTarget"
+                :rename-menu-section-modal-old="renameMenuSectionModalOld"
+                :rename-menu-section-modal-new="renameMenuSectionModalNew"
+                :show-menu-loading-overlay="showMenuLoadingOverlay"
+                :menu-snapshot="menuSnapshot"
+                @cancel-edit="handleCancelEdit"
+                @update-menu="handleUpdateMenu"
+                @add-menu-section="handleAddMenuSection"
+                @delete-menu-section="handleDeleteMenuSection"
+                @populate-rename-modal="handlePopulateRenameModal"
+                @rename-menu-section="handleRenameMenuSection"
+                @delete-menu-item="handleDeleteMenuItem"
+                @add-additional-item="handleAddAdditionalItem"
+                @remove-menu-item="handleRemoveMenuItem"
+                @reset-multiple-menu-items="handleResetMultipleMenuItems"
+                @debounced-search-producers="handleDebouncedSearchProducers"
+                @select-producer="handleSelectProducer"
+                @debounced-search-multiple="handleDebouncedSearchMultiple"
+                @select-listing-multiple="handleSelectListingMultiple"
+                @update-global-target-section="handleUpdateGlobalTargetSection"
+                @add-multiple-menu-items="handleAddMultipleMenuItems"
+                @drag-start="handleDragStart"
+                @drag-end="handleDragEnd"
+                @drag-item-start="handleDragItemStart"
+                @drag-item-end="handleDragItemEnd"
+            />
+        </div>
+
         <!-- Menu View (Not Editing) -->
         <div v-if="!editMode && venueData['claimStatus']" class="container text-start ">
 
@@ -475,8 +513,13 @@
 </template>
 
 <script>
+import VenueMenuEditOriginal from './VenueMenuEditOriginal.vue';
+
 export default {
     name: 'VenueMenuTabOriginal',
+    components: {
+        VenueMenuEditOriginal
+    },
     props: {
         venueData: {
             type: Object,
@@ -505,6 +548,42 @@ export default {
         currentURL: {
             type: String,
             required: true
+        },
+        editMenu: {
+            type: Array,
+            default: () => []
+        },
+        servingTypes: {
+            type: Array,
+            default: () => []
+        },
+        multipleMenuItems: {
+            type: Array,
+            default: () => []
+        },
+        globalMenuItemTargetSection: {
+            type: Object,
+            default: () => ({})
+        },
+        renameMenuSectionModalTarget: {
+            type: Object,
+            default: () => ({})
+        },
+        renameMenuSectionModalOld: {
+            type: String,
+            default: ''
+        },
+        renameMenuSectionModalNew: {
+            type: String,
+            default: ''
+        },
+        showMenuLoadingOverlay: {
+            type: Boolean,
+            default: false
+        },
+        menuSnapshot: {
+            type: String,
+            default: null
         }
     },
     data() {
@@ -655,6 +734,87 @@ export default {
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
                 });
+        },
+
+        // Edit mode handlers
+        handleCancelEdit() {
+            this.$emit('cancel-edit');
+        },
+        
+        handleUpdateMenu() {
+            this.$emit('update-menu');
+        },
+        
+        handleAddMenuSection() {
+            this.$emit('add-menu-section');
+        },
+        
+        handleDeleteMenuSection(index) {
+            this.$emit('delete-menu-section', index);
+        },
+        
+        handlePopulateRenameModal(index) {
+            this.$emit('populate-rename-modal', index);
+        },
+        
+        handleRenameMenuSection() {
+            this.$emit('rename-menu-section');
+        },
+        
+        handleDeleteMenuItem(sectionIndex, itemIndex) {
+            this.$emit('delete-menu-item', sectionIndex, itemIndex);
+        },
+        
+        handleAddAdditionalItem() {
+            this.$emit('add-additional-item');
+        },
+        
+        handleRemoveMenuItem(itemIndex) {
+            this.$emit('remove-menu-item', itemIndex);
+        },
+        
+        handleResetMultipleMenuItems() {
+            this.$emit('reset-multiple-menu-items');
+        },
+        
+        handleDebouncedSearchProducers(itemIndex) {
+            this.$emit('debounced-search-producers', itemIndex);
+        },
+        
+        handleSelectProducer(producer, itemIndex) {
+            this.$emit('select-producer', producer, itemIndex);
+        },
+        
+        handleDebouncedSearchMultiple(itemIndex) {
+            this.$emit('debounced-search-multiple', itemIndex);
+        },
+        
+        handleSelectListingMultiple(listing, itemIndex) {
+            this.$emit('select-listing-multiple', listing, itemIndex);
+        },
+        
+        handleUpdateGlobalTargetSection() {
+            this.$emit('update-global-target-section');
+        },
+        
+        handleAddMultipleMenuItems() {
+            this.$emit('add-multiple-menu-items');
+        },
+        
+        handleDragStart() {
+            this.$emit('drag-start');
+        },
+        
+        handleDragEnd() {
+            this.$emit('drag-end');
+        },
+        
+        handleDragItemStart(menuSection) {
+            this.$emit('drag-item-start', menuSection);
+        },
+        
+        handleDragItemEnd(menuSection) {
+            this.$emit('drag-item-end', menuSection);
         }
     }
 }
