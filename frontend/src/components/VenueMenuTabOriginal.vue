@@ -288,7 +288,8 @@
                     <button type="button" class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
                         aria-expanded="true" :aria-controls="'collapseMenuSection' + index"
-                        style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                        style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+                        @click="loadSectionContent(index)">
                         {{ menuSection.sectionName }} ↓
                     </button>
                 </div>
@@ -299,8 +300,13 @@
                         <p class="text-center fst-italic m-0">No menu items to show!</p>
                     </div>
 
-                    <!-- Section Contents -->
-                    <div class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu"
+                    <!-- Loading message -->
+                    <div v-else-if="!isSectionLoaded(index)" class="col-12 my-3 text-center">
+                        <p class="text-muted fst-italic">Loading menu items...</p>
+                    </div>
+
+                    <!-- Section Contents - only render when loaded -->
+                    <div v-else class="col-12 my-3" v-for="sectionItem in menuSection.sectionMenu"
                         v-bind:key="sectionItem.itemID">
 
                         <div class="row">
@@ -395,8 +401,13 @@
                         <p class="text-center fst-italic m-0">No menu items to show!</p>
                     </div>
 
-                    <!-- Section Contents -->
-                    <div class="col-12 my-3 me-3" v-for="sectionItem in menuSection.sectionMenu"
+                    <!-- Loading message -->
+                    <div v-else-if="!isSectionLoaded(index)" class="col-12 my-3 text-center">
+                        <p class="text-muted fst-italic">Loading menu items...</p>
+                    </div>
+
+                    <!-- Section Contents - only render when loaded -->
+                    <div v-else class="col-12 my-3 me-3" v-for="sectionItem in menuSection.sectionMenu"
                         v-bind:key="sectionItem.itemID">
                         <div class="row align-items-center">
 
@@ -600,7 +611,8 @@ export default {
                 'Price (Low to High)'
             ],
             clipboardItem: false,
-            showFullItemDescription: false
+            showFullItemDescription: false,
+            loadedSections: new Set() // Track which sections have been loaded
         }
     },
     watch: {
@@ -608,14 +620,26 @@ export default {
             immediate: true,
             handler(newData) {
                 this.searchResults = [...newData];
+                this.loadedSections.clear(); // Reset loaded sections when data changes
                 this.sortMenu('');
             }
         }
+    },
+    mounted() {
+        // Pre-load the first section for better user experience
+        this.$nextTick(() => {
+            if (this.searchResults.length > 0) {
+                this.loadSectionContent(0);
+            }
+        });
     },
     methods: {
         // Search Menu
         searchMenu() {
             console.log("Searching menu with term: " + this.searchTerm);
+            // Reset loaded sections when searching
+            this.loadedSections.clear();
+            
             // Trim search term, set to lowercase. If empty, set searchResults to menuData
             this.searchTerm = this.searchTerm.trim().toLowerCase();
             if (this.searchTerm == '') {
@@ -734,6 +758,17 @@ export default {
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
                 });
+        },
+
+        // Lazy loading: Load section content when expanded
+        loadSectionContent(sectionIndex) {
+            console.log('Loading section content for index:', sectionIndex);
+            this.loadedSections.add(sectionIndex);
+        },
+
+        // Check if section content is loaded
+        isSectionLoaded(sectionIndex) {
+            return this.loadedSections.has(sectionIndex);
         },
 
         // Edit mode handlers
