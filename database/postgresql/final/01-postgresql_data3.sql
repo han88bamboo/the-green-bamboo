@@ -261,6 +261,8 @@ CREATE TABLE "venues" (
     "pdfMenuUrl" TEXT DEFAULT NULL
 );
 
+-- ALTER TABLE "venues" ADD COLUMN "pdfMenuUrl" TEXT DEFAULT NULL;
+
 -- ========= "venueAmenities" =========
 CREATE TABLE "venueAmenities" (
     "id" SERIAL PRIMARY KEY,

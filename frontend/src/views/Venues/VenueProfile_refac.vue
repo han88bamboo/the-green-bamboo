@@ -308,15 +308,11 @@ export default {
             },
 
             overview: {
-                mp_loading: false, // most popular loading state
-                mp_error: null, // most popular error 
+                loading: false, // most popular loading state
+                error: null, // most popular error 
                 mostPopular: [], // most popular list 
-                md_loading: false, // most discussed loading state
-                md_error: null, // most discussed error
                 mostDiscussed: [], // most discussed list 
-                ra_loading: false, // recently added loading state
-                ra_error: null, // recently added error 
-                ra_recentlyAdded: [] // recently added list
+                recentlyAdded: [] // recently added list
             },
 
             // Properties to hold data from the child component
@@ -473,7 +469,27 @@ export default {
         },
 
         async getOverview() {
-            return
+            this.overview.loading = true;
+            this.overview.error = null; // Clear previous errors
+
+            try {
+                const response = await apiService.fetchWithRetry(
+                    this.$axios,
+                    `${process.env.VUE_APP_API_URL}/menu/${this.targetVenueID}/overview`
+                );
+
+                // Update only the data properties
+                this.overview.mostPopular = response.data.most_popular;
+                this.overview.mostDiscussed = response.data.most_discussed;
+                this.overview.recentlyAdded = response.data.most_recent;
+
+                console.log("-----------------------------------------")
+                console.log(this.overview)
+            } catch (error) {
+                this.overview.error = error;
+            } finally {
+                this.overview.loading = false;
+            }
         },
 
         async getReviews() {
@@ -489,7 +505,7 @@ export default {
 
             try {
                 const venueData = await this.fetchVenueDetails();
-                console.log(venueData);
+                // console.log(venueData);
                 if (!venueData) {
                     this.venueExists = false;
                     return;

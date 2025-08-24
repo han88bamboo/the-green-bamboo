@@ -132,20 +132,17 @@
         <!-- View Sorted Listings -->
         <div class="venue-overview-container">
             <!-- Most Popular Section -->
-            <ListingDisplay section-key="mostPopular" display-name="Most Popular" :listing-data="overview.mostPopular"
-                :loading="overview.mp_loading" :error="overview.mp_error" :user="user"
-                @icon-clicked="handleBookmarkClick" @retry="handleRetry('mostPopular')" />
+            <ListingDisplay :listings="overview.mostPopular"
+                title="Most Popular" :user="userInfo"
+                @icon-clicked="handleIconClick" />
 
-            <!-- Most Discussed Section -->
-            <ListingDisplay section-key="mostDiscussed" display-name="Most Discussed"
-                :listing-data="overview.mostDiscussed" :loading="overview.md_loading" :error="overview.md_error"
-                :user="user" @icon-clicked="handleBookmarkClick" @retry="handleRetry('mostDiscussed')" />
+            <ListingDisplay :listings="overview.mostDiscussed"
+                title="Most Discussed" :user="userInfo"
+                @icon-clicked="handleIconClick" />
 
-            <!-- Recently Added Section -->
-            <ListingDisplay section-key="recentlyAdded" display-name="Recently Added"
-                :listing-data="overview.ra_recentlyAdded" :loading="overview.ra_loading" :error="overview.ra_error"
-                :user="user" @icon-clicked="handleBookmarkClick" @retry="handleRetry('recentlyAdded')" />
-
+            <ListingDisplay :listings="overview.recentlyAdded"
+                title="Recently Added" :user="userInfo"
+                @icon-clicked="handleIconClick" />
         </div>
 
     </div>
@@ -169,9 +166,8 @@ export default {
             validator(value) {
                 // Validate the structure of overview object
                 const requiredKeys = [
-                    'mp_loading', 'mp_error', 'mostPopular',
-                    'md_loading', 'md_error', 'mostDiscussed',
-                    'ra_loading', 'ra_error', 'ra_recentlyAdded'
+                    'loading', 'error', 
+                    'mostPopular', 'mostDiscussed', 'ra_recentlyAdded'
                 ];
                 return requiredKeys.every(key => key in value);
             }
