@@ -1858,6 +1858,110 @@ export default {
                 sectionOrder: this.editMenu.length,
                 sectionMenu: [],
             });
+        },
+
+        // Delete Menu Section - moved from parent
+        deleteMenuSection(index) {
+            // Remove section from editMenu
+            this.editMenu = this.editMenu.filter(s => s.sectionOrder != index);
+        },
+
+        // Populate Rename Menu Section Modal - moved from parent
+        populateRenameMenuSectionModal(index) {
+            this.renameMenuSectionModalTarget = {
+                index: index,
+                data: JSON.parse(JSON.stringify(this.editMenu.find(s => s.sectionOrder == index))),
+            }
+            this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
+            this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
+        },
+
+        // Rename Menu Section - moved from parent
+        renameMenuSection() {
+            this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
+            this.editMenu = this.editMenu.map(s => s.sectionOrder == this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+        },
+
+        // Update New Menu Item Target - moved from parent
+        async updateNewMenuItemTarget() {
+
+            // get error message element
+            let newMenuItemTargetError = document.getElementById("newMenuItemTargetError");
+
+            // Retrieve from backend the liting data based on newMenuItemID
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsDetailedByID/${this.newMenuItemID}`);
+                let itemData = response.data;
+
+                // Check if itemData is valid
+                if (itemData) {
+                    this.newMenuItemTarget = itemData;
+                    newMenuItemTargetError.innerText = "";
+
+                    this.updateNewMenuItemTargetSection();
+                }
+            }
+            catch (error) {
+                this.newMenuItemTarget = {};
+                newMenuItemTargetError.innerText = "Please target a valid bottle listing!";
+            }
+        },
+
+        // Update New Menu Item Target Section - moved from parent
+        updateNewMenuItemTargetSection() {
+
+            // get error + notice message element
+            let newMenuItemTargetSectionError = document.getElementById("newMenuItemTargetSectionError");
+            let newMenuItemTargetSectionNotice = document.getElementById("newMenuItemTargetSectionNotice");
+
+            if (Object.keys(this.newMenuItemTargetSection).length !== 0) {
+
+                newMenuItemTargetSectionError.innerText = "";
+
+                // Check if item already exists in section
+                let itemExists = this.newMenuItemTargetSection.sectionMenu.find(i => i.itemID == this.newMenuItemID);
+                if (itemExists != undefined) {
+                    newMenuItemTargetSectionNotice.innerText = "Are you sure you want to add a duplicate item to this section?"
+                }
+                else {
+                    newMenuItemTargetSectionNotice.innerText = "";
+                }
+            }
+            else {
+                newMenuItemTargetSectionError.innerText = "Please select a valid menu section!";
+                newMenuItemTargetSectionNotice.innerText = "";
+            }
+        },
+
+        // Get Default Serving Type - moved from parent
+        getDefaultServingType() {
+            try {
+                const defaultServing = this.servingTypes.find(s => s.servingType === "-");
+                if (defaultServing) {
+                    this.newMenuItemServingType = defaultServing.id;
+                } else {
+                    console.error('No serving type with "-" found. Setting a default id.');
+                    this.newMenuItemServingType = 1;  // Or set to a specific default id, e.g. 1
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        },
+
+        // Initialize Default Serving Types for Multiple Items - moved from parent
+        initializeMultipleItemsDefaultServingTypes() {
+            try {
+                const defaultServing = this.servingTypes.find(s => s.servingType === "-");
+                const defaultId = defaultServing ? defaultServing.id : 1;
+
+                this.multipleMenuItems.forEach(item => {
+                    if (!item.newMenuItemServingType) {
+                        item.newMenuItemServingType = defaultId;
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+            }
         }
 
     }
