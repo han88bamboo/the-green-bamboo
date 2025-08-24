@@ -721,7 +721,9 @@
                   </div>
                 </div>
               </div>
-              <div class="row col-6 mobile-col-4  mobile-ps-0 mobile-pt-1">
+
+              <!-- Disabled filter and sort to prevent page errors due to updated content retrieval - CP -->
+              <div v-if="false" class="row col-6 mobile-col-4  mobile-ps-0 mobile-pt-1">
                 <!-- filter by drink type / category tzh changed col-12 to col-4 -->
                 <div class="dropdown col-xl-6 col-lg-4 col-6 mb-3 col-6 mobile-pe-0 ps-0 mobile-mb-1"
                 >
@@ -939,6 +941,7 @@
             <!-- listings  TZH removed class scrollable-listings--->
             <div class="container">
               <div class="row">
+
                 <!-- [if] discovery mode-->
                 <div
                   v-if="discovery == true || following == false"
@@ -962,14 +965,14 @@
                     <!-- Displays listings from all general listings or from filtered listings from drinkCategory/drinkType depending if filter is selected-->
                     <!-- <div v-for="listing in filteredListings" v-bind:key="listing.id" class="p-3 mobile-pt-0"> -->
 
+                    <!-- CP Edit for improved content retrieval for discovery tab -->
                     <div
-                      v-for="listing in selectedDrinkType == ''
-                        ? listings
-                        : filteredListings"
-                      v-bind:key="listing.id"
+                      v-for="content in contents"
+                      v-bind:key="content.id"
                       class=""
                     >
-                      <div class="row">
+                      <!--If content is 'Listing' content -->
+                      <div v-if="content.contentType == 'Listing'" class="row">
                         <div class="col-md-12">
                           <div class="container mt-4 mobile-mt-3">
                             <div class="card d-flex flex-row">
@@ -979,8 +982,8 @@
                                   class="image-wrapper position-relative d-inline-block"
                                 >
                                   <img
-                                    v-if="listing['photo']"
-                                    :src="listing['photo']"
+                                    v-if="content['photo']"
+                                    :src="content['photo']"
                                     class="listing-image"
                                   />
                                   <img
@@ -1000,36 +1003,36 @@
                                   <div class="name-producer">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
                                       }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
                                     >
                                       <h5 class="d-none d-md-block">
-                                        <b>{{ listing["listingName"] }}</b>
+                                        <b>{{ content["listingName"] }}</b>
                                       </h5>
                                       <h6 class="d-block d-md-none mobile-mt-2">
-                                        <b>{{ listing["listingName"] }}</b>
+                                        <b>{{ content["listingName"] }}</b>
                                       </h6>
                                     </router-link>
                                     <router-link
                                       :to="{
                                         path:
                                           '/profile/producer/' +
-                                          listing.producerID +
+                                          content.producerID +
                                           '/' +
-                                          listing.producerName,
+                                          content.producerName,
                                       }"
                                       class="primary-clickable-text"
                                     >
                                       <h6 class="Xmobile-rating-smaller-text">
-                                        <b>{{ listing.producerName }}</b>
+                                        <b>{{ content.producerName }}</b>
                                       </h6>
                                     </router-link>
                                   </div>
                                   <router-link
                                     :to="{
-                                      path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                      path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
                                     }"
                                     class="default-clickable-text fst-italic"
                                   >
@@ -1037,10 +1040,10 @@
                                       class="homepage-bottle-listing-description"
                                     >
                                       {{
-                                        listing.officialDesc?.length > 300
-                                          ? listing.officialDesc.slice(0, 300) +
+                                        content.officialDesc?.length > 300
+                                          ? content.officialDesc.slice(0, 300) +
                                             "..."
-                                          : listing.officialDesc
+                                          : content.officialDesc
                                       }}
                                     </p>
                                   </router-link>
@@ -1050,16 +1053,16 @@
                                 <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
                                 >
                                   <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ listing.rating }} ★
+                                    {{ content.rating }} ★
                                   </h1>
 
                                   <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ listing.rating }} ★
+                                    {{ content.rating }} ★
                                   </h4>
                                   <div class="d-grid">
                                     <router-link
                                       :to="{
-                                        path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName),
+                                        path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
                                       }"
                                       class="primary-clickable-text"
                                     >
@@ -1076,10 +1079,182 @@
                           </div>
                         </div>
                       </div>
+
+                      <!-- If content is 'Review'-->
+                      <div v-else-if="content.contentType == 'Review'" class="row">
+                        <div class="col-md-12">
+                          <div class="container mt-4 mobile-mt-3">
+                            <div class="card d-flex flex-row">
+
+                              <!-- Image Section -->
+                              <div class="text-center text-md-start">
+                                <div
+                                  class="image-wrapper position-relative d-inline-block"
+                                >
+                                  <img
+                                    v-if="content['photo']"
+                                    :src="content['photo']"
+                                    class="listing-image"
+                                  />
+                                  <img
+                                    v-else
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                    class="listing-image"
+                                  />
+                                </div>
+                              </div>
+
+                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                                  <!-- Details Section -->
+                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
+                                  <!-- User and Listing Link -->
+                                  <div>
+                                    <span>
+                                      <!-- Username -->
+                                      <router-link
+                                        :to="{
+                                          path: '/profile/user/' + content.userID + '/' + content.username,
+                                        }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <h5 class="d-none d-md-block">
+                                          @<b>{{ content["username"] }}</b>
+                                        </h5>
+                                        <h6 class="d-block d-md-none mobile-mt-2">
+                                          @<b>{{ content["username"] }}</b>
+                                        </h6>
+                                      </router-link>
+
+                                      <!-- Listing Name -->
+                                      <h6>
+                                        reviewed
+                                        <router-link :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
+                                          class="primary-clickable-text text-decoration-none"
+                                          style="color: #027562"
+                                        >
+                                          <b>{{ content["listingName"] }}</b>
+                                        </router-link>
+                                      </h6>
+                                    </span>
+
+                                    <!-- Review Description -->
+                                    <span>
+                                      <router-link :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <p class="default-clickable-text fst-italic">{{ content["reviewDesc"] }}</p>
+                                      </router-link>
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <!-- Rating & Read More Button -->
+                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
+                                >
+                                  <h1 class="fw-bold text-warning mobile-view-hide">
+                                    {{ content.rating }} ★
+                                  </h1>
+
+                                  <h4 class="fw-bold text-warning mobile-view-show">
+                                    {{ content.rating }} ★
+                                  </h4>
+                                  <div class="d-grid">
+                                    <router-link
+                                      :to="{
+                                        path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName),
+                                      }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <button
+                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                      >
+                                        Read More
+                                      </button>
+                                    </router-link>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- If content is 'Update'-->
+                      <div v-else-if="content.contentType === 'Update'">
+                        <div class="col-md-12">
+                          <div class="container mt-4 mobile-mt-3">
+                            <div class="card d-flex flex-row">
+                              <!-- Image Section -->
+                              <div class="text-center text-md-start">
+                                <div
+                                  class="image-wrapper position-relative d-inline-block"
+                                >
+                                  <img
+                                    v-if="content['photo']"
+                                    :src="content['photo']"
+                                    class="listing-image"
+                                  />
+                                  <img
+                                    v-else
+                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                    class="listing-image"
+                                  />
+                                </div>
+                              </div>
+
+                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+
+                                <!-- Details Section-->
+                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
+
+                                  <!-- Venue Name -->
+                                  <router-link v-if="content.venueId"
+                                    :to="{
+                                      path: '/profile/venue/' + content.venueId + '/' + slugify(content.venueName),
+                                    }"
+                                    class="primary-clickable-text text-decoration-none"
+                                    style="color: #027562"
+                                  >
+                                    <h5 class="d-none d-md-block">
+                                      <b>{{ content["venueName"] }}</b>
+                                    </h5>
+                                    <h6 class="d-block d-md-none mobile-mt-2">
+                                      <b>{{ content["venueName"] }}</b>
+                                    </h6>
+                                  </router-link>
+
+                                  <!-- Producer Name -->
+                                  <router-link v-else-if="content.producerId"
+                                    :to="{
+                                      path: '/profile/producer/' + content.producerId + '/' + slugify(content.producerName),
+                                    }"
+                                    class="primary-clickable-text text-decoration-none"
+                                    style="color: #027562"
+                                  >
+                                    <h5 class="d-none d-md-block">
+                                      <b>{{ content["producerName"] }}</b>
+                                    </h5>
+                                    <h6 class="d-block d-md-none mobile-mt-2">
+                                      <b>{{ content["producerName"] }}</b>
+                                    </h6>
+                                  </router-link>
+
+                                  <!-- Updates -->
+                                  <h6 class="fst-italic">
+                                    {{content.text}}
+                                  </h6>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <!-- end of listings -->
+                <!-- end of content -->
 
                 <!-- [else] following clicked -->
                 <div
@@ -1380,14 +1555,15 @@
                 <div
                   class="d-grid justify-content-center align-content-center mt-5 mb-3"
                 >
-                  <button
+                  <!-- Load More Button -->
+                  <!-- <button
                     v-if="moreListings"
                     class="btn secondary-btn btn-md"
                     style="font-weight: bold"
                     @click="retrieveListings"
                   >
                     Click to load more!
-                  </button>
+                  </button> -->
                 </div>
               </div>
               <!-- end of scrollable section -->
@@ -1438,7 +1614,7 @@ export default {
       dataLoaded: false,
       // data from database
       // countries: [],
-      listings: [],
+      contents: [],
       reviews: [],
       drinkTypes: [],
       // modRequests: [],
@@ -1461,7 +1637,7 @@ export default {
       searchInput: "",
       searchTerm: "",
       searchResults: [],
-      filteredListings: [],
+      filteredContent: [],
       searchHistory: [],
 
       // for filter by drink categories
@@ -1559,9 +1735,9 @@ export default {
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getRandomListings`
         );
-        this.listings = response.data;
-        // originally, make filteredListings the entire collection of listings
-        this.filteredListings = this.listings;
+        this.contents = response.data.content;
+        // originally, make filteredContent the entire collection of content
+        this.filteredContent = this.contents;
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -1863,35 +2039,35 @@ export default {
     // },
 
     // for search button
-    searchListings() {
-        // flag to check if there are search inputs
-        const searchInput = this.searchInput.toLowerCase();
-        this.searchTerm = this.searchInput;
+    // searchListings() {
+    //     // flag to check if there are search inputs
+    //     const searchInput = this.searchInput.toLowerCase();
+    //     this.searchTerm = this.searchInput;
 
-        // if there is something searched
-        this.search = true;
-        const searchResults = this.listings.filter((listing) => {
-            const expressionName = listing["listingName"].toLowerCase();
-            const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
-            return expressionName.includes(searchInput) || producer.includes(searchInput);
-        });
+    //     // if there is something searched
+    //     this.search = true;
+    //     const searchResults = this.listings.filter((listing) => {
+    //         const expressionName = listing["listingName"].toLowerCase();
+    //         const producer = this.getProducerName(listing).toLowerCase(); //error here if return null, meaning drink doesnt belong to any producer
+    //         return expressionName.includes(searchInput) || producer.includes(searchInput);
+    //     });
 
-        // add search results to search history
-        this.searchHistory.push([searchInput, searchResults]);
+    //     // add search results to search history
+    //     this.searchHistory.push([searchInput, searchResults]);
 
-        // if nothing found
-        if (searchResults.length == 0) {
-            this.filteredListings = [];
-        }
-        else {
-            this.filteredListings = searchResults;
-        }
+    //     // if nothing found
+    //     if (searchResults.length == 0) {
+    //         this.filteredListings = [];
+    //     }
+    //     else {
+    //         this.filteredListings = searchResults;
+    //     }
 
-        // if there is nothing searched
-        if (this.searchInput == '') {
-            this.resetListings();
-        }
-    },
+    //     // if there is nothing searched
+    //     if (this.searchInput == '') {
+    //         this.resetListings();
+    //     }
+    // },
 
     // for viewing previous listings (show previous search results)
     // previousListing() {
@@ -1912,14 +2088,16 @@ export default {
     // },
 
     // for resetting listings (show full listings)
-    resetListings() {
-      this.searchInput = "";
-      this.search = false;
-      this.filteredListings = this.listings;
-      this.searchHistory = [];
-      this.moreListings = true;
-    },
+    // resetListings() {
+    //   this.searchInput = "";
+    //   this.search = false;
+    //   this.filteredListings = this.listings;
+    //   this.searchHistory = [];
+    //   this.moreListings = true;
+    // },
 
+
+    // Sort features
     // Handle select of drink type filter option like sake, gin, whiskey
     selectDrinkType(drinkType) {
       // reset most reviews and recently added arrays so that can repeatedly filter
@@ -2330,75 +2508,76 @@ export default {
       this.bookmarkListingID = data;
     },
 
-    async retrieveListings() {
-      // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
-      if (this.discovery) {
-        if (this.selectedDrinkType != "") {
-          let lastFilteredId = 0;
-          if (this.filteredListings.length > 0) {
-            lastFilteredId =
-              this.filteredListings[this.filteredListings.length - 1].id;
-          }
-          let params = {
-            drinkType: this.selectedDrinkType.drinkType,
-            drinkCategory: this.selectedCategory,
-          };
-          const response = await this.$axios.get(
-            `${process.env.VUE_APP_API_URL}/getData/getFiltered30` +
-              "/" +
-              lastFilteredId,
-            { params }
-          );
-          this.filteredListings.push(...response.data);
-          if (response.data.length == 0) {
-            this.moreListings = false;
-          }
-        }
-        // if not, meaning listings are not filtered, retrieve next 30 listings in DB
-        else {
-          let lastId = this.listings[this.listings.length - 1].id;
-          const response = await this.$axios.get(
-            `${process.env.VUE_APP_API_URL}/getData/getNext30` + "/" + lastId
-          );
-          this.listings.push(...response.data);
-          if (response.data.length == 0) {
-            this.moreListings = false;
-          }
-        }
-      }
-      //Lazy loading for following tab
-      else {
-      //Lazy loading for following tab
-      // Check if there are items in recentlyAdded before accessing
-      if (this.recentlyAdded && this.recentlyAdded.length > 0) {
+    // Lazy loading for content
+    // async retrieveListings() {
+    //   // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
+    //   if (this.discovery) {
+    //     if (this.selectedDrinkType != "") {
+    //       let lastFilteredId = 0;
+    //       if (this.filteredListings.length > 0) {
+    //         lastFilteredId =
+    //           this.filteredListings[this.filteredListings.length - 1].id;
+    //       }
+    //       let params = {
+    //         drinkType: this.selectedDrinkType.drinkType,
+    //         drinkCategory: this.selectedCategory,
+    //       };
+    //       const response = await this.$axios.get(
+    //         `${process.env.VUE_APP_API_URL}/getData/getFiltered30` +
+    //           "/" +
+    //           lastFilteredId,
+    //         { params }
+    //       );
+    //       this.filteredListings.push(...response.data);
+    //       if (response.data.length == 0) {
+    //         this.moreListings = false;
+    //       }
+    //     }
+    //     // if not, meaning listings are not filtered, retrieve next 30 listings in DB
+    //     else {
+    //       let lastId = this.listings[this.listings.length - 1].id;
+    //       const response = await this.$axios.get(
+    //         `${process.env.VUE_APP_API_URL}/getData/getNext30` + "/" + lastId
+    //       );
+    //       this.listings.push(...response.data);
+    //       if (response.data.length == 0) {
+    //         this.moreListings = false;
+    //       }
+    //     }
+    //   }
+    //   //Lazy loading for following tab
+    //   else {
+    //   //Lazy loading for following tab
+    //   // Check if there are items in recentlyAdded before accessing
+    //   if (this.recentlyAdded && this.recentlyAdded.length > 0) {
         
-        let data = {
-          followedProducers: this.followedProducers,
-          lastListingIdP: this.lastRAProducerListingID,
-          lastMenuId: this.lastMenuID,
-          followedVenues: this.followedVenues,
-        }
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30`,
-          data
-        );
+    //     let data = {
+    //       followedProducers: this.followedProducers,
+    //       lastListingIdP: this.lastRAProducerListingID,
+    //       lastMenuId: this.lastMenuID,
+    //       followedVenues: this.followedVenues,
+    //     }
+    //     const response = await this.$axios.post(
+    //       `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30`,
+    //       data
+    //     );
         
-        this.recentlyAdded.push(...response.data.listings);
-        this.lastRAProducerListingID = response.data.lastListingIdP;
-        this.lastMenuID = response.data.lastMenuId;
+    //     this.recentlyAdded.push(...response.data.listings);
+    //     this.lastRAProducerListingID = response.data.lastListingIdP;
+    //     this.lastMenuID = response.data.lastMenuId;
 
-        if (response.data.listings.length == 0) {
-          this.moreListings = false;
-        }
+    //     if (response.data.listings.length == 0) {
+    //       this.moreListings = false;
+    //     }
         
-        this.followCount++;
-      } else {
-        // Handle case where there are no items to load
-        this.moreListings = false;
-        // Optionally show a message to the user
-      }
-      }
-    },
+    //     this.followCount++;
+    //   } else {
+    //     // Handle case where there are no items to load
+    //     this.moreListings = false;
+    //     // Optionally show a message to the user
+    //   }
+    //   }
+    // },
   },
 };
 </script>

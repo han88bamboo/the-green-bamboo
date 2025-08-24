@@ -4759,13 +4759,10 @@ def getRandomListings():
         if not date_results:
             return jsonify({"error": "No dates found in listings"}), 400
 
-
         try:
             # Extract 'addedDate' values properly from RealDictRow
             date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
             
-           
-
             if not date_list:
                 return jsonify({"error": "Date extraction failed (empty list)"}), 400
 
@@ -4773,9 +4770,32 @@ def getRandomListings():
         except Exception as e:
             return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
 
-        # Fetch listings from the selected random date
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
+
+        # Randomizer to determine if we want to include producerUpdates ONLY, venueUpdates ONLY, or BOTH
+        update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
+
+        # Number of records to retrieve per call
+        num_records = 30
+
+        # Fetch listings from the selected random date 
+        # Set random limit
+        limit = random.randint(8, 15)
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
         listings_data = cursor.fetchall()
+
+        dated_listing_last_id = listings_data[-1]['id'] if listings_data else None
+
+        # Determine if there are 10 records for listings from random date
+        if len(listings_data) < num_records:
+
+            # Get listings that have been created today
+            # Set random limit
+            limit = random.randint(2, 10)
+            cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
+            additional_listings = cursor.fetchall()
+            listings_data.extend(additional_listings)
+
+        new_listings_last_id = additional_listings[-1]['id'] if additional_listings else None
 
         # Loop through the listings and get the producer name
         for listing in listings_data:
@@ -4795,12 +4815,123 @@ def getRandomListings():
 
             rating_data = cursor.fetchone()
             listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
+            listing['contentType'] = 'Listing'
 
+        # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to a week ago)
+        # Set random limit
+        limit = random.randint(3, 8)
+        if len(listings_data) < num_records:
+            cursor.execute("""
+                SELECT * FROM "reviews"
+                WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                ORDER BY "createdDate" DESC
+                LIMIT %s
+            """, (limit,))
+
+            reviews = cursor.fetchall()
+
+            # Add contentType to each review and retrieve userName
+            for review in reviews:
+                review['contentType'] = 'Review'
+
+                # Get username
+                cursor.execute("SELECT username FROM users WHERE id = %s", (review['userID'],))
+                user_data = cursor.fetchone()
+                review['username'] = user_data['username'] if user_data else None
+
+                # Get listing name
+                cursor.execute("""SELECT "listingName" FROM listings WHERE id = %s""", (review['reviewTarget'],))
+                listing_data = cursor.fetchone()
+                review['listingName'] = listing_data['listingName'] if listing_data else None
+
+        reviews_last_id = reviews[-1]['id'] if reviews else None
+
+        producers_updates = []
+        venues_updates = []
+        
+        # Determine if there are 30 records, else, retrieve announcements by venue and brand accounts
+        if len(listings_data) + len(reviews) < num_records:
+
+            # Calculate how many records are still needed
+            remaining = num_records - len(listings_data) - len(reviews)
+
+            # Set random limit
+            limit = random.randint(1, remaining)
+
+            # Based on randomizer, retrieve the relevant information
+            if update_type == "producerUpdates":
+                cursor.execute("""
+                    SELECT * FROM "producersUpdates" 
+                    WHERE date >= NOW() - INTERVAL '14 days'
+                    LIMIT %s
+                """, (limit,)
+                )
+                producers_updates = cursor.fetchall()
+
+            elif update_type == "venueUpdates":
+                cursor.execute("""
+                    SELECT * FROM "venuesUpdates" 
+                    WHERE date >= NOW() - INTERVAL '14 days'
+                    LIMIT %s
+                """, (limit,)
+                )
+                venues_updates = cursor.fetchall()
+
+            elif update_type == "both":
+
+                # Randomly decide how many go to producers vs venues
+                producers_limit = random.randint(0, limit)   # any number between 0 and remaining
+                venue_limit = remaining - producers_limit 
+
+                cursor.execute("""
+                    SELECT * FROM "producersUpdates" 
+                    WHERE date >= NOW() - INTERVAL '14 days'
+                    LIMIT %s
+                """, (producers_limit,)
+                )
+                producers_updates = cursor.fetchall()
+
+                cursor.execute("""
+                    SELECT * FROM "venuesUpdates" 
+                    WHERE date >= NOW() - INTERVAL '14 days'
+                    LIMIT %s
+                """, (venue_limit,)
+                )
+                venues_updates = cursor.fetchall()
+
+            # Add contentType to each update
+            if len(producers_updates):
+                for update in producers_updates:
+                    update['contentType'] = 'Update'
+
+                    # Get producer name
+                    cursor.execute("""SELECT "producerName" FROM producers WHERE id = %s""", (update['producerId'],))
+                    producer_data = cursor.fetchone()
+                    update['producerName'] = producer_data['producerName'] if producer_data else None
+
+            if len(venues_updates):
+                for update in venues_updates:
+                    update['contentType'] = 'Update'
+
+                    # Get venue name
+                    cursor.execute("""SELECT "venueName" FROM venues WHERE id = %s""", (update['venueId'],))
+                    venue_data = cursor.fetchone()
+                    update['venueName'] = venue_data['venueName'] if venue_data else None
 
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400
 
-    return jsonify(listings_data)
+    content = listings_data + reviews + producers_updates + venues_updates
+    random.shuffle(content)
+
+    return jsonify({
+        "content": content,
+        "datedListingLastID": dated_listing_last_id,
+        "newListingsLastID": new_listings_last_id,
+        "reviewsLastID": reviews_last_id,
+        "pUpdateLastID": producers_updates[-1]['id'] if producers_updates else None,
+        "vUpdateLastID": venues_updates[-1]['id'] if venues_updates else None
+    })
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get User Notifications
