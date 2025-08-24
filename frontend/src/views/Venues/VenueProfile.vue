@@ -6265,6 +6265,30 @@ export default {
             this.dataLoaded = null;
         },
 
+        // Event handlers for VenueMenuTabOriginal component
+        handleEditMenuModeChanged(editMode) {
+            this.editMenuMode = editMode;
+        },
+
+        handleDataLoadedChanged(dataLoaded) {
+            this.dataLoaded = dataLoaded;
+        },
+
+        handleMenuUpdated() {
+            // Refresh page when menu is successfully updated
+            this.$router.go(0);
+        },
+
+        handleMenuUpdateError(error) {
+            // Error already handled in child component, could add additional logic here if needed
+            console.error('Menu update error handled by parent:', error);
+        },
+
+        handleClaimVenueAccount() {
+            // Handle claim venue account from child component
+            this.claimVenueAccount();
+        },
+
         onFilesChange(event) {
             const files = event.target.files;
             // Limit to a total of 3 images (existing plus new ones)
@@ -7003,75 +7027,6 @@ export default {
             // Refresh page
             this.$router.go(0);
 
-        },
-
-        // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-        // Delete Menu Item
-        deleteMenuItem(sectionIndex, itemIndex) {
-            // Find section
-            let section = this.editMenu.find(s => s.sectionOrder == sectionIndex);
-
-            // Remove item from section
-            section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder != itemIndex);
-        },
-
-        // Enable Edit Menu Mode
-        async enableEditMenuMode() {
-            // First show the overlay to prevent interaction
-            this.showMenuLoadingOverlay = true;
-
-            // Set edit mode flag
-            this.editMenuMode = true;
-
-            // Hide the overlay after 1.5 seconds
-            setTimeout(() => {
-                this.showMenuLoadingOverlay = false;
-            }, 1500);
-        },
-
-        // Update Menu
-        async updateMenu() {
-            // console.log('-------------------')
-            // console.log(this.editMenu)
-            // console.log('-------------------')
-            this.editMenuMode = false;
-            this.dataLoaded = false;
-
-            // Update sectionOrder and itemOrder based on current ordering
-            for (let sectionIndex in this.editMenu) {
-                this.editMenu[sectionIndex].sectionOrder = parseInt(sectionIndex);
-                for (let itemIndex in this.editMenu[sectionIndex].sectionMenu) {
-                    this.editMenu[sectionIndex].sectionMenu[itemIndex].itemOrder = parseInt(itemIndex);
-                }
-            }
-
-            // Remove itemDetails from editMenu
-            for (let section of this.editMenu) {
-                for (let item of section.sectionMenu) {
-                    delete item.itemDetails;
-                }
-            }
-
-            try {
-                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
-                    {
-                        venueID: this.targetVenue['id'],
-                        updatedMenu: this.editMenu,
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    });
-            }
-            catch (error) {
-                alert("An error occurred while attempting to save your changes. We apologise for the inconvenience. Please try again!");
-                // console.error(error);
-            }
-
-            // Refresh page
-            this.$router.go(0);
         },
 
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

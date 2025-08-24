@@ -2310,6 +2310,79 @@ export default {
             toast.success(`Items added to menu.`);
             // this.editMenuMode = false;
             this.resetMultipleMenuItems();
+        },
+
+        // Delete Menu Item - transferred from parent
+        deleteMenuItem(sectionIndex, itemIndex) {
+            // Find section
+            let section = this.editMenu.find(s => s.sectionOrder == sectionIndex);
+
+            // Remove item from section
+            section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder != itemIndex);
+        },
+
+        // Enable Edit Menu Mode - transferred from parent but modified for component
+        enableEditMenuMode() {
+            // First show the overlay to prevent interaction
+            this.showMenuLoadingOverlay = true;
+
+            // Emit to parent to set edit mode flag since editMenuMode is a prop
+            this.$emit('edit-menu-mode-changed', true);
+
+            // Hide the overlay after 1.5 seconds
+            setTimeout(() => {
+                this.showMenuLoadingOverlay = false;
+            }, 1500);
+        },
+
+        // Update Menu - transferred from parent but modified for component
+        async updateMenu() {
+            // Emit to parent to set edit mode flag and data loaded state
+            this.$emit('edit-menu-mode-changed', false);
+            this.$emit('data-loaded-changed', false);
+
+            // Update sectionOrder and itemOrder based on current ordering
+            for (let sectionIndex in this.editMenu) {
+                this.editMenu[sectionIndex].sectionOrder = parseInt(sectionIndex);
+                for (let itemIndex in this.editMenu[sectionIndex].sectionMenu) {
+                    this.editMenu[sectionIndex].sectionMenu[itemIndex].itemOrder = parseInt(itemIndex);
+                }
+            }
+
+            // Remove itemDetails from editMenu
+            for (let section of this.editMenu) {
+                for (let item of section.sectionMenu) {
+                    delete item.itemDetails;
+                }
+            }
+
+            try {
+                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
+                    {
+                        venueID: this.targetVenue['id'],
+                        updatedMenu: this.editMenu,
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                
+                // Emit success to parent instead of refreshing page
+                this.$emit('menu-updated');
+            }
+            catch (error) {
+                alert("An error occurred while attempting to save your changes. We apologise for the inconvenience. Please try again!");
+                console.error(error);
+                
+                // Emit error to parent
+                this.$emit('menu-update-error', error);
+            }
+        },
+
+        // Claim Venue Account - emit to parent since it involves routing
+        claimVenueAccount() {
+            this.$emit('claim-venue-account');
         }
 
     }
