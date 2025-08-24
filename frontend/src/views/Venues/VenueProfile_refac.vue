@@ -257,14 +257,14 @@ export default {
     }, 
     data() {
         return {
-            // Caching and performance 
+            // Caching and performance
             loadedListings: new Map(), // Use Map for O(1) lookups
             loadedProducers: new Map(),
             processingQueue: new Set(), // Prevent duplicate requests
 
             // Loading states
             isLoadingVenue: false,
-            isLoadingMenu: false, 
+            isLoadingMenu: false,
             dataLoadingError: null,
 
             viewerID: localStorage.getItem('88B_accID'),
@@ -1022,10 +1022,9 @@ export default {
         },
 
         cleanup() {
-            // LEGACY: No longer needed in refactored architecture
-            // this.processingQueue.clear();
-            // this.loadedListings.clear();
-            // this.loadedProducers.clear();
+            this.processingQueue.clear();
+            this.loadedListings.clear();
+            this.loadedProducers.clear();
         },
 
         openShareModal() {
