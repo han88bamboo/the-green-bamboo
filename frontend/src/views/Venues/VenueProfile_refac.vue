@@ -257,14 +257,14 @@ export default {
     }, 
     data() {
         return {
-            // Caching and performance - LEGACY: No longer used in refactored architecture
-            // loadedListings: new Map(), // Use Map for O(1) lookups
-            // loadedProducers: new Map(),
-            // processingQueue: new Set(), // Prevent duplicate requests
+            // Caching and performance 
+            loadedListings: new Map(), // Use Map for O(1) lookups
+            loadedProducers: new Map(),
+            processingQueue: new Set(), // Prevent duplicate requests
 
             // Loading states
             isLoadingVenue: false,
-            // isLoadingMenu: false, // LEGACY: Menu loading now handled by child component
+            isLoadingMenu: false, 
             dataLoadingError: null,
 
             viewerID: localStorage.getItem('88B_accID'),
@@ -704,9 +704,6 @@ export default {
             );
         },
 
-        // LEGACY: Menu item fetching logic - no longer used in refactored architecture
-        // Menu item details are now fetched by the VenueMenuTab child component
-        /*
         async loadMenuData() {
             if (this.isLoadingMenu) return;
             this.isLoadingMenu = true;
@@ -903,7 +900,6 @@ export default {
         removeItemFromSection(section, itemId) {
             section.sectionMenu = section.sectionMenu.filter(i => i.itemID !== itemId);
         },
-        */
 
         // SSR-friendly method to check if we're in browser
         isBrowser() {
