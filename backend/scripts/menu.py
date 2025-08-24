@@ -15,7 +15,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 logger.info(project_root)
 
-
 @blueprint.route("/<int:venue_id>", methods=['GET'])
 def getMenuSections(venue_id: int):
     conn = g.db
@@ -45,11 +44,151 @@ def getMenuSections(venue_id: int):
     except Exception as e:
         import traceback
         traceback.print_exc()
-        conn.rollback()
         return jsonify({
             "code": 500,
             "message": "An error occurred when getting the venue's menu."
         }), 500
+
+
+@blueprint.route("/<int:venue_id>/overview", methods=["GET"])
+def get_overview_items(venue_id: int):
+        conn = g.db
+        cur = conn.cursor()
+        
+        try:
+# Single optimized query to get all required data
+            sql = """
+            WITH menu_items_with_stats AS (
+                SELECT 
+                    mi."id", 
+                    mi."itemID", 
+                    mi."sectionId",
+                    mi."itemOrder",
+                    lst."listingName", 
+                    lst."photo",
+                    lst."bottler",
+                    lst."drinkType", 
+                    lst."abv",
+                    lst."officialDesc",
+                    mi."itemAvailability", 
+                    mi."variant",
+                    mi."itemServingType",
+                    srvTyp."servingType",
+                    mi."itemPrice",
+                    COALESCE(ROUND(AVG(r."rating"), 1), 0) AS "averageRating",
+                    COUNT(r."id") AS "reviewCount"
+                FROM "menuItems" mi
+                INNER JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                INNER JOIN "listings" lst ON mi."itemID" = lst."id"
+                LEFT JOIN "servingTypes" srvTyp ON mi."itemServingType" = srvTyp."id"
+                LEFT JOIN "reviews" r ON lst."id" = r."reviewTarget"
+                WHERE vm."venueId" = %s
+                GROUP BY 
+                    mi."id", 
+                    mi."itemID", 
+                    mi."sectionId",
+                    mi."itemOrder",
+                    lst."listingName", 
+                    lst."photo",
+                    lst."bottler",
+                    lst."drinkType", 
+                    lst."abv",
+                    lst."officialDesc",
+                    mi."itemAvailability",  
+                    mi."variant",
+                    mi."itemServingType",
+                    srvTyp."servingType",
+                    mi."itemPrice"
+            ),
+            most_popular AS (
+                SELECT *, 'popular' as category
+                FROM menu_items_with_stats
+                WHERE "averageRating" > 0  -- Only items with ratings
+                ORDER BY "averageRating" DESC, "reviewCount" DESC
+                LIMIT 5
+            ),
+            most_discussed AS (
+                SELECT *, 'discussed' as category
+                FROM menu_items_with_stats
+                WHERE "reviewCount" > 0  -- Only items with reviews
+                ORDER BY "reviewCount" DESC, "averageRating" DESC
+                LIMIT 5
+            ),
+            most_recent AS (
+                SELECT *, 'recent' as category
+                FROM menu_items_with_stats
+                ORDER BY "id" DESC  -- Latest IDs from the venue
+                LIMIT 5
+            ),
+            combined_results AS (
+                SELECT * FROM most_popular
+                UNION ALL
+                SELECT * FROM most_discussed  
+                UNION ALL
+                SELECT * FROM most_recent
+            )
+            SELECT * FROM combined_results
+            ORDER BY 
+                CASE 
+                    WHEN category = 'popular' THEN 1
+                    WHEN category = 'discussed' THEN 2  
+                    WHEN category = 'recent' THEN 3
+                END;
+            """
+            
+            cur.execute(sql, (venue_id,))
+            all_rows = cur.fetchall()
+            
+            # Separate results by category
+            mp_items = []
+            md_items = []
+            mr_items = []
+            
+            for row in all_rows:
+                item_data = {
+                    "id": row['id'],
+                    "sectionId": row['sectionId'], 
+                    "itemID": row['itemID'],
+                    "itemOrder": row['itemOrder'],
+                    "name": row['listingName'],
+                    "photo": row['photo'],
+                    "bottler": row['bottler'], 
+                    "drinkType": row['drinkType'],
+                    "abv": row['abv'],
+                    "description": row['officialDesc'],
+                    "itemAvailability": row['itemAvailability'],
+                    "variant": row['variant'],
+                    "servingType": row['itemServingType'],
+                    "servingTypeText": row['servingType'],
+                    "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
+                    "averageRating": row['averageRating'],
+                    "reviewCount": row['reviewCount']
+                }
+                
+                if row['category'] == 'popular':
+                    mp_items.append(item_data)
+                elif row['category'] == 'discussed':
+                    md_items.append(item_data)
+                elif row['category'] == 'recent':
+                    mr_items.append(item_data)
+
+            return jsonify({
+                "code": 200,
+                "most_popular": mp_items, 
+                "most_discussed": md_items,
+                "most_recent": mr_items 
+            }), 200
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                "code": 500,
+                "error": "Internal server error"
+            }), 500
+        finally:
+            if cur:
+                cur.close()
 
 
 @blueprint.route("/", methods=['POST'])
