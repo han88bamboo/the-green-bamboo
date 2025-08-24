@@ -27,16 +27,37 @@
                 Cellars aren't just for wines. Fridges are for more than beers. A universal collection across spirits, wines, beers, sakes and more calls for a universal cellar. Drink-X is bringing that to you.
               </p>
               
-              <div class="coming-soon-badge">
-                <h3 class="coming-soon-text mb-0">Coming September 2025</h3>
-              </div>
+              
+              <h3 class="coming-soon-text mb-0">Coming September 2025</h3>
+              
               
               <!-- Sign Up Button -->
               <div class="mt-4">
                 <router-link to="/signup" class="btn btn-sign-up btn-lg fw-bold px-5 py-3">
-                  Sign Up Now
+                  Create Your Drink-X Account Now
                 </router-link>
               </div>
+              <!-- Notify Me Section -->
+              <section class="notify-section py-5">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-md-8">
+                      <p class="mb-4">Get notified when My Cellar launches and receive early access to beta features.</p>
+                      <form action="https://formspree.io/f/xqadzlvr" method="POST" class="notify-form d-flex gap-2 justify-content-center">
+                        <input type="email" name="email" required placeholder="Enter your email"
+                              class="form-control form-control-sm rounded-pill" style="max-width:420px;">
+                        <input type="hidden" name="source" value="my-cellar">
+                        <button class="btn btn-sm fw-bold rounded-pill px-4" type="submit"
+                                style="background-color:#027562; color:white; border:2px solid #027562;">
+                          Notify Me
+                        </button>
+                      </form>
+                      <small class="text-muted d-block mt-2">We’ll only email you about My Cellar. Unsubscribe anytime.</small>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               
               <!-- Optional: Keep the animated bottles for smaller screens -->
               <div class="cellar-icon mt-5 d-lg-none">

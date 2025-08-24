@@ -305,7 +305,7 @@
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/my-cellar'" class="dropdown-item" style="color:#9C2B30;">My Cellar</router-link>
+                    <router-link :to="'/my-cellar'" class="dropdown-item" style="color:#FF3E31;">My Cellar</router-link>
                   </li>
                 </div>
 
@@ -393,8 +393,8 @@
 
                 <!-- My Cellar -->
                 <li class="drawer-section-title pt-2 text-start">
-                  <router-link to="/my-cellar" style="color:#9C2B30; text-decoration: none;">
-                    My Cellar
+                  <router-link to="/my-cellar" style="color: black; text-decoration: none;">
+                    My Cellar <span class="badge bg-danger ms-1">SOON</span>
                   </router-link>
                 </li>
 
@@ -589,7 +589,7 @@
         </router-link>
 
         <router-link :to="'/my-cellar'">
-          <button class="btn primary-btn border-0 fw-bold" type="button" style="color:#9C2B30;">
+          <button class="btn primary-btn border-0 fw-bold cellar-link" type="button" style="color:#FF3E31;">
             My Cellar
           </button>
         </router-link>
@@ -1454,4 +1454,32 @@
       transform: scale(1.1);
       color: #027562;
     }
+
+    .cellar-link {
+        position: relative;
+        color: #E63946; /* striking red */
+        font-weight: 700;
+        background: linear-gradient(
+          90deg,
+          #E63946 0%,
+          #ffb3b3 50%,
+          #E63946 100%
+        );
+        background-size: 200% 100%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: shimmer 8s infinite;
+      }
+
+      /* Shimmer animation */
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+
+
     </style>
