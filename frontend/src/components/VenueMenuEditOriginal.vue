@@ -57,7 +57,8 @@
 
                     <!-- Draggable Menu Sections -->
                     <draggable 
-                        v-model="editMenu" 
+                        :model-value="editMenu" 
+                        @update:model-value="updateEditMenu"
                         item-key="sectionOrder" 
                         handle=".section-drag-handle" 
                         ghost-class="ghost"
@@ -216,7 +217,9 @@
                         <div class="form-group">
                             <label for="renameMenuSectionInput" class="form-label">Section Name</label>
                             <input type="text" class="form-control" id="renameMenuSectionInput" 
-                                v-model="renameMenuSectionModalNew" placeholder="Enter new section name">
+                                :value="renameMenuSectionModalNew" 
+                                @input="updateRenameMenuSectionModalNew" 
+                                placeholder="Enter new section name">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -249,7 +252,8 @@
                         <div class="form-group mb-4 p-3" style="background-color: #f8f9fa; border-radius: 8px;">
                             <p class="text-start mb-1 fw-bold">Target Menu Section (applies to all items) <span class="text-danger">*</span></p>
                             <select class="form-select" aria-label="globalMenuItemTargetSection"
-                                v-model="globalMenuItemTargetSection" @change="updateGlobalMenuItemTargetSection">
+                                :value="globalMenuItemTargetSection" 
+                                @change="handleGlobalMenuItemTargetSectionChange">
                                 <option value="">Select a menu section...</option>
                                 <option v-for="(menuSection, sectionIndex) in editMenu" :key="menuSection" :value="menuSection">
                                     #{{ sectionIndex }}: {{ menuSection.sectionName }}
@@ -512,6 +516,19 @@ export default {
         // Select Listing for Multiple Items
         selectListingMultiple(listing, itemIndex) {
             this.$emit('select-listing-multiple', listing, itemIndex);
+        },
+
+        // Handle prop updates (to avoid v-model on props)
+        updateEditMenu(newValue) {
+            this.$emit('update-edit-menu', newValue);
+        },
+
+        updateRenameMenuSectionModalNew(event) {
+            this.$emit('update-rename-modal-new', event.target.value);
+        },
+
+        handleGlobalMenuItemTargetSectionChange(event) {
+            this.$emit('update-global-target-section', event.target.value);
         },
 
         // Update Global Menu Item Target Section

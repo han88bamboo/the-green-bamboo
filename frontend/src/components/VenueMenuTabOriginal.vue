@@ -262,6 +262,8 @@
                 @drag-end="handleDragEnd"
                 @drag-item-start="handleDragItemStart"
                 @drag-item-end="handleDragItemEnd"
+                @update-edit-menu="handleUpdateEditMenu"
+                @update-rename-modal-new="handleUpdateRenameModalNew"
             />
         </div>
 
@@ -850,6 +852,15 @@ export default {
         
         handleDragItemEnd(menuSection) {
             this.$emit('drag-item-end', menuSection);
+        },
+
+        // New handlers for prop updates
+        handleUpdateEditMenu(newValue) {
+            this.$emit('update-edit-menu', newValue);
+        },
+
+        handleUpdateRenameModalNew(newValue) {
+            this.$emit('update-rename-modal-new', newValue);
         }
     }
 }

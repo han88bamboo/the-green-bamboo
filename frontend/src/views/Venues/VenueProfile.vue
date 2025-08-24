@@ -1910,6 +1910,8 @@
                             @drag-end="dragEnd"
                             @drag-item-start="dragItemStart"
                             @drag-item-end="dragItemEnd"
+                            @update-edit-menu="updateEditMenu"
+                            @update-rename-modal-new="updateRenameModalNew"
                         />
                 </div>
 
@@ -3490,7 +3492,6 @@ import { useHead, useSeoMeta } from '@unhead/vue'
 import { ref, computed } from 'vue'
 
 import NavBar from '@/components/NavBar.vue';
-import draggable from 'vuedraggable';
 import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
 import EventBox from '@/components/EventBox.vue';
@@ -3517,7 +3518,6 @@ export default {
     name: 'profileVenue',
     components: {
         NavBar,
-        draggable,
         ListingRowDisplayProducerProfile,
         BookmarkModal,
         EventBox,
@@ -7210,6 +7210,15 @@ export default {
             }
             this.drag = false;
             this.menuSnapshot = null;
+        },
+
+        // New methods for handling prop updates from child components
+        updateEditMenu(newValue) {
+            this.editMenu = newValue;
+        },
+
+        updateRenameModalNew(newValue) {
+            this.renameMenuSectionModalNew = newValue;
         },
 
         dragItemStart(menuSection) {
