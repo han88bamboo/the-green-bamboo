@@ -6,17 +6,12 @@
 import os
 import json
 import s3Images
-from bson import json_util
 from flask import Blueprint, g, request, jsonify
-from bson.objectid import ObjectId
-from bson.errors import InvalidId
 import pip._vendor.requests as requests
+import re
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
-
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
 
 # -----------------------------------------------------------------------------------------
 # [PUT] Updates a listing
@@ -36,9 +31,14 @@ def updateListing(id):
     elif 'bottlerID' in updatedListing and updatedListing['bottlerID']:
         updatedListing['bottlerID'] = int(updatedListing['bottlerID'])
 
+    # Convert abv from string to float if necessary
     if 'abv' in updatedListing:
-        abv_value = updatedListing['abv'].replace('%', '')
-        updatedListing['abv'] = float(abv_value)
+        abv_value = updatedListing['abv'].replace('%', '')  # Remove the '%' sign
+        if abv_value.strip():  # Check if the string is not empty
+            updatedListing['abv'] = float(abv_value)
+        else:
+            # Handle empty ABV - set to NULL in database
+            updatedListing['abv'] = None
 
     updatedListingName = updatedListing["listingName"]
 
@@ -61,9 +61,11 @@ def updateListing(id):
         # If it's an existing bottle, delete the old image from S3 and upload the new one
         if existingBottle and updatedListing.get('photo'):
             try:
-                if existingBottle['photo'] is not None and existingBottle['photo'] != '':
-                    s3Images.deleteImageFromS3(existingBottle['photo'])
-                updatedListing['photo'] = s3Images.uploadBase64ImageToS3(updatedListing['photo'])
+                # Upload new image if it's base64, otherwise keep as is
+                import re
+                if updatedListing['photo'].startswith('data:image'):
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', updatedListing['photo'])
+                    updatedListing['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
             except Exception as e:
                 print(str(e))
                 return jsonify(

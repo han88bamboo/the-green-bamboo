@@ -490,7 +490,7 @@
                     <!-- col 2: best rated drinks on the menu -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Best Rated Drinks </h6>
-                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
+                        <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -510,7 +510,7 @@
                     <!-- col 1: most reviewed drinks on the menu -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Most Reviewed Drinks </h6>
-                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
+                        <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
                             <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
@@ -527,89 +527,128 @@
                     
                     <!-- col 1: most reviewed sections -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold"> Most Reviewed Sections </h6>
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsMostReviewed" v-bind:key="section.id">
-                            <div class="row ms-0 default-clickable-text"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard">
-                                    <b> {{ section.sectionName }} </b>
-                                    <br>
-                                    {{ section.sectionDetails.sectionReviews.length }} reviews
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+  <h6 class="fw-bold">Most Reviewed Sections</h6>
+
+  <div
+    class="text-start pb-2"
+    v-for="(section, index) in sectionsMostReviewed"
+    :key="section.id"
+    style="justify-content: flex-start; width: 100%;"
+  >
+    <div class="d-flex align-items-start">
+      <!-- Number Circle -->
+      <div
+        class="d-flex justify-content-center align-items-center rounded-circle me-3"
+        style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+      >
+        {{ index + 1 }}
+      </div>
+
+      <!-- Section Text -->
+      <div>
+        <p class="mb-1 fw-bold">{{ section.sectionName }}</p>
+        <p class="mb-0">{{ section.sectionDetails.sectionReviews.length }} reviews</p>
+      </div>
+    </div>
+  </div>
+</div>
+
                     <!-- col 2: best rated sections -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold"> Best Rated Sections </h6>
-                        <div class="text-start pb-2" v-for="(section, index) in sectionsBestRated" v-bind:key="section.id">
-                            <div class="row ms-0 default-clickable-text"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> {{ index + 1 }} </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard">
-                                    <b> {{ section.sectionName }} </b>
-                                    <br>
-                                    {{ section.sectionDetails.sectionRating }} 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
-                                </div>
-                            </div>
+                    <h6 class="fw-bold">Best Rated Sections</h6>
+
+                    <div
+                        class="text-start pb-2"
+                        v-for="(section, index) in sectionsBestRated"
+                        :key="section.id"
+                        style="justify-content: flex-start; width: 100%;"
+                    >
+                        <div class="d-flex align-items-start">
+                        <!-- Number Circle -->
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            {{ index + 1 }}
+                        </div>
+
+                        <!-- Text -->
+                        <div>
+                            <p class="mb-1 fw-bold">{{ section.sectionName }}</p>
+                            <p class="mb-0">
+                            {{ section.sectionDetails.sectionRating }}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                            </svg>
+                            </p>
+                        </div>
                         </div>
                     </div>
+                    </div>
+
                     <!-- col 1: venue menu summary -->
                     <div class="card p-3 col-5 text-start" style="color:black;">
-                        <h6 class="fw-bold"> Venue Menu Summary </h6>
+                    <h6 class="fw-bold">Venue Menu Summary</h6>
 
-                        <!-- Number of Menu Items + Unique Drinks -->
-                        <div class="text-start pb-2">
-                            <div class="row ms-0 default-clickable-text"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> - </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
-                                    <b> Number of Menu Items </b> 
-                                    <br>
-                                    {{ menuItemsCount }} (Unique: {{ loadedListings.length }})
-                                </div>
-                            </div>
+                    <!-- Number of Menu Items + Unique Drinks -->
+                    <div class="text-start pb-2">
+                        <div class="d-flex align-items-start" style="justify-content: flex-start; width: 100%;">
+                        <!-- Circle -->
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            -
                         </div>
 
-                        <!-- Number of Sections -->
-                        <div class="text-start pb-2">
-                            <div class="row ms-0 default-clickable-text"> 
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> - </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" style="color:black;">
-                                    <b> Number of Sections </b> 
-                                    <br>
-                                    {{ detailedMenu.length }} sections
-                                </div>
-                            </div>
+                        <!-- Text -->
+                        <div>
+                            <p class="mb-1 fw-bold">Number of Menu Items</p>
+                            <p class="mb-0">{{ menuItemsCount }} (Unique: {{ loadedListings.length }})</p>
                         </div>
-
-                        <!-- Overall Average Rating -->
-                        <div class="text-start pb-2">
-                            <div class="row ms-0 default-clickable-text" style="color:black;">  
-                                <div class="col-2 d-flex align-items-center justify-content-center rounded-circle me-3">
-                                    <h5 class="my-auto"> - </h5>
-                                </div>
-                                <div class="col-10 shrink-width-on-dashboard" >
-                                    <b> Overall Average Rating </b> 
-                                    <br>
-                                    {{ overallRating }} 
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
-                                </div>
-                            </div>
                         </div>
-
                     </div>
+
+                    <!-- Number of Sections -->
+                    <div class="text-start pb-2">
+                        <div class="d-flex align-items-start">
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            -
+                        </div>
+
+                        <div>
+                            <p class="mb-1 fw-bold">Number of Sections</p>
+                            <p class="mb-0">{{ detailedMenu.length }} sections</p>
+                        </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Average Rating -->
+                    <div class="text-start pb-2">
+                        <div class="d-flex align-items-start">
+                        <div
+                            class="d-flex justify-content-center align-items-center rounded-circle me-3"
+                            style="width: 30px; height: 30px; background-color: #f0b358; color: white; font-weight: bold;"
+                        >
+                            -
+                        </div>
+
+                        <div>
+                            <p class="mb-1 fw-bold">Overall Average Rating</p>
+                            <p class="mb-0">
+                            {{ overallRating }}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16">
+                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                            </svg>
+                            </p>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
                 </div>
 
 
@@ -767,8 +806,6 @@
     </div>
     </div>
 
-    <FooterBar />
-
 </template>
 
 <script>
@@ -777,7 +814,6 @@
     import { Line } from 'vue-chartjs';
     import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
     import { LineElement, PointElement } from 'chart.js';
-    import FooterBar from "@/components/FooterBar.vue";
     import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 
     ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -789,7 +825,6 @@
             NavBar,
             Bar,
             Line,
-            FooterBar,
             LoadingWithFunFact,
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------

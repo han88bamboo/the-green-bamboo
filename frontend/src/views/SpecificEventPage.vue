@@ -35,10 +35,24 @@
                     :key="index"
                     :class="['carousel-item', index === 0 ? 'active' : '']"
                     >
-                    <div
-                        class="d-flex align-items-center justify-content-center event-hero"
-                        :style="{ backgroundImage: `url(${banner})` }"
-                    >
+                    <div class="hero-stack">
+                        <!-- blurred background fill -->
+                        <img
+                            class="hero-bg"
+                            :src="banner || defaultEventBanner"
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            decoding="async"
+                        />
+                        <!-- foreground image (show whole image) -->
+                        <img
+                            class="hero-fore"
+                            :src="banner || defaultEventBanner"
+                            :alt="event.eventName"
+                            loading="lazy"
+                            decoding="async"
+                        />
                         <!-- Overlay Content 
                         <div class="event-hero-overlay text-white text-center">
                         <h2 class="fw-bold">{{ event.eventName }}</h2>
@@ -78,7 +92,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-12">
-                        <div class="d-flex justify-content-between align-items-start mt-2">
+                        <div class="d-md-flex justify-content-between align-items-start mt-2">
                             <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
                                 <!-- Event Name -->
                                 <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
@@ -121,12 +135,16 @@
                                             style="font-weight:bold" 
                                             @click="rsvpEvent" 
                                             :disabled="rsvpButtonStatus" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#promptPurchaseModal">I'm interested
+                                            :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" 
+                                            :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested
                                         </button>
                                     </div>
                                 </div>
-                                
+
+                                <!-- UnRSVP Button -->
+                                <div v-if="rsvpStatus && !selfView">
+                                    <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">Withdraw RSVP</button>
+                                </div>                                
 
                                 <!-- Invite Button -->
                                 <div>
@@ -197,9 +215,21 @@
                                 </router-link>
                             </div>
                             <!-- Edit Event and Delete Event Buttons -->
-                            <div v-if="selfView">
-                                <button class="btn primary-btn btn-sm me-3" data-bs-toggle="modal" data-bs-target="#editEventModal">Edit Event</button>
-                                <button class="btn primary-btn-red btn-sm " data-bs-toggle="modal" data-bs-target="#deleteEventModal">Delete Event</button>
+                            <div v-if="selfView" class="d-flex gap-2">
+                            <button
+                                class="btn primary-btn btn-sm mobile-rating-smaller-text-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#editEventModal"
+                            >
+                                Edit Event
+                            </button>
+                            <button
+                                class="btn primary-btn-red btn-sm mobile-rating-smaller-text-2"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteEventModal"
+                            >
+                                Delete Event
+                            </button>
                             </div>
                             <div v-if="!followStatus && !selfView">
                                 <button class="btn btn-outline-light btn-md" style="font-weight: bold" @click="editFollow('follow')">Follow</button>
@@ -230,9 +260,10 @@
 
                             <!-- Ticketed but free of charge -->
                             <div v-if="event.paidEvent == false">
-                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
+                                <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free, but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
                                 <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
@@ -241,7 +272,8 @@
                             <div v-else> 
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                             </div>
                             
                         </div>
@@ -394,15 +426,17 @@
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
                                 <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
 
                             <!-- Ticketed and require payment -->
                             <div v-else> 
-                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket!</p>
+                                <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket! <Span class="text-muted">(Payment on separate system.)</Span></p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" data-bs-toggle="modal" data-bs-target="#promptPurchaseModal">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                             </div>
                             
                         </div>
@@ -469,8 +503,8 @@
                                     <tr>
                                         <th>Attendee Name</th>
                                         <th>RSVP Date</th>
-                                        <th v-if="event.paidEvent">Has Paid?</th>
-                                        <th>Attendance</th>
+                                        <th v-if="event.paidEvent">Has Paid? <span class="text-muted">(Marked by Organiser)</span></th>
+                                        <th>Attendance <span class="text-muted">(Marked by Organiser)</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -481,8 +515,8 @@
                                         <td>
                                             {{ formatRSVPDate(attendee.rsvpDate) }}
                                         </td>
-                                        <td v-if="event.paidEvent">
-                                            <div class="form-check">
+                                        <td v-if="event.paidEvent" class="text-center">
+                                            <div class="form-check d-flex justify-content-center">
                                                 <input 
                                                     class="form-check-input" 
                                                     type="checkbox" 
@@ -509,6 +543,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- UnRSVP Confirmation Modal Start -->
+        <div class="modal fade" id="unRSVPConfirmationModal" tabindex="-1" aria-labelledby="unRSVPConfirmationModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="unRSVPConfirmationModalLabel">Withdraw Attendance Confirmation</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fw-bold">Are you sure you want to withdraw your attendance from this event?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" @click="unRSVPEvent" data-bs-dismiss="modal">Withdraw RSVP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- UnRSVP Confirmation Modal End -->
+
+
         <!-- Prompt Purchase Modal Start -->
         <div class="modal fade" id="promptPurchaseModal" tabindex="-1" aria-labelledby="promptPurchaseModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -518,7 +574,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p class="fw-bold">Thank you for RSVP-ing. As this is a paid ticketed event, remember to click "Buy Tickets" to secure your tickets for the event!.</p>
+                        <p class="fw-bold">Thank you for RSVP-ing. As this is a paid event, remember to purchase your tickets!</p>
                         <a :href="event.paymentLink" target="_blank" class="btn primary-btn-less-round-blue" style="font-weight:bold">Buy Ticket</a>
                     </div>
                     <div class="modal-footer">
@@ -745,7 +801,12 @@
         <!-- Invite Friend Modal End -->
     </div>
     <!-- Footer End -->
-    <FooterBar />
+
+     <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <style scoped>
@@ -761,13 +822,52 @@
     height: 20px;
     }
 
-.event-hero {
-  width: 100%;
+/* Hero container with a fixed aspect ratio */
+.hero-stack {
   position: relative;
-  background-size: cover;
-  background-position: center;
-  padding-bottom: 50%; /* Default: 4:6 on mobile */
+  width: 100%;
+  aspect-ratio: 4 / 1;      /* desktop default */
+  overflow: hidden;
 }
+
+/* Make hero taller on mobile */
+@media (max-width: 767px) {
+  .hero-stack { aspect-ratio: 2 / 1; }
+}
+
+/* Both layers fill the box */
+.hero-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Background: cover + blur to fill empty space */
+.hero-stack .hero-bg {
+  object-fit: cover;
+  filter: blur(24px) brightness(0.9);
+  transform: scale(1.1);      /* hide blur edges */
+}
+
+/* Foreground: contain (no cropping) */
+.hero-stack .hero-fore {
+  object-fit: contain;         /* key: shows entire vertical poster */
+  z-index: 1;
+}
+
+/* Keep your overlay styles if you use them */
+.event-hero-overlay {
+  position: relative;          /* so it sits above the images */
+  z-index: 2;
+  background: rgba(0,0,0,0.35);
+  padding: 40px;
+  width: 100%;
+  height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+
 
 @media (min-width: 768px) {
   .event-hero {
@@ -793,13 +893,13 @@ import NavBar from '@/components/NavBar.vue';
 import { useToast } from 'vue-toastification';
 import Quill from 'quill';
 import DOMPurify from 'dompurify';
-import FooterBar from "@/components/FooterBar.vue";
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
     name: 'SpecificEventPage',
     components: {
         NavBar,
-        FooterBar
+        BadgePopup,
     },
     data() {
         return {
@@ -853,6 +953,14 @@ export default {
 
             // Variable to store clipboard item for copy confirmation
             clipboardItem: null,
+
+            earnedBadges: [],
+            showBadgePopup: false,
+        }
+    },
+    computed: {
+        isUserLoggedIn() {
+            return this.userType && this.userType !== 'defaultUser' && this.userID;
         }
     },
     methods: {
@@ -1024,6 +1132,44 @@ export default {
             }
         },
 
+        // Function to unRSVP from the event
+        unRSVPEvent() {
+            // Check if the user has already logged in
+            if (this.userType == 'defaultUser') {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+            try {
+                this.$axios.delete(`${process.env.VUE_APP_API_URL}/events/removeAttendee`, {
+                    data: {
+                        eventID: this.event.id,
+                        userID: this.userID,
+                        userType: this.userType
+                    }
+                })
+                .then((response) => {
+                    if (response.status == 200) {
+                        const toast = useToast();
+                        toast.success('UnRSVP successful!');
+                        this.getAttendees();
+                        this.rsvpStatus = false;
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('UnRSVP failed. Please try again!');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
+            catch (error) {
+                console.log(error);
+            }
+        },
+
         // Function to remove an attendee from the event
         removeAttendee(attendee) {
             try {
@@ -1062,6 +1208,15 @@ export default {
 
         // Function to update event details
         async updateEvent() {
+            const toast = useToast();
+
+            // Show loading toast that stays until manually closed
+            const toastId = toast.info('Updating event details...', {
+                timeout: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+            });
+
             try {
                 // Check if there is a change in the event description
                 const content = this.quill.getText(); // Get the plain text
@@ -1085,20 +1240,20 @@ export default {
                 } else {
                     // Check if the event time is valid
                     if (this.eventCopy.eventStartDate == currentDate && this.eventCopy.eventStartTime <= currentTime) {
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.error('Event start time cannot be earlier than current time.');
                         return;
                     }
                     if (this.eventCopy.eventEndDate != null && this.eventCopy.eventEndDate != '' ) {
 
                         if (this.eventCopy.eventEndDate < this.eventCopy.eventStartDate) {
-                            const toast = useToast();
+                            toast.dismiss(toastId);
                             toast.error('Event end date cannot be earlier than event start date.');
                             return;
                         }
 
                         if (this.eventCopy.eventEndDate == this.eventCopy.eventStartDate && this.eventCopy.eventEndTime <= this.eventCopy.eventStartTime) {
-                            const toast = useToast();
+                            toast.dismiss(toastId);
                             toast.error('Event end time cannot be earlier than event start time.');
                             return;
                         }
@@ -1117,9 +1272,7 @@ export default {
                             continue;
                         }
 
-                        if (key == 'eventBanners') {
-                            console.log(this.eventCopy.eventBanners);
-                            console.log(this.event.eventBanners);   
+                        if (key == 'eventBanners') { 
                             if (this.eventCopy.eventBanners.length == 0 && this.event.eventBanners.length == 0) {
                                 continue; // Skip if no banners are uploaded
                             }
@@ -1130,7 +1283,7 @@ export default {
                 }
                 // Check if there are any changes
                 if (Object.keys(changedFields).length == 0) {
-                    const toast = useToast();
+                    toast.dismiss(toastId);
                     toast.info('No changes detected.');
                     return;
                 }
@@ -1143,13 +1296,13 @@ export default {
                 await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateEvent`, changedFields)
                 .then((response) => {
                     if (response.status == 200) {
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.success('Event details updated successfully!');
                         this.getEvent();
                     }
                     else {
                         console.log(response.data.message);
-                        const toast = useToast();
+                        toast.dismiss(toastId);
                         toast.error('Failed to update event details. Please try again!');
                     }
                 })
@@ -1157,7 +1310,7 @@ export default {
             }
             catch (error) {
                 console.log(error);
-                const toast = useToast();
+                toast.dismiss(toastId);
                 toast.error('Failed to update event details. Please try again!');
             }
         },
@@ -1288,12 +1441,17 @@ export default {
         // Update attendee payment status
         async updatePaymentStatus(attendeeId, hasPaid) {
             try {
-                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
                     attendeeId: attendeeId,
                     hasPaid: hasPaid,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });
+
+                if (response.data.badgeAwarded) {
+                    this.earnedBadges = [response.data.badgeAwarded];
+                    this.showBadgePopup = true;
+                }
                 
                 const toast = useToast();
                 toast.success('Payment status updated successfully!');
@@ -1307,12 +1465,17 @@ export default {
         // Update attendee attendance status
         async updateAttendanceStatus(attendeeId, attendanceStatus) {
             try {
-                await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
+                const response = await this.$axios.put(`${process.env.VUE_APP_API_URL}/events/updateAttendeeStatus`, {
                     attendeeId: attendeeId,
                     attendanceStatus: attendanceStatus,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });
+
+                if (response.data.badgeAwarded) {
+                    this.earnedBadges = [response.data.badgeAwarded];
+                    this.showBadgePopup = true;
+                }
                 
                 const toast = useToast();
                 toast.success('Attendance status updated successfully!');
@@ -1335,6 +1498,11 @@ export default {
             .catch(err => {
                 console.error('Failed to copy text: ', err);
             });
+        },
+
+        closeBadgePopup() {
+            this.showBadgePopup = false;
+            this.earnedBadges = [];
         },
     },
 

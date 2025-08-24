@@ -157,7 +157,6 @@
             
             // this is where we add the event listener for the button for all the login stuff
             window.addEventListener('load', () => {
-                console.log(window.google);
                 window.google.accounts.id.initialize({
                     client_id: apiKey,
                     // after login, this will be called

@@ -27,7 +27,7 @@
         <p v-if="resetStage == 'otp' && verifyErrorMessage" class="text-danger">{{verifyErrorMessage}}</p>
 
 
-
+        <br><br>
         <!-- 3rd Stage: Input boxes to enter new password -->
         New password: <br>
         <input type="password" v-if="resetStage == 'password'" v-model="newPassword" placeholder="Enter new password" class="rounded p-2" required> <br>
@@ -54,6 +54,7 @@
             <!-- Button to reset password -->
             <button v-if="resetStage == 'password' && newPassword == confirmPassword && resetSuccessMsg == ''" @click="resetPassword" :disabled="isButtonDisabled" class="btn secondary-btn-border-thick btn-md px-3">Reset Password</button>
         </div>
+        <p class="pt-1 pb-4">If you have any support queries, please email us at <a href="mailto:hello@drink-x.com?subject=Drink-X Support Request: &amp;body=I am having trouble with..."> hello@drink-x.com </a> and we will respond as soon as we can.</p>
     </div>  
 
 </template>

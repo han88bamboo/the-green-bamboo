@@ -17,7 +17,7 @@ import os
 from flask import Blueprint, g, jsonify, request
 from datetime import datetime
 import re
-from scripts import badge_helpers, notifications
+from scripts import badge_helpers, notifications, pointsHelperFunc
 
 # Use to upload image to S3
 import s3Images
@@ -688,20 +688,49 @@ def canCreateEvents(user_id, user_type):
     cursor = conn.cursor()
 
     try:
-        # Step 1: Check if the user can create more events
-        can_create = canCreateMoreEvents(cursor, user_id, user_type)
+        # Check for user type: user - needs to have minimum proof points
+        if user_type == 'user':
+            canCreateTuple = pointsHelperFunc.check_user_can_create_event(user_id)
 
-        if not can_create[0]:
+            if not canCreateTuple[0]:
+                if canCreateTuple[1] == 'insufficient points':
+                    return jsonify({
+                        'canCreate': False,
+                        'reason': 'insufficient points',
+                        'message': 'You need a minimum of 100 proof points to create events.',
+                        'pointsNeeded': canCreateTuple[2]
+                    }), 200
+                
+                else:
+                    return jsonify({
+                        'canCreate': False,
+                        'reason': 'max events created',
+                        'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
+                        'numEventsCreated': canCreateTuple[2]
+                    }), 200
+            
+            # User can create an event
             return jsonify({
-                'canCreate': False,
-                'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
-                'limit': can_create[1]
+                'canCreate': True,
+                'message': 'User can create more events as per the limit'
             }), 200
 
-        return jsonify({
-            'canCreate': True,
-            'message': 'User can create more events as per the limit'
-        }), 200
+        # For producers and venues, use the existing logic
+        else:
+            # Step 1: Check if the user can create more events
+            can_create = canCreateMoreEvents(cursor, user_id, user_type)
+
+            if not can_create[0]:
+                return jsonify({
+                    'canCreate': False,
+                    'message': 'You have reached the limit of events you can create this month. This will reset again next month!',
+                    'limit': can_create[1]
+                }), 200
+
+            return jsonify({
+                'canCreate': True,
+                'message': 'User can create more events as per the limit'
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -735,6 +764,8 @@ def createEvent():
 
     conn = g.db
     cursor = conn.cursor()
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Step 1: Get the input data
@@ -759,7 +790,8 @@ def createEvent():
 
             # Upload each image (base64Image) to S3
             for image in data['eventBanners']:
-                url = s3Images.uploadBase64ImageToS3(image)
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                url = s3Images.uploadBase64ImageToS3(base64_string)
                 if url:
                     event_banner.append(url)
 
@@ -801,42 +833,81 @@ def createEvent():
         created_date = datetime.now().date()
 
         # Step 5: Insert the event into the database
-        cursor.execute('INSERT INTO events ("eventName", "eventDesc", "eventType", "eventStartDate", "eventEndDate", "eventStartTime", "eventEndTime", "eventLimit", "eventBanners", ticketed, "paidEvent", "eventLocation", "paymentLink", "eventOwnerID", "eventOwnerType", "numAttendees", "createdDate") VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s)', 
-                       (data['eventName'], data['eventDesc'], data['eventType'], data['eventStartDate'], data['eventEndDate'], data['eventStartTime'], data['eventEndTime'], data['eventLimit'], event_banner_pg, data['ticketed'], data['paidEvent'], data['eventLocation'], payment_link, data['eventOwnerID'], data['eventOwnerType'], created_date,))
+        cursor.execute(
+            '''
+            INSERT INTO events
+              ("eventName", "eventDesc", "eventType",
+               "eventStartDate", "eventEndDate",
+               "eventStartTime", "eventEndTime",
+               "eventLimit", "eventBanners", ticketed,
+               "paidEvent", "eventLocation", "paymentLink",
+               "eventOwnerID", "eventOwnerType",
+               "numAttendees", "createdDate")
+            VALUES (
+              %s, %s, %s,
+              %s, %s,
+              %s, %s,
+              %s, %s, %s,
+              %s, %s, %s,
+              %s, %s,
+              0, %s
+            )
+            RETURNING id
+            ''',
+            (
+                data['eventName'], data['eventDesc'], data['eventType'],
+                data['eventStartDate'], data['eventEndDate'],
+                data['eventStartTime'], data['eventEndTime'],
+                data['eventLimit'], event_banner_pg, data['ticketed'],
+                data.get('paidEvent'), data.get('eventLocation'), payment_link,
+                data['eventOwnerID'], data['eventOwnerType'],
+                created_date
+            )
+        )
+        new_event = cursor.fetchone()
+        new_event_id = new_event['id']
         conn.commit()
+        print("hello1")
 
-        # Get the ID of the newly created event
-        cursor.execute('SELECT LASTVAL()')
-        event_id = cursor.fetchone()['lastval']
+        # Step 6: Notify all followers of the owner
+        # Determine display name
+        if data['eventOwnerType'] == 'user':
+            owner_name = owner_info['displayName']
+        elif data['eventOwnerType'] == 'producer':
+            owner_name = owner_info['producerName']
+        else:
+            owner_name = owner_info['venueName']
+        print("data: ", data)
+        # Fetch followers from usersFollowLists
+        key = str(data['eventOwnerID'])
+        if data['eventOwnerType'] == 'producer':
+            cursor.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY(producers)',
+                (key,)
+            )
+        else:
+            cursor.execute(
+                'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY(venues)',
+                (key,)
+            )
+        print("hello2")
+        followers = cursor.fetchall()
+        print("Followers fetched:", followers)
 
-
-        # Step 6: Add notifications (1 record for 1 followers of the event owner)
-        if data['eventOwnerType'] in ['venue', 'producer']:
-
-            followers = notifications.get_followers(data['eventOwnerID'], data['eventOwnerType'])
-
-            for follower in followers:
-
-                # Get name of the event owner
-                if data['eventOwnerType'] == 'venue':
-                    name = owner_info['venueName']
-                elif data['eventOwnerType'] == 'producer':
-                    name = owner_info['producerName']
-
-                # Prepare data
-                data = {
-                    'userId': follower,
-                    'userType': 'user', 
-                    'notiTabs': 'Venue & Producers',
-                    'notiType': 'event',
-                    'image': None,
-                    'link': f'/events/{event_id}/{data["eventName"]}',
-                    'message': f'New event "{data["eventName"]}" created by {name}.',
-                    'createdAt': None,
-                }
-                # Create a notification for each follower
-                notifications.add_notification_to_db(data)
-
+        for f in followers:
+            notification_data = {
+                'userId': f['userId'],
+                'userType': 'user',
+                'notiTabs': 'venues & producers',
+                'notiType': 'event_created',
+                'image': None,
+                'link': f'/event/{new_event_id}/{data["eventName"]}',
+                'message': f'{owner_name} created a new event: {data["eventName"]}',
+                'createdAt': current_time,
+            }
+            print(notification_data)
+            notifications.add_notification_to_db(notification_data)
+        
         return jsonify({'message': 'Event created successfully'}), 201
 
     except Exception as e:
@@ -1157,6 +1228,8 @@ def addAttendee():
 
     conn = g.db
     cursor = conn.cursor()
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     try:
         # Step 1: Get the input data
@@ -1216,7 +1289,8 @@ def addAttendee():
             "notiType":  "event_invite",
             "image":     None,
             "link":      f"/event/{data['eventID']}/{event_name}",
-            "message":   f"You have been invited to {event_name}"
+            "message":   f"You have been invited to '{event_name}' event",
+            "createdAt": current_time
         }
         print("data for notification: ", notification_data)
         notifications.add_notification_to_db(notification_data)
@@ -1297,6 +1371,8 @@ def updateAttendeeStatus():
     event_owner_id = data.get('eventOwnerID')
     event_owner_type = data.get('eventOwnerType')
     
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
     conn = g.db
     cursor = conn.cursor()
     
@@ -1371,7 +1447,8 @@ def updateAttendeeStatus():
                         "notiType": "badge_earned",
                         "image":    None,
                         "link":     f"/profile/user/{user_id}/{user_username}",
-                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                        "createdAt": current_time
                     }
                     print("notification data for badge: ", notification_data)
                     notifications.add_notification_to_db(notification_data)
@@ -1417,12 +1494,19 @@ def getUserOrganisingEvents(user_id, user_type):
             ev = {}
             ev['eventID'] = event['id']
             ev['eventName'] = event['eventName']
-            ev['eventDesc'] = event['eventDesc']
+            ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '')
+
             ev['eventType'] = event['eventType']
             ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+            if event['eventEndDate'] is not None:
+                ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+
+            if event['eventStartTime'] is not None:
+                ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+            if event['eventEndTime'] is not None:
+                ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
             ev['eventBanners'] = event['eventBanners']
             ev['eventLocation'] = event['eventLocation']
             ev['numAttendees'] = event['numAttendees']

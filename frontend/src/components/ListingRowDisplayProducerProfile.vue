@@ -13,8 +13,8 @@
             style="flex: 0 0 19%; max-width: 19%; min-width: 150px; margin-right: 1%;">
                    <div class="drink-photo-container-row image-container-150 mb-2" v-if="listing?.id">
                     <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-text-no-background">
-                        <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background centered rounded"> 
-                        <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="add-drink-photo-background centered rounded">
+                        <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="producer-bottle-listing-page-bottle-image centered rounded"> 
+                        <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="producer-bottle-listing-page-bottle-image centered rounded">
                     </router-link>
                     
                     <BookmarkIcon 
@@ -59,12 +59,12 @@
                   class="default-text-no-background">
       
                   <img v-if="listing.photo !== '' && listing.photo !== null" 
-                       :src="'data:image/jpeg;base64,' + listing.photo" 
-                       class="add-drink-photo-background centered rounded review-image">
+                       :src="listing.photo"
+                       class="producer-bottle-listing-page-bottle-image centered rounded review-image">
       
                   <img v-else 
                        src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" 
-                       class="add-drink-photo-background centered rounded review-image">
+                       class="producer-bottle-listing-page-bottle-image centered rounded review-image">
                 
                 </router-link>
       

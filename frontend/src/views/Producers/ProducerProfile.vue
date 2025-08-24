@@ -29,6 +29,16 @@
       <!-- producer information -->
       <div class="col-xl-9 col-12 px-3 px-lg-4"> <!-- KAI Added Impt margins for left columm -->
 
+      <!--Mobile Toggle Button (only visible below 992px)-->
+      <button v-if="selfView" class="mb-3 d-lg-none btn w-100 text-start d-flex justify-content-between align-items-center welcome-toggle" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#welcomeCollapse" 
+        aria-expanded="false" 
+        aria-controls="welcomeCollapse">
+          <span class="fw-bold">Welcome to Drink-X. Grow your brand's presence!</span>
+          <i class="bi bi-chevron-down"></i>
+      </button>
       <!-- Welcome Section for Producer Owners -->
       <div v-if="selfView"
         style="
@@ -38,7 +48,8 @@
           background-color: #ffffff;
           margin-bottom: 20px;
         "
-        class="mb-4"
+        class="mb-4 collapse d-lg-block"
+        id="welcomeCollapse"
       >
         <h3
           style="
@@ -47,6 +58,7 @@
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 16px;
           "
+           class="mobile-view-hide"
         >
           Welcome to Drink-X. Grow your brand's presence!
         </h3>
@@ -253,10 +265,60 @@
                 </router-link>
                 </div>
             </div>
-
+            <!-- Action Item 6 -->
+            <div
+                style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                "
+            >
+                <img
+                src="/CurateMenu.png"
+                style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                "
+                alt="Claim a free venue account"
+                />
+                <div class="text-start">
+                <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                    <strong>Claim Free Venue Account</strong> A Venue Account allows you to curate an online menu and show fans what you're pouring at your bar, restaurant or bottle shop! (PS: Same brand only!)
+                </p>
+                <button
+                    class="btn btn-warning btn-sm rounded fw-bold fs-8"
+                    data-bs-toggle="modal"
+                    data-bs-target="#venueClaimModal"
+                >
+                    Claim Account
+                </button>
+                </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="modal fade" id="venueClaimModal" tabindex="-1" aria-labelledby="venueClaimModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="venueClaimModalLabel">Claim Free Venue Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                Each Brand Account on Drink-X is entitled to claim <b>one free Venue Account</b> for a single location. Send us an email, and our team will get back to you within a few days!
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" @click="openVenueClaimEmail">
+                  Claim Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
 
         <!-- header -->
         <div class="row">
@@ -446,14 +508,14 @@
                     ></textarea>
                   </div>
                   <div v-else class="ps-0 pe-0">
-                    <div v-if="specified_producer.producerDesc.length > 150">
+                    <div v-if="specified_producer.producerDesc.length > 320">
                       <p
                         v-if="!showFullProducerDescription"
                         class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
                       >
                         {{
-                          specified_producer["producerDesc"].slice(0, 150) +
-                          (specified_producer["producerDesc"].length > 150
+                          specified_producer["producerDesc"].slice(0, 320) +
+                          (specified_producer["producerDesc"].length > 320
                             ? "..."
                             : "")
                         }}
@@ -591,6 +653,7 @@
                     </span>
                   </p>
                 </div>
+              
               </div>
             </div>
           </div>
@@ -599,49 +662,83 @@
         <!-- Info + Buttons (Responsive Layout) -->
         <div class="row mt-3 mobile-mt-1">
           <!-- Info Fields (7 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-7 d-flex flex-wrap justify-content-start mobile-pe-0">
-            <!-- Year Founded -->
-            <div v-if="specified_producer.yearFounded" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["yearFounded"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Year Founded</u></p>
-            </div>
+          <div class="col-12 col-lg-7">
+            <div class="row">
+              
+                <!-- Average Rating -->
+              <div class="d-flex align-items-center mb-3">
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Average Drink Rating:</u>
+                </p>
+                <h3 class="mb-0 ms-1">
+                   &nbsp;<b>{{ getAverageDrinkRating() }}
+                    <span style="color: #f0b358">★</span>
+                  </b>
+                </h3>
+              </div>
 
-            <!-- Active Status -->
-            <div v-if="specified_producer.activeStatus" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
-                <b>{{ specified_producer["activeStatus"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Status</u></p>
-            </div>
+              <!-- Review Count -->
+              <div class="d-flex align-items-center mb-3">
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Review Count:</u>
+                </p>
+                <h3 class="mb-0 ms-1">
+                   &nbsp;<b>{{ getTotalReviewCount() }}</b>
+                </h3>
+              </div>
 
-            <!-- Open for Tours -->
-            <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
-              class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Open for Tours?</u></p>
-            </div>
+              <!-- Year Founded -->
+              <div v-if="specified_producer.yearFounded" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["yearFounded"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Year Founded</u>
+                </p>
+              </div>
 
-            <!-- Owner -->
-            <div v-if="specified_producer.owner" class="col-3 text-start text-color-black">
-              <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
-                <b>{{ specified_producer["owner"] }}</b>
-              </h5>
-              <p class="mb-2 mobile-rating-smaller-text-2"><u>Owner</u></p>
+              <!-- Active Status -->
+              <div v-if="specified_producer.activeStatus" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0" style="text-transform: capitalize;">
+                  <b>{{ specified_producer["activeStatus"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Status</u>
+                </p>
+              </div>
+
+              <!-- Open for Tours -->
+              <div v-if="specified_producer.openForTours !== null && specified_producer.openForTours !== undefined"
+                class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["openForTours"] === true ? "Yes" : "No" }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Open for Tours?</u>
+                </p>
+              </div>
+
+              <!-- Owner -->
+              <div v-if="specified_producer.owner" class="col-xl-3 col-lg-4 col-md-6 col-6 text-start text-color-black mb-2">
+                <h5 class="mobile-rating-smaller-text text-body-secondary rating-text mb-0">
+                  <b>{{ specified_producer["owner"] }}</b>
+                </h5>
+                <p class="mb-0 mobile-rating-smaller-text-2">
+                  <u>Owner</u>
+                </p>
+              </div>
             </div>
           </div>
 
           <!-- Buttons (5 columns desktop, full width mobile) -->
-          <div class="col-12 col-lg-5 d-flex gap-2 justify-content-lg-end justify-content-start mt-3 mt-lg-0">
+          <div class="col-12 col-lg-5 d-flex flex-row gap-2 align-items-center">
+
             <!-- Follow Button -->
             <button
               v-if="!following"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               @click="editFollow('follow')"
-              style="font-weight: bold;"
+              style="font-weight: bold; height: fit-content;"
             >
               + Follow
             </button>
@@ -649,27 +746,36 @@
               v-else
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               @click="editFollow('unfollow')"
-              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
             >
               Following
             </button>
 
             <!-- Review Button -->
             <button
-              v-if="!inEdit"
+              v-if="userType === 'user' && user_id !== 'defaultUser' && !inEdit"
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
               data-bs-toggle="modal"
               data-bs-target="#reviewModal"
-              style="font-weight: bold;"
+              style="font-weight: bold; height: fit-content;"
             >
               Review Producer
+            </button>
+
+            <button
+              v-else-if="inEdit"
+              class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+              style="font-weight: bold; background-color: rgb(249, 115, 106); height: fit-content;"
+            >
+              Reviewed!
             </button>
             <button
               v-else
               class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
-              style="font-weight: bold; background-color: rgb(249, 115, 106);"
+              style="font-weight: bold; height: fit-content;"
+              @click="$router.push('/login')"
             >
-              Reviewed!
+              Review Producer
             </button>
           </div>
         </div>
@@ -2068,7 +2174,7 @@
             </div>
           </div>
           <!-- DRINK LISTING CATALOGUE-->
-          <div class="row scrollable-expressions-none">
+          <div class="row scrollable-listings">
             <!-- v-loop for each listing -->
             <div class="container text-start">
               <div
@@ -2081,8 +2187,6 @@
                   <div
                     class="col-2 image-container text-start mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0"
                   >
-
-                  
                     <router-link
                       :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName)}"
                       class="default-text-no-background"
@@ -2093,12 +2197,10 @@
                         class="producer-bottle-listing-page-bottle-image"
                       />
                     </router-link>
-
-
                     <!-- Item Rating for MOBILE VIEW ONLY, sits neatly under image -->
                     <div
                     class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show"
-                  >
+                    >
                     <p
                       class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
                       style="margin-bottom: 0.1rem"
@@ -2106,7 +2208,7 @@
                       {{ getRatings(listing) }}&nbsp;
                       <span style="font-size: 30px;"> ★</span>
                     </p>
-                  </div>
+                    </div>
 
                     <div class="row mt-2">
                       <!-- edit listing -->
@@ -3675,23 +3777,31 @@
       :listingID="bookmarkListingID"
     />
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
   <!-- end of main content -->
-  <FooterBar />
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 
 <!-- JavaScript -->
 <script>
+import { useHead, useSeoMeta } from '@unhead/vue'
+import { ref, computed } from 'vue'
+
 // import { all } from 'axios';
 import EventBox from "@/components/EventBox.vue";
 import NavBar from "@/components/NavBar.vue";
 import ListingRowDisplayProducerProfile from "@/components/ListingRowDisplayProducerProfile.vue";
 import BookmarkIcon from "@/components/BookmarkIcon.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
-import FooterBar from "@/components/FooterBar.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import BadgePopup from "@/components/BadgePopup.vue";
 
 export default {
   components: {
@@ -3700,8 +3810,234 @@ export default {
     ListingRowDisplayProducerProfile,
     BookmarkIcon,
     BookmarkModal,
-    FooterBar,
     LoadingWithFunFact,
+    BadgePopup
+  },
+  setup() {
+    // Create reactive references for meta data
+    const metaData = ref({
+      title: 'Producer Page',
+      image: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998",
+      description: '',
+      url: '',
+      siteName: 'www.drink-x.com',
+      type: 'website',
+      locale: 'en_US',
+      keywords: 'brand, listings, events, brand information',
+      rating: '',
+      reviewCount: 0,
+      robotsIndex: true,
+      robotsFollow: true,
+      robotsImageIndex: true,
+      robotsSnippet: true
+    })
+
+    // Computed properties for dynamic meta content
+    const dynamicTitle = computed(() => metaData.value.title)
+    const dynamicDescription = computed(() => metaData.value.description)
+    const dynamicImage = computed(() => metaData.value.image)
+    const dynamicUrl = computed(() => metaData.value.url)
+    const dynamicKeywords = computed(() => metaData.value.keywords)
+
+    // Computed property for structured data
+    const structuredData = computed(() => {
+      if (!metaData.value.title || metaData.value.title === 'Product Page') {
+        return ''
+      }
+
+      const data = {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": metaData.value.title,
+        "image": metaData.value.image,
+        "description": metaData.value.description,
+        "url": metaData.value.url
+      }
+
+      if (metaData.value.rating) {
+        data.aggregateRating = {
+          "@type": "AggregateRating",
+          "ratingValue": metaData.value.rating,
+          "ratingCount": metaData.value.reviewCount || 1
+        }
+      }
+
+      return JSON.stringify(data)
+    })
+
+    // Computed property for dynamic robots content
+    const robotsContent = computed(() => {
+      const robots = []
+
+      // Basic indexing
+      robots.push(metaData.value.robotsIndex ? 'index' : 'noindex')
+      robots.push(metaData.value.robotsFollow ? 'follow' : 'nofollow')
+
+      // Image indexing
+      if (metaData.value.robotsImageIndex) {
+        robots.push('max-image-preview:large')
+      } else {
+        robots.push('noimageindex')
+      }
+
+      // Snippet control
+      if (metaData.value.robotsSnippet) {
+        robots.push('max-snippet:-1') // No limit on snippet length
+        robots.push('max-video-preview:-1') // No limit on video preview
+      } else {
+        robots.push('nosnippet')
+      }
+
+      return robots.join(', ')
+    })
+
+    // useHead for general head management and custom meta tags
+    useHead({
+      title: dynamicTitle,
+
+      // Custom meta tags that useSeoMeta doesn't cover
+      meta: [
+        {
+          name: 'author',
+          content: 'drink-x'
+        },
+        {
+          name: 'robots',
+          content: robotsContent
+        },
+        {
+          name: 'googlebot',
+          content: robotsContent // Specific for Google
+        },
+        {
+          name: 'bingbot',
+          content: robotsContent // Specific for Bing
+        },
+        {
+          name: 'rating',
+          content: computed(() => metaData.value.rating || '')
+        },
+        {
+          name: 'price',
+          content: computed(() => metaData.value.price || '')
+        },
+        // Additional SEO meta tags
+        {
+          name: 'distribution',
+          content: 'global'
+        }
+      ],
+
+      // Link tags
+      link: [
+        {
+          rel: 'canonical',
+          href: dynamicUrl
+        },
+        {
+          rel: 'preload',
+          href: dynamicImage,
+          as: 'image',
+          condition: computed(() => metaData.value.image && metaData.value.image !== 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739')
+        }
+      ],
+
+      // JSON-LD structured data for rich snippets
+      script: [
+        {
+          type: 'application/ld+json',
+          innerHTML: structuredData
+        }
+      ]
+    })
+
+    // useSeoMeta for SEO and social media optimization
+    useSeoMeta({
+      // Basic SEO
+      title: dynamicTitle,
+      description: dynamicDescription,
+      keywords: dynamicKeywords,
+
+      // Open Graph (Facebook, LinkedIn, etc.)
+      ogTitle: dynamicTitle,
+      ogDescription: dynamicDescription,
+      ogImage: dynamicImage,
+      ogImageWidth: '1200',
+      ogImageHeight: '630',
+      ogUrl: dynamicUrl,
+      ogType: computed(() => metaData.value.type),
+      ogSiteName: computed(() => metaData.value.siteName),
+      ogLocale: computed(() => metaData.value.locale),
+
+      // Twitter Card
+      twitterCard: 'summary_large_image',
+      twitterSite: '@drinkx',
+      twitterCreator: '@drinkx',
+      twitterTitle: dynamicTitle,
+      twitterDescription: dynamicDescription,
+      twitterImage: dynamicImage,
+      twitterImageAlt: computed(() => `Image of ${metaData.value.title}`),
+
+      // Additional social platforms
+      articleAuthor: 'drink-x.com',
+      articlePublisher: '88bamboo.com',
+
+      // Canonical URL
+      canonical: dynamicUrl,
+
+      // Robots
+      // robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'
+      // Enhanced robots directive
+      robots: robotsContent
+    })
+
+    // Function to update meta tags
+    const updateAllMetaTags = (producerData, reviewStats = null) => {
+      const producerName = producerData ? ` ${producerData.producerName}` : ''
+      // const rating = reviewStats?.averageRating ? ` (${reviewStats.averageRating}★)` : ''
+      const reviewCount = reviewStats?.totalReviews ? ` - ${reviewStats.totalReviews} reviews` : ''
+
+      // Create rich description
+      const description = producerData.producerDesc ||
+        `${producerName}${reviewCount}. Read reviews and discover more details about this brand.'}.`
+
+      // Generate keywords
+      const keywords = [
+        producerData.producerName,
+        producerData.originCountry,
+        producerData.location,
+        producerData.website, 
+        'reviews',
+        'spirits',
+        'drinks'
+      ].filter(Boolean).join(', ')
+
+      // Determine robots behavior based on content quality
+      const shouldIndex = producerName !== 'Producer Page' &&
+        producerData.producerDesc.trim() !== ''
+
+      // Update the reactive metaData object
+      metaData.value = {
+        title: `${producerName}, ${producerData.originCountry}`,
+        image: producerData.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739',
+        description: description,
+        url: typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : '',
+        siteName: 'drink-x.com',
+        type: 'product',
+        locale: 'en_US',
+        keywords: keywords,
+        rating: reviewStats?.averageRating?.toString() || '',
+        reviewCount: reviewStats?.totalReviews || 0,
+        robotsIndex: shouldIndex,
+        robotsImageIndex: true,
+        robotsSnippet: shouldIndex
+      }
+    }
+
+    return {
+      metaData,
+      updateAllMetaTags
+    }
   },
   data() {
     return {
@@ -3954,9 +4290,12 @@ export default {
       selfView: false,
       targetProducer: '',
       targetProducerID: '',
+
+      earnedBadges: [],
+      showBadgePopup: false,
     
     };
-  },
+  }, 
   async mounted() {
     var userID = localStorage.getItem("88B_accID");
     if (userID != null) {
@@ -4387,6 +4726,17 @@ export default {
       // Set dataLoaded to true
       if (this.dataLoaded != null) {
         this.dataLoaded = true;
+
+        // Wait for next tick to ensure all computed properties are updated
+        this.$nextTick(() => {
+          this.updateAllMetaTags(
+            this.specified_producer,
+            {
+              averageRating : this.getAverageDrinkRating(),
+              totalReviews: this.getTotalReviewCount(),
+            }
+          );
+        });
       }
     },
 
@@ -4433,6 +4783,36 @@ export default {
         allProducerDrinkRatings[drink_name].push(rating);
       });
       this.drinkRatings = allProducerDrinkRatings;
+    },
+
+    getAverageDrinkRating() {
+      // Get all reviews for this producer's listings
+      const allDrinkReviews = this.reviews.filter(review => {
+        return this.allDrinksIDs.includes(review.reviewTarget);
+      });
+      
+      // If no reviews, return "-"
+      if (allDrinkReviews.length === 0) {
+        return "-";
+      }
+      
+      // Calculate average rating
+      const totalRating = allDrinkReviews.reduce((sum, review) => {
+        return sum + parseFloat(review.rating);
+      }, 0);
+      
+      const averageRating = totalRating / allDrinkReviews.length;
+      return averageRating.toFixed(1);
+    },
+
+    // get total review count for this producer
+    getTotalReviewCount() {
+      // Get all reviews for this producer's listings
+      const allDrinkReviews = this.reviews.filter(review => {
+        return this.allDrinksIDs.includes(review.reviewTarget);
+      });
+      
+      return allDrinkReviews.length;
     },
 
     // get compiled dictionary of count of each type of drink
@@ -5078,18 +5458,25 @@ export default {
             },
           }
         );
+
+        // Handle badges if awarded
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
+
         const toast = useToast();
         toast.success("Your question has been successfully sent!");
         console.log(response.data);
+
       } catch (error) {
         console.error(error);
         alert(
           "An error occurred while attempting to send your question, please try again!"
         );
       }
-
-      // force page to reload
-      window.location.reload();
     },
 
     // send answer that producers give to users
@@ -6059,11 +6446,11 @@ export default {
     },
     async confirmUpdatePassword() {
       let oldHash = this.hashPassword(
-        this.specified_producer.producerName,
+        this.specified_producer.username,
         this.oldPassword
       );
       let newHash = this.hashPassword(
-        this.specified_producer.producerName,
+        this.specified_producer.username,
         this.newPassword
       );
       let submitURL =
@@ -6202,8 +6589,62 @@ export default {
           qnaSection.classList.remove('highlight-section');
         }, 3000);
       }
-    }
+    },
+    openVenueClaimEmail() {
+    const subject = encodeURIComponent("I'd like to claim a free Venue Account");
+    const body = encodeURIComponent(
+      `Hi Drink-X Team,
+
+I hold a Brand Account. I would like to claim a free Venue Account under the same brand.
+
+Please find my details below:
+
+- Link to my existing Brand Account:
+- My Business/Venue Name: 
+- Business Description:
+- Country:
+- Official Address on Google Maps:
+- My First Name:
+- My Last Name:
+- My Relationship to Brand/Venue:
+- My Email Address:
+- My Contact Number:
+
+Thank you!`
+    );
+    window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
   },
+
+  closeBadgePopup() {
+    this.showBadgePopup = false;
+    this.earnedBadges = [];
+    // Reload the page when user closes the popup
+    window.location.reload();
+  },
+  },
+  watch:{
+     '$route.params.producerID': function(newId, oldId) {
+      console.log('Route producer ID changed from', oldId, 'to', newId);
+      if (newId !== oldId) {
+        // Reset data loading state
+        this.dataLoaded = false;
+        
+        // Reset data
+        this.targetProducer = newId;
+        this.targetProducerID = newId;
+        
+        // Check if it's own profile
+        if (this.userType == 'producer' && this.user_id == this.targetProducer) {
+          this.selfView = true;
+        } else {
+          this.selfView = false;
+        }
+        
+        // Reload data
+        this.loadData();
+      }
+    }
+  }
 };
 </script>
 
@@ -6218,5 +6659,36 @@ export default {
   animation: highlightBorder 1s ease-out infinite;
   border: 2px solid #FFC107;
   border-radius: 5px;
+}
+
+/* Welcome section collapse button styling */
+.welcome-toggle {
+  background-color: #f0b358 !important; /* Match the yellow/orange background */
+  border: 1px solid #e0a043 !important; /* Add a border with slightly darker shade */
+  color: #212529 !important; /* Darker text color */
+  border-radius: 0.25rem !important; /* Match the border radius */
+  font-weight: bold !important; /* Make text bold */
+  padding: 0.5rem 1rem !important; /* Adjust padding */
+  transition: all 0.3s ease;
+}
+
+.welcome-toggle:hover {
+  background-color: #e5a443 !important; /* Slightly darker on hover */
+  border-color: #d89932 !important;
+}
+
+/* Handle border radius changes when expanded */
+.welcome-toggle[aria-expanded="true"] {
+  border-radius: 0.25rem 0.25rem 0 0 !important;
+}
+
+/* Rotate arrow when expanded */
+.welcome-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .bi-chevron-down {
+  transition: transform 0.3s ease;
 }
 </style>

@@ -55,6 +55,7 @@
 
             <!-- choose plan -->
             <div class="row justify-content-between">
+                <p style="color: red;">Please select one option</p> <br>
                 <div class="col-6">
                     <button class="btn rounded p-3 text-start mb-3 w-100" @click="toggleMonthlyPricing" :style="{ backgroundColor: selectedMonthlyPricing ? '#DD9E54' :'white', 
                                                                                                                         color: selectedMonthlyPricing ? 'white' :'black', 
@@ -62,7 +63,7 @@
                                                                                                                         borderWidth:'3px' }">
                         <span>
                             <h6> <b> Monthly plan </b> </h6>
-                            <p class="m-0"> $65 / Month </p> 
+                            <p class="m-0"> US$95 / Month </p> 
                             <small class="fst-italic p-0"> Billed monthly </small>
                         </span>
                     </button>
@@ -77,14 +78,26 @@
                             <div class="rounded col-5 text-center" style="background-color: green; color: white;">Save 23%</div>
                         </div>
                         <span>
-                            <p class="m-0"> $50 / Month </p> 
-                            <small class="fst-italic p-0"> $600 Billed annually </small>
+                            <p class="m-0"> US$85 / Month </p> 
+                            <small class="fst-italic p-0"> $960 Billed annually </small>
                         </span>
                     
                     </button>
                 </div>
             </div>
             
+            <div v-if="selectedMonthlyPricing || selectedYearlyPricing" class="form-group mb-3">
+                <p class="text-start mb-1" style="font-family: radley; font-size: 25px;">Apply Coupon Code (Leave Blank If Not Applicable)</p>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" :style="'border-color: black;'" v-model="couponCode">
+                    <button class="btn btn-outline-secondary" type="button" id="couponButton" @click="applyCoupon()">Apply</button>
+                </div>
+                <span v-if="isFullDiscount" class="text-success">This coupon enables you to subscribe for free! No payment required!</span>
+                <span v-if="paymentAmount > 0" class="text-success">The payment for this subscription will be ${{ paymentAmount/100 }}</span>
+                <span v-if="invalidCoupon" class="text-danger">This coupon is invalid, please try another coupon code</span>
+                <span v-if="failedStripe" class="text-danger">Payment rendering has failed, please try with a different code. Contact administrator if problem persists.</span>
+            </div>
+
             <div v-if="selectedMonthlyPricing || selectedYearlyPricing">
                 <form id="payment-form">
                     <div id="payment-element">
@@ -140,7 +153,6 @@
     </div>
 
     <!-- Footer End -->
-    <FooterBar />
 </template>
 
 <!-- ------------------------------------------------------------------------------ -->
@@ -149,19 +161,17 @@
     // import components used
     import NavBar from '@/components/NavBar.vue';
     import { loadStripe } from '@stripe/stripe-js';
-    import FooterBar from "@/components/FooterBar.vue";
 
     export default {
         name: 'BillingSecurity',
         components: {
-            NavBar,
-            FooterBar
+            NavBar
         },
         data(){
             return{
                 dataLoaded: false,
-                monthlyPriceId: "price_1Q2wvTILhk1xtKohjMfP1Gr0",
-                yearlyPriceId: "price_1Q2zOvILhk1xtKohtZSFuDeb",
+                monthlyPriceId: "",
+                yearlyPriceId: "",
 
                 // owner details
                 stripe: null,
@@ -182,14 +192,17 @@
                 // plan details
                 selectedMonthlyPricing: false,
                 selectedYearlyPricing: true,
-
                 // stripe details
                 priceId: "",
                 customerId: "",
                 clientSecret: "",
-
+                couponCode: "",
+                invalidCoupon: false,
+                failedStripe: false,
                 paymentFilled: false,
-
+                paymentElementInstance: null,
+                isFullDiscount: false,
+                paymentAmount:null,
                 // username and password
                 usernames: null,
                 username: "",
@@ -203,6 +216,8 @@
             }
         },
         async mounted(){
+            this.monthlyPriceId = process.env.VUE_APP_STRIPE_MONTHLY_PRICE_ID,
+            this.yearlyPriceId = process.env.VUE_APP_STRIPE_YEARLY_PRICE_ID,
 
             this.token = this.$route.query.token;
             
@@ -223,8 +238,9 @@
                     await this.create_customer();
                 }
 
-                await this.create_subscription();
-                this.paymentElement();
+                // await this.create_subscription();
+                await this.applyCoupon();
+                // this.paymentElement();
             }
 
             initiateProcess.call(this);
@@ -232,7 +248,16 @@
 
         },
         methods: {
+            async wipeStripe(){
+                this.invalidCoupon=false;
+                this.failedStripe=false;
+                this.isFullDiscount=false;
+                this.paymentAmount = null
+                this.unmountPayment();
+            },
             async toggleYearlyPricing(){
+                this.wipeStripe();
+                this.couponCode=""
                 if(this.selectedMonthlyPricing && !this.selectedYearlyPricing){
                     this.selectedMonthlyPricing= false
                 }
@@ -240,11 +265,12 @@
                     this.selectedYearlyPricing=false
                 }else{
                     this.selectedYearlyPricing = true
-                    await this.create_subscription()
-                    this.paymentElement()
+                    this.applyCoupon()
                 }
             },
             async toggleMonthlyPricing(){
+                this.wipeStripe();
+                this.couponCode=""
                 if(this.selectedYearlyPricing && ! this.selectedMonthlyPricing){
                     this.selectedYearlyPricing= false
                 }
@@ -252,8 +278,32 @@
                     this.selectedMonthlyPricing=false
                 }else{
                     this.selectedMonthlyPricing = true
-                    await this.create_subscription()
-                    this.paymentElement()
+                    this.applyCoupon()
+                }
+            },
+            async applyCoupon(){
+                this.wipeStripe();
+                try{
+                    let couponResponseCode = null
+                    const response = await this.create_subscription()
+                    if(response.clientSecret){
+                        couponResponseCode = 200
+                        this.paymentAmount = response.amountDue
+                        this.paymentElement()
+                    }else if(response.isFullDiscount){
+                        this.isFullDiscount = true
+                    }
+                    else if(response.status == 404){
+                        this.invalidCoupon = true;
+                        
+                    }else if(response.status == 400){
+                        this.failedStripe = true;
+                    }
+                    return couponResponseCode
+                }
+                catch(error){
+                    console.error(error);
+                    return null
                 }
             },
             async loadData(){
@@ -334,6 +384,7 @@
             },
 
             async create_subscription() {
+                //Change these Ids to be taken from the env file instead
                 if (this.selectedMonthlyPricing) {
                     this.priceId = this.monthlyPriceId;
                 } else {
@@ -355,13 +406,13 @@
                         {
                             priceId: this.priceId,
                             customerId: this.customerId,
+                            couponCode: this.couponCode
                         }, {
                         headers: {
                             'Content-Type': 'application/json'
                         }
                     });
                     const endTime = new Date().getTime();
-                    
                     console.log(`🔍 Request completed in ${endTime - startTime}ms`);
                     this.displayDebugInfo(response);
                     
@@ -379,13 +430,18 @@
                         });
                         
                         return response.data;
-                    } else {
+                    }else if(response.data.isFullDiscount){
+                       return response.data 
+                    }
+                    else {
                         console.error('🔍 No client_secret in response!', response.data);
                         return null;
                     }
                 } catch (error) {
                     console.error('🔍 Subscription creation error:', error.response ? error.response.data : error);
-                    return null;
+                    console.log(error.response.status)
+                    return error.response;
+
                 }
             },
 
@@ -397,31 +453,63 @@
                     theme: 'stripe',
                 };
 
-                this.elements = stripe.elements({clientSecret, appearance});
+                this.elements = stripe.elements({clientSecret, appearance, loader: 'auto', allowPromotionCodes: true});
                 const elements = this.elements;
 
-                const paymentElement = elements.create('payment');
-                paymentElement.mount('#payment-element');
+                this.paymentElementInstance = elements.create('payment');
+                this.paymentElementInstance.mount('#payment-element');
 
-                paymentElement.on('change', (event) => {
+                this.paymentElementInstance.on('change', (event) => {
                     this.paymentFilled = event.complete;
                 });
 
             },
+            async unmountPayment(){
+                if (this.paymentElementInstance) {
+                    this.paymentElementInstance.unmount();
+                    this.paymentElementInstance = null;
+                }
+            },
 
             async processPayment() {
-                console.log('🔍 PAYMENT INFO:', {
-                    clientSecret: this.clientSecret ? this.clientSecret.substring(0, 10) + '...' : 'not set'
-                });
-                const stripe = this.stripe;
-                const elements = this.elements;
-
-                const { error, paymentIntent } = await stripe.confirmPayment({
-                    elements,
-                    redirect: 'if_required' // Prevents automatic redirection
-
-                });
-
+                // Updated this function to handle situations with 100% or coupon discount > subscription amount
+                let error, paymentIntent, fullyDiscountedSubscription;
+                if(!this.isFullDiscount){
+                    console.log('🔍 PAYMENT INFO:', {
+                        clientSecret: this.clientSecret ? this.clientSecret.substring(0, 10) + '...' : 'not set'
+                    });
+                    const stripe = this.stripe;
+                    const elements = this.elements;
+    
+                    ({error, paymentIntent} = await stripe.confirmPayment({
+                        elements,
+                        redirect: 'if_required' // Prevents automatic redirection
+    
+                    }));
+                    
+                }else{
+                    // Submit subscription request for the promo code
+                    // Set a flag to true if nothing wrong
+                    try{
+                        const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/payment/create-full-discount-subscription`,
+                            {
+                                priceId: this.priceId,
+                                customerId: this.customerId,
+                                couponCode: this.couponCode
+                            }, {
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        if(response.data.subscriptionId){
+                            fullyDiscountedSubscription = true
+                        }
+                    }
+                    catch(error){
+                        console.error(error)
+                    }
+                    
+                }
                 if (error) {
                     if (error.type === "card_error" || error.type === "validation_error") {
                         console.log(error.message);
@@ -429,7 +517,7 @@
                         console.log("An unexpected error occurred.");
                     }
 
-                } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+                } else if ((paymentIntent && paymentIntent.status === 'succeeded')|| fullyDiscountedSubscription) {
                     // sucessful payment -> business is now verified
 
                     // update account request
@@ -495,7 +583,7 @@
 
             async createAccount () {
                 
-                if (!this.paymentFilled) {
+                if ((!this.paymentFilled) && (!this.isFullDiscount)) {
                     return;
                 }
                 console.log("creating account");
@@ -554,13 +642,25 @@
             }, 
 
             async checkUsername() {
+                // trim username to ensure consistent processing
+                this.username = this.username.trim();
 
                 // username empty
                 if (this.username == "") {
                     this.formError["username"] = "Please enter a username.";
                     return;
+                    
+                // check for uppercase letters
+                } else if (this.username !== this.username.toLowerCase()) {
+                    this.formError["username"] = "Username must be all lowercase letters.";
+                    return;
 
-                // username not empty
+                // username format validation
+                } else if (!this.validateUsername(this.username)) {
+                    this.formError["username"] = "Username can only contain letters and numbers (no spaces or special characters).";
+                    return;
+
+                // username not empty and valid format
                 } else {
                     // username changed
                     if (this.username != this.business.username) {

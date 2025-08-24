@@ -6,10 +6,11 @@
 import os
 import json
 import pytz
-import data
+import re
 import s3Images
 from flask import Blueprint, g, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
+from scripts import notifications
 # [OLD] TO BE DELETED FOR POSTGRES:
 # ------------------------------------------------------
 from bson import json_util
@@ -147,6 +148,10 @@ def createListings():
     rawBottle['producerID'] = int(rawBottle['producerID'])
     rawBottle['bottlerID'] = int(rawBottle['bottlerID']) if rawBottle['bottlerID'] != "" else None
     rawBottleName = rawBottle["listingName"]
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    print("data received:", rawBottle)
 
     try:
         # Check for duplicate listing
@@ -167,17 +172,114 @@ def createListings():
         # Convert abv from string to float if necessary
         if 'abv' in rawBottle:
             abv_value = rawBottle['abv'].replace('%', '')  # Remove the '%' sign
-            rawBottle['abv'] = float(abv_value)
+            if abv_value.strip():  # Check if the string is not empty
+                rawBottle['abv'] = float(abv_value)
+            else:
+                # Handle empty ABV - set to NULL in database
+                rawBottle['abv'] = None
 
+        # uploading as base64 image
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":
-            rawBottle['photo'] = s3Images.uploadBase64ImageToS3(rawBottle['photo'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawBottle['photo'])
+            rawBottle['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
+        else:
+            rawBottle['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
 
         columns = ', '.join(f'"{col}"' for col in rawBottle.keys())
         placeholders = ', '.join(['%s'] * len(rawBottle))
         sql = f"INSERT INTO listings ({columns}) VALUES ({placeholders}) RETURNING id"
         
         cur.execute(sql, list(rawBottle.values()))
-        new_id = cur.fetchone()['id']  # Corrected to access the first element
+        new_id = cur.fetchone()['id']
+
+        # NEW: Send approval notification to the original submitter
+        # First, find the original request from requestListings table
+        cur.execute(
+            'SELECT "userID", "venueID", "submitterType" FROM "requestListings" WHERE "listingName" = %s',
+            (rawBottleName,)
+        )
+        original_request = cur.fetchone()
+        
+        if original_request:
+            submitter_type = original_request.get('submitterType', 'user')
+            
+            # Determine the actual submitter ID and type
+            if submitter_type == 'venue' and original_request['venueID']:
+                submitter_id = original_request['venueID']
+                submitter_user_type = 'venue'
+            elif submitter_type == 'user' and original_request['userID']:
+                submitter_id = original_request['userID']
+                submitter_user_type = 'user'
+            else:
+                submitter_id = None
+                submitter_user_type = None
+            
+            if submitter_id:
+                # Build URL slug for the approved listing
+                slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+                
+                # Create approval notification with correct user type
+                approval_notification = {
+                    "userId": submitter_id,
+                    "userType": submitter_user_type,  # Now correctly set based on actual submitter
+                    "notiTabs": "forYou",
+                    "notiType": "approvedListing",
+                    "image": rawBottle.get('photo'),
+                    "link": f"/listing/view/{new_id}/{slug}",
+                    "message": f"Your listing request '{rawBottleName}' has been approved and is now live!",
+                    "createdAt": current_time,
+                }
+                
+                print("Sending approval notification:", approval_notification)
+                notifications.add_notification_to_db(approval_notification)
+
+        # Existing notification logic for followers
+        cutoff = datetime.now(pytz.timezone('Etc/GMT-8')) - timedelta(hours=24)
+        
+        cur.execute(
+            'SELECT COUNT(*) FROM "listings" '
+            'WHERE "producerID" = %s AND "addedDate" >= %s',
+            (rawBottle['producerID'], cutoff)
+        )
+        recent_count = cur.fetchone()['count']
+        print(f"Recent count: {recent_count}")
+
+        cur.execute(
+            'SELECT "producerName" FROM "producers" WHERE id = %s',
+            (rawBottle['producerID'],)
+        )
+        producerName = cur.fetchone()['producerName']
+
+        if recent_count <= 2:
+            # build a URL-safe slug: lowercase, alphanumeric only
+            slug = re.sub(r'[^a-z0-9]+', '', rawBottleName.lower())
+
+            # fetch all users who follow this producer
+            cur.execute(
+                'SELECT "userId" FROM "usersFollowLists" '
+                'WHERE %s::text = ANY("producers")',
+                (str(rawBottle['producerID']),)
+            )
+            print("hello6")
+            followers = [row['userId'] for row in cur.fetchall()]
+            
+
+            # insert notifications
+            for uid in followers:
+                notification_data = {
+                    "userId":   uid,
+                    "userType": "user",
+                    "notiTabs": "venues & producers",
+                    "notiType": "newDrink",
+                    "image":    rawBottle.get('photo'),
+                    "link":     f"/listing/view/{new_id}/{slug}",
+                    "message":  f"{producerName} added a new drink: {rawBottleName}",
+                    "createdAt": current_time,
+                }
+                print("Sending notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+        
+        
         conn.commit()
 
         return jsonify(

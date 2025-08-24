@@ -2,7 +2,7 @@
 DROP TABLE IF EXISTS "notifications" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
-DROP TABLE IF EXISTs "clubPostCommentsLikes" CASCADE;
+DROP TABLE IF EXISTS "clubPostCommentsLikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostCommentsDislikes" CASCADE;
 DROP TABLE IF EXISTS "clubPostComments" CASCADE;
 DROP TABLE IF EXISTS "clubPostsLikes" CASCADE;
@@ -19,6 +19,7 @@ DROP TABLE IF EXISTS "badgeRules" CASCADE;
 DROP TABLE IF EXISTS "badgeMappings" CASCADE;
 DROP TABLE IF EXISTS "userBadges" CASCADE;
 DROP TABLE IF EXISTS "colours" CASCADE;
+DROP TABLE IF EXISTS "moreColours" CASCADE;
 DROP TABLE IF EXISTS "countries" CASCADE;
 DROP TABLE IF EXISTS "drinkTypes" CASCADE;
 DROP TABLE IF EXISTS "flavourTags" CASCADE;
@@ -47,9 +48,12 @@ DROP TABLE IF EXISTS "tokens" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkLists" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkListItems" CASCADE;
+DROP TABLE IF EXISTS "userProducerLists" CASCADE;
+DROP TABLE IF EXISTS "userProducerListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
 DROP TABLE IF EXISTS "venueUpdateLikes" CASCADE;
 DROP TABLE IF EXISTS "venues" CASCADE;
+DROP TABLE IF EXISTS "venueAmenities" CASCADE;
 DROP TABLE IF EXISTS "venuesMenu" CASCADE;
 DROP TABLE IF EXISTS "venuesOpeningHours" CASCADE;
 DROP TABLE IF EXISTS "venuesProfileViews" CASCADE;
@@ -63,6 +67,12 @@ DROP TABLE IF EXISTS "pointSystemRules" CASCADE; -- ADDED BY SMU GROUP 3
 DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
+DROP TABLE IF EXISTS "systemSettings" CASCADE;
+
+-- to enable trigram index for fuzzy search
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- CREATE TABLES -- 
 -- ========= "accountRequests" =========
@@ -213,6 +223,10 @@ CREATE TABLE "producers" (
     "stripeCustomerId" VARCHAR(255)
 );
 
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_producers_name_trgm ON "producers" USING gin ("producerName" gin_trgm_ops);
+
+
 -- ========= "venues" =========
 CREATE TABLE "venues" (
     "id" SERIAL PRIMARY KEY,
@@ -236,8 +250,77 @@ CREATE TABLE "venues" (
     "username" VARCHAR(255),
     "publicHolidays" VARCHAR(255),
     "stripeCustomerId" VARCHAR(255),
-    "pin" VARCHAR(255)
+    "pin" VARCHAR(255),
+    "requestId" INTEGER, -- [!] reference "accountRequests"
+    "instagram" TEXT,
+    "facebook" TEXT,
+    "tiktok" TEXT,
+    "email" TEXT,
+    "phoneNumber" TEXT,
+    "whatsappNumber" TEXT,
+    "pdfMenuUrl" TEXT DEFAULT NULL
 );
+
+-- ========= "venueAmenities" =========
+CREATE TABLE "venueAmenities" (
+    "id" SERIAL PRIMARY KEY,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE CASCADE,
+    -- Payment Modes
+    "paymentCash" BOOLEAN DEFAULT FALSE,
+    "paymentVisa" BOOLEAN DEFAULT FALSE,
+    "paymentMasterCard" BOOLEAN DEFAULT FALSE,
+    "paymentAmericanExpress" BOOLEAN DEFAULT FALSE,
+    "paymentDiscover" BOOLEAN DEFAULT FALSE,
+    "paymentApplePay" BOOLEAN DEFAULT FALSE,
+    "paymentPayNow" BOOLEAN DEFAULT FALSE,
+    "paymentGooglePay" BOOLEAN DEFAULT FALSE,
+    "paymentSamsungPay" BOOLEAN DEFAULT FALSE,
+    -- Beverage Offerings
+    "beverageCocktails" BOOLEAN DEFAULT FALSE,
+    "beverageWine" BOOLEAN DEFAULT FALSE,
+    "beverageBeer" BOOLEAN DEFAULT FALSE,
+    "beverageWhisky" BOOLEAN DEFAULT FALSE,
+    "beverageBrandy" BOOLEAN DEFAULT FALSE,
+    "beverageTequila" BOOLEAN DEFAULT FALSE,
+    "beverageMezcal" BOOLEAN DEFAULT FALSE,
+    "beverageRum" BOOLEAN DEFAULT FALSE,
+    "beverageSake" BOOLEAN DEFAULT FALSE,
+    "beverageShochu" BOOLEAN DEFAULT FALSE,
+    "beverageSoju" BOOLEAN DEFAULT FALSE,
+    "beverageBaijiu" BOOLEAN DEFAULT FALSE,
+    "beverageGin" BOOLEAN DEFAULT FALSE,
+    "beverageVodka" BOOLEAN DEFAULT FALSE,
+    "beverageAbsinthe" BOOLEAN DEFAULT FALSE,
+    "beverageArrack" BOOLEAN DEFAULT FALSE,
+    -- Other Amenities (Yes/No)
+    "foodServed" BOOLEAN DEFAULT FALSE,
+    "outdoorSeating" BOOLEAN DEFAULT FALSE,
+    "indoorSeating" BOOLEAN DEFAULT FALSE,
+    "petFriendly" BOOLEAN DEFAULT FALSE,
+    "childFriendly" BOOLEAN DEFAULT FALSE,
+    "familyFriendly" BOOLEAN DEFAULT FALSE,
+    "smokeFriendly" BOOLEAN DEFAULT FALSE,
+    "wheelchairAccessibility" BOOLEAN DEFAULT FALSE,
+    "freeWiFi" BOOLEAN DEFAULT FALSE,
+    "happyHourDrinks" BOOLEAN DEFAULT FALSE,
+    "liveMusic" BOOLEAN DEFAULT FALSE,
+    "barGames" BOOLEAN DEFAULT FALSE,
+    "sommelierService" BOOLEAN DEFAULT FALSE,
+    "deliveryAvailable" BOOLEAN DEFAULT FALSE,
+    "lgbtqFriendly" BOOLEAN DEFAULT FALSE,
+    "reservationsRequired" BOOLEAN DEFAULT FALSE,
+    "membershipRequired" BOOLEAN DEFAULT FALSE,
+    "inStoreScheduling" BOOLEAN DEFAULT FALSE,
+    -- Custom amenities
+    "otherAmenities" TEXT,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("venueId")
+);
+
+-- create index 
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_venues_name_trgm ON "venues" USING gin ("venueName" gin_trgm_ops);
 
 -- ========= "users" =========
 CREATE TABLE "users" (
@@ -248,7 +331,8 @@ CREATE TABLE "users" (
     "modType" TEXT[],
     "photo" TEXT,
     "hashedPassword" VARCHAR(255),
-    -- "drinkLists" SERIAL, -- [!] reference "usersDrinkLists" not needed since user followlist ref users
+    "drinkLists" JSONB,
+    "producerLists" JSONB,
     "joinDate" TIMESTAMP,
     -- "followLists" SERIAL, -- [!] reference "usersFollowLists"
     "firstName" VARCHAR(255),
@@ -259,10 +343,16 @@ CREATE TABLE "users" (
     "pin" VARCHAR(255),
     "choiceFlavours" TEXT[], -- SMU Group 3 added in "choiceFlavours"
     "preferences" TEXT[],-- SMU Group 3 added in "preferences"
-    "grails" TEXT[], -- SMU Group 3 added in "grails"
-    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing"
-    "goats" TEXT[] -- SMU Group 3 added in "goats"
+    "grails" TEXT[], -- SMU Group 3 added in "grails" - remove this to decouple db
+    "upAndComing" TEXT[], -- SMU Group 3 added in "upAndComing" - remove this to decouple db
+    "goats" TEXT[], -- SMU Group 3 added in "goats" - remove this to decouple db
+    "blueDot" BOOLEAN DEFAULT TRUE, -- Indicates if the blue dot should be shown
+    "ambassador" BOOLEAN DEFAULT FALSE,
+    "categoryExpert" VARCHAR(255) DEFAULT NULL -- Category expert designation (e.g., "Champagne Expert", "Whisky Expert", etc.)
 );
+
+-- Create a GIN index on username for trigram fuzzy search
+CREATE INDEX idx_users_username_trgm ON "users" USING gin ("username" gin_trgm_ops);
 
 -- ========= "userBadges" =========
 CREATE TABLE "userBadges" (
@@ -354,8 +444,25 @@ CREATE TABLE "listings" (
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
     "photo" TEXT,
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "drinkStyle" VARCHAR(255) -- added by tzh
 );
+
+-- create index 
+-- CREATE INDEX idx_listings_search_vector 
+-- ON "listings" USING GIN("searchVector");
+-- Create a GIN index on listingName for trigram fuzzy search
+CREATE INDEX idx_listings_name_trgm ON "listings" USING gin ("listingName" gin_trgm_ops);
+
+-- Create index for producer-aware randomized sorting
+CREATE INDEX idx_listings_producer_random_sort ON "listings" (ABS(HASHTEXT("id"::text || '-' || "producerID"::text)));
+
+-- ========= "listingVariants" ========= to store user's favourite
+-- CREATE TABLE "listingVariants" (
+--     "listing_id" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+--     "variant" SMALLINT, -- 2 bytes per row, Handles years from -32,768 to 32,767
+--     -- "user_id" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, if we ever want to track user
+--     "added_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 -- ========= "modRequests" =========
 CREATE TABLE "modRequests" (
@@ -394,6 +501,42 @@ CREATE TABLE "usersDrinkListItems" (
     UNIQUE ("listId", "drinkId")
 );
 
+-- ========= "userProducerLists" =========
+CREATE TABLE "userProducerLists" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
+    "listName" TEXT,
+    "listDesc" TEXT,
+    UNIQUE ("userId", "listName")
+);
+
+-- ========= "userProducerListItems" =========
+CREATE TABLE "userProducerListItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "userProducerLists"("id") ON DELETE CASCADE,
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE CASCADE,
+    "addedDate" TIMESTAMP,
+    UNIQUE ("listId", "producerId")
+);
+
+-- ========= "userVenueLists" =========
+CREATE TABLE "userVenueLists" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,
+    "listName" TEXT,
+    "listDesc" TEXT,
+    UNIQUE ("userId", "listName")
+);
+
+-- ========= "userVenueListItems" =========
+CREATE TABLE "userVenueListItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "userVenueLists"("id") ON DELETE CASCADE,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE CASCADE,
+    "addedDate" TIMESTAMP,
+    UNIQUE ("listId", "venueId")
+);
+
 -- ========= "reviews" =========
 CREATE TABLE "reviews" (
     "id" SERIAL PRIMARY KEY,
@@ -404,7 +547,7 @@ CREATE TABLE "reviews" (
     "reviewType" VARCHAR(255),
     "createdDate" TIMESTAMP,
     "language" VARCHAR(255),
-    "finish" VARCHAR(255),
+    "finish" VARCHAR(750),
     "willRecommend" BOOLEAN NULL,
     "wouldBuyAgain" BOOLEAN NULL,
     -- "userVotes" SERIAL, -- [!] reference "reviewsUserVotes" FK
@@ -412,11 +555,12 @@ CREATE TABLE "reviews" (
     "flavourTag" TEXT[], -- Contains "flavourTags"("id")s
     "photo" TEXT,
     "colour" VARCHAR(7),
-    "aroma" VARCHAR(255),
+    "aroma" VARCHAR(750),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
-    "taste" VARCHAR(255),
+    "taste" VARCHAR(750),
     "observationTag" TEXT[], -- Contains "observationTags"("id")s
-    "address" VARCHAR(255)
+    "address" VARCHAR(255),
+    "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 
 -- ========= "reviewsUserVotes" =========
@@ -425,6 +569,16 @@ CREATE TABLE "reviewsUserVotes" (
     "upvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
     "downvotes" JSONB DEFAULT '[]', -- Contains "users"("id")s and date
     "reviewId" INTEGER REFERENCES "reviews"("id") on DELETE SET NULL -- [!] reference "reviews" FK
+);
+
+-- ========= "userLeaderboard" ========= to store user's favourite
+CREATE TABLE "userLeaderboard" (
+    "user_id" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "listing_id" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "category" VARCHAR(20),  -- e.g. 'grails', 'upAndComing', 'goats'
+    "sort_order" INTEGER,    -- whatever user listed will always be kept in order
+    "added_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY ("user_id", "listing_id", "category")
 );
 
 CREATE TABLE "producerReviews" (
@@ -497,8 +651,10 @@ CREATE TABLE "menuItems" (
     "itemAvailability" BOOLEAN,
     "itemID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL,
     "itemServingType" INTEGER REFERENCES "servingTypes"("id") ON DELETE SET NULL,
-    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE
+    "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
+    "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
+-- ALTER TABLE "menuItems" ADD COLUMN "variant" SMALLINT DEFAULT NULL;
 
 -- ========= "venuesOpeningHours" =========
 CREATE TABLE "venuesOpeningHours" (
@@ -594,7 +750,10 @@ CREATE TABLE "requestListings" (
     "abv" VARCHAR(255),
     "age" VARCHAR(255),
     "reviewLink" VARCHAR(255),
-    "drinkStyle" VARCHAR(255) -- added by tzh 
+    "drinkStyle" VARCHAR(255), -- added by tzh
+    "officialDesc" TEXT, -- added by tzh
+    "submitterType" VARCHAR(20) DEFAULT 'user',  -- added by tzh
+    "venueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL  -- added by tzh
 );
 
 -- ========= "requestEdits" =========
@@ -805,5 +964,32 @@ CREATE TABLE "notifications" (
     "link" TEXT, -- Link to the related entity
     "message" TEXT,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "read" BOOLEAN DEFAULT FALSE -- Indicates if the notification has been read
+    "read" BOOLEAN DEFAULT FALSE, -- Indicates if the notification has been read
+    "blueDot" BOOLEAN DEFAULT TRUE -- Indicates if the blue dot should be shown
+);
+
+-- ========== [NEW!] latestFollowers =========
+-- This table stores the latest followers for each user
+CREATE TABLE "latestUserFollowers" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- User who is following someone
+    "followingId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- User being followed
+    "followDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Date when the follow occurred
+    UNIQUE ("userId", "followingId") -- Ensure no duplicate follows
+);
+
+-- ========== [NEW!] moreColours for reviews =========
+CREATE TABLE "moreColours" (
+    "id" SERIAL PRIMARY KEY,
+    "hexcode" VARCHAR(7)
+);
+
+
+-- ========= "systemSettings" =========
+CREATE TABLE "systemSettings" (
+    "id" SERIAL PRIMARY KEY,
+    "settingName" VARCHAR(255) UNIQUE NOT NULL,
+    "settingValue" TEXT NOT NULL,
+    "settingDescription" TEXT,
+    "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

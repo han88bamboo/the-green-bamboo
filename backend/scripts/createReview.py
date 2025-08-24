@@ -8,9 +8,32 @@ import s3Images
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
+import re
+import unicodedata
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
+
+
+def normalize_venue_name(name):
+    """Normalize venue name for fuzzy matching"""
+    if not name:
+        return ""
+    
+    # Convert to lowercase and remove accents
+    name = unicodedata.normalize('NFKD', name.lower())
+    name = ''.join(c for c in name if not unicodedata.combining(c))
+    
+    # Remove punctuation and collapse whitespace
+    name = re.sub(r'[^\w\s]', '', name)
+    name = re.sub(r'\s+', ' ', name).strip()
+    
+    # Remove common words
+    stop_words = {'bar', 'bars', 'pub', 'pubs', 'taproom', 'tap', 'room', 'taphouse', 
+                  'house', 'cellar', 'cocktail', 'cocktails', 'tavern', 'and', 'the', 'at'}
+    words = [word for word in name.split() if word not in stop_words]
+    
+    return ' '.join(words)
 
 
 # Helper function to create a unique username for the venue
@@ -51,10 +74,27 @@ def createReviews():
     user_id = int(raw_review['userID'])
     created_date = datetime.strptime(raw_review['createdDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
+    # Handle nullable variant field
+    variant = raw_review.get('variant')
+    if variant and str(variant).strip():
+        variant = int(variant)
+    else:
+        variant = None
+
     # Checking for duplicate review
-    cur.execute("""
-        SELECT * FROM "reviews" WHERE "reviewTarget" = %s AND "userID" = %s
-    """, (review_target, user_id))
+    if variant is None: 
+        cur.execute("""
+            SELECT * FROM "reviews" 
+                WHERE "reviewTarget" = %s 
+                AND "userID" = %s
+        """, (review_target, user_id))
+    else: 
+        cur.execute("""
+            SELECT * FROM "reviews" 
+                WHERE "reviewTarget" = %s 
+                AND "variant" = %s    
+                AND "userID" = %s
+        """, (review_target, variant, user_id))
 
     if cur.fetchone() is not None:
         return jsonify({
@@ -72,49 +112,112 @@ def createReviews():
     will_recommend = raw_review.get('willRecommend')
     would_buy_again = raw_review.get('wouldBuyAgain')
 
-    if will_recommend is None:
-        will_recommend = None
-    else:
-        will_recommend = bool(will_recommend == 'true')
+    # if will_recommend is None:
+    #     will_recommend = None
+    # else:
+    #     will_recommend = bool(will_recommend == 'true')
 
-    if would_buy_again is None:
-        would_buy_again = None
-    else:
-        would_buy_again = bool(would_buy_again == 'true')
+    # if would_buy_again is None:
+    #     would_buy_again = None
+    # else:
+    #     would_buy_again = bool(would_buy_again == 'true')
 
-    # Insert new venue if necessary
+    # Insert new venue if necessary OR handle "Home" case
     venue_id = None
+    stored_address = raw_review.get('address', '')
     if raw_review.get('location') and raw_review.get('address'):
         location_name = raw_review['location']
         address = raw_review['address']
-        cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
-        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-        if not venue_id:
-            username = create_username(location_name)
-            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
-                                  "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-            hashed_password = 'hashed_password'
-            cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+        
+        # Check if this is a "Home" tasting
+        if location_name.lower() == 'home' and address.lower() == 'home':
+            venue_id = None  # NULL for home tastings (no venue reference needed)
+            stored_address = 'home'  # Normalize to lowercase for consistency
+        else:
+            # Existing venue logic for real venues
+            # Check for exact match first
+            cur.execute("""SELECT id FROM venues WHERE "venueName" = %s AND "address" = %s""", (location_name, address))
             venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-    
-            conn.commit()
+            
+            if not venue_id:
+                # Try fuzzy matching on venue name with exact address match
+                normalized_input_name = normalize_venue_name(location_name)
+                if normalized_input_name:
+                    cur.execute("""
+                        WITH normalized_venues AS (
+                            SELECT 
+                                id, 
+                                "venueName",
+                                regexp_replace(
+                                    regexp_replace(
+                                        regexp_replace(
+                                            lower("venueName"), 
+                                            '[^a-z0-9\\s]', 
+                                            '', 
+                                            'g'
+                                        ),
+                                        '(^|\\s+)(bar|bars|pub|pubs|taproom|tap|room|taphouse|house|cellar|cocktail|cocktails|tavern|and|the|at)(\\s+|$)', 
+                                        '\\1\\3', 
+                                        'g'
+                                    ),
+                                    '\\s+', 
+                                    ' ', 
+                                    'g'
+                                ) AS normalized_name
+                            FROM venues
+                            WHERE "address" = %s
+                        )
+                        SELECT id, "venueName", 
+                            similarity(%s, TRIM(normalized_name)) as sim
+                        FROM normalized_venues
+                        WHERE similarity(%s, TRIM(normalized_name)) > 0.3
+                        ORDER BY sim DESC
+                        LIMIT 1
+                    """, (address, normalized_input_name, normalized_input_name))
+                    
+                    fuzzy_match = cur.fetchone()
+                    if fuzzy_match:
+                        venue_id = fuzzy_match['id']
+            
+            if not venue_id:
+                # Create new venue if no exact or fuzzy match found
+                username = create_username(location_name)
+                insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                      "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                      VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+                hashed_password = 'hashed_password'
+                cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+                venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        
+                conn.commit()
 
     # Upload image into S3
     if raw_review['photo']:
-        raw_review['photo'] = s3Images.uploadBase64ImageToS3(raw_review['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', raw_review['photo'])
+        raw_review['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
 
     # Prepare the insert SQL for reviews
-    insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
-                          language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
-                          aroma, taste, "observationTag", location, address)
-                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
-                     created_date, raw_review['language'], raw_review['finish'], will_recommend,
-                     would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
-                     raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                     observation_tags, venue_id, raw_review['address'])
+    if variant is None: 
+        insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
+                            language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
+                            aroma, taste, "observationTag", location, address)
+                            VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                        created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                        would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
+                        raw_review['colour'], raw_review['aroma'], raw_review['taste'],
+                        observation_tags, venue_id, stored_address)
+    else :
+        insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
+                                "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", 
+                                "aroma", "taste", "observationTag", "location", "address", "variant")
+                                VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+        review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
+                        created_date, raw_review['language'], raw_review['finish'], will_recommend,
+                        would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
+                        raw_review['colour'], raw_review['aroma'], raw_review['taste'],
+                        observation_tags, venue_id, stored_address, variant)
 
     try:
         cur.execute(insert_review_sql, review_values)
@@ -127,6 +230,9 @@ def createReviews():
         cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
         user_row = cur.fetchone()
         reviewer_username = user_row['username'] if user_row else "Someone"
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         for tagged_id in tagged_users:
             try:
                 tagged_id_int = int(tagged_id)
@@ -159,7 +265,8 @@ def createReviews():
                     "notiType": "user_tagged_review",
                     "image":    None,
                     "link":     f"/listing/view/{review_target}/{listing_name}",
-                    "message":  f"@{reviewer_username} mentioned you in a review of {listing_name}"
+                    "message":  f"@{reviewer_username} mentioned you in a review of {listing_name}",
+                    "createdAt": current_time,
                 }
                 print("Adding notification for tagged user:", notification_data)
                 notifications.add_notification_to_db(notification_data)
@@ -211,7 +318,8 @@ def createReviews():
 
         # Update user points
         if total_points:
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
+
             conn.commit()
 
         # Badge Processing
@@ -292,6 +400,20 @@ def createReviews():
 
             badges_awarded = badge_helpers.process_badges(conn, cur, user_id, badge_triggers)
 
+            # Notify user of badges earned
+            for badge in badges_awarded:
+                notification_data = {
+                    "userId": user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image": None,
+                    "link": f"/profile/user/{user_id}/{reviewer_username}",
+                    "message": f"Congratulations! You earned a badge: {badge['badgeName']}.",
+                    "createdAt": current_time
+                }
+                notifications.add_notification_to_db(notification_data)
+
             return jsonify({
                 "code": 201,
                 "data": raw_review['reviewDesc'],
@@ -307,7 +429,8 @@ def createReviews():
                 "proofPointsEarned": total_points,
             }), 201
     except Exception as e:
-        print(str(e))
+        import traceback
+        traceback.print_exc()
         conn.rollback()
         return jsonify({
             "code": 500,
@@ -334,9 +457,18 @@ def createProducerReviews():
                 (producer_id, user_id))
     if cur.fetchone()['exists']:
         return jsonify({"code": 400, "message": "Review already exists."}), 400
+    
+    photos = []
+
+    for photo in raw_review.get('photos', []):
+        if photo:
+            # Upload images & store their returned URLs
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            uploaded_photo = s3Images.uploadBase64ImageToS3(base64_string)
+            photos.append(uploaded_photo)
 
     # Upload images & store their returned URLs
-    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
+    # photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
 
     insert_review_sql = """
         INSERT INTO "producerReviews" ("userID", "producerID", "rating", "reviewDesc", "createdDate", "photos") 
@@ -364,7 +496,7 @@ def createProducerReviews():
             total_points += cur.fetchone()['proofPoints']
 
         # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
 
         return jsonify({"code": 201, "data": raw_review['reviewDesc'], "pointsEarned": total_points}), 201
@@ -393,9 +525,18 @@ def createVenueReviews():
     )
     if cur.fetchone()['exists']:
         return jsonify({"code": 400, "message": "Review already exists."}), 400
+    
+    photos = []
+
+    for photo in raw_review.get('photos', []):
+        if photo:
+            # Upload images & store their returned URLs
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            uploaded_photo = s3Images.uploadBase64ImageToS3(base64_string)
+            photos.append(uploaded_photo)
 
     # Upload images & store their returned URLs
-    photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
+    # photos = [s3Images.uploadBase64ImageToS3(photo) for photo in raw_review.get('photos', []) if photo]
 
     insert_review_sql = """
         INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") 
@@ -430,7 +571,7 @@ def createVenueReviews():
             total_points += cur.fetchone()['proofPoints']
 
         # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE id = %s AND "userType" = %s', (total_points, user_id, 'user',))
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s', (total_points, user_id, 'user',))
         conn.commit()
         
         return jsonify({"code": 201, "data": raw_review['reviewDesc']}), 201

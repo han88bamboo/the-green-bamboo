@@ -149,6 +149,31 @@ def readNotification():
     finally:
         cur.close()
 
+# [POST] /notifications/markAllRead
+# PURPOSE: Mark all notifications as read
+@blueprint.route('/markAllRead', methods=['POST'])
+def mark_all_read():
+    data = request.get_json()
+    user_id = data.get('userId')
+    user_type = data.get('userType')
+    try:
+        cur = g.db.cursor()
+        cur.execute(
+            'UPDATE "notifications" '
+            'SET "read" = TRUE '
+            'WHERE "userId" = %s AND "userType" = %s',
+            (user_id, user_type)
+        )
+        g.db.commit()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        g.db.rollback()
+        print("Error marking all notifications read:", e)
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        cur.close()
+
+
 # [POST] /addOrUpdateNewsNotification
 # PURPOSE: Add a new notification or update an existing one if it already exists        
 @blueprint.route('/insertNews', methods=['POST'])
@@ -251,4 +276,6 @@ def upsert_news_notifications():
         return jsonify({'success': False, 'error': str(e)}), 500
 
     finally:
-        cur.close()        
+        cur.close()
+        
+                

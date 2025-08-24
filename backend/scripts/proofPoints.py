@@ -202,13 +202,13 @@ def createPointsForUser():
 
     try: 
         # Check if user already has points
-        cursor.execute('SELECT * FROM "userPoints" WHERE "userID" = %s AND "userType" = %s', (data['user_id'], data['user_type'],))
+        cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (data['user_id'], data['user_type'],))
 
         if cursor.fetchone():
             return jsonify({"message": "User already has points"}), 409
         
         # Create points for user
-        cursor.execute('INSERT INTO "userPoints" ("userID", "userType", "points") VALUES (%s, %s, 0)', (data['user_id'], data['user_type'],))
+        cursor.execute('INSERT INTO "pointsRecorder" ("userID", "userType", "points") VALUES (%s, %s, 0)', (data['user_id'], data['user_type'],))
         conn.commit()
 
         return jsonify({"message": "User points created"}), 201

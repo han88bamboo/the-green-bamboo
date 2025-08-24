@@ -8,6 +8,7 @@ from flask import Blueprint, g, request, jsonify
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
 import json
+import re
 
 from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
@@ -143,6 +144,7 @@ def voteReview():
                     )
                     conn.commit()
             
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # If a new upvote was added, insert a notification (up to the first 3 total)
             if is_new_upvote:
                 total_upvotes = len(upvotes)
@@ -157,7 +159,8 @@ def voteReview():
                           "notiType": "review_upvote",
                           "image":    None,
                           "link":     f"/listing/view/{review_target}/{listing_name}",
-                          "message":  f"@{voter_username} upvoted your review of {listing_name}"
+                          "message":  f"@{voter_username} upvoted your review of {listing_name}",
+                          "createdAt": current_time
                         }
                         print("Notification data: ", notification_data)
                         notifications.add_notification_to_db(notification_data)      
@@ -205,7 +208,8 @@ def voteReview():
                           "notiType": "badge_earned",
                           "image":    None,
                           "link":     f"/profile/user/{review_owner_id}/{review_username}",
-                          "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                          "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                          "createdAt": current_time
                         }
                         print("Badge notification data: ", notification_data)
                         notifications.add_notification_to_db(notification_data)
@@ -252,6 +256,8 @@ def updateReview(id):
             "code": 400,
             "message": "Invalid date format."
         }), 400
+    
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Check if review exists
     cur.execute("""
@@ -371,7 +377,8 @@ def updateReview(id):
     if existing_review['photo'] and data['photo'] != existing_review['photo']:
         s3Images.deleteImageFromS3(existing_review['photo'])
     if data['photo'] and data['photo'] != existing_review['photo']:
-        data['photo'] = s3Images.uploadBase64ImageToS3(data['photo'])
+        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['photo'])
+        data['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
     tagged_users = data.get('taggedUsers', [])
     flavour_tags = data.get('flavourTag', [])
@@ -379,7 +386,7 @@ def updateReview(id):
 
     update_review_sql = """
         UPDATE "reviews"
-        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s, "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
+        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s::DECIMAL(3,1), "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
             "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
             "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
         WHERE "id" = %s
@@ -409,7 +416,7 @@ def updateReview(id):
             cur.execute("""
                 UPDATE "pointsRecorder"
                 SET "currentPoints" = "currentPoints" + %s
-                WHERE "id" = %s
+                WHERE "userID" = %s
             """, (modify_point, data.get('userID')))
             conn.commit()
 
@@ -475,12 +482,31 @@ def updateReview(id):
                 badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', -1)
                 if badge_updated:
                     badges_updated.append(badge_updated)
+
+            # — now send notifications for each badge just earned —
+            cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+            user_row = cur.fetchone()
+            review_username = user_row['username'] if user_row else "Someone"
+
+            for badge in badges_updated:
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{user_id}/{review_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Badge notification data: ", notification_data)
+                notifications.add_notification_to_db(notification_data)
         
         return jsonify({
             "code": 200,
             "data": data.get('reviewDesc', ''),
             "pointsChange": modify_point,
-            "badgesUpdated": badges_updated
+            "badgesAwarded": badges_updated
         }), 200
 
     except Exception as e:
@@ -578,8 +604,19 @@ def updateProducerReview(id):
 
     Thread(target=async_delete_images, args=(old_photos,)).start()
 
+    new_photos = []
 
-    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+    for photo in data.get('photos', []):
+        if not is_empty_photo(photo):
+            # Upload the photo to S3
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            photo = s3Images.uploadBase64ImageToS3(base64_string)
+            if photo:
+                new_photos.append(photo)
+        else:
+            photo = None
+    
+    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
     update_review_sql = """
         UPDATE "producerReviews"
@@ -632,7 +669,7 @@ def updateProducerReview(id):
             cur.execute("""
                 UPDATE "pointsRecorder"
                 SET "currentPoints" = "currentPoints" + %s
-                WHERE "id" = %s
+                WHERE "userID" = %s
             """, (modify_point, data.get('userID')))
             conn.commit()
 
@@ -727,7 +764,19 @@ def updateVenueReview(id):
 
     Thread(target=async_delete_images, args=(old_photos,)).start()
 
-    new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+    new_photos = []
+
+    for photo in data.get('photos', []):
+        if not is_empty_photo(photo):
+            # Upload the photo to S3
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+            photo = s3Images.uploadBase64ImageToS3(base64_string)
+            if photo:
+                new_photos.append(photo)
+        else:
+            photo = None
+
+    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
     update_review_sql = """
         UPDATE "venueReviews"

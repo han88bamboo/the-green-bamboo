@@ -12,7 +12,7 @@
 -->
 
 <template>
-    <div class="container pt-3">
+    <div class="container pt-3 pb-5">
 
         <!-- Display when data is still loading / form is being submitted -->
         <div class="text-info-emphasis fst-italic fw-bold fs-5" v-if="submitForm || !dataLoaded">
@@ -25,9 +25,9 @@
         </div>
         
         <!-- Display when bottle listing is successfully submitted -->
-        <div class="text-success fst-italic fw-bold fs-3" v-if="successSubmission"> 
+        <div class="text-success fw-bold fs-5" v-if="successSubmission"> 
             <div v-if="formType == 'req'">
-                <span v-if="formMode == 'new'">The request has successfully been submitted!</span>
+                <span v-if="formMode == 'new'">The request has successfully been submitted! The listing is now on Drink-X and can be reviewed (or added to a menu)! 😉 </span>
                 <span v-if="formMode == 'edit'">The edit request has successfully been submitted!</span>
                 <span v-if="formMode == 'dup'">The duplicate report has successfully been submitted!</span>
             </div>
@@ -38,31 +38,31 @@
             </div>
             <br>
             <button class="btn primary-btn btn-sm" @click="reset" v-if="formMode == 'new'">
-                <span class="fs-5 fst-italic"> Submit another bottle listing here! </span>
+                <span class="fs-6"> Submit another bottle listing here! </span>
             </button>
             <button class="btn primary-btn btn-sm" @click="goBack" v-if="formMode != 'new'">
-                <span class="fs-5 fst-italic"> Return to previous page </span>
+                <span class="fs-6"> Return to previous page </span>
             </button>
-            <router-link :to="'/request/view'" class="mx-1">
+            <!-- <router-link :to="'/request/view'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
-                    <span class="fs-5 fst-italic"> View Requests </span>
+                    <span class="fs-6"> View Requests </span>
                 </button>
-            </router-link>
+            </router-link> commented out because not necessry now that we've enabled auto-listing approvals-->
             <router-link :to="'/'" class="mx-1">
                 <button class="btn primary-btn btn-sm">
-                    <span class="fs-5 fst-italic"> Go to Home page </span>
+                    <span class="fs-6"> Go to Home page </span>
                 </button>
             </router-link>
         </div>
         
         <!-- Display when bottle listing submission encounters an error -->
-        <div class="text-danger fst-italic fw-bold fs-3" v-if="errorSubmission"> 
+        <div class="text-danger  fw-bold fs-5" v-if="errorSubmission"> 
             <span v-if="errorMessage">An error occurred while attempting to submit, please try again!</span>
             <span v-if="invalidListing">Your request is not linked to a valid listing, please try again!</span>
-            <span v-if="duplicateEntry">The bottle listing you are trying to submit already exists.</span>
+            <!-- <span v-if="duplicateEntry">The bottle listing you are trying to submit already exists.</span> --> <!--commented out temporarily to disable duplicate check-->
             <br>
             <button class="btn primary-btn btn-sm" @click="reset">
-                <span class="fs-5 fst-italic"> Retry your submission here! </span>
+                <span class="fs-5"> Retry your submission here! </span>
             </button>
         </div>
 
@@ -77,17 +77,32 @@
 
                 <!-- Form Title -->
                 <div class="d-grid gap-2">
-                    <div v-if="formType == 'req'">
-                        <p class="fw-bold fs-1" v-if="formMode == 'new'">Request New Bottle Listing</p>
+                    <div v-if="formType == 'req'"> 
+                        <p class="fw-bold fs-3" v-if="formMode == 'new'">Can't <span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">find your bottle on Drink-X</span>? Submit a new bottle listing!</p>
+                        <p class="fs-5 fw-bold mobile-rating-smaller-text-2" v-if="formMode == 'new'"><span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">Double check if it's already listed!</span></p>
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Propose Edit to Bottle Listing</p>
                         <p class="fw-bold fs-1" v-if="formMode == 'dup'">Report Duplicate Bottle Listing</p>
+                
                     </div>
                     <div v-if="formType == 'power'">
                         <p class="fw-bold fs-1" v-if="formMode == 'new'">Create New Bottle Listing</p> 
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Edit Bottle Listing</p>
                     </div>
                 </div>
-                
+                <!-- Search Modal -->
+                <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog" style="margin-top: 15vh;">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title" id="searchModalLabel">Let's check if your bottle is already on Drink-X!</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <AutocompleteSearch @select="handleSelection" />
+                    </div>
+                    </div>
+                </div>
+                </div>
                 <!-- [REQ EDIT/DUP] Show Linked Bottle Listing Information -->
                 <div class="card mb-3 text-start" v-if="formType == 'req' && (formMode == 'edit' || formMode == 'dup')">
                     <div class="card-header fst-italic">
@@ -171,38 +186,80 @@
                     <div v-if="formType == 'power' || formMode == 'new'">
 
                         <!-- Input: Producer Name -->
-                        <!-- [IF] Producer is creating listing, lock Producer selection -->
+                        <!-- [IF] Producer is creating listing, lock Producer selection - COMMENTED OUT for now 
                         <div class="form-group mb-3" v-if="isProducer != false">
                             <p class="text-start mb-1">Producer Name <span class="text-danger">*</span></p>
                             <select class="form-select" disabled>
                                 <option selected>{{ isProducer }}</option>
                             </select>
-                        </div>
+                        </div>-->
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
-                        <div class="form-group mb-3" v-else>
-                            <p class="text-start mb-1">New Producer Name <span class="text-danger">*</span></p>
-                            <input list="producer-names" v-model="form['producerNew']" class="form-control" id="bottleName" placeholder="Enter Producer Name" @input="getProducerID">
-                            <datalist id="producer-names">
-                                {{ producerList }}
-                                <option v-for="producer in producerList" :key="producer.producerName" :value="producer.producerName">
-                                    {{ producer.producerName }}
-                                </option>
-                            </datalist>
+                        <div class="form-group mb-3" > <!--removed v-else-->
+                            <p class="text-start mb-1">Name of Producer (Brand, Bar or Venue, etc)<span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
+                            
+                            <input type="text" class="form-control" 
+                                   v-model="form['producerNew']" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Producer Name" 
+                                   @input="handleProducerInput"
+                                   @blur="hideProducerDropdown">
 
-                            <!-- Redirect to CreateProducer page to create a producer -->
+                            <!-- Dropdown list with drawer styling -->
+                            <ul class="list-group"
+                                v-if="producerList && producerList.length > 0 && form['producerNew'] && showProducerDropdown">
+                                <li v-for="producer in producerList" :key="producer.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectProducer(producer)">
+                                    {{ producer.producerName }}
+                                    <small class="text-muted" v-if="producer.originCountry">
+                                        ({{ producer.originCountry }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Show selected producer -->
+                            <div v-if="selectedProducer && selectedProducer.id" 
+                                 class="mt-2 p-2 bg-light border rounded">
+                                <small class="text-success fw-bold">
+                                    ✓ Producer Selected: {{ selectedProducer.producerName }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                            @click="clearSelectedProducer()">
+                                        Clear
+                                    </button>
+                                </small>
+                            </div>
+
+                            <!-- [admins] Redirect to Admin page to create a producer -->
                             <p v-if="!isProducer && formType == 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
-                                <router-link :to="'/admin/dashboard'" class="text-decoration-none">
-                                    Click here to create!
+                                <router-link :to="'/admin/dashboard'" class="fw-bold">
+                                    <span style="font-weight: bold; text-decoration: underline;">Click here to create!</span>
                                 </router-link>
                             </p>
                             
+
+                            
+                            <!-- [non-admins] Create Producer Modal Trigger -->
+                            <p v-if="formType != 'power'" class="text-start text-muted pt-2" style="font-size: 14px;">Can't find a producer?
+                                <a href="#" @click.prevent="showCreateProducerModal = true" class="text-decoration-none">
+                                    Click here to create!
+                                </a>
+                            </p>
+                            
+                            <!-- Create Producer Modal -->
+                            <CreateProducerModal 
+                                v-if="showCreateProducerModal"
+                                :countries="countries"
+                                @close="showCreateProducerModal = false"
+                                @producerCreated="handleNewProducer"
+                            />
+
                                 
                         </div>
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Name of Bottle <span class="text-danger">*</span></p>
+                            <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item<span class="text-danger">*</span></p>
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Bottle Name">
                         </div>
 
@@ -276,14 +333,14 @@
                         </div>
 
                         <!-- [POWER] Input: Drink Description -->
-                        <div class="form-group mb-3" v-if="formType == 'power'">
-                            <p class="text-start mb-1">Official Description <span class="text-danger">*</span></p>
+                        <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
+                            <p class="text-start mb-1">Official Description</p>
                             <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of bottle"></textarea>
                         </div>
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Link to website or source <span class="text-danger" v-if="formType == 'req'">*</span></p>
+                            <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
                             <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
                         </div>
 
@@ -314,19 +371,46 @@
                         </div>
                         <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
                         <div class="form-group mb-3" v-if="indOperator">
-                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span></p>
-                            <input type="text" list="bottler-names" class="form-control" v-model="form['bottler']" :disabled="!indOperator" id="bottlerName" placeholder="Enter Bottler Name" @input="getBottlerID">
-                            <datalist id="bottler-names">
-                                <option v-for="bottler in bottlersList" :key="bottler.producerName" :value="bottler.producerName">
+                            <p class="text-start mb-1">If yes, who is the independent bottler? <span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p>
+                            
+                            <input type="text" class="form-control" 
+                                   v-model="form['bottler']" 
+                                   :disabled="!indOperator" 
+                                   autocomplete="off" 
+                                   placeholder="Enter Bottler Name" 
+                                   @input="handleBottlerInput"
+                                   @blur="hideBottlerDropdown">
+
+                            <!-- Dropdown list with drawer styling -->
+                            <ul class="list-group"
+                                v-if="bottlersList && bottlersList.length > 0 && form['bottler'] && showBottlerDropdown && indOperator">
+                                <li v-for="bottler in bottlersList" :key="bottler.id"
+                                    class="list-group-item list-group-item-action text-start"
+                                    @click="selectBottler(bottler)">
                                     {{ bottler.producerName }}
-                                </option>
-                            </datalist>
+                                    <small class="text-muted" v-if="bottler.originCountry">
+                                        ({{ bottler.originCountry }})
+                                    </small>
+                                </li>
+                            </ul>
+
+                            <!-- Show selected bottler -->
+                            <div v-if="selectedBottler && selectedBottler.id" 
+                                 class="mt-2 p-2 bg-light border rounded">
+                                <small class="text-success fw-bold">
+                                    ✓ Bottler Selected: {{ selectedBottler.producerName }}
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                            @click="clearSelectedBottler()">
+                                        Clear
+                                    </button>
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Input: Alcohol Strength (% ABV) + Alcohol Age / Vintage (years old / Year Bottled) -->
                         <div class="row mb-3">
                             <div class="form-group col-6">
-                                <p class="text-start mb-1">Strength <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <p class="text-start mb-1">Strength</p> <!--<span class="text-danger" v-if="formType == 'power'">*</span>-->
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
                                         <input type="number" v-model="form['abv']" class="form-control" id="abv" min="0" max="100" step="0.1">
@@ -349,6 +433,7 @@
                     </div>
 
                     <!-- [REQ] Input: Relationship with Brand -->
+                    <!-- COMMENTED OUT: Brand relationship selection is handled automatically
                     <p class="text-start mb-1" v-if="formType == 'req'">Your Relationship with the Brand <span class="text-danger">*</span></p>
                     <div class="text-start mb-3" v-if="formType == 'req'">
                         <div class="form-check form-check-inline" v-if="userType == 'user'">
@@ -372,6 +457,7 @@
                             <label class="form-check-label" for="brandRelationOther">Others</label>
                         </div>
                     </div>
+                    -->
 
                     <!-- Error Handling -->
                     <div v-if="errors.length > 0">
@@ -407,14 +493,41 @@
             </div>
         </div>
     </div>
+
+    <BadgePopup 
+        :badges="earnedBadges" 
+        :show="showBadgePopup" 
+        @close="closeBadgePopup"
+    />
 </template>
 
 <script>
+    // import SearchBar from './SearchBar.vue';
+    import AutocompleteSearch from './AutocompleteSearch.vue';
+    import CreateProducerModal from './CreateProducerModal.vue';
+    import { useSearch } from '@/composables/navbar/useSearch'
+    import BadgePopup from "@/components/BadgePopup.vue";
+
     export default {
         name: "SubmitListingNew",
+        components: {
+            AutocompleteSearch,
+            CreateProducerModal,
+            BadgePopup
+        },
         props: {
             formType: String,
             formMode: String
+        },
+        setup() {
+            /* Searchbar handler functions stars here */
+            const { handleSelection } = useSearch()
+            /* Searchbar handler functions ends here */
+
+            return {
+            // Search functionality
+            handleSelection
+            }
         },
         data () {
             return {
@@ -430,6 +543,7 @@
                 errorSubmission: false,
                 fillForm: false,
                 requestRemoval: false,
+                showCreateProducerModal: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -448,7 +562,7 @@
                 tempDrinkType: "",
                 tempTypeCategory: "",
                 tempProducer: "",
-                indOperator: true,
+                indOperator: false,
                 tempDrinkStyle: "",
 
                 // Form data variables
@@ -463,6 +577,14 @@
                 drinkStylesList:[],
                 tempDrinkStylesList: [],
 
+                // New producer selection state
+                selectedProducer: {},
+                showProducerDropdown: false,
+
+                // New bottler selection state
+                selectedBottler: {},
+                showBottlerDropdown: false,
+
                 form: {
                     "editDesc": "",
                     "sourceLink": "",
@@ -470,22 +592,52 @@
                     "listingName": "",
                     "officialDesc": "",
                     "reviewLink": "",
-                    "producerNew": "", // mutually exclusive with producerID  (exactly one of them will be blank)
+                    "producerNew": "", 
                     "bottler": "",
                     "originCountry": "",
                     "abv": "",
                     "age": "",
                     "brandRelation": "Others",
-
                     "userID": "",
-                    "producerID": "", // mutually exclusive with producerNew (exactly one of them will be blank)
+                    "producerID": "",
                     "bottlerID": "",
                     "listingID": "",
                     "photo": "",
                 },
+                producerDebounceTimer: null,
+                bottlerDebounceTimer: null,
+
+                earnedBadges: [],
+                showBadgePopup: false,
             };
         },
-        mounted() {
+        async mounted() {
+            console.log("Component mounted. Route params:", this.$route.params);
+    
+            // Restore cached form data immediately
+            const cachedForm = localStorage.getItem('cachedListingForm');
+            if (cachedForm) {
+                this.form = JSON.parse(cachedForm);
+                this.tempDrinkType = localStorage.getItem('cachedListingTempDrinkType') || "";
+                this.tempTypeCategory = localStorage.getItem('cachedListingTempTypeCategory') || "";
+                this.tempDrinkStyle = localStorage.getItem('cachedListingTempDrinkStyle') || "";
+                
+                // Restore selectedProducer if we have producer data in cache
+                if (this.form['producerID'] && this.form['producerNew']) {
+                    this.selectedProducer = {
+                        id: this.form['producerID'],
+                        producerName: this.form['producerNew']
+                    };
+                }
+                
+                // Restore selectedBottler if we have bottler data in cache
+                if (this.form['bottlerID'] && this.form['bottler']) {
+                    this.selectedBottler = {
+                        id: this.form['bottlerID'],
+                        producerName: this.form['bottler']
+                    };
+                }
+            }
 
             // Get userID
             this.form['userID'] = localStorage.getItem('88B_accID');
@@ -498,27 +650,45 @@
             // Check if route params "requestID" is present
             if (this.$route.params.requestID != "" && this.$route.params.requestID != undefined) {
                 this.prevListing = true;
+                console.log('this.prevListing set to', this.prevListing, 'in mounted()');
             }
 
             // Power user check
             if (this.formType == "power") {
-                this.checkPower();
+                await this.checkPower();
             } else {
                 // Load data
-                this.loadData();
+                await this.loadData();
             }
         },
         watch: {
-            // Watch for changes in form['bottler'] to retrieve relevant bottlers information
+            form: {
+                handler(newData) {
+                    localStorage.setItem('cachedListingForm', JSON.stringify(newData));
+                },
+                deep: true,
+            },
+
+            tempDrinkType(newVal) {
+                localStorage.setItem('cachedListingTempDrinkType', newVal);
+            },
+            tempTypeCategory(newVal) {
+                localStorage.setItem('cachedListingTempTypeCategory', newVal);
+            },
+            tempDrinkStyle(newVal) {
+                localStorage.setItem('cachedListingTempDrinkStyle', newVal);
+            },
+
+            // Watch for changes in formMode and formType to load data accordingly
             'form.bottler'(newVal) {
-                if (newVal.length >= 2) {
-                    this.fetchBottlerSuggestions(newVal);
+                if (newVal && newVal.length >= 2) {
+                    this.debouncedFetchBottlers(newVal);
                 }
             },
-            // Watch for changes in form['producerNew'] to retrieve relevant producer information
+            // Watch for changes in producerNew to fetch suggestions
             'form.producerNew'(newVal) {
-                if (newVal.length >= 2) {
-                    this.fetchProducerSuggestions(newVal);
+                if (newVal && newVal.length >= 2) {
+                    this.debouncedFetchProducers(newVal);
                 }
             },
         },
@@ -577,6 +747,23 @@
             
             // Function to load form data
             async loadData(){
+               
+                console.log('SubmitListingNew.vue loadData started');
+                console.log('Form Mode:', this.formMode);
+                console.log('Form Type:', this.formType);
+                console.log('Listing ID from route:', this.$route.params.listingID);
+                console.log('Request ID from route:', this.$route.params.requestID);
+                console.log('this.prevListing at start of loadData:', this.prevListing);
+                // Clear cache if editing or duplicating
+                if (this.formMode === "edit" || this.formMode === "dup") {
+                    localStorage.removeItem('cachedListingForm');
+                    localStorage.removeItem('cachedListingTempDrinkType');
+                    localStorage.removeItem('cachedListingTempTypeCategory');
+                    localStorage.removeItem('cachedListingTempDrinkStyle');
+                }
+
+                const cachedForm = localStorage.getItem('cachedListingForm');
+                const hasCache = !!cachedForm;
 
                 // Only run when listing detail form is required
                 if (this.formType == "power" || this.formMode == "new") {
@@ -631,6 +818,17 @@
                         this.getProducerName();
                     }
 
+                console.log('this.prevListing at cache check:', this.prevListing);
+                if (hasCache && !(this.formMode === "edit" || this.formMode === "dup") && !this.prevListing) 
+                {
+                    console.log("Returning early due to cached form data");
+                    // Already restored in mounted()
+                    this.fillForm = true; // Ensure form is visible after restoring cache
+                    this.dataLoaded = true;
+                    return; // Skip the rest of loadData to avoid overwriting cached data
+                }
+
+
                     // populate "producerList" form data variable
                     // try {
                     //     const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID`);
@@ -653,10 +851,14 @@
                 // Only run when editing listing / proposing edit / reporting duplicate (listingID is present in route params)
                 if (this.formMode == "edit" || this.formMode == "dup") {
                     this.form["listingID"] = this.$route.params.listingID;
+                    // Add this log:
+                    console.log('Before API call to getListing');
 
                     // Get target listing
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + this.$route.params.listingID);
+                        console.log('API Response for getListing:', response.data);
+                       
                         if (Array.isArray(response.data) && response.data.length == 0) {
                             throw "Listing not found!";
                         }
@@ -674,12 +876,33 @@
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueBottlersNamesID/dummy/` + this.targetListing.bottlerName);
                             this.targetListing.bottlerID = response.data.id;
                         }
+
+                        
+                        if (this.targetListing.producerID) {
+                            const producerResp = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUniqueProducersNamesID/dummy/` + this.targetListing.producerID);
+                            this.producerList = [producerResp.data];
+                            this.form['producerNew'] = producerResp.data.producerName;
+
+                            console.log('Fetched producer:', producerResp.data);
+                            console.log('producerList:', this.producerList);
+                            console.log('form[\'producerNew\']:', this.form['producerNew']);
+                        }
+                        
+                        console.log('Form type in edit/dup:', this.formType);
+
                         if (this.formType == "power") {
                             this.populateForm(this.targetListing);
                             this.form["officialDesc"] = this.targetListing.officialDesc;
+
+                            // Set producerNew after populateForm to ensure it is not overwritten
+                            if (this.producerList.length > 0) {
+                                this.form['producerNew'] = this.producerList[0].producerName;
+                                this.selectedProducer = this.producerList[0];
+                            }
                         }
                     } 
                     catch (error) {
+                        console.log('In catch block', error);
                         console.error(error);
                     }
 
@@ -688,15 +911,17 @@
 
                 // Only run when route params "requestID" is present (modifying previously submitted request / auto-filling form with request data)
                 if (this.prevListing) {
-
                     // [REQ / POWER NEW] Retrieve previously submitted new listing request data
                     if (this.formMode == "new") {
                         try {
+                            console.log('Calling /getData/getRequestListing/ with ID:', this.$route.params.requestID);
                             const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getRequestListing/` + this.$route.params.requestID);
+                            
                             if (Array.isArray(response.data) && response.data.length == 0) {
                                 throw "Request not found!";
                             }
                             let previousData = await response.data;
+                            console.log('Response from /getData/getRequestListing:', previousData);
                             this.checkUserPermissions(previousData);
 
                             // If user is a producer, check if request producerID is the same as user producerID
@@ -786,6 +1011,14 @@
                 }
             },
 
+            // Debounced function to fetch producer suggestions
+            debouncedFetchProducers(query) {
+                clearTimeout(this.producerDebounceTimer);
+                this.producerDebounceTimer = setTimeout(() => {
+                    this.fetchProducerSuggestions(query);
+                }, 300); // 300ms debounce delay
+            },
+
             // Function to get producer names dynamically (lazy loading to avoid loading all producers at once)
             async fetchProducerSuggestions(query) {
                 try {
@@ -797,6 +1030,14 @@
                         this.producerList = ["No producers with this search term found. Please try again with a different term."];
                     } 
                 }
+            },
+
+            // Debounced function to fetch bottler suggestions
+            debouncedFetchBottlers(query) {
+                clearTimeout(this.bottlerDebounceTimer);
+                this.bottlerDebounceTimer = setTimeout(() => {
+                    this.fetchBottlerSuggestions(query);
+                }, 300); // 300ms debounce delay
             },
 
             // Function to get bottler names dynamically (lazy loading to avoid loading all bottlers at once)
@@ -828,8 +1069,11 @@
 
             // Function to populate form with previous data
             populateForm(previousData) {
-                console.log("Populating form with previous data:", previousData);
+                console.log('Populating form with data:', previousData);
+               
                 this.tempDrinkType = previousData.drinkType;
+                console.log('tempDrinkType:', this.tempDrinkType);
+                
                 this.getDrinkCategoryList();
 
                 // If typeCategory is not present, set it to '-'
@@ -838,6 +1082,7 @@
                 } else {
                     this.tempTypeCategory = previousData.typeCategory;
                 }
+                console.log('tempTypeCategory:', this.tempTypeCategory);
 
                 this.getDrinkStyleList();
 
@@ -847,64 +1092,117 @@
                 } else {
                     this.tempDrinkStyle = previousData.drinkStyle;
                 }
+                console.log('tempDrinkStyle:', this.tempDrinkStyle);
 
                 this.form["sourceLink"] = previousData.sourceLink;
-                this.form["listingName"] = previousData.listingName;
-                this.form["reviewLink"] = previousData.reviewLink;
-                this.form["originCountry"] = previousData.originCountry;
-                this.form["producerID"] = previousData.producerID;
-                this.form["photo"] = previousData.photo;
+                console.log('form.sourceLink:', this.form["sourceLink"]);
 
-                // Check if producerID is blank
-                if (this.form["producerID"] == "" || this.form["producerID"] == null) {
-                    this.form["producerNew"] = previousData.producerNew;
-                    // The code below... is it necessary?
-                    if (this.formMode != "new") {
-                        if (this.formType == "req") {
-                            // In request mode, fill in producerNew
-                            this.form["producerNew"] = previousData.producerNew;
-                            this.tempProducer = "Other";
-                        } else if (this.formType == "power") {
-                            // In actual listing mode, fill in tempProducer
-                            this.tempProducer = previousData.producerNew;
-                        }
-                    }
-                } else {
-                    this.form["producerNew"] = previousData.producerName;
+                this.form["listingName"] = previousData.listingName;
+                console.log('form.listingName:', this.form["listingName"]);
+
+                this.form["reviewLink"] = previousData.reviewLink;
+                console.log('form.reviewLink:', this.form["reviewLink"]);
+
+                this.form["originCountry"] = previousData.originCountry;
+                console.log('form.originCountry:', this.form["originCountry"]);
+
+                this.form["producerID"] = previousData.producerID;
+                console.log('form.producerID:', this.form["producerID"]);
+
+                this.form["photo"] = previousData.photo;
+                console.log('form.photo:', this.form["photo"]);
+
+                // // Check if producerID is blank
+                // if (this.form["producerID"] == "" || this.form["producerID"] == null) {
+                //     this.form["producerNew"] = previousData.producerNew;
+                //     // The code below... is it necessary?
+                //     if (this.formMode != "new") {
+                //         if (this.formType == "req") {
+                //             // In request mode, fill in producerNew
+                //             this.form["producerNew"] = previousData.producerNew;
+                //             this.tempProducer = "Other";
+                //         } else if (this.formType == "power") {
+                //             // In actual listing mode, fill in tempProducer
+                //             this.tempProducer = previousData.producerNew;
+                //         }
+                //     }
+                // } else {
+                    
+                // }
+                this.form["producerNew"] = previousData.producerNew;
+                console.log('form.producerNew:', this.form["producerNew"]);
+
+                // Set selectedProducer if we have producer data
+                if (previousData.producerID && previousData.producerNew) {
+                    this.selectedProducer = {
+                        id: previousData.producerID,
+                        producerName: previousData.producerNew,
+                        originCountry: previousData.originCountry || ''
+                    };
                 }
 
+                this.form["officialDesc"] = previousData.officialDesc;
+                console.log('form.officialDesc:', this.form["officialDesc"]);
+
                 // If independent bottler, fill in bottler
-                if (previousData.bottler != "OB") {
+                if (previousData.bottler != "OB" && previousData.bottler != "Original Bottling" && previousData.bottler != "Original Bottler") {
                     this.indOperator = true;
                     this.form["bottler"] = previousData.bottler;
                     this.form["bottlerID"] = previousData.bottlerID;
+                    
+                    // Set selectedBottler if we have bottler data
+                    if (previousData.bottlerID && previousData.bottler) {
+                        this.selectedBottler = {
+                            id: previousData.bottlerID,
+                            producerName: previousData.bottler,
+                            originCountry: previousData.originCountry || ''
+                        };
+                    }
                 } else {
                     this.indOperator = false;
                 }
+                console.log('indOperator:', this.indOperator);
+                console.log('form.bottler:', this.form["bottler"]);
+                console.log('form.bottlerID:', this.form["bottlerID"]);
 
                 // If abv has % sign, remove it. Change abv to number.
                 if (toString(previousData.abv).includes("%")) {
                     this.form["abv"] = parseFloat(previousData.abv.slice(0, -1));
                 } else {
-                    this.form["abv"] = previousData.abv;
+                    this.form["abv"] = parseFloat(previousData.abv);
                 }
+                console.log('form.abv:', this.form["abv"]);
 
                 // If age has value, change age to number.
                 if (previousData.age) {
                     this.form["age"] = parseInt(previousData.age);
                 }
+                console.log('form.age:', this.form["age"]);
             },
 
             // Helper function to reset form (by refreshing page)
             reset(){
-                if (this.successSubmission == true && this.prevListing == true) {
-                    // Remove requestID router param from current path
-                    let newPath = this.$route.path.split("/").slice(0, -1).join("/");
-                    window.location.replace(newPath);
-                }
-                else {
-                    this.$router.go(0);
-                }
+            // Only clear cache if submission was successful
+            if (this.successSubmission == true && this.prevListing == true) {
+                localStorage.removeItem('cachedListingForm');
+                localStorage.removeItem('cachedListingTempDrinkType');
+                localStorage.removeItem('cachedListingTempTypeCategory');
+                localStorage.removeItem('cachedListingTempDrinkStyle');
+                // Remove requestID router param from current path
+                let newPath = this.$route.path.split("/").slice(0, -1).join("/");
+                window.location.replace(newPath);
+            }
+            else if (this.successSubmission == true) {
+                localStorage.removeItem('cachedListingForm');
+                localStorage.removeItem('cachedListingTempDrinkType');
+                localStorage.removeItem('cachedListingTempTypeCategory');
+                localStorage.removeItem('cachedListingTempDrinkStyle');
+                this.$router.go(0);
+            }
+            else {
+                // On error, just reload the page, keep cache
+                this.$router.go(0);
+            }
             },
 
             // Helper function to return to previous page
@@ -941,48 +1239,163 @@
             },
 
             // Helper function to handle file selection for photo
-            handleFileSelect(event){
-                try {
-                    const file = event.target.files[0];
-                    const reader = new FileReader;
-                    
-                    reader.onload = () => {
-                        this.selectedImage = reader.result
-                        const base64String = reader.result.split(',')[1];
-                        this.form["photo"] = base64String
-                    };
-                    
-                    reader.readAsDataURL(file);
-                }
-                catch (error) {
-                    // console.error(error);
-                }
+            async handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    this.selectedImage = reader.result;
+                    this.form["photo"] = reader.result; // full data URL (base64)
+                };
+                reader.readAsDataURL(file);
             },
 
             // Helper function to get producerID from tempProducer
             getProducerID() {
-                let producer = this.producerList.find(producer => producer.producerName == this.form['producerNew'])
-                if (producer) {
-                    this.form['producerID'] = producer.id;
-                }
-                else {
-                    this.form['producerID'] = ""
+                // Ensure producerList is an array and input is valid
+                if (Array.isArray(this.producerList) && this.form['producerNew']) {
+                    const producer = this.producerList.find(
+                        item => item?.producerName === this.form['producerNew']
+                    );
+
+                    if (producer) {
+                        this.form['producerID'] = producer.id;
+                    } else {
+                        this.form['producerID'] = "";
+                    }
+                } else {
+                    // Log a warning and clear the field to prevent errors
+                    console.warn("Producer list or input is invalid:", this.producerList, this.form['producerNew']);
+                    this.form['producerID'] = "";
                 }
             },
 
-            getBottlerID() {
-                let bottler = this.bottlersList.find(producer => producer.producerName == this.form['bottler'])
-                if (bottler) {
-                    this.form['bottlerID'] = bottler.id;
-                }
-                else {
-                    this.form['bottlerID'] = ""
+            // New methods for drawer-style producer selection
+            handleProducerInput() {
+                this.showProducerDropdown = true;
+                this.getProducerID(); // Keep existing logic for ID resolution
+                
+                // Trigger debounced search if input has at least 2 characters
+                if (this.form['producerNew'] && this.form['producerNew'].length >= 2) {
+                    this.debouncedFetchProducers(this.form['producerNew']);
+                } else {
+                    this.producerList = [];
+                    this.showProducerDropdown = false;
                 }
             },
+
+            selectProducer(producer) {
+                this.selectedProducer = producer;
+                this.form['producerNew'] = producer.producerName;
+                this.form['producerID'] = producer.id;
+                this.showProducerDropdown = false;
+                this.producerList = [];
+            },
+
+            clearSelectedProducer() {
+                this.selectedProducer = {};
+                this.form['producerNew'] = '';
+                this.form['producerID'] = '';
+                this.showProducerDropdown = false;
+                this.producerList = [];
+            },
+
+            hideProducerDropdown() {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    this.showProducerDropdown = false;
+                }, 150);
+            },
+
+            // New methods for drawer-style bottler selection
+            handleBottlerInput() {
+                this.showBottlerDropdown = true;
+                this.getBottlerID(); // Keep existing logic for ID resolution
+                
+                // Trigger debounced search if input has at least 2 characters
+                if (this.form['bottler'] && this.form['bottler'].length >= 2) {
+                    this.debouncedFetchBottlers(this.form['bottler']);
+                } else {
+                    this.bottlersList = [];
+                    this.showBottlerDropdown = false;
+                }
+            },
+
+            selectBottler(bottler) {
+                this.selectedBottler = bottler;
+                this.form['bottler'] = bottler.producerName;
+                this.form['bottlerID'] = bottler.id;
+                this.showBottlerDropdown = false;
+                this.bottlersList = [];
+            },
+
+            clearSelectedBottler() {
+                this.selectedBottler = {};
+                this.form['bottler'] = '';
+                this.form['bottlerID'] = '';
+                this.showBottlerDropdown = false;
+                this.bottlersList = [];
+            },
+
+            hideBottlerDropdown() {
+                // Use a timeout to allow click events on dropdown items to fire first
+                setTimeout(() => {
+                    this.showBottlerDropdown = false;
+                }, 150);
+            },
+
+            // Handle newly created producer from modal
+            handleNewProducer(producer) {
+                // Add the new producer to producerList
+                if (!Array.isArray(this.producerList)) {
+                    this.producerList = [];
+                }
+                this.producerList.push({
+                    id: producer.id,
+                    producerName: producer.name,
+                    isIndependentBottler: producer.isIndependentBottler
+                });
+                
+                // Select the newly created producer
+                this.form['producerNew'] = producer.name;
+                this.form['producerID'] = producer.id;
+                
+                // Set as selected producer for the new UI
+                this.selectedProducer = {
+                    id: producer.id,
+                    producerName: producer.name,
+                    isIndependentBottler: producer.isIndependentBottler
+                };
+                
+                // Close the modal
+                this.showCreateProducerModal = false;
+            },
+
+
+            getBottlerID() {
+                // Validate that bottlersList is an array and form.bottler is a non-empty string
+                if (Array.isArray(this.bottlersList) && this.form['bottler']) {
+                    const bottler = this.bottlersList.find(
+                        producer => producer?.producerName === this.form['bottler']
+                    );
+
+                    if (bottler) {
+                        this.form['bottlerID'] = bottler.id;
+                    } else {
+                        this.form['bottlerID'] = "";
+                    }
+                } else {
+                    // Handle case where data is not ready or invalid
+                    console.warn("Bottler list or bottler input is missing or invalid");
+                    this.form['bottlerID'] = "";
+                }
+            },
+
 
             // Function to submit form
             async submitFunction(){
                 this.errors = [];
+                console.log("submitFunction called. formType:", this.formType, "formMode:", this.formMode, "prevListing:", this.prevListing);
 
 
                 // Form Validation for Edit/Duplicate Request
@@ -1018,40 +1431,40 @@
 
 
                     // Validate Independent Bottler Name (if OB, will be handled by database writing method)
-                    if (!this.form["bottler"].trim() && this.indOperator == true) {
+                    if (this.indOperator === true && !(this.form["bottler"] || "").trim()) {
                         this.errors.push("Name of independent bottler is required.");
                     }
 
-                    // Validation ONLY FOR REQUEST
-                    if (this.formType == "req") {
+                    // // Validation ONLY FOR REQUEST - removed requirement for source link 
+                    // if (this.formType == "req") {
 
-                        // Validate Source Link
-                        if (!this.form["sourceLink"].trim()) {
-                            this.errors.push("Link to website or source is required.");
-                        }
+                    //     // Validate Source Link
+                    //     if (!this.form["sourceLink"].trim()) {
+                    //         this.errors.push("Link to website or source is required.");
+                    //     }
 
-                        // Validate Producer Name
-                        if (this.form['producerID']) {
-                            // If producerID is blank, check if producerNew is blank
-                            if (!this.form["producerNew"]) {
-                                this.errors.push("Producer Name is required.");
-                            }
-                        } else {
-                            // Check if producerNew is blank
-                            if (!this.form["producerNew"].trim()) {
-                                this.errors.push("Producer Name is required.");
-                            }
-                        }
+                    //     // Validate Producer Name
+                    //     if (this.form['producerID']) {
+                    //         // If producerID is blank, check if producerNew is blank
+                    //         if (!this.form["producerNew"]) {
+                    //             this.errors.push("Producer Name is required.");
+                    //         }
+                    //     } else {
+                    //         // Check if producerNew is blank
+                    //         if (!this.form["producerNew"].trim()) {
+                    //             this.errors.push("Producer Name is required.");
+                    //         }
+                    //     }
 
-                    }
+                    // }
 
-                    // Validation ONLY FOR ACTUAL LISTING
-                    if (this.formType == "power") {
+                    // Validation ONLY FOR ACTUAL LISTING - removed the condition that it only applies to power user - now it applies to all.
+                    // if (this.formType == "power") {
 
-                        // Validate Official Description
-                        if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
-                            this.errors.push("Official Description is required.");
-                        }
+                        // // Validate Official Description - removed so it doesnt insist you fill in official description
+                        // if (!this.form["officialDesc"] || !this.form["officialDesc"].trim()) {
+                        //     this.errors.push("Official Description is required.");
+                        // }
 
                         // Validate Producer ID
                         if (!this.form["producerID"]) {
@@ -1068,16 +1481,17 @@
                             this.errors.push("Country of Origin is required.");
                         }
 
-                        // Validate Alcohol Strength (% ABV)
-                        if (!this.form["abv"].toString().trim()) {
-                            this.errors.push("Alcohol Strength is required.");
-                        }
+                        // // Validate Alcohol Strength (% ABV)
+                        // if (!this.form["abv"].toString().trim()) {
+                        //     this.errors.push("Alcohol Strength is required.");
+                        // }
                         
-                    }
+                    // }
                     
                 }
 
                 if (this.errors.length > 0) {
+                    console.log("Form validation errors:", this.errors);
                     // If errors, alert user and return
                     return "Submission Incomplete"
                 } else {
@@ -1095,19 +1509,20 @@
                             if (this.tempDrinkStyle == null) {
                                 console.error("ERROR: tempDrinkStyle is null or undefined!");
                             }
-
+                            
                             submitData = {
-                                "sourceLink": this.form["sourceLink"].trim(),
-                                "listingName": this.form["listingName"].trim(),
-                                "reviewLink": this.form["reviewLink"].trim(),
-                                "producerNew": this.form["producerNew"].trim(),
-                                "bottler": this.form["bottler"].trim(),
-                                "originCountry": this.form["originCountry"].trim(),
-                                "abv": this.form["abv"].toString().trim(),
-                                "age": this.form["age"].toString().trim(),
+                                "sourceLink": (this.form["sourceLink"] || "").trim(),
+                                "listingName": (this.form["listingName"] || "").trim(),
+                                "reviewLink": (this.form["reviewLink"] || "").trim(),
+                                "producerNew": (this.form["producerNew"] || "").trim(),
+                                "bottler": (this.form["bottler"] || "").trim(),
+                                "originCountry": (this.form["originCountry"] || "").trim(),
+                                "abv": (this.form["abv"] || "").toString().trim(),
+                                "age": (this.form["age"] || "").toString().trim(),
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
+                                "submitterType": this.userType, // Include submitter type from localStorage
                                 "producerID": this.form["producerID"],
                                 "bottlerID": this.form["bottlerID"],
                                 "photo": this.form["photo"],
@@ -1116,10 +1531,16 @@
                                 "typeCategory": (this.tempTypeCategory || "").trim(),
                                 "reviewStatus": false,
                                 "drinkStyle": (this.tempDrinkStyle || "").trim(),
+                                "officialDesc": (this.form["officialDesc"] || "").trim(), 
                             }
-
+                            
+                            // Add this log before the API call:
+                            console.log("Request Creation Mode Submitting to API:", submitAPI);
+                            console.log("Payload being sent:", submitData);
+                            
                             if (this.prevListing) {
                                 submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestListingModify/` + this.$route.params.requestID
+                                console.log("prevListing is true, switching to modify endpoint:", submitAPI);
                             }
                         }
 
@@ -1127,12 +1548,13 @@
                         else if (this.formMode == "edit" || this.formMode == "dup") {
                             submitAPI = `${process.env.VUE_APP_API_URL}/requestListing/requestEdits`
                             submitData = {
-                                "editDesc": this.form["editDesc"].trim(),
-                                "sourceLink": this.form["sourceLink"].trim(),
-                                "duplicateLink": this.form["duplicateLink"].trim(),
+                                "editDesc": (this.form["editDesc"] || "").trim(),
+                                "sourceLink": (this.form["sourceLink"] || "").trim(),
+                                "duplicateLink": (this.form["duplicateLink"] || "").trim(),
                                 "brandRelation": this.form["brandRelation"],
 
                                 "userID": this.form["userID"],
+                                "submitterType": this.userType, // Include submitter type from localStorage
                                 "listingID": this.form["listingID"],
                                 "reviewStatus": false,
                             }
@@ -1153,21 +1575,21 @@
 
                         submitData = {
                             "sourceLink": (this.form["sourceLink"] || "").trim(),
-                            "listingName": this.form["listingName"].trim(),
-                            "officialDesc": this.form["officialDesc"].trim(),
-                            "reviewLink": this.form["reviewLink"].trim(),
-                            "bottler": this.form["bottler"].trim(),
-                            "originCountry": this.form["originCountry"].trim(),
-                            "abv": this.form["abv"].toString().trim(),
-                            "age": this.form["age"].toString().trim(),
+                            "listingName": (this.form["listingName"] || "").trim(),
+                            "officialDesc": (this.form["officialDesc"] || "").trim(),
+                            "reviewLink": (this.form["reviewLink"] || "").trim(),
+                            "bottler": (this.form["bottler"] || "").trim(),
+                            "originCountry": (this.form["originCountry"] || "").trim(),
+                            "abv": (this.form["abv"] || "").toString().trim(),
+                            "age": (this.form["age"] || "").toString().trim(),
                             
                             "producerID": this.form["producerID"],
                             "bottlerID": this.form["bottlerID"],
                             "photo": this.form["photo"],
 
-                            "drinkType": this.tempDrinkType.trim(),
+                            "drinkType": (this.tempDrinkType || "").trim(),
                             "typeCategory": (this.tempTypeCategory || "").trim(),
-                            "drinkStyle": this.tempDrinkStyle.trim(),
+                            "drinkStyle": (this.tempDrinkStyle || "").trim(),
                         }
 
                         // Listing Creation Mode
@@ -1199,7 +1621,7 @@
                     if (this.formType == "power" || this.formMode == "new") {
                         // If not independent bottler, set bottler to "OB"
                         if (this.indOperator == false) {
-                            submitData["bottler"] = "OB"
+                            submitData["bottler"] = "Original Bottling"
                         }
 
                         // If abv has value, add % sign
@@ -1212,7 +1634,7 @@
                     if (this.prevListing && this.formType == "power") {
                         this.updateRequestStatus("approve")
                     }
-
+                    console.log("Calling writeListing with:", submitAPI, submitData);
                     this.writeListing(submitAPI, submitData)
                 }
             },
@@ -1224,12 +1646,24 @@
                 this.submitForm = true; // Display submission in progress message
                 let responseCode = "";
 
-                const response = await this.$axios.post(submitAPI, submitData)
-                .then((response)=>{
-                    responseCode = response.data.code
+                console.log("writeListing called. API:", submitAPI);
+                console.log("Payload being sent:", submitData);
+
+                let response;
+                await this.$axios.post(submitAPI, submitData)
+                .then((res)=>{
+                    response = res;
+                    responseCode = res.data.code
+                    console.log("API response received:", res.data);
                 })
                 .catch((error)=>{
                     responseCode = error.response.data.code
+                    console.error("API error response:", error.response.data);
+
+                    if (responseCode === 201 && response && response.data.badgeAwarded) {
+                        this.earnedBadges = [response.data.badgeAwarded];
+                        this.showBadgePopup = true;
+                    }
                 });
 
                 // [Replace with Backend Fix] Response Code Transformation for Edit Listing
@@ -1241,10 +1675,48 @@
                         responseCode = 400
                     }
                 }
+
+                // Temporarily treat duplicate entries (400) as success for new listings
+                if (responseCode == 400 && this.formMode == "new") {
+                    responseCode = 201; // Force success
+                }
                 
                 if (responseCode == 201) {
                     this.successSubmission = true; // Display success message
                     this.submitForm = false; // Hide submission in progress message
+                    localStorage.removeItem('cachedListingForm');
+                    localStorage.removeItem('cachedListingTempDrinkType');
+                    localStorage.removeItem('cachedListingTempTypeCategory');
+                    localStorage.removeItem('cachedListingTempDrinkStyle');
+                    
+                    // Redirect to new listing page for users creating new listings
+                    if (this.formMode === "new" && response && response.data && response.data.data) {
+                        const responseData = response.data.data;
+                        let listingId = null;
+                        let listingName = null;
+                        
+                        // For power users (direct listing creation)
+                        if (this.formType === "power" && responseData.id && responseData.listingName) {
+                            listingId = responseData.id;
+                            listingName = responseData.listingName;
+                        }
+                        // For regular users (request listings with auto-approval)
+                        else if (this.formType === "req" && responseData.listingId && responseData.listingName && responseData.autoApproved) {
+                            listingId = responseData.listingId;
+                            listingName = responseData.listingName;
+                        }
+                        
+                        // Redirect if we have both listing ID and name
+                        if (listingId && listingName) {
+                            // Create URL-safe slug (same logic as backend)
+                            const slug = listingName.toLowerCase().replace(/[^a-z0-9]+/g, '');
+                            const listingUrl = `/listing/view/${listingId}/${slug}`;
+                            
+                            console.log("Redirecting to new listing:", listingUrl);
+                            this.$router.push(listingUrl);
+                            return response; // Early return to avoid showing success message
+                        }
+                    }
                 } else {
                     this.errorSubmission = true; // Display error message
                     this.submitForm = false; // Hide submission in progress message
@@ -1261,6 +1733,7 @@
                         this.errorMessage = true // Display generic error message
                     }
                 }
+                console.log("writeListing finished. responseCode:", responseCode);
                 return response
             },
 
@@ -1324,6 +1797,11 @@
                 }
                 return response
 
+            },
+
+            closeBadgePopup() {
+                this.showBadgePopup = false;
+                this.earnedBadges = [];
             },
         }
     }

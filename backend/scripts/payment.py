@@ -92,6 +92,47 @@ def create_customer():
         log_debug("Error creating customer", error_info)
         return jsonify(error={'message': e.user_message}), 400
 
+@blueprint.route('/create-full-discount-subscription', methods=['POST'])
+def create_full_discount_subscription():
+    db = g.db
+    data = json.loads(request.data)
+    customer_id = data['customerId']
+    price_id = data['priceId']
+    coupon_code = data['couponCode']
+    print(data)
+    promotion_code_id = None 
+    if(coupon_code):
+        try: 
+            print(coupon_code)
+            promotion_codes = stripe.PromotionCode.list(
+                code=coupon_code,
+                active=True,
+                limit=1
+            )
+            if not promotion_codes.data:
+                return jsonify(error={'message': 'Invalid Coupon Code'}), 404
+            else:
+                promotion_code_id = promotion_codes.data[0].id
+        except Exception as e:
+            return jsonify(error={'message': 'Invalid Coupon Code/Server Error'}), 404
+    try:
+        subscription = stripe.Subscription.create(
+                customer=customer_id,
+                items=[{
+                    'price': price_id,
+                }],
+                discounts=[{
+                    'promotion_code': promotion_code_id
+                }],
+                payment_behavior='default_incomplete',
+                payment_settings={'save_default_payment_method': 'on_subscription'},
+                expand=['latest_invoice.confirmation_secret'],
+            )
+        return jsonify(subscriptionId=subscription.id), 200
+    except Exception as e:
+        return jsonify(error={'message': 'e.user_message'}), 400
+
+
 
 
 @blueprint.route('/create-subscription', methods=['POST'])
@@ -100,27 +141,69 @@ def create_subscription():
     data = json.loads(request.data)
     customer_id = data['customerId']
     price_id = data['priceId']
+    coupon_code = data['couponCode']
+    print(data)
+    promotion_code_id = None 
+    # To retrieve promo code ID to use in subscription
+    if(coupon_code):
+        try: 
+            promotion_codes = stripe.PromotionCode.list(
+                code=coupon_code,
+                active=True,
+                limit=1
+            )
+            if not promotion_codes.data:
+                return jsonify(error={'message': 'Invalid Coupon Code'}), 404
+            else:
+                promotion_code_id = promotion_codes.data[0].id
 
-    try:
+                #CHECK IF PROMO CODE WILL MAKE IT FREE
+                #RETRIEVE PRICE LIST, CHECK IF DISCOUNT IS percent_off 100% OR amount_off > price/100
+                #IF NO PAYMENT REQUIRED, return to frontend that full discount
+                price = stripe.Price.retrieve(price_id)
+                promotion_code = stripe.PromotionCode.retrieve(promotion_code_id)
+                amount_off = promotion_code.coupon.amount_off
+                is_full_discount = (
+                    promotion_code.coupon.percent_off == 100 or
+                    (amount_off is not None and amount_off >= price.unit_amount)
+                )
+                if is_full_discount:
+                    return jsonify(isFullDiscount=is_full_discount), 200
+        except Exception as e:
+            return jsonify(error={'message': 'Invalid Coupon Code/Server Error'}), 404
+    try:     
         # Create the subscription. Note we're expanding the Subscription's
         # latest invoice and that invoice's payment_intent
         # so we can pass it to the front end to confirm the payment
         # Note that expand might be optional due to the update of API version on stripe's end
         # API used to return latest_invoice.payment_intent.client_secret
-        subscription = stripe.Subscription.create(
-            customer=customer_id,
-            items=[{
-                'price': price_id,
-            }],
-            payment_behavior='default_incomplete',
-            payment_settings={'save_default_payment_method': 'on_subscription'},
-            expand=['latest_invoice.confirmation_secret'],
-        )
-        
-        return jsonify(subscriptionId=subscription.id, clientSecret=subscription.latest_invoice.confirmation_secret.client_secret), 200
-
+        if(promotion_code_id):
+            subscription = stripe.Subscription.create(
+                customer=customer_id,
+                items=[{
+                    'price': price_id,
+                }],
+                discounts=[{
+                    'promotion_code': promotion_code_id
+                }],
+                payment_behavior='default_incomplete',
+                payment_settings={'save_default_payment_method': 'on_subscription'},
+                expand=['latest_invoice.confirmation_secret'],
+            )
+            return jsonify(subscriptionId=subscription.id, clientSecret=subscription.latest_invoice.confirmation_secret.client_secret, amountDue=subscription.latest_invoice.amount_due), 200
+        else:
+            subscription = stripe.Subscription.create(
+                customer=customer_id,
+                items=[{
+                    'price': price_id,
+                }],
+                payment_behavior='default_incomplete',
+                payment_settings={'save_default_payment_method': 'on_subscription'},
+                expand=['latest_invoice.confirmation_secret'],
+            )
+            return jsonify(subscriptionId=subscription.id, clientSecret=subscription.latest_invoice.confirmation_secret.client_secret, amountDue=subscription.latest_invoice.amount_due), 200
     except Exception as e:
-        return jsonify(error={'message': e.user_message}), 400
+        return jsonify(error={'message': 'e.user_message'}), 400
 # def create_subscription():
 #     db = g.db
 #     data = json.loads(request.data)

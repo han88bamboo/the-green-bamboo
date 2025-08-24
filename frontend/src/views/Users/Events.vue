@@ -52,10 +52,16 @@
 
                 <div class="d-flex flex-wrap gap-2">
                     <!-- Create Event Button (Triggers Modal) -->
-                    <button class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                    <button v-if="userType !== 'defaultUser'" class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
                     @click="handleCreateEventClick">
                         + Create Event
                     </button>
+                    <button v-else
+                    class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                    @click="$router.push('/login')">
+                        + Create Event
+                    </button>
+    
                     <!-- View Upcoming Events Toggle Button -->
                     <button 
                       class="btn primary-btn-less-round-blue d-md-none mobile-rating-smaller-text-2" 
@@ -109,14 +115,13 @@
 
                 <!-- YOUR UPCOMING EVENTS -->
                 <div class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
+                    <h5 class="text-start fw-bold my-3">Your Upcoming Events <button v-if="upcomingEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#upcomingEventsModal">View All</button></h5>
 
                     <div v-if="upcomingEvents.length > 0">
                         <div v-for="event in upcomingEvents" class="event-club-box" :key="event.eventID">
-                        
                             <!-- Column 1: banner -->
                             <div style="flex: 0 0 40%; max-width: 40%; height: 100px;">
-                                <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
+                                <img v-if="event.eventBanners?.length" :src="event.eventBanners[0]" class="img-fluid event-banner" alt="Event Banner" style="object-fit: contain; max-height: 100%;">
                                 <img v-else :src="defaultEventBanner" class="img-fluid event-banner" alt="Event Banner" style="object-fit: cover">
                             </div>
 
@@ -310,8 +315,8 @@
                 </div>
 
                 <!-- Error message for error retrieving recommended events -->
-                <div v-if="recommendedEventsError" class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="mobile-fs-6">{{ recommendedEventsError }}</h5>
+                <div v-if="recommendedEventsError" class="collapse text-start d-md-block my-4" id="sidebarContent">
+                    <p class="mobile-rating-smaller-text-2 ">{{ recommendedEventsError }}</p>
                 </div>
             </div>
 
@@ -333,12 +338,24 @@
                     <div v-for="event in searchResults" class="col-6 mb-2" :key="event.eventID">
                         <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                             <!-- Event Image -->
+                            <div class="banner-stack">
+                            <!-- blurred background fill -->
                             <img
-                            :src="event.eventBanners?.[0] || defaultEventBanner"
-                            class="img-fluid w-100 mb-3"
-                            style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                            alt="Event Banner"
+                                class="banner-bg"
+                                :src="event.eventBanners?.[0] || defaultEventBanner"
+                                alt=""
+                                aria-hidden="true"
+                                loading="lazy"
                             />
+                            <!-- foreground image: show the whole thing -->
+                            <img
+                                class="banner-fore"
+                                :src="event.eventBanners?.[0] || defaultEventBanner"
+                                :alt="event.eventName"
+                                loading="lazy"
+                            />
+                            </div>
+
                             
                             <!-- Event Name -->
                             <p class="fw-bold mb-1">
@@ -364,9 +381,7 @@
                             </p>
 
                             <!-- Description -->
-                            <p class="text-muted small mb-2">
-                            {{ event.eventDesc }}
-                            </p>
+                            <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                             <!-- CTA -->
                             <router-link
@@ -438,12 +453,21 @@
                                 >
                                 <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                     <!-- Event Image -->
+                                    <div class="banner-stack mb-3">
+                                    <!-- blurred background -->
                                     <img
-                                    :src="event.eventBanners?.[0] || defaultEventBanner"
-                                    class="img-fluid w-100 mb-3"
-                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                    alt="Event Banner"
+                                        class="banner-bg"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        alt=""
+                                        aria-hidden="true"
                                     />
+                                    <!-- foreground full image -->
+                                    <img
+                                        class="banner-fore"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        :alt="event.eventName"
+                                    />
+                                    </div>
 
                                     <!-- Event Name -->
                                     <p class="fw-bold mb-1">
@@ -469,9 +493,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">
-                                    {{ event.eventDesc }}
-                                    </p>
+                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -491,7 +513,7 @@
 
                 <!--- Error message for error retrieving recent activity or no recent activtiy found -->
                 <div v-if="trendingEventsError" class="mt-3">
-                    <h2>{{ trendingEventsError }}</h2>
+                    <h6 mobile-fs-7>{{ trendingEventsError }}</h6>
                     <hr>
                 </div>
 
@@ -547,12 +569,21 @@
                                 >
                                 <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                     <!-- Banner -->
+                                    <div class="banner-stack mb-3">
+                                    <!-- blurred background -->
                                     <img
-                                    :src="event.eventBanners?.[0] || defaultEventBanner"
-                                    class="img-fluid w-100 mb-3"
-                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                    alt="Event Banner"
+                                        class="banner-bg"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        alt=""
+                                        aria-hidden="true"
                                     />
+                                    <!-- foreground full image -->
+                                    <img
+                                        class="banner-fore"
+                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                        :alt="event.eventName"
+                                    />
+                                    </div>
 
                                     <!-- Event Name -->
                                     <p class="fw-bold mb-1">
@@ -578,9 +609,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">
-                                    {{ event.eventDesc }}
-                                    </p>
+                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -638,6 +667,7 @@
                     <div>
                         <!-- Events You're Organising Tab -->
                         <div v-if="activeUserEventsTab === 'organising'">
+                            {{ organisingEvents.length > 0 ? '' : 'No events found.' }}
                             <div v-if="organisingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Organising -->
                                 <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
@@ -650,12 +680,21 @@
                                         >
                                             <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                                 <!-- Event Image -->
+                                                <div class="banner-stack mb-3">
+                                                <!-- blurred background -->
                                                 <img
+                                                    class="banner-bg"
                                                     :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                    class="img-fluid w-100 mb-3"
-                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                    alt="Event Banner"
+                                                    alt=""
+                                                    aria-hidden="true"
                                                 />
+                                                <!-- foreground full image -->
+                                                <img
+                                                    class="banner-fore"
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    :alt="event.eventName"
+                                                />
+                                                </div>
                                                 
                                                 <!-- Event Name -->
                                                 <p class="fw-bold mb-1">
@@ -676,9 +715,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -704,12 +741,21 @@
                                             <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
                                                 <!-- Event Image with overlay -->
                                                 <div class="position-relative mb-3">
+                                                    <div class="banner-stack mb-3">
+                                                    <!-- blurred background -->
                                                     <img
+                                                        class="banner-bg"
                                                         :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                        class="img-fluid w-100"
-                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                        alt="Event Banner"
+                                                        alt=""
+                                                        aria-hidden="true"
                                                     />
+                                                    <!-- foreground full image -->
+                                                    <img
+                                                        class="banner-fore"
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        :alt="event.eventName"
+                                                    />
+                                                    </div>
                                                     <div class="past-event-overlay"></div>
                                                 </div>
                                                 
@@ -725,16 +771,20 @@
 
                                                 <!-- Event Details -->
                                                 <p class="text-muted small mb-2">
-                                                    {{ formatDate(event.eventStartDate) }} |
-                                                    {{ formatTime(event.eventStartTime) }} -
-                                                    {{ formatTime(event.eventEndTime) }} |
+                                                    {{ formatDate(event.eventStartDate) }} 
+                                                    <span v-if="event.eventStartTime">
+                                                        |
+                                                        {{ formatTime(event.eventStartTime) }} 
+                                                    </span>
+                                                    <span v-if="event.eventEndTime">
+                                                        <span v-if="event.eventStartTime">-</span>
+                                                        {{ formatTime(event.eventEndTime) }}
+                                                    </span> |
                                                     {{ event.eventType }}
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -769,12 +819,21 @@
                                         >
                                             <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                                 <!-- Event Image -->
+                                                <div class="banner-stack mb-3">
+                                                <!-- blurred background -->
                                                 <img
+                                                    class="banner-bg"
                                                     :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                    class="img-fluid w-100 mb-3"
-                                                    style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                    alt="Event Banner"
+                                                    alt=""
+                                                    aria-hidden="true"
                                                 />
+                                                <!-- foreground full image -->
+                                                <img
+                                                    class="banner-fore"
+                                                    :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                    :alt="event.eventName"
+                                                />
+                                                </div>
                                                 
                                                 <!-- Event Name -->
                                                 <p class="fw-bold mb-1">
@@ -795,9 +854,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -823,12 +880,21 @@
                                             <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
                                                 <!-- Event Image with overlay -->
                                                 <div class="position-relative mb-3">
+                                                    <div class="banner-stack mb-3">
+                                                    <!-- blurred background -->
                                                     <img
+                                                        class="banner-bg"
                                                         :src="event.eventBanners?.[0] || defaultEventBanner"
-                                                        class="img-fluid w-100"
-                                                        style="height: 160px; object-fit: cover; border-radius: 0.5rem;"
-                                                        alt="Event Banner"
+                                                        alt=""
+                                                        aria-hidden="true"
                                                     />
+                                                    <!-- foreground full image -->
+                                                    <img
+                                                        class="banner-fore"
+                                                        :src="event.eventBanners?.[0] || defaultEventBanner"
+                                                        :alt="event.eventName"
+                                                    />
+                                                    </div>
                                                     <div class="past-event-overlay"></div>
                                                 </div>
                                                 
@@ -851,9 +917,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">
-                                                    {{ event.eventDesc }}
-                                                </p>
+                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -886,22 +950,19 @@
 
     </div>
     <!-- Footer End -->
-        <FooterBar />
 </template>
 
 <script>
 import { useToast } from 'vue-toastification';
 import NavBar from '@/components/NavBar.vue';
 import CreateEventPage from '@/components/CreateEventPage.vue';
-import FooterBar from "@/components/FooterBar.vue";
 
 
 export default {
     name: 'EventsPage',
     components: {
         NavBar,
-        CreateEventPage,
-        FooterBar
+        CreateEventPage
     },
     data() {
         return {
@@ -972,6 +1033,16 @@ export default {
         }
     },
     methods: {
+        plainText(desc) {
+            if (!desc) return '';
+            return desc
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/?p[^>]*>/gi, '\n')
+            .replace(/<[^>]*>/g, '')
+            .replace(/\s+\n/g, '\n')
+            .replace(/\n+/g, ' ')
+            .trim();
+        },
         slugify(text) {
                 return text
                     .toString()
@@ -994,6 +1065,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.upcomingEventsError = "No upcoming events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.upcomingEventsError = "Error loading upcoming events.";
@@ -1013,6 +1085,7 @@ export default {
 
                 if (error.response.status == 404) {
                     this.pastEventsError = "No past events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.pastEventsError = "Sign up or log in to view your event history!";
@@ -1031,6 +1104,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.recommendedEventsError = "No recommended events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.recommendedEventsError = "Failed to retrieve recommended events.";
@@ -1049,6 +1123,7 @@ export default {
             catch (error) {
                 if (error.response.status == 404) {
                     this.trendingEventsError = "No trending events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.trendingEventsError = "Error retrieving trending events";
@@ -1067,6 +1142,7 @@ export default {
             catch (error) {
                  if (error.response.status == 404) {
                     this.followedEventsError = "No followed events found.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.followedEventsError = "Sign up or log in to view events from brands and venues you follow!";
@@ -1089,6 +1165,7 @@ export default {
             catch (error) {
                 if (error.response && error.response.status === 404) {
                     this.organisingEventsError = "No events found that you're organising.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.organisingEventsError = "Failed to retrieve events you're organising.";
@@ -1106,6 +1183,7 @@ export default {
             catch (error) {
                 if (error.response && error.response.status === 404) {
                     this.attendingEventsError = "No events found that you're attending.";
+                    this.dataLoaded = true;
                 }
                 else {
                     this.attendingEventsError = "Failed to retrieve events you're attending.";
@@ -1120,8 +1198,20 @@ export default {
                 let response;
                 response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/canCreateEvents/` + this.userID + "/" + this.userType);
                 this.canCreateEvent = response.data.canCreate;
-                console.log(this.canCreateEvent);
-                this.canCreateEventMessage = response.data.message;
+                
+                // cannot create event
+                if (!this.canCreateEvent) {
+                    if (this.userType == "user") {
+                        if (response.data.reason == "insufficient points") {
+                            this.canCreateEventMessage = response.data.message;
+                        } else {
+                            this.canCreateEventMessage = response.data.message;
+                        }
+                    } 
+                    else {
+                        this.canCreateEventMessage = response.data.message;
+                    }
+                }
             }
             catch (error) {
                 console.error(error);
@@ -1394,4 +1484,36 @@ export default {
 .nav-tabs {
     border-bottom: 1px solid #dee2e6;
 }
+
+.banner-stack {
+  position: relative;
+  width: 100%;
+  height: 160px;            /* your card height */
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #f3f3f3;      /* fallback while image loads */
+}
+
+/* both layers fill the box */
+.banner-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* background: covers and blurs to fill any empty space */
+.banner-stack .banner-bg {
+  object-fit: cover;
+  filter: blur(20px) brightness(0.9); /* tweak blur/brightness to taste */
+  transform: scale(1.1);              /* hides blur edges */
+}
+
+/* foreground: show the entire image (no cropping) */
+.banner-stack .banner-fore {
+  object-fit: contain;  /* key: prevents cropping for vertical images */
+  z-index: 1;
+}
+
 </style>

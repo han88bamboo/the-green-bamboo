@@ -6,6 +6,9 @@ import os
 import s3Images
 from flask import Blueprint, g, request, jsonify
 from scripts import pointsHelperFunc, badge_helpers, notifications
+from datetime import datetime
+import re
+from scripts import notifications
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -26,8 +29,8 @@ def editDetails():
             existingUser = cursor.fetchone()
             if existingUser and existingUser['photo']:
                 s3Images.deleteImageFromS3(existingUser['photo'])
-
-            image64 = s3Images.uploadBase64ImageToS3(data['image64'])
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
+            image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
             cursor.execute("UPDATE users SET photo = %s WHERE id = %s", (image64, userID))
         drinkChoice = data['drinkChoice']
@@ -73,6 +76,173 @@ def editDetails():
     
     finally:
         cursor.close()
+
+# -----------------------------------------------------------------------------------------
+# [POST] Update user producer bookmark
+# - Update user producer bookmark with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/updateProducerBookmark', methods=['POST'])
+def updateProducerBookmark():
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    bookmark = data['bookmark']
+
+    try:
+        cursor = conn.cursor()
+
+        # Fetch existing producer lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "userProducerLists" WHERE "userId" = %s', (userID,))
+        existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
+
+        bookmark_list_names = set(bookmark.keys())
+        existing_list_names = set(existing_lists.keys())
+
+        # Identify lists to delete (if not in new bookmark)
+        lists_to_delete = existing_list_names - bookmark_list_names
+        for listName in lists_to_delete:
+            cursor.execute('DELETE FROM "userProducerLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+
+        for listName, listData in bookmark.items():
+            listItems = listData["listItems"]
+
+            # If list exists, use its ID; otherwise, create a new one
+            if listName in existing_lists:
+                list_id = existing_lists[listName]
+
+                # Update existing list desc
+                cursor.execute(
+                    'UPDATE "userProducerLists" SET "listDesc" = %s WHERE "id" = %s',
+                    (listData["listDesc"], list_id)
+                )
+            else:
+                cursor.execute(
+                    'INSERT INTO "userProducerLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    (userID, listName, listData["listDesc"],)
+                )
+                list_id = cursor.fetchone()["id"]
+
+            # Delete existing items in the list (to avoid duplicates)
+            cursor.execute('DELETE FROM "userProducerListItems" WHERE "listId" = %s', (list_id,))
+
+            # Insert new producers with their addedDate, using NOW() if missing
+            for item in listItems:
+                added_date = item.get("addedDate", None)  # Get addedDate, default to None
+                if added_date:
+                    cursor.execute(
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, %s)',
+                        (list_id, item["producerId"], added_date)
+                    )
+                else:
+                    cursor.execute(
+                        'INSERT INTO "userProducerListItems" ("listId", "producerId", "addedDate") VALUES (%s, %s, NOW())',
+                        (list_id, item["producerId"])
+                    )
+
+        conn.commit()
+        cursor.close()
+        return jsonify(
+            {
+                "code": 201,
+                "data": {
+                    "userID": userID,
+                    "bookmark": bookmark
+                }
+            }
+        ), 201
+
+    except Exception as e:
+        print("Update producer bookmark error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            },
+            "message": "An error occurred updating the producer lists."
+        }), 500
+    
+# -----------------------------------------------------------------------------------------
+# [POST] Update user venue bookmark
+# - Update user venue bookmark with new details
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/updateVenueBookmark', methods=['POST'])
+def updateVenueBookmark():
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    bookmark = data['bookmark']
+
+    try:
+        cursor = conn.cursor()
+
+        # Fetch existing venue lists for the user
+        cursor.execute('SELECT "id", "listName" FROM "userVenueLists" WHERE "userId" = %s', (userID,))
+        existing_lists = {row['listName']: row['id'] for row in cursor.fetchall()}
+
+        bookmark_list_names = set(bookmark.keys())
+        existing_list_names = set(existing_lists.keys())
+
+        # Identify lists to delete
+        lists_to_delete = existing_list_names - bookmark_list_names
+        for listName in lists_to_delete:
+            cursor.execute('DELETE FROM "userVenueLists" WHERE "userId" = %s AND "listName" = %s', (userID, listName))
+
+        for listName, listData in bookmark.items():
+            listItems = listData["listItems"]
+
+            if listName in existing_lists:
+                list_id = existing_lists[listName]
+                cursor.execute(
+                    'UPDATE "userVenueLists" SET "listDesc" = %s WHERE "id" = %s',
+                    (listData["listDesc"], list_id)
+                )
+            else:
+                cursor.execute(
+                    'INSERT INTO "userVenueLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
+                    (userID, listName, listData["listDesc"],)
+                )
+                list_id = cursor.fetchone()["id"]
+
+            # Delete existing items in the list
+            cursor.execute('DELETE FROM "userVenueListItems" WHERE "listId" = %s', (list_id,))
+
+            # Insert new venues
+            for item in listItems:
+                added_date = item.get("addedDate", None)
+                if added_date:
+                    cursor.execute(
+                        'INSERT INTO "userVenueListItems" ("listId", "venueId", "addedDate") VALUES (%s, %s, %s)',
+                        (list_id, item["venueId"], added_date)
+                    )
+                else:
+                    cursor.execute(
+                        'INSERT INTO "userVenueListItems" ("listId", "venueId", "addedDate") VALUES (%s, %s, NOW())',
+                        (list_id, item["venueId"])
+                    )
+
+        conn.commit()
+        cursor.close()
+        return jsonify({
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            }
+        }), 201
+
+    except Exception as e:
+        print("Update venue bookmark error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userID": userID,
+                "bookmark": bookmark
+            },
+            "message": "An error occurred updating the venue lists."
+        }), 500
     
 # -----------------------------------------------------------------------------------------
 # [POST] Update user bookmark
@@ -190,6 +360,8 @@ def updateBookmark():
         if user_row:
             # Get the username of the user
             user_username = user_row['username'] if user_row else "Someone"
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
         # Notify if badge earned
         if badge_result:
@@ -200,7 +372,8 @@ def updateBookmark():
                 "notiType": "badge_earned",
                 "image":    None,
                 "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}."
+                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "createdAt": current_time
             }
             print("Notification data:", notification_data)
             notifications.add_notification_to_db(notification_data)
@@ -244,7 +417,6 @@ def updateFollowList():
     conn = g.db
     cur = conn.cursor()
     data = request.get_json()
-    print(data)
 
     userID = int(data['userID'])
     action = data['action']
@@ -276,10 +448,77 @@ def updateFollowList():
         if action == "unfollow":
             if str(followerID) in target_list:
                 target_list.remove(str(followerID))
+
+                # Remove the follower from latestUserFollowers table
+                if target == 'users':
+                    cur.execute(
+                        'DELETE FROM "latestUserFollowers" WHERE "userId" = %s AND "followingId" = %s',
+                        (userID, followerID)
+                    )
         else:
             if str(followerID) not in target_list:
                 target_list.append(str(followerID))
 
+                # Add the follower to latestUserFollowers table
+                if target == 'users':
+                    # Ensure we do not exceed 10 followers
+                    # Step 1: Check follower count
+                    cur.execute(
+                        'SELECT COUNT(*) FROM "latestUserFollowers" WHERE "userId" = %s',
+                        (userID,)
+                    )
+                    count = cur.fetchone()['count']
+
+                    # Step 2: If already 10 followers, delete the oldest one
+                    if count >= 10:
+                        cur.execute(
+                            '''
+                            WITH to_delete AS (
+                                SELECT id FROM "latestUserFollowers"
+                                WHERE "userId" = %s
+                                ORDER BY "followDate" ASC
+                                LIMIT 1
+                            )
+                            DELETE FROM "latestUserFollowers" WHERE id IN (SELECT id FROM to_delete)
+                            ''',
+                            (userID,)
+                        )
+
+                    # Step 3: Insert new follower (optional conflict resolution)
+                    cur.execute(
+                        '''
+                        INSERT INTO "latestUserFollowers" ("userId", "followingId")
+                        VALUES (%s, %s)
+                        ON CONFLICT DO NOTHING
+                        ''',
+                        (userID, followerID)
+                    )
+
+                    # ADD NOTIFICATION CODE HERE
+                    # Get follower username (User A's name)
+                    cur.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (userID,))
+                    follower_user = cur.fetchone()
+                    follower_username = follower_user['username'] if follower_user else "Someone"
+                    follower_photo = follower_user['photo']  # User A's photo
+                    
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    
+                    # Create notification for User B
+                    notification_data = {
+                        "userId": followerID,  # User B (person being followed)
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "new_follower",
+                        "image": follower_photo,  # User A's photo
+                        "link": f"/profile/user/{userID}/{follower_username}",
+                        "message": f"@{follower_username} followed you!",
+                        "createdAt": current_time
+                    }
+
+                    #Send notification to User B
+                    print("Sending notification:", notification_data)
+                    notifications.add_notification_to_db(notification_data)
+        
         if row:
             cur.execute(
                 """

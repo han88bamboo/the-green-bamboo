@@ -203,7 +203,7 @@
                                         }">
                                         <span>
                                             <h6> <b> Monthly plan </b> </h6>
-                                            <p class="m-0"> $65 / Month </p>
+                                            <p class="m-0"> US$95 / Month </p>
                                             <small class="fst-italic p-0"> Billed monthly </small>
                                         </span>
                                     </button>
@@ -221,11 +221,11 @@
                                                 <h6> <b> Yearly plan </b> </h6>
                                             </div>
                                             <div class="rounded col-5 text-center"
-                                                style="background-color: green; color: white;">Save 23%</div>
+                                                style="background-color: green; color: white;">Save 15%</div>
                                         </div>
                                         <span>
-                                            <p class="m-0"> $50 / Month </p>
-                                            <small class="fst-italic p-0"> $600 Billed annually </small>
+                                            <p class="m-0"> US$80 / Month </p>
+                                            <small class="fst-italic p-0"> $960 Billed annually </small>
                                         </span>
 
                                     </button>
@@ -314,9 +314,8 @@ export default {
             user_id: null,
             user_type: null,
 
-            monthlyPriceId: "price_1Q2wvTILhk1xtKohjMfP1Gr0",
-            yearlyPriceId: "price_1Q2zOvILhk1xtKohtZSFuDeb",
-
+            monthlyPriceId: "price_1RfRV2ILhk1xtKohYsaHTvcR",
+            yearlyPriceId: "price_1RfRU0ILhk1xtKohvdKvI6du",
             business: null,
             businessName: null,
             photo: null,

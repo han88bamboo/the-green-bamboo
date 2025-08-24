@@ -29,7 +29,7 @@
     <div class="container text-start">
       <div class="row">
         <!-- user profile -->
-        <div class="col-12 col-md-4 mb-3">
+        <div class="col-12 col-md-4 mb-0">
           <div class="container">
             <!-- basic information -->
             <div class="row">
@@ -78,6 +78,25 @@
                 >
                   ★ Moderator
                 </button>
+
+                <!-- User Title (ambassador) -->
+                <span v-if="displayUser && displayUser.ambassador === true" class="badge rounded-pill ms-2"
+                  style="background-color: #ff3e31; color: white">
+                  Ambassador
+                </span>
+
+                <!-- User Title (category expert) -->
+                <span v-if="displayUser && displayUser.categoryExpert" class="badge rounded-pill ms-2"
+                  style="background-color: #5D83D9; color: white">
+                  {{ displayUser.categoryExpert }}
+                </span>
+
+                <!-- Add this temporarily to debug -->
+                <div style="display: none;">
+                  {{ displayUser && typeof displayUser.ambassador }} - 
+                  {{ displayUser && JSON.stringify(displayUser.ambassador) }}
+                </div>
+                
                 <br class="mobile-view-hide"/>
                 <button
                 v-if="ownProfile && user"
@@ -89,24 +108,7 @@
               >
                 Edit Profile
               </button>
-              <button
-                v-else-if="following && user"
-                type="button"
-                class="mt-2 btn primary-btn-less-round-blue"
-                @click="editFollow('unfollow')"
-                style="font-weight: bold"
-              >
-                Following
-              </button>
-              <button
-                v-else-if="user"
-                type="button"
-                class="mt-2 btn primary-btn-less-round-blue" 
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow User
-              </button>
+              
               <button
                 v-if="ownProfile && user"
                 type="button"
@@ -121,8 +123,8 @@
 
             <!-- additional information -->
             <div class="mt-3">
-              <div class="row">
-                <div class="col-5">
+              <div class="row mobile-view-hide">
+                <div class="col-5 ">
                   <b>Member Since</b>
                 </div>
                 <div class="col-7 text-end">
@@ -149,7 +151,7 @@
                 </div>
               </div>
               <!-- Display Chosen Flavour Tag End -->
-              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) -->
+              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) 
               <div class="row mobile-view-hide">
                 <div class="col-5">
                   <b>Observation Tags</b>
@@ -161,7 +163,7 @@
                   <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
                 </div>
               </div>
-              <!-- Display Chosen Observation Tag End -->
+               -->
               <div class="row">
                 <div class="col-5">
                   <b> Points Earned </b>
@@ -182,37 +184,88 @@
               </div>
             </div>
 
-            <!-- buttons -->
-            <div class="row mt-3">
-              <router-link
-                v-if="ownProfile && user"
-                :to="{ path: '/dashboard/user/' + userID }"
-                class="btn primary-btn-less-round-blue btn-lg mt-3"
-                style="font-weight: bold"
-              >
-                View My Stats
-              </router-link>
-              <button
-                v-else-if="following && user"
-                type="button"
-                class="btn primary-btn-outline-less-round"
-                @click="editFollow('unfollow')"
-              >
-                Following
-              </button>
-              <button
-                v-else-if="user"
-                type="button"
-                class="btn primary-btn-less-round-blue"
-                @click="editFollow('follow')"
-                style="font-weight: bold"
-              >
-                + Follow User
-              </button>
+            <!-- Top row -->
+            <div class="row mt-0 gx-2"> <!-- use gx-2 to match bottom if you like -->
+              <div class="col-12">
+                <router-link
+                  v-if="ownProfile && user"
+                  :to="{ path: '/dashboard/user/' + userID }"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 mobile-view-hide"
+                  style="font-weight: bold"
+                >
+                  View My Stats
+                </router-link>
+
+                <button
+                  v-else-if="following && user"
+                  type="button"
+                  class="mt-3 btn primary-btn-outline-less-round w-100"
+                  @click="editFollow('unfollow')"
+                >
+                  Following
+                </button>
+
+                <button
+                  v-else-if="user"
+                  type="button"
+                  class="mt-3 btn primary-btn-less-round-blue w-100"
+                  @click="editFollow('follow')"
+                  style="font-weight: bold"
+                >
+                  + Follow User
+                </button>
+              </div>
+            </div>
+            <!-- buttons for MOBILE -->
+            <div class="row mobile-view-show">
+              <div class="col-6" v-if="ownProfile && user">
+                <router-link
+                  :to="{ path: '/dashboard/user/' + userID }"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  style="font-weight: bold"
+                >
+                  View My Drink Stats
+                <i class="bi bi-arrow-up-right"></i>
+                </router-link>
+                
+              </div>
+              <div class="col-6">
+                <router-link 
+                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
+                    class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                    style="font-weight: bold"
+                  >
+                    View All Reviews
+                  <i class="bi bi-arrow-up-right"></i>
+                  </router-link>
+              </div>
+              <div class="col-6" v-if="ownProfile && user">
+                <div>
+                  <button class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                          type="button" 
+                          data-bs-toggle="collapse" 
+                          data-bs-target="#recentactivityCollapse"
+                          aria-expanded="false" 
+                          aria-controls="recentactivityCollapse">
+                    <span class="fw-bold">Recent Activity</span>
+                    <i class="bi bi-chevron-down"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="col-6">
+                <router-link
+                  :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  style="font-weight: bold"
+                >
+                  View All Friends
+                <i class="bi bi-arrow-up-right"></i>
+                </router-link>
+                
+              </div>
             </div>
             <!-- buttons (DESKTOP ONLY) -->
             <div class="row mt-0">
-              
               <span
                 style="position: relative; display: inline-block"
                 class="m-0 p-0"
@@ -238,8 +291,6 @@
                   Edit Moderators
                 </button>-->
               </span>
-              
-              
             </div>
 
             <!-- editProfileModal start -->
@@ -323,9 +374,9 @@
                               :value="type"
                             />
                             <label
-                              v-if="selectedDrinks.includes(type)"
+                              v-if="displayUserDrinkChoice.includes(type)"
                               class="btn primary-btn-less-round btn-sm"
-                              style="background-color: #f0b358;border:1px solid #f0b358;"
+                              style="background-color: #f0b358;border:1px solid #f0b358;color: black;"
                               :for="index"
                               >{{ type }}</label
                             >
@@ -433,6 +484,49 @@
                     >
                       Save changes
                     </button>
+                  </div>
+                </div>
+
+                <!-- display all producer lists -->
+                <div
+                  v-for="(bookmarkList, name) in displayUserProducerBookmarks"
+                  :key="name"
+                  style="display: flex"
+                  class="row mb-3"
+                >
+                  <div class="col-3 mobile-col-4 mobile-pe-2">
+                    <img
+                      :src="
+                        bookmarkList.listItems.length > 0
+                          ? getProducerFromID(bookmarkList.listItems[0].producerId).photo || defaultDrinkImage
+                          : defaultDrinkImage
+                      "
+                      alt=""
+                      class="bottle-img rounded me-3"
+                    />
+                  </div>
+                  <div class="col-9 mobile-col-8 mobile-ps-1">
+                    <h5
+                      class="mt-1 mobile-fs-6"
+                      style="cursor: pointer; font-weight:bold"
+                    >
+                      Brands List: {{ name }}
+                    </h5>
+                    <span v-if="bookmarkList.listItems.length > 1">
+                      {{ bookmarkList.listItems.length }} items in list
+                    </span>
+                    <span v-else>
+                      {{ bookmarkList.listItems.length }} item in list
+                    </span>
+                    <div
+                      style="
+                        max-height: 48px;
+                        overflow-y: auto;
+                        font-style: italic;
+                      "
+                    >
+                      {{ bookmarkList.listDesc }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1029,6 +1123,7 @@
                         !(
                           confirmChangePassword ||
                           passwordError ||
+                          samePasswordError || 
                           passwordSuccess ||
                           passwordMismatch
                         )
@@ -1037,28 +1132,47 @@
                       <p class="text-start mb-1">
                         Old Password: <span class="text-danger">*</span>
                       </p>
-                      <input
+                      <!-- <input
                         type="password"
                         v-model="oldPassword"
                         class="form-control"
                         id="oldPassword"
                         placeholder="Enter Previous Password"
-                      />
+                      /> -->
+
+                      <div class="form-floating">
+                        <input
+                          type="password"
+                          id="oldPassword"
+                          v-model="oldPassword"
+                          class="form-control form-box-outline"
+                          placeholder="Enter Previous Password"
+                        />
+                        <label for="oldPassword"> Enter Previous Password </label>
+                      </div>
+
+
                       <p class="text-start mt-3 mb-1">
                         New Password: <span class="text-danger">*</span>
                       </p>
-                      <input
+                      <!-- <input
                         type="password"
                         v-model="newPassword"
                         class="form-control"
                         id="newPassword"
                         placeholder="Enter New Password"
+                      /> -->
+                      <PWStrengthChecker 
+                        @password-change="password = $event"
+                        @strength-change="passwordStrength = $event"
                       />
                     </div>
                     <div
                       v-if="
                         confirmChangePassword &&
-                        !(passwordError || passwordSuccess || passwordMismatch)
+                        !(passwordError || passwordSuccess || 
+                          passwordMismatch || samePasswordError 
+                        )
                       "
                     >
                       <b>Are you sure you want to change password?</b>
@@ -1156,11 +1270,25 @@
                       please try again!
                     </p>
                     <p
+                      v-if="samePasswordError"
+                      class="text-danger  fw-bold fs-5"
+                    >
+                      You should not use the same password as your old password.
+                    </p>
+                    <p
                       v-if="passwordMismatch"
                       class="text-danger fst-italic fw-bold fs-5"
                     >
                       Old password do not match, please try again
                     </p>
+                    <p
+                      v-if="(passwordStrength > 0 && passwordStrength < 5) &&
+                      weakPasswordError"
+                      class="text-danger fst-italic fw-bold fs-5"
+                    >
+                      Please use password that meets the requirement.
+                    </p>
+                  
                   </div>
 
                   <div class="modal-footer">
@@ -1178,8 +1306,6 @@
                       Return
                     </button>
 
-                    
-
                     <!-- Change password first confirmation and second confirmation -->
                     <button
                       v-if="
@@ -1187,6 +1313,7 @@
                         !(
                           confirmChangePassword ||
                           passwordError ||
+                          samePasswordError ||
                           passwordSuccess ||
                           passwordMismatch ||
                           resettingPassword
@@ -1203,6 +1330,7 @@
                         confirmChangePassword &&
                         !(
                           passwordError ||
+                          samePasswordError ||
                           passwordSuccess ||
                           passwordMismatch ||
                           resettingPassword
@@ -1252,10 +1380,12 @@
             <!-- badges -->
             <div class="mt-4 mobile-view-hide">
               <h5 class="mobile-view-hide" style="font-weight:bold">Badges Unlocked</h5>
-              <p class="mobile-view-show"><strong>Badges Unlocked</strong></p>
               <hr />
               <div v-if="!userBadges || userBadges.length === 0">
-                You have no badges yet.
+                No badges unlocked yet. 
+                <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
+                  Click here to find out how badges are earned on Drink-X.
+                </router-link>
               </div>
 
               <div v-else class="container text-center mb-3">
@@ -1281,10 +1411,296 @@
                 </div>
               </div>
 
-              <div>
-                <a href="#" @click.prevent="switchTab('badges')" style="color: black">View all badges</a>
+              <div v-if="userBadges && userBadges.length > 0">
+                <a 
+                  href="#" 
+                  @click.prevent="switchTab('badges')" 
+                  style="color: black"
+                >
+                  View all badges
+                </a>
               </div>
             </div>
+
+            <!-- Drink I've Reviewed -->
+            <div class="mt-4 mobile-view-hide">
+              
+             <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviews }} Drinks Reviewed</h5>
+              <p class="mobile-view-show"><strong>{{ totalReviews }} Drinks Reviewed</strong></p>
+              <hr />
+              <div v-if="!recentReviews || recentReviews.length === 0">
+                {{ ownProfile ? 'You have no drink reviews added yet. Get started by searching for a drink and adding your review!' : 'No drink reviews logged yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(review, index) in recentReviews.slice(0, 3)" 
+                    :key="review.id"
+                  >
+                    <!-- Review image with squared border -->
+                    <div class="position-relative review-container" :key="index">
+                      <a
+                        :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="review.photo || defaultDrinkImage"
+                          alt="review image"
+                          class="rounded review-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="review-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">{{ getListingName(review.reviewTarget) || 'Unknown Drink' }}</div>
+                          <div style="color: #666; margin-bottom: 2px;">{{ getListingDrinkType(review.reviewTarget) || 'Unknown Type' }}</div>
+                          <div style="color: #888; font-size: 0.75rem;">{{ getListingProducerName(review.reviewTarget) || 'Unknown Producer' }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <a :href="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View all reviewed drinks</a>
+              </div>
+            </div>
+
+
+            <!-- Recently Followed Users -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followingCount }} Following</h5>
+              <p class="mobile-view-show"><strong>{{ followingCount }} Following</strong></p>
+              <hr />
+              <div v-if="loadingFollowingUsers" class="text-center">
+                Loading following users...
+              </div>
+              <div v-else-if="errorFollowingUsers" class="text-danger">
+                {{ errorFollowingUsers }}
+              </div>
+              <div v-else-if="!followingUsers || followingUsers.length === 0">
+                {{ ownProfile ? 'You have not followed anyone yet. Invite your friends to Drink-X to see what they are drinking lately!' : 'User is not following anyone yet.' }}
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followingUsers.slice(0, 3)" 
+                    :key="`following-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Followers -->
+            <div class="mt-4 mobile-view-hide">
+              <h5 class="mobile-view-hide" style="font-weight:bold">{{ followersCount }} Followers</h5>
+              <p class="mobile-view-show"><strong>{{ followersCount }} Followers</strong></p>
+              <hr />
+              <div v-if="loadingFollowersUsers" class="text-center">
+                Loading followers...
+              </div>
+              <div v-else-if="errorFollowersUsers" class="text-danger">
+                {{ errorFollowersUsers }}
+              </div>
+              <div v-else-if="!followersUsers || followersUsers.length === 0">
+                {{ ownProfile ? `Don't drink alone! Invite your friends on Drink-X to share what you're drinking lately!` : "No followers yet." }}
+
+              </div>
+
+              <div v-else class="container text-center mb-3">
+                <div class="row">
+                  <div 
+                    class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
+                    v-for="(user, index) in followersUsers.slice(0, 3)" 
+                    :key="`follower-${user.id || index}`"
+                  >
+                    <!-- User profile with circular border -->
+                    <div class="position-relative user-container" :key="index">
+                      <a
+                        :href="`/profile/user/${user.id}/${user.username}`"
+                        style="text-decoration: none; color: inherit;"
+                      >
+                        <img
+                          :src="user.photo || defaultProfilePhoto"
+                          alt="user profile photo"
+                          class="rounded-circle user-img"
+                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                        />
+                        <div class="user-text mt-2" style="font-size: 0.8rem; text-align: center;">
+                          <div style="font-weight: bold; margin-bottom: 2px;">@{{ user.username }}</div>
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- View All Friends Link -->
+            <div class="mt-4 mobile-view-hide">
+              <div>
+                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
+              </div>
+            </div>
+
+
+            <!-- My Recent ACtivity -->
+            <div v-if="ownProfile" class="mt-4">
+              <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
+              
+              
+              <div class="mb-4 Xmobile-view-hide collapse d-lg-block" id="recentactivityCollapse">
+              <hr>
+                <div>
+                    <div class="square-inline">
+                        <p class="fw-bold text-start">Your Recent Activity</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentUserActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentUserActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentUserActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentUserActivity || recentUserActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="py-1">
+                                <!-- Your Activity -->
+                                <div v-if="activity.type === 'review'">
+                                    You rated <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> <span style="color: rgb(2, 117, 98)">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-else-if="activity.type === 'list_add'">
+                                    You added <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link></b> to your list: <b><router-link :to="listUrl(activity)" class="primary-clickable-text"><u><span style="color: rgb(2, 117, 98);">{{ activity.listName }}</span></u></router-link></b><br />{{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-if="activity.type === 'follow'">
+                                    You started following
+                                    <router-link :to="profileUrl(activity)" class="reverse-clickable-text" style="color: rgb(2, 117, 98)">
+                                      @<b>{{ activity.username }}</b>
+                                    </router-link>
+                                    {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="square-inline">
+                        <p class="fw-bold text-start">Recent Activity on Your Reviews</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2 pb-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentReviewsActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted fst-italic">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentReviewsActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentReviewsActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentReviewsActivity || recentReviewsActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentReviewsActivity" :key="activity.id || activity.date" class="pb-2">
+                                <!-- Activity on Your Reviews -->
+                                <div v-if="activity.type === 'upvote' || activity.type === 'downvote'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> <span :style="{ color: activity.type === 'upvote' ? '#90ee90' : 'black' }">{{ activity.type }}d</span> your review of <router-link :to="listingUrl(activity, activity.reviewTarget)" class="clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="square-inline pb-2">
+                        <p class="fw-bold text-start">Recent Activity from Your Followers</p>
+                    </div>
+                    <div class="feed-body mobile-rating-smaller-text-2">
+                        <!-- Loading State -->
+                        <div v-if="loadingRecentFollowersActivity" class="text-center pb-1">
+                            <div class="spinner-border spinner-border-sm text-dark me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted">Loading recent activity...</span>
+                        </div>
+
+                        <!-- Error State -->
+                        <div v-else-if="errorRecentFollowersActivity" class="text-center pb-1">
+                            <div class="text-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ errorRecentFollowersActivity }}
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else-if="!recentFollowersActivity || recentFollowersActivity.length === 0" class="pb-1">
+                            No recent activity.
+                        </div>
+
+                        <!-- Activity List -->
+                        <div v-else class="overflow-auto" style="max-height: 100%;">
+                            <div v-for="activity in recentFollowersActivity" :key="activity.id || activity.date" class="pb-2">
+                                <!-- Follower Activity -->
+                                <div v-if="activity.type === 'follow'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> started following you {{ getTimeDifference(activity.date) }}
+                                </div>
+                                <div v-else-if="activity.type === 'tag'">
+                                    <router-link :to="profileUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)">@<b>{{ activity.username }}</b></router-link> tagged you in a review of <router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> {{ getTimeDifference(activity.date) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>   
+              </div> 
+            </div>
+
+            
+
 
             <!-- Events-->
             <div class="mt-3 mobile-view-hide">
@@ -1297,8 +1713,25 @@
           </div>
         </div>
 
+        <!-- Mobile Toggle Button (only visible below 992px) -->
+        <div v-if="ownProfile" class="row d-lg-none">
+          <div class="col-12">
+            <button 
+              class="ms-3 btn primary-btn-outline-less-round w-100 text-start d-flex justify-content-between align-items-center welcome-toggle"
+              type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#welcomeCollapse" 
+              aria-expanded="false" 
+              aria-controls="welcomeCollapse"
+            >
+              <span class="fw-bold">Get started on Drink-X!</span>
+              <i class="bi bi-chevron-down"></i>
+            </button>
+          </div>
+        </div>
+
         <!-- Welcome section and Reviews/Lists -->
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-8 mobile-mt-3">
           <!-- Welcome Section -->
           <div v-if="ownProfile"
             style="
@@ -1307,10 +1740,12 @@
               padding: 16px;
               background-color: #ffffff;
             "
-            class="mb-4 mobile-view-hide"
+            class="mb-4 Xmobile-view-hide collapse d-lg-block" 
+            id="welcomeCollapse"
             >
+
             <!-- Welcome section -->
-            <div style="margin-bottom: 24px" >
+            <div style="margin-bottom: 24px" class="mobile-view-hide" >
               <div
                 style="
                   position: relative;
@@ -1342,6 +1777,7 @@
                 border-bottom: 1px solid #e0e0e0;
                 padding-bottom: 16px;
               "
+              class="mobile-view-hide"
             >
               Welcome to Drink-X. Let's get started!
             </h3>
@@ -1443,7 +1879,7 @@
                       <div class="modal-content">
                         <div class="modal-header">
                           <h1 class="modal-title fs-5" id="exampleModalLabel">
-                            Create New List
+                            Create New Drinks List
                           </h1>
                           <button
                             type="button"
@@ -1455,7 +1891,7 @@
                         <div class="modal-body">
                           <div class="mb-3">
                             <label for="basic-url" class="form-label"
-                              >List Name</label
+                              >Drinks List Name</label
                             >
                             <div class="input-group mb-3">
                               <input
@@ -1477,7 +1913,7 @@
 
                           <div class="mb-3">
                             <label for="basic-url" class="form-label"
-                              >List Description</label
+                              >Drinks List Description</label
                             >
                             <div class="input-group mb-3">
                               <textarea
@@ -1511,7 +1947,7 @@
                       </div>
                     </div>
                   </div>
-                                    <!-- add a friend modal -->
+                  <!-- add a friend modal -->
                   <div class="modal fade" id="addFriendModal" tabindex="-1" aria-labelledby="addFriendModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered modal-lg">
                       <div class="modal-content">
@@ -1591,6 +2027,17 @@
                                   </button>
                                 </div>
                               </div>
+
+                              <!-- No suggestions found -->
+                              <div
+                                v-if="showUserSuggestions && filteredUserSuggestions.length === 0"
+                                class="position-absolute w-100 mt-1 bg-white border rounded shadow-sm p-2"
+                                style="z-index: 1000;"
+                              >
+                                <div class="text-muted text-center">
+                                  No users found. Try searching for a different name.
+                                </div>
+                              </div>
                               
                               <div class="position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%);">
                               </div>
@@ -1667,24 +2114,43 @@
                     object-fit: contain;
                     border-radius: 4px;
                   "
-                  alt="Explore and join a club!"
+                  alt="Explore and join a club! Earn 100 points to create your own Club!"
                 />
                 <div>
                   <p class="mobile-rating-smaller-text-2 mb-2">
-                    Explore and join a club!
-                  </p>
-                  <router-link :to="'/clubs/view'">
-                    <button
-                      class="btn btn-warning btn-sm rounded fw-bold"
-                      @mouseover="hoverButton($event)"
-                      @mouseleave="leaveButton($event)"
+                    Explore and join a club or event! 
+                    <router-link
+                      to="/badges-and-points"
+                      style="color: #FF3E31; font-weight: bold; text-decoration: none;"
                     >
-                      Find A Club
-                    </button>
-                  </router-link>
+                      Earn 100 points
+                    </router-link>
+                    to create your own Club or Event!
+                  </p>
+                  <div class="d-flex gap-2">
+                    <router-link :to="'/clubs/view'">
+                      <button
+                        class="btn btn-warning btn-sm rounded fw-bold"
+                        @mouseover="hoverButton($event)"
+                        @mouseleave="leaveButton($event)"
+                      >
+                        Find Clubs
+                      </button>
+                    </router-link>
+                    <router-link :to="'/events/view'">
+                      <button
+                        class="btn btn-warning btn-sm rounded fw-bold"
+                        @mouseover="hoverButton($event)"
+                        @mouseleave="leaveButton($event)"
+                      >
+                        Find Events
+                      </button>
+                    </router-link>
+                  </div>
                 </div>
               </div>
             </div>
+            
           </div>
 
           <!-- reviews and lists -->
@@ -1708,14 +2174,14 @@
               class="btn mx-1 fw-bold no-hover"
               :class="{
                 'primary-btn-green active-toggle-button-user-profile':
-                  activeTab === 'lists',
+                  activeTab === 'lists' || activeTab === 'list' || activeTab === 'producer_lists' || activeTab === 'producer_list' || activeTab === 'venue_lists' || activeTab === 'venue_list',
                 'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
-                  activeTab !== 'lists',
+                  activeTab !== 'lists' && activeTab !== 'list' && activeTab !== 'producer_lists' && activeTab !== 'producer_list' && activeTab !== 'venue_lists' && activeTab !== 'venue_list',
               }"
               @click="switchTab('lists')"
             >
-              <span v-if="ownProfile">My Drink List</span>
-              <span v-if="!ownProfile">Drink List</span>
+              <span v-if="ownProfile">My Lists</span>
+              <span v-if="!ownProfile">Lists</span>
             </button>
 
             <!-- My Badges button -->
@@ -1736,14 +2202,22 @@
             <div class="tab-content container mt-2 mobile-py-2">
               <!-- reviews tab -->
               <div v-if="activeTab == 'reviews'" id="reviews">
-                <h5 class="text-body-secondary text-start py-2">
-                  <b> Recent Reviews </b>
+                <!-- View All Reviews Button -->
+                <div v-if="recentReviews && recentReviews.length > 0" class="mb-4 mobile-view-hide">
+                  <router-link 
+                    :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
+                    class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round"
+                  >
+                    View All Reviews
+                  </router-link>
+                </div>
+                <h5 class="text-body-secondary text-start pb-2">
+                  <b> Latest Reviewed Drinks </b>
                 </h5>
                 <div v-if="recentReviews && recentReviews.length > 0">
                   <div v-for="review in recentReviews" :key="review.id">
                     <div style="display: flex" class="row mb-2">
                       <div class="col-3 mobile-col-3 mobile-pe-0">
-                        <!-- <img :src="'data:image/png;base64,' + (review.photo || defaultDrinkImage)" alt="" class="rounded bottle-img "> me-3 -->
                         <img
                           :src="review.photo || defaultDrinkImage"
                           alt=""
@@ -1809,507 +2283,540 @@
                     </div>
                   </div>
                 </div>
-                <div v-else class="mb-2 mobile-rating-smaller-text-2">
-                  No reviews yet. To explore more drinks in the home page,
+                <div v-else class="my-2 mobile-rating-smaller-text-2">
+                  No drinks reviewed yet! To explore more drinks in the home page,
                   <router-link to="/" style="color: inherit"
                     >click here</router-link
                   >.
                 </div>
+                <br>
 
                 <ListingRowDisplayUserProfile
-                  :listingArr="top5ListingsData"
+                  :topRatedReviews="topRatedReviews"
                   :producers="producers"
-                  displayName="Favourite Listings"
+                  :subTags="subTags"
+                  :flavourTags="flavourTags"
+                  displayName="Highest Rated Drinks"
                   columnWidth="165px"
                 />
-
-                <ListingRowDisplayUserProfile
-                  :listingArr="recentActivity"
-                  :producers="producers"
-                  displayName="Recent Activity"
-                  columnWidth="165px"
-                />
+                
+                
+                
                 <br>
               </div>
 
-              <!-- lists tab -->
-              <div v-if="activeTab == 'lists'" id="lists">
-                <button
-                  v-if="ownProfile"
-                  type="button"
-                  class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                  data-bs-toggle="modal"
-                  data-bs-target="#createNewListModal"
-                >
-                  Create New List
-                </button>
-
-                <!-- create new list modal -->
-                <div
-                  class="modal fade"
-                  id="createNewListModal"
-                  tabindex="-1"
-                  aria-labelledby="exampleModalLabel"
-                  aria-hidden="true"
-                >
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">
-                          Create New List
-                        </h1>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"              
-                        ></button>
-                      </div>
-                      <div class="modal-body">
-                        <div class="mb-3">
-                          <label for="basic-url" class="form-label"
-                            >List Name</label
-                          >
-                          <div class="input-group mb-3">
-                            <input
-                              v-model="newListName"
-                              type="text"
-                              class="form-control"
-                              placeholder="List Name"
-                              aria-label="Username"
-                              aria-describedby="basic-addon1"
-                            />
-                          </div>
-                          <div
-                            v-if="newListNameError"
-                            class="text-danger text-sm"
-                          >
-                            *{{ newListNameError }}
-                          </div>
-                        </div>
-
-                        <div class="mb-3">
-                          <label for="basic-url" class="form-label"
-                            >List Description</label
-                          >
-                          <div class="input-group mb-3">
-                            <textarea
-                              v-model="newListDesc"
-                              type="text"
-                              class="form-control"
-                              placeholder="List Description (Optional)"
-                              aria-label="Username"
-                              aria-describedby="basic-addon1"
-                              rows="5"
-                            ></textarea>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="modal-footer">
-                        <button
-                          type="button"
-                          class="btn btn-secondary"
-                          data-bs-dismiss="modal"
-                        >
-                          Close
-                        </button>
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          @click="addNewList"
-                        >
-                          Save changes
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+              <!-- consolidated lists tab -->
+              <div v-if="activeTab == 'lists' || activeTab == 'list' || activeTab == 'producer_lists' || activeTab == 'producer_list' || activeTab == 'venue_lists' || activeTab == 'venue_list'" id="lists">
+                
+                <!-- Sub-navigation for list types -->
+                <div class="mb-3">
+                  <button
+                    class="btn btn-sm mx-1"
+                    :class="{
+                      'primary-btn-green': currentListType === 'drinks',
+                      'primary-btn-green-thin-outline': currentListType !== 'drinks'
+                    }"
+                    @click="switchListType('drinks')"
+                  >
+                    Drinks
+                  </button>
+                  <button
+                    class="btn btn-sm mx-1 mb-1 fw-bold"
+                    :class="{
+                      'primary-btn-green': currentListType === 'producers',
+                      'primary-btn-green-thin-outline': currentListType !== 'producers'
+                    }"
+                    @click="switchListType('producers')"
+                  >
+                    Brands
+                  </button>
+                  <button
+                    class="btn btn-sm mx-1 mb-1 fw-bold"
+                    :class="{
+                      'primary-btn-green': currentListType === 'venues',
+                      'primary-btn-green-thin-outline': currentListType !== 'venues'
+                    }"
+                    @click="switchListType('venues')"
+                  >
+                    Venues
+                  </button>
                 </div>
 
-                <!-- display all lists -->
-                <div
-                  v-for="(bookmarkList, name, index) in displayUserBookmarks"
-                  :key="name"
-                  style="display: flex"
-                  class="row mb-3"
-                >
-                  <div class="col-3 mobile-col-4 mobile-pe-2">
-                    <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                    <img
-                      :src="
-                        bookmarkList.listItems.length > 0
-                          ? bookedMarkedListings[
-                              bookmarkList.listItems[0]?.drinkId
-                            ]?.photo || defaultDrinkImage
-                          : defaultDrinkImage
-                      "
-                      alt=""
-                      class="bottle-img rounded me-3"
-                    />
-                  </div>
-                  <div class="col-9 mobile-col-8 mobile-ps-1">
-                    <!-- style="height: 150px; display: flex; flex-direction: column;" -->
-                    <h5
-                      class="mt-1 mobile-fs-6"
-                      @click="viewList(name)"
-                      style="cursor: pointer; font-weight:bold"
-                    >
-                      {{ name }}
-                    </h5>
-                    <span v-if="bookmarkList.listItems.length > 1">
-                      {{ bookmarkList.listItems.length }} items in list
-                    </span>
-                    <span v-else>
-                      {{ bookmarkList.listItems.length }} item in list
-                    </span>
-                    <div
-                      style="
-                        max-height: 48px;
-                        overflow-y: auto;
-                        font-style: italic;
-                      "
-                    >
-                      {{ bookmarkList.listDesc }}
-                    </div>
-                    <div style="display: flex; margin-top: auto" class="mb-1">
-                      <b
-                        ><a
-                          class="me-2 mt-2 mobile-view-hide"
-                          @click="viewList(name)"
-                          href="#"
-                          style="color: #027562"
-                          >View List</a
-                        ></b
-                      >
-                      <b
-                        ><a
-                          class="me-2 mobile-view-show"
-                          @click="viewList(name)"
-                          href="#"
-                          style="color: #027562"
-                          >View</a
-                        ></b
-                      >
-                      <b
-                        ><a
-                          v-if="
-                            ownProfile &&
-                            !(
-                              name == 'Drinks I Have Tried' ||
-                              name == 'Drinks I Want To Try'
-                            )
-                          "
-                          class="mobile-view-hide me-2"
-                          style="color: #027562"
-                          href="#"
-                          data-bs-toggle="modal"
-                          :data-bs-target="`#editListModal${index}`"
-                          @click="resetEditList(name, bookmarkList.listDesc)"
-                          >Edit List</a
-                        ></b
-                      >
-                      <b
-                        ><a
-                          v-if="
-                            ownProfile &&
-                            !(
-                              name == 'Drinks I Have Tried' ||
-                              name == 'Drinks I Want To Try'
-                            )
-                          "
-                          class="mobile-view-hide"
-                          href="#"
-                          style="color: #027562"
-                          data-bs-toggle="modal"
-                          :data-bs-target="`#deleteListModal${index}`"
-                          >Delete List</a
-                        ></b
-                      >
-                      <b
-                        ><a
-                          v-if="
-                            ownProfile &&
-                            !(
-                              name == 'Drinks I Have Tried' ||
-                              name == 'Drinks I Want To Try'
-                            )
-                          "
-                          class="mobile-view-show me-2"
-                          href="#"
-                          data-bs-toggle="modal"
-                          style="color: #027562"
-                          :data-bs-target="`#editListModal${index}`"
-                          @click="resetEditList(name, bookmarkList.listDesc)"
-                          >Edit</a
-                        ></b
-                      >
-                      <b
-                        ><a
-                          v-if="
-                            ownProfile &&
-                            !(
-                              name == 'Drinks I Have Tried' ||
-                              name == 'Drinks I Want To Try'
-                            )
-                          "
-                          class="mobile-view-show"
-                          href="#"
-                          style="color: #027562"
-                          data-bs-toggle="modal"
-                          :data-bs-target="`#deleteListModal${index}`"
-                          >Delete</a
-                        ></b
-                      >
-                    </div>
-                  </div>
-
-                  <!-- edit list modal start -->
-                  <div
-                    class="modal fade"
-                    :id="`editListModal${index}`"
-                    tabindex="-1"
-                    aria-labelledby="exampleModalLabel"
-                    aria-hidden="true"
-                  >
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h1 class="modal-title fs-5" id="exampleModalLabel">
-                            Edit List
-                          </h1>
-                          <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                          ></button>
-                        </div>
-                        <div class="modal-body">
-                          <div class="mb-3">
-                            <label for="basic-url" class="form-label"
-                              >List Name</label
-                            >
-                            <div class="input-group mb-3">
-                              <input
-                                v-model="editListName"
-                                type="text"
-                                class="form-control"
-                                :placeholder="name"
-                                aria-label="Username"
-                                aria-describedby="basic-addon1"
-                              />
-                            </div>
-                            <div
-                              v-if="editListNameError"
-                              class="text-danger text-sm"
-                            >
-                              *{{ editListNameError }}
-                            </div>
-                          </div>
-
-                          <div class="mb-3">
-                            <label for="basic-url" class="form-label"
-                              >List Description</label
-                            >
-                            <div class="input-group mb-3">
-                              <textarea
-                                v-model="editListDesc"
-                                type="text"
-                                class="form-control"
-                                :placeholder="bookmarkList.listDesc"
-                                aria-label="Username"
-                                aria-describedby="basic-addon1"
-                                rows="5"
-                              ></textarea>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="modal-footer">
-                          <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                          >
-                            Close
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-primary"
-                            @click="editList(name)"
-                          >
-                            Save changes
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- modal end -->
-
-                  <!-- delete list modal start -->
-                  <div
-                    class="modal fade"
-                    :id="`deleteListModal${index}`"
-                    tabindex="-1"
-                    aria-labelledby="exampleModalLabel"
-                    aria-hidden="true"
-                  >
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="text-end mt-2 me-2">
-                          <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                          ></button>
-                        </div>
-
-                        <div class="text-center">
-                          <img
-                            src="../../../Images/Others/cancel.png"
-                            alt=""
-                            class="rounded-circle border border-dark text-center"
-                            style="width: 100px; height: 100px"
-                          />
-                          <h3>Are you sure?</h3>
-                          <br />
-                          <p>
-                            Do you really want to delete
-                            <b
-                              ><i>{{ name }}</i></b
-                            >?
-                          </p>
-                        </div>
-                        <div style="display: inline" class="text-center mb-4">
-                          <button
-                            type="button"
-                            class="btn btn-secondary me-3"
-                            data-bs-dismiss="modal"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            class="btn btn-danger"
-                            data-bs-dismiss="modal"
-                            @click="deleteList(name)"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- modal end -->
-                </div>
-                <br>
-              </div>
-
-              <!-- individual list tab -->
-              <div
-                v-if="activeTab == 'list' && displayUser.drinkLists"
-                id="list"
-              >
-                <!-- list name, back to lists & add drink to list & share button -->
-                <div class="row mb-4 mobile-mt-2">
-                  <div class="col-5 mobile-col-7">
-                    <h5 class="mobile-fs-5">
-                      <b>{{ currentList }}</b>
-                    </h5>
-                  </div>
-                  <div
-                    class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end"
-                  >
+                <!-- Drinks Lists Content -->
+                <div v-if="currentListType === 'drinks' && (activeTab === 'lists' || activeTab === 'list')">
+                  <!-- Show list overview when activeTab is 'lists' -->
+                  <div v-if="activeTab === 'lists'">
                     <button
                       v-if="ownProfile"
                       type="button"
-                      class="btn btn tertiary-btn-blue drinklist"
+                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
                       data-bs-toggle="modal"
-                      data-bs-target="#exampleModal"
+                      data-bs-target="#createNewListModal"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        class="bi bi-plus"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"
-                        />
-                        <path
-                          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-                        />
-                      </svg>
-                      <span class="mobile-view-hide">&nbsp; Add Drink</span>
-                    </button>
-                    <button
-                      @click="updateCurrentURL"
-                      type="button"
-                      class="btn btn tertiary-btn-blue drinklist"
-                      data-bs-toggle="modal"
-                      data-bs-target="#shareListModal"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        class="bi bi-share"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 30 30"
-                      >
-                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                        <g
-                          id="SVGRepo_tracerCarrier"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        ></g>
-                        <g id="SVGRepo_iconCarrier">
-                          <path
-                            d="M0 25.472q0 2.368 1.664 4.032t4.032 1.664h18.944q2.336 0 4-1.664t1.664-4.032v-8.192l-3.776 3.168v5.024q0 0.8-0.544 1.344t-1.344 0.576h-18.944q-0.8 0-1.344-0.576t-0.544-1.344v-18.944q0-0.768 0.544-1.344t1.344-0.544h9.472v-3.776h-9.472q-2.368 0-4.032 1.664t-1.664 4v18.944zM5.696 19.808q0 2.752 1.088 5.28 0.512-2.944 2.24-5.344t4.288-3.872 5.632-1.664v5.6l11.36-9.472-11.36-9.472v5.664q-2.688 0-5.152 1.056t-4.224 2.848-2.848 4.224-1.024 5.152zM32 22.080v0 0 0z"
-                          ></path>
-                        </g>
-                      </svg>
-                      <span class="mobile-view-hide">&nbsp;Share List</span>
-                    </button>
-                    <button
-                      @click="viewList('lists')"
-                      type="button"
-                      class="btn btn tertiary-btn-blue drinklist"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                        class="bi bi-arrow-left-circle"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"
-                        />
-                      </svg>
-                      <span class="mobile-view-hide">&nbsp;Back to Lists</span>
+                      Create New Drinks List
                     </button>
 
-                    <!-- Share Menu Modal (QR Code) -->
+                    <!-- create new list modal -->
                     <div
                       class="modal fade"
-                      id="shareListModal"
+                      id="createNewListModal"
                       tabindex="-1"
-                      aria-labelledby="shareListModalLabel"
+                      aria-labelledby="exampleModalLabel"
                       aria-hidden="true"
                     >
-                      <div class="modal-dialog">
+                      <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h1
-                              class="modal-title fs-5"
-                              id="shareMenuModalLabel"
-                            >
-                              Drink List QR Code
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">
+                              Create New Drinks List
                             </h1>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"              
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label"
+                                >List Name</label
+                              >
+                              <div class="input-group mb-3">
+                                <input
+                                  v-model="newListName"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Name"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                />
+                              </div>
+                              <div
+                                v-if="newListNameError"
+                                class="text-danger text-sm"
+                              >
+                                *{{ newListNameError }}
+                              </div>
+                            </div>
+
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label"
+                                >List Description</label
+                              >
+                              <div class="input-group mb-3">
+                                <textarea
+                                  v-model="newListDesc"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Description (Optional)"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                  rows="5"
+                                ></textarea>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="addNewList"
+                            >
+                              Save changes
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- display all lists -->
+                    <div
+                      v-for="(bookmarkList, name, index) in displayUserBookmarks"
+                      :key="name"
+                      style="display: flex"
+                      class="row mb-3"
+                    >
+                      <div class="col-3 mobile-col-4 mobile-pe-2">
+                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
+                        <img
+                          :src="
+                            bookmarkList.listItems.length > 0
+                              ? bookedMarkedListings[
+                                  bookmarkList.listItems[0]?.drinkId || bookmarkList.listItems[0]
+                                ]?.photo || defaultDrinkImage
+                              : defaultDrinkImage
+                          "
+                          alt=""
+                          class="bottle-img rounded me-3"
+                        />
+                      </div>
+                      <div class="col-9 mobile-col-8 mobile-ps-1">
+                        <!-- style="height: 150px; display: flex; flex-direction: column;" -->
+                        <h5
+                          class="mt-1 mobile-fs-6"
+                          @click="viewList(name)"
+                          style="cursor: pointer; font-weight:bold"
+                        >
+                          Drinks List: {{ name }}
+                        </h5>
+                        <span v-if="bookmarkList.listItems.length > 1">
+                          {{ bookmarkList.listItems.length }} items in list
+                        </span>
+                        <span v-else>
+                          {{ bookmarkList.listItems.length }} item in list
+                        </span>
+                        <div
+                          style="
+                            max-height: 48px;
+                            overflow-y: auto;
+                            font-style: italic;
+                          "
+                        >
+                          {{ bookmarkList.listDesc }}
+                        </div>
+                        <div style="display: flex; margin-top: auto" class="mb-1">
+                          <b
+                            ><a
+                              class="me-2 mt-2 mobile-view-hide"
+                              @click="viewList(name)"
+                              href="#"
+                              style="color: #027562"
+                              >View List</a
+                            ></b
+                          >
+                          <b
+                            ><a
+                              class="me-2 mobile-view-show"
+                              @click="viewList(name)"
+                              href="#"
+                              style="color: #027562"
+                              >View</a
+                            ></b
+                          >
+                          <b
+                            ><a
+                              v-if="
+                                ownProfile &&
+                                !(
+                                  name == 'Drinks I Have Tried' ||
+                                  name == 'Drinks I Want To Try'
+                                )
+                              "
+                              class="mobile-view-hide me-2"
+                              style="color: #027562"
+                              href="#"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#editListModal${index}`"
+                              @click="resetEditList(name, bookmarkList.listDesc)"
+                              >Edit List</a
+                            ></b
+                          >
+                          <b
+                            ><a
+                              v-if="
+                                ownProfile &&
+                                !(
+                                  name == 'Drinks I Have Tried' ||
+                                  name == 'Drinks I Want To Try'
+                                )
+                              "
+                              class="mobile-view-hide"
+                              href="#"
+                              style="color: #027562"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#deleteListModal${index}`"
+                              >Delete List</a
+                            ></b
+                          >
+                          <b
+                            ><a
+                              v-if="
+                                ownProfile &&
+                                !(
+                                  name == 'Drinks I Have Tried' ||
+                                  name == 'Drinks I Want To Try'
+                                )
+                              "
+                              class="mobile-view-show me-2"
+                              href="#"
+                              data-bs-toggle="modal"
+                              style="color: #027562"
+                              :data-bs-target="`#editListModal${index}`"
+                              @click="resetEditList(name, bookmarkList.listDesc)"
+                              >Edit</a
+                            ></b
+                          >
+                          <b
+                            ><a
+                              v-if="
+                                ownProfile &&
+                                !(
+                                  name == 'Drinks I Have Tried' ||
+                                  name == 'Drinks I Want To Try'
+                                )
+                              "
+                              class="mobile-view-show"
+                              href="#"
+                              style="color: #027562"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#deleteListModal${index}`"
+                              >Delete</a
+                            ></b
+                          >
+                        </div>
+                      </div>
+
+                      <!-- edit list modal start -->
+                      <div
+                        class="modal fade"
+                        :id="`editListModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="exampleModalLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                Edit List
+                              </h1>
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="basic-url" class="form-label"
+                                  >List Name</label
+                                >
+                                <div class="input-group mb-3">
+                                  <input
+                                    v-model="editListName"
+                                    type="text"
+                                    class="form-control"
+                                    :placeholder="name"
+                                    aria-label="Username"
+                                    aria-describedby="basic-addon1"
+                                  />
+                                </div>
+                                <div
+                                  v-if="editListNameError"
+                                  class="text-danger text-sm"
+                                >
+                                  *{{ editListNameError }}
+                                </div>
+                              </div>
+
+                              <div class="mb-3">
+                                <label for="basic-url" class="form-label"
+                                  >List Description</label
+                                >
+                                <div class="input-group mb-3">
+                                  <textarea
+                                    v-model="editListDesc"
+                                    type="text"
+                                    class="form-control"
+                                    :placeholder="bookmarkList.listDesc"
+                                    aria-label="Username"
+                                    aria-describedby="basic-addon1"
+                                    rows="5"
+                                  ></textarea>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                              >
+                                Close
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="editList(name)"
+                              >
+                                Save changes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- modal end -->
+
+                      <!-- delete list modal start -->
+                      <div
+                        class="modal fade"
+                        :id="`deleteListModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="exampleModalLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="text-end mt-2 me-2">
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+
+                            <div class="text-center">
+                              <img
+                                src="../../../Images/Others/cancel.png"
+                                alt=""
+                                class="rounded-circle border border-dark text-center"
+                                style="width: 100px; height: 100px"
+                              />
+                              <h3>Are you sure?</h3>
+                              <br />
+                              <p>
+                                Do you really want to delete
+                                <b
+                                  ><i>{{ name }}</i></b
+                                >?
+                              </p>
+                            </div>
+                            <div style="display: inline" class="text-center mb-4">
+                              <button
+                                type="button"
+                                class="btn btn-secondary me-3"
+                                data-bs-dismiss="modal"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal"
+                                @click="deleteList(name)"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- modal end -->
+                    </div>
+                  </div>
+
+                  <!-- Individual Drinks List View -->
+                  <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
+                    <!-- list name, back to lists & add drink to list & share button -->
+                    <div class="row mb-4 mobile-mt-2">
+                      <div class="col-5 mobile-col-7">
+                        <h5 class="mobile-fs-5">
+                          <b>Drinks List: {{ currentList }}</b>
+                        </h5>
+                      </div>
+                      <div class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end">
+                        <button
+                          v-if="ownProfile"
+                          type="button"
+                          class="btn btn tertiary-btn-blue drinklist"
+                          data-bs-toggle="modal"
+                          data-bs-target="#exampleModal"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            class="bi bi-plus"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"
+                            />
+                            <path
+                              d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
+                            />
+                          </svg>
+                          <span class="mobile-view-hide">&nbsp; Add Drink</span>
+                        </button>
+                        <button
+                          @click="updateCurrentURL"
+                          type="button"
+                          class="btn btn tertiary-btn-blue drinklist"
+                          data-bs-toggle="modal"
+                          data-bs-target="#shareListModal"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            class="bi bi-share"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 30 30"
+                          >
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g
+                              id="SVGRepo_tracerCarrier"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                            ></g>
+                            <g id="SVGRepo_iconCarrier">
+                              <path
+                                d="M0 25.472q0 2.368 1.664 4.032t4.032 1.664h18.944q2.336 0 4-1.664t1.664-4.032v-8.192l-3.776 3.168v5.024q0 0.8-0.544 1.344t-1.344 0.576h-18.944q-0.8 0-1.344-0.576t-0.544-1.344v-18.944q0-0.768 0.544-1.344t1.344-0.544h9.472v-3.776h-9.472q-2.368 0-4.032 1.664t-1.664 4v18.944zM5.696 19.808q0 2.752 1.088 5.28 0.512-2.944 2.24-5.344t4.288-3.872 5.632-1.664v5.6l11.36-9.472-11.36-9.472v5.664q-2.688 0-5.152 1.056t-4.224 2.848-2.848 4.224-1.024 5.152zM32 22.080v0 0 0z"
+                              ></path>
+                            </g>
+                          </svg>
+                          <span class="mobile-view-hide">&nbsp;Share List</span>
+                        </button>
+                        <button
+                          @click="viewList('lists')"
+                          type="button"
+                          class="btn btn tertiary-btn-blue drinklist"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor"
+                            class="bi bi-arrow-left-circle"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 16 16"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"
+                            />
+                          </svg>
+                          <span class="mobile-view-hide">&nbsp;Back to Drinks Lists</span>
+                        </button>
+                      </div>
+                    </div>
+
+
+
+                    <!-- add drink modal -->
+                    <div
+                      class="modal fade"
+                      id="exampleModal"
+                      tabindex="-1"
+                      aria-labelledby="exampleModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div
+                        class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
+                      >
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5>Add Drink to List: {{ currentList }}</h5>
                             <button
                               type="button"
                               class="btn-close"
@@ -2317,317 +2824,918 @@
                               aria-label="Close"
                             ></button>
                           </div>
-                          <div class="modal-body">
-                            <div class="centered">
-                              <qr-code
-                                v-bind:text="currentURL"
-                                ref="qrCode"
-                              ></qr-code>
-                            </div>
-                            <div class="input-group pt-3">
-                              <input
-                                type="text"
-                                class="form-control"
-                                aria-label="Link"
-                                aria-describedby="button-addon2"
-                                v-bind:value="currentURL"
-                                disabled
-                              />
-                              <button
-                                class="btn btn-outline-secondary"
-                                type="button"
-                                id="button-addon2"
-                                @click="copyToClipboard(currentURL)"
+                          <div class="modal-body" style="height: 400px">
+                            <!-- search -->
+                            <div>
+                              <!-- search bar  -->
+                              <div class="input-group mb-3">
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="Search for drink"
+                                  aria-label="Recipient's username"
+                                  aria-describedby="button-addon2"
+                                  v-model="drinkSearch"
+                                  @input="searchResult"
+                                />
+                              </div>
+                              <!-- search results -->
+                              <div
+                                class="overflow-auto"
+                                :style="{
+                                  height:
+                                    drinksToAdd.length > 0 ? '200px' : '300px',
+                                }"
                               >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="16"
-                                  height="16"
-                                  fill="currentColor"
-                                  class="bi bi-clipboard"
-                                  viewBox="0 0 16 16"
+                                <div
+                                  class="form-check"
+                                  v-for="(drinkName, index) in drinkSearchResults"
+                                  :key="index"
                                 >
-                                  <path
-                                    d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    :value="drinkName"
+                                    :id="'drinkCheckbox' + index"
+                                    v-model="drinksToAdd"
                                   />
-                                  <path
-                                    d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"
-                                  />
-                                </svg>
-                              </button>
+                                  <label
+                                    class="form-check-label"
+                                    :for="'drinkCheckbox' + index"
+                                  >
+                                    {{ drinkName }}
+                                  </label>
+                                </div>
+                              </div>
                             </div>
-                            <p class="text-start pt-2" v-if="clipboardItem">
+                            <!-- selected results -->
+                            <div v-if="drinksToAdd.length > 0" class="mt-2">
+                              <hr />
+                              <div class="overflow-auto" style="height: 75px">
+                                <b>Selected Drinks: </b>
+                                {{ drinksToAdd.join(", ") }}
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="addDrinkToList(currentList)"
+                            >
+                              Add to List
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- list details -->
+                    <div
+                      class="row"
+                      v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
+                      :key="index"
+                    >
+                      <div class="col-10 pe-0" style="display: flex">
+                        <img
+                          :src="
+                            bookedMarkedListings[listing?.drinkId]?.photo ||
+                            defaultDrinkImage
+                          "
+                          alt=""
+                          style="width: 100px; height: 100px"
+                          class="bottle-img rounded me-3"
+                        />
+                        <div
+                          style="
+                            min-height: 130px;
+                            display: flex;
+                            flex-direction: column;
+                          "
+                        >
+                          <a
+                            :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
+                            style="text-decoration: none; color: inherit"
+                          >
+                            <h5 class="mobile-fs-6"><b>
+                              {{
+                                bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...'
+                              }}
+                            </b></h5>
+                          </a>
+                          <p
+                            class="mobile-rating-smaller-text-2"
+                            style="
+                              display: -webkit-box;
+                              -webkit-line-clamp: 3;
+                              -webkit-box-orient: vertical;
+                              overflow: hidden;
+                            "
+                          >
+                            {{
+                              bookedMarkedListings[listing?.drinkId]?.officialDesc || 'No description available'
+                            }}
+                          </p>
+                          <div
+                            v-if="ownProfile"
+                            style="display: flex; margin-top: auto"
+                            class="my-0"
+                          >
+                            <a
+                              href="#"
+                              style="text-decoration: none; color: #FF3E31"
+                              class="mobile-rating-smaller-text-2"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#deleteFromListModal${index}`"
+                            >
+                              <!-- cross icon -->
                               <svg
+                                class="mb-1"
                                 xmlns="http://www.w3.org/2000/svg"
-                                width="25"
-                                height="25"
-                                fill="currentColor"
-                                class="bi bi-check"
-                                viewBox="0 0 16 16"
+                                height="16"
+                                width="12"
+                                viewBox="0 0 384 512"
+                                style="fill: #FF3E31"
                               >
                                 <path
-                                  d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425z"
+                                  d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
                                 />
                               </svg>
-                              Copied to clipboard!
-                            </p>
+                              Delete from list
+                            </a>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- add drink modal -->
-                <div
-                  class="modal fade"
-                  id="exampleModal"
-                  tabindex="-1"
-                  aria-labelledby="exampleModalLabel"
-                  aria-hidden="true"
-                >
-                  <div
-                    class="modal-dialog modal-dialog-centered modal-dialog-scrollable"
-                  >
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5>Add Drink to List: {{ currentList }}</h5>
-                        <button
-                          type="button"
-                          class="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
+                      <div class="col-2 text-center ps-0" style="color:rgb(240, 179, 88)">
+                        <h2>
+                          {{
+                            bookedMarkedListings[listing?.drinkId]?.avgRating !==
+                              null &&
+                            bookedMarkedListings[listing?.drinkId]?.avgRating !==
+                              undefined
+                              ? parseFloat(
+                                  bookedMarkedListings[listing?.drinkId]?.avgRating
+                                ).toFixed(1)
+                              : "-"
+                          }}
+                          ★
+                        </h2>
                       </div>
-                      <div class="modal-body" style="height: 400px">
-                        <!-- search -->
-                        <div>
-                          <!-- search bar  -->
-                          <div class="input-group mb-3">
-                            <input
-                              type="text"
-                              class="form-control"
-                              placeholder="Search for drink"
-                              aria-label="Recipient's username"
-                              aria-describedby="button-addon2"
-                              v-model="drinkSearch"
-                              @keyup="searchResult"
-                            />
-                          </div>
-                          <!-- search results -->
-                          <div
-                            class="overflow-auto"
-                            :style="{
-                              height:
-                                drinksToAdd.length > 0 ? '200px' : '300px',
-                            }"
-                          >
-                            <div
-                              class="form-check"
-                              v-for="(drinkName, index) in drinkSearchResults"
-                              :key="index"
-                            >
-                              <input
-                                class="form-check-input"
-                                type="checkbox"
-                                :value="drinkName"
-                                :id="'drinkCheckbox' + index"
-                                v-model="drinksToAdd"
+                      <hr>
+
+                      <!-- delete from list modal start -->
+                      <div
+                        class="modal fade"
+                        :id="`deleteFromListModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="exampleModalLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="text-end mt-2 me-2">
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+
+                            <div class="text-center mx-2">
+                              <img
+                                src="../../../Images/Others/cancel.png"
+                                alt=""
+                                class="rounded-circle border border-dark text-center"
+                                style="width: 100px; height: 100px"
                               />
-                              <label
-                                class="form-check-label"
-                                :for="'drinkCheckbox' + index"
+                              <h3>Are you sure?</h3>
+                              <br />
+                              <p>
+                                Do you really want to delete
+                                <b
+                                  ><i>{{
+                                    bookedMarkedListings[listing?.drinkId]
+                                      ?.listingName || 'this item'
+                                  }}</i></b
+                                >
+                                from
+                                <b
+                                  ><i>{{ currentList }}</i></b
+                                >?
+                              </p>
+                            </div>
+                            <div style="display: inline" class="text-center mb-4">
+                              <button
+                                type="button"
+                                class="btn btn-secondary me-3"
+                                data-bs-dismiss="modal"
                               >
-                                {{ drinkName }}
-                              </label>
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal"
+                                @click="
+                                  deleteFromList(currentList, listing?.drinkId)
+                                "
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         </div>
-                        <!-- selected results -->
-                        <div v-if="drinksToAdd.length > 0" class="mt-2">
-                          <hr />
-                          <div class="overflow-auto" style="height: 75px">
-                            <b>Selected Drinks: </b>
-                            {{ drinksToAdd.join(", ") }}
-                          </div>
-                        </div>
                       </div>
-                      <div class="modal-footer">
-                        <button
-                          type="button"
-                          class="btn btn-primary"
-                          @click="addDrinkToList(currentList)"
-                        >
-                          Add to List
-                        </button>
-                      </div>
+                      <!-- modal end -->
                     </div>
                   </div>
                 </div>
 
-                <!-- list details -->
-                <div
-                  class="row"
-                  v-for="(listing, index) in displayUser.drinkLists[currentList]
-                    .listItems"
-                  :key="index"
-                >
-                  <div class="col-10 pe-0" style="display: flex">
-                    <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(listingID[1]).photo || defaultDrinkImage )" alt="" style="width:130px; height:130px;" class="bottle-img me-3"> -->
-                    <img
-                      :src="
-                        bookedMarkedListings[listing?.drinkId]?.photo ||
-                        defaultDrinkImage
-                      "
-                      alt=""
-                      style="width: 100px; height: 100px"
-                      class="bottle-img rounded me-3"
-                    />
-                    <div
-                      style="
-                        min-height: 130px;
-                        display: flex;
-                        flex-direction: column;
-                      "
+                <!-- Producers Lists Content -->
+                <div v-if="currentListType === 'producers' && (activeTab === 'lists' || activeTab === 'producer_lists' || activeTab === 'producer_list')">
+                  <!-- Show list overview when activeTab is 'lists' or 'producer_lists' -->
+                  <div v-if="activeTab === 'lists' || activeTab === 'producer_lists'">
+                    <button
+                      v-if="ownProfile"
+                      type="button"
+                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
+                      data-bs-toggle="modal"
+                      data-bs-target="#createNewProducerListModal"
                     >
-                      <a
-                        :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                        style="text-decoration: none; color: inherit"
-                      >
-                        <h5 class="mobile-fs-6"><b>
-                          {{
-                            bookedMarkedListings[listing?.drinkId]?.listingName
-                          }}
-                        </b></h5>
-                      </a>
-                      <p
-                        class="mobile-rating-smaller-text-2"
-                        style="
-                          display: -webkit-box;
-                          -webkit-line-clamp: 3;
-                          -webkit-box-orient: vertical;
-                          overflow: hidden;
-                        "
-                      >
-                        {{
-                          bookedMarkedListings[listing?.drinkId]?.officialDesc
-                        }}
-                      </p>
-                      <div
-                        v-if="ownProfile"
-                        style="display: flex; margin-top: auto"
-                        class="my-0"
-                      >
-                        <a
-                          href="#"
-                          style="text-decoration: none; color: #FF3E31"
-                          class="mobile-rating-smaller-text-2"
-                          data-bs-toggle="modal"
-                          :data-bs-target="`#deleteFromListModal${index}`"
-                        >
-                          <!-- cross icon -->
-                          <svg
-                            class="mb-1"
-                            xmlns="http://www.w3.org/2000/svg"
-                            height="16"
-                            width="12"
-                            viewBox="0 0 384 512"
-                            style="fill: #FF3E31"
-                          >
-                            <!--! Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc. -->
-                            <path
-                              d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
-                            />
-                          </svg>
-                          Delete from list
-                        </a>
+                      Create New Brands List
+                    </button>
+
+                    <!-- display all producer lists -->
+                    <div
+                      v-for="(producerList, name, index) in displayUserProducerBookmarks"
+                      :key="name"
+                      style="display: flex"
+                      class="row mb-3"
+                    >
+                      <div class="col-3 mobile-col-4 mobile-pe-2">
+                        <img 
+                          :src="producers && producers.length > 0 && producerList.listItems && producerList.listItems.length > 0 && getProducerFromID(producerList.listItems[0].producerId) ? getProducerFromID(producerList.listItems[0].producerId).photo || defaultProfilePhoto : defaultProfilePhoto"
+                          alt="Producer List" 
+                          class="img-fluid rounded"
+                          style="width: 100%; height: 100px; object-fit: cover;" 
+                        />
                       </div>
-                      
-                    </div>
-                  </div>
-                  <div class="col-2 text-center ps-0" style="color:rgb(240, 179, 88)">
-                    <h2>
-                      {{
-                        bookedMarkedListings[listing?.drinkId]?.avgRating !==
-                          null &&
-                        bookedMarkedListings[listing?.drinkId]?.avgRating !==
-                          undefined
-                          ? parseFloat(
-                              bookedMarkedListings[listing?.drinkId]?.avgRating
-                            ).toFixed(1)
-                          : "-"
-                      }}
-                      ★
-                    </h2>
-                  </div>
-                  <hr>
-
-                  <!-- delete from list modal start -->
-                  <div
-                    class="modal fade"
-                    :id="`deleteFromListModal${index}`"
-                    tabindex="-1"
-                    aria-labelledby="exampleModalLabel"
-                    aria-hidden="true"
-                  >
-                    <div class="modal-dialog modal-dialog-centered">
-                      <div class="modal-content">
-                        <div class="text-end mt-2 me-2">
-                          <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                          ></button>
-                        </div>
-
-                        <div class="text-center mx-2">
-                          <img
-                            src="../../../Images/Others/cancel.png"
-                            alt=""
-                            class="rounded-circle border border-dark text-center"
-                            style="width: 100px; height: 100px"
-                          />
-                          <h3>Are you sure?</h3>
-                          <br />
-                          <p>
-                            Do you really want to delete
-                            <b
-                              ><i>{{
-                                bookedMarkedListings[listing?.drinkId]
-                                  ?.listingName
-                              }}</i></b
-                            >
-                            from
-                            <b
-                              ><i>{{ currentList }}</i></b
-                            >?
-                          </p>
-                        </div>
-                        <div style="display: inline" class="text-center mb-4">
-                          <button
-                            type="button"
-                            class="btn btn-secondary me-3"
-                            data-bs-dismiss="modal"
+                      <div class="col-9 mobile-col-8 mobile-ps-1">
+                        <h5 class="mb-1 fw-bold">{{ name }}</h5>
+                        <p class="mb-1">{{ producerList.listDesc }}</p>
+                        <p class="mb-0">
+                          <small>{{ producerList.listItems ? producerList.listItems.length : 0 }} Producers</small>
+                        </p>
+                        <div class="mt-2">
+                          <button 
+                            class="btn primary-btn-green-thin-outline btn-sm me-1" 
+                            @click="viewProducerList(name)"
                           >
-                            Cancel
+                            View Details
                           </button>
-                          <button
-                            type="button"
-                            class="btn btn-danger"
-                            data-bs-dismiss="modal"
-                            @click="
-                              deleteFromList(currentList, listing?.drinkId)
-                            "
+                          <button 
+                            v-if="ownProfile" 
+                            class="btn primary-btn-green-thin-outline btn-sm me-1"
+                            data-bs-toggle="modal" 
+                            :data-bs-target="'#editProducerList' + index"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            v-if="ownProfile" 
+                            class="btn btn-danger btn-sm"
+                            data-bs-toggle="modal" 
+                            :data-bs-target="'#deleteProducerList' + index"
                           >
                             Delete
                           </button>
                         </div>
                       </div>
+                      
+                      <!-- edit producer list modal -->
+                      <div
+                        v-if="ownProfile"
+                        class="modal fade"
+                        :id="'editProducerList' + index"
+                        tabindex="-1"
+                        aria-labelledby="editProducerListLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="editProducerListLabel">Edit Producer List</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="editProducerListName" class="form-label">List Name</label>
+                                <input type="text" class="form-control" id="editProducerListName" v-model="editListName" @focus="resetEditList(name, producerList.listDesc)">
+                                <div class="text-danger" v-if="editListNameError">{{ editListNameError }}</div>
+                              </div>
+                              <div class="mb-3">
+                                <label for="editProducerListDesc" class="form-label">List Description</label>
+                                <textarea class="form-control" id="editProducerListDesc" rows="3" v-model="editListDesc"></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="button" class="btn primary-btn-green" @click="editProducerList(name)">Save changes</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- delete producer list modal -->
+                      <div
+                        v-if="ownProfile"
+                        class="modal fade"
+                        :id="'deleteProducerList' + index"
+                        tabindex="-1"
+                        aria-labelledby="deleteProducerListLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="deleteProducerListLabel">Delete Producer List</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p>Are you sure you want to delete this producer list: <strong>{{ name }}</strong>?</p>
+                              <p>This action cannot be undone.</p>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-danger" @click="deleteProducerList(name)" data-bs-dismiss="modal">Delete</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- create new producer list modal -->
+                    <div
+                      class="modal fade"
+                      id="createNewProducerListModal"
+                      tabindex="-1"
+                      aria-labelledby="exampleModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">
+                              Create New Brands List
+                            </h1>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"              
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label"
+                                >List Name</label
+                              >
+                              <div class="input-group mb-3">
+                                <input
+                                  v-model="newProducerListName"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Name"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                />
+                              </div>
+                              <div
+                                v-if="newProducerListNameError"
+                                class="text-danger text-sm"
+                              >
+                                *{{ newProducerListNameError }}
+                              </div>
+                            </div>
+
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label"
+                                >List Description</label
+                              >
+                              <div class="input-group mb-3">
+                                <textarea
+                                  v-model="newProducerListDesc"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Description (Optional)"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                  rows="5"
+                                ></textarea>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="addNewProducerList"
+                            >
+                              Save changes
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <!-- modal end -->
+
+                  <!-- Individual Producer List View -->
+                  <div v-if="activeTab === 'producer_list' && displayUser.producerLists" id="producer_list">
+                    <!-- list name, back to lists & add producer to list & share button -->
+                    <div class="row mb-4 mobile-mt-2">
+                      <div class="col-12 col-md-6">
+                        <h4 class="fw-bold mb-1">{{ currentProducerList }}</h4>
+                        <p class="mb-1">
+                          {{ displayUserProducerBookmarks[currentProducerList].listDesc }}
+                        </p>
+                        <button
+                          class="btn primary-btn-green-thin-outline mb-2"
+                          @click="switchListType('producers')"
+                        >
+                          <i class="bi bi-arrow-left"></i> Back to Brand Lists
+                        </button>
+                      </div>
+                      <div class="col-12 col-md-6 text-end">
+                        <button
+                          v-if="ownProfile"
+                          class="btn primary-btn-green-thin-outline mx-1"
+                          data-bs-toggle="modal"
+                          data-bs-target="#addProducerModal"
+                        >
+                          <i class="bi bi-plus"></i> Add Brand
+                        </button>
+                        <button
+                          class="btn primary-btn-green-thin-outline mx-1"
+                          @click="updateCurrentURL(); copyToClipboard(currentURL)"
+                        >
+                          <i class="bi bi-share"></i> Share
+                        </button>
+                      </div>
+                    </div>
+                  
+                    <!-- list details -->
+                    <div
+                      v-for="(producerItem, index) in displayUserProducerBookmarks[currentProducerList].listItems"
+                      :key="index"
+                      class="row mb-3 border-bottom pb-3"
+                    >
+                      <div class="col-3 text-center">
+                        <router-link
+                          v-if="getProducerFromID(producerItem.producerId)"
+                          :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
+                        >
+                          <img
+                            :src="getProducerFromID(producerItem.producerId).photo || defaultProfilePhoto"
+                            alt="Producer"
+                            class="img-fluid rounded"
+                            style="max-height: 100px; object-fit: cover"
+                          />
+                        </router-link>
+                      </div>
+                      <div class="col-7">
+                        <h5 class="mb-1">
+                          <router-link
+                            v-if="getProducerFromID(producerItem.producerId)"
+                            :to="`/profile/producer/${producerItem.producerId}/${getProducerFromID(producerItem.producerId).username}`"
+                            class="text-decoration-none text-dark"
+                          >
+                            {{ getProducerFromID(producerItem.producerId).producerName }}
+                          </router-link>
+                        </h5>
+                        <p class="text-muted mb-1">
+                          {{ getProducerFromID(producerItem.producerId)?.originCountry || 'Unknown country' }}
+                        </p>
+                        <p class="mb-0">
+                          <small>Added on: {{ new Date(producerItem.addedDate).toLocaleDateString() }}</small>
+                        </p>
+                      </div>
+                      <div v-if="ownProfile" class="col-2 text-end">
+                        <button
+                          class="btn btn-danger btn-sm"
+                          @click="deleteProducerFromList(currentProducerList, producerItem.producerId)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  
+                    <!-- add producer modal -->
+                    <div 
+                      class="modal fade" 
+                      id="addProducerModal" 
+                      tabindex="-1" 
+                      aria-labelledby="addProducerModalLabel" 
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="addProducerModalLabel">Add Brand to List</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="producerSearch" class="form-label">Search for brand</label>
+                              <input type="text" class="form-control" id="producerSearch" v-model="producerSearch" 
+                                    @input="searchProducerResult" placeholder="Enter producer name">
+                            </div>
+                            <div class="search-results mt-2">
+                              <div v-if="producerSearchResults.length === 0 && producerSearch.length > 0" class="text-muted">
+                                No brands found.
+                              </div>
+                              <div v-for="(producer, index) in producerSearchResults" :key="index" class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <span>{{ producer.producerName }}</span>
+                                  <button @click="selectProducer(producer.producerName)" class="btn btn-sm primary-btn-green">
+                                    Add
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <hr />
+                            <h6 class="mb-3">Selected Brands:</h6>
+                            <div v-if="producersToAdd.length === 0" class="text-muted">
+                              No brands selected.
+                            </div>
+                            <div v-for="(producer, index) in producersToAdd" :key="index" class="mb-2">
+                              <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ producer }}</span>
+                                <button @click="removeSelectedProducer(producer)" class="btn btn-sm btn-danger">
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn primary-btn-green" @click="addProducerToList(currentProducerList)">
+                              Add to List
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
+
+                <!-- Venues Lists Content -->
+                <div v-if="currentListType === 'venues' && (activeTab === 'lists' || activeTab === 'venue_lists' || activeTab === 'venue_list')">
+                  <!-- Show list overview when activeTab is 'lists' or 'venue_lists' -->
+                  <div v-if="activeTab === 'lists' || activeTab === 'venue_lists'">
+                    <button
+                      v-if="ownProfile"
+                      type="button"
+                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
+                      data-bs-toggle="modal"
+                      data-bs-target="#createNewVenueListModal"
+                    >
+                      Create New Venues List
+                    </button>
+
+                    <!-- display all venue lists -->
+                    <div
+                      v-for="(venueList, name, index) in displayUserVenueBookmarks"
+                      :key="name"
+                      style="display: flex"
+                      class="row mb-3"
+                    >
+                      <div class="col-3 mobile-col-4 mobile-pe-2">
+                        <img 
+                          :src="venues && venues.length > 0 && venueList.listItems && venueList.listItems.length > 0 && getVenueFromID(venueList.listItems[0].venueId) ? getVenueFromID(venueList.listItems[0].venueId).photo || defaultProfilePhoto : defaultProfilePhoto"
+                          alt="Venue List" 
+                          class="img-fluid rounded"
+                          style="width: 100%; height: 100px; object-fit: cover;" 
+                        />
+                      </div>
+                      <div class="col-9 mobile-col-8 mobile-ps-1">
+                        <h5 class="mb-1 fw-bold">{{ name }}</h5>
+                        <p class="mb-1">{{ venueList.listDesc }}</p>
+                        <p class="mb-0">
+                          <small>{{ venueList.listItems ? venueList.listItems.length : 0 }} Venues</small>
+                        </p>
+                        <div class="mt-2">
+                          <button 
+                            class="btn primary-btn-green-thin-outline btn-sm me-1" 
+                            @click="viewVenueList(name)"
+                          >
+                            View Details
+                          </button>
+                          <button 
+                            v-if="ownProfile" 
+                            class="btn primary-btn-green-thin-outline btn-sm me-1"
+                            data-bs-toggle="modal" 
+                            :data-bs-target="'#editVenueList' + index"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            v-if="ownProfile" 
+                            class="btn btn-danger btn-sm"
+                            data-bs-toggle="modal" 
+                            :data-bs-target="'#deleteVenueList' + index"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- edit venue list modal -->
+                      <div
+                        v-if="ownProfile"
+                        class="modal fade"
+                        :id="'editVenueList' + index"
+                        tabindex="-1"
+                        aria-labelledby="editVenueListLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="editVenueListLabel">Edit Venue List</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="editVenueListName" class="form-label">List Name</label>
+                                <input type="text" class="form-control" id="editVenueListName" v-model="editListName" @focus="resetEditList(name, venueList.listDesc)">
+                                <div class="text-danger" v-if="editListNameError">{{ editListNameError }}</div>
+                              </div>
+                              <div class="mb-3">
+                                <label for="editVenueListDesc" class="form-label">List Description</label>
+                                <textarea class="form-control" id="editVenueListDesc" rows="3" v-model="editListDesc"></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                              <button type="button" class="btn primary-btn-green" @click="editVenueList(name)">Save changes</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- delete venue list modal -->
+                      <div
+                        v-if="ownProfile"
+                        class="modal fade"
+                        :id="'deleteVenueList' + index"
+                        tabindex="-1"
+                        aria-labelledby="deleteVenueListLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" id="deleteVenueListLabel">Delete Venue List</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <p>Are you sure you want to delete this venue list: <strong>{{ name }}</strong>?</p>
+                              <p>This action cannot be undone.</p>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              <button type="button" class="btn btn-danger" @click="deleteVenueList(name)" data-bs-dismiss="modal">Delete</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- create new venue list modal -->
+                    <div
+                      class="modal fade"
+                      id="createNewVenueListModal"
+                      tabindex="-1"
+                      aria-labelledby="exampleModalLabel"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="exampleModalLabel">
+                              Create New Venues List
+                            </h1>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"              
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label">List Name</label>
+                              <div class="input-group mb-3">
+                                <input
+                                  v-model="newVenueListName"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Name"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                />
+                              </div>
+                              <div
+                                v-if="newVenueListNameError"
+                                class="text-danger text-sm"
+                              >
+                                *{{ newVenueListNameError }}
+                              </div>
+                            </div>
+
+                            <div class="mb-3">
+                              <label for="basic-url" class="form-label">List Description</label>
+                              <div class="input-group mb-3">
+                                <textarea
+                                  v-model="newVenueListDesc"
+                                  type="text"
+                                  class="form-control"
+                                  placeholder="List Description (Optional)"
+                                  aria-label="Username"
+                                  aria-describedby="basic-addon1"
+                                  rows="5"
+                                ></textarea>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Close
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+                              @click="addNewVenueList"
+                            >
+                              Save changes
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Individual Venues List View -->
+                  <div v-if="activeTab === 'venue_list' && displayUser.venueLists" id="venue_list">
+                    <!-- list name, back to lists & add venue to list & share button -->
+                    <div class="row mb-4 mobile-mt-2">
+                      <div class="col-12 col-md-6">
+                        <h4 class="fw-bold mb-1">{{ currentVenueList }}</h4>
+                        <p class="mb-1">
+                          {{ displayUserVenueBookmarks[currentVenueList].listDesc }}
+                        </p>
+                        <button
+                          class="btn primary-btn-green-thin-outline mb-2"
+                          @click="switchListType('venues')"
+                        >
+                          <i class="bi bi-arrow-left"></i> Back to Venue Lists
+                        </button>
+                      </div>
+                      <div class="col-12 col-md-6 text-end">
+                        <button
+                          v-if="ownProfile"
+                          class="btn primary-btn-green-thin-outline mx-1"
+                          data-bs-toggle="modal"
+                          data-bs-target="#addVenueModal"
+                        >
+                          <i class="bi bi-plus"></i> Add Venue
+                        </button>
+                        <button
+                          class="btn primary-btn-green-thin-outline mx-1"
+                          @click="updateCurrentURL(); copyToClipboard(currentURL)"
+                        >
+                          <i class="bi bi-share"></i> Share
+                        </button>
+                      </div>
+                    </div>
+                  
+                    <!-- list details -->
+                    <div
+                      v-for="(venueItem, index) in displayUserVenueBookmarks[currentVenueList].listItems"
+                      :key="index"
+                      class="row mb-3 border-bottom pb-3"
+                    >
+                      <div class="col-3 text-center">
+                        <router-link
+                          v-if="getVenueFromID(venueItem.venueId)"
+                          :to="`/profile/venue/${venueItem.venueId}/${getVenueFromID(venueItem.venueId).username}`"
+                        >
+                          <img
+                            :src="getVenueFromID(venueItem.venueId).photo || defaultProfilePhoto"
+                            alt="Venue"
+                            class="img-fluid rounded"
+                            style="max-height: 100px; object-fit: cover"
+                          />
+                        </router-link>
+                      </div>
+                      <div class="col-7">
+                        <h5 class="mb-1">
+                          <router-link
+                            v-if="getVenueFromID(venueItem.venueId)"
+                            :to="`/profile/venue/${venueItem.venueId}/${getVenueFromID(venueItem.venueId).username}`"
+                            class="text-decoration-none text-dark"
+                          >
+                            {{ getVenueFromID(venueItem.venueId).venueName }}
+                          </router-link>
+                        </h5>
+                        <p class="text-muted mb-1">
+                          {{ getVenueFromID(venueItem.venueId)?.location || 'Unknown location' }}
+                        </p>
+                        <p class="mb-0">
+                          <small>Added on: {{ new Date(venueItem.addedDate).toLocaleDateString() }}</small>
+                        </p>
+                      </div>
+                      <div v-if="ownProfile" class="col-2 text-end">
+                        <button
+                          class="btn btn-danger btn-sm"
+                          @click="deleteVenueFromList(currentVenueList, venueItem.venueId)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  
+                    <!-- add venue modal -->
+                    <div 
+                      class="modal fade" 
+                      id="addVenueModal" 
+                      tabindex="-1" 
+                      aria-labelledby="addVenueModalLabel" 
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title" id="addVenueModalLabel">Add Venue to List</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                          </div>
+                          <div class="modal-body">
+                            <div class="mb-3">
+                              <label for="venueSearch" class="form-label">Search for venues</label>
+                              <input type="text" class="form-control" id="venueSearch" v-model="venueSearch" 
+                                    @input="searchVenueResult" placeholder="Enter venue name">
+                            </div>
+                            <div class="search-results mt-2">
+                              <div v-if="venueSearchResults.length === 0 && venueSearch.length > 0" class="text-muted">
+                                No venues found.
+                              </div>
+                              <div v-for="(venue, index) in venueSearchResults" :key="index" class="mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                  <span>{{ venue.venueName }}</span>
+                                  <button @click="selectVenue(venue.venueName)" class="btn btn-sm primary-btn-green">
+                                    Add
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                            <hr />
+                            <h6 class="mb-3">Selected Venues:</h6>
+                            <div v-if="venuesToAdd.length === 0" class="text-muted">
+                              No venues selected.
+                            </div>
+                            <div v-for="(venue, index) in venuesToAdd" :key="index" class="mb-2">
+                              <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ venue }}</span>
+                                <button @click="removeSelectedVenue(venue)" class="btn btn-sm btn-danger">
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn primary-btn-green" @click="addVenueToList(currentVenueList)">
+                              Add to List
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <br>
               </div>
 
               <!-- badges tab -->
@@ -2637,7 +3745,10 @@
                 </h5>
                 
                 <div v-if="!userBadges || userBadges.length === 0" class="container">
-                  No badges unlocked yet. Keep reviewing drinks and participating to earn badges!
+                  No badges unlocked yet. 
+                <router-link to="/badges-and-points" style="color: inherit; text-decoration: underline;">
+                  Click here to find out how badges are earned on Drink-X.
+                </router-link>
                 </div>
                 
                 <div v-else class="container">
@@ -2649,7 +3760,7 @@
                         <img 
                           :src="badge.badgePhoto || defaultProfilePhoto"
                           alt=""
-                          class="rounded-circle-white-bg border border-dark badge-img mb-2"
+                          class="rounded-circle-white-bg  badge-img mb-2"
                           style="width: 100px; height: 100px;"
                         />
                         
@@ -2702,7 +3813,7 @@
             </div>
           </div>
         </div>
-
+        
         <!-- Bookmark Modal -->
         <BookmarkModal
           v-if="ownProfile"
@@ -2713,28 +3824,36 @@
       </div>
     </div>
 
-    <FooterBar />
   </div>
+
+  <BadgePopup 
+    :badges="earnedBadges" 
+    :show="showBadgePopup" 
+    @close="closeBadgePopup"
+  />
 </template>
 
 <script>
 import NavBar from "@/components/NavBar.vue";
-import FooterBar from "@/components/FooterBar.vue";
+import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import { useToast } from "vue-toastification";
 import EventBox from "@/components/EventBox.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import ListingRowDisplayUserProfile from "@/components/ListingRowDisplayUserProfile.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import BadgePopup from "@/components/BadgePopup.vue";
+
 
 export default {
   name: "UserProfileRefactor",
   components: {
     NavBar,
-    FooterBar,
+    PWStrengthChecker,
     EventBox,
     BookmarkModal,
     ListingRowDisplayUserProfile,
     LoadingWithFunFact,
+    BadgePopup
   },
   data() {
     return {
@@ -2771,6 +3890,7 @@ export default {
       ownProfile: false,
       following: false,
       userBookmarks: {},
+      userProducerBookmarks: {},
       selectedDrinks: [],
       userBadges: [],
       userBadgesLoaded: false,
@@ -2782,6 +3902,7 @@ export default {
       displayUser: {},
       displayUserDrinkChoice: "",
       displayUserBookmarks: {},
+      displayUserProducerBookmarks: {},
       photo: null,
       joinDate: null,
       listingIDs: [],
@@ -2800,7 +3921,26 @@ export default {
       top5ListingsData: [], // contains top 5 listings data
 
       // Recent Activity information
-      recentActivity: [],
+      recentUserActivity: [],
+      recentReviewsActivity: [],
+      recentFollowersActivity: [],
+      loadingRecentUserActivity: false,
+      loadingRecentReviewsActivity: false,
+      loadingRecentFollowersActivity: false,
+      errorRecentUserActivity: null,
+      errorRecentReviewsActivity: null,
+      errorRecentFollowersActivity: null,
+
+      // Following/Followers information
+      followingUsers: [],
+      followersUsers: [],
+      loadingFollowingUsers: false,
+      loadingFollowersUsers: false,
+      errorFollowingUsers: null,
+      errorFollowersUsers: null,
+
+      // Following/Followers count information
+      followersCount: 0,
 
       // Add or remove moderator variables
       successRemoveMod: false,
@@ -2823,10 +3963,14 @@ export default {
 
       // Change password variables
       oldPassword: "",
-      newPassword: "",
+      //newPassword: "",
+      password: "",
+      passwordStrength: 0,
       changingPassword: "",
       confirmChangePassword: false,
       confirmResetPassword: false,
+      weakPasswordError: false,
+      samePasswordError: false,
       passwordError: false,
       passwordSuccess: false,
       passwordMismatch: false,
@@ -2871,6 +4015,11 @@ export default {
       newListNameError: "",
       newListDesc: "",
 
+      // Create Producer Bookmark Variables
+      newProducerListName: "",
+      newProducerListNameError: "",
+      newProducerListDesc: "",
+
       // Edit Bookmark Variables
       editListName: "",
       editListNameError: "",
@@ -2890,13 +4039,67 @@ export default {
 
       //  new properties for user search
       userSearchInput: "",
-      allUsernames: [],
       filteredUserSuggestions: [],
       showUserSuggestions: false,
       selectedUserIndex: -1,
       isUserSearchFetching: false,
       totalPointsValue: 0, // Assuming this is used elsewhere
+
+      // Producer List Management Variables
+      producerSearch: "",
+      producerSearchResults: [],
+      producersToAdd: [],
+      excludeProducerList: [],
+      currentProducerList: "",
+      bookmarkProducerID: null,
+
+      topRatedReviews: [],
+
+      displayUserVenueBookmarks: {},
+      userVenueBookmarks: {},
+      venues: [],
+      venueSearch: "",
+      venueSearchResults: [],
+      venuesToAdd: [],
+      excludeVenueList: [],
+      currentVenueList: "",
+      newVenueListName: "",
+      newVenueListNameError: "",
+      newVenueListDesc: "",
+      currentListType: "drinks",
+
+      // badge popup related
+      earnedBadges: [],
+      showBadgePopup: false,
+
     };
+  },
+  computed: {
+    // Get the count of users this person is following
+    followingCount() {
+      return this.displayUser?.followLists?.users?.length || 0;
+    },
+    totalReviews() {
+    // If the summary already returns a total, prefer it.
+    if (this.reviewsSummary && typeof this.reviewsSummary.totalReviews === 'number') {
+      return this.reviewsSummary.totalReviews;
+    }
+
+    // Otherwise, sum all subcategory counts inside categoriesReviewed
+    if (this.reviewsSummary && this.reviewsSummary.categoriesReviewed) {
+      return Object.values(this.reviewsSummary.categoriesReviewed).reduce((sum, subcats) => {
+        const subTotal = Object.values(subcats || {}).reduce(
+          (a, b) => a + (Number(b) || 0),
+          0
+        );
+        return sum + subTotal;
+      }, 0);
+    }
+
+    // Fallback: count what you loaded as "recentReviews"
+    return Array.isArray(this.recentReviews) ? this.recentReviews.length : 0;
+  },
+  
   },
   mounted() {
     // get local storage
@@ -2942,11 +4145,47 @@ export default {
     this.loadData();
 
     // Fetch usernames when component mounts
-    this.fetchAllUsernames(); 
+    // this.fetchAllUsernames(); 
     
     // Add event listeners for user search
     document.addEventListener("click", this.handleUserSearchClickOutside);
     document.addEventListener("keydown", this.handleUserSearchKeyDown);
+  
+  // get displayUserID from URL
+    try {
+      this.displayUserID = this.$route.params.userID;
+      this.routeUsername = this.$route.params.username;
+      if (this.displayUserID === this.userID) {
+        this.ownProfile = true;
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    // get list name from URL
+    try {
+      if (this.$route.params.listName) {
+        this.currentList = this.$route.params.listName;
+        this.activeTab = "list";
+      } else if (this.$route.path.includes('/producer_list/')) {
+        // Extract producer list name from URL
+        const path = this.$route.path;
+        const producerListNameEncoded = path.substring(path.indexOf('/producer_list/') + 15);
+        this.currentProducerList = decodeURIComponent(producerListNameEncoded);
+        this.activeTab = "producer_list";
+      } else if (this.$route.path.includes('/venue_list/')) {
+        const path = this.$route.path;
+        const venueListNameEncoded = path.substring(path.indexOf('/venue_list/') + 12);
+        this.currentVenueList = decodeURIComponent(venueListNameEncoded);
+        this.activeTab = "venue_list";
+      } else {
+        this.currentList = "";
+        this.currentProducerList = "";
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
   },
   beforeUnmount() {
   // Remove event listeners to prevent memory leaks
@@ -2961,7 +4200,10 @@ export default {
 
         await Promise.all([this.getDisplayUserProfile(), this.getReviews()]);
 
-        await this.getListing();
+        await this.getListing(this.listingIDs);
+
+        // Get proof points
+        await this.getProofPoints();
 
         if (this.userID) {
           if (this.ownProfile) {
@@ -2979,8 +4221,7 @@ export default {
             }
           }
 
-          // Get proof points
-          this.getProofPoints();
+          
 
           // check if current user is following the user being viewed
           if (this.userType === "user") {
@@ -3008,7 +4249,14 @@ export default {
           this.getFlavourTag(), // added by group 3 edit profile
           this.getObservationTags(), // added by group 3 for the edit profile
           this.getUserBadges(),
-          this.getProducers()
+          this.getProducers(),
+          this.getVenues(),
+          this.getRecentUserActivity(),
+          this.getRecentReviewsActivity(),
+          this.getRecentFollowersActivity(),
+          this.getFollowingUsers(),
+          this.getFollowersUsers(),
+          this.getFollowersCount(),
         ]);
 
         await this.getReviewsSummary();
@@ -3061,13 +4309,26 @@ export default {
 
         // get display user bookmark lists
         this.displayUserBookmarks = this.displayUser.drinkLists;
+        if (this.displayUser.producerLists) {
+          this.displayUserProducerBookmarks = this.displayUser.producerLists;
+        }
+        if (this.displayUser.venueLists) {
+          this.displayUserVenueBookmarks = this.displayUser.venueLists;
+        }
         console.log("Display User Bookmarks:", this.displayUserBookmarks);
+        console.log("Display User Producer Bookmarks:", this.displayUserProducerBookmarks);
 
         // get listings details in bookmark lists
         this.getBookmarkListings();
 
         if (this.ownProfile) {
           this.userBookmarks = this.displayUserBookmarks;
+          if (this.displayUser.producerLists) {
+            this.userProducerBookmarks = this.displayUser.producerLists;
+          }
+          if (this.displayUser.venueLists) {
+            this.userVenueBookmarks = this.displayUser.venueLists;
+          }
           this.user = this.displayUser;
         }
 
@@ -3099,8 +4360,9 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getRecentListingReviews/${this.displayUserID}`
         );
         // const response = await this.$axios.get(`http://127.0.0.1:5000/getData/getRecentListingReviews/${this.displayUserID}`);
-        this.top5Listings = response.data.topListings;
+        this.top5Listings = response.data.topListings || []; // Keeping for backward compatibility
         this.recentReviews = response.data.recentReview;
+        this.topRatedReviews = response.data.topRatedReviews || [];
 
         // get number of unique listings reviewed by user
         this.drinkCount = response.data.drinkCount;
@@ -3113,6 +4375,12 @@ export default {
             !this.listingIDs.includes(this.recentReviews[review].reviewTarget)
           ) {
             this.listingIDs.push(this.recentReviews[review].reviewTarget);
+          }
+        }
+
+        for (const review of this.topRatedReviews) {
+          if (!this.listingIDs.includes(review.reviewTarget)) {
+            this.listingIDs.push(review.reviewTarget);
           }
         }
 
@@ -3153,12 +4421,16 @@ export default {
     },
 
     // Listings (get only listings that are in the recent reviews, top 5 listings, and bookmark lists)
-    async getListing() {
+    async getListing(listingIDs) {
       try {
-        const response = await this.$axios.post(
-          `${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`,
-          { listingIDs: this.listingIDs }
-        );
+        // Assuming you have an endpoint that can take multiple IDs
+        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`, {
+          params: new URLSearchParams(listingIDs.map(id => ['ids', id]))
+        });
+        // const response = await this.$axios.post(
+        //   `${process.env.VUE_APP_API_URL}/getData/getListingsByIDs`,
+        //   { listingIDs: this.listingIDs }
+        // );
         // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getListingsByIDs`, { 'listingIDs': this.listingIDs });
         this.listings = response.data;
 
@@ -3200,23 +4472,30 @@ export default {
     async getBookmarkListings() {
       let listing_ids = [];
       for (const list in this.displayUserBookmarks) {
-        for (const listingID of this.displayUserBookmarks[list].listItems) {
-          if (!listing_ids.includes(listingID)) {
-            listing_ids.push(listingID);
+        for (const listingItem of this.displayUserBookmarks[list].listItems) {
+          // Handle both old format (direct ID) and new format (object with drinkId)
+          const drinkId = listingItem.drinkId || listingItem;
+          if (!listing_ids.includes(drinkId)) {
+            listing_ids.push(drinkId);
           }
         }
+      }
+
+      // If no listing IDs found, mark as loaded
+      if (listing_ids.length === 0) {
+        this.bookedMarkedListingsLoaded = true;
+        return;
       }
 
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/getData/getBookmarkListings`,
-          { listingIDs: listing_ids }
+          { listingIDs: listing_ids } // Send simple array of IDs
         );
-        // const response = await this.$axios.post(`http://127.0.0.1:5000/getData/getBookmarkListings`, { 'listingIDs': listing_ids });
         this.bookedMarkedListings = response.data;
         this.bookedMarkedListingsLoaded = true;
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching bookmark listings:", error);
         if (error.status === 404) {
           this.bookedMarkedListingsLoaded = true;
         } else {
@@ -3225,8 +4504,102 @@ export default {
       }
     },
 
-    // Recent Activity (not implemented yet)
-    async getRecentActivity() {},
+    async getRecentUserActivity() {
+      this.loadingRecentUserActivity = true;
+      this.errorRecentUserActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentUserActivity/${this.displayUserID}`
+        );
+        this.recentUserActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent user activity:", error);
+        this.errorRecentUserActivity = "Failed to load recent user activity.";
+      } finally {
+        this.loadingRecentUserActivity = false;
+      }
+    },
+
+    async getRecentReviewsActivity() {
+      this.loadingRecentReviewsActivity = true;
+      this.errorRecentReviewsActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentReviewsActivity/${this.displayUserID}`
+        );
+        this.recentReviewsActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent reviews activity:", error);
+        this.errorRecentReviewsActivity = "Failed to load recent reviews activity.";
+      } finally {
+        this.loadingRecentReviewsActivity = false;
+      }
+    },
+
+    async getRecentFollowersActivity() {
+      this.loadingRecentFollowersActivity = true;
+      this.errorRecentFollowersActivity = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getRecentFollowersActivity/${this.displayUserID}`
+        );
+        this.recentFollowersActivity = response.data;
+      } catch (error) {
+        console.error("Error fetching recent followers activity:", error);
+        this.errorRecentFollowersActivity = "Failed to load recent followers activity.";
+      } finally {
+        this.loadingRecentFollowersActivity = false;
+      }
+    },
+
+    // Get the count of followers (users who follow this person)
+    async getFollowersCount() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowers/${this.displayUserID}`
+        );
+        this.followersCount = response.data?.followers?.length || 0;
+      } catch (error) {
+        console.error("Error fetching followers count:", error);
+        this.followersCount = 0;
+      }
+    },
+
+    // Get users that this person is following
+    async getFollowingUsers() {
+      this.loadingFollowingUsers = true;
+      this.errorFollowingUsers = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowing/${this.displayUserID}`
+        );
+        this.followingUsers = response.data?.following || [];
+      } catch (error) {
+        console.error("Error fetching following users:", error);
+        this.errorFollowingUsers = "Failed to load following users.";
+        this.followingUsers = [];
+      } finally {
+        this.loadingFollowingUsers = false;
+      }
+    },
+
+    // Get users that follow this person
+    async getFollowersUsers() {
+      this.loadingFollowersUsers = true;
+      this.errorFollowersUsers = null;
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserFollowers/${this.displayUserID}`
+        );
+        this.followersUsers = response.data?.followers || [];
+      } catch (error) {
+        console.error("Error fetching followers users:", error);
+        this.errorFollowersUsers = "Failed to load followers users.";
+        this.followersUsers = [];
+      } finally {
+        this.loadingFollowersUsers = false;
+      }
+    },
 
     // Badges
     async getBadges() {
@@ -3251,7 +4624,7 @@ export default {
     async getUserBadges() {
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.userID}`
+          `${process.env.VUE_APP_API_URL}/getData/getUserBadges/${this.displayUserID}`
         );
         this.userBadges = response.data;
         this.userBadgesLoaded = true;
@@ -3764,7 +5137,10 @@ export default {
     // Reset Change Password variables
     resetChangePassword() {
       if (this.passwordError || this.passwordSuccess || this.passwordMismatch) {
+        this.passwordStrength = 0;
+        this.weakPasswordError = false;
         this.passwordError = false;
+        this.samePasswordError = false;
         this.passwordMismatch = false;
         this.passwordSuccess = false;
         this.confirmChangePassword = false;
@@ -3777,7 +5153,10 @@ export default {
     // To return to previous step to choose if change or reset password
     selectPasswordMode() {
       if (this.confirmChangePassword || this.confirmResetPassword) {
+        this.passwordStrength = 0;
+        this.weakPasswordError = false;
         this.passwordError = false;
+        this.samePasswordError = false;
         this.passwordMismatch = false;
         this.passwordSuccess = false;
         this.confirmChangePassword = false;
@@ -3790,7 +5169,11 @@ export default {
 
     // Function to check if old and new password is entered
     updatePassword() {
-      if (this.oldPassword == "" || this.newPassword == "") {
+      // if (this.oldPassword == "" || this.newPassword == "") {
+      //   alert("One of the passwords is empty, please check again");
+      //   return null;
+      // }
+      if (this.oldPassword == "" || this.password == "") {
         alert("One of the passwords is empty, please check again");
         return null;
       }
@@ -3814,8 +5197,23 @@ export default {
 
     // Function to update password
     async confirmUpdatePassword() {
+      // if your old password new new password is the same, dont waste resource
+      if (this.oldPassword === this.password) {
+        this.samePasswordError = true;
+        // same password error, no need to send request
+        return;
+      }
+
+      if (this.passwordStrength < 5) {
+        // cannot update to weak password
+        this.weakPasswordError = true; // Display error message for weak password
+        // we can get away without defining a custom error code 
+        // when it 0 its empty string when it is anything less than 5 it is a weak password
+        return;
+      }
+
       let oldHash = this.hashPassword(this.user.username, this.oldPassword);
-      let newHash = this.hashPassword(this.user.username, this.newPassword);
+      let newHash = this.hashPassword(this.user.username, this.password);
       let submitURL =
         `${process.env.VUE_APP_API_URL}/authcheck/editPassword/` + this.user.id;
       // let submitURL = `http://127.0.0.1:5000/authcheck/editPassword/` + this.user.id
@@ -4102,6 +5500,26 @@ export default {
       }
     },
 
+    // Get drink type from listing ID
+    getListingDrinkType(listingID) {
+      if (this.listings) {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        return listing ? listing.drinkType : null;
+      }
+    },
+
+    // Get producer name from listing ID
+    getListingProducerName(listingID) {
+      if (this.listings) {
+        const listing = this.listings.find((listing) => listing.id === listingID);
+        if (listing && listing.producerID) {
+          const producer = this.getProducerFromID(listing.producerID);
+          return producer ? producer.producerName : null;
+        }
+      }
+      return null;
+    },
+
     // ------------------ Unfollow Display User ------------------
     async editFollow(action) {
       if (action === "unfollow") {
@@ -4151,6 +5569,12 @@ export default {
       );
     },
 
+    getProducerFromID(producerID) {
+      return this.producers.find(
+        (producer) => producer.id === parseInt(producerID)
+      );
+    },
+
     // Changes the url to the selected list
     viewList(name) {
       if (name == "lists") {
@@ -4174,6 +5598,67 @@ export default {
 
         if (this.ownProfile) {
           this.removeExistingListingInList();
+        }
+      }
+    },
+
+    // view specific producer list
+    
+    viewProducerList(name) {
+      if (name === "producer_lists") {
+        this.activeTab = "producer_lists";
+        this.$router.push(
+          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
+        );
+      } else {
+        this.activeTab = "producer_list";
+        this.currentProducerList = name;
+        this.$router.push(
+          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username + "/producer_list/" + encodeURIComponent(name)
+        );
+        
+        if (this.ownProfile) {
+          this.removeExistingProducersInList();
+        }
+      }
+    },
+
+    viewVenueList(name) {
+      if (name == "venue_lists") {
+        this.activeTab = "venue_lists";
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username
+        );
+      } else {
+        this.activeTab = "venue_list";
+        this.currentVenueList = name;
+        this.$router.push(
+          "/profile/user/" +
+            this.displayUserID +
+            "/" +
+            this.displayUser.username +
+            "/venue_list/" + encodeURIComponent(name)
+        );
+      }
+    },
+    
+    // Helper function to remove existing producers from search results
+    removeExistingProducersInList() {
+      this.excludeProducerList = [];
+      
+      // Get all producer IDs in the current list
+      if (this.currentProducerList && this.userProducerBookmarks[this.currentProducerList]) {
+        const producerItems = this.userProducerBookmarks[this.currentProducerList].listItems;
+        
+        // Add the producer names to the exclude list
+        for (const item of producerItems) {
+          const producer = this.producers.find(p => p.id === item.producerId);
+          if (producer) {
+            this.excludeProducerList.push(producer.producerName);
+          }
         }
       }
     },
@@ -4204,6 +5689,47 @@ export default {
         } 
       }
     },
+ 
+    async searchProducerResult() {
+      if (this.producerSearch.trim().length < 2) {
+        this.producerSearchResults = [];
+        return;
+      }
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getProducersBySearch?searchTerm=${this.producerSearch}`
+        );
+        
+        // Filter out producers that are already in the list
+        this.producerSearchResults = response.data.filter(producer => 
+          !this.excludeProducerList.includes(producer.producerName)
+        );
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 404) {
+          this.producerSearchResults = ['No results found'];
+        }
+      }
+    },
+
+    // producer selection handler
+    
+    selectProducer(producerName) {
+      if (!this.producersToAdd.includes(producerName)) {
+        this.producersToAdd.push(producerName);
+      }
+      this.producerSearch = "";
+      this.producerSearchResults = [];
+    },
+    
+    // Add this function to remove a producer from the selection
+    removeSelectedProducer(producerName) {
+      const index = this.producersToAdd.indexOf(producerName);
+      if (index !== -1) {
+        this.producersToAdd.splice(index, 1);
+      }
+    },
 
     async addNewList() {
       if (this.userBookmarks[this.newListName]) {
@@ -4232,7 +5758,49 @@ export default {
             },
           }
         );
+
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
         console.log("bookmark: " + response.data);
+      } catch (error) {
+        console.error(error);
+        window.location.reload();
+      }
+
+    },
+
+    async addNewProducerList() {
+      if (this.userProducerBookmarks[this.newProducerListName]) {
+        this.newProducerListNameError = "List name already exists";
+        return;
+      } else if (this.newProducerListName === "") {
+        this.newProducerListNameError = "List name cannot be empty";
+        return;
+      }
+
+      this.newProducerListNameError = "";
+      this.userProducerBookmarks[this.newProducerListName] = {};
+      this.userProducerBookmarks[this.newProducerListName].listDesc = this.newProducerListDesc;
+      this.userProducerBookmarks[this.newProducerListName].listItems = [];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("producer bookmark: " + response.data);
       } catch (error) {
         console.error(error);
       }
@@ -4323,13 +5891,82 @@ export default {
             },
           }
         );
+
+        if (response.data.badgeAwarded) {
+          this.earnedBadges = [response.data.badgeAwarded];
+          this.showBadgePopup = true;
+        } else {
+          window.location.reload();
+        }
         console.log(response.data);
       } catch (error) {
         console.error(error);
+        window.location.reload();
       }
 
-      window.location.reload();
     },
+
+    // add producer to list
+    
+    async addProducerToList(listName) {
+      console.log("Adding producers to list:", listName);
+      const currentDate = new Date().toISOString();
+      
+      for (const producerName of this.producersToAdd) {
+        try {
+          // Find the producer by name to get its ID
+          const producer = this.producers.find(p => p.producerName === producerName);
+          
+          if (producer) {
+            // Check if producer is already in the list
+            const alreadyInList = this.userProducerBookmarks[listName].listItems.some(
+              item => item.producerId === producer.id
+            );
+            
+            if (!alreadyInList) {
+              this.userProducerBookmarks[listName].listItems.push({
+                producerId: producer.id,
+                addedDate: currentDate
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error adding producer ${producerName}:`, error);
+        }
+      }
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("Producer bookmark updated:", response.data);
+        
+        // Show success message
+        const toast = useToast();
+        toast.success("Brand added to list successfully!");
+        
+        // Reset variables
+        this.producersToAdd = [];
+        this.producerSearch = "";
+        this.producerSearchResults = [];
+        
+        // Reload the page to reflect changes
+        window.location.reload();
+      } catch (error) {
+        console.error("Error updating producer bookmark:", error);
+        const toast = useToast();
+        toast.error("Failed to add brand to list. Please try again.");
+      }
+    },    
 
     // ------------------ Delete Drink from List Functions ------------------
     async deleteFromList(listName, listingID) {
@@ -4356,6 +5993,83 @@ export default {
         console.log(response.data);
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    // delete producer from list function
+    
+    async deleteProducerFromList(listName, producerId) {
+      // Find the index of the producer to remove
+      const index = this.userProducerBookmarks[listName].listItems.findIndex(
+        item => item.producerId === producerId
+      );
+      
+      if (index !== -1) {
+        // Remove the producer from the list
+        this.userProducerBookmarks[listName].listItems.splice(index, 1);
+        
+        try {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+            {
+              userID: this.userID,
+              bookmark: this.userProducerBookmarks,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log("Producer removed from list:", response.data);
+          
+          // Show success message
+          const toast = useToast();
+          toast.success("Producer removed from list successfully!");
+          
+          // No need to reload if we're just removing an item - update UI directly
+          // You can reload if needed: window.location.reload();
+        } catch (error) {
+          console.error("Error updating producer bookmark:", error);
+          const toast = useToast();
+          toast.error("Failed to remove producer from list. Please try again.");
+        }
+      }
+    },
+
+    async deleteVenueFromList(listName, venueId) {
+      // Find the index of the venue to remove
+      const index = this.userVenueBookmarks[listName].listItems.findIndex(
+        item => item.venueId === venueId
+      );
+      
+      if (index !== -1) {
+        // Remove the venue from the list
+        this.userVenueBookmarks[listName].listItems.splice(index, 1);
+        
+        try {
+          const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/editProfile/updateVenueBookmark`,
+            {
+              userID: this.userID,
+              bookmark: this.userVenueBookmarks,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          console.log("Venue removed from list:", response.data);
+          
+          // Show success message
+          const toast = useToast();
+          toast.success("Venue removed from list successfully!");
+        } catch (error) {
+          console.error("Error updating venue bookmark:", error);
+          const toast = useToast();
+          toast.error("Failed to remove venue from list. Please try again.");
+        }
       }
     },
 
@@ -4427,49 +6141,72 @@ export default {
     },
 
     // Fetch all usernames from backend
-    async fetchAllUsernames() {
+    // async fetchAllUsernames() {
+    //   try {
+    //     this.isUserSearchFetching = true;
+    //     const response = await this.$axios.get(
+    //       `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+    //     );
+    //     console.log("API response:", response.data); // See what data is returned
+    //     this.allUsernames = Array.isArray(response.data) ? response.data : [];
+    //   } catch (error) {
+    //     console.error("Error fetching usernames:", error);
+    //     this.allUsernames = [];
+    //   } finally {
+    //     this.isUserSearchFetching = false;
+    //   }
+    // },
+
+    // Filter suggestions based on input (old method)
+    // getUserSuggestions() {
+    //   if (this.userSearchInput.trim().length === 0) {
+    //     this.showUserSuggestions = false;
+    //     this.filteredUserSuggestions = [];
+    //     return;
+    //   }
+
+    //   const searchTerm = this.userSearchInput.toLowerCase();
+      
+    //   // First prioritize exact matches at the start
+    //   const startsWithMatches = this.allUsernames.filter(user => 
+    //     user.username.toLowerCase().startsWith(searchTerm) || 
+    //     user.displayName.toLowerCase().startsWith(searchTerm)
+    //   );
+      
+    //   // Then add partial matches
+    //   const containsMatches = this.allUsernames.filter(user => 
+    //     (user.username.toLowerCase().includes(searchTerm) || 
+    //     user.displayName.toLowerCase().includes(searchTerm)) && 
+    //     !user.username.toLowerCase().startsWith(searchTerm) &&
+    //     !user.displayName.toLowerCase().startsWith(searchTerm)
+    //   );
+      
+    //   // Combine matches with priority order and limit to 7
+    //   this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
+    //   this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+    // },
+
+    // Filter suggestions based on input (new method)
+    async getUserSuggestions() {
       try {
-        this.isUserSearchFetching = true;
+        if (this.userSearchInput.trim().length === 0) {
+          this.showUserSuggestions = false;
+          this.filteredUserSuggestions = [];
+          return;
+        }
+
+        const searchTerm = this.userSearchInput.toLowerCase();
+
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getAllUsernames`
+          `${process.env.VUE_APP_API_URL}/getData/getUserNamesDynamic/${searchTerm}`
         );
-        console.log("API response:", response.data); // See what data is returned
-        this.allUsernames = Array.isArray(response.data) ? response.data : [];
-      } catch (error) {
-        console.error("Error fetching usernames:", error);
-        this.allUsernames = [];
-      } finally {
-        this.isUserSearchFetching = false;
-      }
-    },
 
-    // Filter suggestions based on input
-    getUserSuggestions() {
-      if (this.userSearchInput.trim().length === 0) {
-        this.showUserSuggestions = false;
-        this.filteredUserSuggestions = [];
-        return;
+        this.filteredUserSuggestions = response.data
+        this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
       }
-
-      const searchTerm = this.userSearchInput.toLowerCase();
-      
-      // First prioritize exact matches at the start
-      const startsWithMatches = this.allUsernames.filter(user => 
-        user.username.toLowerCase().startsWith(searchTerm) || 
-        user.displayName.toLowerCase().startsWith(searchTerm)
-      );
-      
-      // Then add partial matches
-      const containsMatches = this.allUsernames.filter(user => 
-        (user.username.toLowerCase().includes(searchTerm) || 
-        user.displayName.toLowerCase().includes(searchTerm)) && 
-        !user.username.toLowerCase().startsWith(searchTerm) &&
-        !user.displayName.toLowerCase().startsWith(searchTerm)
-      );
-      
-      // Combine matches with priority order and limit to 7
-      this.filteredUserSuggestions = [...startsWithMatches, ...containsMatches].slice(0, 7);
-      this.showUserSuggestions = this.filteredUserSuggestions.length > 0;
+      catch (error) {
+        console.error("Error fetching user suggestions:", error);
+      }
     },
 
     // Navigate to selected user profile in a new tab
@@ -4593,15 +6330,373 @@ export default {
     },
     
     async getProducers() {
-    try {
-      const response = await this.$axios.get(
-        `${process.env.VUE_APP_API_URL}/getData/getAllProducers`
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllProducers`
+        );
+        this.producers = response.data;
+        console.log("Producers loaded:", this.producers.length);
+      } catch (error) {
+        console.error("Error fetching brand:", error);
+      }
+    },
+
+    async getVenues() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllVenues`
+        );
+        this.venues = response.data;
+        console.log("Venues loaded:", this.venues.length);
+      } catch (error) {
+        console.error("Error fetching venues:", error);
+      }
+    },
+
+    getVenueFromID(venueID) {
+      return this.venues.find(
+        (venue) => venue.id === parseInt(venueID)
       );
-      this.producers = response.data;
-      console.log("Producers loaded:", this.producers.length);
-    } catch (error) {
-      console.error("Error fetching producers:", error);
-    }
+    },
+
+    async searchVenueResult() {
+      if (this.venueSearch.trim().length < 2) {
+        this.venueSearchResults = [];
+        return;
+      }
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getVenuesBySearch?searchTerm=${this.venueSearch}`
+        );
+        
+        this.venueSearchResults = response.data.filter(venue => 
+          !this.excludeVenueList.includes(venue.venueName)
+        );
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 404) {
+          this.venueSearchResults = ['No results found'];
+        }
+      }
+    },
+
+    selectVenue(venueName) {
+      if (!this.venuesToAdd.includes(venueName)) {
+        this.venuesToAdd.push(venueName);
+      }
+      this.venueSearch = "";
+      this.venueSearchResults = [];
+    },
+
+    removeSelectedVenue(venueName) {
+      const index = this.venuesToAdd.indexOf(venueName);
+      if (index !== -1) {
+        this.venuesToAdd.splice(index, 1);
+      }
+    },
+
+    async addNewVenueList() {
+      if (this.userVenueBookmarks[this.newVenueListName]) {
+        this.newVenueListNameError = "List name already exists";
+        return;
+      } else if (this.newVenueListName === "") {
+        this.newVenueListNameError = "List name cannot be empty";
+        return;
+      }
+
+      this.newVenueListNameError = "";
+      this.userVenueBookmarks[this.newVenueListName] = {};
+      this.userVenueBookmarks[this.newVenueListName].listDesc = this.newVenueListDesc;
+      this.userVenueBookmarks[this.newVenueListName].listItems = [];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateVenueBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userVenueBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("venue bookmark: " + response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
+    async addVenueToList(listName) {
+      console.log("Adding venues to list:", listName);
+      const currentDate = new Date().toISOString();
+      
+      for (const venueName of this.venuesToAdd) {
+        try {
+          const venue = this.venues.find(v => v.venueName === venueName);
+          
+          if (venue) {
+            const alreadyInList = this.userVenueBookmarks[listName].listItems.some(
+              item => item.venueId === venue.id
+            );
+            
+            if (!alreadyInList) {
+              this.userVenueBookmarks[listName].listItems.push({
+                venueId: venue.id,
+                addedDate: currentDate
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error adding venue ${venueName}:`, error);
+        }
+      }
+      
+      try {
+        await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateVenueBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userVenueBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        const toast = useToast();
+        toast.success("Venues added to list successfully!");
+        
+        this.venuesToAdd = [];
+        this.venueSearch = "";
+        this.venueSearchResults = [];
+        
+        window.location.reload();
+      } catch (error) {
+        console.error("Error updating venue bookmark:", error);
+        const toast = useToast();
+        toast.error("Failed to add venues to list. Please try again.");
+      }
+    },
+
+    switchListType(type) {
+      this.currentListType = type;
+      // Update the active tab based on type
+      if (type === 'drinks') {
+        this.activeTab = 'lists';
+      } else if (type === 'producers') {
+        this.activeTab = 'producer_lists';
+      } else if (type === 'venues') {
+        this.activeTab = 'venue_lists';
+      }
+    },
+
+
+    // Edit producer list
+    slugify(text) {
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    },
+
+    getTimeDifference(date) { 
+        const now = new Date();
+        const target = new Date(date);
+        const diffMs = now - target;
+        
+        // Handle negative differences (future dates)
+        if (diffMs < 0) {
+            return 'in the future';
+        }
+        
+        // Time intervals in milliseconds
+        const intervals = [
+            { unit: 'year', ms: 365.25 * 24 * 60 * 60 * 1000 },
+            { unit: 'month', ms: 30.44 * 24 * 60 * 60 * 1000 },
+            { unit: 'day', ms: 24 * 60 * 60 * 1000 },
+            { unit: 'hour', ms: 60 * 60 * 1000 },
+            { unit: 'minute', ms: 60 * 1000 },
+            { unit: 'second', ms: 1000 }
+        ];
+        
+        for (const { unit, ms } of intervals) {
+            const value = Math.floor(diffMs / ms);
+            if (value > 0) {
+                return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
+            }
+        }
+        
+        return 'just now';
+    },
+
+    listingUrl(activity, idOverride = null) {
+        const id = idOverride || activity.listingID;
+        return `/listing/view/${id}/${this.slugify(activity.listingName)}`;
+    },
+
+    listUrl(activity) {
+        return `/profile/user/${this.userID}/${this.slugify(activity.listName)}`;
+    },
+
+    profileUrl(activity) {
+        return `/profile/user/${activity.userID}/${this.slugify(activity.username)}`;
+    },
+
+    async editProducerList(currentListName) {
+      if (this.editListName === "") {
+        this.editListNameError = "List name cannot be empty";
+        return;
+      } else if (
+        this.editListName !== currentListName &&
+        this.userProducerBookmarks[this.editListName]
+      ) {
+        this.editListNameError = "List name already exists";
+        return;
+      }
+
+      this.editListNameError = "";
+
+      if (this.editListName !== currentListName) {
+        this.userProducerBookmarks[this.editListName] = {};
+        this.userProducerBookmarks[this.editListName].listDesc = this.editListDesc;
+        this.userProducerBookmarks[this.editListName].listItems =
+          this.userProducerBookmarks[currentListName].listItems;
+        delete this.userProducerBookmarks[currentListName];
+      }
+
+      this.userProducerBookmarks[this.editListName].listDesc = this.editListDesc;
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("producer bookmark updated:", response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
+    async editVenueList(currentListName) {
+      if (this.editListName === "") {
+        this.editListNameError = "List name cannot be empty";
+        return;
+      } else if (
+        this.editListName !== currentListName &&
+        this.userVenueBookmarks[this.editListName]
+      ) {
+        this.editListNameError = "List name already exists";
+        return;
+      }
+
+      this.editListNameError = "";
+
+      if (this.editListName !== currentListName) {
+        this.userVenueBookmarks[this.editListName] = {};
+        this.userVenueBookmarks[this.editListName].listDesc = this.editListDesc;
+        this.userVenueBookmarks[this.editListName].listItems =
+          this.userVenueBookmarks[currentListName]?.listItems;
+        delete this.userVenueBookmarks[currentListName];
+      }
+
+      this.userVenueBookmarks[this.editListName].listDesc = this.editListDesc;
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateVenueBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userVenueBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("venue bookmark updated:", response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
+    // Delete producer list
+    async deleteProducerList(listName) {
+      delete this.userProducerBookmarks[listName];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateProducerBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userProducerBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("producer bookmark updated after delete:", response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
+    async deleteVenueList(listItem) {
+      delete this.userVenueBookmarks[listItem];
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateVenueBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userVenueBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("venue bookmark updated after delete:", response.data);
+      } catch (error) {
+        console.error(error);
+      }
+
+      window.location.reload();
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
+      window.location.reload();
     },
   },
 };
@@ -4630,4 +6725,118 @@ export default {
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
 }
+
+/* Welcome section collapse button styling */
+.welcome-toggle {
+  background-color: #f0b358 !important; /* Match the yellow/orange background */
+  border: 1px solid #e0a043 !important; /* Add a border with slightly darker shade */
+  color: #212529 !important; /* Darker text color */
+  border-radius: 0.25rem !important; /* Match the border radius */
+  font-weight: bold !important; /* Make text bold */
+  padding: 0.5rem 1rem !important; /* Adjust padding */
+  transition: all 0.3s ease;
+}
+
+.welcome-toggle:hover {
+  background-color: #e5a443 !important; /* Slightly darker on hover */
+  border-color: #d89932 !important;
+}
+
+/* Rotate arrow when expanded */
+.welcome-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .bi-chevron-down {
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle[aria-expanded="true"] .chevron-toggle {
+  transform: rotate(180deg);
+  transition: transform 0.3s ease;
+}
+
+.welcome-toggle .chevron-toggle {
+  transition: transform 0.3s ease;
+}
+
+/* Review Container Styles */
+.review-container {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.review-img {
+  transition: transform 0.2s ease;
+}
+
+.review-container:hover .review-img {
+  transform: scale(1.05);
+}
+
+.review-container:hover {
+  transform: translateY(-2px);
+}
+
+.review-text {
+  line-height: 1.3;
+}
+
+/* Responsive adjustments for reviews */
+@media (max-width: 768px) {
+  .review-img {
+    max-width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .review-text {
+    font-size: 0.7rem !important;
+  }
+  
+  .review-text div {
+    margin-bottom: 1px !important;
+  }
+}
+
+/* User Container Styles */
+.user-container {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.user-img {
+  transition: transform 0.2s ease;
+}
+
+.user-container:hover .user-img {
+  transform: scale(1.05);
+}
+
+.user-container:hover {
+  transform: translateY(-2px);
+}
+
+.user-text {
+  line-height: 1.3;
+}
+
+/* Responsive adjustments for user containers */
+@media (max-width: 768px) {
+  .user-img {
+    max-width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .user-text {
+    font-size: 0.7rem !important;
+  }
+  
+  .user-text div {
+    margin-bottom: 1px !important;
+  }
+}
+
 </style>
