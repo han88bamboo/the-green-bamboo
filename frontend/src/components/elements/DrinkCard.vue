@@ -84,7 +84,7 @@ export default {
   computed: {
     drinkUrl() {
       return {
-        path: `/listing/view/${this.listing.id}/${this.slugify(this.listing.name || this.listing.listingName)}`
+        path: `/listing/view/${this.listing.itemID}/${this.slugify(this.listing.name || this.listing.listingName)}`
       }
     },
     
