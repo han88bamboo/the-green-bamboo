@@ -1203,30 +1203,12 @@ button.primary-square:hover {
 }
 
 .inactive-toggle-button:hover {
-  color: #83a9e8 !important; /* Active state text color */
+  color: #027562 !important; /* Active state text color */
   background-color: white !important; /* Active state background color */
-  border-bottom: 3px solid #83a9e8 !important;
+  border-bottom: 3px solid #027562 !important;
   border-radius: 0px !important;
   font-weight: bold !important;
 }
-/*
- .active-toggle-button-user-profile {
-    color: #495264  !important;  Active state text color 
-    background-color: #F2F2F2 !important;  Active state background color 
-    border-bottom: 3px solid #495264 !important; Underline for active tab 
-    border-radius: 0px !important;
-    font-weight: bold !important;
-  
-} 
-*/
-
-/* .inactive-toggle-button-user-profile {
-    color: black  !important;  Active state text color 
-    background-color: #F2F2F2 !important;  Active state background color 
-    border: none !important;  Underline for active tab 
-    border-radius: 0px !important;
-    font-weight: bold !important;
-}  */
 
 .navbar-toggler-icon {
   min-width: 2em;
@@ -2069,31 +2051,6 @@ button.primary-square:hover {
   color: black !important;
 }
 
-@media (max-width: 991px) {
-  .active-toggle-button-user-profile {
-    color: #027562 !important; /* Active state text color */
-    background-color: white !important; /* Active state background color */
-    border-bottom: 3px solid #027562 !important; /* Underline for active tab */
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-radius: 0px !important;
-    font-weight: bold !important;
-    text-align: left;
-  }
-}
-
-@media (max-width: 991px) {
-  .inactive-toggle-button-user-profile {
-    color: rgba(0, 0, 0, 0.514) !important; /* Active state text color */
-    background-color: white !important; /* Active state background color */
-    border: none !important; /* Underline for active tab */
-    border-radius: 0px !important;
-    font-weight: bold !important;
-    border-bottom: 1px outset rgba(0, 0, 0, 0.514) !important;
-    text-align: left;
-  }
-}
 @media (max-width: 991px) {
   .no-hover:hover {
     background-color: inherit; /* Keeps the original background color */

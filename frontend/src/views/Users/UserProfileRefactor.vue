@@ -2159,9 +2159,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'reviews',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'reviews',
               }"
               @click="switchTab('reviews')"
@@ -2173,9 +2173,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'lists' || activeTab === 'list' || activeTab === 'producer_lists' || activeTab === 'producer_list' || activeTab === 'venue_lists' || activeTab === 'venue_list',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'lists' && activeTab !== 'list' && activeTab !== 'producer_lists' && activeTab !== 'producer_list' && activeTab !== 'venue_lists' && activeTab !== 'venue_list',
               }"
               @click="switchTab('lists')"
@@ -2188,9 +2188,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'badges',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'badges',
               }"
               @click="switchTab('badges')"

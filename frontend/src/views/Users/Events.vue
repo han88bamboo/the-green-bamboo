@@ -643,8 +643,8 @@
                         <button
                             class="btn mx-1 fw-bold no-hover"
                             :class="{
-                                'primary-btn-green active-toggle-button-user-profile': activeUserEventsTab === 'organising',
-                                'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeUserEventsTab !== 'organising',
+                                'mobile-toggle-button-producer-profile active-toggle-button': activeUserEventsTab === 'organising',
+                                'mobile-toggle-button-producer-profile inactive-toggle-button': activeUserEventsTab !== 'organising',
                             }"
                             @click="switchUserEventsTab('organising')"
                         >
@@ -654,8 +654,8 @@
                         <button
                             class="btn mx-1 fw-bold no-hover"
                             :class="{
-                                'primary-btn-green active-toggle-button-user-profile': activeUserEventsTab === 'attending',
-                                'primary-btn-green-thin-outline inactive-toggle-button-user-profile': activeUserEventsTab !== 'attending',
+                                'mobile-toggle-button-producer-profile active-toggle-button': activeUserEventsTab === 'attending',
+                                'mobile-toggle-button-producer-profile inactive-toggle-button': activeUserEventsTab !== 'attending',
                             }"
                             @click="switchUserEventsTab('attending')"
                         >
@@ -671,7 +671,7 @@
                             <div v-if="organisingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Organising -->
                                 <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
-                                    <h5 class="fw-bold mb-3 text-start">Upcoming</h5>
+                                    <h6 class="fw-bold mb-3 text-start">Upcoming</h6>
                                     <div class="row">
                                         <div 
                                             v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date())" 
@@ -731,7 +731,7 @@
 
                                 <!-- Past Events You're Organising -->
                                 <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) < new Date()).length > 0" class="mt-4">
-                                    <h5 class="fw-bold mb-3 text-start">Past Events</h5>
+                                    <h6 class="fw-bold mb-3 text-start">Past Events</h6>
                                     <div class="row">
                                         <div 
                                             v-for="event in organisingEvents.filter(event => new Date(event.eventStartDate) < new Date())" 
@@ -810,7 +810,7 @@
                             <div v-if="attendingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Attending -->
                                 <div v-if="attendingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
-                                    <h5 class="fw-bold mb-3 text-start">Upcoming</h5>
+                                    <h6 class="fw-bold mb-3 text-start">Upcoming</h6>
                                     <div class="row">
                                         <div 
                                             v-for="event in attendingEvents.filter(event => new Date(event.eventStartDate) >= new Date())" 
@@ -870,7 +870,7 @@
 
                                 <!-- Past Events You're Attending -->
                                 <div v-if="attendingEvents.filter(event => new Date(event.eventStartDate) < new Date()).length > 0" class="mt-4">
-                                    <h5 class="fw-bold mb-3 text-start">Past Events</h5>
+                                    <h6 class="fw-bold mb-3 text-start">Past Events</h6>
                                     <div class="row">
                                         <div 
                                             v-for="event in attendingEvents.filter(event => new Date(event.eventStartDate) < new Date())" 
