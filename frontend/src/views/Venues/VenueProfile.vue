@@ -3467,11 +3467,9 @@ import { useHead, useSeoMeta } from '@unhead/vue'
 import { ref, computed } from 'vue'
 
 import NavBar from '@/components/NavBar.vue';
-import draggable from 'vuedraggable';
 import ListingRowDisplayProducerProfile from '@/components/ListingRowDisplayProducerProfile.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
 import EventBox from '@/components/EventBox.vue';
-import { useToast } from 'vue-toastification';
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
@@ -3494,7 +3492,6 @@ export default {
     name: 'profileVenue',
     components: {
         NavBar,
-        draggable,
         ListingRowDisplayProducerProfile,
         BookmarkModal,
         EventBox,
