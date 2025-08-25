@@ -1895,6 +1895,10 @@
                         @menu-data-processed="handleMenuDataProcessed"
                         @menu-data-error="handleMenuDataError"
                         @edit-menu-mode-changed="handleEditMenuModeChanged"
+                        @data-loaded-changed="(value) => handleDataLoadedChanged(value)"
+                        @menu-updated="() => handleMenuUpdated()"
+                        @menu-update-error="handleMenuUpdateError"
+                        @claim-venue-account="handleClaimVenueAccount"
                     />
                 </div>
 
@@ -4148,36 +4152,24 @@ export default {
                     // Try to manually listen to events from the child component
                     const childComponent = this.$refs.venueMenuComponent;
                     
-                    // Set up manual event listeners using Vue 3 approach
-                    console.log('🔗 VenueProfile: Setting up manual event listeners...');
-                    
-                    // In Vue 3, we need to manually set up event listeners
-                    // Let's try overriding the child's $emit method to intercept events
-                    const originalEmit = childComponent.$emit;
-                    childComponent.$emit = (...args) => {
-                        const eventName = args[0];
-                        const eventData = args[1];
-                        
-                        console.log(`🎯 VenueProfile: Intercepted event "${eventName}" with data:`, eventData);
-                        
-                        // Handle our specific events
-                        if (eventName === 'menu-updated') {
-                            console.log('� VenueProfile: Manually handling menu-updated event');
+                    // In Vue 3, we can use $on if available, or we might need to use other approaches
+                    if (childComponent.$on) {
+                        console.log('🔗 VenueProfile: Setting up manual event listeners...');
+                        childComponent.$on('menu-updated', () => {
+                            console.log('🎯 VenueProfile: Manual menu-updated listener triggered!');
                             this.handleMenuUpdated();
-                        } else if (eventName === 'data-loaded-changed') {
-                            console.log('🔄 VenueProfile: Manually handling data-loaded-changed event with value:', eventData);
-                            this.handleDataLoadedChanged(eventData);
-                        }
-                        
-                        // Call the original emit function
-                        return originalEmit.apply(childComponent, args);
-                    };
-                    
-                    console.log('✅ VenueProfile: Manual event interception set up successfully');
+                        });
+                        childComponent.$on('data-loaded-changed', (value) => {
+                            console.log('🎯 VenueProfile: Manual data-loaded-changed listener triggered!', value);
+                            this.handleDataLoadedChanged(value);
+                        });
+                    } else {
+                        console.log('⚠️ VenueProfile: $on not available, this might be Vue 3');
+                    }
                 } else {
                     console.log('❌ VenueProfile: Child component not found via ref');
                 }
-            }, 2000); // Wait 2 seconds to ensure component is fully loaded
+            }, 1000);
         });
     },
     beforeUnmount() {

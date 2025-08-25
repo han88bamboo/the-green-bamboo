@@ -2472,18 +2472,9 @@ export default {
                 if (response.status === 201) {
                     console.log('✅ updateMenu: Status 201 confirmed, emitting menu-updated event');
                     console.log('🚀 updateMenu: About to emit menu-updated event to parent');
-                    console.log('🚀 updateMenu: Component instance:', this);
-                    console.log('🚀 updateMenu: Event emission timestamp:', new Date().toISOString());
-                    
                     // Emit success to parent instead of refreshing page
                     this.$emit('menu-updated');
                     console.log('🚀 updateMenu: menu-updated event emitted successfully');
-                    
-                    // Wait a moment and check if parent received the event
-                    setTimeout(() => {
-                        console.log('⏰ updateMenu: 1 second after event emission - parent should have received event');
-                    }, 1000);
-                    
                     // Also emit data-loaded-changed to true to ensure UI is not stuck in loading state
                     this.$emit('data-loaded-changed', true);
                     console.log('🚀 updateMenu: data-loaded-changed(true) event emitted successfully');
@@ -2503,21 +2494,9 @@ export default {
                 // Check if it's actually a successful response that's being caught as an error
                 if (error.response && error.response.status === 201) {
                     console.log('✅ updateMenu: Error response has status 201, treating as success');
-                    console.log('🚀 updateMenu: About to emit menu-updated event to parent (from catch block)');
-                    console.log('🚀 updateMenu: Component instance (catch):', this);
-                    console.log('🚀 updateMenu: Event emission timestamp (catch):', new Date().toISOString());
-                    
                     this.$emit('menu-updated');
-                    console.log('🚀 updateMenu: menu-updated event emitted successfully (from catch block)');
-                    
-                    // Wait a moment and check if parent received the event
-                    setTimeout(() => {
-                        console.log('⏰ updateMenu: 1 second after event emission (catch) - parent should have received event');
-                    }, 1000);
-                    
                     // Also emit data-loaded-changed to true to ensure UI is not stuck in loading state
                     this.$emit('data-loaded-changed', true);
-                    console.log('🚀 updateMenu: data-loaded-changed(true) event emitted successfully (from catch block)');
                 } else {
                     console.error('❌ updateMenu: Genuine error occurred, showing alert');
                     // Show more specific error message
