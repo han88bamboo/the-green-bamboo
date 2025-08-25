@@ -4901,7 +4901,9 @@ export default {
         },
 
         handleMenuUpdated() {
-            // Refresh page when menu is successfully updated
+            console.log('handleMenuUpdated called - refreshing page');
+            // Immediately refresh the page when menu is successfully updated
+            // This ensures we don't get stuck in loading state
             this.$router.go(0);
         },
 

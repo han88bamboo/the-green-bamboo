@@ -2428,10 +2428,9 @@ export default {
 
         // Update Menu - transferred from parent but modified for component
         async updateMenu() {
-            // Emit to parent to set edit mode flag and data loaded state
+            // Emit to parent to set edit mode flag
             this.$emit('edit-menu-mode-changed', false);
-            this.$emit('data-loaded-changed', false);
-
+            
             // Update sectionOrder and itemOrder based on current ordering
             for (let sectionIndex in this.editMenu) {
                 this.editMenu[sectionIndex].sectionOrder = parseInt(sectionIndex);
@@ -2459,10 +2458,12 @@ export default {
                         }
                     });
                 
-                // Check if response is successful
-                if (response.status === 201) {
-                    // Emit success to parent instead of refreshing page
+                // Check if response is successful (any 2xx status)
+                if (response.status >= 200 && response.status < 300) {
+                    console.log('Menu update successful, emitting menu-updated event');
+                    // PRIORITY: Emit success to parent - the parent will handle page refresh immediately
                     this.$emit('menu-updated');
+                    return; // Exit early on success - no need for dataLoaded changes since page will refresh
                 } else {
                     throw new Error(`Unexpected response status: ${response.status}`);
                 }
@@ -2473,11 +2474,12 @@ export default {
                 console.error('Error response:', error.response);
                 
                 // Check if it's actually a successful response that's being caught as an error
-                if (error.response && error.response.status === 201) {
-                    console.log('Menu update was actually successful, emitting success event');
+                if (error.response && error.response.status >= 200 && error.response.status < 300) {
+                    console.log('Menu update was actually successful (caught in error handler), emitting menu-updated event');
                     this.$emit('menu-updated');
+                    return; // Exit early on success - no need for further error handling
                 } else {
-                    // Show more specific error message
+                     // Show more specific error message
                     const errorMessage = error.response?.data?.message || error.message || "An unknown error occurred";
                     alert(`An error occurred while attempting to save your changes: ${errorMessage}. Please try again!`);
                     
