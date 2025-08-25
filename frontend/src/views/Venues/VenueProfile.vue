@@ -4358,8 +4358,6 @@ export default {
                     // Obtain servingTypes
                     const servingTypesResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getServingTypes`);
                     this.servingTypes = servingTypesResponse.data;
-                    this.getDefaultServingType();
-                    this.initializeMultipleItemsDefaultServingTypes();
 
                     // Obtain map data
                     try {
