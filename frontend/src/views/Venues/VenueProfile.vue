@@ -83,7 +83,7 @@
                                     </p>
                                     <button
                                         class="btn btn-warning btn-sm rounded fw-bold fs-8"
-                                        @click="contentMode = 'menu'; enableEditMenuMode()"
+                                        @click="contentMode = 'menu'" 
                                         onclick="setTimeout(() => {
                                             document.getElementById('menu-section').scrollIntoView({behavior: 'smooth'});
                                             setTimeout(() => {
@@ -95,7 +95,7 @@
                                             }
                                             }, 550);
                                         }, 100)"
-                                    >
+                                    ><!-- enableEditMenuMode() -->
                                         Update Menu
                                     </button>
                                 </div>
@@ -7891,36 +7891,36 @@ export default {
 
         // Updated search item to add to menu functions 
         // Debounced input handler
-        debouncedSearch() {
-            clearTimeout(this.debounceTimer);
-            this.debounceTimer = setTimeout(() => {
-                this.searchListings();
-            }, 300); // debounce delay (ms)
-        },
+        // debouncedSearch() {
+        //     clearTimeout(this.debounceTimer);
+        //     this.debounceTimer = setTimeout(() => {
+        //         this.searchListings();
+        //     }, 300); // debounce delay (ms)
+        // },
 
-        // Actual search call
-        async searchListings() {
-            if (this.searchQuery.length < 2) {
-                this.searchResults = [];
-                return;
-            }
+        // // Actual search call
+        // async searchListings() {
+        //     if (this.searchQuery.length < 2) {
+        //         this.searchResults = [];
+        //         return;
+        //     }
 
-            try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${this.searchQuery}`);
-                this.searchResults = response.data;
-            } catch (error) {
-                console.error("Search failed:", error);
-                this.searchResults = [];
-            }
-        },
+        //     try {
+        //         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingNamesDynamicSearch/${this.searchQuery}`);
+        //         this.searchResults = response.data;
+        //     } catch (error) {
+        //         console.error("Search failed:", error);
+        //         this.searchResults = [];
+        //     }
+        // },
 
         // Set selected listing
-        selectListing(listing) {
-            this.newMenuItemID = listing.id;
-            this.searchQuery = listing.listingName;
-            this.searchResults = []; // Clear dropdown
-            this.updateNewMenuItemTarget();
-        },
+        // selectListing(listing) {
+        //     this.newMenuItemID = listing.id;
+        //     this.searchQuery = listing.listingName;
+        //     this.searchResults = []; // Clear dropdown
+        //     this.updateNewMenuItemTarget();
+        // },
         highlightQnAAndNavigate() {
             // Find the QnA section
             const qnaSection = document.getElementById('qna');
@@ -7935,29 +7935,22 @@ export default {
                 }, 3000);
             }
         },
-        highlightMenuSection() {
-            // Find the menu section
-            const menuSection = document.getElementById('menu');
+        // highlightMenuSection() {
+        //     // Find the menu section
+        //     const menuSection = document.getElementById('menu');
 
-            if (menuSection) {
-                // Add the highlight effect
-                menuSection.classList.add('highlight-section');
+        //     if (menuSection) {
+        //         // Add the highlight effect
+        //         menuSection.classList.add('highlight-section');
 
-                // Remove highlight after 3 seconds
-                setTimeout(() => {
-                    menuSection.classList.remove('highlight-section');
-                }, 3000);
-            }
-        },
+        //         // Remove highlight after 3 seconds
+        //         setTimeout(() => {
+        //             menuSection.classList.remove('highlight-section');
+        //         }, 3000);
+        //     }
+        // },
         // Add to your methods object
-        showInvalidAreaMessage() {
-            this.invalidAreaMessageVisible = true;
-
-            setTimeout(() => {
-                this.invalidAreaMessageVisible = false;
-            }, 1000);
-        },
-
+        
         // Add this new method to handle drag errors
         // handleDragError(event) {
         //     // Check for error in both error event formats
@@ -7986,40 +7979,6 @@ export default {
         //     return false;
         // },
 
-        // Add these methods to the methods section
-        dragStart() {
-            this.drag = true;
-            // Take a snapshot of the current menu structure
-            this.menuSnapshot = JSON.stringify(this.editMenu);
-        },
-
-        dragEnd() {
-            // Check if the menu structure changed after drag
-            const currentMenu = JSON.stringify(this.editMenu);
-            if (this.menuSnapshot === currentMenu) {
-                // No change occurred - likely an invalid drop
-                this.showInvalidAreaMessage();
-            }
-            this.drag = false;
-            this.menuSnapshot = null;
-        },
-
-        dragItemStart(menuSection) {
-            this.drag = true;
-            // Take a snapshot of the current section's items
-            this.menuSnapshot = JSON.stringify(menuSection.sectionMenu);
-        },
-
-        dragItemEnd(menuSection) {
-            // Check if the section's items changed after drag
-            const currentSection = JSON.stringify(menuSection.sectionMenu);
-            if (this.menuSnapshot === currentSection) {
-                // No change occurred - likely an invalid drop
-                this.showInvalidAreaMessage();
-            }
-            this.drag = false;
-            this.menuSnapshot = null;
-        },
         formatTime(time) {
             if (!time) return '';
 

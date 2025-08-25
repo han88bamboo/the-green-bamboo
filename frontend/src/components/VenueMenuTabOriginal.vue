@@ -1563,6 +1563,22 @@ export default {
             // Internal copies of props for manipulation
             internalLoadedListings: [],
             internalLoadedProducers: [],
+
+            // Drag and drop properties
+            menuSnapshot: null,
+            dragOptions: {
+                animation: 350,
+                group: "menuSections",
+                disabled: false,
+                ghostClass: "ghost",
+                revertOnSpill: true,       // Return items to original position when dropped outside valid containers
+                fallbackOnBody: true,      // Allow ghost element to appear on body when outside valid areas
+                onSpill: function () {       // Handle drops outside valid containers
+                    // Just let revertOnSpill do its job
+                    this.showInvalidAreaMessage();
+                    return false;
+                }.bind(this)
+            },
         }
     },
     watch: {
@@ -2383,6 +2399,50 @@ export default {
         // Claim Venue Account - emit to parent since it involves routing
         claimVenueAccount() {
             this.$emit('claim-venue-account');
+        },
+
+        // Drag and drop methods
+        dragStart() {
+            this.drag = true;
+            // Take a snapshot of the current menu structure
+            this.menuSnapshot = JSON.stringify(this.editMenu);
+        },
+
+        dragEnd() {
+            // Check if the menu structure changed after drag
+            const currentMenu = JSON.stringify(this.editMenu);
+            if (this.menuSnapshot === currentMenu) {
+                // No change occurred - likely an invalid drop
+                this.showInvalidAreaMessage();
+            }
+            this.drag = false;
+            this.menuSnapshot = null;
+        },
+
+        dragItemStart(menuSection) {
+            this.drag = true;
+            // Take a snapshot of the current section's items
+            this.menuSnapshot = JSON.stringify(menuSection.sectionMenu);
+        },
+
+        dragItemEnd(menuSection) {
+            // Check if the section's items changed after drag
+            const currentSection = JSON.stringify(menuSection.sectionMenu);
+            if (this.menuSnapshot === currentSection) {
+                // No change occurred - likely an invalid drop
+                this.showInvalidAreaMessage();
+            }
+            this.drag = false;
+            this.menuSnapshot = null;
+        },
+
+        // Show invalid area message for drag operations
+        showInvalidAreaMessage() {
+            this.invalidAreaMessageVisible = true;
+
+            setTimeout(() => {
+                this.invalidAreaMessageVisible = false;
+            }, 1000);
         }
 
     }
