@@ -336,7 +336,7 @@ export default {
 
   computed: {
     averageRating() {
-      if (!this.venueReviews || this.venueReviews.length === 0) return 'N/A';
+      if (!this.venueReviews || this.venueReviews.length === 0) return '-';
       const total = this.venueReviews.reduce((acc, review) => acc + review.rating, 0);
       return (total / this.venueReviews.length).toFixed(1);
     },
