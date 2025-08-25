@@ -4621,7 +4621,7 @@ export default {
 
                 // Check if viewer is a user and get their data
                 if (this.viewerType == 'user') {
-                    console.log('👤 loadData: Viewer type is user, fetching user data');
+                    console.log('👤 Log 123: loadData: Viewer type is user, fetching user data');
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/` + this.viewerID);
                         if (Array.isArray(response.data) && response.data.length == 0) {
