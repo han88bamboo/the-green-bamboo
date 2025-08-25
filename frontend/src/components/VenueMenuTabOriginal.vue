@@ -1469,11 +1469,13 @@
 <script>
 import VenueMenuEditOriginal from './VenueMenuEditOriginal.vue';
 import { useToast } from 'vue-toastification';
+import draggable from 'vuedraggable';
 
 export default {
     name: 'VenueMenuTabOriginal',
     components: {
-        VenueMenuEditOriginal
+        VenueMenuEditOriginal,
+        draggable
     },
     props: {
         // Props passed from parent component
@@ -1506,16 +1508,29 @@ export default {
             default: false
         }
     },
+    computed: {
+        // Generate current URL for sharing functionality
+        currentURL() {
+            // Return a clean, shareable URL for this venue
+            const baseUrl = window.location.origin;
+            const venueId = this.targetVenue?.id || this.$route.params?.venueID;
+            return venueId ? `${baseUrl}/venue/${venueId}` : window.location.href;
+        }
+    },
     data() {
         return {
-        drag: false,
+            drag: false,
+            
+            // Constants
+            VARIANT_DRNK_TYP: ['Wine', 'Champagne', 'Sparkling Wine'],
+            defaultPhoto: '/path/to/default/image.jpg', // You should replace this with your actual default image path
         
-        // Menu Editing
-        editMenu: [],
+            // Menu Editing
+            editMenu: [],
 
-        showMenuLoadingOverlay: false,
+            showMenuLoadingOverlay: false,
 
-        invalidAreaMessageVisible: false,
+            invalidAreaMessageVisible: false,
     
         // truncation of official description <!-- tzh added  --->
         showFullItemDescription: false,
