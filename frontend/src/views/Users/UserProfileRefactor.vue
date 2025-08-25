@@ -6832,19 +6832,5 @@ export default {
   margin: 0;
 }
 
-.card-img-top-wrapper {
-  position: relative;
-  padding-top: 100%; /* Creates a square */
-  overflow: hidden;
-}
-
-.review-card-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
 
 </style>
