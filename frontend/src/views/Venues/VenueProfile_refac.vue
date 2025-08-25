@@ -323,6 +323,14 @@ export default {
                 recentlyAdded: [] // recently added list
             },
 
+            venue_reviews: {
+                reviews: [], // list of reviews (default to 20)
+                lastId: null, // last loaded review id 
+                loading: false, 
+                hasMore: true,
+                error: null
+            },  
+
             // Properties to hold data from the child component
             updateText: '',
             updatePhoto: null,
@@ -502,7 +510,33 @@ export default {
         },
 
         async getReviews() {
-            return 
+            if (this.venue_reviews.loading || !this.venue_reviews.hasMore) return
+            this.venue_reviews.loading = true
+            this.venue_reviews.error = null
+
+            try {
+                // Build API URL with cursor (last_id)
+                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/reviews?limit=20`
+                if (this.venue_reviews.lastId) {
+                    url += `&last_id=${this.venue_reviews.lastId}`
+                }
+
+                const response = await apiService.fetchWithRetry(this.$axios, url)
+
+                if (response && response.length > 0) {
+                    this.venue_reviews.reviews.push(...response)
+
+                    // Update cursor to the last review’s ID
+                    this.venue_reviews.lastId = response[response.length - 1].id
+                } else {
+                    this.venue_reviews.hasMore = false
+                }
+            } catch (err) {
+                console.error("Error loading reviews:", err)
+                this.venue_reviews.error = err.message || "Failed to load reviews"
+            } finally {
+                this.venue_reviews.loading = false
+            }
         },
 
         async getActivities() {
