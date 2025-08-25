@@ -11,7 +11,7 @@
         <LoadingWithFunFact v-if="dataLoaded === false" />
 
         <!-- DEBUG: Show current state -->
-        <!-- <div class="alert alert-info" style="position: fixed; top: 100px; right: 20px; z-index: 9999; font-size: 12px;">
+        <div class="alert alert-info" style="position: fixed; top: 100px; right: 20px; z-index: 9999; font-size: 12px;">
             <strong>DEBUG STATE:</strong><br>
             dataLoaded: {{ dataLoaded }}<br>
             venueExists: {{ venueExists }}<br>
@@ -19,7 +19,7 @@
             targetVenue: {{ typeof targetVenue === 'object' ? 'object' : targetVenue }}<br>
             Error condition 1: {{ venueExists === false }}<br>
             Error condition 2: {{ dataLoaded === null && venueExists !== true }}
-        </div> -->
+        </div>
 
         <!-- Display when venue does not exist -->
         <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (dataLoaded === null && venueExists !== true)">
@@ -1884,6 +1884,7 @@
                 <!-- Bar Menu Component -->
                 <div v-if="contentMode == 'menu'" id="menu">
                     <VenueMenuTabOriginal
+                        ref="venueMenuComponent"
                         :detailed-menu="detailedMenu"
                         :serving-types="servingTypes"
                         :target-venue="targetVenue"
@@ -1894,10 +1895,6 @@
                         @menu-data-processed="handleMenuDataProcessed"
                         @menu-data-error="handleMenuDataError"
                         @edit-menu-mode-changed="handleEditMenuModeChanged"
-                        @data-loaded-changed="handleDataLoadedChanged"
-                        @menu-updated="handleMenuUpdated"
-                        @menu-update-error="handleMenuUpdateError"
-                        @claim-venue-account="handleClaimVenueAccount"
                     />
                 </div>
 
@@ -4128,6 +4125,59 @@ export default {
         // Initialize auto-resize functionality for textareas
         this.$nextTick(() => {
             this.setupAutoResize();
+            
+            // Additional debugging for event system
+            console.log('🔍 VenueProfile: Checking Vue event system in nextTick...');
+            console.log('🔍 VenueProfile: Component instance:', this);
+            console.log('🔍 VenueProfile: $el:', this.$el);
+            console.log('🔍 VenueProfile: contentMode:', this.contentMode);
+            
+            // Test if we can find the child component using refs or other methods
+            setTimeout(() => {
+                const menuDiv = document.getElementById('menu');
+                if (menuDiv) {
+                    console.log('✅ VenueProfile: Found menu div element:', menuDiv);
+                } else {
+                    console.log('❌ VenueProfile: Menu div element not found');
+                }
+                
+                // Test ref access to child component
+                if (this.$refs.venueMenuComponent) {
+                    console.log('✅ VenueProfile: Found child component via ref:', this.$refs.venueMenuComponent);
+                    
+                    // Try to manually listen to events from the child component
+                    const childComponent = this.$refs.venueMenuComponent;
+                    
+                    // Set up manual event listeners using Vue 3 approach
+                    console.log('🔗 VenueProfile: Setting up manual event listeners...');
+                    
+                    // In Vue 3, we need to manually set up event listeners
+                    // Let's try overriding the child's $emit method to intercept events
+                    const originalEmit = childComponent.$emit;
+                    childComponent.$emit = (...args) => {
+                        const eventName = args[0];
+                        const eventData = args[1];
+                        
+                        console.log(`🎯 VenueProfile: Intercepted event "${eventName}" with data:`, eventData);
+                        
+                        // Handle our specific events
+                        if (eventName === 'menu-updated') {
+                            console.log('� VenueProfile: Manually handling menu-updated event');
+                            this.handleMenuUpdated();
+                        } else if (eventName === 'data-loaded-changed') {
+                            console.log('🔄 VenueProfile: Manually handling data-loaded-changed event with value:', eventData);
+                            this.handleDataLoadedChanged(eventData);
+                        }
+                        
+                        // Call the original emit function
+                        return originalEmit.apply(childComponent, args);
+                    };
+                    
+                    console.log('✅ VenueProfile: Manual event interception set up successfully');
+                } else {
+                    console.log('❌ VenueProfile: Child component not found via ref');
+                }
+            }, 2000); // Wait 2 seconds to ensure component is fully loaded
         });
     },
     beforeUnmount() {
@@ -4413,11 +4463,12 @@ export default {
 
                             } catch (error) {
                                 if (error.response && error.response.status === 404) {
-                                    console.error('Error retrieving subscription:', error);
-
+                                    console.error('Error retrieving subscription (404 - not found):', error);
+                                    // 404 is expected for unclaimed venues - don't set dataLoaded to null
                                 } else {
-                                    console.error('Error retrieving subscription:', error);
-                                    this.dataLoaded = null;
+                                    console.error('Error retrieving subscription (other error):', error);
+                                    // Don't set dataLoaded to null for subscription errors - they shouldn't prevent page load
+                                    console.log('Subscription error will not prevent page from loading');
                                 }
                             }
 
@@ -4458,7 +4509,13 @@ export default {
 
                     console.log('📞 Log 148: getVenueData: About to call loadData(), current venueExists:', this.venueExists);
                     console.log('📞 getVenueData: Calling loadData()');
-                    this.loadData();
+                    await this.loadData();
+                    
+                    // Failsafe: ensure dataLoaded is set to true if venue exists
+                    if (this.venueExists === true && this.dataLoaded !== true) {
+                        console.log('🔧 Failsafe: Setting dataLoaded to true after loadData completed');
+                        this.dataLoaded = true;
+                    }
                 }
                 else {
                     console.log('❌ Log 134: getVenueData: Venue data validation failed');
@@ -4639,9 +4696,10 @@ export default {
         // Load other data
         async loadData() {
             console.log('🔄 loadData: Starting data loading process');
-            console.log('🔄 loadData: Current state:', { 
+            console.log('🔄 loadData: Current state at start:', { 
                 dataLoaded: this.dataLoaded, 
                 venueExists: this.venueExists,
+                targetVenueID: this.targetVenueID,
                 viewerID: this.viewerID,
                 loggedIn: this.loggedIn
             });
@@ -4681,8 +4739,9 @@ export default {
                         }
                     }
                     catch (error) {
-                        console.log('❌ Log 152: loadData: Error fetching user data, setting dataLoaded to null:', error);
-                        this.dataLoaded = null;
+                        console.log('❌ Log 152: loadData: Error fetching user data (will not prevent page load):', error);
+                        // Don't set dataLoaded to null for user data errors - venue page should still load
+                        console.log('User data error will not prevent venue page from loading');
                     }
                 }
             }
@@ -4777,14 +4836,17 @@ export default {
             // Set data loaded flag
             console.log('🔄 Log 149: loadData: About to set dataLoaded flag, current dataLoaded:', this.dataLoaded);
             console.log('🔄 Log 150: loadData: Current venueExists value:', this.venueExists);
-            if (this.dataLoaded != null) {
-                console.log('✅ Log 151: loadData: Setting dataLoaded to true');
+            // Change condition: set dataLoaded to true if venue exists, regardless of current dataLoaded state
+            if (this.venueExists === true) {
+                console.log('✅ Log 151: loadData: Setting dataLoaded to true (venue exists)');
                 this.dataLoaded = true;
 
                 // Wait for next tick to ensure all computed properties are updated
                 this.$nextTick(() => {
                     this.updateAllMetaTags(this.targetVenue,);
                 });
+            } else {
+                console.log('❌ Log 151b: loadData: NOT setting dataLoaded to true because venueExists is:', this.venueExists);
             }
 
             //calling endpoint for getData/getVenueReviewsByVenueId
@@ -4887,8 +4949,9 @@ export default {
 
         // Handle menu data processing errors
         handleMenuDataError(error) {
-            console.error('❌ Log 153: handleMenuDataError: Menu data processing error, setting dataLoaded to null:', error);
-            this.dataLoaded = null;
+            console.error('❌ Log 153: handleMenuDataError: Menu data processing error (will not prevent page load):', error);
+            // Don't set dataLoaded to null for menu errors - page should still load without menu
+            console.log('Menu data error will not prevent venue page from loading');
         },
 
         // Event handlers for VenueMenuTabOriginal component
@@ -4897,12 +4960,26 @@ export default {
         },
 
         handleDataLoadedChanged(dataLoaded) {
+            console.log('� handleDataLoadedChanged: RECEIVED data-loaded-changed event from child component!');
+            console.log('�🔄 handleDataLoadedChanged: dataLoaded changed to:', dataLoaded);
             this.dataLoaded = dataLoaded;
+            
+            // If dataLoaded is being set to true, it likely means a menu update completed successfully
+            // So we should refresh the page to show the updated menu
+            if (dataLoaded === true && this.editMenuMode === false) {
+                console.log('handleDataLoadedChanged: Detected menu update completion, refreshing page');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 100);
+            }
         },
 
         handleMenuUpdated() {
-            // Refresh page when menu is successfully updated
-            this.$router.go(0);
+            console.log('🎉 handleMenuUpdated: RECEIVED menu-updated event from child component!');
+            console.log('🔄 handleMenuUpdated: Menu updated successfully, refreshing page');
+            
+            // Use window.location.reload() instead of router.go(0) for more reliable refresh
+            window.location.reload();
         },
 
         handleMenuUpdateError(error) {
