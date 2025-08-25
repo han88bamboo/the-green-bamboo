@@ -5370,17 +5370,17 @@ export default {
             renameMenuSectionModalNew: '',
 
             // Report Menu Inaccuracy
-            reportFormView: true,
-            reportSubmitLoading: false,
-            reportSubmitSuccess: false,
-            reportSubmitError: null,
-            reportSection: '',
-            reportSectionItems: [],
-            reportItem: '',
-            reportReason: '',
-            reportItemNone: false,
-            reportReasonNone: false,
-            reportResponseCode: null,
+            // reportFormView: true,
+            // reportSubmitLoading: false,
+            // reportSubmitSuccess: false,
+            // reportSubmitError: null,
+            // reportSection: '',
+            // reportSectionItems: [],
+            // reportItem: '',
+            // reportReason: '',
+            // reportItemNone: false,
+            // reportReasonNone: false,
+            // reportResponseCode: null,
 
             // for editing Q&A
             editingQA: false,
@@ -7146,103 +7146,103 @@ export default {
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         // Report Menu Inaccuracy (Reset)
-        resetReport() {
-            this.reportSection = '';
-            this.reportSectionItems = [];
-            this.reportItem = '';
-            this.reportReason = '';
+        // resetReport() {
+        //     this.reportSection = '';
+        //     this.reportSectionItems = [];
+        //     this.reportItem = '';
+        //     this.reportReason = '';
 
-            this.retryReport();
-        },
+        //     this.retryReport();
+        // },
 
-        // Report Menu Inaccuracy (Retry)
-        retryReport() {
-            this.reportFormView = true;
-            this.reportSubmitLoading = false;
-            this.reportSubmitSuccess = false;
-            this.reportSubmitError = null;
-            this.reportItemNone = false;
-            this.reportReasonNone = false;
-            this.reportResponseCode = null;
-        },
+        // // Report Menu Inaccuracy (Retry)
+        // retryReport() {
+        //     this.reportFormView = true;
+        //     this.reportSubmitLoading = false;
+        //     this.reportSubmitSuccess = false;
+        //     this.reportSubmitError = null;
+        //     this.reportItemNone = false;
+        //     this.reportReasonNone = false;
+        //     this.reportResponseCode = null;
+        // },
 
-        // Report Menu Inaccuracy (Get Section Items)
-        getReportSectionItems() {
-            try {
-                this.reportItem = '';
-                if (this.reportSection !== '') {
-                    this.reportSectionItems = this.detailedMenu[this.reportSection].sectionMenu;
-                }
-                else {
-                    this.reportSectionItems = [];
-                }
-            }
-            catch (error) {
-                this.reportSectionItems = [];
-            }
-        },
+        // // Report Menu Inaccuracy (Get Section Items)
+        // getReportSectionItems() {
+        //     try {
+        //         this.reportItem = '';
+        //         if (this.reportSection !== '') {
+        //             this.reportSectionItems = this.detailedMenu[this.reportSection].sectionMenu;
+        //         }
+        //         else {
+        //             this.reportSectionItems = [];
+        //         }
+        //     }
+        //     catch (error) {
+        //         this.reportSectionItems = [];
+        //     }
+        // },
 
-        // Report Menu Inaccuracy (Submit)
-        async submitReport() {
-            try {
-                this.reportSubmitLoading = true;
+        // // Report Menu Inaccuracy (Submit)
+        // async submitReport() {
+        //     try {
+        //         this.reportSubmitLoading = true;
 
-                // Reset error validation flags
-                this.reportItemNone = false;
-                this.reportReasonNone = false;
+        //         // Reset error validation flags
+        //         this.reportItemNone = false;
+        //         this.reportReasonNone = false;
 
-                // Validate input
-                if (this.reportItem == '') {
-                    this.reportItemNone = true;
-                }
-                if (this.reportReason.trim() == '') {
-                    this.reportReasonNone = true;
-                }
-                if (this.reportItemNone || this.reportReasonNone) {
-                    this.reportSubmitLoading = false;
-                    return;
-                }
+        //         // Validate input
+        //         if (this.reportItem == '') {
+        //             this.reportItemNone = true;
+        //         }
+        //         if (this.reportReason.trim() == '') {
+        //             this.reportReasonNone = true;
+        //         }
+        //         if (this.reportItemNone || this.reportReasonNone) {
+        //             this.reportSubmitLoading = false;
+        //             return;
+        //         }
 
-                // Prepare data
-                let reportData = {
-                    "userID": this.viewerID,
-                    "venueID": this.targetVenue['id'],
-                    "listingID": this.reportItem,
-                    "inaccurateReason": "[ Menu Section: " + this.detailedMenu[this.reportSection].sectionName + " ]\nReason: " + this.reportReason,
-                }
+        //         // Prepare data
+        //         let reportData = {
+        //             "userID": this.viewerID,
+        //             "venueID": this.targetVenue['id'],
+        //             "listingID": this.reportItem,
+        //             "inaccurateReason": "[ Menu Section: " + this.detailedMenu[this.reportSection].sectionName + " ]\nReason: " + this.reportReason,
+        //         }
 
-                // Send report
-                await this.$axios.post(`${process.env.VUE_APP_API_URL}/requestListing/requestInaccuracy`, reportData)
-                    .then((response) => {
-                        this.reportResponseCode = response.data.code;
-                    })
-                    .catch((error) => {
-                        this.reportResponseCode = error.response.data.code;
-                    });
+        //         // Send report
+        //         await this.$axios.post(`${process.env.VUE_APP_API_URL}/requestListing/requestInaccuracy`, reportData)
+        //             .then((response) => {
+        //                 this.reportResponseCode = response.data.code;
+        //             })
+        //             .catch((error) => {
+        //                 this.reportResponseCode = error.response.data.code;
+        //             });
 
-                this.reportFormView = false;
-                this.reportSubmitLoading = false;
+        //         this.reportFormView = false;
+        //         this.reportSubmitLoading = false;
 
-                // Handle response
-                if (this.reportResponseCode == 201) {
-                    this.reportSubmitSuccess = true;
-                }
-                else if (this.reportResponseCode == 400) {
-                    this.reportSubmitError = 'dupe';
-                }
-                else {
-                    this.reportSubmitError = 'error';
-                }
+        //         // Handle response
+        //         if (this.reportResponseCode == 201) {
+        //             this.reportSubmitSuccess = true;
+        //         }
+        //         else if (this.reportResponseCode == 400) {
+        //             this.reportSubmitError = 'dupe';
+        //         }
+        //         else {
+        //             this.reportSubmitError = 'error';
+        //         }
 
-            }
-            catch (error) {
-                this.reportSubmitError = 'error';
-                this.reportSubmitLoading = false;
-                if (this.reportFormView) {
-                    this.reportFormView = false;
-                }
-            }
-        },
+        //     }
+        //     catch (error) {
+        //         this.reportSubmitError = 'error';
+        //         this.reportSubmitLoading = false;
+        //         if (this.reportFormView) {
+        //             this.reportFormView = false;
+        //         }
+        //     }
+        // },
 
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
