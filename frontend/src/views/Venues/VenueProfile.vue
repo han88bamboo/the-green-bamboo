@@ -29,7 +29,7 @@
         </div> -->
 
         <!-- Display when venue does not exist -->
-        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (!venueDataLoaded && venueExists !== true)">
+        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false">
             <span>An error occurred while loading this page, please try again!</span>
             <br>
             <span class="text-danger-emphasis fw-normal">Are you sure that this venue exists?</span>
