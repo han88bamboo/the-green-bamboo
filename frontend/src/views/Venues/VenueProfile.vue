@@ -392,12 +392,12 @@
                             </div>
 
                             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
-                            <!-- modal for inaccurate listing request -->
+                            <!-- modal for inaccurate listing request 
                             <div class="modal fade" id="inaccurateModal" tabindex="-1"
                                 aria-labelledby="inaccurateModalLabel" aria-hidden="true" data-bs-backdrop="static">
                                 <div class="modal-dialog modal-xl">
 
-                                    <!-- Report Submission Successful -->
+                                     Report Submission Successful
                                     <div class="text-success text-center fst-italic fw-bold fs-3 modal-content"
                                         v-if='reportSubmitSuccess'>
                                         <span>Your report has successfully been submitted!</span>
@@ -407,14 +407,14 @@
                                         </div>
                                     </div>
 
-                                    <!-- Report Submission Error -->
+                                     Report Submission Error 
                                     <div class="text-danger text-center fst-italic fw-bold fs-3 modal-content"
                                         v-if="reportSubmitError != null">
 
-                                        <!-- Error: Generic -->
+                                         Error: Generic 
                                         <span v-if="reportSubmitError == 'error'">An error occurred while attempting to
                                             report, please try again!</span>
-                                        <!-- Error: Duplicate Report -->
+                                         Error: Duplicate Report 
                                         <span v-if="reportSubmitError == 'dupe'">You've already submitted an inaccurate
                                             report for this bottle listing!</span>
 
@@ -427,7 +427,7 @@
 
                                     </div>
 
-                                    <!-- Report Form -->
+                                     Report Form 
                                     <div v-if="reportFormView" class="modal-content" style="height: 450px;">
                                         <div class="modal-header" style="background-color: #535C72">
                                             <h1 class="modal-title fs-5" id="exampleModalLabel" style="color: white;">
@@ -437,7 +437,7 @@
                                         </div>
                                         <div class="modal-body">
 
-                                            <!-- Select: Menu Section -->
+                                             Select: Menu Section 
                                             <p class='text-start mb-2 fw-bold'>Menu Section: <span
                                                     class="text-danger">*</span></p>
                                             <div class="input-group">
@@ -449,7 +449,7 @@
                                                 </select>
                                             </div>
 
-                                            <!-- Select: Inaccurate Item -->
+                                             Select: Inaccurate Item 
                                             <p class='text-start mb-2 fw-bold'>Inaccurate Item: <span
                                                     class="text-danger">* <span v-if="reportItemNone">(Select
                                                         1)</span></span></p>
@@ -461,14 +461,14 @@
                                                     </option>
                                                 </select>
                                             </div>
-                                            <!-- disabled if no valid items to select -->
+                                             disabled if no valid items to select 
                                             <div class="input-group" v-else>
                                                 <select class="form-select mw-100" disabled>
                                                     <option selected>-</option>
                                                 </select>
                                             </div>
 
-                                            <!-- Text Input: Reason for Inaccuracy -->
+                                             Text Input: Reason for Inaccuracy
                                             <div class='row justify-content-start mt-3'>
                                                 <div class="col-md-12">
                                                     <p class='text-start mb-2 fw-bold'>Report Reason: <span
@@ -482,7 +482,7 @@
 
                                         </div>
 
-                                        <!-- end of modal body -->
+                                         end of modal body
                                         <div class="modal-footer">
                                             <div v-if="reportSubmitLoading" class="spinner-border" role="status">
                                                 <span class="visually-hidden">Loading...</span>
@@ -495,7 +495,7 @@
                                     </div>
                                 </div>
 
-                            </div>
+                            </div>-->
                             <!-- END OF MODAL FOR INACCURATE REPORTING -->
                             <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 
