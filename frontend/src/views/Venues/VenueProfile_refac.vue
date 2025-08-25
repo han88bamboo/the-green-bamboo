@@ -136,6 +136,12 @@ Normal User (Anonymous & Logged-In)
                         <VenueReviewsTab :venue-reviews="filteredVenueReviews" :bottle-reviews="bottleReviews"
                             :user-id="user_id" :can-mod="isAdmin" />
                     </div>
+
+                    <!-- Activities Tab -->
+                    <div v-show="contentMode === 'recentActivities'">
+                        <VenueActivityTab :venue-reviews="filteredVenueReviews" :bottle-reviews="bottleReviews"
+                            :user-id="user_id" :can-mod="isAdmin" />
+                    </div>
                 </div>
             </div>
 
@@ -168,6 +174,7 @@ import VenueContentTabs from '@/components/venue_profile/VenueContentTabs.vue';
 import VenueOverviewTab from '@/components/venue_profile/VenueOverviewTab.vue';
 import VenueMenuTab from '@/components/venue_profile/VenueMenuTab.vue';
 import VenueReviewsTab from '@/components/venue_profile/VenueReviewsTab.vue';
+import VenueActivityTab from '@/components/venue_profile/VenueActivityTab.vue';
 import ProfileSidebar from '@/components/elements/ProfileSidebar.vue';
 
 import VenueReviewModal from '@/components/venue_profile/VenueReviewModal.vue';
@@ -245,6 +252,7 @@ export default {
         VenueOverviewTab,
         VenueMenuTab,
         VenueReviewsTab,
+        VenueActivityTab,
         ProfileSidebar,
         VenueReviewModal,
         VenueQRModal,

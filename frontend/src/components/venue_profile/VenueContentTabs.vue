@@ -25,6 +25,7 @@ export default {
                 { id: 'menu', name: 'Menu' },
                 { id: 'overview', name: 'Venue Overview' },
                 { id: 'venueReviews', name: 'Venue Reviews' },
+                { id: 'recentActivities', name: 'Recent Activities' },
             ]
         }
     }
