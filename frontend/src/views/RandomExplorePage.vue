@@ -1703,14 +1703,14 @@
                   class="d-grid justify-content-center align-content-center mt-5 mb-3"
                 >
                   <!-- Load More Button -->
-                  <!-- <button
+                  <button
                     v-if="moreListings"
                     class="btn secondary-btn btn-md"
                     style="font-weight: bold"
                     @click="retrieveListings"
                   >
                     Click to load more!
-                  </button> -->
+                  </button>
                 </div>
               </div>
               <!-- end of scrollable section -->
@@ -1998,6 +1998,15 @@ export default {
 
       defaultProfilePhoto:
         "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+
+
+      // Added by CP - 25 Aug
+      datedListingPreviousDate: null,
+      newListingsLastID: null,
+      pUpdateLastID: null,
+      reviewsLastID: null,
+      vUpdateLastID: null,
+      moreContent: true
     };
   },
   mounted() {
@@ -2058,6 +2067,13 @@ methods: {
         this.contents = response.data.content;
         // originally, make filteredContent the entire collection of content
         this.filteredContent = this.contents;
+
+        // Retrieve all the last IDs
+        this.datedListingPreviousDate = response.data.datedListingPreviousDate;
+        this.newListingsLastID = response.data.newListingsLastID;
+        this.pUpdateLastID = response.data.pUpdateLastID;
+        this.reviewsLastID = response.data.reviewsLastID;
+        this.vUpdateLastID = response.data.vUpdateLastID;
       } catch (error) {
         console.error(error);
         this.dataLoaded = null;
@@ -2589,7 +2605,7 @@ methods: {
 
     clearSelection() {
       // Handle the click event here
-      this.resetListings();
+      // this.resetListings();
       this.selectedDrinkType = "";
       this.selectedCategory = "";
       this.isFilterType = "";
@@ -2830,75 +2846,66 @@ methods: {
     },
 
     // Lazy loading for content
-    // async retrieveListings() {
-    //   // if selectedDrinkType not empty, meaning listings are filtered, retrieve based off the drink type and/or drink category
-    //   if (this.discovery) {
-    //     if (this.selectedDrinkType != "") {
-    //       let lastFilteredId = 0;
-    //       if (this.filteredListings.length > 0) {
-    //         lastFilteredId =
-    //           this.filteredListings[this.filteredListings.length - 1].id;
-    //       }
-    //       let params = {
-    //         drinkType: this.selectedDrinkType.drinkType,
-    //         drinkCategory: this.selectedCategory,
-    //       };
-    //       const response = await this.$axios.get(
-    //         `${process.env.VUE_APP_API_URL}/getData/getFiltered30` +
-    //           "/" +
-    //           lastFilteredId,
-    //         { params }
-    //       );
-    //       this.filteredListings.push(...response.data);
-    //       if (response.data.length == 0) {
-    //         this.moreListings = false;
-    //       }
-    //     }
-    //     // if not, meaning listings are not filtered, retrieve next 30 listings in DB
-    //     else {
-    //       let lastId = this.listings[this.listings.length - 1].id;
-    //       const response = await this.$axios.get(
-    //         `${process.env.VUE_APP_API_URL}/getData/getNext30` + "/" + lastId
-    //       );
-    //       this.listings.push(...response.data);
-    //       if (response.data.length == 0) {
-    //         this.moreListings = false;
-    //       }
-    //     }
-    //   }
-    //   //Lazy loading for following tab
-    //   else {
-    //   //Lazy loading for following tab
-    //   // Check if there are items in recentlyAdded before accessing
-    //   if (this.recentlyAdded && this.recentlyAdded.length > 0) {
-        
-    //     let data = {
-    //       followedProducers: this.followedProducers,
-    //       lastListingIdP: this.lastRAProducerListingID,
-    //       lastMenuId: this.lastMenuID,
-    //       followedVenues: this.followedVenues,
-    //     }
-    //     const response = await this.$axios.post(
-    //       `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30`,
-    //       data
-    //     );
-        
-    //     this.recentlyAdded.push(...response.data.listings);
-    //     this.lastRAProducerListingID = response.data.lastListingIdP;
-    //     this.lastMenuID = response.data.lastMenuId;
+    async retrieveListings() {
+      if (this.discovery) {
+        // Retrieve the next 30 content
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getNext30`, 
+          {
+            datedListingPreviousDate: this.datedListingPreviousDate,
+            newListingsLastID: this.newListingsLastID,
+            pUpdateLastID: this.pUpdateLastID,
+            reviewsLastID: this.reviewsLastID,
+            vUpdateLastID: this.vUpdateLastID
+          }
+        );
 
-    //     if (response.data.listings.length == 0) {
-    //       this.moreListings = false;
-    //     }
+        if (response.data.length == 0) {
+          this.moreContent = false;
+        } else {
+          this.contents.push(...response.data.content);
+
+          this.datedListingLastID = response.data.datedListingLastID;
+          this.newListingsLastID = response.data.newListingsLastID;
+          this.pUpdateLastID = response.data.pUpdateLastID;
+          this.reviewsLastID = response.data.reviewsLastID;
+          this.vUpdateLastID = response.data.vUpdateLastID;
+        }
         
-    //     this.followCount++;
-    //   } else {
-    //     // Handle case where there are no items to load
-    //     this.moreListings = false;
-    //     // Optionally show a message to the user
-    //   }
-    //   }
-    // },
+      }
+      //Lazy loading for following tab
+      else {
+      //Lazy loading for following tab
+      // Check if there are items in recentlyAdded before accessing
+      if (this.recentlyAdded && this.recentlyAdded.length > 0) {
+        
+        let data = {
+          followedProducers: this.followedProducers,
+          lastListingIdP: this.lastRAProducerListingID,
+          lastMenuId: this.lastMenuID,
+          followedVenues: this.followedVenues,
+        }
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/getData/getNextFollowing30`,
+          data
+        );
+        
+        this.recentlyAdded.push(...response.data.listings);
+        this.lastRAProducerListingID = response.data.lastListingIdP;
+        this.lastMenuID = response.data.lastMenuId;
+
+        if (response.data.listings.length == 0) {
+          this.moreListings = false;
+        }
+        
+        this.followCount++;
+      } else {
+        // Handle case where there are no items to load
+        this.moreListings = false;
+        // Optionally show a message to the user
+      }
+      }
+    },
   },
 };
 </script>
