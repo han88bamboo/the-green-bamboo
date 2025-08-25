@@ -4251,10 +4251,14 @@ export default {
 
         // Obtain venue data
         async getVenueData() {
+            console.log('🔍 getVenueData: Starting venue data fetch for ID:', this.targetVenueID);
             try {
+                console.log('📡 getVenueData: Making API call to:', `${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
+                console.log('📡 getVenueData: API response received:', response);
 
                 if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
+                    console.log('✅ getVenueData: Valid venue data found:', response.data);
 
                     this.targetVenue = response.data;
 
@@ -4359,12 +4363,14 @@ export default {
                         }
 
                         this.venueExists = true;
+                        console.log('✅ getVenueData: venueExists set to true, map data loaded successfully');
                     } catch (error) {
-                        console.error("Error getting maps data: ", error)
+                        console.error("❌ getVenueData: Error getting maps data: ", error)
                     }
 
 
                     // get claim status
+                    console.log('🔍 getVenueData: Checking claim status for venue:', this.targetVenue.stripeCustomerId);
                     if (this.targetVenue.stripeCustomerId) {
                         var claimStatus = false
                         // check for active subscription if last check status date before today
@@ -4430,16 +4436,23 @@ export default {
                         }
                     }
 
+                    console.log('📞 getVenueData: Calling loadData()');
                     this.loadData();
                 }
                 else {
+                    console.log('❌ getVenueData: No venue data found, setting venueExists to false');
                     this.venueExists = false;
                 }
             }
             catch (error) {
-                console.error(error);
+                console.error('❌ getVenueData: Error in getVenueData:', error);
+                console.log('❌ getVenueData: Setting dataLoaded to null due to error');
                 this.dataLoaded = null;
             }
+            console.log('🏁 getVenueData: Method completed. Final state:', { 
+                venueExists: this.venueExists, 
+                dataLoaded: this.dataLoaded 
+            });
         },
 
         async loadBottleReviews() {
@@ -4593,13 +4606,22 @@ export default {
 
         // Load other data
         async loadData() {
+            console.log('🔄 loadData: Starting data loading process');
+            console.log('🔄 loadData: Current state:', { 
+                dataLoaded: this.dataLoaded, 
+                venueExists: this.venueExists,
+                viewerID: this.viewerID,
+                loggedIn: this.loggedIn
+            });
 
             // Check if viewer is logged in
             if (this.viewerID != null && this.viewerID != "") {
+                console.log('👤 loadData: Viewer is logged in:', this.viewerID);
                 this.loggedIn = true;
 
                 // Check if viewer is a user and get their data
                 if (this.viewerType == 'user') {
+                    console.log('👤 loadData: Viewer type is user, fetching user data');
                     try {
                         const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getUser/` + this.viewerID);
                         if (Array.isArray(response.data) && response.data.length == 0) {
