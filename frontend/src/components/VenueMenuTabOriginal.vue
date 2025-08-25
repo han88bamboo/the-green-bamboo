@@ -2429,9 +2429,6 @@ export default {
                 
                 // Emit error to parent
                 this.$emit('menu-update-error', error);
-                
-                // Re-enable data loaded state since operation completed (even with error)
-                this.$emit('data-loaded-changed', true);
             }
         },
 
