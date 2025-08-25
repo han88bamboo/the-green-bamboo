@@ -1612,6 +1612,16 @@ export default {
                 // Only trigger if menu actually changed and avoid initial trigger since mounted handles it
                 if (newMenu && newMenu.length > 0 && !this.isLoading && JSON.stringify(newMenu) !== JSON.stringify(oldMenu)) {
                     this.loadMenuData();
+                } else if (newMenu && newMenu.length === 0 && JSON.stringify(newMenu) !== JSON.stringify(oldMenu)) {
+                    // If menu becomes empty, emit immediate completion
+                    console.log('🍽️ VenueMenuTabOriginal: Menu became empty, emitting immediate completion');
+                    this.$emit('menu-data-processed', {
+                        loadedListings: this.internalLoadedListings,
+                        loadedProducers: this.internalLoadedProducers,
+                        editMenu: [],
+                        searchMenuResults: [],
+                        processedDetailedMenu: []
+                    });
                 }
             },
             deep: true,
@@ -1628,14 +1638,29 @@ export default {
         }
     },
     mounted() {
-        // Initialize menu data when component mounts
-        if (this.detailedMenu.length > 0) {
-            this.loadMenuData();
-        }
+        console.log('🍽️ VenueMenuTabOriginal: mounted() called');
+        console.log('🍽️ VenueMenuTabOriginal: detailedMenu prop:', this.detailedMenu);
+        console.log('🍽️ VenueMenuTabOriginal: detailedMenu length:', this.detailedMenu ? this.detailedMenu.length : 0);
         
         // Initialize internal arrays from props
         this.internalLoadedListings = [...this.loadedListings];
         this.internalLoadedProducers = [...this.loadedProducers];
+        
+        // Initialize menu data when component mounts
+        if (this.detailedMenu.length > 0) {
+            console.log('🍽️ VenueMenuTabOriginal: Starting loadMenuData()');
+            this.loadMenuData();
+        } else {
+            // If no menu data to process, immediately emit completion
+            console.log('🍽️ VenueMenuTabOriginal: No menu data to process, emitting immediate completion');
+            this.$emit('menu-data-processed', {
+                loadedListings: this.internalLoadedListings,
+                loadedProducers: this.internalLoadedProducers,
+                editMenu: [],
+                searchMenuResults: [],
+                processedDetailedMenu: []
+            });
+        }
     },
     methods: {
 
@@ -1763,6 +1788,13 @@ export default {
                 );
 
                 // Emit the processed data back to parent
+                console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with data:', {
+                    loadedListingsCount: this.internalLoadedListings.length,
+                    loadedProducersCount: this.internalLoadedProducers.length,
+                    editMenuCount: this.editMenu.length,
+                    searchMenuResultsCount: this.searchMenuResults.length,
+                    processedDetailedMenuCount: menuCopy.length
+                });
                 this.$emit('menu-data-processed', {
                     loadedListings: this.internalLoadedListings,
                     loadedProducers: this.internalLoadedProducers,
@@ -1773,10 +1805,11 @@ export default {
 
             }
             catch (error) {
-                console.error("Error processing menu data:", error);
+                console.error("🍽️ VenueMenuTabOriginal: Error processing menu data:", error);
                 this.$emit('menu-data-error', error);
             }
             finally {
+                console.log('🍽️ VenueMenuTabOriginal: loadMenuData() finished, setting isLoading to false');
                 this.isLoading = false;
             }
         },

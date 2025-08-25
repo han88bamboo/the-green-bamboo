@@ -21,6 +21,11 @@
             targetVenue: {{ typeof targetVenue === 'object' ? 'object' : targetVenue }}<br>
             Error condition 1: {{ venueExists === false }}<br>
             Error condition 2: {{ !venueDataLoaded && venueExists !== true }}
+            
+            <div class="mt-2">
+                <button class="btn btn-sm btn-primary me-1" @click="completeMenuLoading">Complete Menu</button>
+                <button class="btn btn-sm btn-warning" @click="simulateSlowMenuLoading">Simulate Slow</button>
+            </div>
         </div> -->
 
         <!-- Display when venue does not exist -->
@@ -1893,9 +1898,10 @@
                         <p class="mt-3 text-muted">Loading menu...</p>
                     </div>
                     
-                    <!-- Show menu component when data is loaded -->
+                    <!-- Always render menu component so it can process data and emit events -->
+                    <!-- Hide it with CSS when loading, but keep it mounted -->
                     <VenueMenuTabOriginal
-                        v-else
+                        :style="{ display: isMenuLoading ? 'none' : 'block' }"
                         :detailed-menu="detailedMenu"
                         :serving-types="servingTypes"
                         :target-venue="targetVenue"
@@ -4807,7 +4813,29 @@ export default {
                 this.dataLoaded = true; // Keep for backward compatibility
                 
                 // Set menu to loading state initially - it will be updated by the menu component
-                this.menuDataLoaded = false;
+                // However, if there's no detailed menu data, mark it as loaded immediately
+                console.log('📝 Checking detailedMenu for loading decision:', {
+                    detailedMenuExists: !!this.detailedMenu,
+                    detailedMenuLength: this.detailedMenu ? this.detailedMenu.length : 0,
+                    detailedMenuContent: this.detailedMenu
+                });
+                
+                if (!this.detailedMenu || this.detailedMenu.length === 0) {
+                    console.log('📝 No detailed menu data found - setting menuDataLoaded to true immediately');
+                    this.menuDataLoaded = true;
+                } else {
+                    console.log('📝 Detailed menu data found - setting menuDataLoaded to false, waiting for component');
+                    this.menuDataLoaded = false;
+                    
+                    // Since we removed the timeout, let's add a simple fallback check
+                    setTimeout(() => {
+                        if (!this.menuDataLoaded) {
+                            console.warn('⚠️ Menu component has not emitted completion after 15 seconds - this may indicate an issue');
+                            console.warn('⚠️ VenueMenuTabOriginal should have emitted menu-data-processed by now');
+                            console.warn('⚠️ Check if the component is mounted and the watcher is working');
+                        }
+                    }, 15000); // Just for debugging - doesn't auto-complete
+                }
 
                 // Wait for next tick to ensure all computed properties are updated
                 this.$nextTick(() => {
@@ -4921,7 +4949,6 @@ export default {
         handleMenuDataError(error) {
             console.error('❌ Log 153: handleMenuDataError: Menu data processing error, setting menuDataLoaded to false:', error);
             this.menuDataLoaded = false; // Only affect menu loading, not venue info
-            // Don't set dataLoaded to null anymore - venue info can still be shown
         },
 
         // Event handlers for VenueMenuTabOriginal component
@@ -4949,6 +4976,37 @@ export default {
         handleClaimVenueAccount() {
             // Handle claim venue account from child component
             this.claimVenueAccount();
+        },
+
+        // Method to manually complete menu loading (for testing/debugging)
+        completeMenuLoading() {
+            console.log('🧪 completeMenuLoading: Manually setting menuDataLoaded to true');
+            this.menuDataLoaded = true;
+        },
+        
+        // Method to simulate slow menu loading (for testing)
+        simulateSlowMenuLoading() {
+            console.log('🧪 simulateSlowMenuLoading: Setting menu to loading state');
+            this.menuDataLoaded = false;
+            
+            // Simulate slow loading
+            setTimeout(() => {
+                console.log('🧪 simulateSlowMenuLoading: Completing after 3 seconds');
+                this.menuDataLoaded = true;
+            }, 3000);
+        },
+        
+        // Debug method to check current loading states
+        checkLoadingStates() {
+            console.log('🔍 Current Loading States:', {
+                dataLoaded: this.dataLoaded,
+                venueDataLoaded: this.venueDataLoaded,
+                menuDataLoaded: this.menuDataLoaded,
+                venueExists: this.venueExists,
+                isPageReady: this.isPageReady,
+                isMenuLoading: this.isMenuLoading,
+                detailedMenuLength: this.detailedMenu?.length || 0
+            });
         },
 
         onFilesChange(event) {
