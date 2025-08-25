@@ -2448,11 +2448,6 @@ export default {
             }
 
             try {
-                console.log('🔄 updateMenu: Starting API call to update menu');
-                console.log('🔄 updateMenu: API URL:', `${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`);
-                console.log('🔄 updateMenu: venueID:', this.targetVenue['id']);
-                console.log('🔄 updateMenu: editMenu length:', this.editMenu.length);
-                
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
                     {
                         venueID: this.targetVenue['id'],
@@ -2464,62 +2459,24 @@ export default {
                         }
                     });
                 
-                console.log('✅ updateMenu: API call completed successfully');
-                console.log('✅ updateMenu: Response status:', response.status);
-                console.log('✅ updateMenu: Response data:', response.data);
-                
                 // Check if response is successful
                 if (response.status === 201) {
-                    console.log('✅ updateMenu: Status 201 confirmed, emitting menu-updated event');
-                    console.log('🚀 updateMenu: About to emit menu-updated event to parent');
-                    console.log('🚀 updateMenu: Component instance:', this);
-                    console.log('🚀 updateMenu: Event emission timestamp:', new Date().toISOString());
-                    
                     // Emit success to parent instead of refreshing page
                     this.$emit('menu-updated');
-                    console.log('🚀 updateMenu: menu-updated event emitted successfully');
-                    
-                    // Wait a moment and check if parent received the event
-                    setTimeout(() => {
-                        console.log('⏰ updateMenu: 1 second after event emission - parent should have received event');
-                    }, 1000);
-                    
-                    // Also emit data-loaded-changed to true to ensure UI is not stuck in loading state
-                    this.$emit('data-loaded-changed', true);
-                    console.log('🚀 updateMenu: data-loaded-changed(true) event emitted successfully');
                 } else {
-                    console.log('❌ updateMenu: Unexpected status code:', response.status);
                     throw new Error(`Unexpected response status: ${response.status}`);
                 }
             }
             catch (error) {
                 // Log the full error for debugging
-                console.error('❌ updateMenu: API call failed with error:', error);
-                console.error('❌ updateMenu: Error message:', error.message);
-                console.error('❌ updateMenu: Error response:', error.response);
-                console.error('❌ updateMenu: Error response status:', error.response?.status);
-                console.error('❌ updateMenu: Error response data:', error.response?.data);
+                console.error('Menu update error details:', error);
+                console.error('Error response:', error.response);
                 
                 // Check if it's actually a successful response that's being caught as an error
                 if (error.response && error.response.status === 201) {
-                    console.log('✅ updateMenu: Error response has status 201, treating as success');
-                    console.log('🚀 updateMenu: About to emit menu-updated event to parent (from catch block)');
-                    console.log('🚀 updateMenu: Component instance (catch):', this);
-                    console.log('🚀 updateMenu: Event emission timestamp (catch):', new Date().toISOString());
-                    
+                    console.log('Menu update was actually successful, emitting success event');
                     this.$emit('menu-updated');
-                    console.log('🚀 updateMenu: menu-updated event emitted successfully (from catch block)');
-                    
-                    // Wait a moment and check if parent received the event
-                    setTimeout(() => {
-                        console.log('⏰ updateMenu: 1 second after event emission (catch) - parent should have received event');
-                    }, 1000);
-                    
-                    // Also emit data-loaded-changed to true to ensure UI is not stuck in loading state
-                    this.$emit('data-loaded-changed', true);
-                    console.log('🚀 updateMenu: data-loaded-changed(true) event emitted successfully (from catch block)');
                 } else {
-                    console.error('❌ updateMenu: Genuine error occurred, showing alert');
                     // Show more specific error message
                     const errorMessage = error.response?.data?.message || error.message || "An unknown error occurred";
                     alert(`An error occurred while attempting to save your changes: ${errorMessage}. Please try again!`);
