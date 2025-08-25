@@ -11,7 +11,7 @@
         <LoadingWithFunFact v-if="dataLoaded === false" />
 
         <!-- Display when venue does not exist -->
-        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists == false || dataLoaded == null">
+        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (dataLoaded === null && venueExists !== true)">
             <span>An error occurred while loading this page, please try again!</span>
             <br>
             <span class="text-danger-emphasis fw-normal">Are you sure that this venue exists?</span>
@@ -4040,17 +4040,22 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     mounted() {
+        console.log('🏢 VenueProfile: mounted() called');
+        console.log('📍 Route params:', this.$route.params);
+        console.log('🔍 Initial state:', { dataLoaded: this.dataLoaded, venueExists: this.venueExists });
 
         // Check if route params "venueID" is present
         if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
             this.targetVenue = this.$route.params.venueID;
             this.targetVenueID = this.$route.params.venueID;
+            console.log('✅ VenueProfile: Found venueID in route params:', this.targetVenueID);
 
             this.userName = this.$route.params.username || this.userName;
 
             // If logged in as a venue, check if the venueID matches the logged in venue's ID
             if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
                 this.selfView = true;
+                console.log('👤 VenueProfile: Self view detected');
             }
         }
         // If no venueID is specified, display logged in venue's profile page
@@ -4058,9 +4063,11 @@ export default {
             this.targetVenue = this.viewerID;
             this.selfView = true;
             this.currentURL = this.currentURL + '/' + this.targetVenue + '/' + this.userName;
+            console.log('👤 VenueProfile: Using logged in venue ID:', this.targetVenue);
         }
         // If not logged in as a venue, redirect to your own profile page / login
         else {
+            console.log('🚫 VenueProfile: No venue access, redirecting to login');
             this.$router.push('/login');
         }
 
@@ -4068,9 +4075,11 @@ export default {
 
         // Obtain venue data
         if (this.targetVenue != "" && this.targetVenue != undefined) {
+            console.log('🔄 VenueProfile: Starting getVenueData() for venue:', this.targetVenue);
             this.getVenueData();
         }
         else {
+            console.log('❌ VenueProfile: No target venue, setting venueExists to false');
             this.venueExists = false;
         }
 
