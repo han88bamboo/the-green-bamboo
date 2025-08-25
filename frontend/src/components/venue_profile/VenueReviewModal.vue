@@ -134,10 +134,12 @@
               <div>
                 <button type="button" class="btn secondary-btn-less-round-inverse me-2"
                   data-bs-dismiss="modal">Close</button>
-                <button v-if="!inEdit" type="button" @click="addVenueReview" class="btn secondary-btn-less-round">Submit
-                  Review</button>
-                <button v-else type="button" @click="editVenueReview" class="btn secondary-btn-less-round">Update
-                  Review</button>
+                <button v-if="!inEdit" type="button" @click="addVenueReview" class="btn secondary-btn-less-round">
+                  Submit Review
+                </button>
+                <button v-else type="button" @click="editVenueReview" class="btn secondary-btn-less-round">
+                  Update Review
+                </button>
               </div>
             </div>
           </template>
@@ -202,7 +204,6 @@ export default {
       this.errorMessage = '';
       this.duplicateEntry = false;
       this.addingVenueReview = true;
-      this.populateFormForEdit();
     },
     onFilesChange(event) {
       const files = event.target.files;

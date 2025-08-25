@@ -438,7 +438,8 @@ export default {
                     this.getVenueData(),
                     this.getMenu(),
                     this.getOverview(), 
-                    this.getReviews()
+                    this.getReviews(),
+                    this.getActivities(),
                 ]);
 
             } catch (error) {
@@ -504,6 +505,10 @@ export default {
             return 
         },
 
+        async getActivities() {
+            return 
+        },
+
         // Main venue data fetching method - optimized for SSR
         async getVenueData() {
             if (this.isLoadingVenue) return;
@@ -524,8 +529,6 @@ export default {
                     this.processVenueBasicData(venueData),
                     this.processVenueQuestionsAnswers(venueData),
                     this.processVenueHours(venueData),
-                    // this.processVenueMenu(venueData),
-                    // this.processVenueUpdates(venueData),
                     this.processMapData(venueData.address),
                     this.processClaimStatus(venueData)
                 ]);
@@ -589,31 +592,6 @@ export default {
             const rawHours = venueData.openingHours || {};
             this.openingHours = processUtils.sortObjectByKeys(rawHours, DAY_ORDER);
             this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
-        },
-
-        // Process menu data
-        processVenueMenu(venueData) {
-            // const menu = venueData.menu || [];
-
-            // Sort sections and items
-            this.menuSections = venueData.menu || [];
-            //  processUtils.sortByProperty(menu, 'sectionOrder');
-            // this.menuSections.forEach(section => {
-            //     section.sectionMenu = processUtils.sortByProperty(section.sectionMenu, 'itemOrder');
-            // });
-        },
-
-        // Process updates
-        processVenueUpdates(venueData) {
-            const updates = venueData.updates || [];
-
-            if (updates.length > 0) {
-                const sortedUpdates = processUtils.sortByProperty(updates, 'date', 'desc');
-                this.targetVenue.updates = sortedUpdates.map(update => ({
-                    ...update,
-                    date: processUtils.formatDateForDisplay(update.date)
-                }));
-            }
         },
 
         // Process map data with better error handling
