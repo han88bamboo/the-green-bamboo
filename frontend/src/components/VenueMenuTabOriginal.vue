@@ -1508,16 +1508,20 @@ export default {
     },
     data() {
         return {
-            drag: false,
-            
-            // Menu Editing
-            editMenu: [],
+        drag: false,
+        
+        // Menu Editing
+        editMenu: [],
 
-            showMenuLoadingOverlay: false,
+        showMenuLoadingOverlay: false,
 
-            invalidAreaMessageVisible: false,
+        invalidAreaMessageVisible: false,
+    
+        // truncation of official description <!-- tzh added  --->
+        showFullItemDescription: false,
 
-            // Search + Sort Menu
+        // Clipboard functionality
+        clipboardItem: false,            // Search + Sort Menu
             searchMenuResults: [],
             searchMenuTerm: '',
             sortMenuTerm: '',
@@ -2443,6 +2447,20 @@ export default {
             setTimeout(() => {
                 this.invalidAreaMessageVisible = false;
             }, 1000);
+        },
+
+        // Copy to Clipboard - transferred from parent
+        copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    this.clipboardItem = true;
+                    setTimeout(() => {
+                        this.clipboardItem = false;
+                    }, 3000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
         }
 
     }

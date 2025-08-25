@@ -3980,9 +3980,6 @@ export default {
             // truncation of official description <!-- tzh added  --->
             showFullDescription: false,
 
-            // truncation of official description <!-- tzh added  --->
-            showFullItemDescription: false,
-
             userType: 'user',
 
             showMenuLoadingOverlay: false,
