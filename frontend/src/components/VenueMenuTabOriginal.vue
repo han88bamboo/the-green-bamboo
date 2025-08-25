@@ -1610,6 +1610,16 @@ export default {
             },
             deep: true,
             immediate: true
+        },
+        // Watch for changes in servingTypes from parent
+        servingTypes: {
+            handler(newServingTypes) {
+                if (newServingTypes && newServingTypes.length > 0) {
+                    this.getDefaultServingType();
+                    this.initializeMultipleItemsDefaultServingTypes();
+                }
+            },
+            immediate: true
         }
     },
     mounted() {
