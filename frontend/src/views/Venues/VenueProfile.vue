@@ -8,21 +8,23 @@
     <div class="container pt-5 mobile-pt-3">
 
         <!-- Display when data is still loading -->
-        <LoadingWithFunFact v-if="dataLoaded === false" />
+        <LoadingWithFunFact v-if="!venueDataLoaded" />
 
         <!-- DEBUG: Show current state -->
         <!-- <div class="alert alert-info" style="position: fixed; top: 100px; right: 20px; z-index: 9999; font-size: 12px;">
             <strong>DEBUG STATE:</strong><br>
             dataLoaded: {{ dataLoaded }}<br>
+            venueDataLoaded: {{ venueDataLoaded }}<br>
+            menuDataLoaded: {{ menuDataLoaded }}<br>
             venueExists: {{ venueExists }}<br>
             targetVenueID: {{ targetVenueID }}<br>
             targetVenue: {{ typeof targetVenue === 'object' ? 'object' : targetVenue }}<br>
             Error condition 1: {{ venueExists === false }}<br>
-            Error condition 2: {{ dataLoaded === null && venueExists !== true }}
+            Error condition 2: {{ !venueDataLoaded && venueExists !== true }}
         </div> -->
 
         <!-- Display when venue does not exist -->
-        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (dataLoaded === null && venueExists !== true)">
+        <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (!venueDataLoaded && venueExists !== true)">
             <span>An error occurred while loading this page, please try again!</span>
             <br>
             <span class="text-danger-emphasis fw-normal">Are you sure that this venue exists?</span>
@@ -39,7 +41,7 @@
 
         <!-- ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- -->
 
-        <div class="row" v-if="dataLoaded == true">
+        <div class="row" v-if="isPageReady">
 
             <!-- ------- START Venue Information ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -1883,7 +1885,17 @@
 
                 <!-- Bar Menu Component -->
                 <div v-if="contentMode == 'menu'" id="menu">
+                    <!-- Show loading state if menu data is not loaded yet -->
+                    <div v-if="isMenuLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading menu...</p>
+                    </div>
+                    
+                    <!-- Show menu component when data is loaded -->
                     <VenueMenuTabOriginal
+                        v-else
                         :detailed-menu="detailedMenu"
                         :serving-types="servingTypes"
                         :target-venue="targetVenue"
@@ -3766,6 +3778,8 @@ export default {
 
             // flags
             dataLoaded: false,
+            venueDataLoaded: false,  // New: separate flag for venue info
+            menuDataLoaded: false,   // New: separate flag for menu
             venueExists: null,
             contentMode: 'menu',
             qaMode: 'answered',
@@ -4047,6 +4061,16 @@ export default {
         hasAmenities() {
             if (!this.targetVenue.amenities) return false;
             return Object.values(this.targetVenue.amenities).some(value => value === true);
+        },
+        
+        // Computed property to show if the page is ready to display
+        isPageReady() {
+            return this.venueDataLoaded && this.venueExists === true;
+        },
+        
+        // Computed property to show loading state for menu specifically
+        isMenuLoading() {
+            return this.venueDataLoaded && !this.menuDataLoaded;
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4774,12 +4798,16 @@ export default {
             }
 
 
-            // Set data loaded flag
-            console.log('🔄 Log 149: loadData: About to set dataLoaded flag, current dataLoaded:', this.dataLoaded);
+            // Set data loaded flags
+            console.log('🔄 Log 149: loadData: About to set dataLoaded flags, current dataLoaded:', this.dataLoaded);
             console.log('🔄 Log 150: loadData: Current venueExists value:', this.venueExists);
             if (this.dataLoaded != null) {
-                console.log('✅ Log 151: loadData: Setting dataLoaded to true');
-                this.dataLoaded = true;
+                console.log('✅ Log 151: loadData: Setting venueDataLoaded to true');
+                this.venueDataLoaded = true; // Show venue info immediately
+                this.dataLoaded = true; // Keep for backward compatibility
+                
+                // Set menu to loading state initially - it will be updated by the menu component
+                this.menuDataLoaded = false;
 
                 // Wait for next tick to ensure all computed properties are updated
                 this.$nextTick(() => {
@@ -4858,7 +4886,7 @@ export default {
 
         // Handle menu data processed by child component
         handleMenuDataProcessed(menuData) {
-            console.log('Menu data processed by child component:', menuData);
+            console.log('📊 handleMenuDataProcessed: Menu data received from child component:', menuData);
             
             // Update parent arrays with processed data if provided
             if (menuData.loadedListings) {
@@ -4877,6 +4905,10 @@ export default {
                 this.detailedMenu = menuData.processedDetailedMenu;
             }
             
+            // Mark menu as loaded when data processing is complete
+            console.log('✅ handleMenuDataProcessed: Setting menuDataLoaded to true');
+            this.menuDataLoaded = true;
+            
             // Generate sidebar data from processed listings
             if (this.loadedListings && this.loadedListings.length > 0) {
                 this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
@@ -4887,8 +4919,9 @@ export default {
 
         // Handle menu data processing errors
         handleMenuDataError(error) {
-            console.error('❌ Log 153: handleMenuDataError: Menu data processing error, setting dataLoaded to null:', error);
-            this.dataLoaded = null;
+            console.error('❌ Log 153: handleMenuDataError: Menu data processing error, setting menuDataLoaded to false:', error);
+            this.menuDataLoaded = false; // Only affect menu loading, not venue info
+            // Don't set dataLoaded to null anymore - venue info can still be shown
         },
 
         // Event handlers for VenueMenuTabOriginal component
@@ -4897,7 +4930,8 @@ export default {
         },
 
         handleDataLoadedChanged(dataLoaded) {
-            this.dataLoaded = dataLoaded;
+            // Update menu loading state instead of main dataLoaded
+            this.menuDataLoaded = dataLoaded;
         },
 
         handleMenuUpdated() {
@@ -6851,6 +6885,22 @@ Thank you!`
             immediate: true
         },
         
+        // Watch for venueDataLoaded changes
+        venueDataLoaded: {
+            handler(newVal, oldVal) {
+                console.log('🏢 Log 156: venueDataLoaded changed from', oldVal, 'to', newVal);
+            },
+            immediate: true
+        },
+        
+        // Watch for menuDataLoaded changes
+        menuDataLoaded: {
+            handler(newVal, oldVal) {
+                console.log('🍽️ Log 157: menuDataLoaded changed from', oldVal, 'to', newVal);
+            },
+            immediate: true
+        },
+        
         // Watch for venueExists changes  
         venueExists: {
             handler(newVal, oldVal) {
@@ -6862,8 +6912,10 @@ Thank you!`
     '$route.params.venueID': function(newId, oldId) {
         console.log('Route venue ID changed from', oldId, 'to', newId);
         if (newId !== oldId) {
-            // Reset data loading state
+            // Reset data loading states
             this.dataLoaded = false;
+            this.venueDataLoaded = false;
+            this.menuDataLoaded = false;
             this.venueExists = null;
             
             // Reset data
