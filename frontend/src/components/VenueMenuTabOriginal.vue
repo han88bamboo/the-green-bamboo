@@ -208,7 +208,7 @@
                 </div>
                 <div v-if="editMenuMode" class="col-3 d-grid px-1">
                     <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0"
-                        @click="editMenuMode = false"> Exit </button>
+                        @click="exitEditMode"> Exit </button>
                 </div>
 
 
@@ -260,7 +260,7 @@
                 </div>
                 <div v-if="editMenuMode" class="col-2 d-grid px-1">
                     <button type="button" class="btn btn-danger rounded-0 reverse-clickable-text px-0"
-                        @click="editMenuMode = false"> Exit </button>
+                        @click="exitEditMode"> Exit </button>
                 </div>
 
                 <!-- Sort Menu -->
@@ -1733,7 +1733,7 @@ export default {
                 // Set editMenu and searchMenuResults
                 this.resetEditMenu();
                 this.searchMenuResults = this.detailedMenu;
-                this.searchMenuResults = this.detailedMenu.sort((a, b) => 
+                this.searchMenuResults = [...this.detailedMenu].sort((a, b) => 
                     parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
                 );
 
@@ -2060,7 +2060,8 @@ export default {
                 // console.error(error);
             }
 
-            this.editMenuMode = false;
+            // Instead of directly mutating the prop, emit to parent
+            this.$emit('edit-menu-mode-changed', false);
 
             // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
             this.newMenuItemID = "";
@@ -2368,6 +2369,12 @@ export default {
             setTimeout(() => {
                 this.showMenuLoadingOverlay = false;
             }, 1500);
+        },
+
+        // Exit Edit Menu Mode - emit to parent instead of mutating prop
+        exitEditMode() {
+            // Emit to parent to set edit mode flag since editMenuMode is a prop
+            this.$emit('edit-menu-mode-changed', false);
         },
 
         // Update Menu - transferred from parent but modified for component
