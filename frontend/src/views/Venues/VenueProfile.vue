@@ -10,6 +10,17 @@
         <!-- Display when data is still loading -->
         <LoadingWithFunFact v-if="dataLoaded === false" />
 
+        <!-- DEBUG: Show current state -->
+        <!-- <div class="alert alert-info" style="position: fixed; top: 100px; right: 20px; z-index: 9999; font-size: 12px;">
+            <strong>DEBUG STATE:</strong><br>
+            dataLoaded: {{ dataLoaded }}<br>
+            venueExists: {{ venueExists }}<br>
+            targetVenueID: {{ targetVenueID }}<br>
+            targetVenue: {{ typeof targetVenue === 'object' ? 'object' : targetVenue }}<br>
+            Error condition 1: {{ venueExists === false }}<br>
+            Error condition 2: {{ dataLoaded === null && venueExists !== true }}
+        </div> -->
+
         <!-- Display when venue does not exist -->
         <div class="text-danger fst-italic fw-bold fs-3" v-if="venueExists === false || (dataLoaded === null && venueExists !== true)">
             <span>An error occurred while loading this page, please try again!</span>
@@ -4048,6 +4059,7 @@ export default {
         if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
             this.targetVenue = this.$route.params.venueID;
             this.targetVenueID = this.$route.params.venueID;
+            console.log('✅ Log 146: VenueProfile: Found venueID in route params:', this.targetVenueID);
             console.log('✅ VenueProfile: Found venueID in route params:', this.targetVenueID);
 
             this.userName = this.$route.params.username || this.userName;
@@ -4252,12 +4264,22 @@ export default {
         // Obtain venue data
         async getVenueData() {
             console.log('🔍 getVenueData: Starting venue data fetch for ID:', this.targetVenueID);
+            console.log('🔍 Log 124: getVenueData: targetVenue value:', this.targetVenue);
+            console.log('🔍 Log 125: getVenueData: targetVenueID value:', this.targetVenueID);
+            console.log('🔍 Log 126: getVenueData: API URL:', process.env.VUE_APP_API_URL);
+            
             try {
                 console.log('📡 getVenueData: Making API call to:', `${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenue/${this.targetVenueID}`);
-                console.log('📡 getVenueData: API response received:', response);
+                console.log('📡 Log 127: getVenueData: Raw API response received:', response);
+                console.log('📡 Log 128: getVenueData: Response status:', response.status);
+                console.log('📡 Log 129: getVenueData: Response data:', response.data);
+                console.log('📡 Log 130: getVenueData: Response data type:', typeof response.data);
+                console.log('📡 Log 131: getVenueData: Is response.data an array?', Array.isArray(response.data));
+                console.log('📡 Log 132: getVenueData: Response data length (if array):', Array.isArray(response.data) ? response.data.length : 'Not an array');
 
                 if (response != null && response.data != null && response.data != "" && !(Array.isArray(response.data) && response.data.length == 0)) {
+                    console.log('✅ Log 133: getVenueData: Venue data validation passed - venue exists');
                     console.log('✅ getVenueData: Valid venue data found:', response.data);
 
                     this.targetVenue = response.data;
@@ -4363,7 +4385,7 @@ export default {
                         }
 
                         this.venueExists = true;
-                        console.log('✅ getVenueData: venueExists set to true, map data loaded successfully');
+                        console.log('✅ Log 147: getVenueData: venueExists set to true, map data loaded successfully');
                     } catch (error) {
                         console.error("❌ getVenueData: Error getting maps data: ", error)
                     }
@@ -4436,16 +4458,28 @@ export default {
                         }
                     }
 
+                    console.log('📞 Log 148: getVenueData: About to call loadData(), current venueExists:', this.venueExists);
                     console.log('📞 getVenueData: Calling loadData()');
                     this.loadData();
                 }
                 else {
+                    console.log('❌ Log 134: getVenueData: Venue data validation failed');
+                    console.log('❌ Log 135: getVenueData: response != null:', response != null);
+                    console.log('❌ Log 136: getVenueData: response.data != null:', response.data != null);
+                    console.log('❌ Log 137: getVenueData: response.data != "":', response.data != "");
+                    console.log('❌ Log 138: getVenueData: !(Array.isArray(response.data) && response.data.length == 0):', !(Array.isArray(response.data) && response.data.length == 0));
+                    console.log('❌ Log 139: getVenueData: response.data value:', response.data);
                     console.log('❌ getVenueData: No venue data found, setting venueExists to false');
                     this.venueExists = false;
                 }
             }
             catch (error) {
-                console.error('❌ getVenueData: Error in getVenueData:', error);
+                console.error('❌ Log 140: getVenueData: Error in getVenueData:', error);
+                console.log('❌ Log 141: getVenueData: Error type:', typeof error);
+                console.log('❌ Log 142: getVenueData: Error message:', error.message);
+                console.log('❌ Log 143: getVenueData: Error response:', error.response);
+                console.log('❌ Log 144: getVenueData: Error response status:', error.response?.status);
+                console.log('❌ Log 145: getVenueData: Error response data:', error.response?.data);
                 console.log('❌ getVenueData: Setting dataLoaded to null due to error');
                 this.dataLoaded = null;
             }
@@ -4649,6 +4683,7 @@ export default {
                         }
                     }
                     catch (error) {
+                        console.log('❌ Log 152: loadData: Error fetching user data, setting dataLoaded to null:', error);
                         this.dataLoaded = null;
                     }
                 }
@@ -4742,7 +4777,10 @@ export default {
 
 
             // Set data loaded flag
+            console.log('🔄 Log 149: loadData: About to set dataLoaded flag, current dataLoaded:', this.dataLoaded);
+            console.log('🔄 Log 150: loadData: Current venueExists value:', this.venueExists);
             if (this.dataLoaded != null) {
+                console.log('✅ Log 151: loadData: Setting dataLoaded to true');
                 this.dataLoaded = true;
 
                 // Wait for next tick to ensure all computed properties are updated
@@ -4851,7 +4889,7 @@ export default {
 
         // Handle menu data processing errors
         handleMenuDataError(error) {
-            console.error('Error processing menu data:', error);
+            console.error('❌ Log 153: handleMenuDataError: Menu data processing error, setting dataLoaded to null:', error);
             this.dataLoaded = null;
         },
 
@@ -6805,6 +6843,22 @@ Thank you!`
         }
     },
     watch: {
+        // Watch for dataLoaded changes
+        dataLoaded: {
+            handler(newVal, oldVal) {
+                console.log('🔄 Log 154: dataLoaded changed from', oldVal, 'to', newVal);
+            },
+            immediate: true
+        },
+        
+        // Watch for venueExists changes  
+        venueExists: {
+            handler(newVal, oldVal) {
+                console.log('🏢 Log 155: venueExists changed from', oldVal, 'to', newVal);
+            },
+            immediate: true
+        },
+
     '$route.params.venueID': function(newId, oldId) {
         console.log('Route venue ID changed from', oldId, 'to', newId);
         if (newId !== oldId) {
