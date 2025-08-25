@@ -513,10 +513,10 @@
                       Brands List: {{ name }}
                     </h5>
                     <span v-if="bookmarkList.listItems.length > 1">
-                      {{ bookmarkList.listItems.length }} items in list
+                      {{ bookmarkList.listItems.length }} brands in list
                     </span>
                     <span v-else>
-                      {{ bookmarkList.listItems.length }} item in list
+                      {{ bookmarkList.listItems.length }} brand in list
                     </span>
                     <div
                       style="
@@ -2159,9 +2159,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'reviews',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'reviews',
               }"
               @click="switchTab('reviews')"
@@ -2173,9 +2173,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'lists' || activeTab === 'list' || activeTab === 'producer_lists' || activeTab === 'producer_list' || activeTab === 'venue_lists' || activeTab === 'venue_list',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'lists' && activeTab !== 'list' && activeTab !== 'producer_lists' && activeTab !== 'producer_list' && activeTab !== 'venue_lists' && activeTab !== 'venue_list',
               }"
               @click="switchTab('lists')"
@@ -2188,9 +2188,9 @@
             <button
               class="btn mx-1 fw-bold no-hover"
               :class="{
-                'primary-btn-green active-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'badges',
-                'primary-btn-green-thin-outline inactive-toggle-button-user-profile':
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
                   activeTab !== 'badges',
               }"
               @click="switchTab('badges')"
@@ -2311,7 +2311,7 @@
                 <!-- Sub-navigation for list types -->
                 <div class="mb-3">
                   <button
-                    class="btn btn-sm mx-1"
+                    class="btn btn-sm mx-1 mb-1 fw-bold"
                     :class="{
                       'primary-btn-green': currentListType === 'drinks',
                       'primary-btn-green-thin-outline': currentListType !== 'drinks'
@@ -2438,297 +2438,253 @@
                     </div>
 
                     <!-- display all lists -->
-                    <div
-                      v-for="(bookmarkList, name, index) in displayUserBookmarks"
-                      :key="name"
-                      style="display: flex"
-                      class="row mb-3"
-                    >
-                      <div class="col-3 mobile-col-4 mobile-pe-2">
-                        <!-- <img :src=" 'data:image/png;base64,' + ( getListingFromID(bookmarkList.listItems[0]).photo || defaultDrinkImage )" alt="" class="bottle-img me-3"> xyz -->
-                        <img
-                          :src="
-                            bookmarkList.listItems.length > 0
-                              ? bookedMarkedListings[
-                                  bookmarkList.listItems[0]?.drinkId || bookmarkList.listItems[0]
-                                ]?.photo || defaultDrinkImage
-                              : defaultDrinkImage
-                          "
-                          alt=""
-                          class="bottle-img rounded me-3"
-                        />
-                      </div>
-                      <div class="col-9 mobile-col-8 mobile-ps-1">
-                        <!-- style="height: 150px; display: flex; flex-direction: column;" -->
-                        <h5
-                          class="mt-1 mobile-fs-6"
-                          @click="viewList(name)"
-                          style="cursor: pointer; font-weight:bold"
-                        >
-                          Drinks List: {{ name }}
-                        </h5>
-                        <span v-if="bookmarkList.listItems.length > 1">
-                          {{ bookmarkList.listItems.length }} items in list
-                        </span>
-                        <span v-else>
-                          {{ bookmarkList.listItems.length }} item in list
-                        </span>
+                    <div class="row g-3">
+                      <div
+                        v-for="(bookmarkList, name, index) in displayUserBookmarks"
+                        :key="name"
+                        class="col-12 col-md-6"
+                      >
                         <div
-                          style="
-                            max-height: 48px;
-                            overflow-y: auto;
-                            font-style: italic;
-                          "
+                          class="pin-card h-100"
+                          @click="viewList(name)"
+                          role="button"
+                          tabindex="0"
                         >
-                          {{ bookmarkList.listDesc }}
-                        </div>
-                        <div style="display: flex; margin-top: auto" class="mb-1">
-                          <b
-                            ><a
-                              class="me-2 mt-2 mobile-view-hide"
-                              @click="viewList(name)"
-                              href="#"
-                              style="color: #027562"
-                              >View List</a
-                            ></b
-                          >
-                          <b
-                            ><a
-                              class="me-2 mobile-view-show"
-                              @click="viewList(name)"
-                              href="#"
-                              style="color: #027562"
-                              >View</a
-                            ></b
-                          >
-                          <b
-                            ><a
-                              v-if="
-                                ownProfile &&
-                                !(
-                                  name == 'Drinks I Have Tried' ||
-                                  name == 'Drinks I Want To Try'
-                                )
-                              "
-                              class="mobile-view-hide me-2"
-                              style="color: #027562"
-                              href="#"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#editListModal${index}`"
-                              @click="resetEditList(name, bookmarkList.listDesc)"
-                              >Edit List</a
-                            ></b
-                          >
-                          <b
-                            ><a
-                              v-if="
-                                ownProfile &&
-                                !(
-                                  name == 'Drinks I Have Tried' ||
-                                  name == 'Drinks I Want To Try'
-                                )
-                              "
-                              class="mobile-view-hide"
-                              href="#"
-                              style="color: #027562"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#deleteListModal${index}`"
-                              >Delete List</a
-                            ></b
-                          >
-                          <b
-                            ><a
-                              v-if="
-                                ownProfile &&
-                                !(
-                                  name == 'Drinks I Have Tried' ||
-                                  name == 'Drinks I Want To Try'
-                                )
-                              "
-                              class="mobile-view-show me-2"
-                              href="#"
-                              data-bs-toggle="modal"
-                              style="color: #027562"
-                              :data-bs-target="`#editListModal${index}`"
-                              @click="resetEditList(name, bookmarkList.listDesc)"
-                              >Edit</a
-                            ></b
-                          >
-                          <b
-                            ><a
-                              v-if="
-                                ownProfile &&
-                                !(
-                                  name == 'Drinks I Have Tried' ||
-                                  name == 'Drinks I Want To Try'
-                                )
-                              "
-                              class="mobile-view-show"
-                              href="#"
-                              style="color: #027562"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#deleteListModal${index}`"
-                              >Delete</a
-                            ></b
-                          >
-                        </div>
-                      </div>
-
-                      <!-- edit list modal start -->
-                      <div
-                        class="modal fade"
-                        :id="`editListModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="exampleModalLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                Edit List
-                              </h1>
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
+                          <!-- 3-image grid -->
+                          <div class="pin-grid">
+                            <!-- Main (first item) -->
+                            <div class="pin-cell pin-main">
+                              <template v-if="bookmarkList.listItems[0]">
+                                <img
+                                  class="pin-img"
+                                  :src="getListingPhoto(bookmarkList.listItems[0])"
+                                  :alt="`${name} preview 1`"
+                                />
+                              </template>
+                              <div v-else class="pin-placeholder"></div>
                             </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label for="basic-url" class="form-label"
-                                  >List Name</label
-                                >
-                                <div class="input-group mb-3">
-                                  <input
-                                    v-model="editListName"
-                                    type="text"
-                                    class="form-control"
-                                    :placeholder="name"
-                                    aria-label="Username"
-                                    aria-describedby="basic-addon1"
-                                  />
-                                </div>
-                                <div
-                                  v-if="editListNameError"
-                                  class="text-danger text-sm"
-                                >
-                                  *{{ editListNameError }}
-                                </div>
-                              </div>
 
-                              <div class="mb-3">
-                                <label for="basic-url" class="form-label"
-                                  >List Description</label
-                                >
-                                <div class="input-group mb-3">
-                                  <textarea
-                                    v-model="editListDesc"
-                                    type="text"
-                                    class="form-control"
-                                    :placeholder="bookmarkList.listDesc"
-                                    aria-label="Username"
-                                    aria-describedby="basic-addon1"
-                                    rows="5"
-                                  ></textarea>
-                                </div>
-                              </div>
+                            <!-- Right-top (second item) -->
+                            <div class="pin-cell pin-side1">
+                              <template v-if="bookmarkList.listItems[1]">
+                                <img
+                                  class="pin-img"
+                                  :src="getListingPhoto(bookmarkList.listItems[1])"
+                                  :alt="`${name} preview 2`"
+                                />
+                              </template>
+                              <div v-else class="pin-placeholder"></div>
                             </div>
-                            <div class="modal-footer">
-                              <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-primary"
-                                @click="editList(name)"
-                              >
-                                Save changes
-                              </button>
+
+                            <!-- Right-bottom (third item) -->
+                            <div class="pin-cell pin-side2">
+                              <template v-if="bookmarkList.listItems[2]">
+                                <img
+                                  class="pin-img"
+                                  :src="getListingPhoto(bookmarkList.listItems[2])"
+                                  :alt="`${name} preview 3`"
+                                />
+                              </template>
+                              <div v-else class="pin-placeholder"></div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                      <!-- modal end -->
-
-                      <!-- delete list modal start -->
-                      <div
-                        class="modal fade"
-                        :id="`deleteListModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="exampleModalLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="text-end mt-2 me-2">
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
+                          <div class="pin-body">
+                            <!-- Meta -->
+                            <div class="pin-meta">
+                              <h5 class="pin-title">{{ name }}</h5>
+                              <div class="pin-count">
+                                {{ bookmarkList.listItems.length }}
+                                {{ bookmarkList.listItems.length === 1 ? 'Drink' : 'Drinks' }}
+                              </div>
                             </div>
-
-                            <div class="text-center">
-                              <img
-                                src="../../../Images/Others/cancel.png"
-                                alt=""
-                                class="rounded-circle border border-dark text-center"
-                                style="width: 100px; height: 100px"
-                              />
-                              <h3>Are you sure?</h3>
-                              <br />
-                              <p>
-                                Do you really want to delete
-                                <b
-                                  ><i>{{ name }}</i></b
-                                >?
-                              </p>
+                            <div class="pin-desc">
+                              <div>
+                                {{ bookmarkList.listDesc }}
+                              </div>
                             </div>
-                            <div style="display: inline" class="text-center mb-4">
-                              <button
-                                type="button"
-                                class="btn btn-secondary me-3"
-                                data-bs-dismiss="modal"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-danger"
-                                data-bs-dismiss="modal"
-                                @click="deleteList(name)"
-                              >
-                                Delete
-                              </button>
+                            <div class="pin-actions">
+                                <b>
+                                  <a
+                                    class="me-2 my-3"
+                                    @click="viewList(name)"
+                                    href="#"
+                                    style="color: #027562"
+                                    >View</a>
+                                </b>
+                                <b>
+                                  <a
+                                    v-if="ownProfile"
+                                    class=" me-2 my-3"
+                                    style="color: #027562"
+                                    href="#"
+                                    data-bs-toggle="modal"
+                                    :data-bs-target="`#editListModal${index}`"
+                                    @click="resetEditList(name, bookmarkList.listDesc)"
+                                    >Edit</a>
+                                </b>
+                                <b>
+                                  <a
+                                    v-if="ownProfile"
+                                    class=" my-3"
+                                    href="#"
+                                    style="color: #027562"
+                                    data-bs-toggle="modal"
+                                    :data-bs-target="`#deleteListModal${index}`"
+                                    >Delete</a>
+                                </b>
                             </div>
                           </div>
+                          <!-- edit list modal start -->
+                          <div
+                            class="modal fade"
+                            :id="`editListModal${index}`"
+                            tabindex="-1"
+                            aria-labelledby="exampleModalLabel"
+                            aria-hidden="true"
+                          >
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                    Edit List
+                                  </h1>
+                                  <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                  ></button>
+                                </div>
+                                <div class="modal-body">
+                                  <div class="mb-3">
+                                    <label for="basic-url" class="form-label"
+                                      >List Name</label
+                                    >
+                                    <div class="input-group mb-3">
+                                      <input
+                                        v-model="editListName"
+                                        type="text"
+                                        class="form-control"
+                                        :placeholder="name"
+                                        aria-label="Username"
+                                        aria-describedby="basic-addon1"
+                                      />
+                                    </div>
+                                    <div
+                                      v-if="editListNameError"
+                                      class="text-danger text-sm"
+                                    >
+                                      *{{ editListNameError }}
+                                    </div>
+                                  </div>
+
+                                  <div class="mb-3">
+                                    <label for="basic-url" class="form-label"
+                                      >List Description</label
+                                    >
+                                    <div class="input-group mb-3">
+                                      <textarea
+                                        v-model="editListDesc"
+                                        type="text"
+                                        class="form-control"
+                                        :placeholder="bookmarkList.listDesc"
+                                        aria-label="Username"
+                                        aria-describedby="basic-addon1"
+                                        rows="5"
+                                      ></textarea>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="modal-footer">
+                                  <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                  >
+                                    Close
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    @click="editList(name)"
+                                  >
+                                    Save changes
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- modal end -->
+                          <!-- delete list modal start -->
+                          <div
+                            class="modal fade"
+                            :id="`deleteListModal${index}`"
+                            tabindex="-1"
+                            aria-labelledby="exampleModalLabel"
+                            aria-hidden="true"
+                          >
+                            <div class="modal-dialog modal-dialog-centered">
+                              <div class="modal-content">
+                                <div class="text-end mt-2 me-2">
+                                  <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Close"
+                                  ></button>
+                                </div>
+
+                                <div class="text-center px-3">
+                                  <h3><i class="bi bi-trash-fill"></i></h3>
+                                  <h3>Delete this list?</h3>
+                                  <br />
+                                  <p>
+                                    This list will be permanently deleted. Are you sure you want to delete
+                                    <b
+                                      ><i>{{ name }}</i></b
+                                    >?
+                                  </p>
+                                </div>
+                                <div style="display: inline" class="text-center mb-4">
+                                  <button
+                                    type="button"
+                                    class="btn btn-secondary me-3"
+                                    data-bs-dismiss="modal"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    class="btn btn-danger"
+                                    data-bs-dismiss="modal"
+                                    @click="deleteList(name)"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- modal end -->
                         </div>
                       </div>
-                      <!-- modal end -->
                     </div>
                   </div>
 
                   <!-- Individual Drinks List View -->
                   <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
                     <!-- list name, back to lists & add drink to list & share button -->
-                    <div class="row mb-4 mobile-mt-2">
-                      <div class="col-5 mobile-col-7">
+                    <div class="row mobile-mt-2">
                         <h5 class="mobile-fs-5">
-                          <b>Drinks List: {{ currentList }}</b>
+                          <b>Drink List: {{ currentList }}</b>
+                          <p class="mobile-rating-smaller-text-2 my-1">{{ displayUserBookmarks[currentList].listDesc }}</p>
                         </h5>
-                      </div>
-                      <div class="col-7 mobile-col-5 text-end d-flex gap-2 justify-content-end">
+                    </div>
+                    <div class="text-start d-flex gap-2 mb-3 justify-content-start">
                         <button
                           v-if="ownProfile"
                           type="button"
-                          class="btn btn tertiary-btn-blue drinklist"
+                          class="btn btn-sm tertiary-btn-blue drinklist"
                           data-bs-toggle="modal"
                           data-bs-target="#exampleModal"
                         >
@@ -2749,10 +2705,11 @@
                           </svg>
                           <span class="mobile-view-hide">&nbsp; Add Drink</span>
                         </button>
+                        <!--KAI temporarily comment out 
                         <button
                           @click="updateCurrentURL"
                           type="button"
-                          class="btn btn tertiary-btn-blue drinklist"
+                          class="btn btn-sm tertiary-btn-blue drinklist"
                           data-bs-toggle="modal"
                           data-bs-target="#shareListModal"
                         >
@@ -2778,10 +2735,11 @@
                           </svg>
                           <span class="mobile-view-hide">&nbsp;Share List</span>
                         </button>
+                        -->
                         <button
                           @click="viewList('lists')"
                           type="button"
-                          class="btn btn tertiary-btn-blue drinklist"
+                          class="btn btn-sm tertiary-btn-blue drinklist"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -2798,10 +2756,7 @@
                           </svg>
                           <span class="mobile-view-hide">&nbsp;Back to Drinks Lists</span>
                         </button>
-                      </div>
                     </div>
-
-
 
                     <!-- add drink modal -->
                     <div
@@ -2890,165 +2845,121 @@
                       </div>
                     </div>
 
-                    <!-- list details -->
-                    <div
-                      class="row"
-                      v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
-                      :key="index"
-                    >
-                      <div class="col-10 pe-0" style="display: flex">
-                        <img
-                          :src="
-                            bookedMarkedListings[listing?.drinkId]?.photo ||
-                            defaultDrinkImage
-                          "
-                          alt=""
-                          style="width: 100px; height: 100px"
-                          class="bottle-img rounded me-3"
-                        />
-                        <div
-                          style="
-                            min-height: 130px;
-                            display: flex;
-                            flex-direction: column;
-                          "
-                        >
-                          <a
-                            :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                            style="text-decoration: none; color: inherit"
-                          >
-                            <h5 class="mobile-fs-6"><b>
-                              {{
-                                bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...'
-                              }}
-                            </b></h5>
-                          </a>
-                          <p
-                            class="mobile-rating-smaller-text-2"
-                            style="
-                              display: -webkit-box;
-                              -webkit-line-clamp: 3;
-                              -webkit-box-orient: vertical;
-                              overflow: hidden;
-                            "
-                          >
-                            {{
-                              bookedMarkedListings[listing?.drinkId]?.officialDesc || 'No description available'
-                            }}
-                          </p>
-                          <div
-                            v-if="ownProfile"
-                            style="display: flex; margin-top: auto"
-                            class="my-0"
-                          >
-                            <a
-                              href="#"
-                              style="text-decoration: none; color: #FF3E31"
-                              class="mobile-rating-smaller-text-2"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#deleteFromListModal${index}`"
-                            >
-                              <!-- cross icon -->
-                              <svg
-                                class="mb-1"
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="16"
-                                width="12"
-                                viewBox="0 0 384 512"
-                                style="fill: #FF3E31"
-                              >
-                                <path
-                                  d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"
-                                />
-                              </svg>
-                              Delete from list
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-2 text-center ps-0" style="color:rgb(240, 179, 88)">
-                        <h2>
-                          {{
-                            bookedMarkedListings[listing?.drinkId]?.avgRating !==
-                              null &&
-                            bookedMarkedListings[listing?.drinkId]?.avgRating !==
-                              undefined
-                              ? parseFloat(
-                                  bookedMarkedListings[listing?.drinkId]?.avgRating
-                                ).toFixed(1)
-                              : "-"
-                          }}
-                          ★
-                        </h2>
-                      </div>
-                      <hr>
-
-                      <!-- delete from list modal start -->
+                    
+                    <!-- List details (card grid layout, no pagination/visibility checks) -->
+                    <div class="row">
                       <div
-                        class="modal fade"
-                        :id="`deleteFromListModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="exampleModalLabel"
-                        aria-hidden="true"
+                        class="col-6 col-md-4 col-lg-3 mb-4"
+                        v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
+                        :key="index"
                       >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="text-end mt-2 me-2">
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
-                            </div>
+                        <div class="card h-100 review-card border shadow-sm">
+                          <!-- Image on top -->
+                          <div class="card-img-top-wrapper">
+                            <img
+                              :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
+                              :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
+                              class="card-img-top review-card-img"
+                            />
+                          </div>
+                          <div class="card-body d-flex flex-column">
+                            <!-- Title links to listing -->
+                            <a
+                              :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
+                              class="text-decoration-none"
+                              style="text-decoration: none; color: #223957"
+                            >
+                              <h6 class="card-title mb-2 default-clickable-text fw-bold">
+                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                              </h6>
+                            </a>
 
-                            <div class="text-center mx-2">
-                              <img
-                                src="../../../Images/Others/cancel.png"
-                                alt=""
-                                class="rounded-circle border border-dark text-center"
-                                style="width: 100px; height: 100px"
-                              />
-                              <h3>Are you sure?</h3>
-                              <br />
-                              <p>
-                                Do you really want to delete
-                                <b
-                                  ><i>{{
-                                    bookedMarkedListings[listing?.drinkId]
-                                      ?.listingName || 'this item'
-                                  }}</i></b
+                            <!-- Producer 
+                            <p class="text-muted small mb-2">
+                              by {{ bookedMarkedListings[listing?.drinkId]?.producerName }}
+                            </p> -->
+
+                            <!-- Type / Country (optional) -->
+                            <p class="mb-3 small fw-bold" style="color: #f0b358;"
+                              v-if="bookedMarkedListings[listing?.drinkId]?.drinkType || bookedMarkedListings[listing?.drinkId]?.originCountry">
+                              
+                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / 
+                              {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }} 
+                            </p>
+                            <h4 class="mobile-fs-5 fw-bold rating-text" style="color:#f0b358">
+                                {{
+                                  bookedMarkedListings[listing?.drinkId]?.avgRating !== null &&
+                                  bookedMarkedListings[listing?.drinkId]?.avgRating !== undefined
+                                    ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1)
+                                    : "-"
+                                }}★
+                            </h4>
+                            <!-- Footer pinned to bottom: delete (if ownProfile) on left, rating on right -->
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                              <div v-if="ownProfile">
+                                <a
+                                  href="#"
+                                  class="mobile-rating-smaller-text-2 small"
+                                  style="text-decoration: none; color:#666"
+                                  data-bs-toggle="modal"
+                                  :data-bs-target="`#deleteFromListModal${index}`"
                                 >
-                                from
-                                <b
-                                  ><i>{{ currentList }}</i></b
-                                >?
-                              </p>
-                            </div>
-                            <div style="display: inline" class="text-center mb-4">
-                              <button
-                                type="button"
-                                class="btn btn-secondary me-3"
-                                data-bs-dismiss="modal"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-danger"
-                                data-bs-dismiss="modal"
-                                @click="
-                                  deleteFromList(currentList, listing?.drinkId)
-                                "
-                              >
-                                Delete
-                              </button>
+                                  x Delete from list
+                                </a>
+                              </div>
+
+                              
                             </div>
                           </div>
                         </div>
+
+                        <!-- delete from list modal (unchanged except position) -->
+                        <div
+                          class="modal fade"
+                          :id="`deleteFromListModal${index}`"
+                          tabindex="-1"
+                          aria-labelledby="deleteFromListLabel"
+                          aria-hidden="true"
+                        >
+                          <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="text-end mt-2 me-2">
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+
+                              <div class="text-center mx-2">
+                                <img
+                                  src="../../../Images/Others/cancel.png"
+                                  alt=""
+                                  class="rounded-circle border border-dark text-center"
+                                  style="width: 100px; height: 100px"
+                                />
+                                <h3>Are you sure?</h3>
+                                <br />
+                                <p>
+                                  Do you really want to delete
+                                  <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName || 'this item' }}</i></b>
+                                  from <b><i>{{ currentList }}</i></b>?
+                                </p>
+                              </div>
+                              <div class="text-center mb-4">
+                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                                <button
+                                  type="button"
+                                  class="btn btn-danger"
+                                  data-bs-dismiss="modal"
+                                  @click="deleteFromList(currentList, listing?.drinkId)"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- modal end -->
                       </div>
-                      <!-- modal end -->
                     </div>
+
                   </div>
                 </div>
 
@@ -3085,7 +2996,7 @@
                         <h5 class="mb-1 fw-bold">{{ name }}</h5>
                         <p class="mb-1">{{ producerList.listDesc }}</p>
                         <p class="mb-0">
-                          <small>{{ producerList.listItems ? producerList.listItems.length : 0 }} Producers</small>
+                          <small>{{ producerList.listItems ? producerList.listItems.length : 0 }} Brands</small>
                         </p>
                         <div class="mt-2">
                           <button 
@@ -3125,7 +3036,7 @@
                         <div class="modal-dialog">
                           <div class="modal-content">
                             <div class="modal-header">
-                              <h5 class="modal-title" id="editProducerListLabel">Edit Producer List</h5>
+                              <h5 class="modal-title" id="editProducerListLabel">Edit Brand List</h5>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -3159,7 +3070,7 @@
                         <div class="modal-dialog">
                           <div class="modal-content">
                             <div class="modal-header">
-                              <h5 class="modal-title" id="deleteProducerListLabel">Delete Producer List</h5>
+                              <h5 class="modal-title" id="deleteProducerListLabel">Delete Brand List</h5>
                               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -4843,6 +4754,7 @@ export default {
       }
     },
 
+    
     // ------------------- Button Hover -------------------
     hoverButton(event) {
       event.target.style.backgroundColor = "#E5A443";
@@ -5518,6 +5430,12 @@ export default {
         }
       }
       return null;
+    },
+
+    getListingPhoto(item) {
+    const id = item?.drinkId ?? item;
+    const photo = this.bookedMarkedListings[id]?.photo;
+    return photo || this.defaultDrinkImage;
     },
 
     // ------------------ Unfollow Display User ------------------
@@ -6838,5 +6756,81 @@ export default {
     margin-bottom: 1px !important;
   }
 }
+
+/* List Card Styles */
+.pin-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+
+.pin-body {
+  padding: 0px 12px 12px; /* apply consistent left padding */
+}
+
+.pin-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-template-areas:
+    "main side1"
+    "main side2";
+  gap: 8px;
+  padding: 8px;
+  height: 180px; 
+   /* tweak as you like */
+}
+
+.pin-cell { width: 100%; height: 100%; border-radius: 12px; overflow: hidden; }
+.pin-main  { grid-area: main; }
+.pin-side1 { grid-area: side1; }
+.pin-side2 { grid-area: side2; }
+
+.pin-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.pin-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #e9ecef;   /* greyed-out box */
+}
+
+.pin-meta {
+  padding: 8px 0 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.pin-title {
+  margin: 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pin-count {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.pin-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+.pin-desc {
+  padding: 0;
+  margin: 0;
+}
+
+.pin-actions {
+  padding: 0;   /* top/bottom handled separately, left/right small (or 0) */
+  padding-top: 0.5rem; /* ≈ py-2 top */
+  padding-bottom: 0.5rem; /* ≈ py-2 bottom */
+  margin: 0;
+}
+
 
 </style>
