@@ -1536,7 +1536,9 @@ export default {
         showFullItemDescription: false,
 
         // Clipboard functionality
-        clipboardItem: false,            // Search + Sort Menu
+        clipboardItem: false,
+
+            // Search + Sort Menu
             searchMenuResults: [],
             searchMenuTerm: '',
             sortMenuTerm: '',
@@ -1583,6 +1585,9 @@ export default {
             internalLoadedListings: [],
             internalLoadedProducers: [],
 
+            // Flag to prevent duplicate loading
+            isLoading: false,
+
             // Drag and drop properties
             menuSnapshot: null,
             dragOptions: {
@@ -1603,13 +1608,14 @@ export default {
     watch: {
         // Watch for changes in detailedMenu from parent
         detailedMenu: {
-            handler(newMenu) {
-                if (newMenu && newMenu.length > 0) {
+            handler(newMenu, oldMenu) {
+                // Only trigger if menu actually changed and avoid initial trigger since mounted handles it
+                if (newMenu && newMenu.length > 0 && !this.isLoading && JSON.stringify(newMenu) !== JSON.stringify(oldMenu)) {
                     this.loadMenuData();
                 }
             },
             deep: true,
-            immediate: true
+            immediate: false  // Changed to false to avoid double loading
         },
         // Watch for changes in servingTypes from parent
         servingTypes: {
@@ -1618,8 +1624,7 @@ export default {
                     this.getDefaultServingType();
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
-            },
-            immediate: true
+            }
         }
     },
     mounted() {
@@ -1636,9 +1641,19 @@ export default {
 
         // Load menu data - moved from parent's loadData method
         async loadMenuData() {
+            if (this.isLoading) {
+                console.log('Already loading menu data, skipping...');
+                return;
+            }
+            
+            this.isLoading = true;
+            
             try {
+                // Create a deep copy of detailedMenu to avoid mutating props
+                const menuCopy = JSON.parse(JSON.stringify(this.detailedMenu));
+                
                 // Get listing data for each item in menu
-                for (let section of this.detailedMenu) {
+                for (let section of menuCopy) {
                     for (let item of section.sectionMenu) {
 
                         // Find item in loadedListings
@@ -1740,10 +1755,10 @@ export default {
                     }
                 }
 
-                // Set editMenu and searchMenuResults
-                this.resetEditMenu();
-                this.searchMenuResults = this.detailedMenu;
-                this.searchMenuResults = [...this.detailedMenu].sort((a, b) => 
+                // Set editMenu and searchMenuResults using the processed copy
+                this.resetEditMenuWithData(menuCopy);
+                this.searchMenuResults = menuCopy;
+                this.searchMenuResults = [...menuCopy].sort((a, b) => 
                     parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
                 );
 
@@ -1753,13 +1768,16 @@ export default {
                     loadedProducers: this.internalLoadedProducers,
                     editMenu: this.editMenu,
                     searchMenuResults: this.searchMenuResults,
-                    processedDetailedMenu: this.detailedMenu
+                    processedDetailedMenu: menuCopy
                 });
 
             }
             catch (error) {
                 console.error("Error processing menu data:", error);
                 this.$emit('menu-data-error', error);
+            }
+            finally {
+                this.isLoading = false;
             }
         },
 
@@ -1768,6 +1786,27 @@ export default {
             this.editMenu = [];
 
             for (let section of this.detailedMenu) {
+                let sectionMenu = [];
+                for (let item of section.sectionMenu) {
+                    sectionMenu.push(JSON.parse(JSON.stringify(item)));
+                }
+
+                this.editMenu.push({
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    sectionMenu: sectionMenu,
+                });
+            }
+
+            // Sort editMenu numerically by sectionOrder
+            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+        },
+
+        // Reset Edit Menu with specific data - new method to avoid prop mutation
+        resetEditMenuWithData(menuData) {
+            this.editMenu = [];
+
+            for (let section of menuData) {
                 let sectionMenu = [];
                 for (let item of section.sectionMenu) {
                     sectionMenu.push(JSON.parse(JSON.stringify(item)));
@@ -2429,6 +2468,9 @@ export default {
                 
                 // Emit error to parent
                 this.$emit('menu-update-error', error);
+                
+                // Re-enable data loaded state since operation completed (even with error)
+                this.$emit('data-loaded-changed', true);
             }
         },
 
