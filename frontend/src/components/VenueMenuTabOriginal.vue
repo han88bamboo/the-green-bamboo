@@ -1467,14 +1467,14 @@
 </template>
 
 <script>
-import VenueMenuEditOriginal from './VenueMenuEditOriginal.vue';
+// import VenueMenuEditOriginal from './VenueMenuEditOriginal.vue';
 import { useToast } from 'vue-toastification';
 import draggable from 'vuedraggable';
 
 export default {
     name: 'VenueMenuTabOriginal',
     components: {
-        VenueMenuEditOriginal,
+        // VenueMenuEditOriginal,
         draggable
     },
     props: {
