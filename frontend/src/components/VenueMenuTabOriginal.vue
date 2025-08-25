@@ -2448,7 +2448,7 @@ export default {
             }
 
             try {
-                await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
                     {
                         venueID: this.targetVenue['id'],
                         updatedMenu: this.editMenu,
@@ -2459,18 +2459,34 @@ export default {
                         }
                     });
                 
-                // Emit success to parent instead of refreshing page
-                this.$emit('menu-updated');
+                // Check if response is successful
+                if (response.status === 201) {
+                    // Emit success to parent instead of refreshing page
+                    this.$emit('menu-updated');
+                } else {
+                    throw new Error(`Unexpected response status: ${response.status}`);
+                }
             }
             catch (error) {
-                alert("An error occurred while attempting to save your changes. We apologise for the inconvenience. Please try again!");
-                console.error(error);
+                // Log the full error for debugging
+                console.error('Menu update error details:', error);
+                console.error('Error response:', error.response);
                 
-                // Emit error to parent
-                this.$emit('menu-update-error', error);
-                
-                // Re-enable data loaded state since operation completed (even with error)
-                this.$emit('data-loaded-changed', true);
+                // Check if it's actually a successful response that's being caught as an error
+                if (error.response && error.response.status === 201) {
+                    console.log('Menu update was actually successful, emitting success event');
+                    this.$emit('menu-updated');
+                } else {
+                    // Show more specific error message
+                    const errorMessage = error.response?.data?.message || error.message || "An unknown error occurred";
+                    alert(`An error occurred while attempting to save your changes: ${errorMessage}. Please try again!`);
+                    
+                    // Emit error to parent
+                    this.$emit('menu-update-error', error);
+                    
+                    // Re-enable data loaded state since operation completed (even with error)
+                    this.$emit('data-loaded-changed', true);
+                }
             }
         },
 
