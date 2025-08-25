@@ -1870,9 +1870,24 @@
 
                 <!-- ------- END Bar Overview / START Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-                <!-- Bar Menu TO BE DELETED, SHIFTED TO COMPONENT -->
+                <!-- Bar Menu Component -->
                 <div v-if="contentMode == 'menu'" id="menu">
-                <!--insert component reference VenueMenuTabOriginal.vue-->
+                    <VenueMenuTabOriginal
+                        :detailed-menu="detailedMenu"
+                        :serving-types="servingTypes"
+                        :target-venue="targetVenue"
+                        :self-view="selfView"
+                        :loaded-listings="loadedListings"
+                        :loaded-producers="loadedProducers"
+                        :edit-menu-mode="editMenuMode"
+                        @menu-data-processed="handleMenuDataProcessed"
+                        @menu-data-error="handleMenuDataError"
+                        @edit-menu-mode-changed="handleEditMenuModeChanged"
+                        @data-loaded-changed="handleDataLoadedChanged"
+                        @menu-updated="handleMenuUpdated"
+                        @menu-update-error="handleMenuUpdateError"
+                        @claim-venue-account="handleClaimVenueAccount"
+                    />
                 </div>
 
                 <!-- ------- END Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -4781,16 +4796,29 @@ export default {
         handleMenuDataProcessed(menuData) {
             console.log('Menu data processed by child component:', menuData);
             
-            // Update parent arrays with processed data
-            this.loadedListings = menuData.loadedListings;
-            this.loadedProducers = menuData.loadedProducers;
-            this.editMenu = menuData.editMenu;
-            this.searchMenuResults = menuData.searchMenuResults;
+            // Update parent arrays with processed data if provided
+            if (menuData.loadedListings) {
+                this.loadedListings = menuData.loadedListings;
+            }
+            if (menuData.loadedProducers) {
+                this.loadedProducers = menuData.loadedProducers;
+            }
+            if (menuData.editMenu) {
+                this.editMenu = menuData.editMenu;
+            }
+            if (menuData.searchMenuResults) {
+                this.searchMenuResults = menuData.searchMenuResults;
+            }
+            if (menuData.processedDetailedMenu) {
+                this.detailedMenu = menuData.processedDetailedMenu;
+            }
             
             // Generate sidebar data from processed listings
-            this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
-            this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
-            this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
+            if (this.loadedListings && this.loadedListings.length > 0) {
+                this.mostPopular = this.loadedListings.sort((a, b) => (a.avgRating < b.avgRating) ? 1 : -1).slice(0, 5);
+                this.mostDiscussed = this.loadedListings.sort((a, b) => (a.reviewCount < b.reviewCount) ? 1 : -1).slice(0, 5);
+                this.recentlyAdded = this.loadedListings.sort((a, b) => (Date.parse(a.addedDate) < Date.parse(b.addedDate)) ? 1 : -1).slice(0, 5);
+            }
         },
 
         // Handle menu data processing errors
