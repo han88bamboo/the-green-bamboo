@@ -28,7 +28,8 @@ def getVenueReviews(venue_id: int):
             SELECT 
                 r.id,
                 r."userID",
-                u.username,
+                u."username",
+                u."photo",
                 r."rating",
                 r."reviewDesc",
                 r."createdDate",
@@ -45,7 +46,8 @@ def getVenueReviews(venue_id: int):
             SELECT 
                 r.id,
                 r."userID",
-                u.username,
+                u."username",
+                u."photo",
                 r."rating",
                 r."reviewDesc",
                 r."createdDate",

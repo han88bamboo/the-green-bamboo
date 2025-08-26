@@ -323,11 +323,16 @@ export default {
     },
     noMoreReviews: Boolean,
     defaultPhoto: String,
-    defaultProfilePhoto: String,
     loadingMore: {
       type: Boolean,
       default: false
     }
+  },
+
+  data () {
+    return {
+      defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
+    } 
   },
 
   computed: {
