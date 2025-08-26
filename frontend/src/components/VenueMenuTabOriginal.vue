@@ -2089,117 +2089,208 @@ export default {
             this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
         },
 
-        // Search Menu - moved from parent
+        // Search Menu - Enhanced for hierarchical structure
         searchMenu() {
-            console.log("Searching menu with term: " + this.searchMenuTerm);
-            // Trim search term, set to lowercase. If empty, set searchMenuResults to detailedMenu
+            console.log("Searching hierarchical menu with term: " + this.searchMenuTerm);
+            
+            // Trim search term, set to lowercase
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
+            
             if (this.searchMenuTerm == '') {
-                this.searchMenuResults = this.detailedMenu;
-            }
-            else {
+                // If empty search, show all sections and subsections
+                this.searchMenuResults = this.buildSearchableMenu(this.hierarchicalMenu);
+            } else {
                 // Reset searchMenuResults
                 this.searchMenuResults = [];
 
-                // Filter sections
-                for (let menuSection of this.detailedMenu) {
-
-                    let menuSectionFiltered = {
-                        sectionName: menuSection.sectionName,
-                        sectionOrder: menuSection.sectionOrder,
-                        sectionMenu: []
+                // Filter hierarchical menu
+                for (let mainSection of this.hierarchicalMenu) {
+                    let filteredMainSection = {
+                        id: mainSection.id,
+                        sectionName: mainSection.sectionName,
+                        sectionOrder: mainSection.sectionOrder,
+                        parentSectionId: mainSection.parentSectionId,
+                        isSubSection: mainSection.isSubSection,
+                        sectionMenu: [],
+                        subsections: []
                     };
 
-                    // Retain sections that match search term
-                    if (menuSection.sectionName.toLowerCase().includes(this.searchMenuTerm)) {
-                        menuSectionFiltered.sectionMenu = menuSection.sectionMenu;
-                    }
-                    else {
-                        // Filter items within sections
-                        for (let menuItem of menuSection.sectionMenu) {
-                            if (menuItem.itemDetails && 
-                                (menuItem.itemDetails.itemName.toLowerCase().includes(this.searchMenuTerm) ||
-                                 menuItem.itemDetails.itemProducer.toLowerCase().includes(this.searchMenuTerm))) {
-                                menuSectionFiltered.sectionMenu.push(menuItem);
+                    // Check if main section name matches search term
+                    let mainSectionMatches = mainSection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                    
+                    // If main section matches, include all its items and subsections
+                    if (mainSectionMatches) {
+                        filteredMainSection.sectionMenu = [...mainSection.sectionMenu];
+                        filteredMainSection.subsections = [...mainSection.subsections];
+                    } else {
+                        // Filter items within main section
+                        for (let menuItem of mainSection.sectionMenu) {
+                            if (this.itemMatchesSearch(menuItem)) {
+                                filteredMainSection.sectionMenu.push(menuItem);
+                            }
+                        }
+
+                        // Filter subsections and their items
+                        for (let subsection of mainSection.subsections) {
+                            let filteredSubsection = {
+                                id: subsection.id,
+                                sectionName: subsection.sectionName,
+                                sectionOrder: subsection.sectionOrder,
+                                parentSectionId: subsection.parentSectionId,
+                                isSubSection: subsection.isSubSection,
+                                sectionMenu: []
+                            };
+
+                            // Check if subsection name matches
+                            let subsectionMatches = subsection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                            
+                            if (subsectionMatches) {
+                                // If subsection matches, include all its items
+                                filteredSubsection.sectionMenu = [...subsection.sectionMenu];
+                                filteredMainSection.subsections.push(filteredSubsection);
+                            } else {
+                                // Filter items within subsection
+                                for (let menuItem of subsection.sectionMenu) {
+                                    if (this.itemMatchesSearch(menuItem)) {
+                                        filteredSubsection.sectionMenu.push(menuItem);
+                                    }
+                                }
+                                
+                                // Only add subsection if it has matching items
+                                if (filteredSubsection.sectionMenu.length > 0) {
+                                    filteredMainSection.subsections.push(filteredSubsection);
+                                }
                             }
                         }
                     }
 
-                    // Add section to searchMenuResults if it contains items
-                    if (menuSectionFiltered.sectionMenu.length > 0) {
-                        this.searchMenuResults.push(menuSectionFiltered);
+                    // Add main section to results if it has items, subsections, or matches the search
+                    if (filteredMainSection.sectionMenu.length > 0 || 
+                        filteredMainSection.subsections.length > 0 || 
+                        mainSectionMatches) {
+                        this.searchMenuResults.push(filteredMainSection);
                     }
                 }
             }
 
-            // Sort searchMenuResults
+            // Sort search results
             this.sortMenu(this.sortMenuTerm);
         },
 
-        // Sort Menu - moved from parent
+        // Check if a menu item matches the search term
+        itemMatchesSearch(menuItem) {
+            const searchTerm = this.searchMenuTerm.toLowerCase();
+            
+            // Check item details for matches
+            if (menuItem.itemDetails) {
+                const details = menuItem.itemDetails;
+                return (
+                    (details.itemName && details.itemName.toLowerCase().includes(searchTerm)) ||
+                    (details.itemType && details.itemType.toLowerCase().includes(searchTerm)) ||
+                    (details.itemProducer && details.itemProducer.toLowerCase().includes(searchTerm)) ||
+                    (details.itemCountry && details.itemCountry.toLowerCase().includes(searchTerm)) ||
+                    (details.itemDesc && details.itemDesc.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            return false;
+        },
+
+        // Sort Menu - Enhanced for hierarchical structure
         sortMenu(sortTerm) {
             // Set sortMenuTerm
             this.sortMenuTerm = sortTerm;
 
-            // Sort searchMenuResults
+            // Sort searchMenuResults hierarchically
             if (this.searchMenuResults.length > 0) {
+                // Sort main sections first
+                this.searchMenuResults.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                
                 switch (sortTerm) {
                     case 'Alphabetical (A-Z)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const nameA = a.itemDetails?.itemName || '';
-                                const nameB = b.itemDetails?.itemName || '';
-                                return nameA.localeCompare(nameB);
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            const nameA = a.itemDetails?.itemName || a.sectionName || '';
+                            const nameB = b.itemDetails?.itemName || b.sectionName || '';
+                            return nameA.toLowerCase().localeCompare(nameB.toLowerCase());
                         });
                         break;
+                        
                     case 'Alphabetical (Z-A)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const nameA = a.itemDetails?.itemName || '';
-                                const nameB = b.itemDetails?.itemName || '';
-                                return nameB.localeCompare(nameA);
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            const nameA = a.itemDetails?.itemName || a.sectionName || '';
+                            const nameB = b.itemDetails?.itemName || b.sectionName || '';
+                            return nameB.toLowerCase().localeCompare(nameA.toLowerCase());
                         });
                         break;
+                        
                     case 'Rating (Low to High)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const ratingA = a.itemDetails?.itemRating || 0;
-                                const ratingB = b.itemDetails?.itemRating || 0;
-                                return ratingA - ratingB;
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            // Only sort items, not sections
+                            if (!a.itemDetails || !b.itemDetails) return 0;
+                            const ratingA = parseFloat(a.itemDetails.itemRating) || 0;
+                            const ratingB = parseFloat(b.itemDetails.itemRating) || 0;
+                            return ratingA - ratingB;
                         });
                         break;
+                        
                     case 'Rating (High to Low)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const ratingA = a.itemDetails?.itemRating || 0;
-                                const ratingB = b.itemDetails?.itemRating || 0;
-                                return ratingB - ratingA;
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            // Only sort items, not sections
+                            if (!a.itemDetails || !b.itemDetails) return 0;
+                            const ratingA = parseFloat(a.itemDetails.itemRating) || 0;
+                            const ratingB = parseFloat(b.itemDetails.itemRating) || 0;
+                            return ratingB - ratingA;
                         });
                         break;
+                        
                     case 'Price (High to Low)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const priceA = a.itemPrice || 0;
-                                const priceB = b.itemPrice || 0;
-                                return priceB - priceA;
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            // Only sort items, not sections
+                            if (!a.itemDetails || !b.itemDetails) return 0;
+                            const priceA = parseFloat(a.itemPrice) || 0;
+                            const priceB = parseFloat(b.itemPrice) || 0;
+                            return priceB - priceA;
                         });
                         break;
+                        
                     case 'Price (Low to High)':
-                        this.searchMenuResults.forEach(section => {
-                            section.sectionMenu.sort((a, b) => {
-                                const priceA = a.itemPrice || 0;
-                                const priceB = b.itemPrice || 0;
-                                return priceA - priceB;
-                            });
+                        this.sortSectionsAndItems((a, b) => {
+                            // Only sort items, not sections
+                            if (!a.itemDetails || !b.itemDetails) return 0;
+                            const priceA = parseFloat(a.itemPrice) || 0;
+                            const priceB = parseFloat(b.itemPrice) || 0;
+                            return priceA - priceB;
                         });
                         break;
                 }
             }
+        },
+
+        // Helper method to sort sections and their items/subsections
+        sortSectionsAndItems(compareFunction) {
+            this.searchMenuResults.forEach(mainSection => {
+                // Sort items in main section
+                if (mainSection.sectionMenu && mainSection.sectionMenu.length > 0) {
+                    mainSection.sectionMenu.sort(compareFunction);
+                }
+                
+                // Sort subsections and their items
+                if (mainSection.subsections && mainSection.subsections.length > 0) {
+                    // Sort subsections by order first, then by name if alphabetical
+                    if (this.sortMenuTerm.includes('Alphabetical')) {
+                        mainSection.subsections.sort(compareFunction);
+                    } else {
+                        mainSection.subsections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                    }
+                    
+                    // Sort items within each subsection
+                    mainSection.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                            subsection.sectionMenu.sort(compareFunction);
+                        }
+                    });
+                }
+            });
         },
 
         // Add Menu Section - moved from parent
