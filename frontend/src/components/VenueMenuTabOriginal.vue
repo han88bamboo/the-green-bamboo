@@ -2938,6 +2938,230 @@ export default {
             return issues;
         },
 
+        // Comprehensive menu hierarchy validation
+        validateMenuHierarchy(menu = null) {
+            const menuToValidate = menu || this.editMenu;
+            const issues = [];
+            const sectionOrders = new Set();
+            const mainSections = [];
+            const subsections = [];
+
+            // Separate main sections and subsections
+            menuToValidate.forEach(section => {
+                if (section.isSubSection) {
+                    subsections.push(section);
+                } else {
+                    mainSections.push(section);
+                }
+            });
+
+            // 1. Check for duplicate section orders
+            menuToValidate.forEach(section => {
+                if (sectionOrders.has(section.sectionOrder)) {
+                    issues.push(`Duplicate section order found: ${section.sectionOrder} for section "${section.sectionName}"`);
+                } else {
+                    sectionOrders.add(section.sectionOrder);
+                }
+            });
+
+            // 2. Validate parent-child relationships
+            subsections.forEach(subsection => {
+                const parentSection = mainSections.find(s => s.sectionOrder === subsection.parentSectionId);
+                
+                if (!parentSection) {
+                    issues.push(`Subsection "${subsection.sectionName}" references non-existent parent section ID: ${subsection.parentSectionId}`);
+                } else {
+                    // Check for circular references (subsection cannot be its own parent)
+                    if (subsection.sectionOrder === subsection.parentSectionId) {
+                        issues.push(`Circular reference detected: Subsection "${subsection.sectionName}" cannot be its own parent`);
+                    }
+                }
+            });
+
+            // 3. Check for orphaned subsections (subsections without valid parents)
+            const orphanedSubsections = subsections.filter(sub => 
+                !mainSections.some(main => main.sectionOrder === sub.parentSectionId)
+            );
+            orphanedSubsections.forEach(orphan => {
+                issues.push(`Orphaned subsection found: "${orphan.sectionName}" has no valid parent section`);
+            });
+
+            // 4. Validate section order consistency (should be sequential starting from 0)
+            const allOrders = [...sectionOrders].sort((a, b) => a - b);
+            for (let i = 0; i < allOrders.length; i++) {
+                if (i === 0 && allOrders[i] !== 0) {
+                    issues.push(`Section order should start from 0, but starts from ${allOrders[i]}`);
+                } else if (i > 0 && allOrders[i] !== allOrders[i-1] + 1) {
+                    issues.push(`Section order gap detected between ${allOrders[i-1]} and ${allOrders[i]}`);
+                }
+            }
+
+            // 5. Validate that main sections don't have parentSectionId
+            mainSections.forEach(section => {
+                if (section.parentSectionId !== undefined && section.parentSectionId !== null) {
+                    issues.push(`Main section "${section.sectionName}" should not have a parent section ID`);
+                }
+            });
+
+            // 6. Validate that subsections have proper isSubSection flag
+            subsections.forEach(subsection => {
+                if (!subsection.isSubSection) {
+                    issues.push(`Subsection "${subsection.sectionName}" missing isSubSection flag`);
+                }
+            });
+
+            // 7. Check for deep nesting (subsections can't have subsections)
+            const nestedSubsections = subsections.filter(sub => 
+                subsections.some(other => other.parentSectionId === sub.sectionOrder)
+            );
+            nestedSubsections.forEach(nested => {
+                issues.push(`Invalid nesting: Subsection "${nested.sectionName}" cannot have child subsections`);
+            });
+
+            return {
+                isValid: issues.length === 0,
+                issues: issues,
+                totalSections: mainSections.length,
+                totalSubsections: subsections.length,
+                totalItems: this.getTotalItemCount(menuToValidate)
+            };
+        },
+
+        // Validate specific subsection operations
+        validateSubsectionOperations(operation, section, subsection = null) {
+            const issues = [];
+            
+            switch (operation) {
+                case 'create':
+                    // Validate creating a new subsection
+                    if (!section || section.isSubSection) {
+                        issues.push('Cannot create subsection under another subsection');
+                    }
+                    if (section && this.getSubsectionCount(section.sectionOrder) >= 10) {
+                        issues.push('Maximum 10 subsections allowed per section');
+                    }
+                    break;
+
+                case 'delete':
+                    // Validate deleting a subsection
+                    if (!subsection || !subsection.isSubSection) {
+                        issues.push('Invalid subsection for deletion');
+                    }
+                    if (subsection && subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                        issues.push(`Cannot delete subsection "${subsection.sectionName}" - contains ${subsection.sectionMenu.length} items`);
+                    }
+                    break;
+
+                case 'move':
+                    // Validate moving a subsection to different parent
+                    if (!subsection || !subsection.isSubSection) {
+                        issues.push('Invalid subsection for move operation');
+                    }
+                    if (!section || section.isSubSection) {
+                        issues.push('Cannot move subsection to another subsection');
+                    }
+                    if (section && subsection && section.sectionOrder === subsection.sectionOrder) {
+                        issues.push('Cannot move subsection to itself');
+                    }
+                    break;
+
+                case 'rename':
+                    // Validate renaming a subsection
+                    if (!subsection || !subsection.isSubSection) {
+                        issues.push('Invalid subsection for rename operation');
+                    }
+                    break;
+
+                case 'duplicate':
+                    // Validate duplicating a subsection
+                    if (!subsection || !subsection.isSubSection) {
+                        issues.push('Invalid subsection for duplication');
+                    }
+                    if (section && this.getSubsectionCount(section.sectionOrder) >= 10) {
+                        issues.push('Cannot duplicate - maximum 10 subsections allowed per section');
+                    }
+                    break;
+
+                default:
+                    issues.push(`Unknown subsection operation: ${operation}`);
+            }
+
+            return {
+                isValid: issues.length === 0,
+                issues: issues,
+                operation: operation
+            };
+        },
+
+        // Helper method to get total item count across all sections
+        getTotalItemCount(menu = null) {
+            const menuToCount = menu || this.editMenu;
+            let count = 0;
+            
+            menuToCount.forEach(section => {
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    count += section.sectionMenu.length;
+                }
+            });
+            
+            return count;
+        },
+
+        // Validate menu before save operation
+        validateBeforeSave() {
+            const hierarchyValidation = this.validateMenuHierarchy();
+            const subsectionValidation = this.validateSubsectionStructure();
+            
+            const allIssues = [
+                ...hierarchyValidation.issues,
+                ...subsectionValidation
+            ];
+
+            return {
+                isValid: allIssues.length === 0,
+                issues: allIssues,
+                summary: {
+                    totalSections: hierarchyValidation.totalSections,
+                    totalSubsections: hierarchyValidation.totalSubsections,
+                    totalItems: hierarchyValidation.totalItems
+                }
+            };
+        },
+
+        // Auto-fix common hierarchy issues
+        autoFixHierarchyIssues() {
+            const fixes = [];
+            
+            // Fix missing isSubSection flags
+            this.editMenu.forEach(section => {
+                if (section.parentSectionId && !section.isSubSection) {
+                    section.isSubSection = true;
+                    fixes.push(`Added missing isSubSection flag to "${section.sectionName}"`);
+                }
+            });
+
+            // Remove invalid parentSectionId from main sections
+            this.editMenu.forEach(section => {
+                if (!section.isSubSection && section.parentSectionId !== undefined && section.parentSectionId !== null) {
+                    section.parentSectionId = null;
+                    fixes.push(`Removed invalid parentSectionId from main section "${section.sectionName}"`);
+                }
+            });
+
+            // Initialize missing sectionMenu arrays
+            this.editMenu.forEach(section => {
+                if (!section.sectionMenu) {
+                    section.sectionMenu = [];
+                    fixes.push(`Initialized sectionMenu array for "${section.sectionName}"`);
+                }
+            });
+
+            return {
+                fixesApplied: fixes.length,
+                fixes: fixes
+            };
+        },
+
         // Update New Menu Item Target - moved from parent
         async updateNewMenuItemTarget() {
 
