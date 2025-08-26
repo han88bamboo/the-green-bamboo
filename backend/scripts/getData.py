@@ -4259,6 +4259,8 @@ def getVenues():
                         'sectionOrder',vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4593,7 +4595,7 @@ def getVenueMenuBySearch(venue_id):
 
     try:
         # Get all sections for the venue first
-        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
+        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId", "isSubSection" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
         all_sections_rows = cur.fetchall()
         
         sections = {s['id']: {**s, 'sectionMenu': [], 'subSections': [], 'isExpanded': True} for s in all_sections_rows if not s['parentSectionId']}
@@ -4700,6 +4702,8 @@ def getVenue(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4803,6 +4807,8 @@ def getVenueByRequestId(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",

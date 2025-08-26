@@ -2254,16 +2254,49 @@ export default {
         // Process hierarchical menu structure from prop
         processHierarchicalMenuFromProp() {
             console.log('🍽️ Processing hierarchical menu from prop');
+            console.log('🍽️ Input detailedMenu:', this.detailedMenu);
+            
+            // Check if the data is a flat array with parentSectionId/isSubSection fields
+            // or a nested structure with subsections arrays
+            const hasNestedStructure = this.detailedMenu.some(section => 
+                section.subsections && Array.isArray(section.subsections)
+            );
+            
+            const hasParentSectionIdFields = this.detailedMenu.some(section => 
+                Object.prototype.hasOwnProperty.call(section, 'parentSectionId') ||
+                Object.prototype.hasOwnProperty.call(section, 'isSubSection')
+            );
+            
+            console.log('🍽️ hasNestedStructure:', hasNestedStructure);
+            console.log('🍽️ hasParentSectionIdFields:', hasParentSectionIdFields);
+            
+            let hierarchicalMenu;
+            
+            if (hasNestedStructure) {
+                // Already in nested format
+                console.log('🍽️ Data already in nested hierarchical format');
+                hierarchicalMenu = this.detailedMenu;
+            } else if (hasParentSectionIdFields) {
+                // Convert from flat format with parentSectionId/isSubSection to nested format
+                console.log('🍽️ Converting flat hierarchical data to nested format');
+                hierarchicalMenu = this.convertFlatToNestedHierarchy(this.detailedMenu);
+            } else {
+                // Treat as flat menu without hierarchy
+                console.log('🍽️ Treating as flat menu without hierarchy');
+                hierarchicalMenu = this.convertFlatToHierarchical(this.detailedMenu);
+            }
+            
+            console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
             
             // Build the hierarchical structure and flat lookup
-            this.buildMenuHierarchy(this.detailedMenu);
+            this.buildMenuHierarchy(hierarchicalMenu);
 
             // Set editMenu and searchMenuResults using the provided hierarchical data
-            this.resetEditMenuWithHierarchicalData(this.detailedMenu);
-            this.searchMenuResults = this.buildSearchableMenu(this.detailedMenu);
+            this.resetEditMenuWithHierarchicalData(hierarchicalMenu);
+            this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
 
             // Emit the processed data back to parent
-            this.emitMenuDataProcessed(this.detailedMenu);
+            this.emitMenuDataProcessed(hierarchicalMenu);
         },
 
         // Process flat menu structure from prop and convert to hierarchical
@@ -2376,6 +2409,59 @@ export default {
                 sectionMenu: section.sectionMenu || [],
                 subsections: [] // No subsections in converted flat menu
             }));
+        },
+
+        // Convert flat menu structure with parentSectionId/isSubSection to nested hierarchical format
+        convertFlatToNestedHierarchy(flatMenuArray) {
+            console.log('🍽️ Converting flat menu with parentSectionId/isSubSection to nested hierarchical format');
+            console.log('🍽️ Input flat menu array:', flatMenuArray);
+            
+            // Separate main sections and subsections
+            const mainSections = flatMenuArray.filter(section => !section.isSubSection && !section.parentSectionId);
+            const subsections = flatMenuArray.filter(section => section.isSubSection && section.parentSectionId);
+            
+            console.log('🍽️ Found', mainSections.length, 'main sections and', subsections.length, 'subsections');
+            
+            // Build the hierarchical structure
+            const hierarchicalMenu = mainSections.map(section => ({
+                id: section.id,
+                sectionName: section.sectionName,
+                sectionOrder: section.sectionOrder,
+                parentSectionId: null,
+                isSubSection: false,
+                sectionMenu: section.sectionMenu || [],
+                subsections: []
+            }));
+            
+            // Add subsections to their parent sections
+            subsections.forEach(subsection => {
+                const parentSection = hierarchicalMenu.find(section => section.id === subsection.parentSectionId);
+                if (parentSection) {
+                    parentSection.subsections.push({
+                        id: subsection.id,
+                        sectionName: subsection.sectionName,
+                        sectionOrder: subsection.sectionOrder,
+                        parentSectionId: subsection.parentSectionId,
+                        isSubSection: true,
+                        sectionMenu: subsection.sectionMenu || [],
+                        subsections: [] // Subsections can't have subsections
+                    });
+                    console.log(`🍽️ Added subsection "${subsection.sectionName}" to parent "${parentSection.sectionName}"`);
+                } else {
+                    console.warn(`🍽️ Warning: Could not find parent section with ID ${subsection.parentSectionId} for subsection "${subsection.sectionName}"`);
+                }
+            });
+            
+            // Sort main sections and subsections by sectionOrder
+            hierarchicalMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            hierarchicalMenu.forEach(section => {
+                if (section.subsections.length > 0) {
+                    section.subsections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                }
+            });
+            
+            console.log('🍽️ Built hierarchical menu structure:', hierarchicalMenu);
+            return hierarchicalMenu;
         },
 
         // Emit processed menu data to parent
@@ -2714,7 +2800,48 @@ export default {
         // Reset Edit Menu with hierarchical data
         resetEditMenuWithHierarchicalData(hierarchicalData) {
             console.log('🍽️ Resetting edit menu with hierarchical data');
-            this.editMenu = JSON.parse(JSON.stringify(hierarchicalData));
+            
+            // Convert hierarchical data to flat format for editing
+            this.editMenu = this.convertHierarchicalToFlat(hierarchicalData);
+            
+            // Sort editMenu numerically by sectionOrder
+            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+        },
+
+        // Convert hierarchical menu structure to flat format for editing
+        convertHierarchicalToFlat(hierarchicalData) {
+            console.log('🍽️ Converting hierarchical data to flat format for editing');
+            
+            const flatMenu = [];
+            
+            hierarchicalData.forEach(section => {
+                // Add main section
+                flatMenu.push({
+                    id: section.id,
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    parentSectionId: null,
+                    isSubSection: false,
+                    sectionMenu: section.sectionMenu || []
+                });
+                
+                // Add subsections
+                if (section.subsections && section.subsections.length > 0) {
+                    section.subsections.forEach(subsection => {
+                        flatMenu.push({
+                            id: subsection.id,
+                            sectionName: subsection.sectionName,
+                            sectionOrder: subsection.sectionOrder,
+                            parentSectionId: subsection.parentSectionId,
+                            isSubSection: true,
+                            sectionMenu: subsection.sectionMenu || []
+                        });
+                    });
+                }
+            });
+            
+            console.log('🍽️ Converted to flat format:', flatMenu.length, 'sections');
+            return flatMenu;
         },
 
         // Build searchable menu structure (flattened for search but maintains hierarchy info)

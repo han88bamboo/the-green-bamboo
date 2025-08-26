@@ -4368,12 +4368,8 @@ export default {
                     this.openingHours = this.convertToMultiSlotFormat(this.openingHours);
                     this.newOpeningHours = JSON.parse(JSON.stringify(this.openingHours));
 
-                    // Set and sort menu data
-                    this.detailedMenu = this.targetVenue["menu"];
-                    this.detailedMenu.sort((a, b) => (a.sectionOrder > b.sectionOrder) ? 1 : -1); // Sort by section order
-                    for (let section of this.detailedMenu) {
-                        section.sectionMenu.sort((a, b) => (a.itemOrder > b.itemOrder) ? 1 : -1); // Sort by item order
-                    }
+                    // Load menu data separately using the dedicated menu endpoint
+                    await this.loadMenuData();
 
                     // Format updates
                     if (this.targetVenue["updates"].length > 0) {
@@ -4515,6 +4511,61 @@ export default {
                 venueExists: this.venueExists, 
                 dataLoaded: this.dataLoaded 
             });
+        },
+
+        // Load menu data using the dedicated hierarchical menu endpoint
+        async loadMenuData() {
+            console.log('🍽️ loadMenuData: Starting menu data fetch for venue ID:', this.targetVenue.id);
+            
+            try {
+                const menuResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${this.targetVenue.id}`);
+                console.log('🍽️ loadMenuData: Menu API response:', menuResponse.data);
+                
+                if (menuResponse.data && Array.isArray(menuResponse.data)) {
+                    this.detailedMenu = menuResponse.data;
+                    
+                    // Sort sections by sectionOrder and add menu items to each section
+                    this.detailedMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                    
+                    // Load menu items for each section
+                    for (let section of this.detailedMenu) {
+                        if (section.id) {
+                            await this.loadMenuItemsForSection(section);
+                        }
+                    }
+                    
+                    console.log('🍽️ loadMenuData: Successfully loaded hierarchical menu with', this.detailedMenu.length, 'sections');
+                    console.log('🍽️ loadMenuData: Menu sections:', this.detailedMenu);
+                } else {
+                    console.log('🍽️ loadMenuData: No menu data found, setting empty array');
+                    this.detailedMenu = [];
+                }
+            } catch (error) {
+                console.error('❌ loadMenuData: Error loading menu data:', error);
+                console.log('❌ loadMenuData: Setting detailedMenu to empty array due to error');
+                this.detailedMenu = [];
+            }
+        },
+
+        // Load menu items for a specific section
+        async loadMenuItemsForSection(section) {
+            try {
+                // Use the existing getVenueMenu endpoint to get items for this section
+                const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`);
+                
+                if (itemsResponse.data && Array.isArray(itemsResponse.data)) {
+                    section.sectionMenu = itemsResponse.data;
+                    // Sort items by itemOrder
+                    section.sectionMenu.sort((a, b) => parseInt(a.itemOrder) - parseInt(b.itemOrder));
+                    console.log(`🍽️ loadMenuItemsForSection: Loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
+                } else {
+                    section.sectionMenu = [];
+                    console.log(`🍽️ loadMenuItemsForSection: No items found for section "${section.sectionName}"`);
+                }
+            } catch (error) {
+                console.error(`❌ loadMenuItemsForSection: Error loading items for section "${section.sectionName}":`, error);
+                section.sectionMenu = [];
+            }
         },
 
         async loadBottleReviews() {
