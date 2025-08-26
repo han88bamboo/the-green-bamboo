@@ -655,10 +655,10 @@
             <!-- ------- START Menu Sections ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
             <!-- Hierarchical Menu Sections -->
-            <draggable v-model="mainSections" item-key="sectionOrder" @start="dragStart" @end="dragEnd"
+            <draggable v-if="Array.isArray(editableMainSections)" v-model="editableMainSections" item-key="sectionOrder" @start="dragStart" @end="dragEnd"
                 v-bind="dragOptions">
                 <template #item="{ element: menuSection }">
-                    <div class="row mb-2" :data-section-order="menuSection.sectionOrder">
+                    <div v-if="menuSection" class="row mb-2" :data-section-order="menuSection.sectionOrder">
 
                         <!-- Section Name -->
                         <div class="col-7 d-grid pe-0 mobile-view-hide">
@@ -1950,8 +1950,13 @@ export default {
         
             // Menu Editing - Enhanced for hierarchical structure
             editMenu: [], // Now supports sections with subsections
+            editableMainSections: [], // Mutable array for main sections (for drag and drop)
             hierarchicalMenu: [], // Processed hierarchical menu for display
             flatMenuLookup: new Map(), // For quick section/subsection lookups by ID
+            
+            // Sync control flag to prevent infinite loops
+            isSyncing: false,
+            watchersEnabled: false, // Flag to enable watchers after mount
             
             // Hierarchical menu tracking
             editingSubsection: false, // Track if currently editing subsections
@@ -2172,6 +2177,32 @@ export default {
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
             }
+        },
+        
+        // Watch for changes in editMenu to sync editableMainSections
+        editMenu: {
+            handler() {
+                // Only sync if watchers are enabled and not in the middle of syncing
+                if (this.watchersEnabled && !this.isSyncing) {
+                    this.$nextTick(() => {
+                        this.syncEditableMainSections();
+                    });
+                }
+            },
+            deep: true
+        },
+        
+        // Watch for changes in editableMainSections to sync back to editMenu
+        editableMainSections: {
+            handler(newMainSections) {
+                // Only sync if watchers are enabled and not in the middle of syncing
+                if (this.watchersEnabled && !this.isSyncing && Array.isArray(newMainSections)) {
+                    this.$nextTick(() => {
+                        this.syncMainSectionsToEditMenu(newMainSections);
+                    });
+                }
+            },
+            deep: true
         }
     },
     mounted() {
@@ -2185,8 +2216,111 @@ export default {
         
         // Smart data source detection and adaptation
         this.initializeMenuData();
+        
+        // Initialize editableMainSections if editMenu already has data (use nextTick to avoid timing issues)
+        this.$nextTick(() => {
+            if (Array.isArray(this.editMenu) && this.editMenu.length > 0) {
+                this.syncEditableMainSections();
+            }
+            
+            // Enable watchers after initialization is complete
+            this.watchersEnabled = true;
+        });
     },
     methods: {
+
+        // Sync editableMainSections from editMenu (called when editMenu changes)
+        syncEditableMainSections() {
+            // Prevent infinite loops by checking if we're already syncing
+            if (this.isSyncing) return;
+            
+            try {
+                this.isSyncing = true;
+                
+                // Ensure editMenu is an array
+                if (!Array.isArray(this.editMenu)) {
+                    console.warn('🍽️ editMenu is not an array, skipping sync');
+                    return;
+                }
+                
+                const mainSections = this.editMenu.filter(section => 
+                    section && !section.parentSectionId
+                );
+                
+                // Only update if there's actually a change
+                const currentIds = (this.editableMainSections || []).map(s => s.id || s.sectionOrder).join(',');
+                const newIds = mainSections.map(s => s.id || s.sectionOrder).join(',');
+                
+                if (currentIds !== newIds) {
+                    this.editableMainSections = mainSections.map(section => ({...section}));
+                }
+                
+            } catch (error) {
+                console.error('🍽️ Error syncing editableMainSections:', error);
+            } finally {
+                this.isSyncing = false;
+            }
+        },
+        
+        // Sync changes from editableMainSections back to editMenu (called when drag reordering occurs)
+        syncMainSectionsToEditMenu(newMainSections) {
+            // Prevent infinite loops by checking if we're already syncing
+            if (this.isSyncing) return;
+            
+            try {
+                this.isSyncing = true;
+                
+                // Ensure we have valid input
+                if (!Array.isArray(newMainSections) || !Array.isArray(this.editMenu)) {
+                    console.warn('🍽️ Invalid data for syncMainSectionsToEditMenu, skipping sync');
+                    return;
+                }
+                
+                // Update sectionOrder for reordered main sections
+                newMainSections.forEach((section, index) => {
+                    if (section) {
+                        section.sectionOrder = index;
+                    }
+                });
+                
+                // Find the corresponding sections in editMenu and update their order
+                newMainSections.forEach(mainSection => {
+                    if (!mainSection) return;
+                    
+                    const editMenuSection = this.editMenu.find(s => 
+                        s && (s.id === mainSection.id || 
+                        (s.sectionName === mainSection.sectionName && !s.parentSectionId))
+                    );
+                    if (editMenuSection) {
+                        editMenuSection.sectionOrder = mainSection.sectionOrder;
+                    }
+                });
+                
+                // Sort editMenu to maintain consistency
+                this.editMenu.sort((a, b) => {
+                    if (!a || !b) return 0;
+                    
+                    // Main sections first, ordered by sectionOrder
+                    if (!a.parentSectionId && !b.parentSectionId) {
+                        return (a.sectionOrder || 0) - (b.sectionOrder || 0);
+                    }
+                    // Subsections after their parent sections
+                    if (a.parentSectionId && !b.parentSectionId) {
+                        return 1;
+                    }
+                    if (!a.parentSectionId && b.parentSectionId) {
+                        return -1;
+                    }
+                    // Both are subsections, order by sectionOrder
+                    return (a.sectionOrder || 0) - (b.sectionOrder || 0);
+                });
+                
+            } catch (error) {
+                console.error('🍽️ Error syncing main sections to editMenu:', error);
+            } finally {
+                this.isSyncing = false;
+            }
+        },
 
         // Smart initialization method that detects available data sources
         initializeMenuData() {
@@ -2806,6 +2940,9 @@ export default {
             
             // Sort editMenu numerically by sectionOrder
             this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            
+            // Sync editableMainSections after setting editMenu
+            this.syncEditableMainSections();
         },
 
         // Convert hierarchical menu structure to flat format for editing
@@ -2869,6 +3006,9 @@ export default {
 
             // Sort editMenu numerically by sectionOrder
             this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            
+            // Sync editableMainSections after setting editMenu
+            this.syncEditableMainSections();
         },
 
         // Reset Edit Menu with specific data - new method to avoid prop mutation
@@ -2890,6 +3030,9 @@ export default {
 
             // Sort editMenu numerically by sectionOrder
             this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            
+            // Sync editableMainSections after setting editMenu
+            this.syncEditableMainSections();
         },
 
         // Search Menu - Enhanced for hierarchical structure
