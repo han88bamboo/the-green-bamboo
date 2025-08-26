@@ -2798,6 +2798,146 @@ export default {
             }
         },
 
+        // Move items between sections/subsections
+        moveItemsBetweenSections(fromSection, toSection, items) {
+            if (!fromSection || !toSection || !items || items.length === 0) {
+                console.warn('Invalid parameters for moveItemsBetweenSections');
+                return false;
+            }
+
+            try {
+                // Remove items from source section
+                items.forEach(item => {
+                    const itemIndex = fromSection.sectionMenu.findIndex(menuItem => 
+                        menuItem.itemID === item.itemID && menuItem.itemOrder === item.itemOrder
+                    );
+                    if (itemIndex !== -1) {
+                        fromSection.sectionMenu.splice(itemIndex, 1);
+                    }
+                });
+
+                // Add items to target section
+                items.forEach(item => {
+                    // Reset item order for new section
+                    item.itemOrder = toSection.sectionMenu.length;
+                    toSection.sectionMenu.push(item);
+                });
+
+                // Reorder items in both sections
+                this.reorderSectionItems(fromSection);
+                this.reorderSectionItems(toSection);
+
+                return true;
+            } catch (error) {
+                console.error('Error moving items between sections:', error);
+                return false;
+            }
+        },
+
+        // Reorder items within a section to ensure sequential order
+        reorderSectionItems(section) {
+            if (section && section.sectionMenu) {
+                section.sectionMenu.forEach((item, index) => {
+                    item.itemOrder = index;
+                });
+            }
+        },
+
+        // Move subsection to different parent section
+        moveSubsectionToSection(subsection, newParentSection) {
+            if (!subsection || !newParentSection) {
+                console.warn('Invalid parameters for moveSubsectionToSection');
+                return false;
+            }
+
+            if (subsection.parentSectionId === newParentSection.sectionOrder) {
+                console.warn('Subsection is already in the target section');
+                return false;
+            }
+
+            try {
+                // Update subsection's parent reference
+                subsection.parentSectionId = newParentSection.sectionOrder;
+                
+                // Find and update in editMenu
+                const subsectionInMenu = this.editMenu.find(s => s.sectionOrder === subsection.sectionOrder);
+                if (subsectionInMenu) {
+                    subsectionInMenu.parentSectionId = newParentSection.sectionOrder;
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Error moving subsection to new parent:', error);
+                return false;
+            }
+        },
+
+        // Duplicate subsection with all its items
+        duplicateSubsection(subsection, parentSection) {
+            if (!subsection || !parentSection) {
+                console.warn('Invalid parameters for duplicateSubsection');
+                return null;
+            }
+
+            try {
+                const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
+                const duplicatedSubsection = {
+                    sectionName: `${subsection.sectionName} (Copy)`,
+                    sectionOrder: maxSectionOrder + 1,
+                    parentSectionId: parentSection.sectionOrder,
+                    isSubSection: true,
+                    sectionMenu: subsection.sectionMenu.map((item, index) => ({
+                        ...item,
+                        itemOrder: index // Ensure proper ordering
+                    }))
+                };
+
+                this.editMenu.push(duplicatedSubsection);
+                return duplicatedSubsection;
+            } catch (error) {
+                console.error('Error duplicating subsection:', error);
+                return null;
+            }
+        },
+
+        // Get all items in a subsection
+        getSubsectionItems(subsection) {
+            if (!subsection || !subsection.sectionMenu) {
+                return [];
+            }
+            return [...subsection.sectionMenu];
+        },
+
+        // Check if subsection is empty
+        isSubsectionEmpty(subsection) {
+            return !subsection || !subsection.sectionMenu || subsection.sectionMenu.length === 0;
+        },
+
+        // Get subsection count for a parent section
+        getSubsectionCount(parentSectionOrder) {
+            return this.getSubsectionsForSection(parentSectionOrder).length;
+        },
+
+        // Validate subsection structure
+        validateSubsectionStructure() {
+            const issues = [];
+            
+            this.editMenu.forEach(section => {
+                if (section.isSubSection) {
+                    // Check if parent section exists
+                    const parentExists = this.editMenu.some(s => 
+                        !s.isSubSection && s.sectionOrder === section.parentSectionId
+                    );
+                    
+                    if (!parentExists) {
+                        issues.push(`Subsection "${section.sectionName}" has invalid parent section ID: ${section.parentSectionId}`);
+                    }
+                }
+            });
+
+            return issues;
+        },
+
         // Update New Menu Item Target - moved from parent
         async updateNewMenuItemTarget() {
 
