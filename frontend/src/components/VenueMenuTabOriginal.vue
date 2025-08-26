@@ -1752,6 +1752,7 @@ export default {
     methods: {
 
         // Load menu data - moved from parent's loadData method
+        // Load hierarchical menu data from new backend endpoints
         async loadMenuData() {
             if (this.isLoading) {
                 console.log('Already loading menu data, skipping...');
@@ -1761,144 +1762,289 @@ export default {
             this.isLoading = true;
             
             try {
-                // Create a deep copy of detailedMenu to avoid mutating props
-                const menuCopy = JSON.parse(JSON.stringify(this.detailedMenu));
+                console.log('🍽️ VenueMenuTabOriginal: Loading hierarchical menu data');
                 
-                // Get listing data for each item in menu
-                for (let section of menuCopy) {
-                    for (let item of section.sectionMenu) {
-
-                        // Find item in loadedListings
-                        let listingData = this.internalLoadedListings.find(i => i.id == item.itemID);
-
-                        // If not found, get from server
-                        if (listingData == undefined) {
-
-                            try {
-                                let response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/` + item.itemID);
-                                listingData = response.data;
-
-                                if (Array.isArray(listingData) && listingData.length == 0) {
-                                    // Remove item from section
-                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                }
-                                // If found, obtain additional data and add to loadedListings
-                                else if (listingData != null && listingData != "") {
-
-                                    try {
-                                        // Get average rating 
-                                        let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/` + item.itemID);
-                                        listingData['avgRating'] = reviewResponse.data['averageRating'];
-                                        listingData['reviewCount'] = reviewResponse.data['reviewCount'];
-
-                                        // Find producer in loadedProducers
-                                        let producerData = this.internalLoadedProducers.find(p => p.id == listingData["producerID"]);
-
-                                        try {
-                                            // If not found, get from server
-                                            if (producerData == undefined) {
-                                                let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/` + listingData["producerID"]);
-                                                producerData = producerResponse.data;
-
-                                                if (Array.isArray(producerData) && producerData.length == 0) {
-                                                    // Remove item from section
-                                                    section.sectionMenu = section.sectionMenu.filter(i => i.itemID != item.itemID);
-                                                }
-                                                // If found, add to loadedProducers
-                                                else if (producerData != null && producerData != "") {
-                                                    this.internalLoadedProducers.push(producerData);
-                                                }
-                                            }
-
-                                            // Set producer data (producerData should either be valid or [] here)
-                                            if (!(Array.isArray(producerData) && producerData.length == 0)) {
-                                                listingData["producerName"] = producerData["producerName"];
-
-                                                // Add to loadedListings
-                                                this.internalLoadedListings.push(listingData);
-                                            }
-                                            else {
-                                                listingData = [];
-                                            }
-                                        }
-                                        catch (error) {
-                                            console.error("Error fetching producer data: ", error);
-                                            listingData = [];
-                                        }
-                                    }
-                                    catch (error) {
-                                        console.error("Error fetching listing reviews rating: ", error);
-                                        listingData = [];
-                                    }
-                                }
-                            }
-                            catch (error) {
-                                console.error("Error fetching listing data: ", error);
-                                listingData = [];
-                            }
-
-                        }
-
-                        // Set item data (listingData should either be valid or [] here)
-                        if (!(Array.isArray(listingData) && listingData.length == 0)) {
-
-                            item.itemDetails = {
-                                itemPhoto: listingData["photo"],
-                                itemName: listingData["listingName"],
-                                itemType: listingData["drinkType"],
-                                itemTypeCategory: listingData["typeCategory"],
-                                itemABV: listingData["abv"],
-                                itemCountry: listingData["originCountry"],
-                                itemDesc: listingData["officialDesc"],
-                                itemRating: listingData["avgRating"],
-                                itemProducer: listingData["producerName"],
-                                itemProducerID: listingData["producerID"],
-                            };
-
-                            // Get serving type name
-                            let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
-                            if (servingTypeData != undefined) {
-                                item.itemDetails.itemServingTypeName = servingTypeData["servingType"];
-                            }
-                            else {
-                                item.itemDetails.itemServingTypeName = "(Unknown)";
-                            }
-                        }
-                    }
+                // Get venue ID
+                const venueId = this.targetVenue?.id || this.$route.params?.venueID;
+                if (!venueId) {
+                    throw new Error('No venue ID available for loading menu');
                 }
 
-                // Set editMenu and searchMenuResults using the processed copy
-                this.resetEditMenuWithData(menuCopy);
-                this.searchMenuResults = menuCopy;
-                this.searchMenuResults = [...menuCopy].sort((a, b) => 
-                    parseInt(a.sectionOrder) - parseInt(b.sectionOrder)
-                );
+                // Load complete hierarchical menu structure from new endpoint
+                const hierarchicalMenuData = await this.loadHierarchicalMenu(venueId);
+                
+                // Process the hierarchical response and load items for each section/subsection
+                const processedMenu = await this.processHierarchicalMenu(hierarchicalMenuData);
+
+                // Build the hierarchical structure and flat lookup
+                this.buildMenuHierarchy(processedMenu);
+
+                // Set editMenu and searchMenuResults using the processed hierarchical data
+                this.resetEditMenuWithHierarchicalData(processedMenu);
+                this.searchMenuResults = this.buildSearchableMenu(processedMenu);
 
                 // Emit the processed data back to parent
-                console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with data:', {
+                console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with hierarchical data:', {
                     loadedListingsCount: this.internalLoadedListings.length,
                     loadedProducersCount: this.internalLoadedProducers.length,
                     editMenuCount: this.editMenu.length,
                     searchMenuResultsCount: this.searchMenuResults.length,
-                    processedDetailedMenuCount: menuCopy.length
+                    hierarchicalMenuCount: this.hierarchicalMenu.length
                 });
+                
                 this.$emit('menu-data-processed', {
                     loadedListings: this.internalLoadedListings,
                     loadedProducers: this.internalLoadedProducers,
                     editMenu: this.editMenu,
                     searchMenuResults: this.searchMenuResults,
-                    processedDetailedMenu: menuCopy
+                    processedDetailedMenu: processedMenu,
+                    hierarchicalMenu: this.hierarchicalMenu
                 });
 
             }
             catch (error) {
-                console.error("🍽️ VenueMenuTabOriginal: Error processing menu data:", error);
+                console.error("🍽️ VenueMenuTabOriginal: Error processing hierarchical menu data:", error);
                 this.$emit('menu-data-error', error);
             }
             finally {
                 console.log('🍽️ VenueMenuTabOriginal: loadMenuData() finished, setting isLoading to false');
                 this.isLoading = false;
             }
+        },
+
+        // Load complete hierarchical menu structure from new backend endpoint
+        async loadHierarchicalMenu(venueId) {
+            console.log('🍽️ Loading hierarchical menu structure for venue:', venueId);
+            
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${venueId}`);
+                
+                if (response.status === 200 && response.data) {
+                    console.log('🍽️ Hierarchical menu structure loaded:', response.data);
+                    return response.data;
+                } else {
+                    console.warn('🍽️ No menu data found for venue:', venueId);
+                    return [];
+                }
+            } catch (error) {
+                console.error('🍽️ Error loading hierarchical menu:', error);
+                // Fallback to empty menu if endpoint fails
+                return [];
+            }
+        },
+
+        // Load menu items for a specific section or subsection
+        async loadSectionItems(sectionId) {
+            console.log('🍽️ Loading items for section:', sectionId);
+            
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${sectionId}`);
+                
+                if (response.status === 200 && response.data) {
+                    console.log('🍽️ Section items loaded:', response.data.length, 'items');
+                    return response.data;
+                } else {
+                    console.warn('🍽️ No items found for section:', sectionId);
+                    return [];
+                }
+            } catch (error) {
+                console.error('🍽️ Error loading section items:', error);
+                return [];
+            }
+        },
+
+        // Process hierarchical menu and load items for each section/subsection
+        async processHierarchicalMenu(hierarchicalMenuData) {
+            console.log('🍽️ Processing hierarchical menu data');
+            
+            const processedMenu = [];
+            
+            // Process each section in the hierarchical data
+            for (const section of hierarchicalMenuData) {
+                const processedSection = {
+                    id: section.id,
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    parentSectionId: section.parentSectionId,
+                    isSubSection: section.isSubSection,
+                    sectionMenu: [],
+                    subsections: []
+                };
+
+                // Load items for this section
+                if (section.id) {
+                    const sectionItems = await this.loadSectionItems(section.id);
+                    processedSection.sectionMenu = await this.enrichItemsWithListingData(sectionItems);
+                }
+
+                // If this is a main section (no parent), look for its subsections
+                if (!section.parentSectionId) {
+                    const subsections = hierarchicalMenuData.filter(s => s.parentSectionId === section.id);
+                    
+                    for (const subsection of subsections) {
+                        const processedSubsection = {
+                            id: subsection.id,
+                            sectionName: subsection.sectionName,
+                            sectionOrder: subsection.sectionOrder,
+                            parentSectionId: subsection.parentSectionId,
+                            isSubSection: subsection.isSubSection,
+                            sectionMenu: []
+                        };
+
+                        // Load items for this subsection
+                        if (subsection.id) {
+                            const subsectionItems = await this.loadSectionItems(subsection.id);
+                            processedSubsection.sectionMenu = await this.enrichItemsWithListingData(subsectionItems);
+                        }
+
+                        processedSection.subsections.push(processedSubsection);
+                    }
+
+                    // Sort subsections by order
+                    processedSection.subsections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                }
+
+                // Only add main sections to the processed menu (subsections are nested)
+                if (!section.parentSectionId) {
+                    processedMenu.push(processedSection);
+                }
+            }
+
+            // Sort main sections by order
+            processedMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            
+            console.log('🍽️ Processed hierarchical menu:', processedMenu.length, 'main sections');
+            return processedMenu;
+        },
+
+        // Enrich menu items with listing data
+        async enrichItemsWithListingData(items) {
+            const enrichedItems = [];
+            
+            for (const item of items) {
+                // Find item in loadedListings
+                let listingData = this.internalLoadedListings.find(i => i.id == item.itemID);
+
+                // If not found, get from server
+                if (listingData == undefined) {
+                    try {
+                        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListing/${item.itemID}`);
+                        listingData = response.data;
+
+                        if (Array.isArray(listingData) && listingData.length == 0) {
+                            // Skip this item if listing not found
+                            continue;
+                        } else if (listingData != null && listingData != "") {
+                            try {
+                                // Get average rating 
+                                let reviewResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingReviewsRating/${item.itemID}`);
+                                listingData['avgRating'] = reviewResponse.data['averageRating'];
+                                listingData['reviewCount'] = reviewResponse.data['reviewCount'];
+
+                                // Find producer in loadedProducers
+                                let producerData = this.internalLoadedProducers.find(p => p.id == listingData["producerID"]);
+
+                                // If not found, get from server
+                                if (producerData == undefined) {
+                                    try {
+                                        let producerResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducer/${listingData["producerID"]}`);
+                                        producerData = producerResponse.data;
+
+                                        if (!(Array.isArray(producerData) && producerData.length == 0) && producerData != null && producerData != "") {
+                                            this.internalLoadedProducers.push(producerData);
+                                        }
+                                    } catch (error) {
+                                        console.error("Error fetching producer data: ", error);
+                                    }
+                                }
+
+                                // Set producer data
+                                if (!(Array.isArray(producerData) && producerData.length == 0) && producerData != null) {
+                                    listingData["producerName"] = producerData["producerName"];
+                                    this.internalLoadedListings.push(listingData);
+                                } else {
+                                    continue; // Skip this item if producer not found
+                                }
+                            } catch (error) {
+                                console.error("Error fetching listing reviews rating: ", error);
+                                continue; // Skip this item if reviews can't be loaded
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error fetching listing data: ", error);
+                        continue; // Skip this item if listing can't be loaded
+                    }
+                }
+
+                // Set item data (listingData should be valid here)
+                if (!(Array.isArray(listingData) && listingData.length == 0) && listingData != null) {
+                    item.itemDetails = {
+                        itemPhoto: listingData["photo"],
+                        itemName: listingData["listingName"],
+                        itemType: listingData["drinkType"],
+                        itemTypeCategory: listingData["typeCategory"],
+                        itemABV: listingData["abv"],
+                        itemCountry: listingData["originCountry"],
+                        itemDesc: listingData["officialDesc"],
+                        itemRating: listingData["avgRating"],
+                        itemProducer: listingData["producerName"],
+                        itemProducerID: listingData["producerID"],
+                    };
+
+                    // Get serving type name
+                    let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
+                    if (servingTypeData != undefined) {
+                        item.itemDetails.itemServingTypeName = servingTypeData["servingType"];
+                    } else {
+                        item.itemDetails.itemServingTypeName = "(Unknown)";
+                    }
+
+                    enrichedItems.push(item);
+                }
+            }
+
+            return enrichedItems;
+        },
+
+        // Build hierarchical menu structure and populate lookup
+        buildMenuHierarchy(processedMenu) {
+            console.log('🍽️ Building menu hierarchy and lookup');
+            
+            // Set the hierarchical menu
+            this.hierarchicalMenu = processedMenu;
+            
+            // Clear and rebuild flat lookup
+            this.flatMenuLookup.clear();
+            
+            const addToLookup = (sections, parentId = null) => {
+                sections.forEach(section => {
+                    this.flatMenuLookup.set(section.id, {
+                        section: section,
+                        parentId: parentId,
+                        isSubsection: !!section.parentSectionId
+                    });
+                    
+                    // Add subsections to lookup
+                    if (section.subsections && section.subsections.length > 0) {
+                        addToLookup(section.subsections, section.id);
+                    }
+                });
+            };
+            
+            addToLookup(processedMenu);
+            console.log('🍽️ Flat lookup populated with', this.flatMenuLookup.size, 'entries');
+        },
+
+        // Reset Edit Menu with hierarchical data
+        resetEditMenuWithHierarchicalData(hierarchicalData) {
+            console.log('🍽️ Resetting edit menu with hierarchical data');
+            this.editMenu = JSON.parse(JSON.stringify(hierarchicalData));
+        },
+
+        // Build searchable menu structure (flattened for search but maintains hierarchy info)
+        buildSearchableMenu(hierarchicalData) {
+            console.log('🍽️ Building searchable menu structure');
+            return JSON.parse(JSON.stringify(hierarchicalData));
         },
 
         // Reset Edit Menu - moved from parent
