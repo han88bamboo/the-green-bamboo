@@ -2100,13 +2100,13 @@ export default {
                 }.bind(this)
             },
 
-            // Menu item drag options for items within subsections - Prevent cross-subsection dragging
+            // Menu item drag options for items within subsections - Allow movement within same parent section
             subsectionItemDragOptions: {
                 animation: 350,
                 group: {
-                    name: "subsectionItems",
-                    pull: false,  // Prevent items from being dragged to other subsections
-                    put: false    // Only allow items from the same subsection
+                    name: "menuItems",
+                    pull: true,   // Allow items to be dragged out
+                    put: true     // Allow items from other containers
                 },
                 disabled: false,
                 ghostClass: "ghost-item",
@@ -2117,26 +2117,18 @@ export default {
                     return false;
                 }.bind(this),
                 onMove: function (evt) {
-                    // Only allow reordering within the same subsection
-                    const fromSubsection = evt.from.closest('[data-subsection-order]');
-                    const toSubsection = evt.to.closest('[data-subsection-order]');
-                    
-                    if (fromSubsection && toSubsection) {
-                        const fromSubsectionOrder = fromSubsection.getAttribute('data-subsection-order');
-                        const toSubsectionOrder = toSubsection.getAttribute('data-subsection-order');
-                        return fromSubsectionOrder === toSubsectionOrder;
-                    }
-                    return false;
+                    // Allow all movement for subsection items (cross-section allowed)
+                    return true;
                 }.bind(this)
             },
 
-            // Menu item drag options for direct section items - Prevent cross-section dragging
+            // Menu item drag options for direct section items - Allow cross-section movement
             sectionItemDragOptions: {
                 animation: 350,
                 group: {
-                    name: "sectionItems",
-                    pull: false,  // Prevent items from being dragged to other sections
-                    put: false    // Only allow items from the same section
+                    name: "menuItems",
+                    pull: true,   // Allow items to be dragged out
+                    put: true     // Allow items from other containers
                 },
                 disabled: false,
                 ghostClass: "ghost-item",
@@ -2147,16 +2139,8 @@ export default {
                     return false;
                 }.bind(this),
                 onMove: function (evt) {
-                    // Only allow reordering within the same section
-                    const fromSection = evt.from.closest('[data-section-order]');
-                    const toSection = evt.to.closest('[data-section-order]');
-                    
-                    if (fromSection && toSection) {
-                        const fromSectionOrder = fromSection.getAttribute('data-section-order');
-                        const toSectionOrder = toSection.getAttribute('data-section-order');
-                        return fromSectionOrder === toSectionOrder;
-                    }
-                    return false;
+                    // Allow all movement for direct section items (cross-section allowed)
+                    return true;
                 }.bind(this)
             },
         }
