@@ -1446,9 +1446,10 @@
                                     v-model="globalMenuItemTargetSection"
                                     @change="updateGlobalMenuItemTargetSection">
                                     <option value="">Select a menu section...</option>
-                                    <option v-for="(menuSection, sectionIndex) in editMenu"
-                                        v-bind:key="menuSection" v-bind:value="menuSection">
-                                        #{{ sectionIndex }}: {{ menuSection.sectionName }}
+                                    <option v-for="sectionOption in sectionOptionsForItems"
+                                        v-bind:key="sectionOption.id" 
+                                        v-bind:value="sectionOption.section">
+                                        {{ sectionOption.name }}
                                     </option>
                                 </select>
                                 <p v-show="Object.keys(this.globalMenuItemTargetSection).length !== 0"
@@ -1924,19 +1925,18 @@ export default {
                     section: section
                 });
                 
-                // Add subsections
-                if (section.subsections && section.subsections.length > 0) {
-                    section.subsections.forEach(subsection => {
-                        options.push({
-                            id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-                            name: `  └─ ${subsection.sectionName}`,
-                            type: 'subsection',
-                            level: 1,
-                            section: subsection,
-                            parentSection: section
-                        });
+                // Add subsections for this main section
+                const subsections = this.getSubsectionsForSection(section.sectionOrder);
+                subsections.forEach(subsection => {
+                    options.push({
+                        id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
+                        name: `  └─ ${subsection.sectionName}`,
+                        type: 'subsection',
+                        level: 1,
+                        section: subsection,
+                        parentSection: section
                     });
-                }
+                });
             });
             
             return options;
@@ -2974,10 +2974,23 @@ export default {
 
                 newMenuItemTargetSectionError.innerText = "";
 
+                // Determine if this is a section or subsection
+                if (this.newMenuItemTargetSection.isSubSection) {
+                    this.newMenuItemTargetSectionType = 'subsection';
+                } else {
+                    this.newMenuItemTargetSectionType = 'section';
+                }
+
+                // Ensure section has sectionMenu array
+                if (!this.newMenuItemTargetSection.sectionMenu) {
+                    this.newMenuItemTargetSection.sectionMenu = [];
+                }
+
                 // Check if item already exists in section
                 let itemExists = this.newMenuItemTargetSection.sectionMenu.find(i => i.itemID == this.newMenuItemID);
                 if (itemExists != undefined) {
-                    newMenuItemTargetSectionNotice.innerText = "Are you sure you want to add a duplicate item to this section?"
+                    const sectionType = this.newMenuItemTargetSection.isSubSection ? 'subsection' : 'section';
+                    newMenuItemTargetSectionNotice.innerText = `Are you sure you want to add a duplicate item to this ${sectionType}?`;
                 }
                 else {
                     newMenuItemTargetSectionNotice.innerText = "";
@@ -2986,6 +2999,7 @@ export default {
             else {
                 newMenuItemTargetSectionError.innerText = "Please select a valid menu section!";
                 newMenuItemTargetSectionNotice.innerText = "";
+                this.newMenuItemTargetSectionType = '';
             }
         },
 
@@ -3060,6 +3074,9 @@ export default {
                         itemPrice: this.newMenuItemPrice,
                         servingType: this.newMenuItemServingType,
                         sectionName: this.newMenuItemTargetSection.sectionName,
+                        sectionOrder: this.newMenuItemTargetSection.sectionOrder,
+                        isSubSection: this.newMenuItemTargetSection.isSubSection || false,
+                        parentSectionId: this.newMenuItemTargetSection.parentSectionId || null
                     },
                     {
                         headers: {
@@ -3250,6 +3267,20 @@ export default {
         updateGlobalMenuItemTargetSection() {
             // This method can be used for validation if needed
             console.log('Global target section updated:', this.globalMenuItemTargetSection);
+            
+            // Determine if this is a section or subsection
+            if (this.globalMenuItemTargetSection && this.globalMenuItemTargetSection.isSubSection) {
+                this.globalMenuItemTargetSectionType = 'subsection';
+            } else if (this.globalMenuItemTargetSection) {
+                this.globalMenuItemTargetSectionType = 'section';
+            } else {
+                this.globalMenuItemTargetSectionType = '';
+            }
+            
+            // Validate section has sectionMenu array
+            if (this.globalMenuItemTargetSection && !this.globalMenuItemTargetSection.sectionMenu) {
+                this.globalMenuItemTargetSection.sectionMenu = [];
+            }
         },
 
         // Check if valid to submit multiple items - moved from parent
@@ -3323,6 +3354,9 @@ export default {
                         itemPrice: item.newMenuItemPrice || -1,
                         servingType: item.newMenuItemServingType,
                         sectionName: this.globalMenuItemTargetSection.sectionName,
+                        sectionOrder: this.globalMenuItemTargetSection.sectionOrder,
+                        isSubSection: this.globalMenuItemTargetSection.isSubSection || false,
+                        parentSectionId: this.globalMenuItemTargetSection.parentSectionId || null
                     }
                 )
                 .then(response => {
