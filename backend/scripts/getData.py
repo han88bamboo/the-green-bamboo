@@ -472,7 +472,7 @@ def getListingsByIDs():
         return jsonify({"error": str(e)}), 500
 
 # -----------------------------------------------------------------------------------------
-# [POST] Get content from db where id> last item in list [discovery tab]
+# [POST] Get content from db where id> last item in list [discovery tab] - Edited By CP [25 Aug]
 @blueprint.route("/getNext30", methods=['POST'])
 def getNext30():
     conn = g.db
@@ -604,6 +604,12 @@ def getNext30():
                 listing = cursor.fetchone()
                 review['listingName'] = listing['listingName'] if listing else None
 
+                # Retrieve username and photo
+                cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
+                user_data = cursor.fetchone()
+                review['username'] = user_data['username'] if user_data else None
+                review['userPhoto'] = user_data['photo'] if user_data else None
+
             # Get producer or venue updates after *UpdateLastID
             if limit > 0:
 
@@ -656,9 +662,10 @@ def getNext30():
                     update['contentType'] = 'Update'
 
                     # Get producer name
-                    cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (update['producerId'],))
+                    cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (update['producerId'],))
                     producer = cursor.fetchone()
                     update['producerName'] = producer['producerName'] if producer else None
+                    update['producerPhoto'] = producer['photo'] if producer else None
 
             if venues_updates:
                 vUpdateLastID = venues_updates[-1]['id']
@@ -667,9 +674,10 @@ def getNext30():
                     update['contentType'] = 'Update'
                     
                     # Get venue name
-                    cursor.execute('SELECT "venueName" FROM "venues" WHERE "id" = %s', (update['venueId'],))
+                    cursor.execute('SELECT "venueName", "photo" FROM "venues" WHERE "id" = %s', (update['venueId'],))
                     venue = cursor.fetchone()
                     update['venueName'] = venue['venueName'] if venue else None
+                    update['venuePhoto'] = venue['photo'] if venue else None
 
         if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) == 0:
             return jsonify([])
@@ -7354,9 +7362,10 @@ def getRandomListings():
                 review['contentType'] = 'Review'
 
                 # Get username
-                cursor.execute("SELECT username FROM users WHERE id = %s", (review['userID'],))
+                cursor.execute("SELECT username, photo FROM users WHERE id = %s", (review['userID'],))
                 user_data = cursor.fetchone()
                 review['username'] = user_data['username'] if user_data else None
+                review['userPhoto'] = user_data['photo'] if user_data else None
 
                 # Get listing name
                 cursor.execute("""SELECT "listingName" FROM listings WHERE id = %s""", (review['reviewTarget'],))
@@ -7424,18 +7433,20 @@ def getRandomListings():
                     update['contentType'] = 'Update'
 
                     # Get producer name
-                    cursor.execute("""SELECT "producerName" FROM producers WHERE id = %s""", (update['producerId'],))
+                    cursor.execute("""SELECT "producerName", photo FROM producers WHERE id = %s""", (update['producerId'],))
                     producer_data = cursor.fetchone()
                     update['producerName'] = producer_data['producerName'] if producer_data else None
+                    update['producerPhoto'] = producer_data['photo'] if producer_data else None
 
             if len(venues_updates):
                 for update in venues_updates:
                     update['contentType'] = 'Update'
 
                     # Get venue name
-                    cursor.execute("""SELECT "venueName" FROM venues WHERE id = %s""", (update['venueId'],))
+                    cursor.execute("""SELECT "venueName", photo FROM venues WHERE id = %s""", (update['venueId'],))
                     venue_data = cursor.fetchone()
                     update['venueName'] = venue_data['venueName'] if venue_data else None
+                    update['venuePhoto'] = venue_data['photo'] if venue_data else None
 
     if not listings_data:
         return jsonify({"error": "No listings found for selected date"}), 400

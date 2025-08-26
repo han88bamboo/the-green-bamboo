@@ -1119,106 +1119,109 @@
                       <div v-if="content.contentType == 'Listing'" class="row">
                         <div class="col-md-12">
                           <div class="container mt-4 mobile-mt-3">
-                            <div class="card d-flex flex-row">
-                              <!-- Image Section -->
-                              <div class="text-center text-md-start">
-                                <div
-                                  class="image-wrapper position-relative d-inline-block"
-                                >
-                                  <img
-                                    v-if="content['photo']"
-                                    :src="content['photo']"
-                                    class="listing-image"
-                                  />
-                                  <img
-                                    v-else
-                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                    class="listing-image"
-                                  />
-                                </div>
-                              </div>
+                            <div class="card p-3">
 
-                              <div
-                                class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100"
-                              >
-                                <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3"
-                                >
+                              <!-- First Row: Image | Details | Rating -->
+                              <div class="row w-100 g-0 align-items-center mb-3">
+                                
+                                <!-- Image Section (Left) -->
+                                <div class="col-auto text-center text-md-start">
+                                  <div class="image-wrapper position-relative d-inline-block">
+                                    <img
+                                      v-if="content['photo']"
+                                      :src="content['photo']"
+                                      class="listing-image"
+                                    />
+                                    <img
+                                      v-else
+                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                      class="listing-image"
+                                    />
+                                  </div>
+                                </div>
+
+                                <!-- Details Section (Center) -->
+                                <div class="col d-flex flex-column justify-content-between px-3">
                                   <div class="name-producer">
                                     <router-link
-                                      :to="{
-                                        path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
-                                      }"
+                                      :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
                                       class="primary-clickable-text text-decoration-none"
                                       style="color: #027562"
                                     >
-                                      <h5 class="d-none d-md-block">
-                                        <b>{{ content["listingName"] }}</b>
-                                      </h5>
-                                      <h6 class="d-block d-md-none mobile-mt-2">
-                                        <b>{{ content["listingName"] }}</b>
-                                      </h6>
+                                      <h5 class="d-none d-md-block"><b>{{ content.listingName }}</b></h5>
+                                      <h6 class="d-block d-md-none mobile-mt-2"><b>{{ content.listingName }}</b></h6>
                                     </router-link>
                                     <router-link
-                                      :to="{
-                                        path:
-                                          '/profile/producer/' +
-                                          content.producerID +
-                                          '/' +
-                                          content.producerName,
-                                      }"
+                                      :to="{ path: '/profile/producer/' + content.producerID + '/' + content.producerName }"
                                       class="primary-clickable-text"
                                     >
-                                      <h6 class="Xmobile-rating-smaller-text">
-                                        <b>{{ content.producerName }}</b>
-                                      </h6>
+                                      <h6 class="Xmobile-rating-smaller-text"><b>{{ content.producerName }}</b></h6>
                                     </router-link>
                                   </div>
+
                                   <router-link
-                                    :to="{
-                                      path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
-                                    }"
+                                    :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
                                     class="default-clickable-text fst-italic"
                                   >
-                                    <p
-                                      class="homepage-bottle-listing-description"
-                                    >
+                                    <p class="homepage-bottle-listing-description">
                                       {{
                                         content.officialDesc?.length > 300
-                                          ? content.officialDesc.slice(0, 300) +
-                                            "..."
+                                          ? content.officialDesc.slice(0, 300) + "..."
                                           : content.officialDesc
                                       }}
                                     </p>
                                   </router-link>
                                 </div>
 
-                                <!-- Rating & Read More Button -->
-                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
-                                >
-                                  <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ content.rating }} ★
-                                  </h1>
-
-                                  <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ content.rating }} ★
-                                  </h4>
+                                <!-- Rating & Read More (Right) -->
+                                <div class="col-auto text-center text-md-end d-flex flex-column justify-content-between px-3">
+                                  <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
+                                  <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                   <div class="d-grid">
                                     <router-link
-                                      :to="{
-                                        path: '/listing/view/' + content.id + '/' + slugify(content.listingName),
-                                      }"
+                                      :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
                                       class="primary-clickable-text"
                                     >
-                                      <button
-                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
-                                      >
+                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
                                         Read More
                                       </button>
                                     </router-link>
                                   </div>
                                 </div>
+
                               </div>
+
+                              <!-- Second Row: Like / Comment / Share -->
+                              <div class="row w-100 border-top pt-2">
+                                <div class="col d-flex justify-content-around d-none d-md-flex">
+
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-hand-thumbs-up me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                                    </svg>
+                                    <span><span style="cursor: pointer;">Like</span></span>
+                                  </span>
+
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-chat-dots me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+                                    </svg>
+                                    <span><span style="cursor: pointer;">Comment</span></span>
+                                  </span>
+
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-send me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                    </svg>
+                                    <span><span style="cursor: pointer;">Share</span></span>
+                                  </span>
+
+                                </div>
+                              </div>
+
                             </div>
                           </div>
                         </div>
@@ -1228,96 +1231,137 @@
                       <div v-else-if="content.contentType == 'Review'" class="row">
                         <div class="col-md-12">
                           <div class="container mt-4 mobile-mt-3">
-                            <div class="card d-flex flex-row">
+                            <div class="card p-3">
 
-                              <!-- Image Section -->
-                              <div class="text-center text-md-start">
-                                <div
-                                  class="image-wrapper position-relative d-inline-block"
-                                >
-                                  <img
-                                    v-if="content['photo']"
-                                    :src="content['photo']"
-                                    class="listing-image"
-                                  />
-                                  <img
-                                    v-else
-                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                    class="listing-image"
-                                  />
+                              <!-- First Row: Image | Details | Rating -->
+                              <div class="row w-100 g-0 align-items-center mb-3">
+
+                                <!-- Image Section (Left) -->
+                                <div class="col-auto text-center text-md-start">
+                                  <div class="image-wrapper position-relative d-inline-block">
+                                    <img
+                                      v-if="content['photo']"
+                                      :src="content['photo']"
+                                      class="listing-image"
+                                    />
+                                    <img
+                                      v-else
+                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                      class="listing-image"
+                                    />
+                                  </div>
                                 </div>
-                              </div>
 
-                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
-                                  <!-- Details Section -->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
-                                  <!-- User and Listing Link -->
+                                <!-- Details Section (Center) -->
+                                <div class="col d-flex flex-column justify-content-between px-3">
                                   <div>
                                     <span>
                                       <!-- Username -->
                                       <router-link
-                                        :to="{
-                                          path: '/profile/user/' + content.userID + '/' + content.username,
-                                        }"
+                                        :to="{ path: '/profile/user/' + content.userID + '/' + content.username }"
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <h5 class="d-none d-md-block">
-                                          @<b>{{ content["username"] }}</b>
-                                        </h5>
-                                        <h6 class="d-block d-md-none mobile-mt-2">
-                                          @<b>{{ content["username"] }}</b>
-                                        </h6>
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            v-if="content.userPhoto"
+                                            :src="content.userPhoto"
+                                            class="rounded-circle"
+                                            alt="Profile Photo"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <svg
+                                            v-else
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="30"
+                                            height="30"
+                                            fill="currentColor"
+                                            class="bi bi-person-circle"
+                                            viewBox="0 0 16 16"
+                                            style="object-fit: cover;"
+                                          >
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                          </svg>
+
+                                          <h5 class="d-none d-md-block mb-0 ms-2">@<b>{{ content.username }}</b></h5>
+                                          <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2">@<b>{{ content.username }}</b></h6>
+                                        </div>
                                       </router-link>
 
                                       <!-- Listing Name -->
                                       <h6>
                                         reviewed
-                                        <router-link :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
+                                        <router-link
+                                          :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
                                           class="primary-clickable-text text-decoration-none"
                                           style="color: #027562"
                                         >
-                                          <b>{{ content["listingName"] }}</b>
+                                          <b>{{ content.listingName }}</b>
                                         </router-link>
                                       </h6>
                                     </span>
 
                                     <!-- Review Description -->
                                     <span>
-                                      <router-link :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
+                                      <router-link
+                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <p class="default-clickable-text fst-italic">{{ content["reviewDesc"] }}</p>
+                                        <p class="default-clickable-text fst-italic">{{ content.reviewDesc }}</p>
                                       </router-link>
                                     </span>
                                   </div>
                                 </div>
 
-                                <!-- Rating & Read More Button -->
-                                <div class="text-center text-md-end col-12 col-md-3 d-flex flex-row flex-md-col justify-content-between d-md-block mt-0 mt-md-3 px-3"
-                                >
-                                  <h1 class="fw-bold text-warning mobile-view-hide">
-                                    {{ content.rating }} ★
-                                  </h1>
-
-                                  <h4 class="fw-bold text-warning mobile-view-show">
-                                    {{ content.rating }} ★
-                                  </h4>
+                                <!-- Rating & Read More (Right) -->
+                                <div class="col-auto text-center text-md-end d-flex flex-column justify-content-between px-3">
+                                  <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
+                                  <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                   <div class="d-grid">
                                     <router-link
-                                      :to="{
-                                        path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName),
-                                      }"
+                                      :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) }"
                                       class="primary-clickable-text"
                                     >
-                                      <button
-                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
-                                      >
+                                      <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
                                         Read More
                                       </button>
                                     </router-link>
                                   </div>
+                                </div>
+
+                              </div>
+
+                              <!-- Second Row: Like / Comment / Share -->
+                              <div class="row w-100 border-top pt-2">
+                                <div class="col d-flex justify-content-around d-none d-md-flex">
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-hand-thumbs-up me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                                    </svg>
+                                    <span style="cursor: pointer;">Like</span>
+                                  </span>
+
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-chat-dots me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+                                    </svg>
+                                    <span style="cursor: pointer;">Comment</span>
+                                  </span>
+
+                                  <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                        class="bi bi-send me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                      <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                    </svg>
+                                    <span style="cursor: pointer;">Share</span>
+                                  </span>
+
                                 </div>
                               </div>
                             </div>
@@ -1329,72 +1373,136 @@
                       <div v-else-if="content.contentType === 'Update'">
                         <div class="col-md-12">
                           <div class="container mt-4 mobile-mt-3">
-                            <div class="card d-flex flex-row">
-                              <!-- Image Section -->
-                              <div class="text-center text-md-start">
-                                <div
-                                  class="image-wrapper position-relative d-inline-block"
-                                >
-                                  <img
-                                    v-if="content['photo']"
-                                    :src="content['photo']"
-                                    class="listing-image"
-                                  />
-                                  <img
-                                    v-else
-                                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                    class="listing-image"
-                                  />
+                            <div class="card p-3">
+                                <!-- First Row: Image | Details | Rating -->
+                                <div class="row w-100 g-0 align-items-center mb-3">
+
+                                  <!-- Image Section (Left) -->
+                                  <div class="col-auto text-center text-md-start">
+                                    <div class="image-wrapper position-relative d-inline-block">
+                                      <img
+                                        v-if="content.photo"
+                                        :src="content.photo"
+                                        class="listing-image"
+                                      />
+                                      <img
+                                        v-else
+                                        src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                        class="listing-image"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <!-- Details Section (Center) -->
+                                  <div class="col d-flex flex-column justify-content-between px-3">
+                                    <div>
+                                      <!-- Venue / Producer -->
+                                      <router-link v-if="content.venueId"
+                                        :to="{ path: '/profile/venue/' + content.venueId + '/' + slugify(content.venueName) }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            v-if="content.venuePhoto"
+                                            :src="content.venuePhoto"
+                                            class="rounded-circle"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                              class="bi bi-person-circle" viewBox="0 0 16 16">
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                          </svg>
+                                          <h5 class="d-none d-md-block mb-0 ms-2"><b>{{ content.venueName }}</b></h5>
+                                          <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2"><b>{{ content.venueName }}</b></h6>
+                                        </div>
+                                      </router-link>
+
+                                      <router-link v-else-if="content.producerId"
+                                        :to="{ path: '/profile/producer/' + content.producerId + '/' + slugify(content.producerName) }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            v-if="content.producerPhoto"
+                                            :src="content.producerPhoto"
+                                            class="rounded-circle"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
+                                              class="bi bi-person-circle" viewBox="0 0 16 16">
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                          </svg>
+                                          <h5 class="d-none d-md-block mb-0 ms-2"><b>{{ content.producerName }}</b></h5>
+                                          <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2"><b>{{ content.producerName }}</b></h6>
+                                        </div>
+                                      </router-link>
+
+                                      <!-- Update Text -->
+                                      <h6 class="fst-italic mt-2">{{ content.text }}</h6>
+                                    </div>
+                                  </div>
+
+                                  <!-- Rating & Read More (Right) -->
+                                  <div class="col-auto text-center text-md-end d-flex flex-column justify-content-between px-3">
+                                    <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
+                                    <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
+                                    <div class="d-grid">
+                                      <router-link
+                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) }"
+                                        class="primary-clickable-text"
+                                      >
+                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                          Read More
+                                        </button>
+                                      </router-link>
+                                    </div>
+                                  </div>
+
                                 </div>
-                              </div>
 
-                              <div class="detials-rating d-flex flex-column flex-md-row justify-content-between w-100">
+                                <!-- Second Row: Like / Comment / Share -->
+                                <div class="row w-100 border-top pt-2">
+                                  <div class="col d-flex justify-content-around d-none d-md-flex">
+                                    <span class="d-flex align-items-center" style="cursor: pointer;">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                          class="bi bi-hand-thumbs-up me-1" viewBox="0 0 16 16">
+                                        <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
+                                      </svg>
+                                      <span style="cursor: pointer;">Like</span>
+                                    </span>
 
-                                <!-- Details Section-->
-                                <div class="flex-grow-1 py-md-3 py-1 col-12 col-md-9 d-flex flex-column justify-content-between md-px-3 px-3">
+                                    <span class="d-flex align-items-center">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                          class="bi bi-chat-dots me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                        <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+                                      </svg>
+                                      <span style="cursor: pointer;">Comment</span>
+                                    </span>
 
-                                  <!-- Venue Name -->
-                                  <router-link v-if="content.venueId"
-                                    :to="{
-                                      path: '/profile/venue/' + content.venueId + '/' + slugify(content.venueName),
-                                    }"
-                                    class="primary-clickable-text text-decoration-none"
-                                    style="color: #027562"
-                                  >
-                                    <h5 class="d-none d-md-block">
-                                      <b>{{ content["venueName"] }}</b>
-                                    </h5>
-                                    <h6 class="d-block d-md-none mobile-mt-2">
-                                      <b>{{ content["venueName"] }}</b>
-                                    </h6>
-                                  </router-link>
+                                    <span class="d-flex align-items-center">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                          class="bi bi-send me-1" viewBox="0 0 16 16" style="cursor: pointer;">
+                                        <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                      </svg>
+                                      <span style="cursor: pointer;">Share</span>
+                                    </span>
 
-                                  <!-- Producer Name -->
-                                  <router-link v-else-if="content.producerId"
-                                    :to="{
-                                      path: '/profile/producer/' + content.producerId + '/' + slugify(content.producerName),
-                                    }"
-                                    class="primary-clickable-text text-decoration-none"
-                                    style="color: #027562"
-                                  >
-                                    <h5 class="d-none d-md-block">
-                                      <b>{{ content["producerName"] }}</b>
-                                    </h5>
-                                    <h6 class="d-block d-md-none mobile-mt-2">
-                                      <b>{{ content["producerName"] }}</b>
-                                    </h6>
-                                  </router-link>
-
-                                  <!-- Updates -->
-                                  <h6 class="fst-italic">
-                                    {{content.text}}
-                                  </h6>
+                                  </div>
                                 </div>
-                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+
+                                          
                     </div>
                   </div>
                 </div>
