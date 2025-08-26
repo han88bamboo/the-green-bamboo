@@ -3461,7 +3461,7 @@ export default {
                 this.batchUpdateSectionOrdering();
 
                 // Prepare menu for backend
-                const menuData = this.prepareMenuForBackend();
+                const menuData = this.prepareMenuForBackend(true); // Include metadata for batch operations
 
                 // Save to backend
                 const response = await this.apiCall('post', `/venue/${this.venueId}/menu/hierarchical`, menuData);
@@ -3493,53 +3493,67 @@ export default {
         },
 
         // Prepare hierarchical menu data for backend
-        prepareMenuForBackend() {
-            const menuData = {
-                venueId: this.venueId,
-                sections: [],
-                metadata: {
-                    totalSections: 0,
-                    totalSubsections: 0,
-                    totalItems: 0,
-                    hierarchyVersion: '2.0'
-                }
-            };
-
+        prepareMenuForBackend(includeMetadata = false) {
+            console.log('🍽️ Preparing menu data for backend');
+            
             // Sort all sections by order
             const sortedSections = [...this.editMenu].sort((a, b) => a.sectionOrder - b.sectionOrder);
-
-            sortedSections.forEach(section => {
-                const sectionData = {
+            
+            const cleanSections = sortedSections.map(section => {
+                // Create clean copy without UI-specific properties
+                const cleanSection = {
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     isSubSection: section.isSubSection || false,
                     parentSectionId: section.parentSectionId || null,
-                    items: []
+                    sectionMenu: []
                 };
-
-                // Add menu items
+                
+                // Clean menu items
                 if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
-                    section.sectionMenu.forEach((item, index) => {
-                        sectionData.items.push({
-                            ...item,
-                            itemOrder: index,
-                            sectionOrder: section.sectionOrder
-                        });
+                    cleanSection.sectionMenu = section.sectionMenu.map((item, index) => {
+                        const cleanItem = {
+                            itemID: item.itemID,
+                            itemOrder: index, // Ensure sequential ordering
+                            vintage: item.vintage || null,
+                            price: item.price || null,
+                            servingTypeID: item.servingTypeID || null
+                        };
+                        
+                        // Remove UI-specific properties if they exist
+                        delete cleanItem.itemDetails;
+                        delete cleanItem.expanded;
+                        delete cleanItem.selected;
+                        
+                        return cleanItem;
                     });
                 }
-
-                menuData.sections.push(sectionData);
-
-                // Update metadata
-                if (section.isSubSection) {
-                    menuData.metadata.totalSubsections++;
-                } else {
-                    menuData.metadata.totalSections++;
+                
+                // Ensure main sections don't have parent references
+                if (!cleanSection.isSubSection) {
+                    cleanSection.parentSectionId = null;
                 }
-                menuData.metadata.totalItems += sectionData.items.length;
+                
+                return cleanSection;
             });
 
-            return menuData;
+            // Return with metadata if requested (for batch operations)
+            if (includeMetadata) {
+                const menuData = {
+                    venueId: this.targetVenue?.id || null,
+                    sections: cleanSections,
+                    metadata: {
+                        totalSections: cleanSections.filter(s => !s.isSubSection).length,
+                        totalSubsections: cleanSections.filter(s => s.isSubSection).length,
+                        totalItems: cleanSections.reduce((total, section) => total + (section.sectionMenu?.length || 0), 0),
+                        hierarchyVersion: '2.0'
+                    }
+                };
+                return menuData;
+            }
+
+            // Return simple array format for standard updates
+            return cleanSections;
         },
 
         // ===== BATCH OPERATIONS USAGE EXAMPLES =====
@@ -4526,49 +4540,6 @@ export default {
                 mainSections: mainSections.length,
                 subsections: subsections.length,
                 lastSectionOrder: globalSubsectionOrder - 1
-            });
-        },
-
-        // Prepare menu data for backend by removing UI-specific properties
-        prepareMenuForBackend() {
-            console.log('🍽️ Preparing menu data for backend');
-            
-            return this.editMenu.map(section => {
-                // Create clean copy without UI-specific properties
-                const cleanSection = {
-                    sectionName: section.sectionName,
-                    sectionOrder: section.sectionOrder,
-                    isSubSection: section.isSubSection || false,
-                    parentSectionId: section.parentSectionId || null,
-                    sectionMenu: []
-                };
-                
-                // Clean menu items
-                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
-                    cleanSection.sectionMenu = section.sectionMenu.map(item => {
-                        const cleanItem = {
-                            itemID: item.itemID,
-                            itemOrder: item.itemOrder,
-                            vintage: item.vintage || null,
-                            price: item.price || null,
-                            servingTypeID: item.servingTypeID || null
-                        };
-                        
-                        // Remove UI-specific properties
-                        delete cleanItem.itemDetails;
-                        delete cleanItem.expanded;
-                        delete cleanItem.selected;
-                        
-                        return cleanItem;
-                    });
-                }
-                
-                // Ensure main sections don't have parent references
-                if (!cleanSection.isSubSection) {
-                    cleanSection.parentSectionId = null;
-                }
-                
-                return cleanSection;
             });
         },
 
