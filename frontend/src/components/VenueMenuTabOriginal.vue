@@ -2119,7 +2119,7 @@ export default {
                     this.showInvalidAreaMessage();
                     return false;
                 }.bind(this),
-                onMove: function (evt) {
+                onMove: function () {
                     // Allow all movement for subsection items (cross-section allowed)
                     return true;
                 }.bind(this)
@@ -2141,7 +2141,7 @@ export default {
                     this.showInvalidAreaMessage();
                     return false;
                 }.bind(this),
-                onMove: function (evt) {
+                onMove: function () {
                     // Allow all movement for direct section items (cross-section allowed)
                     return true;
                 }.bind(this)
@@ -2257,9 +2257,9 @@ export default {
             try {
                 // Check if the provided data already has hierarchical structure (subsections)
                 const hasHierarchicalStructure = this.detailedMenu.some(section => 
-                    section.hasOwnProperty('isSubSection') || 
-                    section.hasOwnProperty('parentSectionId') ||
-                    section.hasOwnProperty('subsections')
+                    Object.prototype.hasOwnProperty.call(section, 'isSubSection') || 
+                    Object.prototype.hasOwnProperty.call(section, 'parentSectionId') ||
+                    Object.prototype.hasOwnProperty.call(section, 'subsections')
                 );
                 
                 if (hasHierarchicalStructure) {
