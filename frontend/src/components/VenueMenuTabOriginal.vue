@@ -803,7 +803,173 @@
                                 </div>
                             </div>
 
-                            <!-- Show subsections for this main section -->
+                            <!-- Show direct items for this main section (items not in subsections) FIRST -->
+                            <div v-if="getDirectItemsForSection(menuSection.sectionOrder).length > 0" class="mt-3">
+                                <p class="text-muted fw-bold mb-2" style="font-size: 0.9rem;">📄 Direct Items:</p>
+                                
+                                <!-- Direct Section Items -->
+                                <draggable v-model="menuSection.sectionMenu" item-key="itemOrder"
+                                    @start="dragItemStart(menuSection)" @end="dragItemEnd(menuSection)"
+                                    v-bind="sectionItemDragOptions"
+                                    :data-section-order="menuSection.sectionOrder">
+                                    <template #item="{ element: menuItem }">
+                                        <div class="col-12 my-3">
+                                            <!-- Standard menu item template for main section direct items (same as before) -->
+                                            <div class="row mobile-view-show">
+                                                <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                    <div class="row">
+                                                        <div class="col-1 d-grid">
+                                                            <button type="button" class="btn icon-btn" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                                <svg height="25" width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
+                                                    <div class="row">
+                                                        <div class="col-12 mobile-pe-0">
+                                                            <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
+                                                                {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <p class="text-start mb-1 mobile-fs-7">
+                                                            <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
+                                                            <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
+                                                            <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
+                                                            <span v-if="menuItem.itemDetails['itemABV']">{{ menuItem.itemDetails['itemABV'] }} ABV | </span>
+                                                            <span v-if="menuItem.itemDetails['itemCountry']">{{ menuItem.itemDetails['itemCountry'] }}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                                    <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                                        <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;">
+                                                            {{ menuItem.itemDetails['itemRating'] }}
+                                                        </p>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
+                                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mobile-view-show">
+                                                <div class="col-4 ps-0 pt-2">
+                                                    <div class="form-check form-switch form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                            v-model="menuItem.itemAvailability">
+                                                        <label class="form-check-label fst-italic"
+                                                            :class="menuItem.itemAvailability ? 'text-success' : 'text-danger'"
+                                                            :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                            {{ menuItem.itemAvailability ? 'Available' : 'Unavailable' }}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-3 pe-0">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text fw-bold p-1">$</span>
+                                                        <input type="number" class="p-1 form-control"
+                                                            v-model="menuItem.itemPrice" placeholder="-"
+                                                            min="0" step="0.01">
+                                                    </div>
+                                                </div>
+                                                <div class="col-5 ps-0">
+                                                    <div class="input-group">
+                                                        <span class="input-group-text fw-bold p-1">/</span>
+                                                        <select class="form-select p-1"
+                                                            v-model="menuItem.itemServingType">
+                                                            <option v-for="servingType in servingTypes"
+                                                                :key="servingType.id"
+                                                                :value="servingType.id">{{
+                                                                servingType.servingType }}</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- Desktop view for direct items -->
+                                            <div class="row mobile-view-hide">
+                                                <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
+                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;">
+                                                </div>
+                                                <div class="col-lg-10 col-12 ps-5">
+                                                    <div class="row">
+                                                        <div class="col-11">
+                                                            <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-1 d-grid">
+                                                            <button type="button" class="btn btn-danger" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-10">
+                                                            <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
+                                                                <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
+                                                                <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
+                                                                <span v-if="menuItem.itemDetails['itemABV']">{{ menuItem.itemDetails['itemABV'] }} ABV | </span>
+                                                                <span v-if="menuItem.itemDetails['itemCountry']">{{ menuItem.itemDetails['itemCountry'] }}</span>
+                                                            </p>
+                                                            <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                                <span v-if="menuItem.itemDetails['itemDesc']">{{ menuItem.itemDetails['itemDesc'] }}</span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-2">
+                                                            <p class="fs-3 fw-bold rating-text text-end">
+                                                                {{ menuItem.itemDetails['itemRating'] }}
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                                                </svg>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-4">
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                    :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
+                                                                    v-model="menuItem.itemAvailability">
+                                                                <label class="form-check-label fst-italic"
+                                                                    :class="menuItem.itemAvailability ? 'text-success' : 'text-danger'"
+                                                                    :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
+                                                                    {{ menuItem.itemAvailability ? 'Item Available' : 'Temporarily Unavailable' }}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <div class="input-group">
+                                                                <span class="input-group-text fw-bold">$</span>
+                                                                <input type="number" class="form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-5">
+                                                            <div class="input-group">
+                                                                <span class="input-group-text fw-bold">/</span>
+                                                                <select class="form-select" v-model="menuItem.itemServingType">
+                                                                    <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">{{ servingType.servingType }}</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </draggable>
+                            </div>
+
+                            <!-- Show subsections for this main section AFTER direct items -->
                             <div v-for="subsection in getSubsectionsForSection(menuSection.id || menuSection.sectionOrder)" 
                                 :key="subsection.sectionOrder" class="ms-3 mb-3" 
                                 style="border-left: 3px solid #dee2e6; padding-left: 15px;">
@@ -1229,170 +1395,9 @@
                                         </template>
                                 </draggable>
                             </div>
-
-                            <!-- Show direct items for this main section (items not in subsections) -->
-                            <div v-if="getDirectItemsForSection(menuSection.sectionOrder).length > 0" class="mt-3">
-                                <p class="text-muted fw-bold mb-2" style="font-size: 0.9rem;">📄 Direct Items:</p>
-                                
-                                <!-- Direct Section Items -->
-                                <draggable v-model="menuSection.sectionMenu" item-key="itemOrder"
-                                    @start="dragItemStart(menuSection)" @end="dragItemEnd(menuSection)"
-                                    v-bind="sectionItemDragOptions"
-                                    :data-section-order="menuSection.sectionOrder">
-                                    <template #item="{ element: menuItem }">
-                                        <div class="col-12 my-3">
-                                            <!-- Standard menu item template for main section direct items (same as before) -->
-                                            <div class="row mobile-view-show">
-                                                <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
-                                                    <div class="row">
-                                                        <div class="col-1 d-grid">
-                                                            <button type="button" class="btn icon-btn" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
-                                                                <svg height="25" width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                                    <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
-                                                    <div class="row">
-                                                        <div class="col-12 mobile-pe-0">
-                                                            <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
-                                                                {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <p class="text-start mb-1 mobile-fs-7">
-                                                            <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
-                                                            <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
-                                                            <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
-                                                            <span v-if="menuItem.itemDetails['itemABV']">{{ menuItem.itemDetails['itemABV'] }} ABV | </span>
-                                                            <span v-if="menuItem.itemDetails['itemCountry']">{{ menuItem.itemDetails['itemCountry'] }}</span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
-                                                    <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
-                                                        <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;">
-                                                            {{ menuItem.itemDetails['itemRating'] }}
-                                                        </p>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
-                                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
-                                                        </svg>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row mobile-view-show">
-                                                <div class="col-4 ps-0 pt-2">
-                                                    <div class="form-check form-switch form-check-inline">
-                                                        <input class="form-check-input" type="checkbox" role="switch"
-                                                            :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                            v-model="menuItem.itemAvailability">
-                                                        <label class="form-check-label fst-italic"
-                                                            :class="menuItem.itemAvailability ? 'text-success' : 'text-danger'"
-                                                            :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                            {{ menuItem.itemAvailability ? 'Available' : 'Unavailable' }}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <div class="col-3 pe-0">
-                                                    <div class="input-group">
-                                                        <span class="input-group-text fw-bold p-1">$</span>
-                                                        <input type="number" class="p-1 form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
-                                                    </div>
-                                                </div>
-                                                <div class="col-5 ps-0">
-                                                    <div class="input-group">
-                                                        <span class="input-group-text fw-bold p-1">/</span>
-                                                        <select class="form-select p-1" v-model="menuItem.itemServingType">
-                                                            <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">
-                                                                {{ servingType.servingType }}
-                                                            </option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row mobile-view-hide">
-                                                <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
-                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;">
-                                                </div>
-                                                <div class="col-lg-10 col-12 ps-5">
-                                                    <div class="row">
-                                                        <div class="col-11">
-                                                            <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                                {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
-                                                            </p>
-                                                        </div>
-                                                        <div class="col-1 d-grid">
-                                                            <button type="button" class="btn btn-danger" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
-                                                                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-10">
-                                                            <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                                <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
-                                                                <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
-                                                                <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
-                                                                <span v-if="menuItem.itemDetails['itemABV']">{{ menuItem.itemDetails['itemABV'] }} ABV | </span>
-                                                                <span v-if="menuItem.itemDetails['itemCountry']">{{ menuItem.itemDetails['itemCountry'] }}</span>
-                                                            </p>
-                                                            <p class="text-start fst-italic mb-1" style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                                <span v-if="menuItem.itemDetails['itemDesc']">{{ menuItem.itemDetails['itemDesc'] }}</span>
-                                                            </p>
-                                                        </div>
-                                                        <div class="col-2">
-                                                            <p class="fs-3 fw-bold rating-text text-end">
-                                                                {{ menuItem.itemDetails['itemRating'] }}
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
-                                                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
-                                                                </svg>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-4">
-                                                            <div class="form-check form-switch form-check-inline">
-                                                                <input class="form-check-input" type="checkbox" role="switch"
-                                                                    :id="'AvailCheckDt' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                                    v-model="menuItem.itemAvailability">
-                                                                <label class="form-check-label fst-italic"
-                                                                    :class="menuItem.itemAvailability ? 'text-success' : 'text-danger'"
-                                                                    :for="'AvailCheckDt' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                    {{ menuItem.itemAvailability ? 'Item Available' : 'Temporarily Unavailable' }}
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-3">
-                                                            <div class="input-group">
-                                                                <span class="input-group-text fw-bold">$</span>
-                                                                <input type="number" class="form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-5">
-                                                            <div class="input-group">
-                                                                <span class="input-group-text fw-bold">/</span>
-                                                                <select class="form-select" v-model="menuItem.itemServingType">
-                                                                    <option v-for="servingType in servingTypes" :key="servingType.id" :value="servingType.id">
-                                                                        {{ servingType.servingType }}
-                                                                    </option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </draggable>
-                            </div>
-
+                            
+                            <!-- End subsection v-for loop -->
+                            
                             <!-- No Section Contents to Show -->
                             <div v-if="getSubsectionsForSection(menuSection.id).length === 0 && getDirectItemsForSection(menuSection.sectionOrder).length === 0"
                                 class="col-12 my-3">
