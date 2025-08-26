@@ -3169,6 +3169,269 @@ export default {
             };
         },
 
+        // ===== BATCH OPERATION HELPER METHODS =====
+
+        // Get subsection count for a parent section
+        getSubsectionCount(parentSectionOrder) {
+            return this.editMenu.filter(section => 
+                section.isSubSection && section.parentSectionId === parentSectionOrder
+            ).length;
+        },
+
+        // Get all subsections for a parent section
+        getSubsectionsForSection(parentSectionOrder) {
+            return this.editMenu.filter(section => 
+                section.isSubSection && section.parentSectionId === parentSectionOrder
+            ).sort((a, b) => a.sectionOrder - b.sectionOrder);
+        },
+
+        // Batch update menu with comprehensive hierarchy handling
+        async batchUpdateMenu(sections, options = {}) {
+            console.log('🍽️ Batch updating menu with', sections.length, 'sections');
+            
+            const defaultOptions = {
+                validateBeforeSave: true,
+                updateHierarchy: true,
+                showProgress: false
+            };
+            
+            const config = { ...defaultOptions, ...options };
+            
+            try {
+                // Pre-save validation if enabled
+                if (config.validateBeforeSave) {
+                    const validation = await this.validateBeforeSave();
+                    if (!validation.isValid) {
+                        if (validation.canAutoFix) {
+                            console.log('Auto-fixing issues before batch update');
+                            await this.autoFixMenuIssues();
+                        } else {
+                            throw new Error(`Validation failed: ${validation.issues.join(', ')}`);
+                        }
+                    }
+                }
+
+                // Update hierarchy if enabled
+                if (config.updateHierarchy) {
+                    const hierarchyResult = this.updateSectionHierarchy(sections);
+                    if (!hierarchyResult.success) {
+                        throw new Error(`Hierarchy update failed: ${hierarchyResult.errors.join(', ')}`);
+                    }
+                }
+
+                // Update menu with proper ordering
+                this.batchUpdateSectionOrdering();
+
+                // Prepare menu for backend
+                const menuData = this.prepareMenuForBackend();
+
+                // Save to backend
+                const response = await this.apiCall('post', `/venue/${this.venueId}/menu/hierarchical`, menuData);
+
+                if (response.data.success) {
+                    this.showSnackbarMessage('✅ Menu updated successfully with hierarchical structure', 'success');
+                    
+                    // Refresh menu data
+                    await this.getExistingMenuSections();
+                    
+                    return {
+                        success: true,
+                        message: 'Batch menu update completed successfully',
+                        sectionsUpdated: sections.length
+                    };
+                } else {
+                    throw new Error(response.data.message || 'Backend update failed');
+                }
+
+            } catch (error) {
+                const errorMessage = error.response?.data?.message || error.message || 'Batch update failed';
+                this.showHierarchyError('Batch Menu Update Failed', errorMessage);
+                
+                return {
+                    success: false,
+                    message: errorMessage
+                };
+            }
+        },
+
+        // Prepare hierarchical menu data for backend
+        prepareMenuForBackend() {
+            const menuData = {
+                venueId: this.venueId,
+                sections: [],
+                metadata: {
+                    totalSections: 0,
+                    totalSubsections: 0,
+                    totalItems: 0,
+                    hierarchyVersion: '2.0'
+                }
+            };
+
+            // Sort all sections by order
+            const sortedSections = [...this.editMenu].sort((a, b) => a.sectionOrder - b.sectionOrder);
+
+            sortedSections.forEach(section => {
+                const sectionData = {
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    isSubSection: section.isSubSection || false,
+                    parentSectionId: section.parentSectionId || null,
+                    items: []
+                };
+
+                // Add menu items
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    section.sectionMenu.forEach((item, index) => {
+                        sectionData.items.push({
+                            ...item,
+                            itemOrder: index,
+                            sectionOrder: section.sectionOrder
+                        });
+                    });
+                }
+
+                menuData.sections.push(sectionData);
+
+                // Update metadata
+                if (section.isSubSection) {
+                    menuData.metadata.totalSubsections++;
+                } else {
+                    menuData.metadata.totalSections++;
+                }
+                menuData.metadata.totalItems += sectionData.items.length;
+            });
+
+            return menuData;
+        },
+
+        // ===== BATCH OPERATIONS USAGE EXAMPLES =====
+
+        // Demonstrate batch operations functionality
+        async demonstrateBatchOperations() {
+            console.log('🍽️ Demonstrating batch operations');
+
+            try {
+                // Example 1: Batch update multiple sections
+                console.log('Example 1: Batch updating sections...');
+                const sectionsToUpdate = [
+                    { sectionName: 'Updated Appetizers', sectionOrder: 0, isSubSection: false },
+                    { sectionName: 'Updated Main Courses', sectionOrder: 1, isSubSection: false }
+                ];
+                
+                const updateResult = this.updateSectionHierarchy(sectionsToUpdate);
+                console.log('✅ Hierarchy update result:', updateResult);
+
+                // Example 2: Reorder subsections for a parent
+                console.log('Example 2: Reordering subsections...');
+                const parentSection = this.editMenu.find(s => !s.isSubSection && s.sectionOrder === 0);
+                if (parentSection) {
+                    const reorderResult = this.reorderSubsections(parentSection);
+                    console.log('✅ Subsection reorder result:', reorderResult);
+                }
+
+                // Example 3: Batch validate multiple operations
+                console.log('Example 3: Batch validating operations...');
+                const operations = [
+                    { operation: 'create', section: parentSection, subsection: { sectionName: 'New Subsection' } },
+                    { operation: 'update', section: { sectionName: 'Valid Section', sectionOrder: 0 } }
+                ];
+                
+                const validationResult = this.batchValidateOperations(operations);
+                console.log('✅ Batch validation result:', validationResult);
+
+                // Example 4: Bulk move items between sections
+                console.log('Example 4: Bulk moving items...');
+                const moves = [
+                    {
+                        fromSection: this.editMenu[0],
+                        toSection: this.editMenu[1], 
+                        items: this.editMenu[0].sectionMenu?.slice(0, 2) || []
+                    }
+                ];
+                
+                if (moves[0].items.length > 0) {
+                    const moveResult = this.bulkMoveItemsBetweenSections(moves);
+                    console.log('✅ Bulk move result:', moveResult);
+                }
+
+                // Example 5: Batch create subsections
+                console.log('Example 5: Batch creating subsections...');
+                const subsectionNames = ['Hot Appetizers', 'Cold Appetizers', 'Shared Plates'];
+                const createResult = this.batchCreateSubsections(parentSection, subsectionNames);
+                console.log('✅ Batch create result:', createResult);
+
+                // Example 6: Comprehensive batch menu update
+                console.log('Example 6: Comprehensive batch update...');
+                const batchUpdateResult = await this.batchUpdateMenu(this.editMenu, {
+                    validateBeforeSave: true,
+                    updateHierarchy: true,
+                    showProgress: true
+                });
+                console.log('✅ Comprehensive batch update result:', batchUpdateResult);
+
+                return {
+                    success: true,
+                    message: 'All batch operations demonstrated successfully',
+                    results: {
+                        updateResult,
+                        reorderResult: parentSection ? await this.reorderSubsections(parentSection) : null,
+                        validationResult,
+                        moveResult: moves[0].items.length > 0 ? this.bulkMoveItemsBetweenSections(moves) : null,
+                        createResult,
+                        batchUpdateResult
+                    }
+                };
+
+            } catch (error) {
+                console.error('❌ Batch operations demonstration failed:', error);
+                return {
+                    success: false,
+                    message: `Batch operations failed: ${error.message}`,
+                    error: error
+                };
+            }
+        },
+
+        // Quick batch operations for common use cases
+        async quickBatchOperations() {
+            console.log('🍽️ Running quick batch operations');
+
+            const results = {
+                orderingUpdate: null,
+                hierarchyValidation: null,
+                totalProcessed: 0
+            };
+
+            try {
+                // Quick ordering update for all sections
+                results.orderingUpdate = this.batchUpdateSectionOrdering();
+                results.totalProcessed += results.orderingUpdate.totalUpdated || 0;
+
+                // Quick hierarchy validation
+                results.hierarchyValidation = this.validateMenuHierarchy();
+                
+                // Auto-fix any issues found
+                if (!results.hierarchyValidation.isValid) {
+                    console.log('Auto-fixing hierarchy issues...');
+                    const autoFix = this.autoFixHierarchyIssues();
+                    results.autoFixApplied = autoFix.fixesApplied;
+                }
+
+                return {
+                    success: true,
+                    message: `Quick batch operations completed. Processed ${results.totalProcessed} items.`,
+                    results: results
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Quick batch operations failed: ${error.message}`,
+                    results: results
+                };
+            }
+        },
+
         // Helper method to get total item count across all sections
         getTotalItemCount(menu = null) {
             const menuToCount = menu || this.editMenu;
@@ -4157,6 +4420,413 @@ export default {
             });
             
             return stats;
+        },
+
+        // ===== BATCH OPERATIONS FOR HIERARCHICAL MENU MANAGEMENT =====
+
+        // Handle bulk section/subsection updates with validation
+        updateSectionHierarchy(sections) {
+            console.log('🍽️ Batch updating section hierarchy:', sections.length, 'sections');
+            
+            const results = {
+                success: [],
+                errors: [],
+                totalProcessed: 0
+            };
+
+            // Validate all sections before processing
+            const preValidation = this.batchValidateOperations(sections.map(s => ({ 
+                operation: 'update', 
+                section: s 
+            })));
+            
+            if (!preValidation.isValid) {
+                return {
+                    success: false,
+                    errors: preValidation.issues,
+                    totalProcessed: 0
+                };
+            }
+
+            try {
+                // Group sections by type for efficient processing
+                const mainSections = sections.filter(s => !s.isSubSection);
+                const subsections = sections.filter(s => s.isSubSection);
+
+                // Update main sections first
+                mainSections.forEach((section, index) => {
+                    try {
+                        const existingSection = this.editMenu.find(s => s.sectionOrder === section.sectionOrder);
+                        if (existingSection) {
+                            Object.assign(existingSection, section);
+                            results.success.push(`Updated main section: ${section.sectionName}`);
+                        }
+                        results.totalProcessed++;
+                    } catch (error) {
+                        results.errors.push(`Failed to update section ${section.sectionName}: ${error.message}`);
+                    }
+                });
+
+                // Update subsections with parent validation
+                subsections.forEach(subsection => {
+                    try {
+                        const parentExists = mainSections.some(ms => ms.sectionOrder === subsection.parentSectionId) ||
+                                           this.editMenu.some(s => !s.isSubSection && s.sectionOrder === subsection.parentSectionId);
+                        
+                        if (!parentExists) {
+                            results.errors.push(`Subsection ${subsection.sectionName} has invalid parent ${subsection.parentSectionId}`);
+                            return;
+                        }
+
+                        const existingSubsection = this.editMenu.find(s => s.sectionOrder === subsection.sectionOrder);
+                        if (existingSubsection) {
+                            Object.assign(existingSubsection, subsection);
+                            results.success.push(`Updated subsection: ${subsection.sectionName}`);
+                        }
+                        results.totalProcessed++;
+                    } catch (error) {
+                        results.errors.push(`Failed to update subsection ${subsection.sectionName}: ${error.message}`);
+                    }
+                });
+
+                // Reorder and validate hierarchy after bulk update
+                this.batchUpdateSectionOrdering();
+
+                return {
+                    success: results.errors.length === 0,
+                    successCount: results.success.length,
+                    errors: results.errors,
+                    totalProcessed: results.totalProcessed
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    errors: [`Batch hierarchy update failed: ${error.message}`],
+                    totalProcessed: results.totalProcessed
+                };
+            }
+        },
+
+        // Update subsection ordering within a parent section
+        reorderSubsections(parentSection, newOrder = null) {
+            console.log('🍽️ Reordering subsections for parent:', parentSection.sectionOrder);
+            
+            try {
+                // Get all subsections for this parent
+                const subsections = this.getSubsectionsForSection(parentSection.sectionOrder);
+                
+                if (subsections.length === 0) {
+                    return { success: true, message: 'No subsections to reorder' };
+                }
+
+                // If no new order specified, sort by current order or name
+                const orderedSubsections = newOrder 
+                    ? newOrder.map(order => subsections.find(s => s.sectionOrder === order)).filter(Boolean)
+                    : subsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+
+                // Update subsection ordering
+                const maxMainSectionOrder = Math.max(...this.editMenu.filter(s => !s.isSubSection).map(s => s.sectionOrder), -1);
+                let nextSubsectionOrder = maxMainSectionOrder + 1;
+
+                // Find the starting order for this parent's subsections
+                const allSubsections = this.editMenu.filter(s => s.isSubSection);
+                const otherParentSubsections = allSubsections.filter(s => s.parentSectionId !== parentSection.sectionOrder);
+                
+                // Calculate starting order (after main sections and other parent subsections)
+                otherParentSubsections.forEach(sub => {
+                    if (sub.sectionOrder >= nextSubsectionOrder) {
+                        nextSubsectionOrder = sub.sectionOrder + 1;
+                    }
+                });
+
+                // Apply new ordering
+                orderedSubsections.forEach((subsection, index) => {
+                    const oldOrder = subsection.sectionOrder;
+                    subsection.sectionOrder = nextSubsectionOrder + index;
+                    
+                    // Update in editMenu
+                    const menuSubsection = this.editMenu.find(s => s.sectionOrder === oldOrder);
+                    if (menuSubsection) {
+                        menuSubsection.sectionOrder = subsection.sectionOrder;
+                    }
+                });
+
+                // Validate the reordering
+                const validation = this.validateMenuHierarchy();
+                if (!validation.isValid) {
+                    console.warn('Hierarchy issues after reordering subsections:', validation.issues);
+                }
+
+                return {
+                    success: true,
+                    reorderedCount: orderedSubsections.length,
+                    message: `Reordered ${orderedSubsections.length} subsections`
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Failed to reorder subsections: ${error.message}`
+                };
+            }
+        },
+
+        // Validate multiple operations efficiently 
+        batchValidateOperations(operations) {
+            console.log('🍽️ Batch validating', operations.length, 'operations');
+            
+            const allIssues = [];
+            const validOperations = [];
+
+            operations.forEach((op, index) => {
+                try {
+                    switch (op.operation) {
+                        case 'create':
+                            const createValidation = this.validateSubsectionOperations('create', op.section, op.subsection);
+                            if (!createValidation.isValid) {
+                                allIssues.push(...createValidation.issues.map(issue => `Operation ${index}: ${issue}`));
+                            } else {
+                                validOperations.push(op);
+                            }
+                            break;
+
+                        case 'delete':
+                            const deleteValidation = this.validateSubsectionOperations('delete', op.section, op.subsection);
+                            if (!deleteValidation.isValid) {
+                                allIssues.push(...deleteValidation.issues.map(issue => `Operation ${index}: ${issue}`));
+                            } else {
+                                validOperations.push(op);
+                            }
+                            break;
+
+                        case 'move':
+                            const moveValidation = this.validateSubsectionOperations('move', op.targetSection, op.subsection);
+                            if (!moveValidation.isValid) {
+                                allIssues.push(...moveValidation.issues.map(issue => `Operation ${index}: ${issue}`));
+                            } else {
+                                validOperations.push(op);
+                            }
+                            break;
+
+                        case 'update':
+                            if (!op.section || !op.section.sectionName) {
+                                allIssues.push(`Operation ${index}: Invalid section data`);
+                            } else {
+                                validOperations.push(op);
+                            }
+                            break;
+
+                        default:
+                            allIssues.push(`Operation ${index}: Unknown operation type: ${op.operation}`);
+                    }
+                } catch (error) {
+                    allIssues.push(`Operation ${index}: Validation error: ${error.message}`);
+                }
+            });
+
+            return {
+                isValid: allIssues.length === 0,
+                issues: allIssues,
+                validOperations: validOperations,
+                validCount: validOperations.length,
+                totalCount: operations.length
+            };
+        },
+
+        // Update multiple section orders efficiently
+        batchUpdateSectionOrdering(sections = null) {
+            console.log('🍽️ Batch updating section ordering');
+            
+            const sectionsToUpdate = sections || this.editMenu;
+            
+            try {
+                // Separate main sections and subsections
+                const mainSections = sectionsToUpdate.filter(s => !s.isSubSection);
+                const subsections = sectionsToUpdate.filter(s => s.isSubSection);
+
+                // Update main section ordering
+                mainSections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                mainSections.forEach((section, index) => {
+                    section.sectionOrder = index;
+                });
+
+                // Group subsections by parent and update ordering
+                const subsectionsByParent = new Map();
+                subsections.forEach(subsection => {
+                    const parentId = subsection.parentSectionId;
+                    if (!subsectionsByParent.has(parentId)) {
+                        subsectionsByParent.set(parentId, []);
+                    }
+                    subsectionsByParent.get(parentId).push(subsection);
+                });
+
+                // Update subsection ordering
+                let globalSubsectionOrder = mainSections.length;
+                subsectionsByParent.forEach((parentSubsections, parentId) => {
+                    parentSubsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                    parentSubsections.forEach(subsection => {
+                        subsection.sectionOrder = globalSubsectionOrder++;
+                        subsection.parentSectionId = parentId;
+                        subsection.isSubSection = true;
+                    });
+                });
+
+                return {
+                    success: true,
+                    mainSectionsUpdated: mainSections.length,
+                    subsectionsUpdated: subsections.length,
+                    totalUpdated: sectionsToUpdate.length
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Batch ordering update failed: ${error.message}`
+                };
+            }
+        },
+
+        // Handle multiple item moves efficiently
+        bulkMoveItemsBetweenSections(moves) {
+            console.log('🍽️ Bulk moving', moves.length, 'item groups between sections');
+            
+            const results = {
+                successful: [],
+                failed: [],
+                totalItemsMoved: 0
+            };
+
+            try {
+                // Validate all moves first
+                const invalidMoves = moves.filter(move => 
+                    !move.fromSection || !move.toSection || !move.items || move.items.length === 0
+                );
+
+                if (invalidMoves.length > 0) {
+                    return {
+                        success: false,
+                        message: `${invalidMoves.length} invalid move operations`,
+                        results: results
+                    };
+                }
+
+                // Process moves
+                moves.forEach((move, index) => {
+                    try {
+                        const success = this.moveItemsBetweenSections(move.fromSection, move.toSection, move.items);
+                        if (success) {
+                            results.successful.push({
+                                index: index,
+                                itemCount: move.items.length,
+                                from: move.fromSection.sectionName,
+                                to: move.toSection.sectionName
+                            });
+                            results.totalItemsMoved += move.items.length;
+                        } else {
+                            results.failed.push({
+                                index: index,
+                                message: `Failed to move ${move.items.length} items from ${move.fromSection.sectionName} to ${move.toSection.sectionName}`
+                            });
+                        }
+                    } catch (error) {
+                        results.failed.push({
+                            index: index,
+                            message: `Error moving items: ${error.message}`
+                        });
+                    }
+                });
+
+                return {
+                    success: results.failed.length === 0,
+                    message: `Moved ${results.totalItemsMoved} items in ${results.successful.length} operations`,
+                    results: results
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Bulk move operation failed: ${error.message}`,
+                    results: results
+                };
+            }
+        },
+
+        // Batch create multiple subsections efficiently
+        batchCreateSubsections(parentSection, subsectionNames) {
+            console.log('🍽️ Batch creating', subsectionNames.length, 'subsections');
+            
+            const results = {
+                created: [],
+                failed: [],
+                totalCreated: 0
+            };
+
+            try {
+                // Validate parent section
+                if (!parentSection || parentSection.isSubSection) {
+                    return {
+                        success: false,
+                        message: 'Invalid parent section for batch subsection creation',
+                        results: results
+                    };
+                }
+
+                // Check subsection limit
+                const currentSubsectionCount = this.getSubsectionCount(parentSection.sectionOrder);
+                if (currentSubsectionCount + subsectionNames.length > 10) {
+                    return {
+                        success: false,
+                        message: `Cannot create ${subsectionNames.length} subsections - would exceed limit of 10 per section`,
+                        results: results
+                    };
+                }
+
+                // Create subsections
+                const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
+                let nextOrder = maxSectionOrder + 1;
+
+                subsectionNames.forEach((name, index) => {
+                    try {
+                        const newSubsection = {
+                            sectionName: name,
+                            sectionOrder: nextOrder++,
+                            parentSectionId: parentSection.sectionOrder,
+                            isSubSection: true,
+                            sectionMenu: []
+                        };
+
+                        this.editMenu.push(newSubsection);
+                        results.created.push(newSubsection);
+                        results.totalCreated++;
+
+                    } catch (error) {
+                        results.failed.push({
+                            name: name,
+                            message: error.message
+                        });
+                    }
+                });
+
+                // Validate hierarchy after batch creation
+                const validation = this.validateMenuHierarchy();
+                if (!validation.isValid) {
+                    console.warn('Hierarchy issues after batch subsection creation:', validation.issues);
+                }
+
+                return {
+                    success: results.failed.length === 0,
+                    message: `Created ${results.totalCreated} subsections`,
+                    results: results
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    message: `Batch subsection creation failed: ${error.message}`,
+                    results: results
+                };
+            }
         },
 
         // Claim Venue Account - emit to parent since it involves routing
