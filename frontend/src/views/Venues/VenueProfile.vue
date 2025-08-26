@@ -4553,14 +4553,34 @@ export default {
                 // Use the existing getVenueMenu endpoint to get items for this section
                 const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`);
                 
-                if (itemsResponse.data && Array.isArray(itemsResponse.data)) {
-                    section.sectionMenu = itemsResponse.data;
+                // Backend returns structured response: {code: 200, data: [...items...], pagination: {...}}
+                if (itemsResponse.data && itemsResponse.data.code === 200 && Array.isArray(itemsResponse.data.data)) {
+                    // Transform the data to match the expected structure
+                    section.sectionMenu = itemsResponse.data.data.map(item => ({
+                        ...item,
+                        itemDetails: {
+                            itemName: item.name,
+                            photo: item.photo,
+                            bottler: item.bottler,
+                            drinkType: item.drinkType,
+                            abv: item.abv,
+                            variant: item.variant
+                        },
+                        // Keep the original fields for backward compatibility
+                        itemID: item.itemID,
+                        itemOrder: item.itemOrder,
+                        itemAvailability: item.itemAvailability,
+                        itemPrice: item.itemPrice,
+                        servingType: item.servingType,
+                        servingTypeText: item.servingTypeText
+                    }));
+                    
                     // Sort items by itemOrder
                     section.sectionMenu.sort((a, b) => parseInt(a.itemOrder) - parseInt(b.itemOrder));
                     console.log(`🍽️ loadMenuItemsForSection: Loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
                 } else {
                     section.sectionMenu = [];
-                    console.log(`🍽️ loadMenuItemsForSection: No items found for section "${section.sectionName}"`);
+                    console.log(`🍽️ loadMenuItemsForSection: No items found for section "${section.sectionName}" - Response:`, itemsResponse.data);
                 }
             } catch (error) {
                 console.error(`❌ loadMenuItemsForSection: Error loading items for section "${section.sectionName}":`, error);
