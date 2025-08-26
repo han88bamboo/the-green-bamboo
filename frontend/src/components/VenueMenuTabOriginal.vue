@@ -2199,6 +2199,7 @@ export default {
                 if (this.watchersEnabled && !this.isSyncing && Array.isArray(newMainSections)) {
                     this.$nextTick(() => {
                         this.syncMainSectionsToEditMenu(newMainSections);
+                        this.syncSubsectionReferences();
                     });
                 }
             },
@@ -2252,15 +2253,90 @@ export default {
                 const newIds = mainSections.map(s => s.id || s.sectionOrder).join(',');
                 
                 if (currentIds !== newIds) {
-                    // Use deep copy to prevent shared references to sectionMenu arrays
-                    this.editableMainSections = mainSections.map(section => ({
-                        ...section,
-                        sectionMenu: section.sectionMenu ? [...section.sectionMenu] : []
-                    }));
+                    // Create main sections with proper subsection references
+                    this.editableMainSections = mainSections.map(section => {
+                        // Get subsections from editMenu for this main section
+                        const subsections = this.editMenu.filter(s => 
+                            s.isSubSection && s.parentSectionId === (section.id || section.sectionOrder)
+                        ).sort((a, b) => a.sectionOrder - b.sectionOrder);
+                        
+                        return {
+                            ...section,
+                            sectionMenu: section.sectionMenu || [], // Reference the same array, don't copy
+                            subsections: subsections // Use the actual objects from editMenu
+                        };
+                    });
+                    
+                    console.log('🔄 Updated editableMainSections with proper subsection references');
                 }
                 
             } catch (error) {
                 console.error('🍽️ Error syncing editableMainSections:', error);
+            } finally {
+                this.isSyncing = false;
+            }
+        },
+
+        // Ensure subsections in nested structure reference the same arrays as flat structure
+        syncSubsectionReferences() {
+            if (!Array.isArray(this.editableMainSections)) return;
+            
+            this.editableMainSections.forEach(mainSection => {
+                if (mainSection.subsections && Array.isArray(mainSection.subsections)) {
+                    mainSection.subsections.forEach(nestedSubsection => {
+                        // Find the corresponding subsection in the flat editMenu
+                        const flatSubsection = this.editMenu.find(s => 
+                            s.isSubSection && 
+                            (s.id === nestedSubsection.id || s.sectionOrder === nestedSubsection.sectionOrder)
+                        );
+                        
+                        if (flatSubsection) {
+                            // Ensure both reference the same sectionMenu array
+                            nestedSubsection.sectionMenu = flatSubsection.sectionMenu;
+                        }
+                    });
+                }
+            });
+        },
+
+        // Comprehensive sync between editableMainSections and editMenu after drag operations
+        syncAfterDragOperation() {
+            if (this.isSyncing) return;
+            
+            try {
+                this.isSyncing = true;
+                
+                // Update editMenu from editableMainSections (both main sections and subsections)
+                this.editableMainSections.forEach(editableSection => {
+                    // Sync main section
+                    const flatMainSection = this.editMenu.find(s => 
+                        !s.isSubSection && 
+                        (s.id === editableSection.id || s.sectionOrder === editableSection.sectionOrder)
+                    );
+                    
+                    if (flatMainSection) {
+                        flatMainSection.sectionMenu = editableSection.sectionMenu;
+                    }
+                    
+                    // Sync subsections
+                    if (editableSection.subsections && Array.isArray(editableSection.subsections)) {
+                        editableSection.subsections.forEach(subsection => {
+                            const flatSubsection = this.editMenu.find(s => 
+                                s.isSubSection && 
+                                (s.id === subsection.id || s.sectionOrder === subsection.sectionOrder)
+                            );
+                            
+                            if (flatSubsection) {
+                                flatSubsection.sectionMenu = subsection.sectionMenu;
+                            }
+                        });
+                    }
+                });
+                
+                console.log('🔄 Synchronized editMenu from editableMainSections after drag operation');
+                
+            } catch (error) {
+                console.error('🍽️ Error syncing after drag operation:', error);
             } finally {
                 this.isSyncing = false;
             }
@@ -3696,6 +3772,18 @@ export default {
 
         // Get all subsections for a parent section
         getSubsectionsForSection(parentSectionId) {
+            // First try to get subsections from editableMainSections if available
+            if (Array.isArray(this.editableMainSections)) {
+                const parentSection = this.editableMainSections.find(s => 
+                    (s.id === parentSectionId || s.sectionOrder === parentSectionId) && !s.isSubSection
+                );
+                
+                if (parentSection && parentSection.subsections) {
+                    return parentSection.subsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                }
+            }
+            
+            // Fallback to editMenu if editableMainSections not available
             return this.editMenu.filter(section => 
                 section.isSubSection && section.parentSectionId === parentSectionId
             ).sort((a, b) => a.sectionOrder - b.sectionOrder);
@@ -5416,6 +5504,9 @@ export default {
             } else {
                 // Reorder items to ensure proper sequence
                 this.reorderSectionItems(menuSection);
+                
+                // Comprehensive synchronization after drag operation
+                this.syncAfterDragOperation();
             }
             this.drag = false;
             this.menuSnapshot = null;
