@@ -321,10 +321,6 @@ export default {
       type: Array,
       default: () => []
     },
-    filteredVenueReviews: {
-      type: Array,
-      default: () => []
-    },
     noMoreReviews: Boolean,
     defaultPhoto: String,
     defaultProfilePhoto: String,
@@ -354,7 +350,7 @@ export default {
     },
 
     shouldShowLoadMore() {
-      return this.filteredVenueReviews.length > 0 && 
+      return this.venueReviews.length > 0 && 
              !this.noMoreReviews;
     }
   },

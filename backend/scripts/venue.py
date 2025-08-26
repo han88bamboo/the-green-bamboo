@@ -23,27 +23,42 @@ def getVenueReviews(venue_id: int):
         per_page = int(request.args.get("limit", 20))
         last_id = request.args.get("last_id", None)
 
-        query = """
-        SELECT 
-            r.id,
-            r."userID",
-            u.username,
-            r."rating",
-            r."reviewDesc",
-            r."createdDate",
-            r."photos"
-        FROM "venueReviews" r
-        LEFT JOIN "users" u ON u.id = r."userID"
-        WHERE r."venueID" = %s
-        {filter}
-        ORDER BY r."createdDate" DESC
-        LIMIT %s
-        """.format(
-            filter="AND r.id < %s" if last_id else ""
-        )
+        if last_id:
+            query = """
+            SELECT 
+                r.id,
+                r."userID",
+                u.username,
+                r."rating",
+                r."reviewDesc",
+                r."createdDate",
+                r."photos"
+            FROM "venueReviews" r
+            LEFT JOIN "users" u ON u.id = r."userID"
+            WHERE r."venueID" = %s AND r.id < %s
+            ORDER BY r."createdDate" DESC
+            LIMIT %s
+            """
+            params = (venue_id, int(last_id), per_page)
+        else:
+            query = """
+            SELECT 
+                r.id,
+                r."userID",
+                u.username,
+                r."rating",
+                r."reviewDesc",
+                r."createdDate",
+                r."photos"
+            FROM "venueReviews" r
+            LEFT JOIN "users" u ON u.id = r."userID"
+            WHERE r."venueID" = %s
+            ORDER BY r."createdDate" DESC
+            LIMIT %s
+            """
+            params = (venue_id, per_page)
 
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            params = (venue_id, per_page) if not last_id else (venue_id, last_id, per_page)
             cursor.execute(query, params)
             rows = cursor.fetchall()
 

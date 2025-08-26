@@ -133,8 +133,13 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Reviews Tab -->
                     <div v-show="contentMode === 'venueReviews'">
-                        <VenueReviewsTab :venue-reviews="filteredVenueReviews" :bottle-reviews="bottleReviews"
-                            :user-id="user_id" :can-mod="isAdmin" />
+                        <VenueReviewsTab :venue-reviews="venue_reviews.reviews"
+                            :user-id="viewerID"
+                            :user-type="viewerType"
+                            :can-mod="isAdmin"
+                            :in-edit="editProfile"
+                            :loading-more="venue_reviews.loading"
+                            :no-more-reviews="!venue_reviews.hasMore" />
                     </div>
 
                     <!-- Activities Tab -->
@@ -522,12 +527,21 @@ export default {
                 }
 
                 const response = await apiService.fetchWithRetry(this.$axios, url)
+                console.log(response)
 
-                if (response && response.length > 0) {
-                    this.venue_reviews.reviews.push(...response)
+                // Access the data array from response.data
+                const reviews = response.data || []
 
-                    // Update cursor to the last review’s ID
-                    this.venue_reviews.lastId = response[response.length - 1].id
+                if (reviews && reviews.length > 0) {
+                    this.venue_reviews.reviews.push(...reviews)
+
+                    // Update cursor to the last review's ID
+                    this.venue_reviews.lastId = reviews[reviews.length - 1].id
+                    
+                    // If we got fewer items than requested, we've reached the end
+                    if (reviews.length < 20) {
+                        this.venue_reviews.hasMore = false
+                    }
                 } else {
                     this.venue_reviews.hasMore = false
                 }
