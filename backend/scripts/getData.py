@@ -2046,7 +2046,7 @@ def getRecentListingReviews(id):
             WHERE "reviews"."userID" = %s 
             AND "reviews"."reviewType" = 'Listing'
             ORDER BY "reviews"."createdDate" DESC
-            LIMIT 10
+            LIMIT 5
         """, (id,))
 
         reviews_data = cursor.fetchall()
@@ -3229,7 +3229,7 @@ def getReviewsByUserIds():
                 FROM "reviews"
                 WHERE "userID" IN ({placeholders})
                 ORDER BY "createdDate" DESC
-                LIMIT 10
+                LIMIT 5
             )
             SELECT "reviewDesc", "rating", "reviewTarget", "createdDate", "userID", "photo"
             FROM latest_reviews
@@ -6596,13 +6596,13 @@ def recent_review_activity_optimized(id):
                     vote_data->>'date' AS "date"
                 FROM vote_activities
                 ORDER BY vote_data->>'date' DESC
-                LIMIT 10;
+                LIMIT 5;
             """, (id,))
             
             activities = cursor.fetchall()
 
             # Limit to 10 results
-            activities = activities[:10]
+            activities = activities[:5]
             # Loop through all activities to get the user and listing information
             for activity in activities:
                 

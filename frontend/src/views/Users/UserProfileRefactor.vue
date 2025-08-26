@@ -2211,84 +2211,14 @@
                     View All Reviews
                   </router-link>
                 </div>
-                <h5 class="text-body-secondary text-start pb-2">
-                  <b> Latest Reviewed Drinks </b>
-                </h5>
-                <div v-if="recentReviews && recentReviews.length > 0">
-                  <div v-for="review in recentReviews" :key="review.id">
-                    <div style="display: flex" class="row mb-2">
-                      <div class="col-3 mobile-col-3 mobile-pe-0">
-                        <img
-                          :src="review.photo || defaultDrinkImage"
-                          alt=""
-                          class="rounded bottle-img"
-                        />
-                      </div>
-                      <div class="col-9 mobile-col-9 mobile-ps-2">
-                        <a
-                          :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
-                          style="text-decoration: none; color: #223957"
-                        >
-                          <p class="fs-5 mobile-fs-6 mb-1 mobile-mb-0_5 default-clickable-text">
-                            <b>{{ getListingName(review.reviewTarget) }}</b>
-                          </p>
-                        </a>
-                        <!-- flavor tag -->
-
-                        <span
-                          v-for="(tag, index) in review.flavorTag"
-                          :key="index"
-                          class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5"
-                          :style="{ backgroundColor: getTagColor(tag) }"
-                        >
-                          {{ getTagName(tag) }}</span
-                        >
-                        <span
-                          v-for="(tag, index) in review.observationTag"
-                          :key="index"
-                          class="mobile-view-hide badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5"
-                          style="background-color: #f0b358; color: black"
-                          >{{ tag }}</span
-                        >
-
-                        <span
-                          v-for="(tag, index) in review.flavorTag?.slice(0, 2)"
-                          :key="index"
-                          class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5"
-                          :style="{ backgroundColor: getTagColor(tag) }"
-                        >
-                          {{ getTagName(tag) }}</span
-                        >
-                        <span
-                          v-for="(tag, index) in review.observationTag.slice(
-                            0,
-                            1
-                          )"
-                          :key="index"
-                          class="mobile-view-show badge rounded-pill-user-profile me-2 mb-1 mobile-me-0_5 mobile-mb-0_5"
-                          style="background-color: #f0b358; color: black"
-                          >{{ tag }}</span
-                        >
-                        <p class="mobile-fs-7">
-                          <b>{{ review.reviewTitle }}</b>
-                          <br v-if="review.reviewTitle" />
-                          {{ review.reviewDesc }}
-                        </p>
-                        <p
-                          class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1"
-                        >
-                          {{ parseFloat(review.rating).toFixed(1) }}★
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div v-else class="my-2 mobile-rating-smaller-text-2">
-                  No drinks reviewed yet! To explore more drinks in the home page,
-                  <router-link to="/" style="color: inherit"
-                    >click here</router-link
-                  >.
-                </div>
+                <ListingRowDisplayUserProfile
+                  :topRatedReviews="formattedRecentReviews"
+                  :producers="producers"
+                  :subTags="subTags"
+                  :flavourTags="flavourTags"
+                  displayName="Latest Reviewed Drinks"
+                  columnWidth="165px"
+                />
                 <br>
 
                 <ListingRowDisplayUserProfile
@@ -4010,9 +3940,17 @@ export default {
     // Fallback: count what you loaded as "recentReviews"
     return Array.isArray(this.recentReviews) ? this.recentReviews.length : 0;
   },
+  formattedRecentReviews() {
+    return this.recentReviews?.map(review => ({
+      ...review,
+      listingName: this.getListingName(review.reviewTarget)  // This transforms reviewTarget into listingName
+    })) || [];
+  }
   
   },
   mounted() {
+    console.log("Recent Reviews Data:", this.recentReviews?.[0]);
+    console.log("Top Rated Reviews Data:", this.topRatedReviews?.[0]);
     // get local storage
     const accID = localStorage.getItem("88B_accID");
     if (accID !== null) {

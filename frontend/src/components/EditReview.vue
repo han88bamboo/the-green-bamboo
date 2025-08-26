@@ -30,12 +30,12 @@
 
             <!-- THIS IS FOR MDOE NEW REVIEW -->
             <div v-if="!isEditing">
-                <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorSubmission"> 
+                <div class="text-danger fw-bold fs-5 modal-content" v-if="errorSubmission"> 
                     <div v-if="errorMessage" class = "row"> 
                         <span >An error occurred while attempting to submit, please try again!</span>
                         <br>
-                        <button class="btn primary-btn btn-sm" @click="reset">
-                            <span class="fs-5 fst-italic"> Retry your submission here! </span>
+                        <button class="btn btn-primary-btn btn-sm" @click="reset">
+                            <span class="fs-6"> Retry your submission here! </span>
                         </button>
                     </div>
                     

@@ -398,7 +398,7 @@
                                 <div class="modal-dialog modal-xl">
 
                                     <!-- Report Submission Successful -->
-                                    <div class="text-success text-center fst-italic fw-bold fs-3 modal-content"
+                                    <div class="text-success text-center fw-bold fs-5 modal-content"
                                         v-if='reportSubmitSuccess'>
                                         <span>Your report has successfully been submitted!</span>
                                         <div class="modal-footer">
@@ -408,7 +408,7 @@
                                     </div>
 
                                     <!-- Report Submission Error -->
-                                    <div class="text-danger text-center fst-italic fw-bold fs-3 modal-content"
+                                    <div class="text-danger text-center fw-bold fs-5 modal-content"
                                         v-if="reportSubmitError != null">
 
                                         <!-- Error: Generic -->
@@ -4475,7 +4475,7 @@
         aria-labelledby="venueReviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg">
             <!-- Success Message -->
-            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successSubmission">
+            <div class="text-success fst-italic fw-bold fs-5 modal-content" v-if="successSubmission">
                 <span v-if="!inEdit">Your review has successfully been submitted!</span>
                 <span v-else>Your review has successfully been updated!</span>
                 <div class="modal-footer">
