@@ -139,7 +139,8 @@ Normal User (Anonymous & Logged-In)
                             :can-mod="isAdmin"
                             :in-edit="editProfile"
                             :loading-more="venue_reviews.loading"
-                            :no-more-reviews="!venue_reviews.hasMore" />
+                            :no-more-reviews="!venue_reviews.hasMore"
+                            @load-more-reviews="getReviews" />
                     </div>
 
                     <!-- Activities Tab -->
@@ -339,6 +340,9 @@ export default {
             // Properties to hold data from the child component
             updateText: '',
             updatePhoto: null,
+
+
+            venue_review_limit: 2
         };
     },
     mounted() {
@@ -521,7 +525,7 @@ export default {
 
             try {
                 // Build API URL with cursor (last_id)
-                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/reviews?limit=20`
+                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/reviews?limit=${this.venue_review_limit}`
                 if (this.venue_reviews.lastId) {
                     url += `&last_id=${this.venue_reviews.lastId}`
                 }
@@ -539,7 +543,7 @@ export default {
                     this.venue_reviews.lastId = reviews[reviews.length - 1].id
                     
                     // If we got fewer items than requested, we've reached the end
-                    if (reviews.length < 20) {
+                    if (reviews.length < this.venue_review_limit) {
                         this.venue_reviews.hasMore = false
                     }
                 } else {

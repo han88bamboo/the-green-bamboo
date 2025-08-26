@@ -104,7 +104,7 @@
                         <span>rated</span>
                         <span class="text-warning mx-1">★</span>
                         <span class="fw-bold">{{ review.rating }}</span>
-                        <span>Stars</span>
+                        <span> Stars</span>
                       </div>
 
                       <!-- Moderator Badge -->
@@ -283,20 +283,15 @@
       </div>
     </div>
 
-    <!-- Load More Button -->
-    <div 
-      v-if="shouldShowLoadMore" 
-      class="d-flex justify-content-center mb-3"
-    >
-      <button 
-        class="btn btn-primary btn-lg" 
-        @click="loadMoreReviews"
-        :disabled="loadingMore"
-      >
-        <span v-if="loadingMore" class="spinner-border spinner-border-sm me-2" role="status"></span>
-        {{ loadingMore ? 'Loading...' : 'Load More Reviews' }}
-      </button>
+    <!-- Loading Indicator -->
+    <div v-if="loadingMore" class="d-flex justify-content-center my-3">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
     </div>
+
+    <!-- Intersection Observer Sentinel -->
+    <div ref="observer" style="height: 1px;"></div>
   </div>
 </template>
 
@@ -332,7 +327,33 @@ export default {
   data () {
     return {
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
+      observer: null,
     } 
+  },
+
+  mounted() {
+    this.observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          this.loadMoreReviews();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1,
+      }
+    );
+
+    if (this.$refs.observer) {
+      this.observer.observe(this.$refs.observer);
+    }
+  },
+
+  beforeUnmount() {
+    if (this.observer) {
+      this.observer.disconnect();
+    }
   },
 
   computed: {
@@ -387,7 +408,7 @@ export default {
       return upvotes - downvotes;
     },
 
-    // These methods should be implemented based on your application logic
+    // These methods should be implemented based on your data structure
     getPhotoFromReview(review) {
       // Implementation depends on your data structure
       return review.userPhoto || null;
@@ -431,6 +452,7 @@ export default {
     },
 
     loadMoreReviews() {
+      if (this.loadingMore || this.noMoreReviews) return;
       this.$emit('load-more-reviews');
     }
   }
