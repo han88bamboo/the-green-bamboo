@@ -3427,13 +3427,6 @@ export default {
 
         // ===== BATCH OPERATION HELPER METHODS =====
 
-        // Get subsection count for a parent section
-        getSubsectionCount(parentSectionOrder) {
-            return this.editMenu.filter(section => 
-                section.isSubSection && section.parentSectionId === parentSectionOrder
-            ).length;
-        },
-
         // Get all subsections for a parent section
         getSubsectionsForSection(parentSectionOrder) {
             return this.editMenu.filter(section => 
