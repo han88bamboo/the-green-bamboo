@@ -1,7 +1,7 @@
 # Port: 5300
 # Routes: /editDetails (POST), /addUpdates (POST), /sendQuestions (POST), /sendAnswers (POST), /likeUpdates (POST), /unlikeUpdates (POST)
 #         /editAddress (POST), /editOpeningHours (POST), /editPublicHolidays (POST), /editReservationDetails (POST), /addListingToMenu (POST)
-#         /editSectionName (PUT), /editMenu (POST), /updateVenueStatus (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST)
+#         /editSectionName (PUT), /editMenu (POST), /editMenuHierarchical (POST), /updateVenueStatus (POST), /editUpdate (POST), /deleteUpdate (POST), /editQA (POST)
 #         /deleteQA (POST), /addProfileCount (POST), /addNewProfileCount (POST), /deleteMenuItem (DELETE), /updateVenueClaimStatus (POST)
 # -----------------------------------------------------------------------------------------
 
@@ -1271,6 +1271,157 @@ def editMenu():
             {
                 "code": 500,
                 "message": "An error occurred editing the menu!"
+            }
+        ), 500
+    
+    finally:
+        cur.close()
+
+# -----------------------------------------------------------------------------------------
+# [POST] Edit hierarchical menu
+# - Edit menu with support for sections and subsections
+# - Possible return codes: 201 (Updated), 500 (Error during update)
+@blueprint.route('/editMenuHierarchical', methods=['POST', 'OPTIONS'])
+def editMenuHierarchical():
+    # Handle preflight OPTIONS request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'OK'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response
+    
+    conn = g.db
+    cur = conn.cursor()
+    data = request.get_json()
+    print("Hierarchical menu data received:", data)
+
+    venueID = int(data['venueID'])
+    updatedMenu = data['updatedMenu']
+
+    try:
+        # Debug: Print received menu structure
+        print("=== DEBUG: Hierarchical Menu Debug ===")
+        print(f"Total sections received: {len(updatedMenu)}")
+        for i, section in enumerate(updatedMenu):
+            print(f"Section {i}: {section.get('sectionName', 'Unknown')} - Order: {section.get('sectionOrder')} - isSubSection: {section.get('isSubSection', False)} - parentSectionId: {section.get('parentSectionId')}")
+        
+        # Clear existing menu items and sections
+        cur.execute('DELETE FROM "menuItems" WHERE "sectionId" IN (SELECT "id" FROM "venuesMenu" WHERE "venueId" = %s)', (venueID,))
+        cur.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venueID,))
+
+        # First pass: Insert all main sections (those without parentSectionId)
+        section_id_mapping = {}  # Map old section order to new database IDs
+        main_sections = [section for section in updatedMenu if not section.get('isSubSection', False)]
+        print(f"Main sections found: {len(main_sections)}")
+        for section in main_sections:
+            print(f"  Main section: {section.get('sectionName')} (order: {section.get('sectionOrder')})")
+        
+        for section in main_sections:
+            print(f"  Inserting main section: {section.get('sectionName')} with order {section.get('sectionOrder')}")
+            cur.execute(
+                '''
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId")
+                VALUES (%s, %s, %s)
+                RETURNING id
+                ''',
+                (section['sectionName'], section['sectionOrder'], venueID)
+            )
+            section_id = cur.fetchone()['id']
+            section_id_mapping[section['sectionOrder']] = section_id
+            print(f"  Mapped sectionOrder {section['sectionOrder']} to database ID {section_id}")
+
+        # Second pass: Insert all subsections (those with parentSectionId)
+        subsections = [section for section in updatedMenu if section.get('isSubSection', False)]
+        print(f"Subsections found: {len(subsections)}")
+        
+        for subsection in subsections:
+            parent_section_order = subsection.get('parentSectionId')
+            print(f"  Processing subsection: {subsection.get('sectionName')} with parentSectionId: {parent_section_order}")
+            print(f"  Available mappings: {section_id_mapping}")
+            parent_db_id = section_id_mapping.get(parent_section_order)
+            print(f"  Resolved parent DB ID: {parent_db_id}")
+            
+            if parent_db_id is None:
+                print(f"ERROR: Subsection '{subsection['sectionName']}' has invalid parent section order {parent_section_order}")
+                print(f"Available section mappings: {section_id_mapping}")
+                continue
+                
+            print(f"  Inserting subsection: {subsection.get('sectionName')} with parent DB ID {parent_db_id}")
+            cur.execute(
+                '''
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+                ''',
+                (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id)
+            )
+            subsection_id = cur.fetchone()['id']
+            section_id_mapping[subsection['sectionOrder']] = subsection_id
+            print(f"  Successfully created subsection with ID {subsection_id}")
+
+        print(f"Final section_id_mapping: {section_id_mapping}")
+        print("=== END DEBUG ===")
+
+        # Third pass: Insert menu items for all sections and subsections
+        for section in updatedMenu:
+            section_db_id = section_id_mapping.get(section['sectionOrder'])
+            if section_db_id is None:
+                print(f"Warning: Section '{section['sectionName']}' not found in mapping")
+                continue
+                
+            # Insert items for each section/subsection
+            for item in section.get('sectionMenu', []):
+                # Dynamically add vintage
+                columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+                values = [item.get('itemOrder'), item.get('itemPrice'), item.get('itemAvailability'), item.get('itemID'), item.get('itemServingType'), section_db_id]
+
+                # Only add when you find vintage maintained by user
+                itemVintage = item.get('itemVintage')
+                if itemVintage and str(itemVintage).strip():
+                    itemVintage = int(itemVintage)
+                else:
+                    itemVintage = None
+
+                if itemVintage is not None:
+                    columns.append("variant")
+                    values.append(itemVintage)
+
+                # Append it back as string to be passed for execution
+                column_names = ", ".join(f'"{col}"' for col in columns)
+                placeholders = ", ".join(["%s"] * len(values))
+
+                cur.execute(
+                    f'INSERT INTO "menuItems" ({column_names}) VALUES ({placeholders})',
+                    values
+                )
+
+        conn.commit()
+        
+        # Calculate statistics for response
+        total_sections = len(main_sections)
+        total_subsections = len(subsections)
+        total_items = sum(len(section.get('sectionMenu', [])) for section in updatedMenu)
+        
+        return jsonify(
+            {
+                "code": 201,
+                "message": "Hierarchical menu updated successfully!",
+                "statistics": {
+                    "totalSections": total_sections,
+                    "totalSubsections": total_subsections,
+                    "totalItems": total_items
+                }
+            }
+        ), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print("Error in editMenuHierarchical:", str(e))
+        return jsonify(
+            {
+                "code": 500,
+                "message": f"An error occurred editing the hierarchical menu: {str(e)}"
             }
         ), 500
     
