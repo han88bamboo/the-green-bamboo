@@ -2981,14 +2981,14 @@ export default {
         // Delete Menu Section - moved from parent
         deleteMenuSection(index) {
             // Remove section from editMenu
-            this.editMenu = this.editMenu.filter(s => s.sectionOrder != index);
+            this.editMenu = this.editMenu.filter(s => s.sectionOrder !== index);
         },
 
         // Populate Rename Menu Section Modal - moved from parent
         populateRenameMenuSectionModal(index) {
             this.renameMenuSectionModalTarget = {
                 index: index,
-                data: JSON.parse(JSON.stringify(this.editMenu.find(s => s.sectionOrder == index))),
+                data: JSON.parse(JSON.stringify(this.editMenu.find(s => s.sectionOrder === index))),
             }
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
@@ -2997,7 +2997,7 @@ export default {
         // Rename Menu Section - moved from parent
         renameMenuSection() {
             this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            this.editMenu = this.editMenu.map(s => s.sectionOrder == this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+            this.editMenu = this.editMenu.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
         },
 
         // Add Subsection to a main section
@@ -3256,10 +3256,12 @@ export default {
 
             // 1. Check for duplicate section orders
             menuToValidate.forEach(section => {
-                if (sectionOrders.has(section.sectionOrder)) {
-                    issues.push(`Duplicate section order found: ${section.sectionOrder} for section "${section.sectionName}"`);
+                // Ensure sectionOrder is a number for consistent comparison
+                const sectionOrderNum = parseInt(section.sectionOrder, 10);
+                if (sectionOrders.has(sectionOrderNum)) {
+                    issues.push(`Duplicate section order found: ${sectionOrderNum} for section "${section.sectionName}"`);
                 } else {
-                    sectionOrders.add(section.sectionOrder);
+                    sectionOrders.add(sectionOrderNum);
                 }
             });
 
@@ -3285,13 +3287,14 @@ export default {
                 issues.push(`Orphaned subsection found: "${orphan.sectionName}" has no valid parent section`);
             });
 
-            // 4. Validate section order consistency (should be sequential starting from 0)
-            const allOrders = [...sectionOrders].sort((a, b) => a - b);
-            for (let i = 0; i < allOrders.length; i++) {
-                if (i === 0 && allOrders[i] !== 0) {
-                    issues.push(`Section order should start from 0, but starts from ${allOrders[i]}`);
-                } else if (i > 0 && allOrders[i] !== allOrders[i-1] + 1) {
-                    issues.push(`Section order gap detected between ${allOrders[i-1]} and ${allOrders[i]}`);
+            // 4. Validate section order consistency (main sections should be sequential starting from 0)
+            // Only validate main sections for sequential ordering, as subsections can have different numbering
+            const mainSectionOrders = mainSections.map(s => parseInt(s.sectionOrder, 10)).sort((a, b) => a - b);
+            for (let i = 0; i < mainSectionOrders.length; i++) {
+                if (i === 0 && mainSectionOrders[i] !== 0) {
+                    issues.push(`Main section order should start from 0, but starts from ${mainSectionOrders[i]}`);
+                } else if (i > 0 && mainSectionOrders[i] !== mainSectionOrders[i-1] + 1) {
+                    issues.push(`Main section order gap detected between ${mainSectionOrders[i-1]} and ${mainSectionOrders[i]}`);
                 }
             }
 
@@ -4356,10 +4359,10 @@ export default {
         // Delete Menu Item - transferred from parent
         deleteMenuItem(sectionIndex, itemIndex) {
             // Find section
-            let section = this.editMenu.find(s => s.sectionOrder == sectionIndex);
+            let section = this.editMenu.find(s => s.sectionOrder === sectionIndex);
 
             // Remove item from section
-            section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder != itemIndex);
+            section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder !== itemIndex);
         },
 
         // Enable Edit Menu Mode - transferred from parent but modified for component
@@ -4482,7 +4485,7 @@ export default {
             
             // Update main section ordering (should be sequential starting from 0)
             mainSections.forEach((section, index) => {
-                section.sectionOrder = index;
+                section.sectionOrder = index; // Ensure this is a number, not string
                 
                 // Update item ordering within main sections
                 if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
