@@ -804,7 +804,7 @@
                             </div>
 
                             <!-- Show subsections for this main section -->
-                            <div v-for="subsection in getSubsectionsForSection(menuSection.id)" 
+                            <div v-for="subsection in getSubsectionsForSection(menuSection.id || menuSection.sectionOrder)" 
                                 :key="subsection.sectionOrder" class="ms-3 mb-3" 
                                 style="border-left: 3px solid #dee2e6; padding-left: 15px;">
                                 
@@ -2243,13 +2243,19 @@ export default {
                     return;
                 }
                 
+                console.log('🔄 Syncing editableMainSections, current editMenu:', this.editMenu);
+                
                 const mainSections = this.editMenu.filter(section => 
                     section && !section.parentSectionId
                 );
                 
+                console.log('🔄 Found main sections:', mainSections);
+                
                 // Only update if there's actually a change
                 const currentIds = (this.editableMainSections || []).map(s => s.id || s.sectionOrder).join(',');
                 const newIds = mainSections.map(s => s.id || s.sectionOrder).join(',');
+                
+                console.log('🔄 Current IDs:', currentIds, 'New IDs:', newIds);
                 
                 if (currentIds !== newIds) {
                     // Create main sections with proper subsection references
@@ -2259,6 +2265,8 @@ export default {
                             s.isSubSection && s.parentSectionId === (section.id || section.sectionOrder)
                         ).sort((a, b) => a.sectionOrder - b.sectionOrder);
                         
+                        console.log(`🔄 Section "${section.sectionName}" has ${subsections.length} subsections:`, subsections);
+                        
                         return {
                             ...section,
                             sectionMenu: section.sectionMenu || [], // Reference the same array, don't copy
@@ -2266,7 +2274,7 @@ export default {
                         };
                     });
                     
-                    console.log('🔄 Updated editableMainSections with proper subsection references');
+                    console.log('🔄 Updated editableMainSections:', this.editableMainSections);
                 }
                 
             } catch (error) {
@@ -3329,12 +3337,17 @@ export default {
 
         // Add Subsection to a main section
         addSubSection(parentSection) {
+            console.log('🍽️ addSubSection called with parentSection:', parentSection);
+            
             // Handle case where parentSection is null (when called from general "Add Subsection" buttons)
             if (!parentSection) {
                 // Find the first main section to add subsection to, or create one if none exist
                 const mainSections = this.editMenu.filter(s => !s.isSubSection);
+                console.log('🍽️ Main sections found:', mainSections.length);
+                
                 if (mainSections.length === 0) {
                     // No main sections exist, create one first
+                    console.log('🍽️ No main sections exist, creating one first');
                     this.addMenuSection();
                     // Get the newly created section
                     parentSection = this.editMenu.find(s => !s.isSubSection);
@@ -3342,21 +3355,37 @@ export default {
                     // Use the first main section
                     parentSection = mainSections[0];
                 }
+                console.log('🍽️ Using parent section:', parentSection);
             }
 
-            // Validate operation before proceeding
-            const validation = this.validateSubsectionOperations('create', parentSection);
-            if (!validation.isValid) {
-                this.showHierarchyError('Create Subsection Failed', validation.issues);
+            // Simple validation - just check if we have a valid parent section
+            if (!parentSection) {
+                console.error('🍽️ No valid parent section found');
+                const toast = useToast();
+                toast.error('Cannot create subsection: No main sections available');
+                return false;
+            }
+
+            if (parentSection.isSubSection) {
+                console.error('🍽️ Cannot create subsection under another subsection');
+                const toast = useToast();
+                toast.error('Cannot create subsection under another subsection');
                 return false;
             }
 
             try {
-                const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
+                // Get current max section order
+                const maxSectionOrder = this.editMenu.length > 0 ? Math.max(...this.editMenu.map(s => s.sectionOrder)) : 0;
+                
+                // Count existing subsections for this parent
+                const existingSubsections = this.editMenu.filter(s => 
+                    s.isSubSection && s.parentSectionId === (parentSection.id || parentSection.sectionOrder)
+                );
+                
                 const newSubsection = {
-                    sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.id || parentSection.sectionOrder).length + 1}`,
+                    sectionName: `New Subsection ${existingSubsections.length + 1}`,
                     sectionOrder: maxSectionOrder + 1,
-                    parentSectionId: parentSection.id || parentSection.sectionOrder, // Use ID if available, otherwise sectionOrder
+                    parentSectionId: parentSection.id || parentSection.sectionOrder,
                     isSubSection: true,
                     sectionMenu: []
                 };
@@ -3369,17 +3398,23 @@ export default {
                     parentSectionOrder: parentSection.sectionOrder
                 });
                 
+                // Add to editMenu
                 this.editMenu.push(newSubsection);
                 
-                // Validate hierarchy after operation
-                const postValidation = this.validateMenuHierarchy();
-                if (!postValidation.isValid) {
-                    console.warn('Hierarchy issues detected after adding subsection:', postValidation.issues);
-                }
+                // Update sync
+                this.syncEditableMainSections();
+                
+                // Show success message
+                const toast = useToast();
+                toast.success(`Subsection "${newSubsection.sectionName}" added successfully`);
+                
+                console.log('🍽️ Current editMenu after adding subsection:', this.editMenu);
                 
                 return true;
             } catch (error) {
-                this.showHierarchyError('Create Subsection Error', [`Failed to create subsection: ${error.message}`]);
+                console.error('🍽️ Error creating subsection:', error);
+                const toast = useToast();
+                toast.error(`Failed to create subsection: ${error.message}`);
                 return false;
             }
         },
@@ -3749,6 +3784,8 @@ export default {
 
         // Get all subsections for a parent section
         getSubsectionsForSection(parentSectionId) {
+            console.log('🍽️ getSubsectionsForSection called with parentSectionId:', parentSectionId);
+            
             // First try to get subsections from editableMainSections if available
             if (Array.isArray(this.editableMainSections)) {
                 const parentSection = this.editableMainSections.find(s => 
@@ -3756,14 +3793,18 @@ export default {
                 );
                 
                 if (parentSection && parentSection.subsections) {
+                    console.log('🍽️ Found subsections in editableMainSections:', parentSection.subsections);
                     return parentSection.subsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
                 }
             }
             
             // Fallback to editMenu if editableMainSections not available
-            return this.editMenu.filter(section => 
+            const subsections = this.editMenu.filter(section => 
                 section.isSubSection && section.parentSectionId === parentSectionId
             ).sort((a, b) => a.sectionOrder - b.sectionOrder);
+            
+            console.log('🍽️ Found subsections in editMenu for parent', parentSectionId, ':', subsections);
+            return subsections;
         },
 
         // Get direct items for a section (items not in subsections)
