@@ -3002,6 +3002,21 @@ export default {
 
         // Add Subsection to a main section
         addSubSection(parentSection) {
+            // Handle case where parentSection is null (when called from general "Add Subsection" buttons)
+            if (!parentSection) {
+                // Find the first main section to add subsection to, or create one if none exist
+                const mainSections = this.editMenu.filter(s => !s.isSubSection);
+                if (mainSections.length === 0) {
+                    // No main sections exist, create one first
+                    this.addMenuSection();
+                    // Get the newly created section
+                    parentSection = this.editMenu.find(s => !s.isSubSection);
+                } else {
+                    // Use the first main section
+                    parentSection = mainSections[0];
+                }
+            }
+
             // Validate operation before proceeding
             const validation = this.validateSubsectionOperations('create', parentSection);
             if (!validation.isValid) {
@@ -3014,10 +3029,18 @@ export default {
                 const newSubsection = {
                     sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.sectionOrder).length + 1}`,
                     sectionOrder: maxSectionOrder + 1,
-                    parentSectionId: parentSection.sectionOrder,
+                    parentSectionId: parentSection.sectionOrder, // This will be mapped to DB ID in backend
                     isSubSection: true,
                     sectionMenu: []
                 };
+                
+                console.log('🍽️ Creating new subsection:', {
+                    name: newSubsection.sectionName,
+                    sectionOrder: newSubsection.sectionOrder,
+                    parentSectionId: newSubsection.parentSectionId,
+                    parentSectionName: parentSection.sectionName,
+                    parentSectionOrder: parentSection.sectionOrder
+                });
                 
                 this.editMenu.push(newSubsection);
                 
@@ -3713,6 +3736,10 @@ export default {
         autoFixHierarchyIssues() {
             const fixes = [];
             
+            // First, update hierarchical ordering to fix parent ID mismatches
+            this.updateHierarchicalOrdering();
+            fixes.push('Updated hierarchical ordering to fix parent-child relationships');
+            
             // Fix missing isSubSection flags
             this.editMenu.forEach(section => {
                 if (section.parentSectionId && !section.isSubSection) {
@@ -3736,6 +3763,22 @@ export default {
                     fixes.push(`Initialized sectionMenu array for "${section.sectionName}"`);
                 }
             });
+
+            // Handle orphaned subsections by assigning them to the first main section
+            const mainSections = this.editMenu.filter(s => !s.isSubSection);
+            if (mainSections.length > 0) {
+                const firstMainSectionOrder = mainSections[0].sectionOrder;
+                
+                this.editMenu.forEach(section => {
+                    if (section.isSubSection) {
+                        const parentExists = mainSections.some(main => main.sectionOrder === section.parentSectionId);
+                        if (!parentExists) {
+                            section.parentSectionId = firstMainSectionOrder;
+                            fixes.push(`Reassigned orphaned subsection "${section.sectionName}" to first main section`);
+                        }
+                    }
+                });
+            }
 
             return {
                 fixesApplied: fixes.length,
@@ -4389,17 +4432,18 @@ export default {
         async updateMenu() {
             console.log('🍽️ Starting hierarchical menu update');
             
-            // Validate menu hierarchy before attempting to save
+            // First, try to auto-fix any hierarchy issues
+            const autoFix = this.autoFixHierarchyIssues();
+            if (autoFix.fixesApplied > 0) {
+                console.log('🍽️ Auto-fixed hierarchy issues:', autoFix.fixes);
+                const toast = useToast();
+                toast.info(`Auto-fixed ${autoFix.fixesApplied} hierarchy issues.`);
+            }
+            
+            // Validate menu hierarchy after auto-fix
             const hierarchyValidation = this.validateBeforeSave();
             if (!hierarchyValidation.isValid) {
                 this.showHierarchyError('Cannot Save Menu', hierarchyValidation.issues);
-                
-                // Offer auto-fix
-                const autoFix = this.autoFixHierarchyIssues();
-                if (autoFix.fixesApplied > 0) {
-                    const toast = useToast();
-                    toast.info(`Auto-fixed ${autoFix.fixesApplied} hierarchy issues. Please review and try saving again.`);
-                }
                 return;
             }
 
@@ -4417,6 +4461,18 @@ export default {
                     sectionsCount: menuDataForBackend.length,
                     mainSections: menuDataForBackend.filter(s => !s.isSubSection).length,
                     subsections: menuDataForBackend.filter(s => s.isSubSection).length
+                });
+
+                // Debug: Log the actual data being sent
+                console.log('🍽️ Debug: Menu data being sent to backend:');
+                menuDataForBackend.forEach((section, index) => {
+                    console.log(`  Section ${index}:`, {
+                        name: section.sectionName,
+                        order: section.sectionOrder,
+                        isSubSection: section.isSubSection,
+                        parentSectionId: section.parentSectionId,
+                        itemCount: section.sectionMenu ? section.sectionMenu.length : 0
+                    });
                 });
 
                 const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenuHierarchical`,
@@ -4483,9 +4539,18 @@ export default {
             const mainSections = this.editMenu.filter(section => !section.isSubSection);
             const subsections = this.editMenu.filter(section => section.isSubSection);
             
+            // Create mapping from old section orders to new section orders
+            const sectionOrderMapping = new Map();
+            
             // Update main section ordering (should be sequential starting from 0)
             mainSections.forEach((section, index) => {
-                section.sectionOrder = index; // Ensure this is a number, not string
+                const oldSectionOrder = section.sectionOrder;
+                const newSectionOrder = index;
+                
+                // Store the mapping for subsection parent ID updates
+                sectionOrderMapping.set(oldSectionOrder, newSectionOrder);
+                
+                section.sectionOrder = newSectionOrder; // Ensure this is a number, not string
                 
                 // Update item ordering within main sections
                 if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
@@ -4495,7 +4560,24 @@ export default {
                 }
             });
             
-            // Group subsections by parent and update their ordering
+            // Update parentSectionId for all subsections based on the new main section ordering
+            subsections.forEach(subsection => {
+                const oldParentId = subsection.parentSectionId;
+                const newParentId = sectionOrderMapping.get(oldParentId);
+                
+                if (newParentId !== undefined) {
+                    subsection.parentSectionId = newParentId;
+                } else {
+                    console.warn(`🍽️ Subsection "${subsection.sectionName}" has invalid parent ID ${oldParentId}, attempting to fix...`);
+                    // Try to assign to the first available main section
+                    if (mainSections.length > 0) {
+                        subsection.parentSectionId = 0; // Assign to first main section
+                        console.warn(`🍽️ Assigned orphaned subsection "${subsection.sectionName}" to first main section`);
+                    }
+                }
+            });
+            
+            // Group subsections by their updated parent IDs and update their ordering
             const subsectionsByParent = new Map();
             subsections.forEach(subsection => {
                 const parentId = subsection.parentSectionId;
@@ -4511,7 +4593,7 @@ export default {
                 parentSubsections.forEach((subsection) => {
                     subsection.sectionOrder = globalSubsectionOrder++;
                     
-                    // Ensure parent relationship is maintained
+                    // Ensure parent relationship is maintained with updated parent ID
                     subsection.parentSectionId = parentId;
                     subsection.isSubSection = true;
                     
