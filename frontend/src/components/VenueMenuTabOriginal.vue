@@ -199,11 +199,7 @@
                         class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0"
                         @click="addMenuSection"><b>+ Section</b></button>
                 </div>
-                <div v-if="editMenuMode" class="col-3 d-grid px-1">
-                    <button type="button"
-                        class="btn btn-info rounded-0 reverse-clickable-text px-0"
-                        @click="addSubSection(null)"><b>+ Subsection</b></button>
-                </div>
+               
                 <!--<div v-if="editMenuMode" class="col-2 d-grid px-1">
                 <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"  @click="resetEditMenu"> Reset </button>
             </div-->
@@ -255,12 +251,8 @@
                         class="btn primary-btn-outline-thick rounded-0 reverse-clickable-text px-0"
                         @click="addMenuSection"> Add Section </button>
                 </div>
-                <div v-if="editMenuMode" class="col-1 d-grid px-1">
-                    <button type="button"
-                        class="btn btn-info rounded-0 reverse-clickable-text px-0"
-                        @click="addSubSection(null)"> + Sub </button>
-                </div>
-                <div v-if="editMenuMode" class="col-1 d-grid px-1">
+       
+                <div v-if="editMenuMode" class="col-2 d-grid px-1">
                     <button type="button" class="btn btn-warning rounded-0 reverse-clickable-text px-0"
                         @click="resetEditMenu"> Reset </button>
                 </div>
@@ -479,7 +471,7 @@
                                     data-bs-toggle="collapse" :data-bs-target="'#collapseSubSection' + index + '_' + subIndex"
                                     aria-expanded="true" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; margin-left: 20px;">
-                                    └─ {{ subsection.sectionName }} ↓
+                                    {{ subsection.sectionName }} ↓
                                 </button>
                             </div>
 
@@ -803,15 +795,31 @@
                                 </div>
                             </div>
 
-                            <!-- Show direct items for this main section (items not in subsections) FIRST -->
-                            <div v-if="getDirectItemsForSection(menuSection.sectionOrder).length > 0" class="mt-3">
-                                <p class="text-muted fw-bold mb-2" style="font-size: 0.9rem;">📄 Direct Items:</p>
+                            <!-- Show direct items for this main section (items not in subsections) FIRST - ALWAYS show to provide drop zone -->
+                            <div class="mt-3">
+                                <p class="text-muted fw-bold mb-2" style="font-size: 0.9rem;">Direct Items:</p>
                                 
                                 <!-- Direct Section Items -->
                                 <draggable v-model="menuSection.sectionMenu" item-key="itemOrder"
                                     @start="dragItemStart(menuSection)" @end="dragItemEnd(menuSection)"
                                     v-bind="sectionItemDragOptions"
-                                    :data-section-order="menuSection.sectionOrder">
+                                    :data-section-order="menuSection.sectionOrder"
+                                    class="direct-items-drop-zone"
+                                    :class="{ 'empty-drop-zone': getDirectItemsForSection(menuSection.sectionOrder).length === 0 }">
+                                    
+                                    <!-- Show empty drop zone when no direct items -->
+                                    <template v-if="getDirectItemsForSection(menuSection.sectionOrder).length === 0">
+                                        <div class="empty-direct-items-zone p-3 border border-dashed border-secondary rounded text-center text-muted">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-arrow-down-circle mb-2" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.5 4.5a.5.5 0 0 0-1 0v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293z"/>
+                                            </svg>
+                                            <p class="mb-0" style="font-size: 0.9rem;">
+                                                <em>Drag items here to add them directly to "{{ menuSection.sectionName }}"</em>
+                                            </p>
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- Show actual direct items when they exist -->
                                     <template #item="{ element: menuItem }">
                                         <div class="col-12 my-3">
                                             <!-- Standard menu item template for main section direct items (same as before) -->
@@ -985,7 +993,7 @@
                                             aria-expanded="true"
                                             :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
                                             style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                            📁 {{ subsection.sectionName }}
+                                            {{ subsection.sectionName }}
                                         </button>
                                     </div>
                                     
@@ -998,7 +1006,7 @@
                                             aria-expanded="true"
                                             :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
                                             style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                            📁 {{ subsection.sectionName }}
+                                            {{ subsection.sectionName }}
                                         </button>
                                     </div>
 
@@ -1933,7 +1941,7 @@ export default {
                 subsections.forEach(subsection => {
                     options.push({
                         id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-                        name: `  └─ ${subsection.sectionName}`,
+                        name: `${subsection.sectionName}`,
                         type: 'subsection',
                         level: 1,
                         section: subsection,
@@ -5607,5 +5615,54 @@ export default {
 
 .subsection-container {
     min-height: 50px;
+}
+
+/* Direct Items Drop Zone Styles */
+.direct-items-drop-zone {
+    min-height: 50px;
+    transition: all 0.2s ease;
+}
+
+.empty-drop-zone {
+    min-height: 80px;
+}
+
+.empty-direct-items-zone {
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.empty-direct-items-zone:hover {
+    background-color: #e9ecef;
+    border-color: #6c757d !important;
+}
+
+/* Drag over styles for empty drop zones */
+.direct-items-drop-zone.sortable-drag-over .empty-direct-items-zone {
+    background-color: #d1ecf1;
+    border-color: #bee5eb !important;
+    color: #0c5460;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .empty-direct-items-zone {
+        min-height: 60px;
+        padding: 1rem !important;
+    }
+    
+    .empty-direct-items-zone p {
+        font-size: 0.8rem !important;
+    }
+    
+    .empty-direct-items-zone svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
 }
 </style>
