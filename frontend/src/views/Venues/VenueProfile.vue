@@ -4568,7 +4568,7 @@ export default {
                             itemABV: item.abv,
                             itemCountry: item.originCountry,
                             itemRating: item.avgRating,
-                            itemDescription: item.description,
+                            itemDesc: item.description,
                             itemServingTypeName: item.servingTypeText,
                             // Legacy fields for backward compatibility
                             photo: item.photo,
