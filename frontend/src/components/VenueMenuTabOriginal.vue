@@ -659,7 +659,7 @@
                 v-bind="dragOptions">
                 <template #item="{ element: menuSection }">
                     <!-- Main Section -->
-                    <div class="row mb-2">
+                    <div class="row mb-2" :data-section-order="menuSection.sectionOrder">
 
                         <!-- Section Name -->
                         <div class="col-7 d-grid pe-0 mobile-view-hide">
@@ -903,7 +903,8 @@
                                     <!-- Subsection Items -->
                                     <draggable v-model="subsection.sectionMenu" item-key="itemOrder"
                                         @start="dragItemStart(subsection)" @end="dragItemEnd(subsection)"
-                                        v-bind="dragOptions">
+                                        v-bind="subsectionItemDragOptions"
+                                        :data-subsection-order="subsection.sectionOrder">
                                         <template #item="{ element: menuItem }">
                                             <div class="col-12 my-3">
                                                 <div class="col-12 my-2 p-2" style="background-color: #f8f9fa; border-radius: 5px;">
@@ -1237,7 +1238,8 @@
                                 <!-- Direct Section Items -->
                                 <draggable v-model="menuSection.sectionMenu" item-key="itemOrder"
                                     @start="dragItemStart(menuSection)" @end="dragItemEnd(menuSection)"
-                                    v-bind="dragOptions">
+                                    v-bind="sectionItemDragOptions"
+                                    :data-section-order="menuSection.sectionOrder">
                                     <template #item="{ element: menuItem }">
                                         <div class="col-12 my-3">
                                             <!-- Standard menu item template for main section direct items (same as before) -->
@@ -2052,7 +2054,11 @@ export default {
             draggedSubsectionSnapshot: null, // For subsection drag validation
             dragOptions: {
                 animation: 350,
-                group: "menuSections",
+                group: {
+                    name: "menuSections",
+                    pull: false,  // Prevent sections from being dragged to other groups
+                    put: false    // Prevent items from other groups being dropped here
+                },
                 disabled: false,
                 ghostClass: "ghost",
                 revertOnSpill: true,       // Return items to original position when dropped outside valid containers
@@ -2064,16 +2070,92 @@ export default {
                 }.bind(this)
             },
             
-            // Subsection drag options
+            // Subsection drag options - Enhanced for hierarchical constraints
             subsectionDragOptions: {
                 animation: 350,
-                group: "subsections",
+                group: {
+                    name: "subsections",
+                    pull: false,  // Prevent subsections from being dragged to other groups
+                    put: false    // Prevent items from other groups being dropped here
+                },
                 disabled: false,
                 ghostClass: "ghost-subsection",
                 revertOnSpill: true,
                 fallbackOnBody: true,
                 onSpill: function () {
                     this.showInvalidAreaMessage();
+                    return false;
+                }.bind(this),
+                onMove: function (evt) {
+                    // Only allow reordering within the same parent section
+                    const fromParent = evt.from.closest('[data-section-order]');
+                    const toParent = evt.to.closest('[data-section-order]');
+                    
+                    if (fromParent && toParent) {
+                        const fromSectionOrder = fromParent.getAttribute('data-section-order');
+                        const toSectionOrder = toParent.getAttribute('data-section-order');
+                        return fromSectionOrder === toSectionOrder;
+                    }
+                    return false;
+                }.bind(this)
+            },
+
+            // Menu item drag options for items within subsections - Prevent cross-subsection dragging
+            subsectionItemDragOptions: {
+                animation: 350,
+                group: {
+                    name: "subsectionItems",
+                    pull: false,  // Prevent items from being dragged to other subsections
+                    put: false    // Only allow items from the same subsection
+                },
+                disabled: false,
+                ghostClass: "ghost-item",
+                revertOnSpill: true,
+                fallbackOnBody: true,
+                onSpill: function () {
+                    this.showInvalidAreaMessage();
+                    return false;
+                }.bind(this),
+                onMove: function (evt) {
+                    // Only allow reordering within the same subsection
+                    const fromSubsection = evt.from.closest('[data-subsection-order]');
+                    const toSubsection = evt.to.closest('[data-subsection-order]');
+                    
+                    if (fromSubsection && toSubsection) {
+                        const fromSubsectionOrder = fromSubsection.getAttribute('data-subsection-order');
+                        const toSubsectionOrder = toSubsection.getAttribute('data-subsection-order');
+                        return fromSubsectionOrder === toSubsectionOrder;
+                    }
+                    return false;
+                }.bind(this)
+            },
+
+            // Menu item drag options for direct section items - Prevent cross-section dragging
+            sectionItemDragOptions: {
+                animation: 350,
+                group: {
+                    name: "sectionItems",
+                    pull: false,  // Prevent items from being dragged to other sections
+                    put: false    // Only allow items from the same section
+                },
+                disabled: false,
+                ghostClass: "ghost-item",
+                revertOnSpill: true,
+                fallbackOnBody: true,
+                onSpill: function () {
+                    this.showInvalidAreaMessage();
+                    return false;
+                }.bind(this),
+                onMove: function (evt) {
+                    // Only allow reordering within the same section
+                    const fromSection = evt.from.closest('[data-section-order]');
+                    const toSection = evt.to.closest('[data-section-order]');
+                    
+                    if (fromSection && toSection) {
+                        const fromSectionOrder = fromSection.getAttribute('data-section-order');
+                        const toSectionOrder = toSection.getAttribute('data-section-order');
+                        return fromSectionOrder === toSectionOrder;
+                    }
                     return false;
                 }.bind(this)
             },
@@ -3297,6 +3379,24 @@ export default {
             this.menuSnapshot = null;
         },
 
+        // Subsection drag methods for reordering subsections within parent sections
+        dragSubsectionStart(parentSection) {
+            this.drag = true;
+            // Take a snapshot of the current subsections
+            this.draggedSectionSnapshot = JSON.stringify(parentSection.subsections || []);
+        },
+
+        dragSubsectionEnd(parentSection) {
+            // Check if the subsections changed after drag
+            const currentSubsections = JSON.stringify(parentSection.subsections || []);
+            if (this.draggedSectionSnapshot === currentSubsections) {
+                // No change occurred - likely an invalid drop
+                this.showInvalidAreaMessage();
+            }
+            this.drag = false;
+            this.draggedSectionSnapshot = null;
+        },
+
         // Show invalid area message for drag operations
         showInvalidAreaMessage() {
             this.invalidAreaMessageVisible = true;
@@ -3323,3 +3423,28 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+/* Drag and drop ghost styles for hierarchical menu system */
+.ghost {
+    opacity: 0.5;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+}
+
+.ghost-subsection {
+    opacity: 0.5;
+    background: #e9ecef;
+    border: 2px dashed #6c757d;
+}
+
+.ghost-item {
+    opacity: 0.5;
+    background: #fff3cd;
+    border: 2px dashed #ffc107;
+}
+
+.subsection-container {
+    min-height: 50px;
+}
+</style>
