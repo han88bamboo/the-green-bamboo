@@ -2252,7 +2252,11 @@ export default {
                 const newIds = mainSections.map(s => s.id || s.sectionOrder).join(',');
                 
                 if (currentIds !== newIds) {
-                    this.editableMainSections = mainSections.map(section => ({...section}));
+                    // Use deep copy to prevent shared references to sectionMenu arrays
+                    this.editableMainSections = mainSections.map(section => ({
+                        ...section,
+                        sectionMenu: section.sectionMenu ? [...section.sectionMenu] : []
+                    }));
                 }
                 
             } catch (error) {
@@ -2540,7 +2544,7 @@ export default {
                 sectionOrder: section.sectionOrder || index,
                 parentSectionId: null, // All sections become main sections
                 isSubSection: false,
-                sectionMenu: section.sectionMenu || [],
+                sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: [] // No subsections in converted flat menu
             }));
         },
@@ -2556,18 +2560,18 @@ export default {
             
             console.log('🍽️ Found', mainSections.length, 'main sections and', subsections.length, 'subsections');
             
-            // Build the hierarchical structure
+            // Build the hierarchical structure with deep copies
             const hierarchicalMenu = mainSections.map(section => ({
                 id: section.id,
                 sectionName: section.sectionName,
                 sectionOrder: section.sectionOrder,
                 parentSectionId: null,
                 isSubSection: false,
-                sectionMenu: section.sectionMenu || [],
+                sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: []
             }));
             
-            // Add subsections to their parent sections
+            // Add subsections to their parent sections with deep copies
             subsections.forEach(subsection => {
                 const parentSection = hierarchicalMenu.find(section => section.id === subsection.parentSectionId);
                 if (parentSection) {
@@ -2577,7 +2581,7 @@ export default {
                         sectionOrder: subsection.sectionOrder,
                         parentSectionId: subsection.parentSectionId,
                         isSubSection: true,
-                        sectionMenu: subsection.sectionMenu || [],
+                        sectionMenu: subsection.sectionMenu ? [...subsection.sectionMenu] : [],
                         subsections: [] // Subsections can't have subsections
                     });
                     console.log(`🍽️ Added subsection "${subsection.sectionName}" to parent "${parentSection.sectionName}"`);
@@ -2952,17 +2956,17 @@ export default {
             const flatMenu = [];
             
             hierarchicalData.forEach(section => {
-                // Add main section
+                // Add main section with deep copy of sectionMenu
                 flatMenu.push({
                     id: section.id,
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     parentSectionId: null,
                     isSubSection: false,
-                    sectionMenu: section.sectionMenu || []
+                    sectionMenu: section.sectionMenu ? [...section.sectionMenu] : []
                 });
                 
-                // Add subsections
+                // Add subsections with deep copy of sectionMenu
                 if (section.subsections && section.subsections.length > 0) {
                     section.subsections.forEach(subsection => {
                         flatMenu.push({
@@ -2971,7 +2975,7 @@ export default {
                             sectionOrder: subsection.sectionOrder,
                             parentSectionId: subsection.parentSectionId,
                             isSubSection: true,
-                            sectionMenu: subsection.sectionMenu || []
+                            sectionMenu: subsection.sectionMenu ? [...subsection.sectionMenu] : []
                         });
                     });
                 }
