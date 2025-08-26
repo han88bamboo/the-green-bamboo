@@ -2779,29 +2779,84 @@ export default {
 
         // Add Subsection to a main section
         addSubSection(parentSection) {
-            const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
-            const newSubsection = {
-                sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.sectionOrder).length + 1}`,
-                sectionOrder: maxSectionOrder + 1,
-                parentSectionId: parentSection.sectionOrder,
-                isSubSection: true,
-                sectionMenu: []
-            };
-            this.editMenu.push(newSubsection);
+            // Validate operation before proceeding
+            const validation = this.validateSubsectionOperations('create', parentSection);
+            if (!validation.isValid) {
+                this.showHierarchyError('Create Subsection Failed', validation.issues);
+                return false;
+            }
+
+            try {
+                const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
+                const newSubsection = {
+                    sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.sectionOrder).length + 1}`,
+                    sectionOrder: maxSectionOrder + 1,
+                    parentSectionId: parentSection.sectionOrder,
+                    isSubSection: true,
+                    sectionMenu: []
+                };
+                
+                this.editMenu.push(newSubsection);
+                
+                // Validate hierarchy after operation
+                const postValidation = this.validateMenuHierarchy();
+                if (!postValidation.isValid) {
+                    console.warn('Hierarchy issues detected after adding subsection:', postValidation.issues);
+                }
+                
+                return true;
+            } catch (error) {
+                this.showHierarchyError('Create Subsection Error', [`Failed to create subsection: ${error.message}`]);
+                return false;
+            }
         },
 
         // Delete Subsection
         deleteSubSection(parentSection, subsection) {
-            if (confirm(`Are you sure you want to delete the subsection "${subsection.sectionName}"? This will also delete all items in this subsection.`)) {
-                // Remove subsection from editMenu
-                this.editMenu = this.editMenu.filter(s => s.sectionOrder !== subsection.sectionOrder);
+            // Validate operation before proceeding
+            const validation = this.validateSubsectionOperations('delete', parentSection, subsection);
+            if (!validation.isValid) {
+                this.showHierarchyError('Delete Subsection Failed', validation.issues);
+                return false;
             }
+
+            const confirmMessage = subsection.sectionMenu && subsection.sectionMenu.length > 0 
+                ? `Are you sure you want to delete the subsection "${subsection.sectionName}"? This will also delete ${subsection.sectionMenu.length} item(s) in this subsection.`
+                : `Are you sure you want to delete the subsection "${subsection.sectionName}"?`;
+
+            if (confirm(confirmMessage)) {
+                try {
+                    // Remove subsection from editMenu
+                    this.editMenu = this.editMenu.filter(s => s.sectionOrder !== subsection.sectionOrder);
+                    
+                    // Validate hierarchy after operation
+                    const postValidation = this.validateMenuHierarchy();
+                    if (!postValidation.isValid) {
+                        console.warn('Hierarchy issues detected after deleting subsection:', postValidation.issues);
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    this.showHierarchyError('Delete Subsection Error', [`Failed to delete subsection: ${error.message}`]);
+                    return false;
+                }
+            }
+            return false;
         },
 
         // Move items between sections/subsections
         moveItemsBetweenSections(fromSection, toSection, items) {
             if (!fromSection || !toSection || !items || items.length === 0) {
-                console.warn('Invalid parameters for moveItemsBetweenSections');
+                this.showHierarchyError('Move Items Failed', ['Invalid parameters: Missing source section, target section, or items to move']);
+                return false;
+            }
+
+            // Validate that sections exist in menu
+            const fromExists = this.editMenu.some(s => s.sectionOrder === fromSection.sectionOrder);
+            const toExists = this.editMenu.some(s => s.sectionOrder === toSection.sectionOrder);
+            
+            if (!fromExists || !toExists) {
+                this.showHierarchyError('Move Items Failed', ['Source or target section no longer exists in menu']);
                 return false;
             }
 
@@ -2827,9 +2882,15 @@ export default {
                 this.reorderSectionItems(fromSection);
                 this.reorderSectionItems(toSection);
 
+                // Validate hierarchy after operation
+                const postValidation = this.validateMenuHierarchy();
+                if (!postValidation.isValid) {
+                    console.warn('Hierarchy issues detected after moving items:', postValidation.issues);
+                }
+
                 return true;
             } catch (error) {
-                console.error('Error moving items between sections:', error);
+                this.showHierarchyError('Move Items Error', [`Failed to move items between sections: ${error.message}`]);
                 return false;
             }
         },
@@ -2845,13 +2906,10 @@ export default {
 
         // Move subsection to different parent section
         moveSubsectionToSection(subsection, newParentSection) {
-            if (!subsection || !newParentSection) {
-                console.warn('Invalid parameters for moveSubsectionToSection');
-                return false;
-            }
-
-            if (subsection.parentSectionId === newParentSection.sectionOrder) {
-                console.warn('Subsection is already in the target section');
+            // Validate operation before proceeding
+            const validation = this.validateSubsectionOperations('move', newParentSection, subsection);
+            if (!validation.isValid) {
+                this.showHierarchyError('Move Subsection Failed', validation.issues);
                 return false;
             }
 
@@ -2863,19 +2921,30 @@ export default {
                 const subsectionInMenu = this.editMenu.find(s => s.sectionOrder === subsection.sectionOrder);
                 if (subsectionInMenu) {
                     subsectionInMenu.parentSectionId = newParentSection.sectionOrder;
+                } else {
+                    this.showHierarchyError('Move Subsection Failed', ['Subsection not found in menu']);
+                    return false;
+                }
+
+                // Validate hierarchy after operation
+                const postValidation = this.validateMenuHierarchy();
+                if (!postValidation.isValid) {
+                    console.warn('Hierarchy issues detected after moving subsection:', postValidation.issues);
                 }
 
                 return true;
             } catch (error) {
-                console.error('Error moving subsection to new parent:', error);
+                this.showHierarchyError('Move Subsection Error', [`Failed to move subsection: ${error.message}`]);
                 return false;
             }
         },
 
         // Duplicate subsection with all its items
         duplicateSubsection(subsection, parentSection) {
-            if (!subsection || !parentSection) {
-                console.warn('Invalid parameters for duplicateSubsection');
+            // Validate operation before proceeding
+            const validation = this.validateSubsectionOperations('duplicate', parentSection, subsection);
+            if (!validation.isValid) {
+                this.showHierarchyError('Duplicate Subsection Failed', validation.issues);
                 return null;
             }
 
@@ -2893,9 +2962,16 @@ export default {
                 };
 
                 this.editMenu.push(duplicatedSubsection);
+                
+                // Validate hierarchy after operation
+                const postValidation = this.validateMenuHierarchy();
+                if (!postValidation.isValid) {
+                    console.warn('Hierarchy issues detected after duplicating subsection:', postValidation.issues);
+                }
+                
                 return duplicatedSubsection;
             } catch (error) {
-                console.error('Error duplicating subsection:', error);
+                this.showHierarchyError('Duplicate Subsection Error', [`Failed to duplicate subsection: ${error.message}`]);
                 return null;
             }
         },
@@ -3162,6 +3238,111 @@ export default {
             };
         },
 
+        // Display hierarchy-specific error messages
+        showHierarchyError(title, issues) {
+            const toast = useToast();
+            
+            if (issues.length === 1) {
+                toast.error(`${title}: ${issues[0]}`);
+            } else {
+                toast.error(`${title}: Multiple issues detected`);
+                console.error(`${title}:`, issues);
+            }
+        },
+
+        // Display hierarchy validation summary
+        showHierarchyValidationSummary(validation) {
+            const toast = useToast();
+            
+            if (validation.isValid) {
+                toast.success(`Menu hierarchy is valid (${validation.totalSections} sections, ${validation.totalSubsections} subsections, ${validation.totalItems} items)`);
+            } else {
+                this.showHierarchyError('Menu Hierarchy Validation Failed', validation.issues);
+                
+                // Offer auto-fix if applicable
+                const autoFix = this.autoFixHierarchyIssues();
+                if (autoFix.fixesApplied > 0) {
+                    toast.info(`Auto-fixed ${autoFix.fixesApplied} issues. Please review the changes.`);
+                }
+            }
+        },
+
+        // Enhanced error handling for menu item operations
+        validateAndShowMenuItemErrors(targetSection, targetItem = null) {
+            const errors = [];
+            
+            // Check if target section exists
+            if (!targetSection || Object.keys(targetSection).length === 0) {
+                errors.push('Please select a valid menu section or subsection');
+            } else {
+                // Check if section still exists in menu
+                const sectionExists = this.editMenu.some(s => s.sectionOrder === targetSection.sectionOrder);
+                if (!sectionExists) {
+                    errors.push('Selected section no longer exists in menu');
+                }
+                
+                // Validate subsection parent relationship
+                if (targetSection.isSubSection) {
+                    const parentExists = this.editMenu.some(s => 
+                        !s.isSubSection && s.sectionOrder === targetSection.parentSectionId
+                    );
+                    if (!parentExists) {
+                        errors.push('Selected subsection has invalid parent section');
+                    }
+                }
+            }
+            
+            // Check for duplicate items if targetItem provided
+            if (targetItem && targetSection && targetSection.sectionMenu) {
+                const itemExists = targetSection.sectionMenu.some(item => item.itemID === targetItem.id);
+                if (itemExists) {
+                    const sectionType = targetSection.isSubSection ? 'subsection' : 'section';
+                    errors.push(`Item already exists in this ${sectionType}`);
+                }
+            }
+            
+            return {
+                isValid: errors.length === 0,
+                errors: errors
+            };
+        },
+
+        // Enhanced drag operation validation
+        validateDragOperation(draggedElement, targetElement, operation = 'move') {
+            const issues = [];
+            
+            // Validate drag elements exist
+            if (!draggedElement || !targetElement) {
+                issues.push('Invalid drag operation: Missing dragged or target element');
+                return { isValid: false, issues };
+            }
+            
+            // Prevent dropping section into subsection
+            if (!draggedElement.isSubSection && targetElement.isSubSection) {
+                issues.push('Cannot move a main section into a subsection');
+            }
+            
+            // Prevent circular references in subsections
+            if (draggedElement.isSubSection && targetElement.sectionOrder === draggedElement.parentSectionId) {
+                issues.push('Cannot create circular reference: Subsection cannot be moved to its current parent');
+            }
+            
+            // Validate self-drop prevention
+            if (draggedElement.sectionOrder === targetElement.sectionOrder) {
+                issues.push('Cannot move section to itself');
+            }
+            
+            // Check for deep nesting prevention
+            if (draggedElement.isSubSection && targetElement.isSubSection) {
+                issues.push('Cannot move subsection to another subsection (3-level nesting not allowed)');
+            }
+            
+            return {
+                isValid: issues.length === 0,
+                issues: issues
+            };
+        },
+
         // Update New Menu Item Target - moved from parent
         async updateNewMenuItemTarget() {
 
@@ -3196,6 +3377,16 @@ export default {
 
             if (Object.keys(this.newMenuItemTargetSection).length !== 0) {
 
+                // Validate menu item target section with hierarchy checks
+                const validation = this.validateAndShowMenuItemErrors(this.newMenuItemTargetSection);
+                
+                if (!validation.isValid) {
+                    newMenuItemTargetSectionError.innerText = validation.errors.join('; ');
+                    newMenuItemTargetSectionNotice.innerText = "";
+                    this.newMenuItemTargetSectionType = '';
+                    return;
+                }
+
                 newMenuItemTargetSectionError.innerText = "";
 
                 // Determine if this is a section or subsection
@@ -3221,7 +3412,7 @@ export default {
                 }
             }
             else {
-                newMenuItemTargetSectionError.innerText = "Please select a valid menu section!";
+                newMenuItemTargetSectionError.innerText = "Please select a valid menu section or subsection!";
                 newMenuItemTargetSectionNotice.innerText = "";
                 this.newMenuItemTargetSectionType = '';
             }
@@ -3489,7 +3680,15 @@ export default {
 
         // Update Global Menu Item Target Section - moved from parent
         updateGlobalMenuItemTargetSection() {
-            // This method can be used for validation if needed
+            // Validate global target section with hierarchy checks
+            const validation = this.validateAndShowMenuItemErrors(this.globalMenuItemTargetSection);
+            
+            if (!validation.isValid) {
+                this.showHierarchyError('Invalid Target Section', validation.errors);
+                this.globalMenuItemTargetSectionType = '';
+                return;
+            }
+            
             console.log('Global target section updated:', this.globalMenuItemTargetSection);
             
             // Determine if this is a section or subsection
@@ -3509,14 +3708,18 @@ export default {
 
         // Check if valid to submit multiple items - moved from parent
         isValidToSubmitMultiple() {
-            if (Object.keys(this.globalMenuItemTargetSection).length === 0) {
+            // Validate global target section first
+            const validation = this.validateAndShowMenuItemErrors(this.globalMenuItemTargetSection);
+            if (!validation.isValid) {
                 return false;
             }
 
             // Check if at least one item is valid
-            return this.multipleMenuItems.some(item =>
+            const hasValidItems = this.multipleMenuItems.some(item =>
                 item.newMenuItemID && Object.keys(item.newMenuItemTarget).length > 0
             );
+
+            return hasValidItems;
         },
 
         // Get count of valid items - moved from parent
@@ -3528,12 +3731,34 @@ export default {
 
         // Add Multiple Menu Items - moved from parent
         async addMultipleMenuItems() {
+            // Validate all items and target section before proceeding
+            const validation = this.validateAndShowMenuItemErrors(this.globalMenuItemTargetSection);
+            if (!validation.isValid) {
+                this.showHierarchyError('Cannot Add Items', validation.errors);
+                return;
+            }
+
             const validItems = this.multipleMenuItems.filter(item =>
                 item.newMenuItemID && Object.keys(item.newMenuItemTarget).length > 0
             );
 
-            if (validItems.length === 0 || Object.keys(this.globalMenuItemTargetSection).length === 0) {
-                alert("Please select at least one item and a target menu section.");
+            if (validItems.length === 0) {
+                const toast = useToast();
+                toast.error("Please select at least one valid item to add.");
+                return;
+            }
+
+            // Validate that target section can accept items
+            const hierarchyValidation = this.validateMenuHierarchy();
+            if (!hierarchyValidation.isValid) {
+                this.showHierarchyError('Menu Hierarchy Issues', hierarchyValidation.issues);
+                
+                // Offer auto-fix
+                const autoFix = this.autoFixHierarchyIssues();
+                if (autoFix.fixesApplied > 0) {
+                    const toast = useToast();
+                    toast.info(`Auto-fixed ${autoFix.fixesApplied} hierarchy issues. Please try again.`);
+                }
                 return;
             }
 
@@ -3739,6 +3964,13 @@ export default {
             if (this.menuSnapshot === currentMenu) {
                 // No change occurred - likely an invalid drop
                 this.showInvalidAreaMessage();
+            } else {
+                // Validate hierarchy after drag operation
+                const validation = this.validateMenuHierarchy();
+                if (!validation.isValid) {
+                    console.warn('Hierarchy issues detected after drag operation:', validation.issues);
+                    // Could implement rollback here if needed
+                }
             }
             this.drag = false;
             this.menuSnapshot = null;
@@ -3756,6 +3988,9 @@ export default {
             if (this.menuSnapshot === currentSection) {
                 // No change occurred - likely an invalid drop
                 this.showInvalidAreaMessage();
+            } else {
+                // Reorder items to ensure proper sequence
+                this.reorderSectionItems(menuSection);
             }
             this.drag = false;
             this.menuSnapshot = null;
@@ -3774,6 +4009,12 @@ export default {
             if (this.draggedSectionSnapshot === currentSubsections) {
                 // No change occurred - likely an invalid drop
                 this.showInvalidAreaMessage();
+            } else {
+                // Validate hierarchy after subsection reordering
+                const validation = this.validateMenuHierarchy();
+                if (!validation.isValid) {
+                    console.warn('Hierarchy issues detected after subsection drag:', validation.issues);
+                }
             }
             this.drag = false;
             this.draggedSectionSnapshot = null;
