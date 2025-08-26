@@ -804,7 +804,7 @@
                             </div>
 
                             <!-- Show subsections for this main section -->
-                            <div v-for="subsection in getSubsectionsForSection(menuSection.sectionOrder)" 
+                            <div v-for="subsection in getSubsectionsForSection(menuSection.id)" 
                                 :key="subsection.sectionOrder" class="ms-3 mb-3" 
                                 style="border-left: 3px solid #dee2e6; padding-left: 15px;">
                                 
@@ -1394,7 +1394,7 @@
                             </div>
 
                             <!-- No Section Contents to Show -->
-                            <div v-if="getSubsectionsForSection(menuSection.sectionOrder).length === 0 && getDirectItemsForSection(menuSection.sectionOrder).length === 0"
+                            <div v-if="getSubsectionsForSection(menuSection.id).length === 0 && getDirectItemsForSection(menuSection.sectionOrder).length === 0"
                                 class="col-12 my-3">
                                 <p class="text-center fst-italic m-0">No menu items to show! Search for a drink to add above.</p>
                             </div>
@@ -1924,7 +1924,7 @@ export default {
                 });
                 
                 // Add subsections for this main section
-                const subsections = this.getSubsectionsForSection(section.sectionOrder);
+                const subsections = this.getSubsectionsForSection(section.id);
                 subsections.forEach(subsection => {
                     options.push({
                         id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
@@ -3027,9 +3027,9 @@ export default {
             try {
                 const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
                 const newSubsection = {
-                    sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.sectionOrder).length + 1}`,
+                    sectionName: `New Subsection ${this.getSubsectionsForSection(parentSection.id || parentSection.sectionOrder).length + 1}`,
                     sectionOrder: maxSectionOrder + 1,
-                    parentSectionId: parentSection.sectionOrder, // This will be mapped to DB ID in backend
+                    parentSectionId: parentSection.id || parentSection.sectionOrder, // Use ID if available, otherwise sectionOrder
                     isSubSection: true,
                     sectionMenu: []
                 };
@@ -3161,12 +3161,12 @@ export default {
 
             try {
                 // Update subsection's parent reference
-                subsection.parentSectionId = newParentSection.sectionOrder;
+                subsection.parentSectionId = newParentSection.id;
                 
                 // Find and update in editMenu
                 const subsectionInMenu = this.editMenu.find(s => s.sectionOrder === subsection.sectionOrder);
                 if (subsectionInMenu) {
-                    subsectionInMenu.parentSectionId = newParentSection.sectionOrder;
+                    subsectionInMenu.parentSectionId = newParentSection.id;
                 } else {
                     this.showHierarchyError('Move Subsection Failed', ['Subsection not found in menu']);
                     return false;
@@ -3236,8 +3236,8 @@ export default {
         },
 
         // Get subsection count for a parent section
-        getSubsectionCount(parentSectionOrder) {
-            return this.getSubsectionsForSection(parentSectionOrder).length;
+        getSubsectionCount(parentSectionId) {
+            return this.getSubsectionsForSection(parentSectionId).length;
         },
 
         // Validate subsection structure
@@ -3248,7 +3248,7 @@ export default {
                 if (section.isSubSection) {
                     // Check if parent section exists
                     const parentExists = this.editMenu.some(s => 
-                        !s.isSubSection && s.sectionOrder === section.parentSectionId
+                        !s.isSubSection && s.id === section.parentSectionId
                     );
                     
                     if (!parentExists) {
@@ -3290,13 +3290,13 @@ export default {
 
             // 2. Validate parent-child relationships
             subsections.forEach(subsection => {
-                const parentSection = mainSections.find(s => s.sectionOrder === subsection.parentSectionId);
+                const parentSection = mainSections.find(s => s.id === subsection.parentSectionId);
                 
                 if (!parentSection) {
                     issues.push(`Subsection "${subsection.sectionName}" references non-existent parent section ID: ${subsection.parentSectionId}`);
                 } else {
                     // Check for circular references (subsection cannot be its own parent)
-                    if (subsection.sectionOrder === subsection.parentSectionId) {
+                    if (subsection.id === subsection.parentSectionId) {
                         issues.push(`Circular reference detected: Subsection "${subsection.sectionName}" cannot be its own parent`);
                     }
                 }
@@ -3304,7 +3304,7 @@ export default {
 
             // 3. Check for orphaned subsections (subsections without valid parents)
             const orphanedSubsections = subsections.filter(sub => 
-                !mainSections.some(main => main.sectionOrder === sub.parentSectionId)
+                !mainSections.some(main => main.id === sub.parentSectionId)
             );
             orphanedSubsections.forEach(orphan => {
                 issues.push(`Orphaned subsection found: "${orphan.sectionName}" has no valid parent section`);
@@ -3337,7 +3337,7 @@ export default {
 
             // 7. Check for deep nesting (subsections can't have subsections)
             const nestedSubsections = subsections.filter(sub => 
-                subsections.some(other => other.parentSectionId === sub.sectionOrder)
+                subsections.some(other => other.parentSectionId === sub.id)
             );
             nestedSubsections.forEach(nested => {
                 issues.push(`Invalid nesting: Subsection "${nested.sectionName}" cannot have child subsections`);
@@ -3421,9 +3421,9 @@ export default {
         // ===== BATCH OPERATION HELPER METHODS =====
 
         // Get all subsections for a parent section
-        getSubsectionsForSection(parentSectionOrder) {
+        getSubsectionsForSection(parentSectionId) {
             return this.editMenu.filter(section => 
-                section.isSubSection && section.parentSectionId === parentSectionOrder
+                section.isSubSection && section.parentSectionId === parentSectionId
             ).sort((a, b) => a.sectionOrder - b.sectionOrder);
         },
 
@@ -3513,6 +3513,7 @@ export default {
             const cleanSections = sortedSections.map(section => {
                 // Create clean copy without UI-specific properties
                 const cleanSection = {
+                    id: section.id || null, // Include database ID for mapping
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     isSubSection: section.isSubSection || false,
@@ -3767,13 +3768,13 @@ export default {
             // Handle orphaned subsections by assigning them to the first main section
             const mainSections = this.editMenu.filter(s => !s.isSubSection);
             if (mainSections.length > 0) {
-                const firstMainSectionOrder = mainSections[0].sectionOrder;
+                const firstMainSectionId = mainSections[0].id;
                 
                 this.editMenu.forEach(section => {
                     if (section.isSubSection) {
-                        const parentExists = mainSections.some(main => main.sectionOrder === section.parentSectionId);
+                        const parentExists = mainSections.some(main => main.id === section.parentSectionId);
                         if (!parentExists) {
-                            section.parentSectionId = firstMainSectionOrder;
+                            section.parentSectionId = firstMainSectionId;
                             fixes.push(`Reassigned orphaned subsection "${section.sectionName}" to first main section`);
                         }
                     }
@@ -3832,7 +3833,7 @@ export default {
                 // Validate subsection parent relationship
                 if (targetSection.isSubSection) {
                     const parentExists = this.editMenu.some(s => 
-                        !s.isSubSection && s.sectionOrder === targetSection.parentSectionId
+                        !s.isSubSection && s.id === targetSection.parentSectionId
                     );
                     if (!parentExists) {
                         errors.push('Selected subsection has invalid parent section');
@@ -3871,7 +3872,7 @@ export default {
             }
             
             // Prevent circular references in subsections
-            if (draggedElement.isSubSection && targetElement.sectionOrder === draggedElement.parentSectionId) {
+            if (draggedElement.isSubSection && targetElement.id === draggedElement.parentSectionId) {
                 issues.push('Cannot create circular reference: Subsection cannot be moved to its current parent');
             }
             
@@ -4539,18 +4540,9 @@ export default {
             const mainSections = this.editMenu.filter(section => !section.isSubSection);
             const subsections = this.editMenu.filter(section => section.isSubSection);
             
-            // Create mapping from old section orders to new section orders
-            const sectionOrderMapping = new Map();
-            
             // Update main section ordering (should be sequential starting from 0)
             mainSections.forEach((section, index) => {
-                const oldSectionOrder = section.sectionOrder;
-                const newSectionOrder = index;
-                
-                // Store the mapping for subsection parent ID updates
-                sectionOrderMapping.set(oldSectionOrder, newSectionOrder);
-                
-                section.sectionOrder = newSectionOrder; // Ensure this is a number, not string
+                section.sectionOrder = index; // Ensure this is a number, not string
                 
                 // Update item ordering within main sections
                 if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
@@ -4560,24 +4552,8 @@ export default {
                 }
             });
             
-            // Update parentSectionId for all subsections based on the new main section ordering
-            subsections.forEach(subsection => {
-                const oldParentId = subsection.parentSectionId;
-                const newParentId = sectionOrderMapping.get(oldParentId);
-                
-                if (newParentId !== undefined) {
-                    subsection.parentSectionId = newParentId;
-                } else {
-                    console.warn(`🍽️ Subsection "${subsection.sectionName}" has invalid parent ID ${oldParentId}, attempting to fix...`);
-                    // Try to assign to the first available main section
-                    if (mainSections.length > 0) {
-                        subsection.parentSectionId = 0; // Assign to first main section
-                        console.warn(`🍽️ Assigned orphaned subsection "${subsection.sectionName}" to first main section`);
-                    }
-                }
-            });
-            
-            // Group subsections by their updated parent IDs and update their ordering
+            // DO NOT change parentSectionId values - they should remain as database IDs
+            // Group subsections by their parent IDs and update their ordering only
             const subsectionsByParent = new Map();
             subsections.forEach(subsection => {
                 const parentId = subsection.parentSectionId;
@@ -4590,11 +4566,20 @@ export default {
             // Update subsection ordering within each parent group
             let globalSubsectionOrder = mainSections.length; // Start after main sections
             subsectionsByParent.forEach((parentSubsections, parentId) => {
+                console.log(`🍽️ Processing ${parentSubsections.length} subsections for parent ID: ${parentId}`);
+                console.log(`  Parent subsections:`, parentSubsections.map(s => s.sectionName));
+                
                 parentSubsections.forEach((subsection) => {
-                    subsection.sectionOrder = globalSubsectionOrder++;
+                    // Debug: Validate parentSectionId consistency
+                    if (subsection.parentSectionId !== parentId) {
+                        console.warn(`⚠️ Mismatch: subsection "${subsection.sectionName}" has parentSectionId ${subsection.parentSectionId} but is grouped under ${parentId}`);
+                    }
                     
-                    // Ensure parent relationship is maintained with updated parent ID
-                    subsection.parentSectionId = parentId;
+                    const oldOrder = subsection.sectionOrder;
+                    subsection.sectionOrder = globalSubsectionOrder++;
+                    console.log(`  "${subsection.sectionName}": ${oldOrder} → ${subsection.sectionOrder} (parent: ${parentId})`);
+                    
+                    // Ensure subsection properties are set correctly but DON'T change parentSectionId
                     subsection.isSubSection = true;
                     
                     // Update item ordering within subsections
@@ -4609,7 +4594,7 @@ export default {
             console.log('🍽️ Hierarchical ordering updated:', {
                 mainSections: mainSections.length,
                 subsections: subsections.length,
-                lastSectionOrder: globalSubsectionOrder - 1
+                subsectionsByParent: Array.from(subsectionsByParent.keys())
             });
         },
 
@@ -4749,8 +4734,8 @@ export default {
                 // Update subsections with parent validation
                 subsections.forEach(subsection => {
                     try {
-                        const parentExists = mainSections.some(ms => ms.sectionOrder === subsection.parentSectionId) ||
-                                           this.editMenu.some(s => !s.isSubSection && s.sectionOrder === subsection.parentSectionId);
+                        const parentExists = mainSections.some(ms => ms.id === subsection.parentSectionId) ||
+                                           this.editMenu.some(s => !s.isSubSection && s.id === subsection.parentSectionId);
                         
                         if (!parentExists) {
                             results.errors.push(`Subsection ${subsection.sectionName} has invalid parent ${subsection.parentSectionId}`);
@@ -4793,7 +4778,7 @@ export default {
             
             try {
                 // Get all subsections for this parent
-                const subsections = this.getSubsectionsForSection(parentSection.sectionOrder);
+                const subsections = this.getSubsectionsForSection(parentSection.id);
                 
                 if (subsections.length === 0) {
                     return { success: true, message: 'No subsections to reorder' };
@@ -4810,7 +4795,7 @@ export default {
 
                 // Find the starting order for this parent's subsections
                 const allSubsections = this.editMenu.filter(s => s.isSubSection);
-                const otherParentSubsections = allSubsections.filter(s => s.parentSectionId !== parentSection.sectionOrder);
+                const otherParentSubsections = allSubsections.filter(s => s.parentSectionId !== parentSection.id);
                 
                 // Calculate starting order (after main sections and other parent subsections)
                 otherParentSubsections.forEach(sub => {

@@ -1311,11 +1311,11 @@ def editMenuHierarchical():
         cur.execute('DELETE FROM "venuesMenu" WHERE "venueId" = %s', (venueID,))
 
         # First pass: Insert all main sections (those without parentSectionId)
-        section_id_mapping = {}  # Map old section order to new database IDs
+        section_id_mapping = {}  # Map old IDs and sectionOrder to new database IDs
         main_sections = [section for section in updatedMenu if not section.get('isSubSection', False)]
         print(f"Main sections found: {len(main_sections)}")
         for section in main_sections:
-            print(f"  Main section: {section.get('sectionName')} (order: {section.get('sectionOrder')})")
+            print(f"  Main section: {section.get('sectionName')} (order: {section.get('sectionOrder')}, old_id: {section.get('id')})")
         
         for section in main_sections:
             print(f"  Inserting main section: {section.get('sectionName')} with order {section.get('sectionOrder')}")
@@ -1327,23 +1327,39 @@ def editMenuHierarchical():
                 ''',
                 (section['sectionName'], section['sectionOrder'], venueID)
             )
-            section_id = cur.fetchone()['id']
-            section_id_mapping[section['sectionOrder']] = section_id
-            print(f"  Mapped sectionOrder {section['sectionOrder']} to database ID {section_id}")
+            new_section_id = cur.fetchone()['id']
+            
+            # Create mapping from sectionOrder to new database ID (for all sections)
+            section_id_mapping[section['sectionOrder']] = new_section_id
+            
+            # Create mapping from old database ID to new database ID (for existing sections)
+            if section.get('id') is not None:
+                section_id_mapping[section['id']] = new_section_id
+                print(f"  Mapped old ID {section['id']} → new ID {new_section_id}")
+            
+            print(f"  Mapped sectionOrder {section['sectionOrder']} → new ID {new_section_id}")
 
         # Second pass: Insert all subsections (those with parentSectionId)
         subsections = [section for section in updatedMenu if section.get('isSubSection', False)]
         print(f"Subsections found: {len(subsections)}")
         
         for subsection in subsections:
-            parent_section_order = subsection.get('parentSectionId')
-            print(f"  Processing subsection: {subsection.get('sectionName')} with parentSectionId: {parent_section_order}")
-            print(f"  Available mappings: {section_id_mapping}")
-            parent_db_id = section_id_mapping.get(parent_section_order)
+            parent_section_id = subsection.get('parentSectionId')
+            print(f"  Processing subsection: {subsection.get('sectionName')} with parentSectionId: {parent_section_id} (type: {type(parent_section_id)})")
+            print(f"  Available mappings: {list(section_id_mapping.keys())}")
+            
+            # Look up parent's new database ID using the mapping
+            # Handle both string and integer keys in mapping
+            parent_db_id = section_id_mapping.get(parent_section_id)
+            if parent_db_id is None and isinstance(parent_section_id, str) and parent_section_id.isdigit():
+                parent_db_id = section_id_mapping.get(int(parent_section_id))
+            if parent_db_id is None and isinstance(parent_section_id, int):
+                parent_db_id = section_id_mapping.get(str(parent_section_id))
+            
             print(f"  Resolved parent DB ID: {parent_db_id}")
             
             if parent_db_id is None:
-                print(f"ERROR: Subsection '{subsection['sectionName']}' has invalid parent section order {parent_section_order}")
+                print(f"ERROR: Subsection '{subsection['sectionName']}' has invalid parent section ID {parent_section_id}")
                 print(f"Available section mappings: {section_id_mapping}")
                 continue
                 
@@ -1356,9 +1372,15 @@ def editMenuHierarchical():
                 ''',
                 (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id)
             )
-            subsection_id = cur.fetchone()['id']
-            section_id_mapping[subsection['sectionOrder']] = subsection_id
-            print(f"  Successfully created subsection with ID {subsection_id}")
+            new_subsection_id = cur.fetchone()['id']
+            
+            # Create mapping for this subsection as well
+            section_id_mapping[subsection['sectionOrder']] = new_subsection_id
+            if subsection.get('id') is not None:
+                section_id_mapping[subsection['id']] = new_subsection_id
+                print(f"  Mapped old subsection ID {subsection['id']} → new ID {new_subsection_id}")
+            
+            print(f"  Successfully created subsection with ID {new_subsection_id}")
 
         print(f"Final section_id_mapping: {section_id_mapping}")
         print("=== END DEBUG ===")
