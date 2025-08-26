@@ -3811,7 +3811,7 @@ export default {
         },
 
         // Enhanced drag operation validation
-        validateDragOperation(draggedElement, targetElement, operation = 'move') {
+        validateDragOperation(draggedElement, targetElement) {
             const issues = [];
             
             // Validate drag elements exist
