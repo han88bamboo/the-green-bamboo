@@ -4560,6 +4560,17 @@ export default {
                         ...item,
                         itemDetails: {
                             itemName: item.name,
+                            itemPhoto: item.photo,
+                            itemProducer: item.producerName,
+                            itemProducerID: item.producerID,
+                            itemType: item.drinkType,
+                            itemTypeCategory: item.typeCategory,
+                            itemABV: item.abv,
+                            itemCountry: item.originCountry,
+                            itemRating: item.avgRating,
+                            itemDescription: item.description,
+                            itemServingTypeName: item.servingTypeText,
+                            // Legacy fields for backward compatibility
                             photo: item.photo,
                             bottler: item.bottler,
                             drinkType: item.drinkType,
