@@ -1863,14 +1863,14 @@
                     @mouseover="hoverButton($event)"
                     @mouseleave="leaveButton($event)"
                     data-bs-toggle="modal"
-                    data-bs-target="#createNewListModal"
+                    data-bs-target="#createNewListModalwelcome"
                   >
                     Create A List
                   </button>
                   <!-- create new list modal -->
                   <div
                     class="modal fade"
-                    id="createNewListModal"
+                    id="createNewListModalwelcome"
                     tabindex="-1"
                     aria-labelledby="exampleModalLabel"
                     aria-hidden="true"
@@ -2277,330 +2277,328 @@
                   <!-- Show list overview when activeTab is 'lists' -->
                   <div v-if="activeTab === 'lists'">
                     <button
-                      v-if="ownProfile"
-                      type="button"
-                      class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                      data-bs-toggle="modal"
-                      data-bs-target="#createNewListModal"
-                    >
-                      Create New Drinks List
-                    </button>
-
-                    <!-- create new list modal -->
-                    <div
-                      class="modal fade"
-                      id="createNewListModal"
-                      tabindex="-1"
-                      aria-labelledby="exampleModalLabel"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="exampleModalLabel">
-                              Create New Drinks List
-                            </h1>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"              
-                            ></button>
-                          </div>
-                          <div class="modal-body">
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label"
-                                >List Name</label
-                              >
-                              <div class="input-group mb-3">
-                                <input
-                                  v-model="newListName"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Name"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                />
-                              </div>
-                              <div
-                                v-if="newListNameError"
-                                class="text-danger text-sm"
-                              >
-                                *{{ newListNameError }}
-                              </div>
-                            </div>
-
-                            <div class="mb-3">
-                              <label for="basic-url" class="form-label"
-                                >List Description</label
-                              >
-                              <div class="input-group mb-3">
-                                <textarea
-                                  v-model="newListDesc"
-                                  type="text"
-                                  class="form-control"
-                                  placeholder="List Description (Optional)"
-                                  aria-label="Username"
-                                  aria-describedby="basic-addon1"
-                                  rows="5"
-                                ></textarea>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-secondary"
-                              data-bs-dismiss="modal"
-                            >
-                              Close
-                            </button>
-                            <button
-                              type="button"
-                              class="btn btn-primary"
-                              @click="addNewList"
-                            >
-                              Save changes
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- display all lists -->
-                    <div class="row g-3">
-                      <div
-                        v-for="(bookmarkList, name, index) in displayUserBookmarks"
-                        :key="name"
-                        class="col-12 col-md-6"
+                        v-if="ownProfile"
+                        type="button"
+                        class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
+                        data-bs-toggle="modal"
+                        data-bs-target="#createNewListModal"
                       >
+                        Create New Drinks List
+                    </button>
+                    <!-- display all drinks lists -->
+                    <div class="row g-3">
                         <div
-                          class="pin-card h-100"
-                          @click="viewList(name)"
-                          role="button"
-                          tabindex="0"
+                          v-for="(bookmarkList, name, index) in displayUserBookmarks"
+                          :key="name"
+                          class="col-12 col-md-6"
                         >
-                          <!-- 3-image grid -->
-                          <div class="pin-grid">
-                            <!-- Main (first item) -->
-                            <div class="pin-cell pin-main">
-                              <template v-if="bookmarkList.listItems[0]">
-                                <img
-                                  class="pin-img"
-                                  :src="getListingPhoto(bookmarkList.listItems[0])"
-                                  :alt="`${name} preview 1`"
-                                />
-                              </template>
-                              <div v-else class="pin-placeholder"></div>
-                            </div>
-
-                            <!-- Right-top (second item) -->
-                            <div class="pin-cell pin-side1">
-                              <template v-if="bookmarkList.listItems[1]">
-                                <img
-                                  class="pin-img"
-                                  :src="getListingPhoto(bookmarkList.listItems[1])"
-                                  :alt="`${name} preview 2`"
-                                />
-                              </template>
-                              <div v-else class="pin-placeholder"></div>
-                            </div>
-
-                            <!-- Right-bottom (third item) -->
-                            <div class="pin-cell pin-side2">
-                              <template v-if="bookmarkList.listItems[2]">
-                                <img
-                                  class="pin-img"
-                                  :src="getListingPhoto(bookmarkList.listItems[2])"
-                                  :alt="`${name} preview 3`"
-                                />
-                              </template>
-                              <div v-else class="pin-placeholder"></div>
-                            </div>
-                          </div>
-                          <div class="pin-body">
-                            <!-- Meta -->
-                            <div class="pin-meta">
-                              <h5 class="pin-title">{{ name }}</h5>
-                              <div class="pin-count">
-                                {{ bookmarkList.listItems.length }}
-                                {{ bookmarkList.listItems.length === 1 ? 'Drink' : 'Drinks' }}
-                              </div>
-                            </div>
-                            <div class="pin-desc">
-                              <div>
-                                {{ bookmarkList.listDesc }}
-                              </div>
-                            </div>
-                            <div class="pin-actions">
-                                <b>
-                                  <a
-                                    class="me-2 my-3"
-                                    @click="viewList(name)"
-                                    href="#"
-                                    style="color: #027562"
-                                    >View</a>
-                                </b>
-                                <b>
-                                  <a
-                                    v-if="ownProfile"
-                                    class=" me-2 my-3"
-                                    style="color: #027562"
-                                    href="#"
-                                    data-bs-toggle="modal"
-                                    :data-bs-target="`#editListModal${index}`"
-                                    @click="resetEditList(name, bookmarkList.listDesc)"
-                                    >Edit</a>
-                                </b>
-                                <b>
-                                  <a
-                                    v-if="ownProfile"
-                                    class=" my-3"
-                                    href="#"
-                                    style="color: #027562"
-                                    data-bs-toggle="modal"
-                                    :data-bs-target="`#deleteListModal${index}`"
-                                    >Delete</a>
-                                </b>
-                            </div>
-                          </div>
-                          <!-- edit list modal start -->
                           <div
-                            class="modal fade"
-                            :id="`editListModal${index}`"
-                            tabindex="-1"
-                            aria-labelledby="exampleModalLabel"
-                            aria-hidden="true"
+                            class="pin-card h-100"
+                            @click="viewList(name)"
+                            role="button"
+                            tabindex="0"
                           >
-                            <div class="modal-dialog modal-dialog-centered">
-                              <div class="modal-content">
-                                <div class="modal-header">
-                                  <h1 class="modal-title fs-5" id="exampleModalLabel">
-                                    Edit List
-                                  </h1>
-                                  <button
-                                    type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                  ></button>
+                            <!-- 3-image grid -->
+                            <div class="pin-grid">
+                              <!-- Main (first item) -->
+                              <div class="pin-cell pin-main">
+                                <template v-if="bookmarkList.listItems[0]">
+                                  <img
+                                    class="pin-img"
+                                    :src="getListingPhoto(bookmarkList.listItems[0])"
+                                    :alt="`${name} preview 1`"
+                                  />
+                                </template>
+                                <div v-else class="pin-placeholder"></div>
+                              </div>
+
+                              <!-- Right-top (second item) -->
+                              <div class="pin-cell pin-side1">
+                                <template v-if="bookmarkList.listItems[1]">
+                                  <img
+                                    class="pin-img"
+                                    :src="getListingPhoto(bookmarkList.listItems[1])"
+                                    :alt="`${name} preview 2`"
+                                  />
+                                </template>
+                                <div v-else class="pin-placeholder"></div>
+                              </div>
+
+                              <!-- Right-bottom (third item) -->
+                              <div class="pin-cell pin-side2">
+                                <template v-if="bookmarkList.listItems[2]">
+                                  <img
+                                    class="pin-img"
+                                    :src="getListingPhoto(bookmarkList.listItems[2])"
+                                    :alt="`${name} preview 3`"
+                                  />
+                                </template>
+                                <div v-else class="pin-placeholder"></div>
+                              </div>
+                            </div>
+                            <div class="pin-body">
+                              <!-- Meta -->
+                              <div class="pin-meta">
+                                <h5 class="pin-title">{{ name }}</h5>
+                                <div class="pin-count">
+                                  {{ bookmarkList.listItems.length }}
+                                  {{ bookmarkList.listItems.length === 1 ? 'Drink' : 'Drinks' }}
                                 </div>
-                                <div class="modal-body">
-                                  <div class="mb-3">
-                                    <label for="basic-url" class="form-label"
-                                      >List Name</label
-                                    >
-                                    <div class="input-group mb-3">
-                                      <input
-                                        v-model="editListName"
-                                        type="text"
-                                        class="form-control"
-                                        :placeholder="name"
-                                        aria-label="Username"
-                                        aria-describedby="basic-addon1"
-                                      />
+                              </div>
+                              <div class="pin-desc">
+                                <div>
+                                  {{ bookmarkList.listDesc }}
+                                </div>
+                              </div>
+                              <div class="pin-actions">
+                                  <b>
+                                    <a
+                                      class="me-2 my-3"
+                                      @click="viewList(name)"
+                                      href="#"
+                                      style="color: #027562"
+                                      >View</a>
+                                  </b>
+                                  <b>
+                                    <a
+                                      v-if="ownProfile"
+                                      class=" me-2 my-3"
+                                      style="color: #027562"
+                                      href="#"
+                                      data-bs-toggle="modal"
+                                      :data-bs-target="`#editListModal${index}`"
+                                      @click="resetEditList(name, bookmarkList.listDesc)"
+                                      >Edit</a>
+                                  </b>
+                                  <b>
+                                    <a
+                                      v-if="ownProfile"
+                                      class=" my-3"
+                                      href="#"
+                                      style="color: #027562"
+                                      data-bs-toggle="modal"
+                                      :data-bs-target="`#deleteListModal${index}`"
+                                      >Delete</a>
+                                  </b>
+                              </div>
+                            </div>
+                            <!-- edit list modal start -->
+                            <div
+                              class="modal fade"
+                              :id="`editListModal${index}`"
+                              tabindex="-1"
+                              aria-labelledby="exampleModalLabel"
+                              aria-hidden="true"
+                            >
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                      Edit List
+                                    </h1>
+                                    <button
+                                      type="button"
+                                      class="btn-close"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                    ></button>
+                                  </div>
+                                  <div class="modal-body">
+                                    <div class="mb-3">
+                                      <label for="basic-url" class="form-label"
+                                        >List Name</label
+                                      >
+                                      <div class="input-group mb-3">
+                                        <input
+                                          v-model="editListName"
+                                          type="text"
+                                          class="form-control"
+                                          :placeholder="name"
+                                          aria-label="Username"
+                                          aria-describedby="basic-addon1"
+                                        />
+                                      </div>
+                                      <div
+                                        v-if="editListNameError"
+                                        class="text-danger text-sm"
+                                      >
+                                        *{{ editListNameError }}
+                                      </div>
                                     </div>
-                                    <div
-                                      v-if="editListNameError"
-                                      class="text-danger text-sm"
-                                    >
-                                      *{{ editListNameError }}
+
+                                    <div class="mb-3">
+                                      <label for="basic-url" class="form-label"
+                                        >List Description</label
+                                      >
+                                      <div class="input-group mb-3">
+                                        <textarea
+                                          v-model="editListDesc"
+                                          type="text"
+                                          class="form-control"
+                                          :placeholder="bookmarkList.listDesc"
+                                          aria-label="Username"
+                                          aria-describedby="basic-addon1"
+                                          rows="5"
+                                        ></textarea>
+                                      </div>
                                     </div>
                                   </div>
-
-                                  <div class="mb-3">
-                                    <label for="basic-url" class="form-label"
-                                      >List Description</label
+                                  <div class="modal-footer">
+                                    <button
+                                      type="button"
+                                      class="btn btn-secondary"
+                                      data-bs-dismiss="modal"
                                     >
-                                    <div class="input-group mb-3">
-                                      <textarea
-                                        v-model="editListDesc"
-                                        type="text"
-                                        class="form-control"
-                                        :placeholder="bookmarkList.listDesc"
-                                        aria-label="Username"
-                                        aria-describedby="basic-addon1"
-                                        rows="5"
-                                      ></textarea>
-                                    </div>
+                                      Close
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-primary"
+                                      @click="editList(name)"
+                                    >
+                                      Save changes
+                                    </button>
                                   </div>
                                 </div>
-                                <div class="modal-footer">
-                                  <button
-                                    type="button"
-                                    class="btn btn-secondary"
-                                    data-bs-dismiss="modal"
-                                  >
-                                    Close
-                                  </button>
-                                  <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    @click="editList(name)"
-                                  >
-                                    Save changes
-                                  </button>
-                                </div>
                               </div>
                             </div>
-                          </div>
-                          <!-- modal end -->
-                          <!-- delete list modal start -->
-                          <div
-                            class="modal fade"
-                            :id="`deleteListModal${index}`"
-                            tabindex="-1"
-                            aria-labelledby="exampleModalLabel"
-                            aria-hidden="true"
-                          >
-                            <div class="modal-dialog modal-dialog-centered">
-                              <div class="modal-content">
-                                <div class="text-end mt-2 me-2">
-                                  <button
-                                    type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                  ></button>
-                                </div>
+                            <!-- modal end -->
+                            <!-- delete list modal start -->
+                            <div
+                              class="modal fade"
+                              :id="`deleteListModal${index}`"
+                              tabindex="-1"
+                              aria-labelledby="exampleModalLabel"
+                              aria-hidden="true"
+                            >
+                              <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                  <div class="text-end mt-2 me-2">
+                                    <button
+                                      type="button"
+                                      class="btn-close"
+                                      data-bs-dismiss="modal"
+                                      aria-label="Close"
+                                    ></button>
+                                  </div>
 
-                                <div class="text-center px-3">
-                                  <h3><i class="bi bi-trash-fill"></i></h3>
-                                  <h3>Delete this list?</h3>
-                                  <br />
-                                  <p>
-                                    This list will be permanently deleted. Are you sure you want to delete
-                                    <b
-                                      ><i>{{ name }}</i></b
-                                    >?
-                                  </p>
-                                </div>
-                                <div style="display: inline" class="text-center mb-4">
-                                  <button
-                                    type="button"
-                                    class="btn btn-secondary me-3"
-                                    data-bs-dismiss="modal"
-                                  >
-                                    Cancel
-                                  </button>
-                                  <button
-                                    type="button"
-                                    class="btn btn-danger"
-                                    data-bs-dismiss="modal"
-                                    @click="deleteList(name)"
-                                  >
-                                    Delete
-                                  </button>
+                                  <div class="text-center px-3">
+                                    <h3><i class="bi bi-trash-fill"></i></h3>
+                                    <h3>Delete this list?</h3>
+                                    <br />
+                                    <p>
+                                      This list will be permanently deleted. Are you sure you want to delete
+                                      <b
+                                        ><i>{{ name }}</i></b
+                                      >?
+                                    </p>
+                                  </div>
+                                  <div style="display: inline" class="text-center mb-4">
+                                    <button
+                                      type="button"
+                                      class="btn btn-secondary me-3"
+                                      data-bs-dismiss="modal"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="button"
+                                      class="btn btn-danger"
+                                      data-bs-dismiss="modal"
+                                      @click="deleteList(name)"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
+                            <!-- modal end -->
                           </div>
-                          <!-- modal end -->
                         </div>
-                      </div>
+                    </div>
+                    <!-- create new drink list modal -->
+                    <div
+                        class="modal fade"
+                        id="createNewListModal"
+                        tabindex="-1"
+                        aria-labelledby="exampleModalLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="exampleModalLabel">
+                                Create New Drinks List
+                              </h1>
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"              
+                              ></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="basic-url" class="form-label"
+                                  >List Name</label
+                                >
+                                <div class="input-group mb-3">
+                                  <input
+                                    v-model="newListName"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="List Name"
+                                    aria-label="Username"
+                                    aria-describedby="basic-addon1"
+                                  />
+                                </div>
+                                <div
+                                  v-if="newListNameError"
+                                  class="text-danger text-sm"
+                                >
+                                  *{{ newListNameError }}
+                                </div>
+                              </div>
+
+                              <div class="mb-3">
+                                <label for="basic-url" class="form-label"
+                                  >List Description</label
+                                >
+                                <div class="input-group mb-3">
+                                  <textarea
+                                    v-model="newListDesc"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="List Description (Optional)"
+                                    aria-label="Username"
+                                    aria-describedby="basic-addon1"
+                                    rows="5"
+                                  ></textarea>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                              >
+                                Close
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="addNewList"
+                              >
+                                Save changes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
                     </div>
                   </div>
-
+                  
                   <!-- Individual Drinks List View -->
                   <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
                     <!-- list name, back to lists & add drink to list & share button -->
@@ -2891,6 +2889,7 @@
                     </div>
 
                   </div>
+                  
                 </div>
 
                 <!-- Producers Lists Content -->
@@ -2906,7 +2905,6 @@
                     >
                       Create New Brands List
                     </button>
-
                     <!-- display all producer lists -->
                     <div
                       v-for="(producerList, name, index) in displayUserProducerBookmarks"
@@ -3014,8 +3012,7 @@
                           </div>
                         </div>
                       </div>
-                    </div>
-                    
+                    </div>              
                     <!-- create new producer list modal -->
                     <div
                       class="modal fade"
