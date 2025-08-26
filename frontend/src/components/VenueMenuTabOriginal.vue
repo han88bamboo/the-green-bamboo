@@ -2257,25 +2257,24 @@ export default {
                 
                 console.log('🔄 Current IDs:', currentIds, 'New IDs:', newIds);
                 
-                if (currentIds !== newIds) {
-                    // Create main sections with proper subsection references
-                    this.editableMainSections = mainSections.map(section => {
-                        // Get subsections from editMenu for this main section
-                        const subsections = this.editMenu.filter(s => 
-                            s.isSubSection && s.parentSectionId === (section.id || section.sectionOrder)
-                        ).sort((a, b) => a.sectionOrder - b.sectionOrder);
-                        
-                        console.log(`🔄 Section "${section.sectionName}" has ${subsections.length} subsections:`, subsections);
-                        
-                        return {
-                            ...section,
-                            sectionMenu: section.sectionMenu || [], // Reference the same array, don't copy
-                            subsections: subsections // Use the actual objects from editMenu
-                        };
-                    });
+                // Always update to ensure subsections are properly synced
+                // Create main sections with proper subsection references
+                this.editableMainSections = mainSections.map(section => {
+                    // Get subsections from editMenu for this main section
+                    const subsections = this.editMenu.filter(s => 
+                        s.isSubSection && s.parentSectionId === (section.id || section.sectionOrder)
+                    ).sort((a, b) => a.sectionOrder - b.sectionOrder);
                     
-                    console.log('🔄 Updated editableMainSections:', this.editableMainSections);
-                }
+                    console.log(`🔄 Section "${section.sectionName}" has ${subsections.length} subsections:`, subsections);
+                    
+                    return {
+                        ...section,
+                        sectionMenu: section.sectionMenu || [], // Reference the same array, don't copy
+                        subsections: subsections // Use the actual objects from editMenu
+                    };
+                });
+                
+                console.log('🔄 Updated editableMainSections:', this.editableMainSections);
                 
             } catch (error) {
                 console.error('🍽️ Error syncing editableMainSections:', error);
