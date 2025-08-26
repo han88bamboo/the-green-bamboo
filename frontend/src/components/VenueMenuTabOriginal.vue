@@ -4506,7 +4506,7 @@ export default {
             // Update subsection ordering within each parent group
             let globalSubsectionOrder = mainSections.length; // Start after main sections
             subsectionsByParent.forEach((parentSubsections, parentId) => {
-                parentSubsections.forEach((subsection, index) => {
+                parentSubsections.forEach((subsection) => {
                     subsection.sectionOrder = globalSubsectionOrder++;
                     
                     // Ensure parent relationship is maintained
@@ -4692,7 +4692,7 @@ export default {
                 const subsections = sections.filter(s => s.isSubSection);
 
                 // Update main sections first
-                mainSections.forEach((section, index) => {
+                mainSections.forEach((section) => {
                     try {
                         const existingSection = this.editMenu.find(s => s.sectionOrder === section.sectionOrder);
                         if (existingSection) {
@@ -5024,7 +5024,7 @@ export default {
                 const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
                 let nextOrder = maxSectionOrder + 1;
 
-                subsectionNames.forEach((name, index) => {
+                subsectionNames.forEach((name) => {
                     try {
                         const newSubsection = {
                             sectionName: name,
