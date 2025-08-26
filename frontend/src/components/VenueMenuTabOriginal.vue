@@ -658,7 +658,6 @@
             <draggable v-model="mainSections" item-key="sectionOrder" @start="dragStart" @end="dragEnd"
                 v-bind="dragOptions">
                 <template #item="{ element: menuSection }">
-                    <!-- Main Section -->
                     <div class="row mb-2" :data-section-order="menuSection.sectionOrder">
 
                         <!-- Section Name -->
@@ -1404,7 +1403,6 @@
                     
                     </div>
                     </div>
-                    <!-- End Main Section Row -->
 
                 </template>
 
@@ -2047,12 +2045,7 @@ export default {
                 disabled: false,
                 ghostClass: "ghost",
                 revertOnSpill: true,       // Return items to original position when dropped outside valid containers
-                fallbackOnBody: true,      // Allow ghost element to appear on body when outside valid areas
-                onSpill: function () {       // Handle drops outside valid containers
-                    // Just let revertOnSpill do its job
-                    this.showInvalidAreaMessage();
-                    return false;
-                }.bind(this)
+                fallbackOnBody: true      // Allow ghost element to appear on body when outside valid areas
             },
             
             // Subsection drag options - Enhanced for hierarchical constraints
@@ -2097,10 +2090,6 @@ export default {
                 ghostClass: "ghost-item",
                 revertOnSpill: true,
                 fallbackOnBody: true,
-                onSpill: function () {
-                    this.showInvalidAreaMessage();
-                    return false;
-                }.bind(this),
                 onMove: function () {
                     // Allow all movement for subsection items (cross-section allowed)
                     return true;
@@ -2119,10 +2108,6 @@ export default {
                 ghostClass: "ghost-item",
                 revertOnSpill: true,
                 fallbackOnBody: true,
-                onSpill: function () {
-                    this.showInvalidAreaMessage();
-                    return false;
-                }.bind(this),
                 onMove: function () {
                     // Allow all movement for direct section items (cross-section allowed)
                     return true;
