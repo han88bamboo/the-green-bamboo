@@ -1515,6 +1515,60 @@ export default {
             const baseUrl = window.location.origin;
             const venueId = this.targetVenue?.id || this.$route.params?.venueID;
             return venueId ? `${baseUrl}/venue/${venueId}` : window.location.href;
+        },
+        
+        // Get all main sections (sections without parent)
+        mainSections() {
+            return this.editMenu.filter(section => !section.parentSectionId);
+        },
+        
+        // Get total count of all items across sections and subsections
+        totalItemCount() {
+            let count = 0;
+            const countItems = (sections) => {
+                sections.forEach(section => {
+                    if (section.sectionMenu) {
+                        count += section.sectionMenu.length;
+                    }
+                    if (section.subsections) {
+                        countItems(section.subsections);
+                    }
+                });
+            };
+            countItems(this.editMenu);
+            return count;
+        },
+        
+        // Get sections formatted for dropdown selection
+        sectionOptionsForItems() {
+            const options = [];
+            
+            // Add main sections
+            this.mainSections.forEach(section => {
+                options.push({
+                    id: section.id || section.sectionOrder,
+                    name: section.sectionName,
+                    type: 'section',
+                    level: 0,
+                    section: section
+                });
+                
+                // Add subsections
+                if (section.subsections && section.subsections.length > 0) {
+                    section.subsections.forEach(subsection => {
+                        options.push({
+                            id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
+                            name: `  └─ ${subsection.sectionName}`,
+                            type: 'subsection',
+                            level: 1,
+                            section: subsection,
+                            parentSection: section
+                        });
+                    });
+                }
+            });
+            
+            return options;
         }
     },
     data() {
@@ -1525,21 +1579,28 @@ export default {
             VARIANT_DRNK_TYP: ['Wine', 'Champagne', 'Sparkling Wine'],
             defaultPhoto: '/path/to/default/image.jpg', // You should replace this with your actual default image path
         
-            // Menu Editing
-            editMenu: [],
+            // Menu Editing - Enhanced for hierarchical structure
+            editMenu: [], // Now supports sections with subsections
+            hierarchicalMenu: [], // Processed hierarchical menu for display
+            flatMenuLookup: new Map(), // For quick section/subsection lookups by ID
+            
+            // Hierarchical menu tracking
+            editingSubsection: false, // Track if currently editing subsections
+            selectedParentSection: null, // Track which section is selected for subsection operations
+            collapsedSections: new Set(), // Track which sections are collapsed
+            collapsedSubsections: new Set(), // Track which subsections are collapsed
 
             showMenuLoadingOverlay: false,
-
             invalidAreaMessageVisible: false,
     
-        // truncation of official description <!-- tzh added  --->
-        showFullItemDescription: false,
+            // truncation of official description <!-- tzh added  --->
+            showFullItemDescription: false,
 
-        // Clipboard functionality
-        clipboardItem: false,
+            // Clipboard functionality
+            clipboardItem: false,
 
-            // Search + Sort Menu
-            searchMenuResults: [],
+            // Search + Sort Menu - Enhanced for hierarchical structure
+            searchMenuResults: [], // Now supports nested sections and subsections
             searchMenuTerm: '',
             sortMenuTerm: '',
             sortMenuOptions: [
@@ -1551,9 +1612,12 @@ export default {
                 'Price (High to Low)',
             ],
 
+            // Menu item management - Enhanced for hierarchical structure
             newMenuItemID: '', // selected item ID to add to menu
             newMenuItemTarget: {},
-            newMenuItemTargetSection: {},
+            newMenuItemTargetSection: {}, // Can now be a section or subsection
+            newMenuItemTargetSectionType: '', // 'section' or 'subsection'
+            newMenuItemTargetParentSection: {}, // Parent section if targeting a subsection
             newMenuItemVintage: null,
             newMenuItemPrice: -1,
             newMenuItemServingType: {},
@@ -1562,7 +1626,7 @@ export default {
             searchResults: [],
             debounceTimer: null,
 
-            // Multiple menu items functionality
+            // Multiple menu items functionality - Enhanced for hierarchical structure
             multipleMenuItems: [
                 {
                     searchQuery: '',
@@ -1575,11 +1639,18 @@ export default {
                     debounceTimer: null
                 }
             ],
-            globalMenuItemTargetSection: {},
+            globalMenuItemTargetSection: {}, // Can now be a section or subsection
+            globalMenuItemTargetSectionType: '', // 'section' or 'subsection'
 
+            // Section management - Enhanced for hierarchical structure
             renameMenuSectionModalTarget: {},
             renameMenuSectionModalOld: '',
             renameMenuSectionModalNew: '',
+            renameSectionType: '', // 'section' or 'subsection'
+            
+            // Subsection management
+            newSubsectionName: '',
+            selectedSectionForSubsection: null,
 
             // Internal copies of props for manipulation
             internalLoadedListings: [],
@@ -1588,8 +1659,10 @@ export default {
             // Flag to prevent duplicate loading
             isLoading: false,
 
-            // Drag and drop properties
+            // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
+            draggedSectionSnapshot: null, // For section drag validation
+            draggedSubsectionSnapshot: null, // For subsection drag validation
             dragOptions: {
                 animation: 350,
                 group: "menuSections",
@@ -1599,6 +1672,20 @@ export default {
                 fallbackOnBody: true,      // Allow ghost element to appear on body when outside valid areas
                 onSpill: function () {       // Handle drops outside valid containers
                     // Just let revertOnSpill do its job
+                    this.showInvalidAreaMessage();
+                    return false;
+                }.bind(this)
+            },
+            
+            // Subsection drag options
+            subsectionDragOptions: {
+                animation: 350,
+                group: "subsections",
+                disabled: false,
+                ghostClass: "ghost-subsection",
+                revertOnSpill: true,
+                fallbackOnBody: true,
+                onSpill: function () {
                     this.showInvalidAreaMessage();
                     return false;
                 }.bind(this)
