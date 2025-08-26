@@ -3187,10 +3187,12 @@ export default {
         validateBeforeSave() {
             const hierarchyValidation = this.validateMenuHierarchy();
             const subsectionValidation = this.validateSubsectionStructure();
+            const structureValidation = this.validateMenuStructureForSave();
             
             const allIssues = [
                 ...hierarchyValidation.issues,
-                ...subsectionValidation
+                ...subsectionValidation,
+                ...structureValidation.issues
             ];
 
             return {
@@ -3880,31 +3882,49 @@ export default {
             this.$emit('edit-menu-mode-changed', false);
         },
 
-        // Update Menu - transferred from parent but modified for component
+        // Update Menu - Enhanced for hierarchical structure
         async updateMenu() {
+            console.log('🍽️ Starting hierarchical menu update');
+            
+            // Validate menu hierarchy before attempting to save
+            const hierarchyValidation = this.validateBeforeSave();
+            if (!hierarchyValidation.isValid) {
+                this.showHierarchyError('Cannot Save Menu', hierarchyValidation.issues);
+                
+                // Offer auto-fix
+                const autoFix = this.autoFixHierarchyIssues();
+                if (autoFix.fixesApplied > 0) {
+                    const toast = useToast();
+                    toast.info(`Auto-fixed ${autoFix.fixesApplied} hierarchy issues. Please review and try saving again.`);
+                }
+                return;
+            }
+
             // Emit to parent to set edit mode flag
             this.$emit('edit-menu-mode-changed', false);
             
-            // Update sectionOrder and itemOrder based on current ordering
-            for (let sectionIndex in this.editMenu) {
-                this.editMenu[sectionIndex].sectionOrder = parseInt(sectionIndex);
-                for (let itemIndex in this.editMenu[sectionIndex].sectionMenu) {
-                    this.editMenu[sectionIndex].sectionMenu[itemIndex].itemOrder = parseInt(itemIndex);
-                }
-            }
+            // Update section and subsection ordering with hierarchical structure
+            this.updateHierarchicalOrdering();
 
-            // Remove itemDetails from editMenu
-            for (let section of this.editMenu) {
-                for (let item of section.sectionMenu) {
-                    delete item.itemDetails;
-                }
-            }
+            // Prepare menu data for backend (remove UI-specific properties)
+            const menuDataForBackend = this.prepareMenuForBackend();
 
             try {
-                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenu`,
+                console.log('🍽️ Sending hierarchical menu update to backend:', {
+                    sectionsCount: menuDataForBackend.length,
+                    mainSections: menuDataForBackend.filter(s => !s.isSubSection).length,
+                    subsections: menuDataForBackend.filter(s => s.isSubSection).length
+                });
+
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenuHierarchical`,
                     {
                         venueID: this.targetVenue['id'],
-                        updatedMenu: this.editMenu,
+                        updatedMenu: menuDataForBackend,
+                        hierarchyData: {
+                            totalSections: hierarchyValidation.summary.totalSections,
+                            totalSubsections: hierarchyValidation.summary.totalSubsections,
+                            totalItems: hierarchyValidation.summary.totalItems
+                        }
                     },
                     {
                         headers: {
@@ -3914,36 +3934,229 @@ export default {
                 
                 // Check if response is successful (any 2xx status)
                 if (response.status >= 200 && response.status < 300) {
-                    console.log('Menu update successful, emitting menu-updated event');
-                    // PRIORITY: Emit success to parent - the parent will handle page refresh immediately
+                    console.log('🍽️ Hierarchical menu update successful');
+                    const toast = useToast();
+                    toast.success(`Menu saved successfully! ${hierarchyValidation.summary.totalSections} sections, ${hierarchyValidation.summary.totalSubsections} subsections, ${hierarchyValidation.summary.totalItems} items.`);
+                    
+                    // Emit success to parent
                     this.$emit('menu-updated');
-                    return; // Exit early on success - no need for dataLoaded changes since page will refresh
+                    return;
                 } else {
                     throw new Error(`Unexpected response status: ${response.status}`);
                 }
             }
             catch (error) {
-                // Log the full error for debugging
-                console.error('Menu update error details:', error);
-                console.error('Error response:', error.response);
+                console.error('🍽️ Hierarchical menu update error:', error);
                 
                 // Check if it's actually a successful response that's being caught as an error
                 if (error.response && error.response.status >= 200 && error.response.status < 300) {
-                    console.log('Menu update was actually successful (caught in error handler), emitting menu-updated event');
+                    console.log('🍽️ Menu update was actually successful (caught in error handler)');
+                    const toast = useToast();
+                    toast.success('Menu saved successfully!');
                     this.$emit('menu-updated');
-                    return; // Exit early on success - no need for further error handling
+                    return;
                 } else {
-                     // Show more specific error message
+                    // Handle hierarchy-specific errors
                     const errorMessage = error.response?.data?.message || error.message || "An unknown error occurred";
-                    alert(`An error occurred while attempting to save your changes: ${errorMessage}. Please try again!`);
+                    
+                    if (errorMessage.includes('hierarchy') || errorMessage.includes('parent') || errorMessage.includes('subsection')) {
+                        this.showHierarchyError('Hierarchy Save Error', [errorMessage]);
+                    } else {
+                        this.showHierarchyError('Menu Save Failed', [`Failed to save menu: ${errorMessage}`]);
+                    }
                     
                     // Emit error to parent
                     this.$emit('menu-update-error', error);
-                    
-                    // Re-enable data loaded state since operation completed (even with error)
                     this.$emit('data-loaded-changed', true);
                 }
             }
+        },
+
+        // Update hierarchical ordering for sections and subsections
+        updateHierarchicalOrdering() {
+            console.log('🍽️ Updating hierarchical ordering');
+            
+            // Separate main sections and subsections
+            const mainSections = this.editMenu.filter(section => !section.isSubSection);
+            const subsections = this.editMenu.filter(section => section.isSubSection);
+            
+            // Update main section ordering (should be sequential starting from 0)
+            mainSections.forEach((section, index) => {
+                section.sectionOrder = index;
+                
+                // Update item ordering within main sections
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    section.sectionMenu.forEach((item, itemIndex) => {
+                        item.itemOrder = itemIndex;
+                    });
+                }
+            });
+            
+            // Group subsections by parent and update their ordering
+            const subsectionsByParent = new Map();
+            subsections.forEach(subsection => {
+                const parentId = subsection.parentSectionId;
+                if (!subsectionsByParent.has(parentId)) {
+                    subsectionsByParent.set(parentId, []);
+                }
+                subsectionsByParent.get(parentId).push(subsection);
+            });
+            
+            // Update subsection ordering within each parent group
+            let globalSubsectionOrder = mainSections.length; // Start after main sections
+            subsectionsByParent.forEach((parentSubsections, parentId) => {
+                parentSubsections.forEach((subsection, index) => {
+                    subsection.sectionOrder = globalSubsectionOrder++;
+                    
+                    // Ensure parent relationship is maintained
+                    subsection.parentSectionId = parentId;
+                    subsection.isSubSection = true;
+                    
+                    // Update item ordering within subsections
+                    if (subsection.sectionMenu && Array.isArray(subsection.sectionMenu)) {
+                        subsection.sectionMenu.forEach((item, itemIndex) => {
+                            item.itemOrder = itemIndex;
+                        });
+                    }
+                });
+            });
+            
+            console.log('🍽️ Hierarchical ordering updated:', {
+                mainSections: mainSections.length,
+                subsections: subsections.length,
+                lastSectionOrder: globalSubsectionOrder - 1
+            });
+        },
+
+        // Prepare menu data for backend by removing UI-specific properties
+        prepareMenuForBackend() {
+            console.log('🍽️ Preparing menu data for backend');
+            
+            return this.editMenu.map(section => {
+                // Create clean copy without UI-specific properties
+                const cleanSection = {
+                    sectionName: section.sectionName,
+                    sectionOrder: section.sectionOrder,
+                    isSubSection: section.isSubSection || false,
+                    parentSectionId: section.parentSectionId || null,
+                    sectionMenu: []
+                };
+                
+                // Clean menu items
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    cleanSection.sectionMenu = section.sectionMenu.map(item => {
+                        const cleanItem = {
+                            itemID: item.itemID,
+                            itemOrder: item.itemOrder,
+                            vintage: item.vintage || null,
+                            price: item.price || null,
+                            servingTypeID: item.servingTypeID || null
+                        };
+                        
+                        // Remove UI-specific properties
+                        delete cleanItem.itemDetails;
+                        delete cleanItem.expanded;
+                        delete cleanItem.selected;
+                        
+                        return cleanItem;
+                    });
+                }
+                
+                // Ensure main sections don't have parent references
+                if (!cleanSection.isSubSection) {
+                    cleanSection.parentSectionId = null;
+                }
+                
+                return cleanSection;
+            });
+        },
+
+        // Validate menu structure before save operation
+        validateMenuStructureForSave() {
+            const issues = [];
+            
+            // Check for sections without names
+            const sectionsWithoutNames = this.editMenu.filter(section => 
+                !section.sectionName || section.sectionName.trim() === ''
+            );
+            sectionsWithoutNames.forEach(section => {
+                const sectionType = section.isSubSection ? 'Subsection' : 'Section';
+                issues.push(`${sectionType} at order ${section.sectionOrder} has no name`);
+            });
+            
+            // Check for items without valid IDs
+            this.editMenu.forEach(section => {
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    const invalidItems = section.sectionMenu.filter(item => 
+                        !item.itemID || item.itemID === ''
+                    );
+                    if (invalidItems.length > 0) {
+                        const sectionType = section.isSubSection ? 'subsection' : 'section';
+                        issues.push(`${invalidItems.length} invalid item(s) in ${sectionType} "${section.sectionName}"`);
+                    }
+                }
+            });
+            
+            // Check for duplicate section names within same parent
+            const sectionsByParent = new Map();
+            this.editMenu.forEach(section => {
+                const parentKey = section.isSubSection ? section.parentSectionId : 'main';
+                if (!sectionsByParent.has(parentKey)) {
+                    sectionsByParent.set(parentKey, []);
+                }
+                sectionsByParent.get(parentKey).push(section);
+            });
+            
+            sectionsByParent.forEach((sections, parentKey) => {
+                const nameMap = new Map();
+                sections.forEach(section => {
+                    const name = section.sectionName.toLowerCase().trim();
+                    if (nameMap.has(name)) {
+                        const parentDesc = parentKey === 'main' ? 'main menu' : `parent section ${parentKey}`;
+                        issues.push(`Duplicate section name "${section.sectionName}" in ${parentDesc}`);
+                    } else {
+                        nameMap.set(name, section);
+                    }
+                });
+            });
+            
+            return {
+                isValid: issues.length === 0,
+                issues: issues
+            };
+        },
+
+        // Get menu statistics for logging and validation
+        getMenuStatistics() {
+            const stats = {
+                totalSections: 0,
+                totalSubsections: 0,
+                totalItems: 0,
+                sectionsByParent: new Map(),
+                itemsBySection: new Map(),
+                maxSectionOrder: -1
+            };
+            
+            this.editMenu.forEach(section => {
+                if (section.isSubSection) {
+                    stats.totalSubsections++;
+                    const parentId = section.parentSectionId;
+                    if (!stats.sectionsByParent.has(parentId)) {
+                        stats.sectionsByParent.set(parentId, []);
+                    }
+                    stats.sectionsByParent.get(parentId).push(section);
+                } else {
+                    stats.totalSections++;
+                }
+                
+                stats.maxSectionOrder = Math.max(stats.maxSectionOrder, section.sectionOrder);
+                
+                const itemCount = section.sectionMenu ? section.sectionMenu.length : 0;
+                stats.totalItems += itemCount;
+                stats.itemsBySection.set(section.sectionOrder, itemCount);
+            });
+            
+            return stats;
         },
 
         // Claim Venue Account - emit to parent since it involves routing
