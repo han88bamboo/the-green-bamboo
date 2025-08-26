@@ -1940,24 +1940,6 @@ export default {
             });
             
             return options;
-        },
-        
-        // Get subsections for a specific main section
-        getSubsectionsForSection() {
-            return (sectionOrder) => {
-                return this.editMenu.filter(section => 
-                    section.isSubSection && section.parentSectionId === sectionOrder
-                );
-            };
-        },
-        
-        // Get direct items for a section (items not in subsections)
-        getDirectItemsForSection() {
-            return (sectionOrder) => {
-                const mainSection = this.editMenu.find(s => s.sectionOrder === sectionOrder && !s.isSubSection);
-                if (!mainSection || !mainSection.sectionMenu) return [];
-                return mainSection.sectionMenu;
-            };
         }
     },
     data() {
@@ -3432,6 +3414,13 @@ export default {
             return this.editMenu.filter(section => 
                 section.isSubSection && section.parentSectionId === parentSectionOrder
             ).sort((a, b) => a.sectionOrder - b.sectionOrder);
+        },
+
+        // Get direct items for a section (items not in subsections)
+        getDirectItemsForSection(sectionOrder) {
+            const mainSection = this.editMenu.find(s => s.sectionOrder === sectionOrder && !s.isSubSection);
+            if (!mainSection || !mainSection.sectionMenu) return [];
+            return mainSection.sectionMenu;
         },
 
         // Batch update menu with comprehensive hierarchy handling
