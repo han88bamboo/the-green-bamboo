@@ -2047,6 +2047,9 @@ export default {
 
             // Flag to prevent duplicate loading
             isLoading: false,
+            
+            // Data source mode tracking
+            dataSourceMode: '', // 'legacy-flat', 'legacy-hierarchical', 'api-hierarchical', 'empty'
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -2146,27 +2149,54 @@ export default {
         }
     },
     watch: {
-        // Watch for changes in detailedMenu from parent
+        // Watch for changes in detailedMenu from parent (for backward compatibility)
         detailedMenu: {
             handler(newMenu, oldMenu) {
-                // Only trigger if menu actually changed and avoid initial trigger since mounted handles it
-                if (newMenu && newMenu.length > 0 && !this.isLoading && JSON.stringify(newMenu) !== JSON.stringify(oldMenu)) {
-                    this.loadMenuData();
-                } else if (newMenu && newMenu.length === 0 && JSON.stringify(newMenu) !== JSON.stringify(oldMenu)) {
-                    // If menu becomes empty, emit immediate completion
-                    console.log('🍽️ VenueMenuTabOriginal: Menu became empty, emitting immediate completion');
-                    this.$emit('menu-data-processed', {
-                        loadedListings: this.internalLoadedListings,
-                        loadedProducers: this.internalLoadedProducers,
-                        editMenu: [],
-                        searchMenuResults: [],
-                        processedDetailedMenu: []
-                    });
+                // Only trigger if we're not already loading and this is a significant change
+                if (this.isLoading) {
+                    console.log('🍽️ Already loading, skipping detailedMenu change');
+                    return;
                 }
+                
+                // Check for meaningful changes
+                const hasSignificantChange = JSON.stringify(newMenu) !== JSON.stringify(oldMenu);
+                if (!hasSignificantChange) {
+                    console.log('🍽️ No significant change in detailedMenu');
+                    return;
+                }
+                
+                console.log('🍽️ detailedMenu changed, re-initializing menu data');
+                console.log('🍽️ New menu length:', newMenu ? newMenu.length : 0);
+                console.log('🍽️ Old menu length:', oldMenu ? oldMenu.length : 0);
+                
+                // Re-run smart initialization to adapt to new data
+                this.initializeMenuData();
             },
             deep: true,
-            immediate: false  // Changed to false to avoid double loading
+            immediate: false  // Don't trigger on mount since mounted() handles initialization
         },
+        
+        // Watch for changes in targetVenue (in case venue ID becomes available later)
+        targetVenue: {
+            handler(newVenue, oldVenue) {
+                // Only react if venue ID changed and we don't have menu data yet
+                const newVenueId = newVenue?.id;
+                const oldVenueId = oldVenue?.id;
+                
+                if (newVenueId !== oldVenueId && newVenueId && !this.isLoading) {
+                    console.log('🍽️ Venue ID changed to:', newVenueId);
+                    
+                    // If we don't have any menu data yet, try to load from API
+                    if ((!this.detailedMenu || this.detailedMenu.length === 0) && 
+                        (!this.editMenu || this.editMenu.length === 0)) {
+                        console.log('🍽️ No existing menu data, loading from API with new venue ID');
+                        this.loadMenuDataFromAPI();
+                    }
+                }
+            },
+            deep: true
+        },
+        
         // Watch for changes in servingTypes from parent
         servingTypes: {
             handler(newServingTypes) {
@@ -2186,23 +2216,237 @@ export default {
         this.internalLoadedListings = [...this.loadedListings];
         this.internalLoadedProducers = [...this.loadedProducers];
         
-        // Initialize menu data when component mounts
-        if (this.detailedMenu.length > 0) {
-            console.log('🍽️ VenueMenuTabOriginal: Starting loadMenuData()');
-            this.loadMenuData();
-        } else {
-            // If no menu data to process, immediately emit completion
-            console.log('🍽️ VenueMenuTabOriginal: No menu data to process, emitting immediate completion');
+        // Smart data source detection and adaptation
+        this.initializeMenuData();
+    },
+    methods: {
+
+        // Smart initialization method that detects available data sources
+        initializeMenuData() {
+            console.log('🍽️ VenueMenuTabOriginal: Detecting available data sources...');
+            
+            // Priority 1: Check if parent provides detailedMenu data (Legacy/Backward Compatibility)
+            if (this.detailedMenu && this.detailedMenu.length > 0) {
+                console.log('🍽️ Using provided detailedMenu data (legacy mode)');
+                console.log('🍽️ detailedMenu structure:', this.detailedMenu);
+                this.dataSourceMode = 'legacy-prop';
+                this.loadMenuDataFromProp();
+                return;
+            }
+            
+            // Priority 2: Check if venue ID is available for hierarchical API loading (New Hierarchical Mode)
+            const venueId = this.targetVenue?.id || this.$route.params?.venueID;
+            if (venueId) {
+                console.log('🍽️ No detailedMenu provided, loading hierarchical data from API (new mode)');
+                console.log('🍽️ Using venue ID:', venueId);
+                this.dataSourceMode = 'api-hierarchical';
+                this.loadMenuDataFromAPI();
+                return;
+            }
+            
+            // Priority 3: No data source available - emit empty state
+            console.log('🍽️ No data source available, emitting empty menu state');
+            this.dataSourceMode = 'empty';
+            this.emitEmptyMenuState();
+        },
+
+        // Load menu data from provided detailedMenu prop (legacy mode)
+        loadMenuDataFromProp() {
+            console.log('🍽️ Processing provided detailedMenu prop');
+            
+            try {
+                // Check if the provided data already has hierarchical structure (subsections)
+                const hasHierarchicalStructure = this.detailedMenu.some(section => 
+                    section.hasOwnProperty('isSubSection') || 
+                    section.hasOwnProperty('parentSectionId') ||
+                    section.hasOwnProperty('subsections')
+                );
+                
+                if (hasHierarchicalStructure) {
+                    console.log('🍽️ detailedMenu already has hierarchical structure');
+                    this.dataSourceMode = 'legacy-hierarchical';
+                    this.processHierarchicalMenuFromProp();
+                } else {
+                    console.log('🍽️ detailedMenu has flat structure, converting to hierarchical');
+                    this.dataSourceMode = 'legacy-flat';
+                    this.processFlatMenuFromProp();
+                }
+                
+            } catch (error) {
+                console.error('🍽️ Error processing detailedMenu prop:', error);
+                this.$emit('menu-data-error', error);
+            }
+        },
+
+        // Load menu data from hierarchical API (new mode)
+        loadMenuDataFromAPI() {
+            console.log('🍽️ Loading menu data from hierarchical API');
+            this.loadMenuData(); // Use existing hierarchical API loading method
+        },
+
+        // Process hierarchical menu structure from prop
+        processHierarchicalMenuFromProp() {
+            console.log('🍽️ Processing hierarchical menu from prop');
+            
+            // Build the hierarchical structure and flat lookup
+            this.buildMenuHierarchy(this.detailedMenu);
+
+            // Set editMenu and searchMenuResults using the provided hierarchical data
+            this.resetEditMenuWithHierarchicalData(this.detailedMenu);
+            this.searchMenuResults = this.buildSearchableMenu(this.detailedMenu);
+
+            // Emit the processed data back to parent
+            this.emitMenuDataProcessed(this.detailedMenu);
+        },
+
+        // Process flat menu structure from prop and convert to hierarchical
+        processFlatMenuFromProp() {
+            console.log('🍽️ Processing flat menu from prop and converting to hierarchical');
+            
+            // Create a deep copy to avoid mutating props
+            const menuCopy = JSON.parse(JSON.stringify(this.detailedMenu));
+            
+            // Process flat menu items similar to original loadMenuData logic
+            this.processFlatMenuItems(menuCopy)
+                .then(processedMenu => {
+                    // Convert flat structure to hierarchical (all sections become main sections)
+                    const hierarchicalMenu = this.convertFlatToHierarchical(processedMenu);
+                    
+                    // Build the hierarchical structure and flat lookup
+                    this.buildMenuHierarchy(hierarchicalMenu);
+
+                    // Set editMenu and searchMenuResults
+                    this.resetEditMenuWithHierarchicalData(hierarchicalMenu);
+                    this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
+
+                    // Emit the processed data
+                    this.emitMenuDataProcessed(hierarchicalMenu);
+                })
+                .catch(error => {
+                    console.error('🍽️ Error processing flat menu:', error);
+                    this.$emit('menu-data-error', error);
+                });
+        },
+
+        // Process flat menu items (similar to original logic)
+        async processFlatMenuItems(menuCopy) {
+            console.log('🍽️ Processing flat menu items');
+            
+            for (let section of menuCopy) {
+                for (let item of section.sectionMenu) {
+                    // Find item in loadedListings
+                    let listingData = this.internalLoadedListings.find(i => i.id == item.itemID);
+
+                    // If not found, get from server (keeping original logic)
+                    if (listingData == undefined) {
+                        try {
+                            const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsDetailedByID/${item.itemID}`);
+                            listingData = response.data;
+                            
+                            if (listingData && !Array.isArray(listingData)) {
+                                this.internalLoadedListings.push(listingData);
+                            }
+                        } catch (error) {
+                            console.error(`🍽️ Error loading listing ${item.itemID}:`, error);
+                            listingData = [];
+                        }
+                    }
+
+                    // Set item data
+                    if (!(Array.isArray(listingData) && listingData.length == 0)) {
+                        // Get producer data
+                        let producerData = this.internalLoadedProducers.find(p => p.id == listingData.producerID);
+                        
+                        if (producerData == undefined) {
+                            try {
+                                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getProducerNameByID/${listingData.producerID}`);
+                                producerData = response.data;
+                                
+                                if (producerData && !Array.isArray(producerData)) {
+                                    this.internalLoadedProducers.push(producerData);
+                                }
+                            } catch (error) {
+                                console.error(`🍽️ Error loading producer ${listingData.producerID}:`, error);
+                                producerData = { producerName: 'Unknown Producer' };
+                            }
+                        }
+
+                        // Set serving type name
+                        const servingType = this.servingTypes.find(s => s.id == item.itemServingType);
+                        const servingTypeName = servingType ? servingType.servingType : "Serving";
+
+                        // Populate item details
+                        item.itemDetails = {
+                            itemPhoto: listingData.photo,
+                            itemName: listingData.listingName,
+                            itemType: listingData.drinkType,
+                            itemTypeCategory: listingData.typeCategory,
+                            itemABV: listingData.abv,
+                            itemCountry: listingData.originCountry,
+                            itemDesc: listingData.officialDesc,
+                            itemRating: listingData.avgRating,
+                            itemProducer: producerData.producerName,
+                            itemProducerID: listingData.producerID,
+                            itemServingTypeName: servingTypeName,
+                        };
+                    }
+                }
+            }
+            
+            return menuCopy;
+        },
+
+        // Convert flat menu structure to hierarchical format
+        convertFlatToHierarchical(flatMenu) {
+            console.log('🍽️ Converting flat menu to hierarchical format');
+            
+            return flatMenu.map((section, index) => ({
+                id: section.id || `section_${index}`,
+                sectionName: section.sectionName,
+                sectionOrder: section.sectionOrder || index,
+                parentSectionId: null, // All sections become main sections
+                isSubSection: false,
+                sectionMenu: section.sectionMenu || [],
+                subsections: [] // No subsections in converted flat menu
+            }));
+        },
+
+        // Emit processed menu data to parent
+        emitMenuDataProcessed(processedMenu) {
+            console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with data:', {
+                dataSourceMode: this.dataSourceMode,
+                loadedListingsCount: this.internalLoadedListings.length,
+                loadedProducersCount: this.internalLoadedProducers.length,
+                editMenuCount: this.editMenu.length,
+                searchMenuResultsCount: this.searchMenuResults.length,
+                processedMenuCount: processedMenu.length
+            });
+            
             this.$emit('menu-data-processed', {
+                dataSourceMode: this.dataSourceMode,
+                loadedListings: this.internalLoadedListings,
+                loadedProducers: this.internalLoadedProducers,
+                editMenu: this.editMenu,
+                searchMenuResults: this.searchMenuResults,
+                processedDetailedMenu: processedMenu,
+                hierarchicalMenu: this.hierarchicalMenu
+            });
+        },
+
+        // Emit empty menu state when no data source is available
+        emitEmptyMenuState() {
+            console.log('🍽️ VenueMenuTabOriginal: Emitting empty menu state');
+            
+            this.$emit('menu-data-processed', {
+                dataSourceMode: this.dataSourceMode,
                 loadedListings: this.internalLoadedListings,
                 loadedProducers: this.internalLoadedProducers,
                 editMenu: [],
                 searchMenuResults: [],
-                processedDetailedMenu: []
+                processedDetailedMenu: [],
+                hierarchicalMenu: []
             });
-        }
-    },
-    methods: {
+        },
 
         // Load menu data - moved from parent's loadData method
         // Load hierarchical menu data from new backend endpoints
@@ -2220,8 +2464,20 @@ export default {
                 // Get venue ID
                 const venueId = this.targetVenue?.id || this.$route.params?.venueID;
                 if (!venueId) {
-                    throw new Error('No venue ID available for loading menu');
+                    console.warn('🍽️ No venue ID available for loading menu, emitting empty menu');
+                    // Emit empty menu data instead of throwing error
+                    this.$emit('menu-data-processed', {
+                        loadedListings: this.internalLoadedListings,
+                        loadedProducers: this.internalLoadedProducers,
+                        editMenu: [],
+                        searchMenuResults: [],
+                        processedDetailedMenu: [],
+                        hierarchicalMenu: []
+                    });
+                    return;
                 }
+
+                console.log('🍽️ Loading menu for venue ID:', venueId);
 
                 // Load complete hierarchical menu structure from new endpoint
                 const hierarchicalMenuData = await this.loadHierarchicalMenu(venueId);
