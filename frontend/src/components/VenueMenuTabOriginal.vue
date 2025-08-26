@@ -4791,7 +4791,7 @@ export default {
             operations.forEach((op, index) => {
                 try {
                     switch (op.operation) {
-                        case 'create':
+                        case 'create': {
                             const createValidation = this.validateSubsectionOperations('create', op.section, op.subsection);
                             if (!createValidation.isValid) {
                                 allIssues.push(...createValidation.issues.map(issue => `Operation ${index}: ${issue}`));
@@ -4799,8 +4799,9 @@ export default {
                                 validOperations.push(op);
                             }
                             break;
+                        }
 
-                        case 'delete':
+                        case 'delete': {
                             const deleteValidation = this.validateSubsectionOperations('delete', op.section, op.subsection);
                             if (!deleteValidation.isValid) {
                                 allIssues.push(...deleteValidation.issues.map(issue => `Operation ${index}: ${issue}`));
@@ -4808,8 +4809,9 @@ export default {
                                 validOperations.push(op);
                             }
                             break;
+                        }
 
-                        case 'move':
+                        case 'move': {
                             const moveValidation = this.validateSubsectionOperations('move', op.targetSection, op.subsection);
                             if (!moveValidation.isValid) {
                                 allIssues.push(...moveValidation.issues.map(issue => `Operation ${index}: ${issue}`));
@@ -4817,14 +4819,16 @@ export default {
                                 validOperations.push(op);
                             }
                             break;
+                        }
 
-                        case 'update':
+                        case 'update': {
                             if (!op.section || !op.section.sectionName) {
                                 allIssues.push(`Operation ${index}: Invalid section data`);
                             } else {
                                 validOperations.push(op);
                             }
                             break;
+                        }
 
                         default:
                             allIssues.push(`Operation ${index}: Unknown operation type: ${op.operation}`);
