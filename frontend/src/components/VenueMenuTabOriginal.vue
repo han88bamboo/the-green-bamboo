@@ -5497,14 +5497,14 @@ export default {
         // Drag and drop methods
         dragStart() {
             this.drag = true;
-            // Take a snapshot of the current menu structure
-            this.menuSnapshot = JSON.stringify(this.editMenu);
+            // Take a snapshot of the current editable sections structure (sections are being dragged)
+            this.menuSnapshot = JSON.stringify(this.editableMainSections);
         },
 
         dragEnd() {
-            // Check if the menu structure changed after drag
-            const currentMenu = JSON.stringify(this.editMenu);
-            if (this.menuSnapshot === currentMenu) {
+            // Check if the editable sections structure changed after drag
+            const currentSections = JSON.stringify(this.editableMainSections);
+            if (this.menuSnapshot === currentSections) {
                 // No change occurred - likely an invalid drop
                 this.showInvalidAreaMessage();
             } else {
