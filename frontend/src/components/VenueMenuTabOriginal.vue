@@ -820,7 +820,7 @@
                                                     <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
                                                     <div class="row">
                                                         <div class="col-1 d-grid">
-                                                            <button type="button" class="btn icon-btn" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                            <button type="button" class="btn icon-btn" @click.stop.prevent="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
                                                                 <svg height="25" width="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                                                 </svg>
@@ -904,7 +904,7 @@
                                                             </p>
                                                         </div>
                                                         <div class="col-1 d-grid">
-                                                            <button type="button" class="btn btn-danger" @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                            <button type="button" class="btn btn-danger" @click.stop.prevent="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                                                                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
                                                                     <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
@@ -1085,7 +1085,7 @@
                                                 <div class="row">
                                                     <div class="col-1 d-grid">
                                                         <button type="button" class="btn icon-btn"
-                                                            @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                            @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
                                                             <svg height="25" width="25"
                                                                 viewBox="0 0 24 24" fill="none"
                                                                 class="bi bi-sort-down "
@@ -1257,7 +1257,7 @@
                                                     <!-- Remove Item From Menu Section -->
                                                     <div class="col-1 d-grid">
                                                         <button type="button" class="btn btn-danger"
-                                                            @click="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
+                                                            @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
                                                             <svg xmlns="http://www.w3.org/2000/svg"
                                                                 width="16" height="16"
                                                                 fill="currentColor" class="bi bi-trash"
@@ -3813,6 +3813,15 @@ export default {
 
         // Get direct items for a section (items not in subsections)
         getDirectItemsForSection(sectionOrder) {
+            // First try to get from editableMainSections if available (for immediate UI updates)
+            if (Array.isArray(this.editableMainSections)) {
+                const mainSection = this.editableMainSections.find(s => s.sectionOrder === sectionOrder && !s.isSubSection);
+                if (mainSection && mainSection.sectionMenu) {
+                    return mainSection.sectionMenu;
+                }
+            }
+            
+            // Fallback to editMenu
             const mainSection = this.editMenu.find(s => s.sectionOrder === sectionOrder && !s.isSubSection);
             if (!mainSection || !mainSection.sectionMenu) return [];
             return mainSection.sectionMenu;
@@ -4786,11 +4795,55 @@ export default {
 
         // Delete Menu Item - transferred from parent
         deleteMenuItem(sectionIndex, itemIndex) {
-            // Find section
-            let section = this.editMenu.find(s => s.sectionOrder === sectionIndex);
-
-            // Remove item from section
-            section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder !== itemIndex);
+            console.log('🗑️ Deleting menu item:', { sectionIndex, itemIndex });
+            
+            let itemDeleted = false;
+            
+            // First, try to find and delete from main sections
+            let section = this.editableMainSections.find(s => s.sectionOrder === sectionIndex);
+            if (section && section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                const beforeCount = section.sectionMenu.length;
+                section.sectionMenu = section.sectionMenu.filter(i => i.itemOrder !== itemIndex);
+                const afterCount = section.sectionMenu.length;
+                if (beforeCount !== afterCount) {
+                    console.log('🗑️ Deleted from main section:', { beforeCount, afterCount, sectionName: section.sectionName });
+                    itemDeleted = true;
+                }
+            }
+            
+            // If not found in main sections, search in subsections
+            if (!itemDeleted) {
+                this.editableMainSections.forEach(mainSection => {
+                    if (mainSection.subsections && Array.isArray(mainSection.subsections)) {
+                        mainSection.subsections.forEach(subsection => {
+                            if (subsection.sectionOrder === sectionIndex && subsection.sectionMenu && Array.isArray(subsection.sectionMenu)) {
+                                const beforeCount = subsection.sectionMenu.length;
+                                subsection.sectionMenu = subsection.sectionMenu.filter(i => i.itemOrder !== itemIndex);
+                                const afterCount = subsection.sectionMenu.length;
+                                if (beforeCount !== afterCount) {
+                                    console.log('🗑️ Deleted from subsection:', { beforeCount, afterCount, subsectionName: subsection.sectionName });
+                                    itemDeleted = true;
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Also update editMenu for consistency
+            let editMenuSection = this.editMenu.find(s => s.sectionOrder === sectionIndex);
+            if (editMenuSection && editMenuSection.sectionMenu && Array.isArray(editMenuSection.sectionMenu)) {
+                editMenuSection.sectionMenu = editMenuSection.sectionMenu.filter(i => i.itemOrder !== itemIndex);
+                console.log('🗑️ Also updated editMenu section');
+            }
+            
+            if (itemDeleted) {
+                console.log('🗑️ Item successfully deleted!');
+                // Force reactivity update
+                this.$forceUpdate();
+            } else {
+                console.log('🗑️ Item not found for deletion');
+            }
         },
 
         // Enable Edit Menu Mode - transferred from parent but modified for component
