@@ -247,7 +247,7 @@
                           data-bs-target="#recentactivityCollapse"
                           aria-expanded="false" 
                           aria-controls="recentactivityCollapse">
-                    <span class="fw-bold">Recent Activity</span>
+                    <span class="fw-bold">View Recent Activity</span>
                     <i class="bi bi-chevron-down"></i>
                   </button>
                 </div>
