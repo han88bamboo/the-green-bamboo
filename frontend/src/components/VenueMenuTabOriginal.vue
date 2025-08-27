@@ -3068,26 +3068,120 @@ export default {
             const flatMenu = [];
             
             hierarchicalData.forEach(section => {
-                // Add main section with deep copy of sectionMenu
+                // Deep copy section menu items and ensure database values are preserved
+                const copiedSectionMenu = section.sectionMenu ? section.sectionMenu.map(item => {
+                    const copiedItem = JSON.parse(JSON.stringify(item));
+                    
+                    // Ensure critical database fields are properly mapped for edit mode
+                    // These come from the menuItems table and must be editable
+                    if (copiedItem.itemPrice === undefined || copiedItem.itemPrice === null) {
+                        copiedItem.itemPrice = -1; // Default for no price
+                    }
+                    if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
+                        copiedItem.itemAvailability = true; // Default to available
+                    }
+                    
+                    // For serving type dropdown, handle multiple possible field names and ensure integer type
+                    let servingTypeValue = copiedItem.itemServingType || copiedItem.servingType || null;
+                    if (servingTypeValue === undefined || servingTypeValue === null) {
+                        // Find default serving type (usually "-" or first option)
+                        const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                        copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                    } else {
+                        // Ensure it's an integer (database might return string)
+                        copiedItem.itemServingType = parseInt(servingTypeValue, 10);
+                        
+                        // Validate that this serving type ID exists in servingTypes
+                        const servingTypeExists = this.servingTypes.find(s => s.id === copiedItem.itemServingType);
+                        if (!servingTypeExists) {
+                            console.warn('🍽️ Invalid serving type ID:', copiedItem.itemServingType, 'defaulting to first available');
+                            const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                            copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                        }
+                    }
+                    
+                    // Ensure itemVintage is properly mapped
+                    if (copiedItem.itemVintage === undefined || copiedItem.itemVintage === null) {
+                        copiedItem.itemVintage = copiedItem.vintage || null;
+                    }
+                    
+                    console.log('🍽️ Edit mode item mapped:', {
+                        itemID: copiedItem.itemID,
+                        itemPrice: copiedItem.itemPrice,
+                        itemAvailability: copiedItem.itemAvailability,
+                        itemServingType: copiedItem.itemServingType,
+                        itemVintage: copiedItem.itemVintage
+                    });
+                    
+                    return copiedItem;
+                }) : [];
+                
+                // Add main section with properly mapped sectionMenu
                 flatMenu.push({
                     id: section.id,
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     parentSectionId: null,
                     isSubSection: false,
-                    sectionMenu: section.sectionMenu ? [...section.sectionMenu] : []
+                    sectionMenu: copiedSectionMenu
                 });
                 
-                // Add subsections with deep copy of sectionMenu
+                // Add subsections with properly mapped sectionMenu
                 if (section.subsections && section.subsections.length > 0) {
                     section.subsections.forEach(subsection => {
+                        const copiedSubsectionMenu = subsection.sectionMenu ? subsection.sectionMenu.map(item => {
+                            const copiedItem = JSON.parse(JSON.stringify(item));
+                            
+                            // Ensure critical database fields are properly mapped for edit mode
+                            if (copiedItem.itemPrice === undefined || copiedItem.itemPrice === null) {
+                                copiedItem.itemPrice = -1; // Default for no price
+                            }
+                            if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
+                                copiedItem.itemAvailability = true; // Default to available
+                            }
+                            
+                            // For serving type dropdown, handle multiple possible field names and ensure integer type
+                            let servingTypeValue = copiedItem.itemServingType || copiedItem.servingType || null;
+                            if (servingTypeValue === undefined || servingTypeValue === null) {
+                                // Find default serving type (usually "-" or first option)
+                                const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                                copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                            } else {
+                                // Ensure it's an integer (database might return string)
+                                copiedItem.itemServingType = parseInt(servingTypeValue, 10);
+                                
+                                // Validate that this serving type ID exists in servingTypes
+                                const servingTypeExists = this.servingTypes.find(s => s.id === copiedItem.itemServingType);
+                                if (!servingTypeExists) {
+                                    console.warn('🍽️ Invalid serving type ID:', copiedItem.itemServingType, 'defaulting to first available');
+                                    const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                                    copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                                }
+                            }
+                            
+                            // Ensure itemVintage is properly mapped
+                            if (copiedItem.itemVintage === undefined || copiedItem.itemVintage === null) {
+                                copiedItem.itemVintage = copiedItem.vintage || null;
+                            }
+                            
+                            console.log('🍽️ Edit mode subsection item mapped:', {
+                                itemID: copiedItem.itemID,
+                                itemPrice: copiedItem.itemPrice,
+                                itemAvailability: copiedItem.itemAvailability,
+                                itemServingType: copiedItem.itemServingType,
+                                itemVintage: copiedItem.itemVintage
+                            });
+                            
+                            return copiedItem;
+                        }) : [];
+                        
                         flatMenu.push({
                             id: subsection.id,
                             sectionName: subsection.sectionName,
                             sectionOrder: subsection.sectionOrder,
                             parentSectionId: subsection.parentSectionId,
                             isSubSection: true,
-                            sectionMenu: subsection.sectionMenu ? [...subsection.sectionMenu] : []
+                            sectionMenu: copiedSubsectionMenu
                         });
                     });
                 }
