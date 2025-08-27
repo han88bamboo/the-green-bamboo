@@ -1,4 +1,5 @@
 -- DROP TABLES IF EXISTS -- 
+
 DROP TABLE IF EXISTS "notifications" CASCADE;
 DROP TABLE IF EXISTS "eventAttendees" CASCADE;
 DROP TABLE IF EXISTS "events" CASCADE;
@@ -992,4 +993,81 @@ CREATE TABLE "systemSettings" (
     "settingValue" TEXT NOT NULL,
     "settingDescription" TEXT,
     "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- NEWLY ADDED TABLES for Explore Page - BY CP --
+
+-- ========= "listingsLikes" =========
+CREATE TABLE "listingsLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "listingId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "88BContentLikes" =========
+CREATE TABLE "88BContentLikes" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "contentId" INTEGER REFERENCES "88BContent"("id") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "listingsComments" =========
+CREATE TABLE "listingsComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "listingId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "listingsComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ========= "listingReviewsComments" =========
+CREATE TABLE "listingReviewsComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "reviewId" INTEGER REFERENCES "reviews"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "listingReviewsComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ========= "producerUpdateComments" =========
+CREATE TABLE "producerUpdateComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "producerUpdateId" INTEGER REFERENCES "producerUpdate"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "producerUpdateComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "venueUpdateComments" =========
+CREATE TABLE "venueUpdateComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "venueUpdateId" INTEGER REFERENCES "venueUpdate"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "venueUpdateComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========= "88BContentComments" =========
+CREATE TABLE "88BContentComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "contentId" INTEGER REFERENCES "88BContent"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "88BContentComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
