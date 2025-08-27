@@ -1000,7 +1000,7 @@ CREATE TABLE "systemSettings" (
 -- ========= "listingsLikes" =========
 CREATE TABLE "listingsLikes" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "listingId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -1009,7 +1009,7 @@ CREATE TABLE "listingsLikes" (
 -- ========= "88BContentLikes" =========
 CREATE TABLE "88BContentLikes" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "contentId" INTEGER REFERENCES "88BContent"("id") ON DELETE CASCADE,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -1018,7 +1018,7 @@ CREATE TABLE "88BContentLikes" (
 -- ========= "listingsComments" =========
 CREATE TABLE "listingsComments" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "listingId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
     "parentId" INTEGER REFERENCES "listingsComments"("id") ON DELETE CASCADE,
@@ -1030,7 +1030,7 @@ CREATE TABLE "listingsComments" (
 -- ========= "listingReviewsComments" =========
 CREATE TABLE "listingReviewsComments" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "reviewId" INTEGER REFERENCES "reviews"("id") ON DELETE CASCADE,
     "parentId" INTEGER REFERENCES "listingReviewsComments"("id") ON DELETE CASCADE,
@@ -1042,7 +1042,7 @@ CREATE TABLE "listingReviewsComments" (
 -- ========= "producerUpdateComments" =========
 CREATE TABLE "producerUpdateComments" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "producerUpdateId" INTEGER REFERENCES "producerUpdate"("id") ON DELETE CASCADE,
     "parentId" INTEGER REFERENCES "producerUpdateComments"("id") ON DELETE CASCADE,
@@ -1053,7 +1053,7 @@ CREATE TABLE "producerUpdateComments" (
 -- ========= "venueUpdateComments" =========
 CREATE TABLE "venueUpdateComments" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "venueUpdateId" INTEGER REFERENCES "venueUpdate"("id") ON DELETE CASCADE,
     "parentId" INTEGER REFERENCES "venueUpdateComments"("id") ON DELETE CASCADE,
@@ -1064,7 +1064,7 @@ CREATE TABLE "venueUpdateComments" (
 -- ========= "88BContentComments" =========
 CREATE TABLE "88BContentComments" (
     "id" SERIAL PRIMARY KEY,
-    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "userId" INTEGER,
     "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
     "contentId" INTEGER REFERENCES "88BContent"("id") ON DELETE CASCADE,
     "parentId" INTEGER REFERENCES "88BContentComments"("id") ON DELETE CASCADE,
