@@ -1963,7 +1963,7 @@ export default {
             
             // Constants
             VARIANT_DRNK_TYP: ['Wine', 'Champagne', 'Sparkling Wine'],
-            defaultPhoto: '/path/to/default/image.jpg', // You should replace this with your actual default image path
+            defaultPhoto: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739', // You should replace this with your actual default image path
         
             // Menu Editing - Enhanced for hierarchical structure
             editMenu: [], // Now supports sections with subsections
