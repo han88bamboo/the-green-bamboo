@@ -722,13 +722,13 @@
                 </div>
               </div>
               <!-- DELETE ERROR -->
-              <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDeleteListing">
+              <div class="text-danger fw-bold fs-5 modal-content" v-if="errorDeleteListing">
                 <div v-if="errorDeleteMessage" class="row">
                   <span>An error occurred while attempting to delete, please try
                     again!</span>
                   <br />
                   <button class="btn primary-btn btn-sm" @click="reloadRoute">
-                    <span class="fs-5 fst-italic">
+                    <span class="fs-5">
                       Retry your delete request here!
                     </span>
                   </button>
@@ -845,7 +845,7 @@
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
           aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
           <div class="modal-dialog modal-lg">
-            <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="successSubmission">
+            <div class="text-success fw-bold fs-5 modal-content" v-if="successSubmission">
               <span v-if="!inEdit">Your review has successfully been submitted!</span>
               <span v-else>Your review has successfully been updated!</span>
               <div class="modal-footer">
@@ -855,7 +855,7 @@
               </div>
             </div>
 
-            <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorSubmission">
+            <div class="text-danger fw-bold fs-5 modal-content" v-if="errorSubmission">
               <div v-if="errorMessage" class="row">
                 <span v-if="!inEdit">An error occurred while attempting to submit, please try
                   again!</span>
@@ -863,7 +863,7 @@
                   again!</span>
                 <br />
                 <button class="btn primary-btn btn-sm" @click="reset">
-                  <span class="fs-5 fst-italic">
+                  <span class="fs-5">
                     Retry your submission here!
                   </span>
                 </button>
@@ -2110,12 +2110,12 @@
                   </div>
 
                   <!-- DELETE ERROR -->
-                  <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="errorDelete">
+                  <div class="text-danger fw-bold fs-5 modal-content" v-if="errorDelete">
                     <div v-if="errorDeleteMessage" class="row">
                       <span>An error occurred while attempting to delete, please try again!</span>
                       <br />
                       <button class="btn primary-btn btn-sm" @click="reloadRoute">
-                        <span class="fs-5 fst-italic">
+                        <span class="fs-5">
                           Retry your delete request here!
                         </span>
                       </button>
@@ -2173,7 +2173,7 @@
                   </div>
 
                   <!-- SHARE ERROR -->
-                  <div class="text-danger fst-italic fw-bold fs-3 modal-content" v-if="shareError">
+                  <div class="text-danger fw-bold fs-5 modal-content" v-if="shareError">
                     <div class="modal-body text-center p-4">
                       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
@@ -2183,7 +2183,7 @@
                       <span>{{ shareErrorMessage }}</span>
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
+                      <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
                         Close
                       </button>
                     </div>
