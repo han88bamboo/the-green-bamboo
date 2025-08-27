@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ loadedListings.length }}</span> Drinks On The Menu
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
                 </p>
             </div>
 
@@ -1913,6 +1913,18 @@ export default {
             countItems(this.editMenu);
             return count;
         },
+
+        // Get the appropriate menu items count to display
+        // Prioritizes database count, falls back to loaded count
+        displayMenuItemsCount() {
+            // If we have a count from the database endpoint, use it
+            if (this.totalMenuItemsCount > 0) {
+                return this.totalMenuItemsCount;
+            }
+            
+            // Fall back to loaded listings count if no database count available
+            return this.loadedListings.length;
+        },
         
         // Get sections formatted for dropdown selection
         sectionOptionsForItems() {
@@ -2037,6 +2049,9 @@ export default {
 
             // Flag to prevent duplicate loading
             isLoading: false,
+            
+            // Menu items count from database
+            totalMenuItemsCount: 0,
             
             // Data source mode tracking
             dataSourceMode: '', // 'legacy-flat', 'legacy-hierarchical', 'api-hierarchical', 'empty'
@@ -2421,10 +2436,16 @@ export default {
         },
 
         // Load menu data from provided detailedMenu prop (legacy mode)
-        loadMenuDataFromProp() {
+        async loadMenuDataFromProp() {
             console.log('🍽️ Processing provided detailedMenu prop');
             
             try {
+                // Load menu items count if venue ID is available
+                const venueId = this.targetVenue?.id || this.$route.params?.venueID;
+                if (venueId) {
+                    await this.loadMenuItemsCount(venueId);
+                }
+                
                 // Check if the provided data already has hierarchical structure (subsections)
                 const hasHierarchicalStructure = this.detailedMenu.some(section => 
                     Object.prototype.hasOwnProperty.call(section, 'isSubSection') || 
@@ -2735,6 +2756,9 @@ export default {
 
                 console.log('🍽️ Loading menu for venue ID:', venueId);
 
+                // Load menu items count alongside the menu data
+                await this.loadMenuItemsCount(venueId);
+
                 // Load complete hierarchical menu structure from new endpoint
                 const hierarchicalMenuData = await this.loadHierarchicalMenu(venueId);
                 
@@ -2880,6 +2904,29 @@ export default {
             
             console.log('🍽️ Processed hierarchical menu:', processedMenu.length, 'main sections');
             return processedMenu;
+        },
+
+        // Fetch total menu items count for the venue
+        async loadMenuItemsCount(venueId) {
+            console.log('🍽️ Loading menu items count for venue:', venueId);
+            
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenuItemsCount/${venueId}`);
+                
+                if (response.status === 200 && response.data?.data?.totalMenuItems !== undefined) {
+                    this.totalMenuItemsCount = response.data.data.totalMenuItems;
+                    console.log('🍽️ Menu items count loaded:', this.totalMenuItemsCount);
+                    return this.totalMenuItemsCount;
+                } else {
+                    console.warn('🍽️ No menu items count found for venue:', venueId);
+                    this.totalMenuItemsCount = 0;
+                    return 0;
+                }
+            } catch (error) {
+                console.error('🍽️ Error loading menu items count:', error);
+                this.totalMenuItemsCount = 0;
+                return 0;
+            }
         },
 
         // Enrich menu items with listing data
