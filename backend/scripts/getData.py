@@ -20,7 +20,7 @@
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
-#           /getWhatsOnMenu/<venue_id> (GET),
+#           /getWhatsOnMenu/<venue_id> (GET), /getVenueMenuItemsCount/<venue_id> (GET),
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -4383,6 +4383,51 @@ def getVenuesByIds():
     except Exception as e:
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching venues by IDs."}), 500
+
+# [GET] Get venue menu items count
+@blueprint.route("/getVenueMenuItemsCount/<int:venue_id>", methods=['GET'])
+def getVenueMenuItemsCount(venue_id):
+    """
+    Get the total count of menu items for a specific venue
+    Returns the count of all available menu items in the venue's menu
+    """
+    conn = g.db
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        # Count all menu items for the venue where items are available
+        cursor.execute("""
+            SELECT COUNT(mi."id") as "totalMenuItems"
+            FROM "menuItems" mi
+            JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+            WHERE vm."venueId" = %s
+        """, (venue_id,))
+        
+        result = cursor.fetchone()
+        
+        if result:
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "venueId": venue_id,
+                    "totalMenuItems": result['totalMenuItems']
+                }
+            })
+        else:
+            return jsonify({
+                "code": 404,
+                "data": {
+                    "venueId": venue_id,
+                    "totalMenuItems": 0
+                },
+                "message": "Venue not found or has no menu items"
+            })
+            
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving menu items count: {str(e)}"
+        }), 500
 
 # [GET] Specific Venue
 @blueprint.route("/venue/<id>")
