@@ -4548,7 +4548,7 @@ def getVenueMenu(section_id):
                 p."producerName",
                 mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
                 srvTyp."servingType", mi."variant",
-                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = lst."id"), 0) as "avgRating",
+                (SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = lst."id") as "avgRating",
                 COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
@@ -4591,7 +4591,7 @@ def getVenueMenu(section_id):
                     "typeCategory": row['typeCategory'],
                     "producerID": row['producerID'],
                     "producerName": row['producerName'],
-                    "avgRating": float(row['avgRating']) if row['avgRating'] is not None else 0,
+                    "avgRating": "-" if row['avgRating'] is None else round(float(row['avgRating']), 1),
                     "itemAvailability": row['itemAvailability'],
                     "variant": row['variant'],
                     "servingType": row['itemServingType'],
