@@ -416,7 +416,7 @@
                                 <div class="modal-dialog modal-xl">
 
                                      Report Submission Successful
-                                    <div class="text-success text-center fst-italic fw-bold fs-3 modal-content"
+                                    <div class="text-success text-center fw-bold fs-5 modal-content"
                                         v-if='reportSubmitSuccess'>
                                         <span>Your report has successfully been submitted!</span>
                                         <div class="modal-footer">
@@ -2281,7 +2281,7 @@
                                 </div>
                             </div>
                             <!-- If error, etc... -->
-                            <div v-if="errorDelete" class="text-danger fst-italic fw-bold fs-3 modal-content">
+                            <div v-if="errorDelete" class="text-danger fw-bold fs-5 modal-content">
                                 <!-- ... etc. -->
                             </div>
                             <!-- Deleting in progress -->
