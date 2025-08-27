@@ -4514,12 +4514,13 @@ def getVenueMenu(section_id):
     # Parse and validate query parameters
     try:
         page = max(1, int(request.args.get("page", 1)))
-        limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        # limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        limit = 1000  # Remove pagination - load all items
         search = request.args.get("search", "").strip()
     except ValueError:
         return jsonify({"code": 400, "message": "Invalid pagination parameters"}), 400
     
-    offset = (page - 1) * limit
+    offset = 0  # (page - 1) * limit
     
     conn = g.db
     cur = conn.cursor()
@@ -4557,12 +4558,15 @@ def getVenueMenu(section_id):
             LEFT JOIN "servingTypes" srvTyp
                 ON mi."itemServingType" = srvTyp."id"
             WHERE {where_clause}
-            ORDER BY mi."itemOrder" ASC -- , mi."id" ASC  Add secondary sort for consistency
-            LIMIT %s OFFSET %s;
-        """
+            ORDER BY mi."itemOrder" ASC; -- , mi."id" ASC  Add secondary sort for consistency
+            
+        """ # LIMIT %s OFFSET %s;
         
-        cur.execute(sql, params + [limit, offset])
+        print(f"DEBUG: section_id = {section_id}, params = {params}")
+        print(f"DEBUG: SQL = {sql}")
+        cur.execute(sql, params)  # + [limit, offset]
         rows = cur.fetchall()
+        print(f"DEBUG: Found {len(rows)} rows")
         
         if not rows:
             total_items = 0
