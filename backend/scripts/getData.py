@@ -4259,6 +4259,8 @@ def getVenues():
                         'sectionOrder',vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4494,12 +4496,19 @@ def getVenueMenu(section_id):
         # This eliminates the need for a separate COUNT query
         sql = f"""
             SELECT 
-                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
-                lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
-                mi."itemServingType", srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
+                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", 
+                lst."listingName", lst."photo", lst."bottler", lst."drinkType", lst."abv", 
+                lst."officialDesc", lst."originCountry", lst."typeCategory", lst."producerID",
+                p."producerName",
+                mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
+                srvTyp."servingType", mi."variant",
+                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = lst."id"), 0) as "avgRating",
+                COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
                 ON mi."itemID" = lst."id"
+            INNER JOIN "producers" p
+                ON lst."producerID" = p."id"
             LEFT JOIN "servingTypes" srvTyp
                 ON mi."itemServingType" = srvTyp."id"
             WHERE {where_clause}
@@ -4528,6 +4537,12 @@ def getVenueMenu(section_id):
                     "bottler": row['bottler'], 
                     "drinkType": row['drinkType'],
                     "abv": row['abv'],
+                    "description": row['officialDesc'],
+                    "originCountry": row['originCountry'],
+                    "typeCategory": row['typeCategory'],
+                    "producerID": row['producerID'],
+                    "producerName": row['producerName'],
+                    "avgRating": float(row['avgRating']) if row['avgRating'] is not None else 0,
                     "itemAvailability": row['itemAvailability'],
                     "variant": row['variant'],
                     "servingType": row['itemServingType'],
@@ -4593,7 +4608,7 @@ def getVenueMenuBySearch(venue_id):
 
     try:
         # Get all sections for the venue first
-        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
+        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId", "isSubSection" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
         all_sections_rows = cur.fetchall()
         
         sections = {s['id']: {**s, 'sectionMenu': [], 'subSections': [], 'isExpanded': True} for s in all_sections_rows if not s['parentSectionId']}
@@ -4700,6 +4715,8 @@ def getVenue(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4803,6 +4820,8 @@ def getVenueByRequestId(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
