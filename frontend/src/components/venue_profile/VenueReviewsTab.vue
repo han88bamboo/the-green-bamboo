@@ -3,9 +3,9 @@
     <!-- Header Section -->
     <div class="mb-3">
       <h4 class="text-start text-dark fs-4 fw-bold m-0 mobile-fs-6 mb-2">
-        Average Venue Rating: {{ averageRating }}
+        Average Venue Rating: {{ averageVenueRating.toFixed(1) }}
         <span class="text-warning">★</span>
-        ({{ venueReviews.length }} {{ venueReviews.length === 1 ? 'Review' : 'Reviews' }})
+        ({{ totalVenueReviews }} {{ totalVenueReviews === 1 ? 'Review' : 'Reviews' }})
       </h4>
     </div>
 
@@ -21,6 +21,7 @@
             data-bs-target="#venueReviewModal" 
             role="button"
             tabindex="0"
+            style="width:150px; height:150px"
           >
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
@@ -304,6 +305,14 @@ export default {
       type: Array,
       default: () => []
     },
+    averageVenueRating: {
+      type: Number,
+      default: 0
+    },
+    totalVenueReviews: {
+      type: Number,
+      default: 0
+    },
     userId: [String, Number],
     canMod: {
       type: Boolean,
@@ -317,7 +326,6 @@ export default {
       default: () => []
     },
     noMoreReviews: Boolean,
-    defaultPhoto: String,
     loadingMore: {
       type: Boolean,
       default: false
@@ -327,6 +335,7 @@ export default {
   data () {
     return {
       defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
+      defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
       observer: null,
     } 
   },
@@ -357,12 +366,6 @@ export default {
   },
 
   computed: {
-    averageRating() {
-      if (!this.venueReviews || this.venueReviews.length === 0) return '-';
-      const total = this.venueReviews.reduce((acc, review) => acc + review.rating, 0);
-      return (total / this.venueReviews.length).toFixed(1);
-    },
-
     canAddReview() {
       return this.userType === 'user' && 
              this.user_id !== 'defaultUser' && 
@@ -462,7 +465,7 @@ export default {
 <style scoped>
 .review-image {
   width: 100%;
-  height: 100px;
+  height: 150px;
   object-fit: cover;
   border-radius: 8px;
   cursor: pointer;

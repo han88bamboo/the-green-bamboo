@@ -20,8 +20,20 @@ def getVenueReviews(venue_id: int):
     conn = g.db
 
     try:
-        per_page = int(request.args.get("limit", 20))
+        # Validate and sanitize inputs
+        try:
+            per_page = int(request.args.get("limit", 20))
+            if per_page <= 0 or per_page > 100:  # Set reasonable limits
+                return jsonify({"code": 400, "message": "Limit must be between 1 and 100"}), 400
+        except ValueError:
+            return jsonify({"code": 400, "message": "Invalid limit parameter"}), 400
+        
         last_id = request.args.get("last_id", None)
+        if last_id:
+            try:
+                last_id = int(last_id)
+            except ValueError:
+                return jsonify({"code": 400, "message": "Invalid last_id parameter"}), 400
 
         if last_id:
             query = """
@@ -62,9 +74,52 @@ def getVenueReviews(venue_id: int):
 
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(query, params)
-            rows = cursor.fetchall()
+            reviews = cursor.fetchall()
 
-        return jsonify(rows)
+            # Debug: Check what we got
+            print(f"Raw reviews data: {reviews}")
+            print(f"First review type info: {type(reviews[0]) if reviews else 'No reviews'}")
+            if reviews:
+                for key, value in reviews[0].items():
+                    print(f"  {key}: {type(value)} = {value}")
+
+            stats_query = """
+            SELECT
+                COALESCE(AVG(rating), 0) as average_rating,
+                COUNT(id) as total_reviews
+            FROM "venueReviews"
+            WHERE "venueID" = %s
+            """
+            cursor.execute(stats_query, (venue_id,))
+            stats = cursor.fetchone()
+            
+            print(f"Stats data: {stats}")
+            print(f"Average rating type: {type(stats['average_rating'])}")
+
+        # Convert datetime objects to strings for JSON serialization
+        serialized_reviews = []
+        for review in reviews:
+            serialized_review = dict(review)
+            # Handle datetime serialization
+            if 'createdDate' in serialized_review and serialized_review['createdDate']:
+                serialized_review['createdDate'] = serialized_review['createdDate'].isoformat()
+            
+            # Handle photos if it's a string that needs parsing
+            if 'photos' in serialized_review and serialized_review['photos']:
+                # If photos is stored as JSON string, you might need to parse it
+                # or ensure it's already in the right format
+                pass
+            
+            serialized_reviews.append(serialized_review)
+
+        response_data = {
+            "reviews": serialized_reviews,
+            "average_rating": round(float(stats['average_rating']), 1),
+            "total_reviews": stats['total_reviews']
+        }
+        
+        print(f"Final response_data: {response_data}")
+        return jsonify(response_data)
 
     except Exception as e:
         import traceback

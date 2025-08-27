@@ -134,6 +134,8 @@ Normal User (Anonymous & Logged-In)
                     <!-- Reviews Tab -->
                     <div v-show="contentMode === 'venueReviews'">
                         <VenueReviewsTab :venue-reviews="venue_reviews.reviews"
+                            :average-venue-rating="venue_reviews.average_rating"
+                            :total-venue-reviews="venue_reviews.total_reviews"
                             :user-id="viewerID"
                             :user-type="viewerType"
                             :can-mod="isAdmin"
@@ -331,6 +333,8 @@ export default {
 
             venue_reviews: {
                 reviews: [], // list of reviews (default to 20)
+                average_rating: 0,
+                total_reviews: 0,
                 lastId: null, // last loaded review id 
                 loading: false, 
                 hasMore: true,
@@ -396,16 +400,11 @@ export default {
         // Logic to determine if the current viewer is the owner of the venue profile
         checkOwnerPriviledge() {
             const isVenueOwner =
-                this.viewerType === 'venue' && this.viewerID === this.targetVenue;
+                this.viewerType === 'venue' && this.viewerID === this.targetVenue.id;
 
             // Power users have owner privileges for claimed venues
             const isPowerUserWithClaim =
                 this.isAdmin && Boolean(this.targetVenue.claimStatus);
-            // console.log('viewerType : ', this.viewerType)
-            // console.log('viewerID : ', this.viewerID)
-            // console.log('targetVenue', this.targetVenue)
-            // console.log('veunue owner : ', isVenueOwner)
-            // console.log('power user : ', isPowerUserWithClaim)
             return isVenueOwner || isPowerUserWithClaim;
         },
 
@@ -414,16 +413,16 @@ export default {
             const hasVenueID = Boolean(venueID);
 
             if (hasVenueID) {
-                this.targetVenue = venueID;
+                this.targetVenue.id = venueID;
                 this.targetVenueID = venueID;
                 this.userName = username || this.userName;
             }
             else if (this.viewerType === 'venue') {
                 // Show logged-in venue's profile
-                this.targetVenue = this.viewerID;
+                this.targetVenue.id = this.viewerID;
                 this.targetVenueID = this.viewerID;
                 this.userName = this.userName || ''; // Ensure it's not undefined
-                this.pageURL = `${this.pageURL}/${this.targetVenue}/${this.userName}`;
+                this.pageURL = `${this.pageURL}/${this.targetVenue.id}/${this.userName}`;
             }
             else {
                 // Redirect non-venue users without venueID
@@ -519,41 +518,87 @@ export default {
         },
 
         async getReviews() {
-            if (this.venue_reviews.loading || !this.venue_reviews.hasMore) return
-            this.venue_reviews.loading = true
-            this.venue_reviews.error = null
+            if (this.venue_reviews.loading || !this.venue_reviews.hasMore) return;
+            this.venue_reviews.loading = true;
+            this.venue_reviews.error = null;
 
             try {
-                // Build API URL with cursor (last_id)
-                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/reviews?limit=${this.venue_review_limit}`
+                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/reviews?limit=${this.venue_review_limit}`;
                 if (this.venue_reviews.lastId) {
-                    url += `&last_id=${this.venue_reviews.lastId}`
+                    url += `&last_id=${this.venue_reviews.lastId}`;
                 }
 
-                const response = await apiService.fetchWithRetry(this.$axios, url)
-                console.log(response)
+                const response = await apiService.fetchWithRetry(this.$axios, url);
+                const responseData = response.data;
 
-                // Access the data array from response.data
-                const reviews = response.data || []
+                // Enhanced validation
+                if (typeof responseData !== 'object' || responseData === null) {
+                    throw new Error("Invalid API response format");
+                }
 
-                if (reviews && reviews.length > 0) {
-                    this.venue_reviews.reviews.push(...reviews)
+                // Validate required properties
+                if (!Array.isArray(responseData.reviews)) {
+                    throw new Error("Reviews data is not an array");
+                }
 
-                    // Update cursor to the last review's ID
-                    this.venue_reviews.lastId = reviews[reviews.length - 1].id
-                    
-                    // If we got fewer items than requested, we've reached the end
-                    if (reviews.length < this.venue_review_limit) {
-                        this.venue_reviews.hasMore = false
+                const newReviews = responseData.reviews;
+
+                if (newReviews.length > 0) {
+                    // Validate each review has required fields
+                    const validReviews = newReviews.filter(review => {
+                        if (!review || typeof review !== 'object') {
+                            console.warn('Invalid review object:', review);
+                            return false;
+                        }
+                        if (!review.id) {
+                            console.warn('Review missing ID:', review);
+                            return false;
+                        }
+                        return true;
+                    });
+
+                    if (validReviews.length > 0) {
+                        this.venue_reviews.reviews.push(...validReviews);
+                        this.venue_reviews.lastId = validReviews[validReviews.length - 1].id;
+                    }
+
+                    // Better pagination logic: check if we got exactly what we asked for
+                    // If we got fewer, we've reached the end
+                    if (newReviews.length < this.venue_review_limit) {
+                        this.venue_reviews.hasMore = false;
                     }
                 } else {
-                    this.venue_reviews.hasMore = false
+                    // No new reviews means we've reached the end
+                    this.venue_reviews.hasMore = false;
                 }
+
+                // Update stats (consider doing this only on first load for efficiency)
+                if (typeof responseData.average_rating === 'number') {
+                    this.venue_reviews.average_rating = responseData.average_rating;
+                }
+                if (typeof responseData.total_reviews === 'number') {
+                    this.venue_reviews.total_reviews = responseData.total_reviews;
+                }
+
+                // Optional: Implement memory management for large datasets
+                // Keep only the last N reviews to prevent memory issues
+                const maxReviews = 1000; // Adjust as needed
+                if (this.venue_reviews.reviews.length > maxReviews) {
+                    this.venue_reviews.reviews = this.venue_reviews.reviews.slice(-maxReviews);
+                }
+
             } catch (err) {
-                console.error("Error loading reviews:", err)
-                this.venue_reviews.error = err.message || "Failed to load reviews"
+                console.error("Error loading reviews:", err);
+                this.venue_reviews.error = err.message || "Failed to load reviews";
+                this.venue_reviews.hasMore = false;
+                
+                // Optional: Implement retry logic for network errors
+                // if (err.message.includes('network') || err.message.includes('timeout')) {
+                //     setTimeout(() => this.getReviews(), 2000);
+                // }
+                
             } finally {
-                this.venue_reviews.loading = false
+                this.venue_reviews.loading = false;
             }
         },
 
