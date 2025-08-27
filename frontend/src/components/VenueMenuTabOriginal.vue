@@ -3967,9 +3967,10 @@ export default {
                         const cleanItem = {
                             itemID: item.itemID,
                             itemOrder: index, // Ensure sequential ordering
-                            vintage: item.vintage || null,
-                            price: item.price || null,
-                            servingTypeID: item.servingTypeID || null
+                            itemVintage: item.vintage || item.itemVintage || null,
+                            itemPrice: item.itemPrice || item.price || null,
+                            itemAvailability: item.itemAvailability !== undefined ? item.itemAvailability : true,
+                            itemServingType: item.itemServingType || item.servingTypeID || null
                         };
                         
                         // Remove UI-specific properties if they exist
