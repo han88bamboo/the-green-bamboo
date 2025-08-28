@@ -2,7 +2,7 @@
     <NavBar />
     <main>
     <!-- Hero Section with Search -->
-    <section class="hero-section text-center mb-5 hero-overlap">
+    <section class="hero-section text-center mb-5 ">
         <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
@@ -43,7 +43,7 @@
         <div class="category-ribbon-bar">
             <div class="container">
                 <h3 class="mb-0 pt-2 fw-bold" style="color:white;">I'm Looking For</h3>
-                <div class="category-underline"></div>
+                <div class="category-underline pt-0"></div>
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
                     <div class="category-item" 
@@ -1999,18 +1999,8 @@ button.btn.selected {
     z-index: -1;
 }
 
-/* Make the hero sit above the ribbon */
-.hero-overlap {
-  position: relative;     /* create stacking context */
-  z-index: 10;            /* higher than ribbon */
-  overflow: visible;      /* make sure children can spill out */
-}
 
-/* Keep ribbon below */
-.ribbon-under {
-  position: relative;     /* stacking context, but lower z */
-  z-index: 1;
-}
+
 
 /* Your dropdown panel */
 .autocomplete-dropdown, 
@@ -2564,12 +2554,51 @@ button.btn.selected {
 
 .category-underline {
   width: 180px;
-  height: 3px;
-  margin: 10px auto 0; /* centers under the text */
+  height: 4px;
+  margin: 5px auto 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, #F0B358, transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+/* The shimmer gradient itself */
+.category-underline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #F0B358,
+    #fff8d8,
+    #F0B358,
+    transparent
+  );
+  background-size: 300% 100%;
+  animation: shimmer 5s infinite linear;
+  /* taper effect */
+   -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 70%,
+    rgba(0,0,0,0) 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 70%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
   filter: drop-shadow(0 1px 2px rgba(240,179,88,.35));
 }
+
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -200% 0; }
+}
+
 
 .category-ribbon-nav {
     display: flex;
