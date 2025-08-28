@@ -594,7 +594,54 @@ export default {
         },
 
         async getActivities() {
-            return 
+            if (this.bottle_reviews.loading || !this.bottle_reviews.hasMore) return;
+            this.bottle_reviews.loading = true;
+            this.bottle_reviews.error = null;
+
+            try {
+                // Assuming endpoint for bottle reviews is /venue/{id}/bottle-reviews
+                let url = `${process.env.VUE_APP_API_URL}/venue/${this.targetVenueID}/bottle-reviews?limit=${this.venue_review_limit}`;
+                if (this.bottle_reviews.lastId) {
+                    url += `&last_id=${this.bottle_reviews.lastId}`;
+                }
+
+                const response = await apiService.fetchWithRetry(this.$axios, url);
+                const responseData = response.data;
+
+                if (typeof responseData !== 'object' || responseData === null) {
+                    throw new Error("Invalid API response format for bottle reviews");
+                }
+
+                if (!Array.isArray(responseData.reviews)) {
+                    throw new Error("Bottle reviews data is not an array");
+                }
+
+                const newReviews = responseData.reviews;
+
+                if (typeof responseData.average_rating === 'number') {
+                    this.bottle_reviews.average_rating = responseData.average_rating;
+                }
+                if (typeof responseData.total_reviews === 'number') {
+                    this.bottle_reviews.total_reviews = responseData.total_reviews;
+                }
+
+                if (newReviews.length > 0) {
+                    const validReviews = newReviews.filter(review => review && review.id);
+                    if (validReviews.length > 0) {
+                        this.bottle_reviews.reviews.push(...validReviews);
+                        this.bottle_reviews.lastId = validReviews[validReviews.length - 1].id;
+                    }
+                }
+
+                this.bottle_reviews.hasMore = this.bottle_reviews.reviews.length < this.bottle_reviews.total_reviews;
+
+            } catch (err) {
+                console.error("Error loading bottle reviews:", err);
+                this.bottle_reviews.error = err.message || "Failed to load bottle reviews";
+                this.bottle_reviews.hasMore = false;
+            } finally {
+                this.bottle_reviews.loading = false;
+            }
         },
 
         // Main venue data fetching method - optimized for SSR

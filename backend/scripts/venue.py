@@ -3,6 +3,11 @@ import os
 from psycopg2.extras import execute_values
 
 from flask import Blueprint, g, request, jsonify
+import logging
+import os
+from psycopg2.extras import execute_values
+
+from flask import Blueprint, g, request, jsonify
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from datetime import datetime
 from urllib.request import urlopen
@@ -125,3 +130,105 @@ def getVenueReviews(venue_id: int):
         import traceback
         traceback.print_exc()
         return jsonify({"code": 500, "message": "Error getting reviews"}), 500
+
+
+@blueprint.route("/<int:venue_id>/bottle-reviews", methods=['GET'])
+def getVenueBottleReviews(venue_id: int):
+    conn = g.db
+    try:
+        # Validate and sanitize inputs
+        try:
+            per_page = int(request.args.get("limit", 10))
+            if per_page <= 0 or per_page > 100:
+                return jsonify({"code": 400, "message": "Limit must be between 1 and 100"}), 400
+        except ValueError:
+            return jsonify({"code": 400, "message": "Invalid limit parameter"}), 400
+        
+        last_id = request.args.get("last_id", None)
+        if last_id:
+            try:
+                last_id = int(last_id)
+            except ValueError:
+                return jsonify({"code": 400, "message": "Invalid last_id parameter"}), 400
+
+        if last_id:
+            query = """
+            SELECT
+                r.id,
+                r."userID",
+                u.username,
+                u.photo as "userPhoto",
+                u.points as "userPoints",
+                u.rank as "userRank",
+                l."listingName" as "bottleName",
+                r.rating,
+                r."reviewDesc",
+                r."createdDate",
+                r.photo,
+                r."listingID" as "reviewTarget"
+            FROM reviews r
+            JOIN users u ON r."userID" = u.id
+            JOIN listings l ON r."listingID" = l.id
+            WHERE r."venueID" = %s AND r.id < %s
+            ORDER BY r."createdDate" DESC
+            LIMIT %s
+            """
+            params = (venue_id, last_id, per_page)
+        else:
+            query = """
+            SELECT
+                r.id,
+                r."userID",
+                u.username,
+                u.photo as "userPhoto",
+                u.points as "userPoints",
+                u.rank as "userRank",
+                l."listingName" as "bottleName",
+                r.rating,
+                r."reviewDesc",
+                r."createdDate",
+                r.photo,
+                r."listingID" as "reviewTarget"
+            FROM reviews r
+            JOIN users u ON r."userID" = u.id
+            JOIN listings l ON r."listingID" = l.id
+            WHERE r."venueID" = %s
+            ORDER BY r."createdDate" DESC
+            LIMIT %s
+            """
+            params = (venue_id, per_page)
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(query, params)
+            reviews = cursor.fetchall()
+
+            stats_query = """
+            SELECT
+                COALESCE(AVG(rating), 0) as average_rating,
+                COUNT(id) as total_reviews
+            FROM reviews
+            WHERE "venueID" = %s
+            """
+            cursor.execute(stats_query, (venue_id,))
+            stats = cursor.fetchone()
+
+        serialized_reviews = []
+        for review in reviews:
+            serialized_review = dict(review)
+            if 'createdDate' in serialized_review and serialized_review['createdDate']:
+                serialized_review['createdDate'] = serialized_review['createdDate'].isoformat()
+            serialized_reviews.append(serialized_review)
+
+        response_data = {
+            "reviews": serialized_reviews,
+            "average_rating": round(float(stats['average_rating']), 1),
+            "total_reviews": stats['total_reviews']
+        }
+        
+        return jsonify(response_data)
+
+    except Exception as e:
+        logger.error(f"Error getting bottle reviews for venue {venue_id}: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"code": 500, "message": "Error getting bottle reviews"}), 500

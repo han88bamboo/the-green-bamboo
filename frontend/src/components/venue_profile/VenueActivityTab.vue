@@ -220,26 +220,71 @@
 export default {
   name: 'VenueActivityTab',
 
+  props: {
+    bottleReviews: {
+      type: Array,
+      default: () => [],
+    },
+    loadingMoreReviews: {
+      type: Boolean,
+      default: false,
+    },
+    noMoreBottleReviews: {
+      type: Boolean,
+      default: false,
+    },
+    combinedReviewImages: {
+      type: Array,
+      default: () => [],
+    },
+  },
+
   data() {
     return {
-      // Add your data properties here
-      loadingMoreReviews: false,
       deletingReview: false,
       successDelete: false,
       errorDelete: null,
+      observer: null,
+      defaultPhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739",
+      defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
+    };
+  },
+
+  mounted() {
+    this.observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry && entry.isIntersecting) {
+          this.loadMoreBottleReviews();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 1.0,
+      }
+    );
+
+    if (this.$refs.observer) {
+      this.observer.observe(this.$refs.observer);
+    }
+  },
+
+  beforeUnmount() {
+    if (this.observer) {
+      this.observer.disconnect();
     }
   },
 
   computed: {
     bottleReviewImages() {
       return this.combinedReviewImages
-        ?.filter(img => img.reviewType === 'bottle')
-        ?.slice(0, 5) || []
+        ?.filter((img) => img.reviewType === 'bottle')
+        ?.slice(0, 5) || [];
     },
 
     hasBottleReviews() {
-      return this.bottleReviews && this.bottleReviews.length > 0
-    }
+      return this.bottleReviews && this.bottleReviews.length > 0;
+    },
   },
 
   methods: {
@@ -247,49 +292,58 @@ export default {
       const bottleName = this.getBottleNameFromReview(review)
         .toLowerCase()
         .replace(/\s+/g, '-')
-        .replace(/[^a-z0-9-]/g, '')
+        .replace(/[^a-z0-9-]/g, '');
 
-      return `/listing/view/${review.reviewTarget}/${bottleName}`
+      return `/listing/view/${review.reviewTarget}/${bottleName}`;
     },
 
-    async loadMoreBottleReviews() {
-      this.loadingMoreReviews = true
-      try {
-        // Your load more logic here
-        await this.loadMoreReviews()
-      } catch (error) {
-        console.error('Failed to load more reviews:', error)
-      } finally {
-        this.loadingMoreReviews = false
-      }
+    loadMoreBottleReviews() {
+      if (this.loadingMoreReviews || this.noMoreBottleReviews) return;
+      this.$emit('load-more-bottle-reviews');
     },
 
     async deleteReview() {
-      this.deletingReview = true
-      this.errorDelete = null
+      this.deletingReview = true;
+      this.errorDelete = null;
 
       try {
-        // Your delete logic here
-        await this.performDeleteReview()
-        this.successDelete = true
+        await this.performDeleteReview();
+        this.successDelete = true;
       } catch (error) {
-        this.errorDelete = error.message || 'Failed to delete review'
+        this.errorDelete = error.message || 'Failed to delete review';
       } finally {
-        this.deletingReview = false
+        this.deletingReview = false;
       }
     },
 
     reloadRoute() {
-      // Your reload logic here
-      this.$router.go(0)
+      this.$router.go(0);
     },
 
-    // Add your other existing methods here:
-    // openDetailedReviewModal, getPhotoFromReview, getUsernameFromReview, 
-    // getUserPointsFromReview, getUserRankColor, getUserRankFromReview,
-    // getBottleNameFromReview, etc.
-  }
-}
+    // Placeholder methods
+    openDetailedReviewModal(imageData) {
+      console.log('openDetailedReviewModal', imageData);
+    },
+    getPhotoFromReview(review) {
+      return review.userPhoto || this.defaultProfilePhoto;
+    },
+    getUsernameFromReview(review) {
+      return review.username || 'Anonymous';
+    },
+    getUserPointsFromReview(review) {
+      return review.userPoints || 0;
+    },
+    getUserRankColor() {
+      return '#6c757d';
+    },
+    getUserRankFromReview(review) {
+      return review.userRank || 'N/A';
+    },
+    getBottleNameFromReview(review) {
+      return review.bottleName || 'Unnamed Drink';
+    },
+  },
+};
 </script>
 
 <style scoped>
