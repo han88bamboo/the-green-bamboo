@@ -20,7 +20,7 @@
 #           [Venues]
 #           /getVenuesWithSpecificListing/<listingID> (GET), /getVenuesBySearch (GET), /getVenues (GET), /getVenuesByIds
 #           /getVenue/<id> (GET), /getVenuesAPI (GET), /getVenuesProfileViewsByVenue/<id> (GET),
-#           /getWhatsOnMenu/<venue_id> (GET),
+#           /getWhatsOnMenu/<venue_id> (GET), /getVenueMenuItemsCount/<venue_id> (GET),
 
 #           [Users]
 #           /getUsers (GET), /getUsersFromList (POST), /getUserFollowListDetails (POST) /getUser/<id> (GET), 
@@ -4229,6 +4229,8 @@ def getVenues():
                         'sectionOrder',vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4352,6 +4354,51 @@ def getVenuesByIds():
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred while fetching venues by IDs."}), 500
 
+# [GET] Get venue menu items count
+@blueprint.route("/getVenueMenuItemsCount/<int:venue_id>", methods=['GET'])
+def getVenueMenuItemsCount(venue_id):
+    """
+    Get the total count of menu items for a specific venue
+    Returns the count of all available menu items in the venue's menu
+    """
+    conn = g.db
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    try:
+        # Count all menu items for the venue where items are available
+        cursor.execute("""
+            SELECT COUNT(mi."id") as "totalMenuItems"
+            FROM "menuItems" mi
+            JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+            WHERE vm."venueId" = %s
+        """, (venue_id,))
+        
+        result = cursor.fetchone()
+        
+        if result:
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "venueId": venue_id,
+                    "totalMenuItems": result['totalMenuItems']
+                }
+            })
+        else:
+            return jsonify({
+                "code": 404,
+                "data": {
+                    "venueId": venue_id,
+                    "totalMenuItems": 0
+                },
+                "message": "Venue not found or has no menu items"
+            })
+            
+    except Exception as e:
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving menu items count: {str(e)}"
+        }), 500
+
 # [GET] Specific Venue
 @blueprint.route("/venue/<id>")
 def venue(id):
@@ -4437,12 +4484,13 @@ def getVenueMenu(section_id):
     # Parse and validate query parameters
     try:
         page = max(1, int(request.args.get("page", 1)))
-        limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        # limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        limit = 1000  # Remove pagination - load all items
         search = request.args.get("search", "").strip()
     except ValueError:
         return jsonify({"code": 400, "message": "Invalid pagination parameters"}), 400
     
-    offset = (page - 1) * limit
+    offset = 0  # (page - 1) * limit
     
     conn = g.db
     cur = conn.cursor()
@@ -4464,21 +4512,31 @@ def getVenueMenu(section_id):
         # This eliminates the need for a separate COUNT query
         sql = f"""
             SELECT 
-                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", lst."listingName", lst."photo", 
-                lst."bottler", lst."drinkType", lst."abv", mi."itemPrice", mi."itemAvailability", 
-                mi."itemServingType", srvTyp."servingType", mi."variant", COUNT(*) OVER() as total_count
+                mi."id", mi."sectionId", mi."itemID", mi."itemOrder", 
+                lst."listingName", lst."photo", lst."bottler", lst."drinkType", lst."abv", 
+                lst."officialDesc", lst."originCountry", lst."typeCategory", lst."producerID",
+                p."producerName",
+                mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
+                srvTyp."servingType", mi."variant",
+                (SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = lst."id") as "avgRating",
+                COUNT(*) OVER() as total_count
             FROM "menuItems" mi
             INNER JOIN "listings" lst
                 ON mi."itemID" = lst."id"
+            INNER JOIN "producers" p
+                ON lst."producerID" = p."id"
             LEFT JOIN "servingTypes" srvTyp
                 ON mi."itemServingType" = srvTyp."id"
             WHERE {where_clause}
-            ORDER BY mi."itemOrder" ASC -- , mi."id" ASC  Add secondary sort for consistency
-            LIMIT %s OFFSET %s;
-        """
+            ORDER BY mi."itemOrder" ASC; -- , mi."id" ASC  Add secondary sort for consistency
+            
+        """ # LIMIT %s OFFSET %s;
         
-        cur.execute(sql, params + [limit, offset])
+        print(f"DEBUG: section_id = {section_id}, params = {params}")
+        print(f"DEBUG: SQL = {sql}")
+        cur.execute(sql, params)  # + [limit, offset]
         rows = cur.fetchall()
+        print(f"DEBUG: Found {len(rows)} rows")
         
         if not rows:
             total_items = 0
@@ -4498,6 +4556,12 @@ def getVenueMenu(section_id):
                     "bottler": row['bottler'], 
                     "drinkType": row['drinkType'],
                     "abv": row['abv'],
+                    "description": row['officialDesc'],
+                    "originCountry": row['originCountry'],
+                    "typeCategory": row['typeCategory'],
+                    "producerID": row['producerID'],
+                    "producerName": row['producerName'],
+                    "avgRating": "-" if row['avgRating'] is None else round(float(row['avgRating']), 1),
                     "itemAvailability": row['itemAvailability'],
                     "variant": row['variant'],
                     "servingType": row['itemServingType'],
@@ -4563,7 +4627,7 @@ def getVenueMenuBySearch(venue_id):
 
     try:
         # Get all sections for the venue first
-        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
+        cur.execute('SELECT id, "sectionName", "sectionOrder", "parentSectionId", "isSubSection" FROM "venuesMenu" WHERE "venueId" = %s ORDER BY "sectionOrder"', (venue_id,))
         all_sections_rows = cur.fetchall()
         
         sections = {s['id']: {**s, 'sectionMenu': [], 'subSections': [], 'isExpanded': True} for s in all_sections_rows if not s['parentSectionId']}
@@ -4670,6 +4734,8 @@ def getVenue(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4773,6 +4839,8 @@ def getVenueByRequestId(id):
                         'sectionOrder', vm."sectionOrder",
                         'sectionName', vm."sectionName",
                         'sectionId', vm.id,
+                        'parentSectionId', vm."parentSectionId",
+                        'isSubSection', vm."isSubSection",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",

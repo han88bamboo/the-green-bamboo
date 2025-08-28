@@ -2953,12 +2953,13 @@ INSERT INTO "usersDrinkLists" (
     (4, 'Drinks I Have Tried', ''), 
     (4, 'Drinks I Want To Try', '');
 
-    
 INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37);
 
 -- Venue menu sections for Orh Gao (venue ID 11)
 INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11);
 INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11);
+
+INSERT INTO "venuesMenu" VALUES (9, 'Test Subsection (Orh Gao)', 0, 11, 4);
 
 -- Venue menu sections for 
 INSERT INTO "venuesMenu" VALUES (5, 'Test new section 1 (Omu Nomu)', 0, 10);
