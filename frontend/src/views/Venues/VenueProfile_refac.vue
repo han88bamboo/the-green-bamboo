@@ -147,7 +147,7 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Activities Tab -->
                     <div v-show="contentMode === 'recentActivities'">
-                        <VenueActivityTab :venue-reviews="filteredVenueReviews" :bottle-reviews="bottleReviews"
+                        <VenueActivityTab :bottle-reviews="bottle_reviews"
                             :user-id="user_id" :can-mod="isAdmin" />
                     </div>
                 </div>
@@ -341,6 +341,16 @@ export default {
                 error: null
             },  
 
+            bottle_reviews: {
+                reviews: [], // list of reviews (default to 20)
+                average_rating: 0,
+                total_reviews: 0,
+                lastId: null, // last loaded review id 
+                loading: false, 
+                hasMore: true,
+                error: null
+            },
+
             // Properties to hold data from the child component
             updateText: '',
             updatePhoto: null,
@@ -527,6 +537,7 @@ export default {
 
                 const response = await apiService.fetchWithRetry(this.$axios, url);
                 const responseData = response.data;
+                console.log(responseData)
 
                 // Enhanced validation
                 if (typeof responseData !== 'object' || responseData === null) {

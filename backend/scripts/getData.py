@@ -82,7 +82,6 @@ from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from decimal import Decimal
 from datetime import datetime, timezone, date, timedelta
 from scripts import pointsHelperFunc
-from scripts import pointsHelperFunc
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)

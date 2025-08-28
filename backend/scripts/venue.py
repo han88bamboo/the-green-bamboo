@@ -11,6 +11,7 @@ from flask import Blueprint, g, request, jsonify
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from datetime import datetime
 from urllib.request import urlopen
+from scripts.pointsHelperFunc import *
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +51,11 @@ def getVenueReviews(venue_id: int):
                 r."rating",
                 r."reviewDesc",
                 r."createdDate",
-                r."photos"
+                r."photos",
+                pr."currentPoints"
             FROM "venueReviews" r
             LEFT JOIN "users" u ON u.id = r."userID"
+            LEFT JOIN "pointsRecorder" pr ON pr."userID" = r."userID" AND pr."userType" = 'user'
             WHERE r."venueID" = %s AND r.id < %s
             ORDER BY r."createdDate" DESC
             LIMIT %s
@@ -68,9 +71,11 @@ def getVenueReviews(venue_id: int):
                 r."rating",
                 r."reviewDesc",
                 r."createdDate",
-                r."photos"
+                r."photos",
+                pr."currentPoints"
             FROM "venueReviews" r
             LEFT JOIN "users" u ON u.id = r."userID"
+            LEFT JOIN "pointsRecorder" pr ON pr."userID" = r."userID" AND pr."userType" = 'user'
             WHERE r."venueID" = %s
             ORDER BY r."createdDate" DESC
             LIMIT %s
@@ -101,10 +106,11 @@ def getVenueReviews(venue_id: int):
             print(f"Stats data: {stats}")
             print(f"Average rating type: {type(stats['average_rating'])}")
 
-        # Convert datetime objects to strings for JSON serialization
+        # Convert datetime objects to strings for JSON serialization and add user ranks
         serialized_reviews = []
         for review in reviews:
             serialized_review = dict(review)
+            
             # Handle datetime serialization
             if 'createdDate' in serialized_review and serialized_review['createdDate']:
                 serialized_review['createdDate'] = serialized_review['createdDate'].isoformat()
@@ -114,6 +120,41 @@ def getVenueReviews(venue_id: int):
                 # If photos is stored as JSON string, you might need to parse it
                 # or ensure it's already in the right format
                 pass
+            
+            # Add user rank information using the functions
+            user_id = serialized_review.get('userID')
+            current_points = serialized_review.get('currentPoints', 0)
+            
+            if user_id and current_points is not None:
+                # Get rank using proof points (from the query result)
+                rank_info = get_rank(current_points)
+                serialized_review['proofRank'] = rank_info[0]  # Rank name with emoji
+                serialized_review['rankColor'] = rank_info[1]  # Rank color
+                serialized_review['proofPoints'] = current_points  # User's current points
+                
+                # Check if user has reached max proof points
+                serialized_review['hasReachedMaxPoints'] = check_max_proof_points(user_id)
+            else:
+                # Fallback: get rank by user ID if points not available in query
+                rank_info = get_rank_by_user_id(user_id) if user_id else None
+                if rank_info:
+                    serialized_review['proofRank'] = rank_info[0]
+                    serialized_review['rankColor'] = rank_info[1]
+                    serialized_review['hasReachedMaxPoints'] = check_max_proof_points(user_id)
+                    # Get proof points separately for this case
+                    conn_temp = g.db
+                    cur_temp = conn_temp.cursor()
+                    cur_temp.execute('SELECT "currentPoints" FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (user_id, 'user'))
+                    points_result = cur_temp.fetchone()
+                    serialized_review['proofPoints'] = points_result['currentPoints'] if points_result else 0
+                else:
+                    serialized_review['proofRank'] = None
+                    serialized_review['rankColor'] = None
+                    serialized_review['proofPoints'] = 0
+                    serialized_review['hasReachedMaxPoints'] = False
+            
+            # Remove currentPoints from the response as it's internal data
+            serialized_review.pop('currentPoints', None)
             
             serialized_reviews.append(serialized_review)
 
