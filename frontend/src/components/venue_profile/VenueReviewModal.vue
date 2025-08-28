@@ -126,8 +126,8 @@
               Assuming a computed property 'currentUserReview' will be created.
             -->
             <div class="modal-footer d-flex justify-content-between">
-              <button v-if="inEdit && currentUserReview" class="btn btn-danger py-1 mobile-fs-7"
-                @click="setDeleteID(currentUserReview)" data-bs-toggle="modal" data-bs-target="#deleteReview">
+              <button v-if="inEdit" class="btn btn-danger py-1 mobile-fs-7"
+                @click="setDeleteID(reviewToEdit)" data-bs-toggle="modal" data-bs-target="#deleteReview">
                 Delete Review
               </button>
               <span v-else></span> <!-- Placeholder to keep justify-content-between working -->
@@ -163,14 +163,13 @@ export default {
       type: [String, Number],
       required: true,
     },
-    filteredVenueReviews: {
-      type: Array,
-      default: () => [],
+    reviewToEdit: {
+      type: Object,
+      default: null,
     },
   },
   data() {
     return {
-      inEdit: false,
       addingVenueReview: true,
       successSubmission: false,
       errorSubmission: false,
@@ -186,13 +185,8 @@ export default {
     };
   },
   computed: {
-    currentUserReview() {
-      if (!this.user_id || this.user_id === 'defaultUser') {
-        return null;
-      }
-      return this.filteredVenueReviews.find(
-        (review) => review.userID === parseInt(this.user_id, 10)
-      );
+    inEdit() {
+      return !!this.reviewToEdit;
     },
   },
   methods: {
@@ -267,7 +261,7 @@ export default {
       }
     },
     async editVenueReview() {
-      if (!this.validateReview() || !this.currentUserReview) {
+      if (!this.validateReview() || !this.reviewToEdit) {
         return;
       }
 
@@ -276,12 +270,12 @@ export default {
         venueID: this.venueId,
         rating: this.rating,
         reviewDesc: this.reviewDesc,
-        createdDate: new Date(this.currentUserReview.createdDate).toISOString(),
+        createdDate: new Date(this.reviewToEdit.createdDate).toISOString(),
         photos: this.selectedImagesForReview.length > 0 ? this.selectedImagesForReview : this.reviewImages64,
       };
 
       try {
-        const response = await axios.put(`http://localhost:5022/edit-review/updateVenueReview/${this.currentUserReview.id}`, payload);
+        const response = await axios.put(`http://localhost:5022/edit-review/updateVenueReview/${this.reviewToEdit.id}`, payload);
         if (response.data.code === 200) {
           this.addingVenueReview = false;
           this.successSubmission = true;
@@ -313,14 +307,13 @@ export default {
         this.deleteVenueReview(review.id);
       }
     },
-    populateFormForEdit() {
-      if (this.currentUserReview) {
-        this.inEdit = true;
-        this.reviewDesc = this.currentUserReview.reviewDesc || '';
-        this.rating = this.currentUserReview.rating || 5;
-        this.reviewImages64 = this.currentUserReview.photos || [];
+    populateFormForEdit(newReview) {
+      console.log('Populating form with review data:', newReview);
+      if (newReview && Object.keys(newReview).length > 0) {
+        this.reviewDesc = newReview.reviewDesc || '';
+        this.rating = newReview.rating || 5;
+        this.reviewImages64 = newReview.photos || [];
       } else {
-        this.inEdit = false;
         this.reviewDesc = '';
         this.rating = 5;
         this.reviewImages64 = [];
@@ -329,9 +322,8 @@ export default {
     }
   },
   watch: {
-    currentUserReview: {
-      handler: 'populateFormForEdit',
-      immediate: true,
+    reviewToEdit(newVal) {
+      this.populateFormForEdit(newVal);
     },
   },
 };

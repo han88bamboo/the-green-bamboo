@@ -142,7 +142,8 @@ Normal User (Anonymous & Logged-In)
                             :in-edit="editProfile"
                             :loading-more="venue_reviews.loading"
                             :no-more-reviews="!venue_reviews.hasMore"
-                            @load-more-reviews="getReviews" />
+                            @load-more-reviews="getReviews"
+                            @update-review="handleUpdateReview" />
                     </div>
 
                     <!-- Activities Tab -->
@@ -166,7 +167,7 @@ Normal User (Anonymous & Logged-In)
     <VenueReviewModal 
       :user_id="viewerID"
       :venueId="targetVenue.id"
-      :filteredVenueReviews="filteredVenueReviews"
+      :review-to-edit="reviewToEdit"
     />
 
     <VenueQRModal 
@@ -308,6 +309,7 @@ export default {
 
             userInfo: {},
             filteredVenueReviews: [],
+            reviewToEdit: null,
             bottleReviews: [],
             user_id: '',
             // viewerID: null,
@@ -380,6 +382,11 @@ export default {
         this.loadData();
     },
     methods: {
+        handleUpdateReview(review) {
+            console.log("Review to edit (in parent):", review);
+            this.reviewToEdit = review;
+        },
+
         handleUpdateSubmit(updateData) {
             // Store the received data
             this.updateText = updateData.text;

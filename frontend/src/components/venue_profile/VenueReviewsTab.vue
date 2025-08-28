@@ -92,7 +92,7 @@
                         Edit
                       </button>
 
-                      <button v-if="canMod" class="btn btn-danger btn-sm mobile-fs-7" @click="setDeleteID(review)"
+                      <button v-if="canEditReview(review) || canMod" class="btn btn-danger btn-sm mobile-fs-7" @click="setDeleteID(review)"
                         data-bs-toggle="modal" data-bs-target="#deleteReview">
                         Delete
                       </button>
@@ -221,7 +221,6 @@ export default {
       default: false
     },
     userType: String,
-    user_id: [String, Number],
     inEdit: Boolean,
     combinedReviewImages: {
       type: Array,
@@ -270,7 +269,7 @@ export default {
   computed: {
     canAddReview() {
       return this.userType === 'user' &&
-        this.user_id !== 'defaultUser' &&
+        this.userId !== 'defaultUser' &&
         !this.inEdit;
     },
 
@@ -288,15 +287,15 @@ export default {
 
   methods: {
     canEditReview(review) {
-      return review.userID === parseInt(this.user_id);
+      return parseInt(review.userID) === parseInt(this.userId);
     },
 
     hasUserUpvoted(review) {
-      return review.userVotes?.upvotes?.includes(parseInt(this.user_id));
+      return review.userVotes?.upvotes?.includes(parseInt(this.userId));
     },
 
     hasUserDownvoted(review) {
-      return review.userVotes?.downvotes?.includes(parseInt(this.user_id));
+      return review.userVotes?.downvotes?.includes(parseInt(this.userId));
     },
 
     getUpvoteAction(review) {
