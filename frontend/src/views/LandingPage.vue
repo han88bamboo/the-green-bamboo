@@ -2,7 +2,7 @@
     <NavBar />
     <main>
     <!-- Hero Section with Search -->
-    <section class="hero-section text-center mb-5">
+    <section class="hero-section text-center mb-5 hero-overlap">
         <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
@@ -42,7 +42,8 @@
     <section class="category-ribbon-section pt-5">
         <div class="category-ribbon-bar">
             <div class="container">
-                <h3 class="mb-0 pt-2 fw-bold" style="color:#F4DBA2;">I'm Looking For</h3>
+                <h3 class="mb-0 pt-2 fw-bold" style="color:white;">I'm Looking For</h3>
+                <div class="category-underline"></div>
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
                     <div class="category-item" 
@@ -1983,7 +1984,7 @@ button.btn.selected {
 
 @media (min-width: 768px) {
     .hero-section {
-        padding-top: 28%; /* desktop height stays the same */
+        padding-top: 20%; /* desktop height stays the same */
     }
 }
 
@@ -1998,6 +1999,26 @@ button.btn.selected {
     z-index: -1;
 }
 
+/* Make the hero sit above the ribbon */
+.hero-overlap {
+  position: relative;     /* create stacking context */
+  z-index: 10;            /* higher than ribbon */
+  overflow: visible;      /* make sure children can spill out */
+}
+
+/* Keep ribbon below */
+.ribbon-under {
+  position: relative;     /* stacking context, but lower z */
+  z-index: 1;
+}
+
+/* Your dropdown panel */
+.autocomplete-dropdown, 
+.dropdown-menu, 
+.mega-dropdown-panel {    /* adjust selector to your component */
+  position: absolute;     /* or fixed if you prefer */
+  z-index: 2000;          /* > hero & ribbon */
+}
 
   .hero-wrapper {
   position: relative;
@@ -2534,9 +2555,20 @@ button.btn.selected {
 }
 
 .category-ribbon-bar {
-    background: linear-gradient(135deg, #027562 0%, #025951 100%);
+    background:
+      radial-gradient(1200px 280px at 50% -40%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #027562 0%, #026353 45%, #01493e 100%);
     box-shadow: 0 2px 10px rgba(2, 117, 98, 0.3);
     padding: 0;
+}
+
+.category-underline {
+  width: 180px;
+  height: 3px;
+  margin: 10px auto 0; /* centers under the text */
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #F0B358, transparent);
+  filter: drop-shadow(0 1px 2px rgba(240,179,88,.35));
 }
 
 .category-ribbon-nav {
@@ -2552,6 +2584,8 @@ button.btn.selected {
     display: flex;
     align-items: center;
 }
+
+
 
 .category-link {
     display: block;
