@@ -346,7 +346,7 @@ export default {
             updatePhoto: null,
 
 
-            venue_review_limit: 2
+            venue_review_limit: 10
         };
     },
     mounted() {
@@ -507,9 +507,6 @@ export default {
                 this.overview.mostPopular = response.data.most_popular;
                 this.overview.mostDiscussed = response.data.most_discussed;
                 this.overview.recentlyAdded = response.data.most_recent;
-
-                console.log("-----------------------------------------")
-                console.log(this.overview)
             } catch (error) {
                 this.overview.error = error;
             } finally {
@@ -543,6 +540,14 @@ export default {
 
                 const newReviews = responseData.reviews;
 
+                // Update stats (consider doing this only on first load for efficiency)
+                if (typeof responseData.average_rating === 'number') {
+                    this.venue_reviews.average_rating = responseData.average_rating;
+                }
+                if (typeof responseData.total_reviews === 'number') {
+                    this.venue_reviews.total_reviews = responseData.total_reviews;
+                }
+
                 if (newReviews.length > 0) {
                     // Validate each review has required fields
                     const validReviews = newReviews.filter(review => {
@@ -561,24 +566,10 @@ export default {
                         this.venue_reviews.reviews.push(...validReviews);
                         this.venue_reviews.lastId = validReviews[validReviews.length - 1].id;
                     }
-
-                    // Better pagination logic: check if we got exactly what we asked for
-                    // If we got fewer, we've reached the end
-                    if (newReviews.length < this.venue_review_limit) {
-                        this.venue_reviews.hasMore = false;
-                    }
-                } else {
-                    // No new reviews means we've reached the end
-                    this.venue_reviews.hasMore = false;
                 }
 
-                // Update stats (consider doing this only on first load for efficiency)
-                if (typeof responseData.average_rating === 'number') {
-                    this.venue_reviews.average_rating = responseData.average_rating;
-                }
-                if (typeof responseData.total_reviews === 'number') {
-                    this.venue_reviews.total_reviews = responseData.total_reviews;
-                }
+                // New pagination logic using total_reviews
+                this.venue_reviews.hasMore = this.venue_reviews.reviews.length < this.venue_reviews.total_reviews;
 
                 // Optional: Implement memory management for large datasets
                 // Keep only the last N reviews to prevent memory issues
