@@ -27,29 +27,154 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # Helper Functions
 
 # Get top 3 comments
-def get_top_comments(content_id, content_type):
+def get_top_comments(content_id, content_type, table_user_type):
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        cursor.execute("""
-            SELECT * FROM "comments"
-            WHERE "contentId" = %s AND "contentType" = %s
+
+        # Get table name 
+        table_name = get_table_name(content_type, "comment", table_user_type)
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type, table_user_type)
+
+        cursor.execute(f"""
+            SELECT * FROM "{table_name}"
+            WHERE "{unique_field}" = %s
             ORDER BY "createdAt" DESC
             LIMIT 3
-        """, (content_id, content_type))
-        return cursor.fetchall()
+        """, (content_id,))
+        comments = cursor.fetchall()
+
+        # Loop through each comment and get the username or producerName or venueName
+        if comments:
+            for comment in comments:
+
+                if comment["userType"] == "user":
+                    cursor.execute("""
+                        SELECT "username"
+                        FROM "users"
+                        WHERE "id" = %s
+                    """, (comment["userId"],))
+                    comment["username"] = cursor.fetchone()["username"]
+
+                elif comment["userType"] == "producer":
+                    cursor.execute("""
+                        SELECT "producerName"
+                        FROM "producers"
+                        WHERE "id" = %s
+                    """, (comment["userId"],))
+                    comment["username"] = cursor.fetchone()["producerName"]
+
+                elif comment["userType"] == "venue":
+                    cursor.execute("""
+                        SELECT "venueName"
+                        FROM "venues"
+                        WHERE "id" = %s
+                    """, (comment["userId"],))
+                    comment["username"] = cursor.fetchone()["venueName"]
+
+        return comments
 
 
 # Get number of likes on content
-def get_likes_count(content_id, content_type):
+def get_likes_count(content_id, content_type, table_user_type):
+
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        cursor.execute("""
-            SELECT COUNT(*) AS "likesCount"
-            FROM "likes"
-            WHERE "contentId" = %s AND "contentType" = %s
-        """, (content_id, content_type))
-        result = cursor.fetchone()
-        return result['likesCount'] if result else 0
+
+        # Get table name 
+        table_name = get_table_name(content_type, "like", table_user_type)
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type, table_user_type)
+
+        # If table name is reviewsUserVotes
+        if table_name == "reviewsUserVotes" and table_user_type == "user":
+            cursor.execute(f"""
+                           SELECT upvotes FROM "{table_name}"
+                           WHERE "id" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("upvotes"):   # <-- safe check
+                return 0
+            return len(upvotes["upvotes"])
+
+        # If table name is producerUpdateLikes or venueUpdateLikes
+        if table_name == "producerUpdateLikes" or table_name == "venueUpdateLikes":
+            cursor.execute(f"""
+                           SELECT COUNT(*) FROM "{table_name}"
+                           WHERE "id" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("count"):   # <-- safe check
+                return 0
+            return upvotes["count"]
+
+        # If table name is listingsLikes or 88BContentLikes
+        if table_name == "listingsLikes" or table_name == "88BContentLikes":
+            cursor.execute(f"""
+                           SELECT COUNT(*) FROM "{table_name}"
+                           WHERE "{unique_field}" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("count"):   # <-- safe check
+                return 0
+            return upvotes["count"]
+        
+
+
+# Get a list of content id user has liked based on a list of content ids given
+def get_liked_content_ids(user_id, user_type, content_type, content_ids):
+    """
+    Returns a list of content IDs liked by a given user.
+    Works for reviewsUserVotes, producerUpdateLikes, venueUpdateLikes, listingsLikes, 88BContentLikes.
+    """
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name and unique field
+        table_name = get_table_name(content_type, "like", user_type)
+        unique_field = get_unique_field(content_type, user_type)
+
+        # ---------- reviewsUserVotes ----------
+        if table_name == "reviewsUserVotes" and user_type == "user":
+            cursor.execute("""
+                SELECT "id"
+                FROM "reviewsUserVotes"
+                WHERE "id" = ANY(%s)
+                AND EXISTS (
+                    SELECT 1
+                    FROM jsonb_array_elements("upvotes") elem
+                    WHERE (elem->>'id')::int = %s
+                )
+            """, (content_ids, user_id))
+            rows = cursor.fetchall()
+            return [row['id'] for row in rows] if rows else []
+
+        # ---------- producerUpdateLikes / venueUpdateLikes ----------
+        if table_name in ("producerUpdateLikes", "venueUpdateLikes"):
+            cursor.execute(f"""
+                SELECT "id"
+                FROM "{table_name}"
+                WHERE "id" = ANY(%s)
+                AND "userId" = %s
+            """, (content_ids, user_id))
+            rows = cursor.fetchall()
+            return [row['id'] for row in rows] if rows else []
+
+        # ---------- listingsLikes / 88BContentLikes ----------
+        if table_name in ("listingsLikes", "88BContentLikes"):
+            cursor.execute(f"""
+                SELECT "{unique_field}"
+                FROM "{table_name}"
+                WHERE "userId" = %s
+                AND "{unique_field}" = ANY(%s)
+            """, (user_id, content_ids))
+            rows = cursor.fetchall()
+            return [row[unique_field] for row in rows] if rows else []
+
+        # Default fallback
+        return []
 
 
 # Get table name based on content_type and feature and user_type
@@ -116,193 +241,232 @@ def get_unique_field(content_type, user_type):
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get random content
-@blueprint.route("/getRandomListings")
-def getRandomListings():
+@blueprint.route("/getRandomListings/<user_id>/<user_type>")
+def getRandomListings(user_id, user_type):
     conn = g.db
 
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        # Fetch distinct dates by converting timestamps to dates
-        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings" WHERE "addedDate" != CURRENT_DATE')
-        date_results = cursor.fetchall()
+    try:
 
-        if not date_results:
-            return jsonify({"error": "No dates found in listings"}), 400
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Fetch distinct dates by converting timestamps to dates
+            cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings" WHERE "addedDate" != CURRENT_DATE')
+            date_results = cursor.fetchall()
 
-        try:
-            # Extract 'addedDate' values properly from RealDictRow
-            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+            if not date_results:
+                return jsonify({"error": "No dates found in listings"}), 400
+
+            try:
+                # Extract 'addedDate' values properly from RealDictRow
+                date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+                
+                if not date_list:
+                    return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+                random_date = random.choice(date_list)  # Select a random date
+            except Exception as e:
+                return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+
+            # Randomizer to determine if we want to include producerUpdates ONLY, venueUpdates ONLY, or BOTH
+            update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
+
+            # Number of records to retrieve per call
+            num_records = 30
+
+            # Fetch listings from the selected random date 
+            # Set random limit
+            limit = random.randint(8, 15)
+            cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
+            listings_data = cursor.fetchall()
+
+            # Determine if there are 10 records for listings from random date
+            if len(listings_data) < num_records:
+
+                # Get listings that have been created today
+                # Set random limit
+                limit = random.randint(2, 10)
+                cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
+                additional_listings = cursor.fetchall()
+                listings_data.extend(additional_listings)
+
+            new_listings_last_id = additional_listings[-1]['id'] if additional_listings else None
+
+            # Loop through the listings and get the producer name
+            for listing in listings_data:
+                cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+                producer_data = cursor.fetchone()
+                if producer_data:
+                    listing['producerName'] = producer_data['producerName']
+                else:
+                    listing['producerName'] = None
+
+                # Get rating for the listing
+                cursor.execute("""
+                    SELECT AVG("rating") AS "averageRating"
+                    FROM "reviews"
+                    WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+                """, (listing['id'],))
+
+                rating_data = cursor.fetchone()
+                listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
+                listing['contentType'] = 'Listing'
+
+                # Get top 3 comments 
+                listing['topComments'] = get_top_comments(listing['id'], 'Listing', None)
+                
+                # Get number of likes
+                listing['totalLikes'] = get_likes_count(listing['id'], 'Listing', None)
+
+            # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to a week ago)
+            # Set random limit
+            limit = random.randint(3, 8)
+            if len(listings_data) < num_records:
+                cursor.execute("""
+                    SELECT * FROM "reviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (limit,))
+
+                reviews = cursor.fetchall()
+
+                # Add contentType to each review and retrieve userName
+                for review in reviews:
+                    review['contentType'] = 'Review'
+
+                    # Get username
+                    cursor.execute("SELECT username, photo FROM users WHERE id = %s", (review['userID'],))
+                    user_data = cursor.fetchone()
+                    review['username'] = user_data['username'] if user_data else None
+                    review['userPhoto'] = user_data['photo'] if user_data else None
+
+                    # Get listing name
+                    cursor.execute("""SELECT "listingName" FROM listings WHERE id = %s""", (review['reviewTarget'],))
+                    listing_data = cursor.fetchone()
+                    review['listingName'] = listing_data['listingName'] if listing_data else None
+
+                    # Get top 3 comments
+                    review['topComments'] = get_top_comments(review['id'], 'Review', None)
+
+                    # Get number of likes
+                    review['totalLikes'] = get_likes_count(review['id'], 'Review', None)
+
+            reviews_last_id = reviews[-1]['id'] if reviews else None
+
+            producers_updates = []
+            venues_updates = []
             
-            if not date_list:
-                return jsonify({"error": "Date extraction failed (empty list)"}), 400
+            # Determine if there are 30 records, else, retrieve announcements by venue and brand accounts
+            if len(listings_data) + len(reviews) < num_records:
 
-            random_date = random.choice(date_list)  # Select a random date
-        except Exception as e:
-            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+                # Calculate how many records are still needed
+                remaining = num_records - len(listings_data) - len(reviews)
 
+                # Set random limit
+                limit = random.randint(1, remaining)
 
-        # Randomizer to determine if we want to include producerUpdates ONLY, venueUpdates ONLY, or BOTH
-        update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
+                # Based on randomizer, retrieve the relevant information
+                if update_type == "producerUpdates":
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (limit,)
+                    )
+                    producers_updates = cursor.fetchall()
 
-        # Number of records to retrieve per call
-        num_records = 30
+                elif update_type == "venueUpdates":
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (limit,)
+                    )
+                    venues_updates = cursor.fetchall()
 
-        # Fetch listings from the selected random date 
-        # Set random limit
-        limit = random.randint(8, 15)
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
-        listings_data = cursor.fetchall()
+                elif update_type == "both":
 
-        # Determine if there are 10 records for listings from random date
-        if len(listings_data) < num_records:
+                    # Randomly decide how many go to producers vs venues
+                    producers_limit = random.randint(0, limit)   # any number between 0 and remaining
+                    venue_limit = remaining - producers_limit 
 
-            # Get listings that have been created today
-            # Set random limit
-            limit = random.randint(2, 10)
-            cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
-            additional_listings = cursor.fetchall()
-            listings_data.extend(additional_listings)
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (producers_limit,)
+                    )
+                    producers_updates = cursor.fetchall()
 
-        new_listings_last_id = additional_listings[-1]['id'] if additional_listings else None
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (venue_limit,)
+                    )
+                    venues_updates = cursor.fetchall()
 
-        # Loop through the listings and get the producer name
-        for listing in listings_data:
-            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
-            producer_data = cursor.fetchone()
-            if producer_data:
-                listing['producerName'] = producer_data['producerName']
-            else:
-                listing['producerName'] = None
+                # Add contentType to each update
+                if len(producers_updates):
+                    for update in producers_updates:
+                        update['contentType'] = 'Update'
 
-            # Get rating for the listing
-            cursor.execute("""
-                SELECT AVG("rating") AS "averageRating"
-                FROM "reviews"
-                WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
-            """, (listing['id'],))
+                        # Get producer name
+                        cursor.execute("""SELECT "producerName", photo FROM producers WHERE id = %s""", (update['producerId'],))
+                        producer_data = cursor.fetchone()
+                        update['producerName'] = producer_data['producerName'] if producer_data else None
+                        update['producerPhoto'] = producer_data['photo'] if producer_data else None
 
-            rating_data = cursor.fetchone()
-            listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
-            listing['contentType'] = 'Listing'
+                        # Get top 3 comments
+                        update['topComments'] = get_top_comments(update['id'], 'Update', 'producer')
 
-        # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to a week ago)
-        # Set random limit
-        limit = random.randint(3, 8)
-        if len(listings_data) < num_records:
-            cursor.execute("""
-                SELECT * FROM "reviews"
-                WHERE "createdDate" >= NOW() - INTERVAL '14 days'
-                ORDER BY "createdDate" DESC
-                LIMIT %s
-            """, (limit,))
+                        # Get number of likes
+                        update['totalLikes'] = get_likes_count(update['id'], 'Update', 'producer')
 
-            reviews = cursor.fetchall()
+                if len(venues_updates):
+                    for update in venues_updates:
+                        update['contentType'] = 'Update'
 
-            # Add contentType to each review and retrieve userName
-            for review in reviews:
-                review['contentType'] = 'Review'
+                        # Get venue name
+                        cursor.execute("""SELECT "venueName", photo FROM venues WHERE id = %s""", (update['venueId'],))
+                        venue_data = cursor.fetchone()
+                        update['venueName'] = venue_data['venueName'] if venue_data else None
+                        update['venuePhoto'] = venue_data['photo'] if venue_data else None
 
-                # Get username
-                cursor.execute("SELECT username, photo FROM users WHERE id = %s", (review['userID'],))
-                user_data = cursor.fetchone()
-                review['username'] = user_data['username'] if user_data else None
-                review['userPhoto'] = user_data['photo'] if user_data else None
+                        # Get top 3 comments
+                        update['topComments'] = get_top_comments(update['id'], 'Update', 'venue')
 
-                # Get listing name
-                cursor.execute("""SELECT "listingName" FROM listings WHERE id = %s""", (review['reviewTarget'],))
-                listing_data = cursor.fetchone()
-                review['listingName'] = listing_data['listingName'] if listing_data else None
+                        # Get number of likes
+                        update['totalLikes'] = get_likes_count(update['id'], 'Update', 'venue')
 
-        reviews_last_id = reviews[-1]['id'] if reviews else None
-
-        producers_updates = []
-        venues_updates = []
+        if not listings_data:
+            return jsonify({"error": "No listings found for selected date"}), 400
         
-        # Determine if there are 30 records, else, retrieve announcements by venue and brand accounts
-        if len(listings_data) + len(reviews) < num_records:
+        # Get current user's likes for the content
+        if user_id and user_type:
+            listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
+            reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in reviews])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in venues_updates])
 
-            # Calculate how many records are still needed
-            remaining = num_records - len(listings_data) - len(reviews)
+        content = listings_data + reviews + producers_updates + venues_updates
+        random.shuffle(content)
 
-            # Set random limit
-            limit = random.randint(1, remaining)
-
-            # Based on randomizer, retrieve the relevant information
-            if update_type == "producerUpdates":
-                cursor.execute("""
-                    SELECT * FROM "producersUpdates" 
-                    WHERE date >= NOW() - INTERVAL '14 days'
-                    LIMIT %s
-                """, (limit,)
-                )
-                producers_updates = cursor.fetchall()
-
-            elif update_type == "venueUpdates":
-                cursor.execute("""
-                    SELECT * FROM "venuesUpdates" 
-                    WHERE date >= NOW() - INTERVAL '14 days'
-                    LIMIT %s
-                """, (limit,)
-                )
-                venues_updates = cursor.fetchall()
-
-            elif update_type == "both":
-
-                # Randomly decide how many go to producers vs venues
-                producers_limit = random.randint(0, limit)   # any number between 0 and remaining
-                venue_limit = remaining - producers_limit 
-
-                cursor.execute("""
-                    SELECT * FROM "producersUpdates" 
-                    WHERE date >= NOW() - INTERVAL '14 days'
-                    LIMIT %s
-                """, (producers_limit,)
-                )
-                producers_updates = cursor.fetchall()
-
-                cursor.execute("""
-                    SELECT * FROM "venuesUpdates" 
-                    WHERE date >= NOW() - INTERVAL '14 days'
-                    LIMIT %s
-                """, (venue_limit,)
-                )
-                venues_updates = cursor.fetchall()
-
-            # Add contentType to each update
-            if len(producers_updates):
-                for update in producers_updates:
-                    update['contentType'] = 'Update'
-
-                    # Get producer name
-                    cursor.execute("""SELECT "producerName", photo FROM producers WHERE id = %s""", (update['producerId'],))
-                    producer_data = cursor.fetchone()
-                    update['producerName'] = producer_data['producerName'] if producer_data else None
-                    update['producerPhoto'] = producer_data['photo'] if producer_data else None
-
-            if len(venues_updates):
-                for update in venues_updates:
-                    update['contentType'] = 'Update'
-
-                    # Get venue name
-                    cursor.execute("""SELECT "venueName", photo FROM venues WHERE id = %s""", (update['venueId'],))
-                    venue_data = cursor.fetchone()
-                    update['venueName'] = venue_data['venueName'] if venue_data else None
-                    update['venuePhoto'] = venue_data['photo'] if venue_data else None
-
-    if not listings_data:
-        return jsonify({"error": "No listings found for selected date"}), 400
-
-    content = listings_data + reviews + producers_updates + venues_updates
-    random.shuffle(content)
-
-    return jsonify({
-        "content": content,
-        "datedListingPreviousDate": random_date,
-        "newListingsLastID": new_listings_last_id,
-        "reviewsLastID": reviews_last_id,
-        "pUpdateLastID": producers_updates[-1]['id'] if producers_updates else None,
-        "vUpdateLastID": venues_updates[-1]['id'] if venues_updates else None
-    })
-
+        return jsonify({
+            "content": content,
+            "datedListingPreviousDate": random_date,
+            "newListingsLastID": new_listings_last_id,
+            "reviewsLastID": reviews_last_id,
+            "pUpdateLastID": producers_updates[-1]['id'] if producers_updates else None,
+            "vUpdateLastID": venues_updates[-1]['id'] if venues_updates else None,
+            "listingsLikes": listings_likes,
+            "reviewsLikes": reviews_likes,
+            "producersUpdatesLikes": producers_updates_likes,
+            "venuesUpdatesLikes": venues_updates_likes
+        })
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 # -----------------------------------------------------------------------------------------
 # [POST] Get next 30 random content - Edited By CP [25 Aug]
@@ -561,7 +725,7 @@ def likeContent():
             # If it is listingLikes
             if table_name == "listingLikes":
                 cursor.execute(f"""
-                    INSERT INTO {table_name} ("listingId", "userId", "userType")
+                    INSERT INTO ""{table_name} ("listingId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -583,7 +747,7 @@ def likeContent():
             # If it is producerUpdateLikes
             elif table_name == "producerUpdateLikes":
                 cursor.execute(f"""
-                    INSERT INTO {table_name} ("updateId", "userId", "userType")
+                    INSERT INTO "{table_name}" ("updateId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -591,7 +755,7 @@ def likeContent():
             # If it is venueUpdateLikes
             elif table_name == "venueUpdateLikes":
                 cursor.execute(f"""
-                    INSERT INTO {table_name} ("venueId", "userId", "userType")
+                    INSERT INTO "{table_name}" ("venueId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -599,7 +763,7 @@ def likeContent():
             # If it is 88BContentLikes
             elif table_name == "88BContentLikes":
                 cursor.execute(f"""
-                    INSERT INTO {table_name} ("contentId", "userId", "userType")
+                    INSERT INTO "{table_name}" ("contentId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -641,7 +805,7 @@ def unlikeContent():
             # If it is listingLikes
             if table_name == "listingLikes":
                 cursor.execute(f"""
-                    DELETE FROM {table_name}
+                    DELETE FROM "{table_name}"
                     WHERE "listingId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -660,21 +824,21 @@ def unlikeContent():
 
             elif table_name == "producerUpdateLikes":
                 cursor.execute(f"""
-                    DELETE FROM {table_name}
+                    DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
                 cursor.commit()
 
             elif table_name == "venueUpdateLikes":
                 cursor.execute(f"""
-                    DELETE FROM {table_name}
+                    DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
                 cursor.commit()
 
             elif table_name == "88BContentLikes":
                 cursor.execute(f"""
-                    DELETE FROM {table_name}
+                    DELETE FROM "{table_name}"
                     WHERE "contentId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
                 cursor.commit()
@@ -721,7 +885,7 @@ def addComment():
 
             # Insert the comment into the appropriate table
             cursor.execute(f"""
-                INSERT INTO {table_name} ({unique_field}, "userId", "userType", "comment", "parentId")
+                INSERT INTO "{table_name}" ("{unique_field}", "userId", "userType", "comment", "parentId")
                 VALUES (%s, %s, %s, %s, %s)
             """, (content_id, user_id, user_type, comment, parent_id))
             cursor.commit()
@@ -763,7 +927,7 @@ def editComment():
 
             # Update the comment in the appropriate table
             cursor.execute(f"""
-                UPDATE {table_name}
+                UPDATE "{table_name}"
                 SET "comment" = %s
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (new_comment, comment_id, user_id, user_type))
@@ -805,7 +969,7 @@ def deleteComment():
 
             # Delete the comment from the appropriate table
             cursor.execute(f"""
-                DELETE FROM {table_name}
+                DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
             cursor.commit()
@@ -836,7 +1000,7 @@ def deleteComment():
 
             # Delete the comment from the appropriate table
             cursor.execute(f"""
-                DELETE FROM {table_name}
+                DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
             cursor.commit()
