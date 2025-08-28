@@ -480,6 +480,9 @@ def getNext30():
     datedListingPreviousDate = parsedate_to_datetime(datedListingPreviousDate).date()
     newListingsLastID = data.get('newListingsLastID')
     pUpdateLastID = data.get('pUpdateLastID')
+    vUpdateLastID = data.get('vUpdateLastID')
+    user_id = data.get('userId')
+    user_type = data.get('userType')
 
     if pUpdateLastID:
         pUpdateLastID = int(pUpdateLastID)
@@ -579,6 +582,13 @@ def getNext30():
 
                     listing['contentType'] = 'Listing'
 
+                    # Get top 3 comments 
+                    listing['topComments'] = get_top_comments(listing['id'], 'Listing', None)
+                    
+                    # Get number of likes
+                    listing['totalLikes'] = get_likes_count(listing['id'], 'Listing', None)
+
+
 
             # Get reviews by users within the last 2 weeks after reviewsLastID
             random_records = random.randint(8, 12)
@@ -606,6 +616,12 @@ def getNext30():
                 user_data = cursor.fetchone()
                 review['username'] = user_data['username'] if user_data else None
                 review['userPhoto'] = user_data['photo'] if user_data else None
+
+                # Get top 3 comments
+                review['topComments'] = get_top_comments(review['id'], 'Review', None)
+
+                # Get number of likes
+                review['totalLikes'] = get_likes_count(review['id'], 'Review', None)
 
             # Get producer or venue updates after *UpdateLastID
             if limit > 0:
@@ -664,6 +680,12 @@ def getNext30():
                     update['producerName'] = producer['producerName'] if producer else None
                     update['producerPhoto'] = producer['photo'] if producer else None
 
+                    # Get top 3 comments
+                    update['topComments'] = get_top_comments(update['id'], 'Update', 'producer')
+
+                    # Get number of likes
+                    update['totalLikes'] = get_likes_count(update['id'], 'Update', 'producer')
+
             if venues_updates:
                 vUpdateLastID = venues_updates[-1]['id']
 
@@ -676,9 +698,22 @@ def getNext30():
                     update['venueName'] = venue['venueName'] if venue else None
                     update['venuePhoto'] = venue['photo'] if venue else None
 
+                    # Get top 3 comments
+                    update['topComments'] = get_top_comments(update['id'], 'Update', 'venue')
+
+                    # Get number of likes
+                    update['totalLikes'] = get_likes_count(update['id'], 'Update', 'venue')
+
         if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) == 0:
             return jsonify([])
         
+
+        # Get current user's likes for the content
+        if user_id and user_type:
+            listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
+            reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in recent_reviews])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in venues_updates])
 
         # Shuffle data 
         content = listings_data + recent_reviews + producers_updates + venues_updates
@@ -690,7 +725,11 @@ def getNext30():
             "newListingsLastID": newListingsLastID,
             "pUpdateLastID": pUpdateLastID,
             "reviewsLastID": reviewsLastID,
-            "vUpdateLastID": vUpdateLastID
+            "vUpdateLastID": vUpdateLastID,
+            "listingsLikes": listings_likes,
+            "reviewsLikes": reviews_likes,
+            "producersUpdatesLikes": producers_updates_likes,
+            "venuesUpdatesLikes": venues_updates_likes
         })
 
     except Exception as e:

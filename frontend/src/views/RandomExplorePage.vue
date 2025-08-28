@@ -2122,7 +2122,7 @@ methods: {
 
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/randomContent/getRandomListings`
+          `${process.env.VUE_APP_API_URL}/randomContent/getRandomListings/${this.userID}/${this.userType}`
         );
         this.contents = response.data.content;
         // originally, make filteredContent the entire collection of content
@@ -2912,6 +2912,8 @@ methods: {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/randomContent/getNext30`, 
           {
+            userId: this.userID,
+            userType: this.userType,
             datedListingPreviousDate: this.datedListingPreviousDate,
             newListingsLastID: this.newListingsLastID,
             pUpdateLastID: this.pUpdateLastID,
