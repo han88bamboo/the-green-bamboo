@@ -823,6 +823,11 @@
                                       @click="editAmenities.beverageArrack = !editAmenities.beverageArrack">
                                     <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
+                                <span class="badge amenity-badge beverage-badge" 
+                                    :class="{ 'active': editAmenities.nonAlcoholicOptions }"
+                                    @click="editAmenities.nonAlcoholicOptions = !editAmenities.nonAlcoholicOptions">
+                                    <i class="bi bi-cup-straw me-1"></i>Non-Alcoholic Options
+                                </span>
                             </div>
                         </div>
 
@@ -836,6 +841,46 @@
                                       @click="editAmenities.foodServed = !editAmenities.foodServed">
                                     <i class="bi bi-egg-fried me-1"></i>Food Served
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.breakfastService }"
+                                    @click="editAmenities.breakfastService = !editAmenities.breakfastService">
+                                    <PhBread :size="16" class="me-1" />Breakfast Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.lunchService }"
+                                    @click="editAmenities.lunchService = !editAmenities.lunchService">
+                                    <i class="bi bi-clock me-1"></i>Lunch Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.dinnerService }"
+                                    @click="editAmenities.dinnerService = !editAmenities.dinnerService">
+                                    <i class="bi bi-moon me-1"></i>Dinner Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.vegetarianOptions }"
+                                    @click="editAmenities.vegetarianOptions = !editAmenities.vegetarianOptions">
+                                    <i class="bi bi-flower1 me-1"></i>Vegetarian Options
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.localNotPartOfChain }"
+                                    @click="editAmenities.localNotPartOfChain = !editAmenities.localNotPartOfChain">
+                                    <PhHouseSimple :size="16" class="me-1" />Local (Not Part Of Chain)
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.casualDressing }"
+                                    @click="editAmenities.casualDressing = !editAmenities.casualDressing">
+                                    Casual Dressing
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.formalDressing }"
+                                    @click="editAmenities.formalDressing = !editAmenities.formalDressing">
+                                    Formal Dressing
+                                </span>
+
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.outdoorSeating }"
                                       @click="editAmenities.outdoorSeating = !editAmenities.outdoorSeating">
@@ -845,6 +890,26 @@
                                       :class="{ 'active': editAmenities.indoorSeating }"
                                       @click="editAmenities.indoorSeating = !editAmenities.indoorSeating">
                                     <i class="bi bi-house me-1"></i>Indoor Seating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.airConditioning }"
+                                    @click="editAmenities.airConditioning = !editAmenities.airConditioning">
+                                    <i class="bi bi-snow me-1"></i>Air Conditioning
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.indoorHeating }"
+                                    @click="editAmenities.indoorHeating = !editAmenities.indoorHeating">
+                                    <i class="bi bi-thermometer-sun me-1"></i>Indoor Heating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.coveredOutdoorSeating }"
+                                    @click="editAmenities.coveredOutdoorSeating = !editAmenities.coveredOutdoorSeating">
+                                    <i class="bi bi-umbrella me-1"></i>Covered Outdoor Seating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.toiletsAvailable }"
+                                    @click="editAmenities.toiletsAvailable = !editAmenities.toiletsAvailable">
+                                    <PhToilet :size="16" class="me-1" />Toilet Available
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.petFriendly }"
@@ -860,6 +925,24 @@
                                       :class="{ 'active': editAmenities.familyFriendly }"
                                       @click="editAmenities.familyFriendly = !editAmenities.familyFriendly">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.largeGroupsFriendly }"
+                                    @click="editAmenities.largeGroupsFriendly = !editAmenities.largeGroupsFriendly">
+                                    <PhUsersFour :size="16" class="me-1" />Large Groups Friendly
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.workStudyFriendly }"
+                                    @click="editAmenities.workStudyFriendly = !editAmenities.workStudyFriendly">
+                                    <PhLaptop :size="16" class="me-1" />Work / Study Friendly
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.nonSmoking }"
+                                    @click="editAmenities.nonSmoking = !editAmenities.nonSmoking">
+                                    <i class="bi bi-slash-circle me-1"></i>Non-Smoking
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.smokeFriendly }"
@@ -884,8 +967,16 @@
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.barGames }"
                                       @click="editAmenities.barGames = !editAmenities.barGames">
-                                    <i class="bi bi-controller me-1"></i>Bar Games
+                                    <i class="bi bi-controller me-1"></i>Bar Games / Entertainment
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                      :class="{ 'active': editAmenities.tvEntertainment }"
+                                      @click="editAmenities.tvEntertainment = !editAmenities.tvEntertainment">
+                                    <PhTelevision :size="16" />TV / Entertainment
+                                </span>
+                                                                
+
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.happyHourDrinks }"
                                       @click="editAmenities.happyHourDrinks = !editAmenities.happyHourDrinks">
@@ -897,9 +988,20 @@
                                     <i class="bi bi-truck me-1"></i>Delivery Available
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
-                                      :class="{ 'active': editAmenities.lgbtqFriendly }"
-                                      @click="editAmenities.lgbtqFriendly = !editAmenities.lgbtqFriendly">
-                                    <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
+                                    :class="{ 'active': editAmenities.onlineOrdering }"
+                                    @click="editAmenities.onlineOrdering = !editAmenities.onlineOrdering">
+                                    <i class="bi bi-laptop me-1"></i>Online Ordering
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.takeaway }"
+                                    @click="editAmenities.takeaway = !editAmenities.takeaway">
+                                    <i class="bi bi-bag me-1"></i>Takeaway
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.catering }"
+                                    @click="editAmenities.catering = !editAmenities.catering">
+                                    <i class="bi bi-people-fill me-1"></i>Catering
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.reservationsRequired }"
@@ -920,6 +1022,27 @@
                                       :class="{ 'active': editAmenities.inStoreScheduling }"
                                       @click="editAmenities.inStoreScheduling = !editAmenities.inStoreScheduling">
                                     <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.streetParking }"
+                                    @click="editAmenities.streetParking = !editAmenities.streetParking">
+                                    <i class="bi bi-car-front me-1"></i>Street Parking
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.bikeParking }"
+                                    @click="editAmenities.bikeParking = !editAmenities.bikeParking">
+                                    <i class="bi bi-bicycle me-1"></i>Bike Parking
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.driveThru }"
+                                    @click="editAmenities.driveThru = !editAmenities.driveThru">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Drive Thru
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                      :class="{ 'active': editAmenities.lgbtqFriendly }"
+                                      @click="editAmenities.lgbtqFriendly = !editAmenities.lgbtqFriendly">
+                                    <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
                                 </span>
                             </div>
                         </div>
@@ -1078,11 +1201,44 @@
                                 <span v-if="targetVenue.amenities?.beverageArrack" class="badge bg-success me-1 mb-1">
                                     <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
+                                <span v-if="targetVenue.amenities?.nonAlcoholicOptions" class="badge bg-success me-1 mb-1" >
+                                    <i class="bi bi-cup-straw me-1"></i>Non-Alcoholic Options
+                                </span>
+
 
                                 <!-- General Amenities -->
                                 <span v-if="targetVenue.amenities?.foodServed" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-egg-fried me-1"></i>Food Served
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.breakfastService" class="badge bg-info me-1 mb-1">
+                                    <PhBread :size="16" class="me-1" />Breakfast Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.lunchService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-clock me-1"></i>Lunch Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.dinnerService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-moon me-1"></i>Dinner Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.vegetarianOptions" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-flower1 me-1"></i>Vegetarian Options
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.localNotPartOfChain" class="badge bg-info me-1 mb-1">
+                                     <PhHouseSimple :size="16" class="me-1" />Local (Not Part Of Chain)
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.casualDressing" class="badge bg-info me-1 mb-1">
+                                     Casual Dressing
+                                </span>
+                                
+                                <span v-if="targetVenue.amenities?.formalDressing" class="badge bg-info me-1 mb-1">
+                                     Formal Dressing
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.freeWiFi" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-wifi me-1"></i>Free WiFi
                                 </span>
@@ -1092,6 +1248,23 @@
                                 <span v-if="targetVenue.amenities?.indoorSeating" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-house me-1"></i>Indoor Seating
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.airConditioning" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-snow me-1"></i>Air Conditioning
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.indoorHeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-thermometer-sun me-1"></i>Indoor Heating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.coveredOutdoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-umbrella me-1"></i>Covered Outdoor Seating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.toiletsAvailable" class="badge bg-info me-1 mb-1">
+                                    <PhToilet :size="16" class="me-1" />Toilet Available
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.liveMusic" class="badge bg-warning me-1 mb-1">
                                     <i class="bi bi-music-note me-1"></i>Live Music
                                 </span>
@@ -1107,18 +1280,49 @@
                                 <span v-if="targetVenue.amenities?.familyFriendly" class="badge bg-secondary me-1 mb-1">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
                                 </span>
+                                
+                                <span v-if="targetVenue.amenities?.largeGroupsFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <PhUsersFour :size="16" class="me-1" />Large Groups Friendly
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.workStudyFriendly" class="badge bg-secondary me-1 mb-1">
+                                     <PhLaptop :size="16" class="me-1" />Work / Study Friendly
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.nonSmoking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-slash-circle me-1"></i>Non-Smoking
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.smokeFriendly" class="badge bg-secondary me-1 mb-1">
                                     <i class="bi bi-cloud me-1"></i>Smoking Friendly
                                 </span>
                                 <span v-if="targetVenue.amenities?.barGames" class="badge bg-dark me-1 mb-1">
-                                    <i class="bi bi-controller me-1"></i>Bar Games
+                                    <i class="bi bi-controller me-1"></i>Bar Games / Entertainment
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.tvEntertainment" class="badge bg-dark me-1 mb-1">
+                                    <PhTelevision :size="16" />TV / Entertainment
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.happyHourDrinks" class="badge bg-warning me-1 mb-1">
                                     <i class="bi bi-clock me-1"></i>Happy Hour
                                 </span>
                                 <span v-if="targetVenue.amenities?.deliveryAvailable" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-truck me-1"></i>Delivery Available
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.onlineOrdering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-laptop me-1"></i>Online Ordering
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.takeaway" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bag me-1"></i>Takeaway
+                                </span>  
+
+                                <span v-if="targetVenue.amenities?.catering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-people-fill me-1"></i>Catering
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.reservationsRequired" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar-check me-1"></i>Reservations Required
                                 </span>
@@ -1131,6 +1335,19 @@
                                 <span v-if="targetVenue.amenities?.inStoreScheduling" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.streetParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-car-front me-1"></i>Street Parking
+                                </span>                                
+
+                                <span v-if="targetVenue.amenities?.bikeParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bicycle me-1"></i>Bike Parking
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.driveThru" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Drive Thru
+                                </span>                                
+
                                 <span v-if="targetVenue.amenities?.lgbtqFriendly" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
                                 </span>
@@ -1154,6 +1371,7 @@
                             <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
                                     style="font-weight: bold;">
                                 Dining Menu
                             </button>
@@ -3452,15 +3670,47 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- PDF Viewer Container -->
-                    <div class="pdf-container">
-                        <iframe 
+                    <!-- PDF Viewer Container with Navigation -->
+                    <div class="d-flex align-items-center">
+                        <!-- Left Navigation Button -->
+                        <button 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                            :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitV&zoom=page-width'"
-                            width="100%" 
-                            height="650px"
-                            @error="handlePdfError">
-                        </iframe>
+                            @click="previousPage" 
+                            :disabled="currentPdfPage <= 1"
+                            class="btn btn-primary me-2"
+                            style="min-width: 50px; height: 50px;">
+                            ←
+                        </button>
+                        
+                        <!-- PDF Container -->
+                        <div class="pdf-container flex-grow-1 position-relative">
+                            <iframe 
+                                v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                                :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=' + currentPdfPage + '&view=FitV&zoom=page-width'"
+                                width="100%" 
+                                height="650px"
+                                @error="handlePdfError">
+                            </iframe>
+                            
+                            <!-- Page Counter -->
+                            <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== '' && showPageCounter" 
+                                 class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 rounded"
+                                 style="font-size: 12px; z-index: 10;">
+                                <span v-if="totalPdfPages">Page {{ currentPdfPage }} of {{ totalPdfPages }}</span>
+                                <span v-else-if="isPdfLoading">Loading...</span>
+                                <span v-else>Page {{ currentPdfPage }}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Navigation Button -->
+                        <button 
+                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            @click="nextPage" 
+                            :disabled="totalPdfPages !== null && currentPdfPage >= totalPdfPages"
+                            class="btn btn-primary ms-2"
+                            style="min-width: 50px; height: 50px;">
+                            →
+                        </button>
                     </div>
                     
                     <div v-if="!targetVenue.pdfMenuUrl || targetVenue.pdfMenuUrl.trim() === ''" class="text-center text-muted p-5">
@@ -3511,7 +3761,12 @@ import {
   PhChampagne, 
   PhMartini,
   PhBrandy,
-  PhFlowerLotus
+  PhFlowerLotus,
+  PhBread,
+  PhToilet,
+  PhHouseSimple,
+  PhUsersFour,
+  PhLaptop
 } from '@phosphor-icons/vue'
 
 // load in control 
@@ -3534,7 +3789,12 @@ export default {
         PhBrandy,
         PhFlowerLotus,
         PhChampagne,
-        BadgePopup
+        BadgePopup,
+        PhBread,
+        PhToilet,
+        PhHouseSimple,
+        PhUsersFour,
+        PhLaptop
     },
   setup() {
     // Create reactive references for meta data
@@ -3795,6 +4055,12 @@ export default {
             editProfile: false,
             clipboardItem: false,
             adminCreated: false,
+            
+            // PDF navigation
+            currentPdfPage: 1,
+            totalPdfPages: null, // Will be set when PDF is loaded
+            isPdfLoading: false, // Track if we're currently analyzing the PDF
+            showPageCounter: false, // Show page counter temporarily after navigation
 
             // Editable fields
             editVenueName: '',
@@ -3857,6 +4123,28 @@ export default {
                 reservationsRequired: false,
                 membershipRequired: false,
                 inStoreScheduling: false,
+                localNotPartOfChain: false,
+                casualDressing: false,
+                formalDressing: false,
+                vegetarianOptions: false,
+                breakfastService: false,
+                lunchService: false,
+                dinnerService: false,
+                nonAlcoholicOptions: false,
+                nonSmoking: false,
+                largeGroupsFriendly: false,
+                airConditioning: false,
+                indoorHeating: false,
+                coveredOutdoorSeating: false,
+                toiletsAvailable: false,
+                workStudyFriendly: false,
+                driveThru: false,
+                streetParking: false,
+                bikeParking: false,
+                tvEntertainment: false,
+                onlineOrdering: false,
+                catering: false,
+                takeaway: false,
                 otherAmenities: ''
             },
             qaQuestion: '',
@@ -7014,6 +7302,124 @@ Thank you!`
         handlePdfError() {
             console.warn('PDF failed to load');
             // Could add error state handling here if needed
+        },
+
+        // PDF Navigation methods
+        nextPage() {
+            if (this.totalPdfPages === null || this.currentPdfPage < this.totalPdfPages) {
+                this.currentPdfPage++;
+                this.forceIframeReload();
+                this.showPageCounterTemporarily();
+            }
+        },
+
+        previousPage() {
+            if (this.currentPdfPage > 1) {
+                this.currentPdfPage--;
+                this.forceIframeReload();
+                this.showPageCounterTemporarily();
+            }
+        },
+
+        // Show page counter for 1.5 seconds
+        showPageCounterTemporarily() {
+            this.showPageCounter = true;
+            setTimeout(() => {
+                this.showPageCounter = false;
+            }, 1500);
+        },
+
+        // Get PDF page count using fetch and basic PDF parsing
+        async getPdfPageCount(pdfUrl) {
+            try {
+                this.isPdfLoading = true;
+                
+                // Clean the URL - remove hash parameters for fetching
+                const cleanUrl = pdfUrl.split('#')[0];
+                
+                // Fetch the PDF as ArrayBuffer
+                const response = await fetch(cleanUrl);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch PDF');
+                }
+                
+                const arrayBuffer = await response.arrayBuffer();
+                
+                // Load PDF.js dynamically
+                if (!window.pdfjsLib) {
+                    // Load PDF.js from CDN
+                    await this.loadPdfJs();
+                }
+                
+                // Parse PDF to get page count
+                const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const pageCount = pdf.numPages;
+                
+                this.totalPdfPages = pageCount;
+                console.log(`PDF has ${pageCount} pages`);
+                
+                return pageCount;
+                
+            } catch (error) {
+                console.error('Error getting PDF page count:', error);
+                // Fallback to reasonable default
+                this.totalPdfPages = 10;
+                return 10;
+            } finally {
+                this.isPdfLoading = false;
+            }
+        },
+
+        // Load PDF.js library dynamically
+        async loadPdfJs() {
+            return new Promise((resolve, reject) => {
+                if (window.pdfjsLib) {
+                    resolve();
+                    return;
+                }
+                
+                // Load PDF.js from CDN
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = () => {
+                    // Set worker source
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        },
+
+        // Force iframe reload with proper cache busting
+        forceIframeReload() {
+            this.$nextTick(() => {
+                const iframe = document.querySelector('#diningMenuModal iframe');
+                if (iframe) {
+                    // Create new URL with updated page and cache buster
+                    const baseUrl = this.targetVenue.pdfMenuUrl;
+                    const newSrc = `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&page=${this.currentPdfPage}&view=FitV&zoom=page-width&cachebust=${Date.now()}`;
+                    
+                    // Force reload by removing and re-adding iframe
+                    const parent = iframe.parentNode;
+                    const newIframe = iframe.cloneNode(true);
+                    parent.removeChild(iframe);
+                    newIframe.src = newSrc;
+                    parent.appendChild(newIframe);
+                }
+            });
+        },
+
+        // Reset PDF navigation and analyze PDF when modal opens
+        async resetPdfNavigation() {
+            this.currentPdfPage = 1;
+            this.totalPdfPages = null;
+            this.isPdfLoading = false;
+            
+            // Analyze PDF to get page count
+            if (this.targetVenue.pdfMenuUrl) {
+                await this.getPdfPageCount(this.targetVenue.pdfMenuUrl);
+            }
         }
     },
     watch: {

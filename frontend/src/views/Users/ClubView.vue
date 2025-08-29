@@ -1158,17 +1158,19 @@
                 <img
                   v-if="admin.photo"
                   :src="admin.photo"
-                  class="img-fluid rounded-circle"
+                  class="  "
                   alt="Admin Photo"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 />
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
-                  width="50"
-                  height="50"
+                  width="30"
+                  height="30"
                   fill="currentColor"
-                  class="bi bi-person-circle"
+                  class=" "
                   viewBox="0 0 16 16"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 >
                   <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                   <path
@@ -1179,11 +1181,11 @@
 
                 <!-- Admin name -->
                 <router-link :to="profileURL(admin.id, admin.userType)">
-                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.displayName }}</p>
-                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
+                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2 text-center" style="color: rgb(131, 169, 232); font-size:12px;" >{{ admin.displayName }}</p>
+                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2 text-center" style="color: rgb(131, 169, 232); font-size:12px;">
                     {{ admin.producerName }}
                   </p>
-                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.venueName }}</p>
+                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;">{{ admin.venueName }}</p>
                 </router-link>
 
                 <!-- Show all admins button -->
@@ -1308,8 +1310,9 @@
                 <img
                   v-if="member.photo"
                   :src="member.photo"
-                  class="img-fluid rounded-circle"
+                  class=" "
                   alt="Member Photo"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 />
                 <svg
                   v-else
@@ -1317,8 +1320,9 @@
                   width="50"
                   height="50"
                   fill="currentColor"
-                  class="bi bi-person-circle"
+                  class=" "
                   viewBox="0 0 16 16"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 >
                   <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                   <path
@@ -1400,8 +1404,9 @@
                         <img
                           v-if="member.photo"
                           :src="member.photo"
-                          class="img-fluid rounded-circle"
+                          class=" "
                           alt="Member Photo"
+                          style="height: 50px; width: 50px; border-radius: 50% !important;"
                         />
                         <svg
                           v-else
@@ -1409,8 +1414,9 @@
                           width="50"
                           height="50"
                           fill="currentColor"
-                          class="bi bi-person-circle"
+                          class=" "
                           viewBox="0 0 16 16"
+                          style="height: 50px; width: 50px; border-radius: 50% !important;"
                         >
                           <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                           <path
@@ -1439,6 +1445,23 @@
                             {{ member.venueName }}
                           </p>
                         </router-link>
+                          <!-- Follow button below member name -->
+                          <button
+                            v-if="userType !== 'defaultUser' && member.userType === 'user' && member.id !== userID && !isUserFollowed(member.id)"
+                            @click.stop="followUserFromClub(member.id)"
+                            class="btn btn-sm btn-outline-primary"
+                            style="min-width: 80px; font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+                          >
+                            + Follow User
+                          </button>
+                          <button
+                            v-else-if="userType !== 'defaultUser' && member.userType === 'user' && member.id !== userID && isUserFollowed(member.id)"
+                            @click.stop="unfollowUserFromClub(member.id)"
+                            class="btn btn-sm btn-primary"
+                            style="min-width: 80px; font-size: 0.75rem; padding: 0.25rem 0.5rem;"
+                          >
+                            Following
+                          </button>
                       </div>
                     </div>
                   </div>
@@ -1569,6 +1592,13 @@ export default {
       // Badge popup variables
       earnedBadges: [],
       showBadgePopup: false,
+      
+      // Follow lists for user following functionality
+      userFollowLists: {
+        users: [],
+        producers: [],
+        venues: []
+      },
     };
   },
 
@@ -2219,6 +2249,96 @@ export default {
         });
     },
 
+    // Follow functionality methods
+    // Check if a user is followed
+    isUserFollowed(userId) {
+      return this.userFollowLists.users.includes(String(userId));
+    },
+
+    // Follow a user from club members
+    async followUserFromClub(targetUserId) {
+      if (!this.userID || this.userType === 'defaultUser') return;
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "follow",
+            target: "users",
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        if (response.data && response.data.code === 201) {
+          this.userFollowLists.users.push(String(targetUserId));
+          const toast = useToast();
+          toast.success("Successfully followed user!");
+        }
+      } catch (error) {
+        console.error("Error following user:", error);
+        const toast = useToast();
+        toast.error("Failed to follow user. Please try again.");
+      }
+    },
+
+    // Unfollow a user from club members
+    async unfollowUserFromClub(targetUserId) {
+      if (!this.userID || this.userType === 'defaultUser') return;
+      
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateFollowLists`,
+          {
+            userID: this.userID,
+            action: "unfollow",
+            target: "users", 
+            followerID: targetUserId,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        if (response.data && response.data.code === 201) {
+          const index = this.userFollowLists.users.indexOf(String(targetUserId));
+          if (index > -1) {
+            this.userFollowLists.users.splice(index, 1);
+          }
+          const toast = useToast();
+          toast.success("Successfully unfollowed user!");
+        }
+      } catch (error) {
+        console.error("Error unfollowing user:", error);
+        const toast = useToast();
+        toast.error("Failed to unfollow user. Please try again.");
+      }
+    },
+
+    // Load user's follow lists
+    async loadUserFollowLists() {
+      if (!this.userID || this.userType === 'defaultUser') return;
+      
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserData/${this.userID}`
+        );
+        
+        if (response.data && response.data.user && response.data.user.followLists) {
+          this.userFollowLists = response.data.user.followLists;
+        }
+      } catch (error) {
+        console.error("Error loading follow lists:", error);
+      }
+    },
+
     closeBadgePopup() {
       this.showBadgePopup = false;
       this.earnedBadges = [];
@@ -2245,6 +2365,8 @@ export default {
 
       this.dataLoaded = false;
       this.checkMembership();
+      // Load user's follow lists to check follow status
+      this.loadUserFollowLists();
       // isMember, isAdmin and memberID varies across clubs, so we cant set them in local storage
          
     }

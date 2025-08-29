@@ -2,11 +2,11 @@
     <NavBar />
     <main>
     <!-- Hero Section with Search -->
-    <section class="hero-section text-center mb-5">
-        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
+    <section class="hero-section text-center">
+        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.3);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
-            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
+            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-5">
             <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
@@ -17,7 +17,9 @@
             <div class="row justify-content-center w-100">
                 <div class="col-12 col-md-8 col-lg-6">
                     <!-- <SearchBar :showSurpriseButton="true" class="w-100" /> -->
-                    <AutocompleteSearch @select="handleSelection" />
+                    <!-- <AutocompleteSearch @select="handleSelection" /> -->
+
+                    <LandingPageAutocompleteSearch @select="handleSelection" />
 
                     <!-- surprise me button -->
                     <div class="col-12 align-items-center justify-content-center mb-4">
@@ -42,7 +44,8 @@
     <section class="category-ribbon-section pt-5">
         <div class="category-ribbon-bar">
             <div class="container">
-                <h3 class="mb-0 pt-2 fw-bold" style="color:#F4DBA2;">I'm Looking For</h3>
+                <h3 class="mb-0 pt-2 fw-bold" style="color:white;">I'm Looking For</h3>
+                <div class="category-underline pt-0"></div>
                 <div class="category-ribbon-nav">
                     <!-- Wine -->
                     <div class="category-item" 
@@ -1196,14 +1199,16 @@ import { computed } from 'vue'
 import { useSearch } from '@/composables/navbar/useSearch'; 
 
 import NavBar from "@/components/NavBar.vue";
-import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
+// import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
 import editorialSection from '@/components/landing_page/editorialSection.vue';
+import LandingPageAutocompleteSearch from '@/components/LandingPageAutocompleteSearch.vue';
 
 export default {
     components: {
         NavBar,
-        AutocompleteSearch,
-        editorialSection
+        // AutocompleteSearch,
+        editorialSection,
+        LandingPageAutocompleteSearch
     },
     setup() {
         // Computed property for structured data
@@ -1983,7 +1988,7 @@ button.btn.selected {
 
 @media (min-width: 768px) {
     .hero-section {
-        padding-top: 28%; /* desktop height stays the same */
+        padding-top: 20%; /* desktop height stays the same */
     }
 }
 
@@ -1998,6 +2003,16 @@ button.btn.selected {
     z-index: -1;
 }
 
+
+
+
+/* Your dropdown panel */
+.autocomplete-dropdown, 
+.dropdown-menu, 
+.mega-dropdown-panel {    /* adjust selector to your component */
+  position: absolute;     /* or fixed if you prefer */
+  z-index: 2000;          /* > hero & ribbon */
+}
 
   .hero-wrapper {
   position: relative;
@@ -2529,15 +2544,65 @@ button.btn.selected {
 
 /* Category Ribbon Styles */
 .category-ribbon-section {
-    position: relative;
-    z-index: 98;
+    /* position: relative; */
+    z-index: 3;
 }
 
 .category-ribbon-bar {
-    background: linear-gradient(135deg, #027562 0%, #025951 100%);
+    background:
+      radial-gradient(1200px 280px at 50% -40%, rgba(255,255,255,.08), transparent 60%),
+      linear-gradient(180deg, #027562 0%, #026353 45%, #01493e 100%);
     box-shadow: 0 2px 10px rgba(2, 117, 98, 0.3);
     padding: 0;
 }
+
+.category-underline {
+  width: 180px;
+  height: 4px;
+  margin: 5px auto 0;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The shimmer gradient itself */
+.category-underline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #F0B358,
+    #fff8d8,
+    #F0B358,
+    transparent
+  );
+  background-size: 300% 100%;
+  animation: shimmer 5s infinite linear;
+  /* taper effect */
+   -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 70%,
+    rgba(0,0,0,0) 100%
+  );
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-image: radial-gradient(
+    ellipse at center,
+    rgba(0,0,0,1) 70%,
+    rgba(0,0,0,0) 100%
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+  filter: drop-shadow(0 1px 2px rgba(240,179,88,.35));
+}
+
+@keyframes shimmer {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -200% 0; }
+}
+
 
 .category-ribbon-nav {
     display: flex;
@@ -2552,6 +2617,8 @@ button.btn.selected {
     display: flex;
     align-items: center;
 }
+
+
 
 .category-link {
     display: block;
@@ -2646,7 +2713,7 @@ button.btn.selected {
 /* Mobile Responsive */
 @media (max-width: 991px) {
     .category-ribbon-bar {
-        position: relative;
+        /* position: relative; */
     }
     
     .category-ribbon-nav {
