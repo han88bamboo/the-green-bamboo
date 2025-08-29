@@ -17,7 +17,9 @@
             <div class="row justify-content-center w-100">
                 <div class="col-12 col-md-8 col-lg-6">
                     <!-- <SearchBar :showSurpriseButton="true" class="w-100" /> -->
-                    <AutocompleteSearch @select="handleSelection" />
+                    <!-- <AutocompleteSearch @select="handleSelection" /> -->
+
+                    <LandingPageAutocompleteSearch @select="handleSelection" />
 
                     <!-- surprise me button -->
                     <div class="col-12 align-items-center justify-content-center mb-4">
@@ -1197,14 +1199,16 @@ import { computed } from 'vue'
 import { useSearch } from '@/composables/navbar/useSearch'; 
 
 import NavBar from "@/components/NavBar.vue";
-import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
+// import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
 import editorialSection from '@/components/landing_page/editorialSection.vue';
+import LandingPageAutocompleteSearch from '@/components/LandingPageAutocompleteSearch.vue';
 
 export default {
     components: {
         NavBar,
-        AutocompleteSearch,
-        editorialSection
+        // AutocompleteSearch,
+        editorialSection,
+        LandingPageAutocompleteSearch
     },
     setup() {
         // Computed property for structured data
