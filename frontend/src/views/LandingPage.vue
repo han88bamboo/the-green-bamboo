@@ -2544,7 +2544,7 @@ button.btn.selected {
 
 /* Category Ribbon Styles */
 .category-ribbon-section {
-    position: relative;
+    /* position: relative; */
     z-index: 3;
 }
 
@@ -2713,7 +2713,7 @@ button.btn.selected {
 /* Mobile Responsive */
 @media (max-width: 991px) {
     .category-ribbon-bar {
-        position: relative;
+        /* position: relative; */
     }
     
     .category-ribbon-nav {
