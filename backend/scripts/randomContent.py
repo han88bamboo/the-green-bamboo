@@ -54,27 +54,33 @@ def get_top_comments(content_id, content_type):
 
                 if comment["userType"] == "user":
                     cursor.execute("""
-                        SELECT "username"
+                        SELECT "username", photo
                         FROM "users"
                         WHERE "id" = %s
                     """, (comment["userId"],))
-                    comment["username"] = cursor.fetchone()["username"]
+                    result = cursor.fetchone()
+                    comment["username"] = result["username"]
+                    comment["photo"] = result["photo"]
 
                 elif comment["userType"] == "producer":
                     cursor.execute("""
-                        SELECT "producerName"
+                        SELECT "producerName", photo
                         FROM "producers"
                         WHERE "id" = %s
                     """, (comment["userId"],))
-                    comment["username"] = cursor.fetchone()["producerName"]
+                    result = cursor.fetchone()
+                    comment["username"] = result["producerName"]
+                    comment["photo"] = result["photo"]
 
                 elif comment["userType"] == "venue":
                     cursor.execute("""
-                        SELECT "venueName"
+                        SELECT "venueName", photo
                         FROM "venues"
                         WHERE "id" = %s
                     """, (comment["userId"],))
-                    comment["username"] = cursor.fetchone()["venueName"]
+                    result = cursor.fetchone()
+                    comment["username"] = result["venueName"]
+                    comment["photo"] = result["photo"]
 
         return comments
 

@@ -1422,7 +1422,7 @@
                                 </div>
                               </div>
 
-                              <!-- Third Row: Comment Section -->
+                              <!-- Third Row: Add Comment Section -->
                               <div class="row w-100 pt-2">
                                 <div class="input-group">
                                   <input
@@ -1449,6 +1449,77 @@
                                       <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
                                     </svg>
                                   </button> 
+                                </div>
+                              </div>
+                              
+                              <!-- Fourth Row: Comments Section -->
+                              <div v-if="content.topComments && content.topComments.length" class="row w-100 mt-4 pt-2">
+                                <div class="col-12">
+                                  <div class="d-flex flex-column">
+                                    <div
+                                      class="d-flex align-items-start mb-2"
+                                      v-for="(comment, index) in content.topComments"
+                                      :key="index"
+                                    >
+                                      <!-- Commenter Photo Section -->
+                                      <div class="col-auto me-3">
+                                        <router-link
+                                          :to="{
+                                            path: getProfileLink(comment.userId, comment.userType, comment.username)
+                                          }"
+                                          class="primary-clickable-text"
+                                        >
+                                          <img
+                                            v-if="content.userPhoto"
+                                            :src="content.userPhoto"
+                                            class="rounded-circle"
+                                            alt="Profile Photo"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <svg
+                                            v-else
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="30"
+                                            height="30"
+                                            fill="currentColor"
+                                            class="bi bi-person-circle"
+                                            viewBox="0 0 16 16"
+                                            style="object-fit: cover;"
+                                          >
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                          </svg>
+                                        </router-link>
+                                      </div>
+                                      
+                                      <!-- Comment Box-->
+                                      <div class="col bg-light rounded p-2">
+
+                                        <!-- Row 1: User Name-->
+                                        <div class="d-flex align-items-start">
+                                          <!-- User name at the top left corner-->
+                                          <router-link
+                                            :to="{ path: getProfileLink(comment.userId, comment.userType, comment.username) }"
+                                            class="primary-clickable-text"
+                                          >
+                                            <b>@{{ comment.username }}</b>
+                                          </router-link>
+
+                                          <!-- Edit Button at the top right corner-->
+                                          <button v-if="isCommentOwner(comment.userId, comment.userType)" class="btn btn-link p-0 ms-auto">
+                                            <i class="bi bi-pencil"></i>
+                                          </button>
+                                        </div>
+
+                                        <!-- Row 2: Comment Text-->
+                                        <div class="row mt-2">
+                                          <span>{{ comment.comment }}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
 
@@ -3077,6 +3148,26 @@ methods: {
         console.error("Error unliking content:", error);
       }
     },
+
+    // Function to get profileLink based on userType
+    getProfileLink(userId, userType, name) {
+
+      switch (userType) {
+        case 'user':
+          return `/profile/user/${userId}/${this.slugify(name)}`;
+        case 'producer':
+          return `/profile/producer/${userId}/${this.slugify(name)}`;
+        case 'venue':
+          return `/profile/venue/${userId}/${this.slugify(name)}`;
+        default:
+          return null;
+      }
+    },
+
+    // Function to check if comment is made by current user
+    isCommentOwner(commentUserId, commentUserType) {
+      return this.userID == commentUserId && this.userType == commentUserType;
+    }
   },
 };
 </script>
