@@ -148,8 +148,10 @@ Normal User (Anonymous & Logged-In)
 
                     <!-- Activities Tab -->
                     <div v-show="contentMode === 'recentActivities'">
-                        <VenueActivityTab :bottle-reviews="bottle_reviews"
-                            :user-id="user_id" :can-mod="isAdmin" />
+                        <VenueActivityTab :bottle-reviews="bottle_reviews.reviews"
+                            :loading-more-reviews="bottle_reviews.loading"
+                            :no-more-bottle-reviews="!bottle_reviews.hasMore"
+                            @load-more-bottle-reviews="getActivities" />
                     </div>
                 </div>
             </div>

@@ -139,15 +139,11 @@
       <hr class="my-4" />
     </article>
 
-    <!-- Load More Button -->
-    <div class="text-center mb-4" v-if="!noMoreBottleReviews">
-      <button type="button" class="btn btn-primary btn-lg" @click="loadMoreBottleReviews"
-        :disabled="loadingMoreReviews">
-        <span v-if="loadingMoreReviews" class="spinner-border spinner-border-sm me-2" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </span>
-        Load More Drink Reviews
-      </button>
+    <!-- Infinite Scroll Observer -->
+    <div ref="observer" class="text-center mb-4" v-if="!noMoreBottleReviews" style="height: 50px;">
+      <div v-if="loadingMoreReviews" class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
     </div>
   </section>
 
@@ -233,10 +229,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    combinedReviewImages: {
-      type: Array,
-      default: () => [],
-    },
   },
 
   data() {
@@ -250,23 +242,36 @@ export default {
     };
   },
 
+  watch: {
+    hasBottleReviews: {
+      handler(hasReviews) {
+        if (hasReviews) {
+          this.$nextTick(() => {
+            if (this.$refs.observer) {
+              this.observer.observe(this.$refs.observer);
+            }
+          });
+        } else if (this.observer) {
+          this.observer.disconnect();
+        }
+      },
+      immediate: true,
+    },
+  },
+
   mounted() {
     this.observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry && entry.isIntersecting) {
+        if (entry && entry.isIntersecting && !this.loadingMoreReviews) {
           this.loadMoreBottleReviews();
         }
       },
       {
         root: null,
         rootMargin: '0px',
-        threshold: 1.0,
+        threshold: 0.1,
       }
     );
-
-    if (this.$refs.observer) {
-      this.observer.observe(this.$refs.observer);
-    }
   },
 
   beforeUnmount() {
@@ -277,9 +282,22 @@ export default {
 
   computed: {
     bottleReviewImages() {
-      return this.combinedReviewImages
-        ?.filter((img) => img.reviewType === 'bottle')
-        ?.slice(0, 5) || [];
+      const photos = [];
+      const maxPhotos = 5;
+
+      for (const review of this.bottleReviews) {
+        // Check if photos array exists and has at least one photo
+        if (review.photos && Array.isArray(review.photos) && review.photos.length > 0) {
+          photos.push(review.photos[0]);
+              
+          // Stop if we've reached the maximum
+          if (photos.length >= maxPhotos) {
+              break;
+          }
+        }
+      }
+
+      return photos;
     },
 
     hasBottleReviews() {
