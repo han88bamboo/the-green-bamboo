@@ -1158,17 +1158,19 @@
                 <img
                   v-if="admin.photo"
                   :src="admin.photo"
-                  class="img-fluid rounded-circle"
+                  class="  "
                   alt="Admin Photo"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 />
                 <svg
                   v-else
                   xmlns="http://www.w3.org/2000/svg"
-                  width="50"
-                  height="50"
+                  width="30"
+                  height="30"
                   fill="currentColor"
-                  class="bi bi-person-circle"
+                  class=" "
                   viewBox="0 0 16 16"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 >
                   <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                   <path
@@ -1179,11 +1181,11 @@
 
                 <!-- Admin name -->
                 <router-link :to="profileURL(admin.id, admin.userType)">
-                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.displayName }}</p>
-                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">
+                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;" >{{ admin.displayName }}</p>
+                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;">
                     {{ admin.producerName }}
                   </p>
-                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232);">{{ admin.venueName }}</p>
+                  <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;">{{ admin.venueName }}</p>
                 </router-link>
 
                 <!-- Show all admins button -->
@@ -1308,8 +1310,9 @@
                 <img
                   v-if="member.photo"
                   :src="member.photo"
-                  class="img-fluid rounded-circle"
+                  class=" "
                   alt="Member Photo"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 />
                 <svg
                   v-else
@@ -1317,8 +1320,9 @@
                   width="50"
                   height="50"
                   fill="currentColor"
-                  class="bi bi-person-circle"
+                  class=" "
                   viewBox="0 0 16 16"
+                  style="height: 50px; width: 50px; border-radius: 50% !important;"
                 >
                   <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                   <path
@@ -1400,8 +1404,9 @@
                         <img
                           v-if="member.photo"
                           :src="member.photo"
-                          class="img-fluid rounded-circle"
+                          class=" "
                           alt="Member Photo"
+                          style="height: 50px; width: 50px; border-radius: 50% !important;"
                         />
                         <svg
                           v-else
@@ -1409,8 +1414,9 @@
                           width="50"
                           height="50"
                           fill="currentColor"
-                          class="bi bi-person-circle"
+                          class=" "
                           viewBox="0 0 16 16"
+                          style="height: 50px; width: 50px; border-radius: 50% !important;"
                         >
                           <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
                           <path
@@ -1439,6 +1445,10 @@
                             {{ member.venueName }}
                           </p>
                         </router-link>
+                          <!-- Follow button below member name -->
+                          <button class="btn btn-sm btn-outline-primary" style="min-width: 80px; font-size: 0.75rem; padding: 0.25rem 0.5rem;">
+                            + Follow
+                          </button>
                       </div>
                     </div>
                   </div>
