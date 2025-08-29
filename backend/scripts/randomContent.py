@@ -19,6 +19,8 @@ from flask import Blueprint, g, jsonify, request
 import random
 from email.utils import parsedate_to_datetime
 from psycopg2.extras import RealDictCursor
+import json
+from datetime import datetime
 
 
 file_name = os.path.basename(__file__)
@@ -27,15 +29,15 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # Helper Functions
 
 # Get top 3 comments
-def get_top_comments(content_id, content_type, table_user_type):
+def get_top_comments(content_id, content_type):
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 
         # Get table name 
-        table_name = get_table_name(content_type, "comment", table_user_type)
+        table_name = get_table_name(content_type, "comment")
 
         # Get unique field 
-        unique_field = get_unique_field(content_type, table_user_type)
+        unique_field = get_unique_field(content_type)
 
         cursor.execute(f"""
             SELECT * FROM "{table_name}"
@@ -77,19 +79,19 @@ def get_top_comments(content_id, content_type, table_user_type):
 
 
 # Get number of likes on content
-def get_likes_count(content_id, content_type, table_user_type):
+def get_likes_count(content_id, content_type):
 
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 
         # Get table name 
-        table_name = get_table_name(content_type, "like", table_user_type)
+        table_name = get_table_name(content_type, "like")
 
         # Get unique field 
-        unique_field = get_unique_field(content_type, table_user_type)
+        unique_field = get_unique_field(content_type)
 
         # If table name is reviewsUserVotes
-        if table_name == "reviewsUserVotes" and table_user_type == "user":
+        if table_name == "reviewsUserVotes":
             cursor.execute(f"""
                            SELECT upvotes FROM "{table_name}"
                            WHERE "id" = %s
@@ -133,23 +135,24 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 
         # Get table name and unique field
-        table_name = get_table_name(content_type, "like", user_type)
-        unique_field = get_unique_field(content_type, user_type)
+        table_name = get_table_name(content_type, "like")
+        unique_field = get_unique_field(content_type)
 
         # ---------- reviewsUserVotes ----------
         if table_name == "reviewsUserVotes" and user_type == "user":
             cursor.execute("""
-                SELECT "id"
+                SELECT "reviewId", "upvotes"
                 FROM "reviewsUserVotes"
-                WHERE "id" = ANY(%s)
-                AND EXISTS (
-                    SELECT 1
-                    FROM jsonb_array_elements("upvotes") elem
-                    WHERE (elem->>'id')::int = %s
-                )
-            """, (content_ids, user_id))
+                WHERE "reviewId" = ANY(%s)
+            """, (content_ids,))
             rows = cursor.fetchall()
-            return [row['id'] for row in rows] if rows else []
+
+            # Loop through [] and return reviewId if the user has liked it
+            liked_review_ids = []
+            for row in rows:
+                if user_id in [upvote['userId'] for upvote in row['upvotes']]:
+                    liked_review_ids.append(row['reviewId'])
+            return liked_review_ids
 
         # ---------- producerUpdateLikes / venueUpdateLikes ----------
         if table_name in ("producerUpdateLikes", "venueUpdateLikes"):
@@ -178,7 +181,7 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
 
 
 # Get table name based on content_type and feature and user_type
-def get_table_name(content_type, feature, user_type):
+def get_table_name(content_type, feature):
 
     if content_type == "Listing":
         if feature == "like" or feature == "dislike":
@@ -192,18 +195,19 @@ def get_table_name(content_type, feature, user_type):
         elif feature == "comment":
             return "listingReviewsComments"
         
-    elif content_type == "Update":
+    elif content_type == "pUpdate":
         if feature == "like" or feature == "dislike":
-            if user_type == "producer":
-                return "producerUpdateLikes"
-            elif user_type == "venue":
-                return "venueUpdateLikes"
+            return "producerUpdateLikes"
             
         elif feature == "comment":
-            if user_type == "producer":
-                return "producerUpdateComments"
-            elif user_type == "venue":
-                return "venueUpdateComments"
+            return "producerUpdateComments"
+            
+    elif content_type == "vUpdate":
+        if feature == "like" or feature == "dislike":
+            return "venueUpdateLikes"
+
+        elif feature == "comment":
+            return "venueUpdateComments"
 
     elif content_type == "88B":
         if feature == "like" or feature == "dislike":
@@ -215,18 +219,18 @@ def get_table_name(content_type, feature, user_type):
 
 
 # Get unique field from content comments tables based on content_type
-def get_unique_field(content_type, user_type):
+def get_unique_field(content_type):
     if content_type == "Listing":
         return "listingId"
 
     elif content_type == "Review":
         return "reviewId"
 
-    elif content_type == "Update":
-        if user_type == "producer":
+    elif content_type == "pUpdate":
             return "producerUpdateId"
-        elif user_type == "venue":
-            return "venueUpdateId"
+    
+    elif content_type == "vUpdate":
+        return "venueUpdateId"
 
     elif content_type == "88B":
         return "contentId"
@@ -312,10 +316,10 @@ def getRandomListings(user_id, user_type):
                 listing['contentType'] = 'Listing'
 
                 # Get top 3 comments 
-                listing['topComments'] = get_top_comments(listing['id'], 'Listing', None)
+                listing['topComments'] = get_top_comments(listing['id'], 'Listing')
                 
                 # Get number of likes
-                listing['totalLikes'] = get_likes_count(listing['id'], 'Listing', None)
+                listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
 
             # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to a week ago)
             # Set random limit
@@ -346,10 +350,10 @@ def getRandomListings(user_id, user_type):
                     review['listingName'] = listing_data['listingName'] if listing_data else None
 
                     # Get top 3 comments
-                    review['topComments'] = get_top_comments(review['id'], 'Review', None)
+                    review['topComments'] = get_top_comments(review['id'], 'Review')
 
                     # Get number of likes
-                    review['totalLikes'] = get_likes_count(review['id'], 'Review', None)
+                    review['totalLikes'] = get_likes_count(review['id'], 'Review')
 
             reviews_last_id = reviews[-1]['id'] if reviews else None
 
@@ -409,7 +413,7 @@ def getRandomListings(user_id, user_type):
                 # Add contentType to each update
                 if len(producers_updates):
                     for update in producers_updates:
-                        update['contentType'] = 'Update'
+                        update['contentType'] = 'pUpdate'
 
                         # Get producer name
                         cursor.execute("""SELECT "producerName", photo FROM producers WHERE id = %s""", (update['producerId'],))
@@ -418,14 +422,14 @@ def getRandomListings(user_id, user_type):
                         update['producerPhoto'] = producer_data['photo'] if producer_data else None
 
                         # Get top 3 comments
-                        update['topComments'] = get_top_comments(update['id'], 'Update', 'producer')
+                        update['topComments'] = get_top_comments(update['id'], 'pUpdate')
 
                         # Get number of likes
-                        update['totalLikes'] = get_likes_count(update['id'], 'Update', 'producer')
+                        update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
 
                 if len(venues_updates):
                     for update in venues_updates:
-                        update['contentType'] = 'Update'
+                        update['contentType'] = 'vUpdate'
 
                         # Get venue name
                         cursor.execute("""SELECT "venueName", photo FROM venues WHERE id = %s""", (update['venueId'],))
@@ -434,10 +438,10 @@ def getRandomListings(user_id, user_type):
                         update['venuePhoto'] = venue_data['photo'] if venue_data else None
 
                         # Get top 3 comments
-                        update['topComments'] = get_top_comments(update['id'], 'Update', 'venue')
+                        update['topComments'] = get_top_comments(update['id'], 'vUpdate')
 
                         # Get number of likes
-                        update['totalLikes'] = get_likes_count(update['id'], 'Update', 'venue')
+                        update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
 
         if not listings_data:
             return jsonify({"error": "No listings found for selected date"}), 400
@@ -446,8 +450,8 @@ def getRandomListings(user_id, user_type):
         if user_id and user_type:
             listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
             reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in reviews])
-            producers_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in producers_updates])
-            venues_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in venues_updates])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "vUpdate", [row["id"] for row in venues_updates])
 
         content = listings_data + reviews + producers_updates + venues_updates
         random.shuffle(content)
@@ -583,10 +587,10 @@ def getNext30():
                     listing['contentType'] = 'Listing'
 
                     # Get top 3 comments 
-                    listing['topComments'] = get_top_comments(listing['id'], 'Listing', None)
+                    listing['topComments'] = get_top_comments(listing['id'], 'Listing')
                     
                     # Get number of likes
-                    listing['totalLikes'] = get_likes_count(listing['id'], 'Listing', None)
+                    listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
 
 
 
@@ -618,10 +622,10 @@ def getNext30():
                 review['userPhoto'] = user_data['photo'] if user_data else None
 
                 # Get top 3 comments
-                review['topComments'] = get_top_comments(review['id'], 'Review', None)
+                review['topComments'] = get_top_comments(review['id'], 'Review')
 
                 # Get number of likes
-                review['totalLikes'] = get_likes_count(review['id'], 'Review', None)
+                review['totalLikes'] = get_likes_count(review['id'], 'Review')
 
             # Get producer or venue updates after *UpdateLastID
             if limit > 0:
@@ -672,7 +676,7 @@ def getNext30():
                 pUpdateLastID = producers_updates[-1]['id']
 
                 for update in producers_updates:
-                    update['contentType'] = 'Update'
+                    update['contentType'] = 'pUpdate'
 
                     # Get producer name
                     cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (update['producerId'],))
@@ -681,16 +685,16 @@ def getNext30():
                     update['producerPhoto'] = producer['photo'] if producer else None
 
                     # Get top 3 comments
-                    update['topComments'] = get_top_comments(update['id'], 'Update', 'producer')
+                    update['topComments'] = get_top_comments(update['id'], 'pUpdate')
 
                     # Get number of likes
-                    update['totalLikes'] = get_likes_count(update['id'], 'Update', 'producer')
+                    update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
 
             if venues_updates:
                 vUpdateLastID = venues_updates[-1]['id']
 
                 for update in venues_updates:
-                    update['contentType'] = 'Update'
+                    update['contentType'] = 'vUpdate'
                     
                     # Get venue name
                     cursor.execute('SELECT "venueName", "photo" FROM "venues" WHERE "id" = %s', (update['venueId'],))
@@ -699,10 +703,10 @@ def getNext30():
                     update['venuePhoto'] = venue['photo'] if venue else None
 
                     # Get top 3 comments
-                    update['topComments'] = get_top_comments(update['id'], 'Update', 'venue')
+                    update['topComments'] = get_top_comments(update['id'], 'vUpdate')
 
                     # Get number of likes
-                    update['totalLikes'] = get_likes_count(update['id'], 'Update', 'venue')
+                    update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
 
         if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) == 0:
             return jsonify([])
@@ -755,33 +759,56 @@ def likeContent():
         with conn.cursor() as cursor:
 
             # Retrieve the table name 
-            table_name = get_table_name(content_type, "like", user_type)
+            table_name = get_table_name(content_type, "like")
+            print(table_name)
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
             # Insert the like into the appropriate table
-            
-            # If it is listingLikes
-            if table_name == "listingLikes":
+
+            # If it is listingsLikes
+            if table_name == "listingsLikes":
                 cursor.execute(f"""
-                    INSERT INTO ""{table_name} ("listingId", "userId", "userType")
+                    INSERT INTO "{table_name}" ("listingId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+
+                conn.commit()
 
             # If it is reviewsUserVotes
             elif table_name == "reviewsUserVotes" and user_type == "user":
-                cursor.execute("""
-                    UPDATE "reviewsUserVotes"
-                    SET "upvotes" = "upvotes" || jsonb_build_array(
-                        jsonb_build_object(
-                            'userId', %s,
-                            'date', CURRENT_TIMESTAMP
-                        )
-                    )
-                    WHERE "id" = %s;
-                """, (user_id, content_id))
-                cursor.commit()
+                # Check if review exist
+                cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE "reviewId" = %s;', (content_id,))
+                reviewRecord = cursor.fetchone()
+                review_exists = reviewRecord['count'] > 0
+
+                if review_exists:
+
+                    # Step 1: Get existing upvotes
+                    cursor.execute('SELECT "upvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s;', (content_id,))
+                    row = cursor.fetchone()
+                    upvotes = row[0] if row and row[0] is not None else []
+
+                    # Step 2: Append new vote
+                    new_vote = {"userId": user_id, "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                    upvotes.append(new_vote)
+
+                    # Step 3: Update back into DB
+                    cursor.execute('UPDATE "reviewsUserVotes" SET "upvotes" = %s WHERE "reviewId" = %s;', 
+                                (json.dumps(upvotes), content_id))
+                    
+                else:
+                    print("Goes here")
+
+                    # Step 1: Create new entry
+                    cursor.execute('INSERT INTO "reviewsUserVotes" ("reviewId", "upvotes") VALUES (%s, %s);',
+                                   (content_id, json.dumps([{"userId": user_id, "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}])))
+
+                if cursor.rowcount > 0:
+                    print("success")
+                else:
+                    print("failed")
+                conn.commit()
 
             # If it is producerUpdateLikes
             elif table_name == "producerUpdateLikes":
@@ -789,15 +816,15 @@ def likeContent():
                     INSERT INTO "{table_name}" ("updateId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             # If it is venueUpdateLikes
             elif table_name == "venueUpdateLikes":
                 cursor.execute(f"""
-                    INSERT INTO "{table_name}" ("venueId", "userId", "userType")
+                    INSERT INTO "{table_name}" ("updateId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             # If it is 88BContentLikes
             elif table_name == "88BContentLikes":
@@ -805,7 +832,7 @@ def likeContent():
                     INSERT INTO "{table_name}" ("contentId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             return jsonify({
                 "message": "Content liked successfully",
@@ -836,7 +863,7 @@ def unlikeContent():
         with conn.cursor() as cursor:
 
             # Retrieve the table name
-            table_name = get_table_name(content_type, "unlike", user_type)
+            table_name = get_table_name(content_type, "unlike")
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
@@ -847,7 +874,7 @@ def unlikeContent():
                     DELETE FROM "{table_name}"
                     WHERE "listingId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             elif table_name == "reviewsUserVotes" and user_type == "user":
                 cursor.execute("""
@@ -859,28 +886,28 @@ def unlikeContent():
                     ), '[]')
                     WHERE "reviewId" = %s;
                 """, (str(user_id), content_id))
-                cursor.commit()
+                conn.commit()
 
             elif table_name == "producerUpdateLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             elif table_name == "venueUpdateLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             elif table_name == "88BContentLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "contentId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                cursor.commit()
+                conn.commit()
 
             return jsonify({
                 "message": "Content unliked successfully",
@@ -913,12 +940,12 @@ def addComment():
         with conn.cursor() as cursor:
 
             # Retrieve the table name
-            table_name = get_table_name(content_type, "comment", user_type)
+            table_name = get_table_name(content_type, "comment")
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
             # Retrieve the unique field name
-            unique_field = get_unique_field(content_type, user_type)
+            unique_field = get_unique_field(content_type)
             if not unique_field:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
@@ -960,7 +987,7 @@ def editComment():
         with conn.cursor() as cursor:
 
             # Retrieve the table name
-            table_name = get_table_name(content_type, "comment", user_type)
+            table_name = get_table_name(content_type, "comment")
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
@@ -1002,7 +1029,7 @@ def deleteComment():
         with conn.cursor() as cursor:
 
             # Retrieve the table name
-            table_name = get_table_name(content_type, "comment", user_type)
+            table_name = get_table_name(content_type, "comment")
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
@@ -1033,7 +1060,7 @@ def deleteComment():
         with conn.cursor() as cursor:
 
             # Retrieve the table name
-            table_name = get_table_name(content_type, "comment", user_type)
+            table_name = get_table_name(content_type, "comment")
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
