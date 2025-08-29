@@ -1154,6 +1154,7 @@
                             <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
                                     style="font-weight: bold;">
                                 Dining Menu
                             </button>
@@ -3465,7 +3466,7 @@
                         </button>
                         
                         <!-- PDF Container -->
-                        <div class="pdf-container flex-grow-1">
+                        <div class="pdf-container flex-grow-1 position-relative">
                             <iframe 
                                 v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
                                 :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=' + currentPdfPage + '&view=FitV&zoom=page-width'"
@@ -3473,12 +3474,22 @@
                                 height="650px"
                                 @error="handlePdfError">
                             </iframe>
+                            
+                            <!-- Page Counter -->
+                            <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== '' && showPageCounter" 
+                                 class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 rounded"
+                                 style="font-size: 12px; z-index: 10;">
+                                <span v-if="totalPdfPages">Page {{ currentPdfPage }} of {{ totalPdfPages }}</span>
+                                <span v-else-if="isPdfLoading">Loading...</span>
+                                <span v-else>Page {{ currentPdfPage }}</span>
+                            </div>
                         </div>
                         
                         <!-- Right Navigation Button -->
                         <button 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
                             @click="nextPage" 
+                            :disabled="totalPdfPages !== null && currentPdfPage >= totalPdfPages"
                             class="btn btn-primary ms-2"
                             style="min-width: 50px; height: 50px;">
                             →
@@ -3820,6 +3831,9 @@ export default {
             
             // PDF navigation
             currentPdfPage: 1,
+            totalPdfPages: null, // Will be set when PDF is loaded
+            isPdfLoading: false, // Track if we're currently analyzing the PDF
+            showPageCounter: false, // Show page counter temporarily after navigation
 
             // Editable fields
             editVenueName: '',
@@ -7043,15 +7057,89 @@ Thank you!`
 
         // PDF Navigation methods
         nextPage() {
-            this.currentPdfPage++;
-            this.forceIframeReload();
+            if (this.totalPdfPages === null || this.currentPdfPage < this.totalPdfPages) {
+                this.currentPdfPage++;
+                this.forceIframeReload();
+                this.showPageCounterTemporarily();
+            }
         },
 
         previousPage() {
             if (this.currentPdfPage > 1) {
                 this.currentPdfPage--;
                 this.forceIframeReload();
+                this.showPageCounterTemporarily();
             }
+        },
+
+        // Show page counter for 1.5 seconds
+        showPageCounterTemporarily() {
+            this.showPageCounter = true;
+            setTimeout(() => {
+                this.showPageCounter = false;
+            }, 1500);
+        },
+
+        // Get PDF page count using fetch and basic PDF parsing
+        async getPdfPageCount(pdfUrl) {
+            try {
+                this.isPdfLoading = true;
+                
+                // Clean the URL - remove hash parameters for fetching
+                const cleanUrl = pdfUrl.split('#')[0];
+                
+                // Fetch the PDF as ArrayBuffer
+                const response = await fetch(cleanUrl);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch PDF');
+                }
+                
+                const arrayBuffer = await response.arrayBuffer();
+                
+                // Load PDF.js dynamically
+                if (!window.pdfjsLib) {
+                    // Load PDF.js from CDN
+                    await this.loadPdfJs();
+                }
+                
+                // Parse PDF to get page count
+                const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const pageCount = pdf.numPages;
+                
+                this.totalPdfPages = pageCount;
+                console.log(`PDF has ${pageCount} pages`);
+                
+                return pageCount;
+                
+            } catch (error) {
+                console.error('Error getting PDF page count:', error);
+                // Fallback to reasonable default
+                this.totalPdfPages = 10;
+                return 10;
+            } finally {
+                this.isPdfLoading = false;
+            }
+        },
+
+        // Load PDF.js library dynamically
+        async loadPdfJs() {
+            return new Promise((resolve, reject) => {
+                if (window.pdfjsLib) {
+                    resolve();
+                    return;
+                }
+                
+                // Load PDF.js from CDN
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+                script.onload = () => {
+                    // Set worker source
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                    resolve();
+                };
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
         },
 
         // Force iframe reload with proper cache busting
@@ -7071,6 +7159,18 @@ Thank you!`
                     parent.appendChild(newIframe);
                 }
             });
+        },
+
+        // Reset PDF navigation and analyze PDF when modal opens
+        async resetPdfNavigation() {
+            this.currentPdfPage = 1;
+            this.totalPdfPages = null;
+            this.isPdfLoading = false;
+            
+            // Analyze PDF to get page count
+            if (this.targetVenue.pdfMenuUrl) {
+                await this.getPdfPageCount(this.targetVenue.pdfMenuUrl);
+            }
         }
     },
     watch: {
