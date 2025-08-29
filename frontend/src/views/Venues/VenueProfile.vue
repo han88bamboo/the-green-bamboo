@@ -823,6 +823,11 @@
                                       @click="editAmenities.beverageArrack = !editAmenities.beverageArrack">
                                     <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
+                                <span class="badge amenity-badge beverage-badge" 
+                                    :class="{ 'active': editAmenities.nonAlcoholicOptions }"
+                                    @click="editAmenities.nonAlcoholicOptions = !editAmenities.nonAlcoholicOptions">
+                                    <i class="bi bi-cup-straw me-1"></i>Non-Alcoholic Options
+                                </span>
                             </div>
                         </div>
 
@@ -836,6 +841,27 @@
                                       @click="editAmenities.foodServed = !editAmenities.foodServed">
                                     <i class="bi bi-egg-fried me-1"></i>Food Served
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.breakfastService }"
+                                    @click="editAmenities.breakfastService = !editAmenities.breakfastService">
+                                    <PhBread :size="16" class="me-1" />Breakfast Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.lunchService }"
+                                    @click="editAmenities.lunchService = !editAmenities.lunchService">
+                                    <i class="bi bi-clock me-1"></i>Lunch Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.dinnerService }"
+                                    @click="editAmenities.dinnerService = !editAmenities.dinnerService">
+                                    <i class="bi bi-moon me-1"></i>Dinner Service
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.vegetarianOptions }"
+                                    @click="editAmenities.vegetarianOptions = !editAmenities.vegetarianOptions">
+                                    <i class="bi bi-flower1 me-1"></i>Vegetarian Options
+                                </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.outdoorSeating }"
                                       @click="editAmenities.outdoorSeating = !editAmenities.outdoorSeating">
@@ -845,6 +871,26 @@
                                       :class="{ 'active': editAmenities.indoorSeating }"
                                       @click="editAmenities.indoorSeating = !editAmenities.indoorSeating">
                                     <i class="bi bi-house me-1"></i>Indoor Seating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.airConditioning }"
+                                    @click="editAmenities.airConditioning = !editAmenities.airConditioning">
+                                    <i class="bi bi-snow me-1"></i>Air Conditioning
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.indoorHeating }"
+                                    @click="editAmenities.indoorHeating = !editAmenities.indoorHeating">
+                                    <i class="bi bi-thermometer-sun me-1"></i>Indoor Heating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.coveredOutdoorSeating }"
+                                    @click="editAmenities.coveredOutdoorSeating = !editAmenities.coveredOutdoorSeating">
+                                    <i class="bi bi-umbrella me-1"></i>Covered Outdoor Seating
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.toiletsAvailable }"
+                                    @click="editAmenities.toiletsAvailable = !editAmenities.toiletsAvailable">
+                                    <PhToilet :size="16" class="me-1" />Toilet Available
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.petFriendly }"
@@ -860,6 +906,11 @@
                                       :class="{ 'active': editAmenities.familyFriendly }"
                                       @click="editAmenities.familyFriendly = !editAmenities.familyFriendly">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.nonSmoking }"
+                                    @click="editAmenities.nonSmoking = !editAmenities.nonSmoking">
+                                    <i class="bi bi-slash-circle me-1"></i>Non-Smoking
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.smokeFriendly }"
@@ -897,9 +948,20 @@
                                     <i class="bi bi-truck me-1"></i>Delivery Available
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
-                                      :class="{ 'active': editAmenities.lgbtqFriendly }"
-                                      @click="editAmenities.lgbtqFriendly = !editAmenities.lgbtqFriendly">
-                                    <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
+                                    :class="{ 'active': editAmenities.onlineOrdering }"
+                                    @click="editAmenities.onlineOrdering = !editAmenities.onlineOrdering">
+                                    <i class="bi bi-laptop me-1"></i>Online Ordering
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.takeaway }"
+                                    @click="editAmenities.takeaway = !editAmenities.takeaway">
+                                    <i class="bi bi-bag me-1"></i>Takeaway
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.catering }"
+                                    @click="editAmenities.catering = !editAmenities.catering">
+                                    <i class="bi bi-people-fill me-1"></i>Catering
                                 </span>
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.reservationsRequired }"
@@ -920,6 +982,27 @@
                                       :class="{ 'active': editAmenities.inStoreScheduling }"
                                       @click="editAmenities.inStoreScheduling = !editAmenities.inStoreScheduling">
                                     <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.streetParking }"
+                                    @click="editAmenities.streetParking = !editAmenities.streetParking">
+                                    <i class="bi bi-car-front me-1"></i>Street Parking
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.bikeParking }"
+                                    @click="editAmenities.bikeParking = !editAmenities.bikeParking">
+                                    <i class="bi bi-bicycle me-1"></i>Bike Parking
+                                </span>
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.driveThru }"
+                                    @click="editAmenities.driveThru = !editAmenities.driveThru">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Drive Thru
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                      :class="{ 'active': editAmenities.lgbtqFriendly }"
+                                      @click="editAmenities.lgbtqFriendly = !editAmenities.lgbtqFriendly">
+                                    <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
                                 </span>
                             </div>
                         </div>
@@ -1078,11 +1161,32 @@
                                 <span v-if="targetVenue.amenities?.beverageArrack" class="badge bg-success me-1 mb-1">
                                     <PhBrandy :size="16" class="me-1" />Arrack
                                 </span>
+                                <span v-if="targetVenue.amenities?.nonAlcoholicOptions" class="badge bg-success me-1 mb-1" >
+                                    <i class="bi bi-cup-straw me-1"></i>Non-Alcoholic Options
+                                </span>
+
 
                                 <!-- General Amenities -->
                                 <span v-if="targetVenue.amenities?.foodServed" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-egg-fried me-1"></i>Food Served
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.breakfastService" class="badge bg-info me-1 mb-1">
+                                    <PhBread :size="16" class="me-1" />Breakfast Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.lunchService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-clock me-1"></i>Lunch Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.dinnerService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-moon me-1"></i>Dinner Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.vegetarianOptions" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-flower1 me-1"></i>Vegetarian Options
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.freeWiFi" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-wifi me-1"></i>Free WiFi
                                 </span>
@@ -1092,6 +1196,23 @@
                                 <span v-if="targetVenue.amenities?.indoorSeating" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-house me-1"></i>Indoor Seating
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.airConditioning" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-snow me-1"></i>Air Conditioning
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.indoorHeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-thermometer-sun me-1"></i>Indoor Heating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.coveredOutdoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-umbrella me-1"></i>Covered Outdoor Seating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.toiletsAvailable" class="badge bg-info me-1 mb-1">
+                                    <PhToilet :size="16" class="me-1" />Toilet Available
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.liveMusic" class="badge bg-warning me-1 mb-1">
                                     <i class="bi bi-music-note me-1"></i>Live Music
                                 </span>
@@ -1107,6 +1228,11 @@
                                 <span v-if="targetVenue.amenities?.familyFriendly" class="badge bg-secondary me-1 mb-1">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.nonSmoking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-slash-circle me-1"></i>Non-Smoking
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.smokeFriendly" class="badge bg-secondary me-1 mb-1">
                                     <i class="bi bi-cloud me-1"></i>Smoking Friendly
                                 </span>
@@ -1119,6 +1245,19 @@
                                 <span v-if="targetVenue.amenities?.deliveryAvailable" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-truck me-1"></i>Delivery Available
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.onlineOrdering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-laptop me-1"></i>Online Ordering
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.takeaway" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bag me-1"></i>Takeaway
+                                </span>  
+
+                                <span v-if="targetVenue.amenities?.catering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-people-fill me-1"></i>Catering
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.reservationsRequired" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar-check me-1"></i>Reservations Required
                                 </span>
@@ -1131,6 +1270,19 @@
                                 <span v-if="targetVenue.amenities?.inStoreScheduling" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.streetParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-car-front me-1"></i>Street Parking
+                                </span>                                
+
+                                <span v-if="targetVenue.amenities?.bikeParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bicycle me-1"></i>Bike Parking
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.driveThru" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Drive Thru
+                                </span>                                
+
                                 <span v-if="targetVenue.amenities?.lgbtqFriendly" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
                                 </span>
@@ -3544,7 +3696,9 @@ import {
   PhChampagne, 
   PhMartini,
   PhBrandy,
-  PhFlowerLotus
+  PhFlowerLotus,
+  PhBread,
+  PhToilet
 } from '@phosphor-icons/vue'
 
 // load in control 
@@ -3567,7 +3721,9 @@ export default {
         PhBrandy,
         PhFlowerLotus,
         PhChampagne,
-        BadgePopup
+        BadgePopup,
+        PhBread,
+        PhToilet
     },
   setup() {
     // Create reactive references for meta data
@@ -3896,6 +4052,28 @@ export default {
                 reservationsRequired: false,
                 membershipRequired: false,
                 inStoreScheduling: false,
+                localNotPartOfChain: false,
+                casualDressing: false,
+                formalDressing: false,
+                vegetarianOptions: false,
+                breakfastService: false,
+                lunchService: false,
+                dinnerService: false,
+                nonAlcoholicOptions: false,
+                nonSmoking: false,
+                largeGroupsFriendly: false,
+                airConditioning: false,
+                indoorHeating: false,
+                coveredOutdoorSeating: false,
+                toiletsAvailable: false,
+                workStudyFriendly: false,
+                driveThru: false,
+                streetParking: false,
+                bikeParking: false,
+                tvEntertainment: false,
+                onlineOrdering: false,
+                catering: false,
+                takeaway: false,
                 otherAmenities: ''
             },
             qaQuestion: '',
