@@ -222,10 +222,6 @@ export default {
     },
     userType: String,
     inEdit: Boolean,
-    combinedReviewImages: {
-      type: Array,
-      default: () => []
-    },
     noMoreReviews: Boolean,
     loadingMore: {
       type: Boolean,
@@ -274,9 +270,22 @@ export default {
     },
 
     venueReviewImages() {
-      return this.combinedReviewImages
-        .filter(img => img.reviewType === 'venue')
-        .slice(0, 5);
+      const photos = [];
+      const maxPhotos = 5;
+
+      for (const review of this.venueReviews) {
+        // Check if photos array exists and has at least one photo
+        if (review.photos && Array.isArray(review.photos) && review.photos.length > 0) {
+          photos.push(review.photos[0]);
+              
+          // Stop if we've reached the maximum
+          if (photos.length >= maxPhotos) {
+              break;
+          }
+        }
+      }
+      
+      return photos;
     },
 
     shouldShowLoadMore() {

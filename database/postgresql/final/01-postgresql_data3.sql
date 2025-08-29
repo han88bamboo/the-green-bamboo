@@ -352,6 +352,7 @@ CREATE TABLE "users" (
     "ambassador" BOOLEAN DEFAULT FALSE,
     "categoryExpert" VARCHAR(255) DEFAULT NULL -- Category expert designation (e.g., "Champagne Expert", "Whisky Expert", etc.)
 );
+-- ALTER TABLE "users" ADD COLUMN "categoryExpert" VARCHAR(255) DEFAULT NULL;
 
 -- Create a GIN index on username for trigram fuzzy search
 CREATE INDEX idx_users_username_trgm ON "users" USING gin ("username" gin_trgm_ops);

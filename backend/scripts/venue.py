@@ -209,7 +209,7 @@ def getVenueBottleReviews(venue_id: int):
                 r."listingID" as "reviewTarget"
             FROM reviews r
             JOIN users u ON r."userID" = u.id
-            JOIN listings l ON r."listingID" = l.id
+            JOIN listings l ON r."reviewTarget" = l.id
             WHERE r."venueID" = %s AND r.id < %s
             ORDER BY r."createdDate" DESC
             LIMIT %s
@@ -232,7 +232,7 @@ def getVenueBottleReviews(venue_id: int):
                 r."listingID" as "reviewTarget"
             FROM reviews r
             JOIN users u ON r."userID" = u.id
-            JOIN listings l ON r."listingID" = l.id
+            JOIN listings l ON r."reviewTarget" = l.id
             WHERE r."venueID" = %s
             ORDER BY r."createdDate" DESC
             LIMIT %s
