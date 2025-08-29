@@ -862,6 +862,25 @@
                                     @click="editAmenities.vegetarianOptions = !editAmenities.vegetarianOptions">
                                     <i class="bi bi-flower1 me-1"></i>Vegetarian Options
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.localNotPartOfChain }"
+                                    @click="editAmenities.localNotPartOfChain = !editAmenities.localNotPartOfChain">
+                                    <PhHouseSimple :size="16" class="me-1" />Local (Not Part Of Chain)
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.casualDressing }"
+                                    @click="editAmenities.casualDressing = !editAmenities.casualDressing">
+                                    Casual Dressing
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.formalDressing }"
+                                    @click="editAmenities.formalDressing = !editAmenities.formalDressing">
+                                    Formal Dressing
+                                </span>
+
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.outdoorSeating }"
                                       @click="editAmenities.outdoorSeating = !editAmenities.outdoorSeating">
@@ -907,6 +926,19 @@
                                       @click="editAmenities.familyFriendly = !editAmenities.familyFriendly">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.largeGroupsFriendly }"
+                                    @click="editAmenities.largeGroupsFriendly = !editAmenities.largeGroupsFriendly">
+                                    <PhUsersFour :size="16" class="me-1" />Large Groups Friendly
+                                </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                    :class="{ 'active': editAmenities.workStudyFriendly }"
+                                    @click="editAmenities.workStudyFriendly = !editAmenities.workStudyFriendly">
+                                    <PhLaptop :size="16" class="me-1" />Work / Study Friendly
+                                </span>
+
                                 <span class="badge amenity-badge general-badge" 
                                     :class="{ 'active': editAmenities.nonSmoking }"
                                     @click="editAmenities.nonSmoking = !editAmenities.nonSmoking">
@@ -935,8 +967,16 @@
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.barGames }"
                                       @click="editAmenities.barGames = !editAmenities.barGames">
-                                    <i class="bi bi-controller me-1"></i>Bar Games
+                                    <i class="bi bi-controller me-1"></i>Bar Games / Entertainment
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                      :class="{ 'active': editAmenities.tvEntertainment }"
+                                      @click="editAmenities.tvEntertainment = !editAmenities.tvEntertainment">
+                                    <PhTelevision :size="16" />TV / Entertainment
+                                </span>
+                                                                
+
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.happyHourDrinks }"
                                       @click="editAmenities.happyHourDrinks = !editAmenities.happyHourDrinks">
@@ -1187,6 +1227,18 @@
                                     <i class="bi bi-flower1 me-1"></i>Vegetarian Options
                                 </span>
 
+                                <span v-if="targetVenue.amenities?.localNotPartOfChain" class="badge bg-info me-1 mb-1">
+                                     <PhHouseSimple :size="16" class="me-1" />Local (Not Part Of Chain)
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.casualDressing" class="badge bg-info me-1 mb-1">
+                                     Casual Dressing
+                                </span>
+                                
+                                <span v-if="targetVenue.amenities?.formalDressing" class="badge bg-info me-1 mb-1">
+                                     Formal Dressing
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.freeWiFi" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-wifi me-1"></i>Free WiFi
                                 </span>
@@ -1228,6 +1280,14 @@
                                 <span v-if="targetVenue.amenities?.familyFriendly" class="badge bg-secondary me-1 mb-1">
                                     <i class="bi bi-house-heart me-1"></i>Family Friendly
                                 </span>
+                                
+                                <span v-if="targetVenue.amenities?.largeGroupsFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <PhUsersFour :size="16" class="me-1" />Large Groups Friendly
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.workStudyFriendly" class="badge bg-secondary me-1 mb-1">
+                                     <PhLaptop :size="16" class="me-1" />Work / Study Friendly
+                                </span>
 
                                 <span v-if="targetVenue.amenities?.nonSmoking" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-slash-circle me-1"></i>Non-Smoking
@@ -1237,8 +1297,13 @@
                                     <i class="bi bi-cloud me-1"></i>Smoking Friendly
                                 </span>
                                 <span v-if="targetVenue.amenities?.barGames" class="badge bg-dark me-1 mb-1">
-                                    <i class="bi bi-controller me-1"></i>Bar Games
+                                    <i class="bi bi-controller me-1"></i>Bar Games / Entertainment
                                 </span>
+
+                                <span v-if="targetVenue.amenities?.tvEntertainment" class="badge bg-dark me-1 mb-1">
+                                    <PhTelevision :size="16" />TV / Entertainment
+                                </span>
+
                                 <span v-if="targetVenue.amenities?.happyHourDrinks" class="badge bg-warning me-1 mb-1">
                                     <i class="bi bi-clock me-1"></i>Happy Hour
                                 </span>
@@ -3698,7 +3763,10 @@ import {
   PhBrandy,
   PhFlowerLotus,
   PhBread,
-  PhToilet
+  PhToilet,
+  PhHouseSimple,
+  PhUsersFour,
+  PhLaptop
 } from '@phosphor-icons/vue'
 
 // load in control 
@@ -3723,7 +3791,10 @@ export default {
         PhChampagne,
         BadgePopup,
         PhBread,
-        PhToilet
+        PhToilet,
+        PhHouseSimple,
+        PhUsersFour,
+        PhLaptop
     },
   setup() {
     // Create reactive references for meta data

@@ -326,6 +326,28 @@ def editDetails():
                     amenities.get('reservationsRequired', False),
                     amenities.get('membershipRequired', False),
                     amenities.get('inStoreScheduling', False),
+                    amenities.get('localNotPartOfChain', False),
+                    amenities.get('casualDressing', False),
+                    amenities.get('formalDressing', False),
+                    amenities.get('vegetarianOptions', False),
+                    amenities.get('breakfastService', False),
+                    amenities.get('lunchService', False),
+                    amenities.get('dinnerService', False),
+                    amenities.get('nonAlcoholicOptions', False),
+                    amenities.get('nonSmoking', False),
+                    amenities.get('largeGroupsFriendly', False),
+                    amenities.get('airConditioning', False),
+                    amenities.get('indoorHeating', False),
+                    amenities.get('coveredOutdoorSeating', False),
+                    amenities.get('toiletsAvailable', False),
+                    amenities.get('workStudyFriendly', False),
+                    amenities.get('driveThru', False),
+                    amenities.get('streetParking', False),
+                    amenities.get('bikeParking', False),
+                    amenities.get('tvEntertainment', False),
+                    amenities.get('onlineOrdering', False),
+                    amenities.get('catering', False),
+                    amenities.get('takeaway', False),
                     amenities.get('otherAmenities', '')
                 )
 
@@ -378,6 +400,28 @@ def editDetails():
                             "reservationsRequired" = %s,
                             "membershipRequired" = %s,
                             "inStoreScheduling" = %s,
+                            "localNotPartOfChain" = %s,
+                            "casualDressing" = %s,
+                            "formalDressing" = %s,
+                            "vegetarianOptions" = %s,
+                            "breakfastService" = %s,
+                            "lunchService" = %s,
+                            "dinnerService" = %s,
+                            "nonAlcoholicOptions" = %s,
+                            "nonSmoking" = %s,
+                            "largeGroupsFriendly" = %s,
+                            "airConditioning" = %s,
+                            "indoorHeating" = %s,
+                            "coveredOutdoorSeating" = %s,
+                            "toiletsAvailable" = %s,
+                            "workStudyFriendly" = %s,
+                            "driveThru" = %s,
+                            "streetParking" = %s,
+                            "bikeParking" = %s,
+                            "tvEntertainment" = %s,
+                            "onlineOrdering" = %s,
+                            "catering" = %s,
+                            "takeaway" = %s,
                             "otherAmenities" = %s
                         WHERE "venueId" = %s
                         """,
@@ -395,8 +439,12 @@ def editDetails():
                          "beverageVodka", "beverageAbsinthe", "beverageArrack", "foodServed", "outdoorSeating", "indoorSeating",
                          "petFriendly", "childFriendly", "familyFriendly", "smokeFriendly", "wheelchairAccessibility",
                          "freeWiFi", "happyHourDrinks", "liveMusic", "barGames", "sommelierService", "deliveryAvailable", 
-                         "lgbtqFriendly", "reservationsRequired", "membershipRequired", "inStoreScheduling", "otherAmenities")
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                         "lgbtqFriendly", "reservationsRequired", "membershipRequired", "inStoreScheduling", "localNotPartOfChain",
+                         "casualDressing", "formalDressing", "vegetarianOptions", "breakfastService", "lunchService", "dinnerService",
+                         "nonAlcoholicOptions", "nonSmoking", "largeGroupsFriendly", "airConditioning", "indoorHeating",
+                         "coveredOutdoorSeating", "toiletsAvailable", "workStudyFriendly", "driveThru", "streetParking",
+                         "bikeParking", "tvEntertainment", "onlineOrdering", "catering", "takeaway", "otherAmenities")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (venueID,) + amenities_data
                     )
