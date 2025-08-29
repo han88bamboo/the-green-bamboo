@@ -1,78 +1,30 @@
 <template>
   <div class="search-container">
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <div class="tab-container">
+        <button
+          v-for="(category, key) in categories"
+          :key="key"
+          class="tab-item"
+          :class="{ 
+            'active': selectedCategoryKey === key,
+            'all-search': key === 'all'
+          }"
+          @click="selectCategory(key)"
+          :title="`Search in: ${category.label}`"
+        >
+          <i :class="category.icon" class="me-2"></i>
+          <span>{{ category.label }}</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Search Input -->
     <div class="position-relative">
       <div class="input-group">
-        <!-- Category Selector -->
-        <div class="dropdown">
-          <button 
-            class="btn btn-outline-secondary dropdown-toggle category-selector" 
-            type="button" 
-            id="categoryDropdown" 
-            data-bs-toggle="dropdown" 
-            aria-expanded="false"
-            :title="`Search in: ${selectedCategory.label}`"
-          >
-            <i :class="selectedCategory.icon" class="me-1"></i>
-            <span class="d-none d-md-inline">{{ selectedCategory.label }}</span>
-          </button>
-          <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-            <li>
-              <button 
-                class="dropdown-item d-flex align-items-center" 
-                @click="selectCategory('all')"
-                :class="{ 'active': selectedCategoryKey === 'all' }"
-              >
-                <i class="bi bi-map me-2"></i>
-                Drinks & All
-              </button>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <button 
-                class="dropdown-item d-flex align-items-center" 
-                @click="selectCategory('drinks')"
-                :class="{ 'active': selectedCategoryKey === 'drinks' }"
-              >
-                <i class="bi bi-cup-straw me-2"></i>
-                Drinks
-              </button>
-            </li>
-            <li>
-              <button 
-                class="dropdown-item d-flex align-items-center" 
-                @click="selectCategory('venues')"
-                :class="{ 'active': selectedCategoryKey === 'venues' }"
-              >
-                <i class="bi bi-geo-alt me-2"></i>
-                Venues
-              </button>
-            </li>
-            <li>
-              <button 
-                class="dropdown-item d-flex align-items-center" 
-                @click="selectCategory('producers')"
-                :class="{ 'active': selectedCategoryKey === 'producers' }"
-              >
-                <i class="bi bi-houses me-2"></i>
-                Producers
-              </button>
-            </li>
-            <li>
-              <button 
-                class="dropdown-item d-flex align-items-center" 
-                @click="selectCategory('users')"
-                :class="{ 'active': selectedCategoryKey === 'users' }"
-              >
-                <i class="bi bi-person me-2"></i>
-                Users
-              </button>
-            </li>
-          </ul>
-        </div>
-        
         <!-- Search Icon -->
-        <span class="input-group-text bg-white border-start-0 border-end-0" @click="handleManualSearch" style="cursor: pointer;">
+        <span class="input-group-text bg-white border-end-0" @click="handleManualSearch" style="cursor: pointer;">
           <i class="bi bi-search text-muted" style="color: #027562;"></i>
         </span>
         <input
@@ -92,7 +44,7 @@
     <!-- Results Dropdown -->
     <div 
       v-if="showResults && searchQuery.length >= 2" 
-      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0" style="max-height: 750px;"
+      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0" style="max-height: 750px; z-index: 1001 !important;"
       @mouseenter="isMousedOverResults = true"
       @mouseleave="isMousedOverResults = false"
     >
@@ -276,7 +228,7 @@ export default {
     const selectedCategoryKey = ref('all')
     
     const categories = {
-      all: { label: 'Drinks & All', icon: 'bi bi-map' },
+      all: { label: 'All', icon: 'bi bi-map' },
       drinks: { label: 'Drinks', icon: 'bi bi-cup-straw' },
       venues: { label: 'Venues', icon: 'bi bi-geo-alt' },
       producers: { label: 'Producers', icon: 'bi bi-houses' },
@@ -287,7 +239,7 @@ export default {
     
     const searchPlaceholder = computed(() => {
       if (selectedCategoryKey.value === 'all') {
-        return 'Go for it!'
+        return 'Search drinks, venues, producers, and more!'
       }
       return `Search ${selectedCategory.value.label.toLowerCase()}...`
     })
@@ -706,6 +658,7 @@ export default {
       getItemIndex,
       selectedCategoryKey,
       selectedCategory,
+      categories,
       searchPlaceholder,
       selectCategory,
       getTotalItems,
@@ -719,6 +672,8 @@ export default {
 .search-container {
   position: relative;
   width: 100%;
+  z-index: 1000;
+  isolation: isolate;
 }
 
 .dropdown-menu {
@@ -843,12 +798,20 @@ export default {
   .item-detail {
     font-size: 0.9rem;
   }
+
+  .tab-navigation {
+    margin-bottom: 0.75rem;
+  }
 }
 
 /* Tablet adjustments */
 @media (min-width: 577px) and (max-width: 768px) {
   .search-container {
     max-width: 90%;
+  }
+  
+  .tab-item span {
+    font-size: 0.8rem;
   }
 }
 
@@ -886,72 +849,116 @@ export default {
   flex-shrink: 0;
 }
 
-/* Category Selector Styles */
-.category-selector {
-  border-right: none !important;
-  background-color: #0E6350 !important;
-  border-color: #0E6350 !important;
-  color: white !important;
+/* Tab Navigation Styles */
+.tab-navigation {
+  width: 100%;
+}
+
+.tab-container {
+  display: flex;
+  border-bottom: 2px solid #e9ecef;
+  border-radius: 8px 8px 0 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-item {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.875rem 1rem;
   font-size: 0.875rem;
-  padding: 0.375rem 0.75rem;
-  min-width: 45px;
-}
-
-.category-selector:hover {
-  background-color: #0c5944 !important;
-  border-color: #0c5944 !important;
-  color: white !important;
-}
-
-.category-selector:focus {
-  border-color: #0c5944 !important;
-  box-shadow: 0 0 0 0.25rem rgba(14, 99, 80, 0.25) !important;
-  background-color: #0E6350 !important;
-  color: white !important;
-}
-
-.category-selector.show {
-  background-color: #0c5944 !important;
-  border-color: #0c5944 !important;
-  color: white !important;
-}
-
-.dropdown-menu {
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem 0;
-  min-width: 160px;
-}
-
-.dropdown-item {
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
-  transition: all 0.15s ease;
-}
-
-.dropdown-item:hover {
-  background-color: #f8f9fa;
-  color: #027562;
-}
-
-.dropdown-item.active {
-  background-color: #027562;
+  font-weight: 800;
   color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-align: center;
+  position: relative;
 }
 
-.dropdown-item.active:hover {
-  background-color: #025d52;
-  color: white;
+.tab-item:hover {
+  color:#45dbc2c6;
 }
 
-/* Responsive adjustments for category selector */
+.tab-item:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(2, 117, 98, 0.2);
+}
+
+.tab-item.active {
+  color: #45dbc2;
+  font-weight: 1000;
+  border-bottom-color: #03b093;
+  background-color: rgba(2, 117, 98, 0.05);
+}
+
+.tab-item i {
+  font-size: 1rem;
+}
+
+.tab-item span {
+  margin-left: 0.5rem;
+}
+
+/* Mobile responsive adjustments for tabs */
 @media (max-width: 768px) {
-  .category-selector {
-    min-width: 40px;
-    padding: 0.375rem 0.5rem;
+  .tab-container {
+    border-radius: 4px 4px 0 0;
+  }
+  
+  .tab-item {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+    min-width: 80px;
+    flex: none;
+  }
+  
+  .tab-item:not(.all-search) span {
+    display: none;
+  }
+
+   .tab-item.all-search i {
+    display: none;
+  }
+
+  
+  .tab-item i {
+    margin: 0;
+    font-size: 1.1rem;
   }
 }
+
+@media (max-width: 576px) {
+  .tab-item {
+    padding: 0.65rem 0.4rem;
+    min-width: 70px;
+  }
+  
+  .tab-item i {
+    font-size: 1rem;
+  }
+}
+
+/* Ensure tabs are accessible on small screens */
+@media (max-width: 480px) {
+  .tab-container {
+    justify-content: space-between;
+  }
+  
+  .tab-item {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.3rem;
+  }
+}
+
+/* Old Category Selector Styles - REMOVED */
 
 /* Full Search Item Styles */
 .full-search-item {

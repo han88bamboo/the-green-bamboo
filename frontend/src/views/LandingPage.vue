@@ -2,11 +2,11 @@
     <NavBar />
     <main>
     <!-- Hero Section with Search -->
-    <section class="hero-section text-center mb-5 ">
+    <section class="hero-section text-center">
         <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
-            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3">
+            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-5">
             <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
@@ -2545,7 +2545,7 @@ button.btn.selected {
 /* Category Ribbon Styles */
 .category-ribbon-section {
     position: relative;
-    z-index: 98;
+    z-index: 3;
 }
 
 .category-ribbon-bar {
