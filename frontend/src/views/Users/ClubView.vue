@@ -1181,8 +1181,8 @@
 
                 <!-- Admin name -->
                 <router-link :to="profileURL(admin.id, admin.userType)">
-                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;" >{{ admin.displayName }}</p>
-                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;">
+                  <p v-if="admin.userType == 'user'" class="mt-2 fw-bold mobile-rating-smaller-text-2 text-center" style="color: rgb(131, 169, 232); font-size:12px;" >{{ admin.displayName }}</p>
+                  <p v-else-if="admin.userType == 'producer'" class="mt-2 fw-bold mobile-rating-smaller-text-2 text-center" style="color: rgb(131, 169, 232); font-size:12px;">
                     {{ admin.producerName }}
                   </p>
                   <p v-else class="mt-2 fw-bold mobile-rating-smaller-text-2" style="color: rgb(131, 169, 232); font-size:10px;">{{ admin.venueName }}</p>
