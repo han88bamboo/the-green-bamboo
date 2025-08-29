@@ -1,16 +1,8 @@
 import logging
 import os
-from psycopg2.extras import execute_values
-
-from flask import Blueprint, g, request, jsonify
-import logging
-import os
-from psycopg2.extras import execute_values
-
 from flask import Blueprint, g, request, jsonify
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 from datetime import datetime
-from urllib.request import urlopen
 from scripts.pointsHelperFunc import *
 
 logger = logging.getLogger(__name__)
