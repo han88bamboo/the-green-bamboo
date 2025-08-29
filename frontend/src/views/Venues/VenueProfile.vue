@@ -3452,15 +3452,37 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- PDF Viewer Container -->
-                    <div class="pdf-container">
-                        <iframe 
+                    <!-- PDF Viewer Container with Navigation -->
+                    <div class="d-flex align-items-center">
+                        <!-- Left Navigation Button -->
+                        <button 
                             v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                            :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitV&zoom=page-width'"
-                            width="100%" 
-                            height="650px"
-                            @error="handlePdfError">
-                        </iframe>
+                            @click="previousPage" 
+                            :disabled="currentPdfPage <= 1"
+                            class="btn btn-primary me-2"
+                            style="min-width: 50px; height: 50px;">
+                            ←
+                        </button>
+                        
+                        <!-- PDF Container -->
+                        <div class="pdf-container flex-grow-1">
+                            <iframe 
+                                v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                                :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=' + currentPdfPage + '&view=FitV&zoom=page-width'"
+                                width="100%" 
+                                height="650px"
+                                @error="handlePdfError">
+                            </iframe>
+                        </div>
+                        
+                        <!-- Right Navigation Button -->
+                        <button 
+                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            @click="nextPage" 
+                            class="btn btn-primary ms-2"
+                            style="min-width: 50px; height: 50px;">
+                            →
+                        </button>
                     </div>
                     
                     <div v-if="!targetVenue.pdfMenuUrl || targetVenue.pdfMenuUrl.trim() === ''" class="text-center text-muted p-5">
@@ -3795,6 +3817,9 @@ export default {
             editProfile: false,
             clipboardItem: false,
             adminCreated: false,
+            
+            // PDF navigation
+            currentPdfPage: 1,
 
             // Editable fields
             editVenueName: '',
@@ -7014,6 +7039,38 @@ Thank you!`
         handlePdfError() {
             console.warn('PDF failed to load');
             // Could add error state handling here if needed
+        },
+
+        // PDF Navigation methods
+        nextPage() {
+            this.currentPdfPage++;
+            this.forceIframeReload();
+        },
+
+        previousPage() {
+            if (this.currentPdfPage > 1) {
+                this.currentPdfPage--;
+                this.forceIframeReload();
+            }
+        },
+
+        // Force iframe reload with proper cache busting
+        forceIframeReload() {
+            this.$nextTick(() => {
+                const iframe = document.querySelector('#diningMenuModal iframe');
+                if (iframe) {
+                    // Create new URL with updated page and cache buster
+                    const baseUrl = this.targetVenue.pdfMenuUrl;
+                    const newSrc = `${baseUrl}#toolbar=0&navpanes=0&scrollbar=1&page=${this.currentPdfPage}&view=FitV&zoom=page-width&cachebust=${Date.now()}`;
+                    
+                    // Force reload by removing and re-adding iframe
+                    const parent = iframe.parentNode;
+                    const newIframe = iframe.cloneNode(true);
+                    parent.removeChild(iframe);
+                    newIframe.src = newSrc;
+                    parent.appendChild(newIframe);
+                }
+            });
         }
     },
     watch: {

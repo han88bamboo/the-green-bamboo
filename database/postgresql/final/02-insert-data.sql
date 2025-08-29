@@ -2800,7 +2800,8 @@ INSERT INTO "venues" (
     "username", 
     "publicHolidays", 
     "stripeCustomerId", 
-    "pin"
+    "pin",
+    "pdfMenuUrl"
 ) VALUES (
     11,
     'Orh Gao Taproom Craft Beer Bar', 
@@ -2816,7 +2817,8 @@ INSERT INTO "venues" (
     'orhgaotaproom', 
     'Not open on Christmas', 
     NULL, 
-    NULL
+    NULL,
+    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/29bbeff8-4f21-4140-9d24-8f0cedd2c029.pdf'
 ), 
 (   
     10,
@@ -2833,6 +2835,7 @@ INSERT INTO "venues" (
     'omunomu', 
     'Not open on Christmas', 
     NULL, 
+    NULL,
     NULL
 ),
 (
@@ -2850,6 +2853,7 @@ INSERT INTO "venues" (
     'smithstreettaps',
     'Closed on Lunar New Year',
     NULL,
+    NULL,
     NULL
 ),
 (
@@ -2866,6 +2870,7 @@ INSERT INTO "venues" (
     'Walk-in only, no reservations.',
     'smithstreettapstest',
     'Closed on Lunar New Year',
+    NULL,
     NULL,
     NULL
 );
