@@ -44,7 +44,7 @@
     <!-- Results Dropdown -->
     <div 
       v-if="showResults && searchQuery.length >= 2" 
-      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0" style="max-height: 750px; z-index: 1001 !important;"
+      class="dropdown-menu d-block position-absolute w-100 mt-1 shadow-lg border-0" style="max-height: 750px; z-index:100 !important;"
       @mouseenter="isMousedOverResults = true"
       @mouseleave="isMousedOverResults = false"
     >
@@ -672,8 +672,7 @@ export default {
 .search-container {
   position: relative;
   width: 100%;
-  z-index: 1000;
-  isolation: isolate;
+  z-index:5;
 }
 
 .dropdown-menu {
