@@ -3,7 +3,7 @@
     <main>
     <!-- Hero Section with Search -->
     <section class="hero-section text-center">
-        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.6);"
+        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/chuttersnap-WFu-Y0YNIcI-unsplash.jpg?v=1754730042" class="hero-bg" style="filter: brightness(0.3);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-5">
