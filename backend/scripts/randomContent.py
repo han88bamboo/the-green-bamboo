@@ -4,8 +4,9 @@
 #   [Content Retrieval - On Random Explore Page]
 #   /getRandomListings [GET], /getNext30 [POST]
 
-#   [Content Retrieval - On respective page]
+#   [Content Retrieval - On respective page] - not created yet
 #   /getListingsCommentsDetails [POST], /getReviewsCommentsDetails [POST]
+#   /checkUserLikedContent [GET]
 
 #   [Likes]
 #   /likeContent [POST], /unlikeContent [POST]
@@ -184,33 +185,33 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
 def get_table_name(content_type, feature):
 
     if content_type == "Listing":
-        if feature == "like" or feature == "dislike":
+        if feature == "like" or feature == "unlike":
             return "listingsLikes"
         elif feature == "comment":
             return "listingsComments"
         
     elif content_type == "Review":
-        if feature == "like" or feature == "dislike":
+        if feature == "like" or feature == "unlike":
             return "reviewsUserVotes"
         elif feature == "comment":
             return "listingReviewsComments"
         
     elif content_type == "pUpdate":
-        if feature == "like" or feature == "dislike":
+        if feature == "like" or feature == "unlike":
             return "producerUpdateLikes"
             
         elif feature == "comment":
             return "producerUpdateComments"
             
     elif content_type == "vUpdate":
-        if feature == "like" or feature == "dislike":
+        if feature == "like" or feature == "unlike":
             return "venueUpdateLikes"
 
         elif feature == "comment":
             return "venueUpdateComments"
 
     elif content_type == "88B":
-        if feature == "like" or feature == "dislike":
+        if feature == "like" or feature == "unlike":
             return "88BContentLikes"
         elif feature == "comment":
             return "88BContentComments"
@@ -760,7 +761,6 @@ def likeContent():
 
             # Retrieve the table name 
             table_name = get_table_name(content_type, "like")
-            print(table_name)
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
@@ -864,12 +864,13 @@ def unlikeContent():
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "unlike")
+
             if not table_name:
                 return jsonify({"error": "Invalid content type or user type"}), 400
 
             # Delete the like from the appropriate table
-            # If it is listingLikes
-            if table_name == "listingLikes":
+            # If it is listingsLikes
+            if table_name == "listingsLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "listingId" = %s AND "userId" = %s AND "userType" = %s
@@ -877,16 +878,24 @@ def unlikeContent():
                 conn.commit()
 
             elif table_name == "reviewsUserVotes" and user_type == "user":
+
+                # Check if the review has upvotes
                 cursor.execute("""
-                    UPDATE "reviewsUserVotes"
-                    SET "upvotes" = COALESCE((
-                        SELECT jsonb_agg(elem)
-                        FROM jsonb_array_elements("upvotes") elem
-                        WHERE elem->>'userId' <> %s
-                    ), '[]')
-                    WHERE "reviewId" = %s;
-                """, (str(user_id), content_id))
-                conn.commit()
+                    SELECT "upvotes"
+                    FROM "reviewsUserVotes"
+                    WHERE "reviewId" = %s
+                """, (content_id,))
+                upvotes = cursor.fetchone()
+
+                if upvotes and user_id in [u['userId'] for u in upvotes['upvotes']]:
+
+                    # User has already upvoted, remove their vote
+                    upvotes = [u for u in upvotes['upvotes'] if u['userId'] != user_id]
+
+                    # Update the upvotes array in the database
+                    cursor.execute('UPDATE "reviewsUserVotes" SET "upvotes" = %s WHERE "reviewId" = %s;', 
+                                (json.dumps(upvotes), content_id))
+                    conn.commit()
 
             elif table_name == "producerUpdateLikes":
                 cursor.execute(f"""
@@ -917,6 +926,21 @@ def unlikeContent():
     except Exception as e:
         print("Error occurred while unliking content:", e)
         return jsonify({"error": "Failed to unlike content"}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # -----------------------------------------------------------------------------------------
