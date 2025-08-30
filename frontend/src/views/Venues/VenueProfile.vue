@@ -3717,6 +3717,40 @@
                         </button>
                     </div>
                     
+                    <!-- Carousel Indicators (White Dots) -->
+                    <div v-if="hasPdfMenu && pdfMenuUrls.length > 1" class="carousel-indicators-container d-flex justify-content-center py-3">
+                        <button
+                            v-for="(url, index) in pdfMenuUrls"
+                            :key="index"
+                            @click="goToPage(index + 1)"
+                            :class="['carousel-indicator-dot', { 'active': currentPdfPage === index + 1 }]"
+                            :aria-label="`Go to page ${index + 1}`"
+                        ></button>
+                    </div>
+                    
+                    <!-- Thumbnail Strip -->
+                    <div v-if="hasPdfMenu && pdfMenuUrls.length > 1" class="thumbnail-strip-container px-3 pb-3">
+                        <div class="thumbnail-strip d-flex gap-2 overflow-auto">
+                            <div
+                                v-for="(url, index) in pdfMenuUrls"
+                                :key="index"
+                                @click="goToPage(index + 1)"
+                                :class="['thumbnail-item', { 'active': currentPdfPage === index + 1 }]"
+                                style="cursor: pointer; flex-shrink: 0;"
+                            >
+                                <img 
+                                    :src="url"
+                                    :alt="`Menu Page ${index + 1} Thumbnail`"
+                                    class="thumbnail-image"
+                                    loading="lazy"
+                                >
+                                <div class="thumbnail-overlay">
+                                    <span class="thumbnail-page-number">{{ index + 1 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div v-if="!hasPdfMenu" class="text-center text-muted p-5">
                         <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
                         <p class="fs-5">Menu not available at the moment.</p>
@@ -7403,6 +7437,14 @@ Thank you!`
             }
         },
 
+        // Go to specific page (for carousel indicators and thumbnails)
+        goToPage(pageNumber) {
+            if (this.hasPdfMenu && pageNumber >= 1 && pageNumber <= this.pdfMenuUrls.length) {
+                this.currentPdfPage = pageNumber;
+                this.showPageCounterTemporarily();
+            }
+        },
+
         // Show page counter for 1.5 seconds
         showPageCounterTemporarily() {
             this.showPageCounter = true;
@@ -7931,5 +7973,155 @@ Thank you!`
         border: 1px solid rgba(0, 0, 0, 0.2);
         height: 85vh;
     }
+}
+
+/* Carousel Indicators (White Dots) */
+.carousel-indicators-container {
+    background-color: #6c757d;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.carousel-indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.carousel-indicator-dot:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.carousel-indicator-dot.active {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Thumbnail Strip */
+.thumbnail-strip-container {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-strip {
+    max-height: 120px;
+    padding: 10px 0;
+}
+
+.thumbnail-strip::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-thumb {
+    background: rgba(0, 123, 255, 0.5);
+    border-radius: 3px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 123, 255, 0.7);
+}
+
+.thumbnail-item {
+    position: relative;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 80px;
+    height: 100px;
+    background-color: #f8f9fa;
+}
+
+.thumbnail-item:hover {
+    border-color: rgba(0, 123, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail-item.active {
+    border-color: #007bff;
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.thumbnail-item:hover .thumbnail-image {
+    transform: scale(1.05);
+}
+
+.thumbnail-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    padding: 8px 4px 4px 4px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.thumbnail-page-number {
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Mobile responsiveness for thumbnails */
+@media (max-width: 767px) {
+    .thumbnail-item {
+        width: 60px;
+        height: 75px;
+    }
+    
+    .carousel-indicator-dot {
+        width: 10px;
+        height: 10px;
+        margin: 0 4px;
+    }
+    
+    .thumbnail-strip {
+        max-height: 95px;
+        padding: 8px 0;
+    }
+    
+    .thumbnail-page-number {
+        font-size: 8px;
+    }
+}
+
+/* Animation for smooth page transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pdf-container img {
+    animation: fadeIn 0.3s ease-out;
 }
 </style>
