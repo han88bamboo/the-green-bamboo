@@ -1193,6 +1193,112 @@
           v-if="showListings == false && showTours == false"
           class="padding-for-latestupdatesNmostpopularcontainer-large-screen"
         >
+
+          <!-- Text Sections -->
+      <div v-if="selfView || textSections.length > 0" class="mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
+          <button 
+            v-if="selfView" 
+            @click="editingTextSections = !editingTextSections"
+            class="btn btn-primary"
+          >
+            {{ editingTextSections ? 'Done Editing' : 'Edit Sections' }}
+          </button>
+        </div>
+
+        <!-- Display Mode -->
+        <div v-if="!editingTextSections">
+          <div 
+            v-for="section in textSections" 
+            :key="section.id"
+            class="mb-4 p-3 border rounded"
+          >
+            <h5 class="fw-bold mb-3">{{ section.sectionTitle }}</h5>
+            <div v-html="section.richTextContent" class="text-section-content"></div>
+          </div>
+        </div>
+
+        <!-- Edit Mode -->
+        <div v-if="editingTextSections && selfView">
+          <draggable 
+            v-model="textSections" 
+            group="textSections"
+            @change="reorderSections"
+            :disabled="false"
+            handle=".drag-handle"
+            animation="150"
+            class="mb-3"
+          >
+            <template #item="{ element: section }">
+              <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center">
+                    <span class="drag-handle me-2" style="cursor: move;">⋮⋮</span>
+                    <strong>{{ section.sectionTitle || 'New Section' }}</strong>
+                  </div>
+                  <div>
+                    <button 
+                      @click="editSection(section)"
+                      class="btn btn-sm btn-outline-primary me-2"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      @click="deleteSection(section.id)"
+                      class="btn btn-sm btn-outline-danger"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div v-html="section.richTextContent" class="text-section-preview"></div>
+                </div>
+              </div>
+            </template>
+          </draggable>
+
+          <button 
+            @click="addNewSection"
+            class="btn btn-success mb-3"
+          >
+            Add New Section
+          </button>
+        </div>
+      </div>
+
+      <!-- Rich Text Editor Modal -->
+      <div class="modal fade" id="textSectionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                {{ editingSectionId ? 'Edit Section' : 'Add New Section' }}
+              </h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" @click="closeModal"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-bottom: 0;">
+              <RichTextEditor
+                ref="richTextEditor"
+                :initial-title="editingSectionTitle"
+                :initial-content="editingSectionContent"
+                @content-changed="editingSectionContent = $event"
+                @title-changed="editingSectionTitle = $event"
+              />
+            </div>
+            <div class="modal-footer" style="margin-top: 15px; border-top: 1px solid #dee2e6; padding-top: 15px;">
+              <button type="button" class="btn btn-secondary" @click="closeModal">
+                Cancel
+              </button>
+              <button type="button" @click="saveSection" class="btn btn-primary">
+                {{ editingSectionId ? 'Update' : 'Add' }} Section
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+          <div v-if="showModalBackdrop" class="modal-backdrop fade show" @click="closeModal"></div>
           <!-- [if] account is claimed -->
           <div v-if="claimStatus" style="color: black">
             <!-- latest updates -->
@@ -3802,6 +3908,8 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
+import RichTextEditor from '@/components/RichTextEditor.vue';
+import draggable from 'vuedraggable';
 
 export default {
   components: {
@@ -3811,7 +3919,9 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     LoadingWithFunFact,
-    BadgePopup
+    BadgePopup,
+    RichTextEditor,
+    draggable
   },
   setup() {
     // Create reactive references for meta data
@@ -4293,6 +4403,16 @@ export default {
 
       earnedBadges: [],
       showBadgePopup: false,
+
+      textSections: [],
+      editingTextSections: false,
+      editingSectionId: null,
+      editingSectionTitle: '',
+      editingSectionContent: '',
+      showTextSections: false,
+      newSectionTitle: '',
+      newSectionContent: '',
+      showModalBackdrop: false,
     
     };
   }, 
@@ -4738,6 +4858,9 @@ export default {
           );
         });
       }
+
+      // Load text sections
+      await this.loadTextSections();
     },
 
     // // get all drinks that a producer has
@@ -6621,6 +6744,165 @@ Thank you!`
     // Reload the page when user closes the popup
     window.location.reload();
   },
+
+  // Load text sections
+  async loadTextSections() {
+    if (!this.producer_id) return;
+    
+    try {
+      const response = await this.$axios.get(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/getTextSections/${this.producer_id}`
+      );
+      
+      if (response.data.code === 200) {
+        this.textSections = response.data.data;
+      }
+    } catch (error) {
+      console.error('Error loading text sections:', error);
+    }
+  },
+
+  // Add new section
+  addNewSection() {
+    this.editingSectionId = null;
+    this.editingSectionTitle = '';
+    this.editingSectionContent = '';
+    this.showModal();
+
+    this.$nextTick(() => {
+      if (this.$refs.richTextEditor) {
+        this.$refs.richTextEditor.clearContent();
+      }
+    });
+  },
+
+  // Edit existing section
+  editSection(section) {
+    this.editingSectionId = section.id;
+    this.editingSectionTitle = section.sectionTitle;
+    this.editingSectionContent = section.richTextContent;
+    this.showModal();
+
+    this.$nextTick(() => {
+      if (this.$refs.richTextEditor) {
+        this.$refs.richTextEditor.updateContent(section.sectionTitle, section.richTextContent);
+      }
+    });
+  },
+
+  // Save section (add or update)
+  async saveSection() {
+    if (!this.editingSectionTitle.trim()) {
+      alert('Please enter a section title');
+      return;
+    }
+
+    try {
+      const data = {
+        producerId: this.producer_id,
+        sectionTitle: this.editingSectionTitle,
+        richTextContent: this.editingSectionContent,
+        sectionOrder: this.textSections.length
+      };
+
+      let response;
+      if (this.editingSectionId) {
+        data.sectionId = this.editingSectionId;
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/updateTextSection`,
+          data
+        );
+      } else {
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/addTextSection`,
+          data
+        );
+      }
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        this.closeModal(); // Use our custom close method
+        await this.loadTextSections();
+      }
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Error saving section');
+    }
+  },
+
+  // Delete section
+  async deleteSection(sectionId) {
+    if (!confirm('Are you sure you want to delete this section?')) {
+      return;
+    }
+
+    try {
+      const response = await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/deleteTextSection`,
+        {
+          sectionId: sectionId,
+          producerId: this.producer_id
+        }
+      );
+
+      if (response.data.code === 200) {
+        await this.loadTextSections();
+      }
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      alert('Error deleting section');
+    }
+  },
+
+  showModal() {
+    this.showModalBackdrop = true;
+    this.$nextTick(() => {
+      const modalEl = document.getElementById('textSectionModal');
+      if (modalEl) {
+        modalEl.classList.add('show', 'd-block');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+      }
+    });
+  },
+
+  closeModal() {
+    this.showModalBackdrop = false;
+    const modalEl = document.getElementById('textSectionModal');
+    if (modalEl) {
+      modalEl.classList.remove('show', 'd-block');
+      modalEl.style.display = 'none';
+      document.body.classList.remove('modal-open');
+    }
+
+    if (this.$refs.richTextEditor) {
+      this.$refs.richTextEditor.clearContent();
+    }
+    
+    // Reset form
+    this.editingSectionId = null;
+    this.editingSectionTitle = '';
+    this.editingSectionContent = '';
+  },
+
+  // Reorder sections
+  async reorderSections() {
+    const sectionsWithOrder = this.textSections.map((section, index) => ({
+      id: section.id,
+      sectionOrder: index
+    }));
+
+    try {
+      await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/reorderTextSections`,
+        {
+          producerId: this.producer_id,
+          sections: sectionsWithOrder
+        }
+      );
+    } catch (error) {
+      console.error('Error reordering sections:', error);
+    }
+  },
   },
   watch:{
      '$route.params.producerID': function(newId, oldId) {
@@ -6690,5 +6972,91 @@ Thank you!`
 
 .welcome-toggle .bi-chevron-down {
   transition: transform 0.3s ease;
+}
+
+.text-section-content {
+  line-height: 1.6;
+}
+
+.text-section-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+}
+
+.text-section-preview {
+  max-height: 100px;
+  overflow: hidden;
+  position: relative;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(transparent, white);
+}
+
+.drag-handle {
+  color: #6c757d;
+  font-size: 1.2em;
+}
+
+.drag-handle:hover {
+  color: #495057;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  z-index: 1050;
+}
+
+#textSectionModal .modal-dialog {
+  max-width: 800px;
+}
+
+#textSectionModal .modal-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#textSectionModal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#textSectionModal .modal-footer {
+  flex-shrink: 0;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+}
+
+/* Ensure Quill editor doesn't interfere with modal layout */
+#textSectionModal .ql-container {
+  position: relative;
+  z-index: 1;
+}
+
+#textSectionModal .ql-tooltip {
+  z-index: 1060;
 }
 </style>

@@ -226,6 +226,16 @@ CREATE TABLE "producers" (
 -- Create a GIN index on listingName for trigram fuzzy search
 CREATE INDEX idx_producers_name_trgm ON "producers" USING gin ("producerName" gin_trgm_ops);
 
+CREATE TABLE "producerTextSections" (
+    "id" SERIAL PRIMARY KEY,
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE CASCADE,
+    "sectionTitle" VARCHAR(255),
+    "richTextContent" TEXT,
+    "sectionOrder" INTEGER DEFAULT 0,
+    "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- ========= "venues" =========
 CREATE TABLE "venues" (
