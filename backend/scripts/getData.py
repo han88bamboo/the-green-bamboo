@@ -7886,113 +7886,248 @@ def getRandomListings():
 # [GET] Get User Notifications
 # Purpose: Fetch notifications for a user based on their account type
 # Output: Notification items for the logged-in user
+# @blueprint.route('/getNotifications/<acc_type>/<acc_id>', methods=['GET'])
+# def getNotifications(acc_type, acc_id):
+#     conn = g.db
+#     # use RealDictCursor so that fetchall() returns a list of dicts
+#     cur = conn.cursor(cursor_factory=RealDictCursor)
+#     try:
+#         acc_id = int(acc_id)
+
+#         # 1) Decide which notiTabs to include based on acc_type
+#         if acc_type == 'user':
+#             tabs = ['forYou', 'venues & producers', 'news']
+#         else:  # acc_type == 'venue' or 'producer'
+#             tabs = ['forYou', 'news']
+
+#         # 2) Fetch only notifications for this userId AND the desired notiTabs
+#         cur.execute(
+#             'SELECT * '
+#             'FROM "notifications" '
+#             'WHERE "userId" = %s '
+#             '  AND "notiTabs" = ANY(%s)',
+#             (acc_id, tabs)
+#         )
+#         rows = cur.fetchall()  # each row is a dict because of RealDictCursor
+
+#         # 3) Split into two lists based on notiTabs
+#         for_you_notifications = []
+#         venues_notifications = []
+#         news_notifications = []
+        
+#         for notif in rows:
+#             tab = notif.get('notiTabs')
+#             # Copy createdAt into a uniform 'time' field for sorting
+#             notif['time'] = notif.get('createdAt')
+
+#             if tab == 'forYou':
+#                 for_you_notifications.append(notif)
+#             elif tab == 'venues & producers':
+#                 venues_notifications.append(notif)
+#             elif tab == 'news':
+#                 news_notifications.append(notif)
+
+#         # 4) Helper to normalize any kind of datetime-like value
+#         def normalize_datetime(time_value):
+#             if time_value is None:
+#                 return None
+
+#             # if it's already a string, try to parse as ISO8601 Zulu
+#             if isinstance(time_value, str):
+#                 try:
+#                     return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ') \
+#                                    .replace(tzinfo=timezone.utc)
+#                 except ValueError:
+#                     try:
+#                         return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ') \
+#                                        .replace(tzinfo=timezone.utc)
+#                     except ValueError:
+#                         return datetime.now(timezone.utc)
+
+#             # if it's a date (but not a datetime), convert to datetime at midnight UTC
+#             if isinstance(time_value, date) and not isinstance(time_value, datetime):
+#                 return datetime.combine(time_value, datetime.min.time()) \
+#                                .replace(tzinfo=timezone.utc)
+
+#             # if it's already a datetime
+#             if isinstance(time_value, datetime):
+#                 if time_value.tzinfo is None:
+#                     return time_value.replace(tzinfo=timezone.utc)
+#                 return time_value
+
+#             # fallback
+#             return datetime.now(timezone.utc)
+
+#         # 5) Key function for sorting (most recent first)
+#         def get_sort_key(notification):
+#             t = notification.get('time')
+#             if t is not None:
+#                 return normalize_datetime(t)
+#             return datetime.now(timezone.utc)
+
+#         # 6) Normalize and sort each list
+#         for notif in for_you_notifications:
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for notif in venues_notifications:
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for notif in news_notifications: 
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for_you_notifications.sort(key=get_sort_key, reverse=True)
+#         venues_notifications.sort(key=get_sort_key, reverse=True)
+#         news_notifications.sort(key=get_sort_key, reverse=True)
+
+#         # 7) Return JSON with limits (10 for "forYou", 20 for "venues")
+#         return jsonify({
+#             'forYou': for_you_notifications[:10],
+#             'venues': venues_notifications[:20],
+#             'news': news_notifications
+#         }), 200
+
+#     except Exception as e:
+#         print(str(e))
+#         return jsonify({
+#             'code': 500,
+#             'message': 'An error occurred fetching notifications.'
+#         }), 500
+
+#     finally:
+#         cur.close()
+def _fetch_notifications_by_tab(cursor, user_id, tab_name, limit):
+    """
+    Helper function to fetch notifications for a specific tab with database-level limiting
+    
+    Args:
+        cursor: Database cursor
+        user_id: User ID to fetch notifications for
+        tab_name: Notification tab name
+        limit: Maximum number of notifications to return
+    
+    Returns:
+        List of notification dictionaries, sorted by creation time (newest first)
+    """
+    try:
+        # print(f"DEBUG: Executing query for user_id={user_id}, tab_name='{tab_name}', limit={limit}")
+        
+        cursor.execute(
+            '''
+            SELECT 
+                *
+            FROM "notifications" 
+            WHERE "userId" = %s 
+              AND "notiTabs" = %s
+            ORDER BY "createdAt" DESC 
+            LIMIT %s
+            ''',
+            (user_id, tab_name, limit)
+        )
+        
+        rows = cursor.fetchall()
+        # print(f"DEBUG: Query executed successfully, returned {len(rows)} rows")
+        return rows
+        
+    except Exception as e:
+        # print(f"DEBUG: Database error in _fetch_notifications_by_tab: {str(e)}")
+        # print(f"DEBUG: Query parameters - user_id: {user_id}, tab_name: '{tab_name}', limit: {limit}")
+        raise e
+
+# [GET] Get User Notifications
+# Purpose: Fetch notifications for a user based on their account type
+# Output: Notification items for the logged-in user
 @blueprint.route('/getNotifications/<acc_type>/<acc_id>', methods=['GET'])
 def getNotifications(acc_type, acc_id):
+    """
+    Debug version with detailed error logging to identify the 500 error
+    """
     conn = g.db
-    # use RealDictCursor so that fetchall() returns a list of dicts
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
     try:
-        acc_id = int(acc_id)
-
-        # 1) Decide which notiTabs to include based on acc_type
-        if acc_type == 'user':
-            tabs = ['forYou', 'venues & producers', 'news']
-        else:  # acc_type == 'venue' or 'producer'
-            tabs = ['forYou', 'news']
-
-        # 2) Fetch only notifications for this userId AND the desired notiTabs
-        cur.execute(
-            'SELECT * '
-            'FROM "notifications" '
-            'WHERE "userId" = %s '
-            '  AND "notiTabs" = ANY(%s)',
-            (acc_id, tabs)
-        )
-        rows = cur.fetchall()  # each row is a dict because of RealDictCursor
-
-        # 3) Split into two lists based on notiTabs
-        for_you_notifications = []
-        venues_notifications = []
-        news_notifications = []
+        # print(f"DEBUG: Received acc_type={acc_type}, acc_id={acc_id}")
         
-        for notif in rows:
-            tab = notif.get('notiTabs')
-            # Copy createdAt into a uniform 'time' field for sorting
-            notif['time'] = notif.get('createdAt')
+        # Validate and convert acc_id
+        try:
+            acc_id = int(acc_id)
+            print(f"DEBUG: Converted acc_id to int: {acc_id}")
+        except ValueError as ve:
+            print(f"DEBUG: ValueError converting acc_id: {ve}")
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid account ID format'
+            }), 400
+        
+        # Validate account type
+        if acc_type not in ['user', 'venue', 'producer']:
+            print(f"DEBUG: Invalid account type: {acc_type}")
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid account type'
+            }), 400
 
-            if tab == 'forYou':
-                for_you_notifications.append(notif)
-            elif tab == 'venues & producers':
-                venues_notifications.append(notif)
-            elif tab == 'news':
-                news_notifications.append(notif)
+        print(f"DEBUG: Account type validation passed")
 
-        # 4) Helper to normalize any kind of datetime-like value
-        def normalize_datetime(time_value):
-            if time_value is None:
-                return None
+        # Determine tabs based on account type
+        if acc_type == 'user':
+            tab_queries = [
+                ('forYou', 'forYou', 10),
+                ('venues', 'venues & producers', 20),
+                ('news', 'news', 50)
+            ]
+        else:  # venue or producer
+            tab_queries = [
+                ('forYou', 'forYou', 10),
+                ('news', 'news', 50)
+            ]
 
-            # if it's already a string, try to parse as ISO8601 Zulu
-            if isinstance(time_value, str):
-                try:
-                    return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ') \
-                                   .replace(tzinfo=timezone.utc)
-                except ValueError:
-                    try:
-                        return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ') \
-                                       .replace(tzinfo=timezone.utc)
-                    except ValueError:
-                        return datetime.now(timezone.utc)
+        # print(f"DEBUG: Tab queries determined: {tab_queries}")
 
-            # if it's a date (but not a datetime), convert to datetime at midnight UTC
-            if isinstance(time_value, date) and not isinstance(time_value, datetime):
-                return datetime.combine(time_value, datetime.min.time()) \
-                               .replace(tzinfo=timezone.utc)
+        result = {
+            'forYou': [],
+            'venues': [],
+            'news': []
+        }
 
-            # if it's already a datetime
-            if isinstance(time_value, datetime):
-                if time_value.tzinfo is None:
-                    return time_value.replace(tzinfo=timezone.utc)
-                return time_value
+        # Fetch each tab separately with optimized queries
+        for result_key, db_tab_name, limit in tab_queries:
+            print(f"DEBUG: Fetching {result_key} with tab_name='{db_tab_name}', limit={limit}")
+            
+            try:
+                notifications = _fetch_notifications_by_tab(cur, acc_id, db_tab_name, limit)
+                # print(f"DEBUG: Fetched {len(notifications)} notifications for {result_key}")
+                
+                # Add time field for consistency with original code
+                for notif in notifications:
+                    notif['time'] = notif.get('createdAt')
+                
+                result[result_key] = notifications
+                
+            except Exception as tab_error:
+                print(f"DEBUG: Error fetching {result_key}: {tab_error}")
+                # Continue with empty list for this tab
+                result[result_key] = []
 
-            # fallback
-            return datetime.now(timezone.utc)
-
-        # 5) Key function for sorting (most recent first)
-        def get_sort_key(notification):
-            t = notification.get('time')
-            if t is not None:
-                return normalize_datetime(t)
-            return datetime.now(timezone.utc)
-
-        # 6) Normalize and sort each list
-        for notif in for_you_notifications:
-            if notif['time'] is not None:
-                notif['time'] = normalize_datetime(notif['time'])
-
-        for notif in venues_notifications:
-            if notif['time'] is not None:
-                notif['time'] = normalize_datetime(notif['time'])
-
-        for_you_notifications.sort(key=get_sort_key, reverse=True)
-        venues_notifications.sort(key=get_sort_key, reverse=True)
-
-        # 7) Return JSON with limits (10 for "forYou", 20 for "venues")
-        return jsonify({
-            'forYou': for_you_notifications[:10],
-            'venues': venues_notifications[:20],
-            'news': news_notifications
-        }), 200
+        # print(f"DEBUG: Final result keys: {list(result.keys())}")
+        # print(f"DEBUG: Result counts - forYou: {len(result['forYou'])}, venues: {len(result['venues'])}, news: {len(result['news'])}")
+        
+        return jsonify(result), 200
 
     except Exception as e:
-        print(str(e))
+        print(f"DEBUG: Unexpected error in getNotifications_v2: {str(e)}")
+        print(f"DEBUG: Error type: {type(e).__name__}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         return jsonify({
             'code': 500,
-            'message': 'An error occurred fetching notifications.'
+            'message': f'An error occurred fetching notifications: {str(e)}'
         }), 500
-
     finally:
-        cur.close()
+        if cur:
+            cur.close()
 
 
 # ------------------------------------------------------------------------------------------
