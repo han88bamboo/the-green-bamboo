@@ -4296,7 +4296,7 @@ export default {
     
     };
   }, 
-  async mounted() {
+  created() {
     var userID = localStorage.getItem("88B_accID");
     if (userID != null) {
       this.user_id = userID;
@@ -4311,33 +4311,62 @@ export default {
     if (userName !== null) {
       this.userName = userName;
     }
-
-  // Add the new selfView logic
-    // Check if route params "producerID" is present
-    if (this.$route.params.producerID != "" && this.$route.params.producerID != undefined) {
-      this.targetProducer = this.$route.params.producerID;
-      this.targetProducerID = this.$route.params.producerID;
-      
-      // If logged in as a producer, check if the producerID matches the logged in producer's ID
-      if (this.userType == 'producer' && this.user_id == this.targetProducer) {
-        this.selfView = true;
-      }
-    }
-    // If no producerID is specified, display logged in producer's profile page
-    else if (this.userType == 'producer') {
-      this.targetProducer = this.user_id;
-      this.selfView = true;
-      
-      // Update URL if needed - adjust this based on your routing structure
-      if (window.location.pathname.indexOf(this.targetProducer) === -1) {
-        this.currentURL = window.location.origin + window.location.pathname + '/' + this.targetProducer;
-      }
-    }
-
-
-    await this.loadData();
+    
+    this.loadData();
   },
   methods: {
+    resetComponentState() {
+      this.dataLoaded = false;
+      this.listings = [];
+      this.lazyListings = [];
+      this.reviews = [];
+      this.users = [];
+      this.drinkTypes = [];
+      this.requestListings = [];
+      this.requestEdits = [];
+      this.modRequests = [];
+      this.producersProfileViews = [];
+      this.correctProducer = false;
+      this.claimStatus = false;
+      this.user = null;
+      this.allDrinks = [];
+      this.allDrinksIDs = [];
+      this.allDrinksCount = 0;
+      this.drinkCounts = {};
+      this.sortedDrinksCounts = {};
+      this.mostDiscussed = [];
+      this.recentlyAdded = [];
+      this.allReviews = [];
+      this.allUserIDs = [];
+      this.allReviewsCount = 0;
+      this.drinkRatings = {};
+      this.sortedAverageRatings = {};
+      this.mostPopular = [];
+      this.tourReviews = [];
+      this.reviewDesc = "";
+      this.reviewDescError = "";
+      this.rating = 5;
+      this.inEdit = false;
+      this.editing = false;
+      this.filteredTourReviews = [];
+      this.filteredTourReviewsWithImages = [];
+      this.specified_producer = { producerDesc: '', updates: [], questionsAnswers: [] };
+      this.specified_producer_original_photo = "";
+      this.filteredListings = [];
+      this.answeredQuestions = [];
+      this.unansweredQuestions = [];
+      this.latestUpdate = {};
+      this.remainingUpdates = [];
+      this.showListings = false;
+      this.showTours = false;
+      this.searchExpressions = "";
+      this.ogImage = {};
+      this.showFullProducerDescription = false;
+      this.selfView = false;
+      this.mapLat = null;
+      this.mapLong = null;
+      this.mapMarkers = [];
+    },
     slugify(text) {
                 return text
                     .toString()
@@ -4347,6 +4376,28 @@ export default {
             },
     // load data from database
     async loadData() {
+      // Add the new selfView logic
+      // Check if route params "producerID" is present
+      if (this.$route.params.producerID != "" && this.$route.params.producerID != undefined) {
+        this.targetProducer = this.$route.params.producerID;
+        this.targetProducerID = this.$route.params.producerID;
+        
+        // If logged in as a producer, check if the producerID matches the logged in producer's ID
+        if (this.userType == 'producer' && this.user_id == this.targetProducer) {
+          this.selfView = true;
+        }
+      }
+      // If no producerID is specified, display logged in producer's profile page
+      else if (this.userType == 'producer') {
+        this.targetProducer = this.user_id;
+        this.selfView = true;
+        
+        // Update URL if needed - adjust this based on your routing structure
+        if (window.location.pathname.indexOf(this.targetProducer) === -1) {
+          this.currentURL = window.location.origin + window.location.pathname + '/' + this.targetProducer;
+        }
+      }
+
       // Get the query string parameters (listing ID) from the URL
       this.producer_id = this.$route.params.producerID;
       this.routeUsername = this.$route.params.username;
@@ -4363,48 +4414,48 @@ export default {
           let params = {
             businessType: this.userType,
           };
-          console.log("SETTINGS BUTTON DEBUG: Starting account request check for producer ID:", this.producer_id);
+          // console.log("SETTINGS BUTTON DEBUG: Starting account request check for producer ID:", this.producer_id);
           try {
             let response = await this.$axios.get(
               `${process.env.VUE_APP_API_URL}/getData/getAccountRequest/${this.producer_id}`,
               { params }
             );
-            console.log("SETTINGS BUTTON DEBUG: Account request API response:", response.data);
+            // console.log("SETTINGS BUTTON DEBUG: Account request API response:", response.data);
 
             if (response.data.length === 0) {
-              console.log("SETTINGS BUTTON DEBUG: CONDITION 1 MET - No account request data found (response.data.length === 0)");
+              // console.log("SETTINGS BUTTON DEBUG: CONDITION 1 MET - No account request data found (response.data.length === 0)");
               this.adminCreated = true;
             } else if (!response.data["isApproved"]) {
-              console.log("SETTINGS BUTTON DEBUG: CONDITION 2 MET - Account request exists but is not approved (!response.data[\"isApproved\"])");
-              console.log("SETTINGS BUTTON DEBUG: Value of isApproved:", response.data["isApproved"]);
+              // console.log("SETTINGS BUTTON DEBUG: CONDITION 2 MET - Account request exists but is not approved (!response.data[\"isApproved\"])");
+              // console.log("SETTINGS BUTTON DEBUG: Value of isApproved:", response.data["isApproved"]);
               this.adminCreated = true;
             } else {
               console.log("SETTINGS BUTTON DEBUG: No conditions met in the try block, adminCreated unchanged");
             }
           } catch (error) {
-            console.log("SETTINGS BUTTON DEBUG: Error caught in account request check");
+            // console.log("SETTINGS BUTTON DEBUG: Error caught in account request check")
  
             if (error.response && error.response.status === 404) {
-              console.log("SETTINGS BUTTON DEBUG: CONDITION 3 MET - 404 error (no account request found)");
+              // console.log("SETTINGS BUTTON DEBUG: CONDITION 3 MET - 404 error (no account request found)");
               this.adminCreated = true;
             } else {
-              console.log("SETTINGS BUTTON DEBUG: Other error type:", error.message);
+              // console.log("SETTINGS BUTTON DEBUG: Other error type:", error.message);
               console.error("An unexpected error occurred:", error);
             }
           }
-          console.log("SETTINGS BUTTON DEBUG: Final adminCreated value after account request check:", this.adminCreated);
+          // console.log("SETTINGS BUTTON DEBUG: Final adminCreated value after account request check:", this.adminCreated);
         }
       }
 
       // reviews
       // _id, userID, producerID, date, rating, reviewDesc, photo
       try {
-        console.log(`DEBUG: Fetching producer reviews for producerId=${this.producer_id}`);
+        // console.log(`DEBUG: Fetching producer reviews for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducerReviewsByProducerId/${this.producer_id}`
         );
-        console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
-        console.log("DEBUG: Producer reviews data:", response.data);
+        // console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
+        // console.log("DEBUG: Producer reviews data:", response.data);
         this.filteredTourReviews = response.data || [];
         this.detailedReview = this.filteredTourReviews[0] || null;
       } catch (error) {
@@ -4418,7 +4469,7 @@ export default {
         } else {
           console.error("ERROR DETAILS:", error.message);
         }
-        console.log("DEBUG: Initializing empty reviews array to continue loading");
+        // console.log("DEBUG: Initializing empty reviews array to continue loading");
         this.filteredTourReviews = [];
         this.detailedReview = null;
         // Don't set dataLoaded to null, continue loading the page
@@ -4426,20 +4477,20 @@ export default {
       // producers
       // _id, producerName, producerDesc, originCountry, statusOB, mainDrinks
       try {
-        console.log(`DEBUG: Fetching producer data for producerId=${this.producer_id}`);
+        // console.log(`DEBUG: Fetching producer data for producerId=${this.producer_id}`);
         const response = await this.$axios.get(
           `${process.env.VUE_APP_API_URL}/getData/getProducer/${this.producer_id}`
         );
-        console.log("DEBUG: Producer API response status:", response.status, response.statusText);
-        console.log("DEBUG: Producer data:", response.data);
+        // console.log("DEBUG: Producer API response status:", response.status, response.statusText);
+        // console.log("DEBUG: Producer data:", response.data);
         
         // Check for critical properties
         if (!response.data) {
           console.error("ERROR: Empty producer data received");
         } else {
           console.log("DEBUG: Producer exists with name:", response.data.producerName);
-          console.log("DEBUG: Producer has updates:", response.data.updates ? response.data.updates.length : "none");
-          console.log("DEBUG: Producer has QA:", response.data.questionsAnswers ? response.data.questionsAnswers.length : "none");
+          // console.log("DEBUG: Producer has updates:", response.data.updates ? response.data.updates.length : "none");
+          // console.log("DEBUG: Producer has QA:", response.data.questionsAnswers ? response.data.questionsAnswers.length : "none");
         }
         
         this.specified_producer = response.data;
@@ -4497,7 +4548,7 @@ export default {
           // check for active subscription if last check status date before today
           const claimStatusCheckDate =
             this.specified_producer["claimStatusCheckDate"];
-          // if (claimStatusCheckDate) {
+          // if (claimStatusCheckDate) { 
           if (
             claimStatusCheckDate?.split("T")[0] <
               new Date().toISOString().split("T")[0] ||
@@ -4606,15 +4657,15 @@ export default {
         this.dataLoaded = null;
       }
       // reviews
-      // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, reviewType, flavorTag, photo
+      // _id, userID, reviewTarget, date, rating, reviewDesc, taggedUsers, reviewTitle, flavorTag, photo
       try {
-        console.log("DEBUG: Checking for listings to fetch reviews");
+        // console.log("DEBUG: Checking for listings to fetch reviews");
         
         // Make sure allDrinksIDs is not empty 
         if (this.allDrinksIDs && this.allDrinksIDs.length > 0) {
-          console.log(`DEBUG: Found ${this.allDrinksIDs.length} listings to fetch reviews for`);
+          // console.log(`DEBUG: Found ${this.allDrinksIDs.length} listings to fetch reviews for`);
           const response = await this.$axios.post(
-            `${process.env.VUE_APP_API_URL}/getData/getReviewsByListingIDs`, 
+            `${process.env.VUE_APP_API_URL}/getData/getReviewsByListingIDs`,
             {
               listingIDs: this.allDrinksIDs,
             }
@@ -4627,7 +4678,7 @@ export default {
           this.getAverageRatings();
           this.getMostPopular();
         } else {
-          console.log("DEBUG: No listings found, initializing empty reviews");
+          // console.log("DEBUG: No listings found, initializing empty reviews");
           this.reviews = [];
           this.allUserIDs = [];
           this.allReviews = [];
@@ -4637,7 +4688,7 @@ export default {
         }
       } catch (error) {
         console.error("Error fetching producer reviews:", error);
-        console.log("DEBUG: Initializing empty reviews after error");
+        // console.log("DEBUG: Initializing empty reviews after error");
         this.reviews = [];
         this.allUserIDs = [];
         this.allReviews = [];
@@ -4696,7 +4747,7 @@ export default {
       if (this.allUserIDs.length > 0) {
         try {
           const response = await this.$axios.post(
-            `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`, 
+            `${process.env.VUE_APP_API_URL}/getData/getUsersFromList`,
             {
               userIDs: this.allUserIDs,
             }
@@ -5292,17 +5343,13 @@ export default {
       const wantToTry = this.drinkList.wantToTry.includes(listing.listingName);
 
       const haveTriedButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${
-                  haveTried ? "disabled" : ""
-                }" style="font-size:80%;">
+                <button type="button" class="btn custom-drink-list-btn rounded-0 ${haveTried ? "disabled" : ""}" style="font-size:80%;">
                     Have tried
                 </button>
                 `;
 
       const wantToTryButton = `
-                <button type="button" class="btn custom-drink-list-btn rounded-0 ${
-                  wantToTry ? "disabled" : ""
-                }" style="font-size:80%;">
+                <button type="button" class="btn custom-drink-list-btn rounded-0 ${wantToTry ? "disabled" : ""}" style="font-size:80%;">
                     Want to try
                 </button>
                 `;
@@ -5645,11 +5692,11 @@ export default {
     // get producer's latest updates
     // get producer's latest updates
     getLatestUpdates() {
-      console.log("DEBUG: Starting getLatestUpdates method");
+      // console.log("DEBUG: Starting getLatestUpdates method");
       let updatesList = this.specified_producer["updates"];
       
-      console.log("DEBUG: Updates list type:", typeof updatesList);
-      console.log("DEBUG: Updates list:", updatesList);
+      // console.log("DEBUG: Updates list type:", typeof updatesList);
+      // console.log("DEBUG: Updates list:", updatesList);
     
       // If updatesList is undefined (for new accounts), initialize as empty array
       if (!updatesList) {
@@ -5659,10 +5706,10 @@ export default {
       }
     
       if (updatesList.length > 0) {
-        console.log(`DEBUG: Producer has ${updatesList.length} updates`);
+        // console.log(`DEBUG: Producer has ${updatesList.length} updates`);
         this.hasUpdates = true;
         let latestUpdate = updatesList[updatesList.length - 1];
-        console.log("DEBUG: Latest update:", latestUpdate);
+        // console.log("DEBUG: Latest update:", latestUpdate);
     
         // check that there is more than 1 update
         if (updatesList.length > 1) {
@@ -5707,11 +5754,11 @@ export default {
     // get producer's answered questions (to be displayed to the users/venues)
     // get producer's answered questions (to be displayed to the users/venues)
     checkProducerAnswered() {
-      console.log("DEBUG: Starting checkProducerAnswered method");
+      // console.log("DEBUG: Starting checkProducerAnswered method");
       let answeredQuestions = this.specified_producer["questionsAnswers"];
       
-      console.log("DEBUG: Q&A list type:", typeof answeredQuestions);
-      console.log("DEBUG: Q&A list:", answeredQuestions);
+      // console.log("DEBUG: Q&A list type:", typeof answeredQuestions);
+      // console.log("DEBUG: Q&A list:", answeredQuestions);
       
       // Initialize arrays to prevent errors
       this.answeredQuestions = [];
@@ -5719,17 +5766,17 @@ export default {
       
       // If answeredQuestions is undefined (for new accounts), initialize as empty array
       if (!answeredQuestions) {
-        console.log("DEBUG: Q&A list is undefined, initializing as empty array");
+        // console.log("DEBUG: Q&A list is undefined, initializing as empty array");
         answeredQuestions = [];
         this.specified_producer["questionsAnswers"] = [];
       }
       
       if (answeredQuestions.length > 0) {
-        console.log(`DEBUG: Producer has ${answeredQuestions.length} Q&As`);
+        // console.log(`DEBUG: Producer has ${answeredQuestions.length} Q&As`);
         for (let qa in answeredQuestions) {
           try {
             let answer = answeredQuestions[qa]["answer"];
-            console.log(`DEBUG: Q&A ${qa} has answer:`, answer ? "yes" : "no");
+            // console.log(`DEBUG: Q&A ${qa} has answer:`, answer ? "yes" : "no");
             if (answer && answer !== "") {
               this.answeredQuestions.push(answeredQuestions[qa]);
             } else {
@@ -6041,15 +6088,15 @@ export default {
 
     // for producer to track page views
     async getProfileViews() {
-      console.log("DEBUG: Starting getProfileViews method");
-      console.log(`DEBUG: Profile view info:`, this.producerProfileViewInfo);
+      // console.log("DEBUG: Starting getProfileViews method");
+      // console.log(`DEBUG: Profile view info:`, this.producerProfileViewInfo);
       
       try {
         // ensure that it is not the producer viewing their own page
         if (this.user_id != this.producer_id) {
           // get current date
           let currDate = this.currDate;
-          console.log(`DEBUG: Current date for views: ${currDate}`);
+          // console.log(`DEBUG: Current date for views: ${currDate}`);
           
           // Skip API calls if producer ID is undefined or invalid
           if (!this.producer_id) {
@@ -6059,7 +6106,7 @@ export default {
           
           // check if the profileViewInfo exists
           if (!this.producerProfileViewInfo) {
-            console.log("DEBUG: No profile view record exists for this producer");
+            // console.log("DEBUG: No profile view record exists for this producer");
             
             // Create new profile view since none exists
             try {
@@ -6081,7 +6128,7 @@ export default {
               console.error("ERROR: Failed to create new profile view record:", error);
             }
           } else {
-            console.log(`DEBUG: Found profile view record with ID: ${this.producerProfileViewInfo.id}`);
+            // console.log(`DEBUG: Found profile view record with ID: ${this.producerProfileViewInfo.id}`);
     
             // check if currDate exists in the producerProfileViewInfo
             let dateExists = this.producerProfileViewInfo?.date == currDate || false;
@@ -6103,7 +6150,7 @@ export default {
                     },
                   }
                 );
-                console.log("DEBUG: Profile view count updated:", response.data);
+                // console.log("DEBUG: Profile view count updated:", response.data);
               } catch (error) {
                 console.error("ERROR: Failed to update profile count:", error);
               }
@@ -6123,7 +6170,7 @@ export default {
                     },
                   }
                 );
-                console.log("DEBUG: New profile view added:", response.data);
+                // console.log("DEBUG: New profile view added:", response.data);
               } catch (error) {
                 console.error("ERROR: Failed to add new profile view:", error);
               }
@@ -6591,58 +6638,48 @@ export default {
       }
     },
     openVenueClaimEmail() {
-    const subject = encodeURIComponent("I'd like to claim a free Venue Account");
-    const body = encodeURIComponent(
-      `Hi Drink-X Team,
+      const subject = encodeURIComponent("I'd like to claim a free Venue Account");
+      const body = encodeURIComponent(
+        `Hi Drink-X Team,
 
-I hold a Brand Account. I would like to claim a free Venue Account under the same brand.
+  I hold a Brand Account. I would like to claim a free Venue Account under the same brand.
 
-Please find my details below:
+  Please find my details below:
 
-- Link to my existing Brand Account:
-- My Business/Venue Name: 
-- Business Description:
-- Country:
-- Official Address on Google Maps:
-- My First Name:
-- My Last Name:
-- My Relationship to Brand/Venue:
-- My Email Address:
-- My Contact Number:
+  - Link to my existing Brand Account:
+  - My Business/Venue Name: 
+  - Business Description:
+  - Country:
+  - Official Address on Google Maps:
+  - My First Name:
+  - My Last Name:
+  - My Relationship to Brand/Venue:
+  - My Email Address:
+  - My Contact Number:
 
-Thank you!`
-    );
-    window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
+  Thank you!`
+      );
+      window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
+    },
+
+    closeBadgePopup() {
+      this.showBadgePopup = false;
+      this.earnedBadges = [];
+      // Reload the page when user closes the popup
+      window.location.reload();
+    },
   },
-
-  closeBadgePopup() {
-    this.showBadgePopup = false;
-    this.earnedBadges = [];
-    // Reload the page when user closes the popup
-    window.location.reload();
-  },
-  },
-  watch:{
-     '$route.params.producerID': function(newId, oldId) {
-      console.log('Route producer ID changed from', oldId, 'to', newId);
-      if (newId !== oldId) {
-        // Reset data loading state
-        this.dataLoaded = false;
-        
-        // Reset data
-        this.targetProducer = newId;
-        this.targetProducerID = newId;
-        
-        // Check if it's own profile
-        if (this.userType == 'producer' && this.user_id == this.targetProducer) {
-          this.selfView = true;
-        } else {
-          this.selfView = false;
+  watch: {
+    '$route.params.producerID': {
+      handler: function(newId, oldId) {
+        if (newId && newId !== oldId) {
+          console.log('we need to reset now');
+          this.resetComponentState();
+          this.loadData();
         }
-        
-        // Reload data
-        this.loadData();
-      }
+      },
+      immediate: true,
+      deep: true
     }
   }
 };
