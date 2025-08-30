@@ -130,6 +130,20 @@
   border-radius: 10px;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
 }
+
+.listing-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .listing-img {
+    width: 200px !important;
+    height: auto !important;
+  }
+}
 </style>
 
 <!-- HTML -->
@@ -1122,56 +1136,70 @@
                             <div class="card p-3">
 
                               <!-- First Row: Image | Details | Rating -->
-                              <div class="row w-100 g-0 align-items-center mb-3">
+                              <div class="row flex-column flex-md-row g-3 mb-3 justify-content-between align-items-start w-100">
                                 
                                 <!-- Image Section (Left) -->
-                                <div class="col-auto text-center text-md-start">
+                                <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start px-0">
                                   
                                   <!-- For Listings -->
-                                  <div v-if="content.contentType == 'Listing'" class="image-wrapper position-relative d-inline-block">
+                                  <div v-if="content.contentType == 'Listing'">
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
-                                      class="listing-image"
+                                      class="listing-img"
                                     />
                                     <img
                                       v-else
                                       src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                      class="listing-image"
+                                      class="listing-img"
                                     />
                                   </div>
 
                                   <!-- For Review -->
-                                  <div v-else-if="content.contentType == 'Review'" class="image-wrapper position-relative d-inline-block">
+                                  <div v-else-if="content.contentType == 'Review' " >
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
-                                      class="listing-image"
+                                      class="listing-img"
                                     />
                                     <img
                                       v-else
                                       src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                      class="listing-image"
+                                      class="listing-img"
+                                    />
+                                  </div>
+
+                                  <!-- For pReview or vReview -->
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'">
+                                    <img
+                                      v-if="content['photos'][0]"
+                                      :src="content['photos'][0]"
+                                      class="listing-img"
+                                    />
+                                    <img
+                                      v-else
+                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                      class="listing-img"
                                     />
                                   </div>
 
                                   <!-- For Update -->
-                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'" class="image-wrapper position-relative d-inline-block">
+                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'">
                                     <img
                                       v-if="content.photo"
                                       :src="content.photo"
-                                      class="listing-image"
+                                      class="listing-img"
                                     />
                                     <img
                                       v-else
                                       src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                      class="listing-image"
+                                      class="listing-img"
                                     />
                                   </div>
                                 </div>
 
                                 <!-- Details Section (Center) -->
-                                <div class="col d-flex flex-column justify-content-between px-3">
+                                <div class="col d-flex flex-column justify-content-between px-0 px-md-3">
 
                                   <!-- For Listings -->
                                   <div v-if="content.contentType == 'Listing'">
@@ -1209,7 +1237,7 @@
                                   <!-- For Review -->
                                   <div v-else-if="content.contentType == 'Review'">
                                     <span>
-                                      <!-- Username -->
+                                      <!-- Reviewer username and photo -->
                                       <router-link
                                         :to="{ path: '/profile/user/' + content.userID + '/' + content.username }"
                                         class="primary-clickable-text text-decoration-none"
@@ -1267,6 +1295,71 @@
                                         <p class="default-clickable-text fst-italic">{{ content.reviewDesc }}</p>
                                       </router-link>
                                     </span>
+                                  </div>
+
+                                  <!-- For pReview or vReview -->
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'">
+
+                                    <span>
+                                        <!--Reviewer username and photo -->
+                                      <router-link
+                                        :to="{ path: '/profile/user/' + content.userID + '/' + content.username }"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <div class="d-flex align-items-center">
+                                          <img
+                                            v-if="content.userPhoto"
+                                            :src="content.userPhoto"
+                                            class="rounded-circle"
+                                            alt="Profile Photo"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
+                                          <svg
+                                            v-else
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="30"
+                                            height="30"
+                                            fill="currentColor"
+                                            class="bi bi-person-circle"
+                                            viewBox="0 0 16 16"
+                                            style="object-fit: cover;"
+                                          >
+                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+                                          </svg>
+
+                                          <h5 class="d-none d-md-block mb-0 ms-2">@<b>{{ content.username }}</b></h5>
+                                          <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2">@<b>{{ content.username }}</b></h6>
+                                        </div>
+                                      </router-link>
+
+                                      <!-- Producer or Venue Name -->
+                                      <h6 class="mt-2">
+                                        reviewed
+                                        <router-link
+                                          :to="getProfileLink((content.venueID ? content.venueID : content.producerID), (content.venueID ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
+                                          class="primary-clickable-text text-decoration-none"
+                                          style="color: #027562"
+                                        >
+                                          <b>{{ content.venueName ? content.venueName : content.producerName }}</b>
+                                        </router-link>
+                                      </h6>
+                                    </span>
+
+                                    <!-- Review Description -->
+                                    <span>
+                                      <router-link
+                                        :to="getProfileLink((content.venueID ? content.venueID : content.producerID), (content.venueID ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
+                                        class="primary-clickable-text text-decoration-none"
+                                        style="color: #027562"
+                                      >
+                                        <p class="default-clickable-text fst-italic">{{ content.reviewDesc }}</p>
+                                      </router-link>
+                                    </span>
+                                    
                                   </div>
 
                                   <!-- For Update -->
@@ -1327,7 +1420,7 @@
                                 </div>
 
                                 <!-- Rating & Read More (Right) -->
-                                <div class="col-auto text-center text-md-end d-flex flex-column justify-content-between px-3">
+                                <div class="col-12 col-md-auto text-center text-md-end mt-2 mt-md-0">
 
                                   <!-- Listings -->
                                   <div v-if="content.contentType == 'Listing'">

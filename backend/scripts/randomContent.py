@@ -680,14 +680,20 @@ def getNext30():
                 """, (vReviewLastID, vReviewLastID, 5))
                 venue_reviews = cursor.fetchall()
 
-                # Get producerName and photo
+                # Get review details
                 if producer_reviews:
                     for review in producer_reviews:
-                        cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (review['producerID'],))
+                        cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (review['producerID'],))
                         producer = cursor.fetchone()
                         review['producerName'] = producer['producerName'] if producer else None
-                        review['producerPhoto'] = producer['photo'] if producer else None
 
+                        # Get reviewer username and userPhoto
+                        cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
+                        user_data = cursor.fetchone()
+                        review['username'] = user_data['username'] if user_data else None
+                        review['userPhoto'] = user_data['photo'] if user_data else None
+
+                        # Set content type
                         review['contentType'] = 'pReview'
 
                         # Get top comments
@@ -699,11 +705,17 @@ def getNext30():
                 # Get venueName and photo
                 if venue_reviews:
                     for review in venue_reviews:
-                        cursor.execute('SELECT "venueName", "photo" FROM "venues" WHERE "id" = %s', (review['venueID'],))
+                        cursor.execute('SELECT "venueName" FROM "venues" WHERE "id" = %s', (review['venueID'],))
                         venue = cursor.fetchone()
                         review['venueName'] = venue['venueName'] if venue else None
-                        review['venuePhoto'] = venue['photo'] if venue else None
 
+                        # Get reviewer username and userPhoto
+                        cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
+                        user_data = cursor.fetchone()
+                        review['username'] = user_data['username'] if user_data else None
+                        review['userPhoto'] = user_data['photo'] if user_data else None
+
+                        # Set content type
                         review['contentType'] = 'vReview'
 
                         # Get top comments
