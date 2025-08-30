@@ -667,10 +667,15 @@
                             </div>
                             
                             <!-- Current PDF Menu -->
-                            <div v-if="targetVenue.pdfMenuUrl" class="mb-3">
-                                <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                            <div v-if="hasPdfMenu" class="mb-3">
+                                <button 
+                                    class="btn btn-outline-primary btn-sm ms-2"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                >
                                     View existing dining menu.
-                                </a>
+                                </button>
                             </div>
                             
                             <button 
@@ -1367,7 +1372,7 @@
                     <div class="col-5 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
-                        <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100 mobile-justify-content-start">
+                        <div v-if="hasPdfMenu" class="d-flex justify-content-end w-100 mobile-justify-content-start">
                             <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
@@ -3670,11 +3675,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- PDF Viewer Container with Navigation -->
+                    <!-- Image Viewer Container with Navigation -->
                     <div class="d-flex align-items-center">
                         <!-- Left Navigation Button -->
                         <button 
-                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="previousPage" 
                             :disabled="currentPdfPage <= 1"
                             class="btn btn-primary me-2"
@@ -3682,49 +3687,48 @@
                             ←
                         </button>
                         
-                        <!-- PDF Container -->
+                        <!-- Menu Image Container -->
                         <div class="pdf-container flex-grow-1 position-relative">
-                            <iframe 
-                                v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                                :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=' + currentPdfPage + '&view=FitV&zoom=page-width'"
-                                width="100%" 
-                                height="650px"
-                                @error="handlePdfError">
-                            </iframe>
+                            <div v-if="hasPdfMenu" class="text-center">
+                                <img 
+                                    :src="pdfMenuUrls[currentPdfPage - 1]"
+                                    :alt="`Menu Page ${currentPdfPage}`"
+                                    class="img-fluid"
+                                    style="max-height: 650px; width: auto;"
+                                    @error="handlePdfError">
+                            </div>
                             
                             <!-- Page Counter -->
-                            <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== '' && showPageCounter" 
+                            <div v-if="hasPdfMenu && pdfMenuUrls.length > 1 && showPageCounter" 
                                  class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 rounded"
                                  style="font-size: 12px; z-index: 10;">
-                                <span v-if="totalPdfPages">Page {{ currentPdfPage }} of {{ totalPdfPages }}</span>
-                                <span v-else-if="isPdfLoading">Loading...</span>
-                                <span v-else>Page {{ currentPdfPage }}</span>
+                                <span>Page {{ currentPdfPage }} of {{ pdfMenuUrls.length }}</span>
                             </div>
                         </div>
                         
                         <!-- Right Navigation Button -->
                         <button 
-                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="nextPage" 
-                            :disabled="totalPdfPages !== null && currentPdfPage >= totalPdfPages"
+                            :disabled="currentPdfPage >= pdfMenuUrls.length"
                             class="btn btn-primary ms-2"
                             style="min-width: 50px; height: 50px;">
                             →
                         </button>
                     </div>
                     
-                    <div v-if="!targetVenue.pdfMenuUrl || targetVenue.pdfMenuUrl.trim() === ''" class="text-center text-muted p-5">
+                    <div v-if="!hasPdfMenu" class="text-center text-muted p-5">
                         <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
                         <p class="fs-5">Menu not available at the moment.</p>
                         <p class="text-secondary">Please check back later or contact the venue directly.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" 
-                       :href="targetVenue.pdfMenuUrl" 
+                    <a v-if="hasPdfMenu && pdfMenuUrls.length > 0" 
+                       :href="pdfMenuUrls[currentPdfPage - 1]" 
                        target="_blank" 
                        class="btn btn-primary me-auto mobile-view-show">
-                        View Full Menu
+                        View Full Size
                     </a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Close
@@ -4357,6 +4361,72 @@ export default {
             return Object.values(this.targetVenue.amenities).some(value => value === true);
         },
         
+        // Computed property to check if PDF menu exists and has valid content
+        hasPdfMenu() {
+            console.log('🔍 hasPdfMenu computed: checking targetVenue.pdfMenuUrl:', this.targetVenue?.pdfMenuUrl);
+            
+            if (!this.targetVenue || !this.targetVenue.pdfMenuUrl) {
+                console.log('🔍 hasPdfMenu computed: No targetVenue or pdfMenuUrl, returning false');
+                return false;
+            }
+            
+            try {
+                // Check if it's a JSON string containing an array
+                if (typeof this.targetVenue.pdfMenuUrl === 'string' && this.targetVenue.pdfMenuUrl.trim() !== '') {
+                    // Try to parse as JSON array
+                    const menuUrls = JSON.parse(this.targetVenue.pdfMenuUrl);
+                    const result = Array.isArray(menuUrls) && menuUrls.length > 0;
+                    console.log('🔍 hasPdfMenu computed: Parsed JSON array, result:', result, 'menuUrls:', menuUrls);
+                    return result;
+                }
+                // Check if it's already an array
+                else if (Array.isArray(this.targetVenue.pdfMenuUrl)) {
+                    const result = this.targetVenue.pdfMenuUrl.length > 0;
+                    console.log('🔍 hasPdfMenu computed: Already array, result:', result, 'array:', this.targetVenue.pdfMenuUrl);
+                    return result;
+                }
+                console.log('🔍 hasPdfMenu computed: Not string or array, returning false');
+                return false;
+            } catch (error) {
+                // If JSON parsing fails, treat as legacy single URL string
+                const result = typeof this.targetVenue.pdfMenuUrl === 'string' && this.targetVenue.pdfMenuUrl.trim() !== '';
+                console.log('🔍 hasPdfMenu computed: JSON parse failed, treating as legacy string, result:', result, 'error:', error);
+                return result;
+            }
+        },
+        
+        // Computed property to get parsed PDF menu URLs
+        pdfMenuUrls() {
+            console.log('🔍 pdfMenuUrls computed: hasPdfMenu:', this.hasPdfMenu);
+            
+            if (!this.hasPdfMenu) {
+                console.log('🔍 pdfMenuUrls computed: No PDF menu, returning empty array');
+                return [];
+            }
+            
+            try {
+                // Parse JSON string to array
+                if (typeof this.targetVenue.pdfMenuUrl === 'string') {
+                    const menuUrls = JSON.parse(this.targetVenue.pdfMenuUrl);
+                    const result = Array.isArray(menuUrls) ? menuUrls : [this.targetVenue.pdfMenuUrl];
+                    console.log('🔍 pdfMenuUrls computed: Parsed from string, result:', result);
+                    return result;
+                }
+                // Already an array
+                else if (Array.isArray(this.targetVenue.pdfMenuUrl)) {
+                    console.log('🔍 pdfMenuUrls computed: Already array:', this.targetVenue.pdfMenuUrl);
+                    return this.targetVenue.pdfMenuUrl;
+                }
+                console.log('🔍 pdfMenuUrls computed: Unexpected type, returning empty array');
+                return [];
+            } catch (error) {
+                // Fallback for legacy single URL format
+                const result = [this.targetVenue.pdfMenuUrl];
+                console.log('🔍 pdfMenuUrls computed: Parse error, fallback to legacy format:', result, 'error:', error);
+                return result;
+            }
+        },
+        
         // Computed property to show if the page is ready to display
         isPageReady() {
             return this.venueDataLoaded && this.venueExists === true;
@@ -4601,6 +4671,20 @@ export default {
                     console.log('✅ getVenueData: Valid venue data found:', response.data);
 
                     this.targetVenue = response.data;
+                    
+                    // Debug PDF menu URL
+                    console.log('🍽️ getVenueData: PDF Menu URL from API:', this.targetVenue.pdfMenuUrl);
+                    console.log('🍽️ getVenueData: PDF Menu URL type:', typeof this.targetVenue.pdfMenuUrl);
+                    if (this.targetVenue.pdfMenuUrl) {
+                        try {
+                            const parsed = JSON.parse(this.targetVenue.pdfMenuUrl);
+                            console.log('🍽️ getVenueData: Parsed PDF Menu URLs:', parsed);
+                            console.log('🍽️ getVenueData: Is parsed an array?', Array.isArray(parsed));
+                            console.log('🍽️ getVenueData: Parsed array length:', Array.isArray(parsed) ? parsed.length : 'Not array');
+                        } catch (e) {
+                            console.log('🍽️ getVenueData: PDF Menu URL is not JSON, treating as legacy string:', this.targetVenue.pdfMenuUrl);
+                        }
+                    }
 
                     // Set editable data
                     this.editProfilePhoto = this.targetVenue["photo"];
@@ -7298,17 +7382,16 @@ Thank you!`
             }
         },
 
-        // Handle PDF loading errors
+        // Handle menu image loading errors
         handlePdfError() {
-            console.warn('PDF failed to load');
+            console.warn('Menu image failed to load');
             // Could add error state handling here if needed
         },
 
-        // PDF Navigation methods
+        // Menu Navigation methods (updated for image array)
         nextPage() {
-            if (this.totalPdfPages === null || this.currentPdfPage < this.totalPdfPages) {
+            if (this.hasPdfMenu && this.currentPdfPage < this.pdfMenuUrls.length) {
                 this.currentPdfPage++;
-                this.forceIframeReload();
                 this.showPageCounterTemporarily();
             }
         },
@@ -7316,7 +7399,6 @@ Thank you!`
         previousPage() {
             if (this.currentPdfPage > 1) {
                 this.currentPdfPage--;
-                this.forceIframeReload();
                 this.showPageCounterTemporarily();
             }
         },
@@ -7410,16 +7492,14 @@ Thank you!`
             });
         },
 
-        // Reset PDF navigation and analyze PDF when modal opens
+        // Reset menu navigation when modal opens
         async resetPdfNavigation() {
             this.currentPdfPage = 1;
             this.totalPdfPages = null;
             this.isPdfLoading = false;
             
-            // Analyze PDF to get page count
-            if (this.targetVenue.pdfMenuUrl) {
-                await this.getPdfPageCount(this.targetVenue.pdfMenuUrl);
-            }
+            // No need to analyze PDF since we're now using image arrays
+            // The page count is automatically available from the pdfMenuUrls array length
         }
     },
     watch: {
