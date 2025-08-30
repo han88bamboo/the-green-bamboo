@@ -1430,27 +1430,38 @@
                                     class="form-control me-2 rounded mobile-rating-smaller-text-2"
                                     placeholder="Write a comment..."
                                     aria-label="Write a comment..."
-                                    aria-describedby="button-addon2"
-                                    v-model="newComment"
+                                    :aria-describedby="'button-addon2-' + content.id"
+                                    v-model="newComment[content.id]"  
                                   />
                                   <button
                                     class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
                                     type="button"
-                                    id="button-addon2"
+                                    :id="'button-addon2-' + content.id"
+                                    @click="addComment(content.id, content.contentType, content.topComments)"
                                   >
                                     Comment
                                   </button>
                                   <button
                                     class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
-                                    type="button "
-                                    id="button-addon2"
+                                    type="button"
+                                    :id="'button-addon2-' + content.id"
+                                    @click="addComment(content.id, content.contentType, content.topComments)"
                                   >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send" viewBox="0 0 16 16">
-                                      <path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"/>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                      class="bi bi-send" viewBox="0 0 16 16">
+                                      <path
+                                        d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                                          14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                                          7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                                          0 0 1 .54.11ZM6.636 10.07l2.761 
+                                          4.338L14.13 2.576zm6.787-8.201L1.591 
+                                          6.602l4.339 2.76z"
+                                      />
                                     </svg>
                                   </button> 
                                 </div>
                               </div>
+
                               
                               <!-- Fourth Row: Comments Section -->
                               <div v-if="content.topComments && content.topComments.length" class="row w-100 mt-4 pt-2">
@@ -1507,15 +1518,34 @@
                                             <b>@{{ comment.username }}</b>
                                           </router-link>
 
-                                          <!-- Edit Button at the top right corner-->
-                                          <button v-if="isCommentOwner(comment.userId, comment.userType)" class="btn btn-link p-0 ms-auto">
-                                            <i class="bi bi-pencil"></i>
-                                          </button>
+                                          <!-- Edit and Delete Button at the top right corner-->
+                                          <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
+                                            <i class="bi bi-pencil me-4" style="cursor:pointer" @click="editingCommentId = comment.id"></i>
+
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: content.contentType }, topCommentsToUpdate=content.topComments">
+                                              <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                            </svg>
+                                          </div>
                                         </div>
 
                                         <!-- Row 2: Comment Text-->
                                         <div class="row mt-2">
                                           <span>{{ comment.comment }}</span>
+
+                                          <!-- Edit comment input -->
+                                          <div v-if="editingCommentId === comment.id" class="mt-2">
+                                            <input
+                                              v-model="updatedComment"
+                                              @keyup.enter="editComment(comment)"
+                                              type="text"
+                                              class="form-control"
+                                            />
+                                            <div class="d-flex justify-content-end mt-2">
+                                                <button @click="editComment(comment, content.contentType)" class="btn btn-primary mt-2">Update</button>
+                                                <button @click="cancelEdit" class="btn btn-secondary mt-2 ms-2">Cancel</button>
+                                            </div>
+                                            
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
@@ -1527,6 +1557,26 @@
                           </div>
                         </div>
                       </div>               
+                    </div>
+
+
+                    <!-- CP Edit - Delete Comment Modal -->
+                    <div class="modal fade" id="deleteComment" tabindex="-1" aria-labelledby="deleteCommentLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="deleteCommentLabel">Confirm Deletion</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Are you sure you want to delete this comment?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteComment">Delete</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                   </div>
                 </div>
@@ -1881,6 +1931,7 @@ import { useSearch } from '@/composables/navbar/useSearch';
 import NavBar from "@/components/NavBar.vue";
 import BookmarkModal from "@/components/BookmarkModal.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
+import { useToast } from 'vue-toastification';
 
 export default {
   components: {
@@ -2144,7 +2195,19 @@ export default {
       listingsLikes: [],
       reviewsLikes: [],
       producersUpdatesLikes: [],
-      venuesUpdatesLikes: []
+      venuesUpdatesLikes: [],
+
+      // For comment editing
+      newComment: {},
+      updatedComment: "",
+      editingCommentId: null,
+
+      // For comment deletion
+      deleteCommentItems: {
+        commentId: null,
+        contentType: null
+      },
+      topCommentsToUpdate: []
     };
   },
   mounted() {
@@ -3061,7 +3124,7 @@ methods: {
       }
     },
 
-    // Added function by CP - 28 Aug 2025
+    // Added function by CP - 28 Aug 2025 - More variety of content types and new features
 
     // Boolean feature to track if current user liked this post
     hasLikedContent(contentId, contentType) {
@@ -3167,7 +3230,142 @@ methods: {
     // Function to check if comment is made by current user
     isCommentOwner(commentUserId, commentUserType) {
       return this.userID == commentUserId && this.userType == commentUserType;
+    },
+
+    // Function to add comment 
+    async addComment(contentId, contentType, topComments) {
+      if (!this.userID || !this.userType) {
+        // Route to login page
+        this.$router.push({ name: 'Login' });
+        return;
+      }
+
+      // Use the correct contentId key
+      const commentText = this.newComment[contentId];
+      if (!commentText || commentText.trim() === "") {
+        const toast = useToast();
+        toast.error("Comment cannot be empty.");
+        return;
+      }
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+          {
+            userId: this.userID,
+            userType: this.userType,
+            contentId: contentId,
+            contentType: contentType,
+            comment: commentText.trim()
+          }
+        );
+
+        // Clear the input field for this contentId
+        this.newComment[contentId] = "";
+
+        // Push the new comment into the correct topComments array
+        topComments.push(response.data.comment);
+
+        const toast = useToast();
+
+        toast.success("Comment added successfully.");
+
+      } catch (error) {
+        console.error("Error adding comment:", error);
+        const toast = useToast();
+        toast.error("Failed to add comment. Please try again later.");
+      }
+    },
+
+    // Function to edit comment 
+    async editComment(comment, contentType) {
+
+      // Check if updatedComment is empty
+      if (!this.updatedComment || this.updatedComment.trim() === "") {
+        const toast = useToast();
+        toast.error("Comment cannot be empty.");
+        return;
+      }
+
+      // Check if updatedComment is different from the original comment
+      if (this.updatedComment.trim() === comment.comment.trim()) {
+        const toast = useToast();
+        toast.error("Comment is identical to the original.");
+        return;
+      }
+
+      try {
+        const response = await this.$axios.put(
+          `${process.env.VUE_APP_API_URL}/randomContent/editComment`,
+          {
+            userId: this.userID,
+            userType: this.userType,
+            contentType: contentType,
+            commentId: comment.id,
+            newComment: this.updatedComment.trim()
+          }
+        );
+
+        if (response.status === 201) {
+          this.updatedComment = "";
+          this.editingCommentId = null;
+
+          // Update the comment in the UI
+          comment.comment = response.data.newComment
+
+          // Show message
+          const toast = useToast();
+          toast.success("Comment updated successfully.");
+        }
+
+      } catch (error) {
+        console.error("Error editing comment:", error);
+        const toast = useToast();
+        toast.error("Failed to edit comment. Please try again later.");
+      }
+    },
+
+    // Function to delete comment 
+    async deleteComment() {
+      try {
+        const response = await this.$axios.delete(
+          `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
+          {
+            data: {
+              userId: this.userID,
+              userType: this.userType,
+              contentType: this.deleteCommentItems.contentType,
+              commentId: this.deleteCommentItems.commentId
+            }
+          }
+        );
+
+        if (response.status === 200) {
+          // Remove the comment from the UI using comment.id
+          const index = this.topCommentsToUpdate.findIndex(c => c.id === this.deleteCommentItems.commentId);
+          if (index !== -1) {
+            this.topCommentsToUpdate.splice(index, 1);
+          }
+
+
+          // Reset deleteCommentItems
+          this.deleteCommentItems = {
+            commentId: null,
+            contentType: null
+          };
+
+          // Show message
+          const toast = useToast();
+          toast.success("Comment deleted successfully.");
+        }
+
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        const toast = useToast();
+        toast.error("Failed to delete comment. Please try again later.");
+      }
     }
+
   },
 };
 </script>

@@ -4,15 +4,16 @@
 #   [Content Retrieval - On Random Explore Page]
 #   /getRandomListings [GET], /getNext30 [POST]
 
-#   [Content Retrieval - On respective page] - not created yet
-#   /getListingsCommentsDetails [POST], /getReviewsCommentsDetails [POST]
-#   /checkUserLikedContent [GET]
-
 #   [Likes]
 #   /likeContent [POST], /unlikeContent [POST]
 
 #   [Comments]
 #   /addComment [POST], /editComment [POST], /deleteComment [DELETE]
+
+#   [Content Retrieval - On respective page] - not created yet
+#   /getListingsCommentsDetails [POST], /getReviewsCommentsDetails [POST]
+#   /checkUserLikedContent [GET]
+
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -934,21 +935,6 @@ def unlikeContent():
         return jsonify({"error": "Failed to unlike content"}), 500
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # -----------------------------------------------------------------------------------------
 # [POST] Add a comment
 # Input: { "contentType": <content_type>, "contentId": <content_id>, "userId": <user_id>, "userType": <user_type>, "comment": <comment_text>, "parentId": <parent_id> }
@@ -984,12 +970,47 @@ def addComment():
                 INSERT INTO "{table_name}" ("{unique_field}", "userId", "userType", "comment", "parentId")
                 VALUES (%s, %s, %s, %s, %s)
             """, (content_id, user_id, user_type, comment, parent_id))
-            cursor.commit()
+            conn.commit()
+
+            # Get the added record
+            cursor.execute(f"""
+                SELECT *
+                FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
+                ORDER BY "createdAt" DESC
+                LIMIT 1
+            """, (content_id, user_id, user_type))
+            added_comment = cursor.fetchone()
+
+            # Get the commenter username and photo 
+            if user_type == 'user':
+                cursor.execute("""
+                    SELECT "username", "photo"
+                    FROM "users"
+                    WHERE "id" = %s
+                """, (user_id,))
+                user_info = cursor.fetchone()
+            elif user_type == 'producer':
+                cursor.execute("""
+                    SELECT "producerName", "photo"
+                    FROM "producers"
+                    WHERE "id" = %s
+                """, (user_id,))
+                user_info = cursor.fetchone()
+            elif user_type == 'venue':
+                cursor.execute("""
+                    SELECT "venueName", "photo"
+                    FROM "venues"
+                    WHERE "id" = %s
+                """, (user_id,))
+                user_info = cursor.fetchone()
+
+            added_comment["photo"] = user_info['photo']
+            added_comment["username"] = user_info['username']
 
             return jsonify({
                 "message": "Comment added successfully",
-                "contentId": content_id,
-                "comment": comment
+                "comment": added_comment
             }), 201
 
     except Exception as e:
@@ -1027,13 +1048,13 @@ def editComment():
                 SET "comment" = %s
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (new_comment, comment_id, user_id, user_type))
-            cursor.commit()
+            conn.commit()
 
             return jsonify({
                 "message": "Comment edited successfully",
                 "commentId": comment_id,
                 "newComment": new_comment
-            }), 200
+            }), 201
 
     except Exception as e:
         print("Error occurred while editing comment:", e)
@@ -1068,7 +1089,7 @@ def deleteComment():
                 DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
-            cursor.commit()
+            conn.commit()
 
             return jsonify({
                 "message": "Comment deleted successfully"
@@ -1099,7 +1120,7 @@ def deleteComment():
                 DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
-            cursor.commit()
+            conn.commit()
 
             return jsonify({
                 "message": "Comment deleted successfully",
@@ -1109,4 +1130,5 @@ def deleteComment():
     except Exception as e:
         print("Error occurred while deleting comment:", e)
         return jsonify({"error": "Failed to delete comment"}), 500
+
 
