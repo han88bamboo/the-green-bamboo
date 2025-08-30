@@ -35,22 +35,30 @@
 
   <!-- main content -->
   <div class="container pt-5 mobile-pt-4" v-if="dataLoaded">
-      <!-- Master Listing Banner for Wine/Sake -->
-        <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row container mb-4">
-          <div class="col-12">
-            <div class="alert alert-info d-flex align-items-center" role="alert" style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc" class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
-                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
-              </svg>
-              <div class="text-start mobile-view-hide">
-                <span class="fw-bold text-dark">Master Listing for all vintages.</span> <span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed under "Add Your Review".</span>
-              </div>
-               <div class="text-start mobile-view-show fs-8">
-                <span class="fw-bold text-dark">Master Listing.</span><span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed in "Add Your Review".</span>
-              </div>
-            </div>
+    <!-- Master Listing Banner for Wine/Sake -->
+    <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+      class="row container mb-4">
+      <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center" role="alert"
+          style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
+            class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+            <path
+              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+          </svg>
+          <div class="text-start mobile-view-hide">
+            <span class="fw-bold text-dark">Master Listing for all vintages.</span> <span class="text-muted ms-2">For {{
+              specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
+              }}, specific vintages can be reviewed under "Add Your Review".</span>
+          </div>
+          <div class="text-start mobile-view-show fs-8">
+            <span class="fw-bold text-dark">Master Listing.</span><span class="text-muted ms-2">For {{
+              specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
+              }}, specific vintages can be reviewed in "Add Your Review".</span>
           </div>
         </div>
+      </div>
+    </div>
 
     <div class="row">
       <!-- producer information -->
@@ -356,16 +364,17 @@
                                       {{ venue.venueName }}
                                     </router-link>
                                     <div class="vintages-container">
-                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage" class="vintage-badge">
+                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage"
+                                        class="vintage-badge">
                                         {{ vintage }}
                                       </span>
                                     </div>
                                   </div>
-                                </div> 
+                                </div>
                                 <div v-else>
                                   <p class="mb-1">We couldn't find any bars with this listing.</p>
                                 </div>
-                            
+
                                 <!-- [if] user does not allow location -->
                                 <!-- <div v-if="nearestBars.length == 0">
                                   <div v-for="venue in venueListings" v-bind:key="venue.id">
@@ -620,7 +629,8 @@
               </div>
 
               <!-- drink styles -->
-              <div v-if="specified_listing['drinkStyle']" class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['drinkStyle']"
+                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
                   <b>
                     {{ specified_listing["drinkStyle"] }}
@@ -630,7 +640,8 @@
               </div>
 
               <!-- age -->
-              <div v-if="specified_listing['age']" class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['age']"
+                class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
                 <!-- this code was only relevant before we had new vintage feature for reviews
                   <div v-if="specified_listing['drinkType'] == 'Wine'">
                   <h5 class="text-body-secondary mb-1">
@@ -639,7 +650,7 @@
                   <p class="mb-3"><u> Vintage (Year)</u></p>
                 </div>
                 <div v-else> -->
-                <div  >
+                <div>
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
@@ -656,7 +667,8 @@
               </div>
 
               <!-- abv -->
-              <div v-if="specified_listing['abv']" class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['abv']"
+                class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
                   <b> {{ specified_listing["abv"] }}% </b>
                 </h5>
@@ -769,7 +781,7 @@
           <!-- ADD YOUR REVIEW & BOOKMARK -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
             <!-- Logged-in users -->
-            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"> 
+            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
               <div v-if="userType === 'user' && userID !== 'defaultUser'">
                 <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
                   data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
@@ -840,7 +852,7 @@
           </div>
         </div>
 
-      
+
         <!-- Modal -->
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
           aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -946,7 +958,7 @@
                           <line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line>
                         </svg>
                       </div>
-                    
+
                       <div v-else class="row mobile-review-svg-button">
                         <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
                           loading="lazy" />
@@ -999,41 +1011,37 @@
 
                       <div class="form-group mb-2">
                         <!-- Enhanced Location Input with Home Option and Google Maps -->
-                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }" style="position: relative;">
+                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }"
+                          style="position: relative;">
                           <!-- Home Option Dropdown (appears when typing) -->
                           <div v-if="showHomeOption" class="home-option-dropdown">
                             <div class="home-option-item" @click="selectHomeLocation">
                               🏠 Tasted At Home
                             </div>
                           </div>
-                          
+
                           <!-- Combined Input Field -->
                           <div class="input-group mb-2">
                             <div class="location-input-wrapper" style="position: relative; width: 100%;">
-                              <GMapAutocomplete 
-                                placeholder="Tag where you tasted this drink" 
-                                @place_changed="setPlaceFromAutocomplete"
-                                @input="onLocationInput"
-                                @focus="onLocationFocus"
-                                @blur="onLocationBlur"
-                                @keydown="onLocationKeydown"
-                                class="form-control input-with-icon" 
-                                ref="locationInput"
-                                :value="locationInputValue"
+                              <GMapAutocomplete placeholder="Tag where you tasted this drink"
+                                @place_changed="setPlaceFromAutocomplete" @input="onLocationInput"
+                                @focus="onLocationFocus" @blur="onLocationBlur" @keydown="onLocationKeydown"
+                                class="form-control input-with-icon" ref="locationInput" :value="locationInputValue"
                                 :options="{ types: ['establishment'] }">
                               </GMapAutocomplete>
                             </div>
                           </div>
                         </div>
-                        
+
                         <!-- Location confirmation display -->
                         <div v-if="selectedLocationType === 'home'" class="alert alert-info mb-2">
                           📍 You've selected "Home" as your tasting location
                         </div>
-                        <div v-if="selectedLocationType === 'venue' && selectedLocation" class="alert alert-success mb-2">
+                        <div v-if="selectedLocationType === 'venue' && selectedLocation"
+                          class="alert alert-success mb-2">
                           📍 Selected venue: {{ selectedLocation }}
                         </div>
-                        
+
                         <div>
                           <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError">
                           </p>
@@ -1055,17 +1063,24 @@
                 <div class="row">
                   <div class="col justify-content-start mb-3">
                     <div class="row mb-2">
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-12">
-                        <p class="text-start mb-0 fw-bold" >Vintage
-                          <span v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                           For wine and sake, you can review specific vintage years.
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-12">
+                        <p class="text-start mb-0 fw-bold">Vintage
+                          <span
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                            For wine and sake, you can review specific vintage years.
                           </span>
-                        </p> 
+                        </p>
                       </div>
                     </div>
                     <div class="row mb-2">
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-4">
-                        <input v-model="variant" type="text" class="form-control" id="vintage" placeholder="e.g. 2020" />
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage"
+                          placeholder="e.g. 2020" />
                       </div>
                     </div>
                     <!-- Labels row -->
@@ -1074,19 +1089,19 @@
                         <p class="text-start mb-0 fw-bold">
                           Review<span class="text-danger">*</span>
                         </p>
-                        
+
                       </div>
-                      
+
                     </div>
-                    
+
                     <!-- Input fields row -->
                     <div class="row">
                       <div class="col-12">
-                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
-                          placeholder="Min 20 characters"></textarea>
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
+                          rows="3" placeholder="Min 20 characters"></textarea>
                       </div>
                     </div>
-                    
+
                     <div v-if="reviewDescError !== ''" class="col-md-12">
                       <p class="text-danger text-start mb-2 fw-bold">
                         {{ reviewDescError }}
@@ -1233,11 +1248,11 @@
                           </div>
                         </div>
                       </div>
-                      
+
                       <!-- Fade overlay with call-to-action -->
                       <div class="preview-fade-overlay">
                         <div class="preview-cta">
-                          <span class="fst-italic" >Extend and add more details!</span>
+                          <span class="fst-italic">Extend and add more details!</span>
                           <i class="bi bi-chevron-down ms-2"></i>
                         </div>
                       </div>
@@ -1346,15 +1361,18 @@
                     <div class="col justify-content-start mb-3">
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Aroma</p>
-                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1" placeholder="Describe the aroma..."></textarea>
+                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1"
+                          placeholder="Describe the aroma..."></textarea>
                       </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Taste</p>
-                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1" placeholder="Describe the taste..."></textarea>
+                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1"
+                          placeholder="Describe the taste..."></textarea>
                       </div>
                       <div class="form-group mb-2">
                         <p class="text-start mb-2 fw-bold">Finish</p>
-                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1" placeholder="Describe the finish..."></textarea>
+                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1"
+                          placeholder="Describe the finish..."></textarea>
                       </div>
                     </div>
                   </div>
@@ -1541,17 +1559,20 @@
                   Close
                 </button>
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
-                <div v-if="specified_listing.drinkType !== 'Wine'"> 
+                <div v-if="specified_listing.drinkType !== 'Wine'">
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                   <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
-                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                 </div>
                 <div v-else>
                   <button type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                 </div>
               </div>
@@ -1560,10 +1581,9 @@
         </div>
         <!-- END OF MODAL -->
 
-        <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" :loading="vintage_listings.loading" :error="vintage_listings.error"
-          :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" 
-          @vintage-selected="onVintageSelected"  
-        />
+        <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+          :loading="vintage_listings.loading" :error="vintage_listings.error" :drinkType="specified_listing.drinkType"
+          :listings="vintage_listings.listings" @vintage-selected="onVintageSelected" />
 
         <!-- reviews -->
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
@@ -1577,7 +1597,7 @@
               </button>
             </div>
           </div>
-          
+
           <hr />
           <!-- photos posted by other users -->
           <h5 class="text-start" style="font-weight: bold; color: black">
@@ -1591,7 +1611,7 @@
                   userType == 'user' && userID !== 'defaultUser' && !inEdit
                 " class="row">
                   <!-- Add button -->
-                  <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                  <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 p-0 mobile-px-1">
                     <div data-bs-toggle="modal" data-bs-target="#reviewModal">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="#83A9E8" class="bi bi-plus-lg review-image"
                         viewBox="0 0 16 16" style="cursor: pointer">
@@ -1601,8 +1621,9 @@
                     </div>
                   </div>
                   <div v-for="review in filteredReviewsWithImages" :key="review.id"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review.photo" alt="Review photo" class="review-image" loading="lazy" />
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    <img :src="review.photo" alt="Review photo" class="review-image clickable-image" loading="lazy"
+                      @click="enlargeImage(review.photo, `Review by user - ${review.id}`)" style="cursor: pointer" />
                   </div>
 
                 </div>
@@ -1620,9 +1641,11 @@
                   </div>
                   <!-- Display up to 5 photos -->
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
-                      loading="lazy" />
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    <img :src="review['photo'] || defaultPhoto" alt=""
+                      class="review-image shadow-effect clickable-image" loading="lazy"
+                      @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
+                      style="cursor: pointer" />
                   </div>
                 </div>
 
@@ -1630,11 +1653,25 @@
                 <div v-else class="row">
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
-                      loading="lazy" />
+                    <img :src="review['photo'] || defaultPhoto" alt=""
+                      class="review-image shadow-effect clickable-image" loading="lazy"
+                      @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
+                      style="cursor: pointer" />
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- NEW: Vue-based Image Enlargement Modal -->
+          <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
+            <div class="image-modal-container" @click.stop>
+              <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+              </button>
+              <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
             </div>
           </div>
 
@@ -1668,13 +1705,15 @@
                         {{ getUserRankFromReview(review) }}
                       </span>
                       &nbsp;rated <span style="color: #f0b358">★</span>
-                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": "" }}</b>
+                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + "Vintage": ""}}</b>
 
                       <!-- Location -->
-                      <span v-if="review.location || (review.location === null && review.address && review.address.toLowerCase() === 'home')">
+                      <span
+                        v-if="review.location || (review.location === null && review.address && review.address.toLowerCase() === 'home')">
                         at
-                        <router-link v-if="review.location === null && review.address && review.address.toLowerCase() === 'home'" :to="'/home/profile'" 
-                          class="text-decoration-none text-dark">
+                        <router-link
+                          v-if="review.location === null && review.address && review.address.toLowerCase() === 'home'"
+                          :to="'/home/profile'" class="text-decoration-none text-dark">
                           <b>🏠 Home</b>
                         </router-link>
                         <router-link v-else-if="checkVenue(review.address) !== ''"
@@ -1821,13 +1860,15 @@
                     </button>
 
                     <ul class="dropdown-menu">
-                      <li v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
+                      <li
+                        v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item" @click="setUpdateID(review)" data-bs-toggle="modal"
                           data-bs-target="#reviewModal">
                           Edit
                         </button>
                       </li>
-                      <li v-if="(review.userID === parseInt(userID) && Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)) || review.userID === correctModerator || (user && user.isAdmin)">
+                      <li
+                        v-if="(review.userID === parseInt(userID) && Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)) || review.userID === correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item text-danger" @click="setDeleteID(review)" data-bs-toggle="modal"
                           data-bs-target="#deleteReview">
                           Delete
@@ -1923,7 +1964,8 @@
                           <b>Location</b>
                         </div>
                         <div class="col-9">
-                          <span v-if="detailedReview.location === null && detailedReview.address && detailedReview.address.toLowerCase() === 'home'">
+                          <span
+                            v-if="detailedReview.location === null && detailedReview.address && detailedReview.address.toLowerCase() === 'home'">
                             <router-link to="/home/profile" style="color: inherit">
                               <b>🏠 Home</b>
                             </router-link>
@@ -1990,7 +2032,9 @@
                         </div>
                       </div>
                       <!-- Variant -->
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row mt-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="row mt-2">
                         <div class="col-3">
                           <b>Vintage</b>
                         </div>
@@ -2077,7 +2121,7 @@
                         </div>
                         <div class="col-9">
                           <span v-for="(
-                            tag, index
+tag, index
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
                             style="background-color: #f0b358; color: black">{{ tag }}</span>
                           <!--tzh changed grey to #F0B358-->
@@ -2153,14 +2197,17 @@
               </div>
               <!-- modal end -->
 
-              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog">
                   <!-- SHARE SUCCESS -->
                   <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                          d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
                       </svg>
                       <br>
                       <span>{{ shareSuccessMessage }}</span>
@@ -2175,15 +2222,18 @@
                   <!-- SHARE ERROR -->
                   <div class="text-danger fw-bold fs-5 modal-content" v-if="shareError">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                          d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
                       </svg>
                       <br>
                       <span>{{ shareErrorMessage }}</span>
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
+                      <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal"
+                        data-bs-dismiss="modal">
                         Close
                       </button>
                     </div>
@@ -2269,7 +2319,7 @@
                       </span>
                     </div>
                   </div>
-                </div> 
+                </div>
                 <div v-else>
                   <p class="mb-1">We couldn't find any bars with this listing.</p>
                 </div>
@@ -2386,11 +2436,7 @@
 
 
 
-  <BadgePopup 
-    :badges="earnedBadges" 
-    :show="showBadgePopup" 
-    @close="closeBadgePopup"
-  />
+  <BadgePopup :badges="earnedBadges" :show="showBadgePopup" @close="closeBadgePopup" />
   <!-- end of your drinks shelf & brands you follow -->
 
 </template>
@@ -2873,7 +2919,7 @@ export default {
       shareSuccessMessage: "",
       shareErrorMessage: "",
 
-      isSubmittingReview: false, 
+      isSubmittingReview: false,
 
       VARIANT_DRNK_TYP,
 
@@ -2882,6 +2928,10 @@ export default {
 
       // Paywall controls
       paywallScrollHandler: null,
+
+      showImageModal: false,
+      enlargedImageSrc: '',
+      enlargedImageAlt: ''
     };
   },
   mounted() {
@@ -2899,7 +2949,7 @@ export default {
 
       // Restore cached review data if present
       this.restoreReviewCache();
-      
+
       // Initialize auto-resize functionality for textareas
       this.$nextTick(() => {
         this.setupAutoResize();
@@ -2911,15 +2961,23 @@ export default {
     } catch (error) {
       console.error(error);
     }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.showImageModal) {
+        this.closeImageModal();
+      }
+    });
   },
   beforeUnmount() {
     // Clean up paywall scroll controls
     this.cleanupPaywallControls();
-    
+
     // Clean up Google Maps observer
     if (this._googleMapsObserver) {
       this._googleMapsObserver.disconnect();
     }
+
+    document.removeEventListener('keydown', this.handleEscKey);
   },
   computed: {
     filteredOptions() {
@@ -2946,8 +3004,8 @@ export default {
       if (!this.selectedVintage || this.selectedVintage === 'Show All') {
         return this.reviews; // or whatever your base review list is
       }
-      
-      return this.reviews.filter(review => 
+
+      return this.reviews.filter(review =>
         review.variant === parseInt(this.selectedVintage)
       );
     },
@@ -2965,35 +3023,35 @@ export default {
         averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
       }
     }
-  
+
   },
   watch: {
-    '$route.params.listingID': function(newId, oldId) {
+    '$route.params.listingID': function (newId, oldId) {
       console.log('Route listing ID changed from', oldId, 'to', newId);
       if (newId !== oldId) {
         // Reset data loading state
         this.dataLoaded = false;
         this.listingExists = true;
-        
+
         // Update listing ID
         this.listing_id = newId;
         this.bookmarkListingID = newId;
-        
+
         // Clear previous data
         this.reviews = [];
         this.filteredReviewsWithImages = [];
         this.specified_listing = {};
-        
+
         // Reload data
         this.checkListingExists();
-        
+
         // Clear review cache for the previous listing
         this.clearReviewCache();
       }
     },
 
     // Watch for user login/logout changes
-    userID: function(newUserID, oldUserID) {
+    userID: function (newUserID, oldUserID) {
       if (newUserID !== oldUserID) {
         if (newUserID === 'defaultUser') {
           // User logged out, setup paywall
@@ -3043,7 +3101,7 @@ export default {
     selectedLocation: 'cacheReviewForm',
     selectedLocationAddress: 'cacheReviewForm',
     image64: 'cacheReviewForm',
-    
+
     // Watch for when modal becomes visible
     addingReview(newVal) {
       if (newVal) {
@@ -3052,7 +3110,7 @@ export default {
         });
       }
     },
-    
+
     // Watch for when extend review section becomes visible
     extendReview(newVal) {
       if (newVal) {
@@ -3072,14 +3130,14 @@ export default {
       setTimeout(() => {
         const textareas = document.querySelectorAll('.auto-resize-textarea');
         console.log('Found textareas:', textareas.length); // Debug log
-        
+
         textareas.forEach(textarea => {
           // Remove existing listeners to avoid duplicates
           textarea.removeEventListener('input', this.autoResize);
-          
+
           // Auto-resize on input
           textarea.addEventListener('input', this.autoResize);
-          
+
           // Set initial height
           this.autoResize({ target: textarea });
         });
@@ -3089,16 +3147,16 @@ export default {
     // Auto-resize function for textareas
     autoResize(event) {
       if (!event || !event.target) return;
-      
+
       const textarea = event.target;
-      
+
       // Reset height to auto to get correct scrollHeight
       textarea.style.height = 'auto';
-      
+
       // Set new height based on content
       const newHeight = Math.max(38, textarea.scrollHeight);
       textarea.style.height = newHeight + 'px';
-      
+
       console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
     },
 
@@ -3340,7 +3398,7 @@ export default {
         // remove caching for wine type due to variants 
         if (this.specified_listing.drinkType !== 'Wine') {
           this.specificReview = this.getLoggedUserReview();
-        } 
+        }
 
         this.formatDeepDiveLink();
       } catch (error) {
@@ -4086,7 +4144,7 @@ export default {
         this.photo = this.photo.trim();
       }
       if (this.variant !== "") {
-        this.variant = this.variant.trim();        
+        this.variant = this.variant.trim();
       }
       if (this.aroma !== "") {
         this.aroma = this.aroma.trim();
@@ -4433,15 +4491,15 @@ export default {
 
         if (response.data.badgeUpdate) {
           const badge = response.data.badgeUpdate;
-          
+
           // Show popup only for positive changes
-          const shouldShowPopup = 
+          const shouldShowPopup =
             badge.isNewBadge ||           // New badge earned
             badge.isLevelUp ||            // Level up
             (!badge.removed &&           // Not removed
-            badge.change !== "decrease" && // Not a decrease
-            !badge.isLevelDown);         // Not a level down
-            
+              badge.change !== "decrease" && // Not a decrease
+              !badge.isLevelDown);         // Not a level down
+
           if (shouldShowPopup) {
             this.earnedBadges = [badge];
             this.showBadgePopup = true;
@@ -4843,7 +4901,7 @@ export default {
     onLocationInput(event) { // eslint-disable-line no-unused-vars
       const inputValue = typeof event === 'string' ? event : event.target.value; // eslint-disable-line no-unused-vars
       this.locationInputValue = inputValue;
-      
+
       // Clear any previous selection if user is typing something new
       if (this.selectedLocationType && inputValue !== 'Home' && inputValue !== this.selectedLocation) {
         this.selectedLocationType = '';
@@ -4861,7 +4919,7 @@ export default {
     onLocationFocus() {
       // Always show home option when field is focused
       this.showHomeOption = true;
-      
+
       // Adjust Google Maps autocomplete position after DOM update
       this.$nextTick(() => {
         this.adjustGoogleMapsPosition();
@@ -4913,7 +4971,7 @@ export default {
         const pacContainer = document.querySelector('.pac-container');
         if (pacContainer) {
           console.log('Adjusting Google Maps position, showHomeOption:', this.showHomeOption); // Debug log
-          
+
           if (this.showHomeOption) {
             // Get the input field position to calculate proper offset
             const inputField = this.$refs.locationInput?.$el || document.querySelector('[placeholder="Tag where you tasted this drink"]');
@@ -4921,7 +4979,7 @@ export default {
               const inputRect = inputField.getBoundingClientRect();
               const homeDropdown = document.querySelector('.home-option-dropdown');
               const homeDropdownHeight = homeDropdown ? homeDropdown.offsetHeight : 60;
-              
+
               // Move the autocomplete dropdown below the home option dropdown
               pacContainer.style.position = 'absolute';
               pacContainer.style.top = (inputRect.bottom + homeDropdownHeight + window.scrollY) + 'px';
@@ -5304,11 +5362,165 @@ export default {
       this.earnedBadges = [];
     },
 
+    // Handle image enlargement
+    enlargeImage(imageSrc, altText) {
+      this.enlargedImageSrc = imageSrc;
+      this.enlargedImageAlt = altText;
+      this.showImageModal = true;
+      
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
+    },
+    
+    // Close modal
+    closeImageModal() {
+      this.showImageModal = false;
+      this.enlargedImageSrc = '';
+      this.enlargedImageAlt = '';
+      
+      // Restore body scrolling
+      document.body.style.overflow = '';
+    }
+
   },
 };
 </script>
 
 <style scoped>
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  animation: fadeIn 0.3s ease;
+}
+
+.image-modal-container {
+  position: relative;
+  max-width: 80vw;
+  max-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.enlarged-image {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: zoomIn 0.3s ease;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  background: rgba(0, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  z-index: 1;
+}
+
+.image-modal-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.8); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* Clickable images */
+.clickable-image {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.clickable-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Plus sign styling - match the image dimensions */
+/* .add-button {
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%; 
+  position: relative;
+  border-radius: 8px;
+  background-color: rgba(131, 169, 232, 0.1);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: block;
+} */
+
+.add-button:hover {
+  background-color: rgba(131, 169, 232, 0.2);
+  border-color: #6c94d6;
+}
+
+.add-button svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+}
+
+/* Ensure images maintain consistent sizing */
+.review-image:not(.add-button) {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .image-modal-container {
+    max-width: 95vw;
+    max-height: 70vh;
+  }
+  
+  .enlarged-image {
+    max-height: 70vh;
+  }
+  
+  .image-modal-close {
+    top: -30px;
+    right: -15px;
+    width: 35px;
+    height: 35px;
+  }
+}
+
 .venue-item {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
@@ -5466,7 +5678,8 @@ export default {
 
 .preview-content {
   padding: 20px;
-  height: 200px; /* Fixed height for preview */
+  height: 200px;
+  /* Fixed height for preview */
   overflow: hidden;
   position: relative;
 }
@@ -5487,11 +5700,11 @@ export default {
   left: 10px;
   right: 10px;
   height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #dee2e6 20%, 
-    #dee2e6 80%, 
-    transparent 100%);
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #dee2e6 20%,
+      #dee2e6 80%,
+      transparent 100%);
   transform: translateY(-50%);
 }
 
@@ -5500,15 +5713,18 @@ export default {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 140px; /* Increased height for stronger fade */
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.4) 30%, /* Earlier fade start */
-    rgba(255, 255, 255, 0.8) 60%, 
-    rgba(255, 255, 255, 0.95) 80%,
-    rgba(255, 255, 255, 1) 100%); /* Stronger fade */
+  height: 140px;
+  /* Increased height for stronger fade */
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 30%,
+      /* Earlier fade start */
+      rgba(255, 255, 255, 0.8) 60%,
+      rgba(255, 255, 255, 0.95) 80%,
+      rgba(255, 255, 255, 1) 100%);
+  /* Stronger fade */
   display: flex;
-  align-items: start; 
+  align-items: start;
   justify-content: center;
   padding: 15px;
 }
@@ -5516,26 +5732,36 @@ export default {
 .preview-cta {
   color: #333;
   font-size: 1rem;
-  font-weight: 900; /* Extra bold */
+  font-weight: 900;
+  /* Extra bold */
   text-align: center;
-  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2), 
-               0px 0px 12px rgba(0, 0, 0, 0.3),
-               1px 1px 4px rgba(0, 0, 0, 0.3); /* Heavy shadow */
+  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
+    0px 0px 12px rgba(0, 0, 0, 0.3),
+    1px 1px 4px rgba(0, 0, 0, 0.3);
+  /* Heavy shadow */
   transition: all 0.3s ease;
-  background: none; /* Remove background */
-  border: none; /* Remove border */
-  padding: 0; /* Remove padding */
-  border-radius: 0; /* Remove border radius */
-  backdrop-filter: none; /* Remove backdrop filter */
-  box-shadow: none; /* Remove box shadow */
+  background: none;
+  /* Remove background */
+  border: none;
+  /* Remove border */
+  padding: 0;
+  /* Remove padding */
+  border-radius: 0;
+  /* Remove border radius */
+  backdrop-filter: none;
+  /* Remove backdrop filter */
+  box-shadow: none;
+  /* Remove box shadow */
 }
 
 .extended-preview-container:hover {
-  color: #000; /* Darker on hover */
+  color: #000;
+  /* Darker on hover */
   transform: translateY(-1px);
-  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9), 
-               0px 0px 15px rgba(0, 0, 0, 0.7),
-               2px 2px 6px rgba(0, 0, 0, 1); /* Even heavier shadow on hover */
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
+    0px 0px 15px rgba(0, 0, 0, 0.7),
+    2px 2px 6px rgba(0, 0, 0, 1);
+  /* Even heavier shadow on hover */
 }
 
 
@@ -5551,19 +5777,22 @@ export default {
     padding: 15px;
     height: 150px;
   }
-  
+
   .preview-fade-overlay {
-    height: 100px; /* Increased for mobile too */
+    height: 100px;
+    /* Increased for mobile too */
   }
-  
+
   .preview-cta {
     font-size: 0.9rem;
-    font-weight: 800; /* Slightly less bold on mobile but still heavy */
-    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8), 
-                 0px 0px 10px rgba(0, 0, 0, 0.6),
-                 1px 1px 3px rgba(0, 0, 0, 0.9); /* Adjusted for mobile */
+    font-weight: 800;
+    /* Slightly less bold on mobile but still heavy */
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
+      0px 0px 10px rgba(0, 0, 0, 0.6),
+      1px 1px 3px rgba(0, 0, 0, 0.9);
+    /* Adjusted for mobile */
   }
-  
+
   .preview-color-btn {
     width: 16px !important;
     height: 16px !important;
@@ -5578,7 +5807,7 @@ export default {
   max-height: 1000px;
 }
 
-.paywall-container > *:not(.paywall-overlay) {
+.paywall-container>*:not(.paywall-overlay) {
   pointer-events: none;
   user-select: none;
 }
@@ -5602,18 +5831,16 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 70%,
-    rgba(255, 255, 255, 0.1) 75%,
-    rgba(255, 255, 255, 0.3) 80%,
-    rgba(255, 255, 255, 0.6) 85%,
-    rgba(255, 255, 255, 0.8) 90%,
-    rgba(255, 255, 255, 0.95) 95%,
-    rgba(255, 255, 255, 1) 100%,
-    rgba(255, 255, 255, 1) 100%
-  );
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.1) 75%,
+      rgba(255, 255, 255, 0.3) 80%,
+      rgba(255, 255, 255, 0.6) 85%,
+      rgba(255, 255, 255, 0.8) 90%,
+      rgba(255, 255, 255, 0.95) 95%,
+      rgba(255, 255, 255, 1) 100%,
+      rgba(255, 255, 255, 1) 100%);
   backdrop-filter: blur(1.15px);
 }
 
