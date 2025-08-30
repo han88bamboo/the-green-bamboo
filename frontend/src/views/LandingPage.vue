@@ -233,6 +233,7 @@
             </div>
         </div>
     </section>
+    <LookingFor />
 
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
@@ -1200,6 +1201,7 @@ import { useSearch } from '@/composables/navbar/useSearch';
 
 import NavBar from "@/components/NavBar.vue";
 // import AutocompleteSearch from '@/components/AutocompleteSearch.vue';
+import LookingFor from '@/components/landing_page/LookingFor.vue';
 import editorialSection from '@/components/landing_page/editorialSection.vue';
 import LandingPageAutocompleteSearch from '@/components/LandingPageAutocompleteSearch.vue';
 
@@ -1207,6 +1209,7 @@ export default {
     components: {
         NavBar,
         // AutocompleteSearch,
+        LookingFor,
         editorialSection,
         LandingPageAutocompleteSearch
     },
@@ -1407,26 +1410,26 @@ export default {
         }
         this.loadData();
 
-        // Initialize mega menu positioning
-        this.$nextTick(() => {
-            this.handleMegaMenuPosition();
+        // // Initialize mega menu positioning
+        // this.$nextTick(() => {
+        //     this.handleMegaMenuPosition();
             
-            // Add resize listener with debouncing
-            this.debouncedPositionHandler = this.debounce(this.handleMegaMenuPosition, 150);
-            window.addEventListener('resize', this.debouncedPositionHandler);
+        //     // Add resize listener with debouncing
+        //     this.debouncedPositionHandler = this.debounce(this.handleMegaMenuPosition, 150);
+        //     window.addEventListener('resize', this.debouncedPositionHandler);
             
-            // Add scroll listener for repositioning on scroll
-            window.addEventListener('scroll', this.debouncedPositionHandler, { passive: true });
-        });
+        //     // Add scroll listener for repositioning on scroll
+        //     window.addEventListener('scroll', this.debouncedPositionHandler, { passive: true });
+        // });
     },
     
-    beforeUnmount() {
-        // Clean up event listeners
-        if (this.debouncedPositionHandler) {
-            window.removeEventListener('resize', this.debouncedPositionHandler);
-            window.removeEventListener('scroll', this.debouncedPositionHandler);
-        }
-    },
+    // beforeUnmount() {
+    //     // Clean up event listeners
+    //     if (this.debouncedPositionHandler) {
+    //         window.removeEventListener('resize', this.debouncedPositionHandler);
+    //         window.removeEventListener('scroll', this.debouncedPositionHandler);
+    //     }
+    // },
     computed: {
         safeProfileRoute() {
             // If userID is not present, route to signup instead
@@ -1448,124 +1451,19 @@ export default {
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         },
 
-        // Mobile category menu toggle for tap-to-open behavior
-        toggleMobileCategoryMenu(categoryId, event) {
-            // Only handle mobile behavior (screen width <= 991px)
-            if (window.innerWidth <= 991) {
-                event.preventDefault();
-                
-                // Close any currently open mobile menu first
-                if (this.activeMobileCategoryId === categoryId) {
-                    this.activeMobileCategoryId = null;
-                } else {
-                    this.activeMobileCategoryId = categoryId;
-                    
-                    // Position the dropdown to avoid viewport overflow
-                    this.$nextTick(() => {
-                        this.handleMobileMegaMenuPosition(categoryId);
-                    });
-                }
-            }
-        },
-
-        // Handle mobile mega menu positioning
-        handleMobileMegaMenuPosition(categoryId) {
-            if (window.innerWidth <= 991) {
-                const categoryItem = document.querySelector(`.category-item[data-category="${categoryId}"]`);
-                const activeItem = document.querySelector(`.category-item[data-category="${categoryId}"] .mega-menu`);
-                if (!activeItem || !categoryItem) return;
-                
-                const viewportWidth = window.innerWidth;
-                const viewportHeight = window.innerHeight;
-                
-                // Reset positioning and classes
-                activeItem.style.left = '50%';
-                activeItem.style.right = 'auto';
-                activeItem.style.transform = 'translateX(-50%)';
-                activeItem.classList.remove('position-top');
-                
-                // Get positions after reset
-                const categoryRect = categoryItem.getBoundingClientRect();
-                const menuRect = activeItem.getBoundingClientRect();
-                
-                // Check for vertical overflow (similar to desktop logic)
-                const wouldOverflowBottom = (categoryRect.bottom + menuRect.height + 20) > viewportHeight;
-                
-                if (wouldOverflowBottom) {
-                    activeItem.classList.add('position-top');
-                    // Adjust transform for top positioning
-                    activeItem.style.transform = 'translateX(-50%) translateY(0)';
-                }
-                
-                // Check if menu would overflow right edge
-                const updatedMenuRect = activeItem.getBoundingClientRect();
-                if (updatedMenuRect.right > viewportWidth - 10) {
-                    activeItem.style.left = 'auto';
-                    activeItem.style.right = '0';
-                    if (wouldOverflowBottom) {
-                        activeItem.style.transform = 'translateX(0) translateY(0)';
-                    } else {
-                        activeItem.style.transform = 'translateX(0)';
-                    }
-                }
-                
-                // Check if menu would overflow left edge
-                if (updatedMenuRect.left < 10) {
-                    activeItem.style.left = '0';
-                    activeItem.style.right = 'auto';
-                    if (wouldOverflowBottom) {
-                        activeItem.style.transform = 'translateX(0) translateY(0)';
-                    } else {
-                        activeItem.style.transform = 'translateX(0)';
-                    }
-                }
-            }
-        },
-
-        // Check if mobile category is active
-        isMobileCategoryActive(categoryId) {
-            return this.activeMobileCategoryId === categoryId;
-        },
-
-        // Smart positioning for mega menu to avoid viewport overflow
-        handleMegaMenuPosition() {
-            if (window.innerWidth >= 992) { // Only for desktop
-                const categoryItems = document.querySelectorAll('.category-item');
-                
-                categoryItems.forEach(item => {
-                    const megaMenu = item.querySelector('.mega-menu');
-                    if (megaMenu) {
-                        // Reset positioning
-                        megaMenu.classList.remove('position-top');
-                        
-                        // Get positions
-                        const itemRect = item.getBoundingClientRect();
-                        const menuRect = megaMenu.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        
-                        // Check if menu would overflow bottom of viewport
-                        const wouldOverflow = (itemRect.bottom + menuRect.height + 20) > viewportHeight;
-                        
-                        if (wouldOverflow) {
-                            megaMenu.classList.add('position-top');
-                        }
-                    }
-                });
-            }
-        },
-
         // Debounced version of position handler for performance
-        debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
+        // debounce(func, wait) {
+        //     let timeout;
+        //     return function executedFunction(...args) {
+        //         const later = () => {
+        //             clearTimeout(timeout);
+        //             func(...args);
+        //         };
+        //         clearTimeout(timeout);
+        //         timeout = setTimeout(later, wait);
+        //     };
+        // },
+
         // Load data from the database (e.g., profile picture)
         async loadData(url) {
             try {
@@ -1975,7 +1873,7 @@ button.btn.selected {
 .hero-section {
     position: relative;
     width: 100%;
-    padding-top: 70%;
+    /* padding-top: 70%; */
     /* mobile default: 3:6 = 1:2 */
     /* overflow: hidden; */
 }
@@ -2010,18 +1908,14 @@ button.btn.selected {
     z-index: -1;
 }
 
-
-
-
 /* Your dropdown panel */
 .autocomplete-dropdown, 
-.dropdown-menu, 
-.mega-dropdown-panel {    /* adjust selector to your component */
+.dropdown-menu {    /* adjust selector to your component */
   position: absolute;     /* or fixed if you prefer */
   z-index: 2000;          /* > hero & ribbon */
 }
 
-  .hero-wrapper {
+.hero-wrapper {
   position: relative;
   overflow: hidden;
 }
@@ -2611,7 +2505,7 @@ button.btn.selected {
 }
 
 
-
+/* lookging for */ 
 .category-ribbon-nav {
   display: flex;
   flex-wrap: wrap;   /* ✅ allow items to wrap to new rows */
