@@ -11,8 +11,7 @@
 #   /addComment [POST], /editComment [POST], /deleteComment [DELETE]
 
 #   [Content Retrieval - On respective page] - not created yet
-#   /getListingsCommentsDetails [POST], /getReviewsCommentsDetails [POST]
-#   /checkUserLikedContent [GET]
+#   /getListingComments [GET], /getReviewComments [GET]
 
 # -----------------------------------------------------------------------------------------
 
@@ -769,7 +768,7 @@ def likeContent():
             # Retrieve the table name 
             table_name = get_table_name(content_type, "like")
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Insert the like into the appropriate table
 
@@ -873,7 +872,7 @@ def unlikeContent():
             table_name = get_table_name(content_type, "unlike")
 
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Delete the like from the appropriate table
             # If it is listingsLikes
@@ -958,12 +957,12 @@ def addComment():
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Retrieve the unique field name
             unique_field = get_unique_field(content_type)
             if not unique_field:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No unique field found"}), 400
 
             # Insert the comment into the appropriate table
             cursor.execute(f"""
@@ -1040,7 +1039,7 @@ def editComment():
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Update the comment in the appropriate table
             cursor.execute(f"""
@@ -1082,7 +1081,7 @@ def deleteComment():
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Delete the comment from the appropriate table
             cursor.execute(f"""
@@ -1113,7 +1112,7 @@ def deleteComment():
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
             if not table_name:
-                return jsonify({"error": "Invalid content type or user type"}), 400
+                return jsonify({"error": "No table found"}), 400
 
             # Delete the comment from the appropriate table
             cursor.execute(f"""
@@ -1130,5 +1129,129 @@ def deleteComment():
     except Exception as e:
         print("Error occurred while deleting comment:", e)
         return jsonify({"error": "Failed to delete comment"}), 500
+
+
+
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific listings and check if current user likes the listing
+@blueprint.route("/getListingComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
+def getListingComments(user_id, user_type, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Listing", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+            
+            # Retrieve the unique field
+            unique_field = get_unique_field("Listing")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            # Check if the current user likes the content
+
+            # Get the table name
+            likes_table = get_table_name("Listing", "like")
+
+            if not likes_table:
+                return jsonify({"error": "No table found"}), 400
+            
+            # Check if the user likes the content
+            cursor.execute(f"""
+                SELECT * FROM "{likes_table}"
+                WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
+            """, (content_id, user_id, user_type))
+            user_likes = cursor.fetchone() is not None
+            
+
+            return jsonify({
+                "comments": comments,
+                "userLiked": user_likes
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific review and check if current user liked the review
+@blueprint.route("/getReviewComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
+def getReviewComments(user_id, user_type, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Review", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("Review")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            # Check if the current user likes the content
+
+            # Get the table name
+            likes_table = get_table_name("Review", "like")
+
+            if not likes_table:
+                return jsonify({"error": "No table found"}), 400
+
+            # Check if the user likes the content
+            cursor.execute(f"""
+                SELECT upvotes FROM "{likes_table}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            review_upvotes = cursor.fetchone() 
+
+            print(review_upvotes)
+
+            # Loop through upvotes to check if user id is present
+            user_liked = False
+            if review_upvotes:
+                for upvote in review_upvotes['upvotes']:
+                    if upvote['userId'] == user_id:
+                        user_liked = True
+                        break
+
+            return jsonify({
+                "comments": comments,
+                "userLiked": user_liked
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
 
 
