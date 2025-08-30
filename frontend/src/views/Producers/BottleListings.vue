@@ -1663,18 +1663,6 @@
             </div>
           </div>
 
-          <!-- NEW: Vue-based Image Enlargement Modal -->
-          <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
-            <div class="image-modal-container" @click.stop>
-              <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" />
-                </svg>
-              </button>
-              <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
-            </div>
-          </div>
-
           <hr />
 
           <div class="row mb-3" v-for="review in filteredReviews" v-bind:key="review.id">
@@ -2439,6 +2427,18 @@ tag, index
   <BadgePopup :badges="earnedBadges" :show="showBadgePopup" @close="closeBadgePopup" />
   <!-- end of your drinks shelf & brands you follow -->
 
+
+  <!-- NEW: Vue-based Image Enlargement Modal -->
+  <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
+    <div class="image-modal-container" @click.stop>
+      <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
+    </div>
+  </div>
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
