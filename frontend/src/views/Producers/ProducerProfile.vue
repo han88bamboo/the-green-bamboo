@@ -6673,7 +6673,6 @@ export default {
     '$route.params.producerID': {
       handler: function(newId, oldId) {
         if (newId && newId !== oldId) {
-          console.log('we need to reset now');
           this.resetComponentState();
           this.loadData();
         }
