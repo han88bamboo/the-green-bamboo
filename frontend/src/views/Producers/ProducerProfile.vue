@@ -6150,7 +6150,7 @@ export default {
                     },
                   }
                 );
-                // console.log("DEBUG: Profile view count updated:", response.data);
+                console.log("DEBUG: Profile view count updated:", response.data);
               } catch (error) {
                 console.error("ERROR: Failed to update profile count:", error);
               }
@@ -6170,7 +6170,7 @@ export default {
                     },
                   }
                 );
-                // console.log("DEBUG: New profile view added:", response.data);
+                console.log("DEBUG: New profile view added:", response.data);
               } catch (error) {
                 console.error("ERROR: Failed to add new profile view:", error);
               }
