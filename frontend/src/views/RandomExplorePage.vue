@@ -2189,6 +2189,8 @@ export default {
       pUpdateLastID: null,
       reviewsLastID: null,
       vUpdateLastID: null,
+      pReviewLastID: null,
+      vReviewLastID: null,
       moreContent: true,
 
       // Contains ids of content which the user has liked for the 4 categories
@@ -2196,6 +2198,8 @@ export default {
       reviewsLikes: [],
       producersUpdatesLikes: [],
       venuesUpdatesLikes: [],
+      producerReviewsLikes: [],
+      venueReviewsLikes: [],
 
       // For comment editing
       newComment: {},
@@ -3066,7 +3070,9 @@ methods: {
             newListingsLastID: this.newListingsLastID,
             pUpdateLastID: this.pUpdateLastID,
             reviewsLastID: this.reviewsLastID,
-            vUpdateLastID: this.vUpdateLastID
+            vUpdateLastID: this.vUpdateLastID,
+            pReviewLastID: this.pReviewLastID,
+            vReviewLastID: this.vReviewLastID
           }
         );
 
@@ -3074,6 +3080,7 @@ methods: {
           this.moreContent = false;
         } else {
           this.contents.push(...response.data.content);
+          console.log(response.data.content);
 
           // Update last IDs for pagination
           this.datedListingLastID = response.data.datedListingLastID;
@@ -3081,12 +3088,16 @@ methods: {
           this.pUpdateLastID = response.data.pUpdateLastID;
           this.reviewsLastID = response.data.reviewsLastID;
           this.vUpdateLastID = response.data.vUpdateLastID;
+          this.pReviewLastID = response.data.pReviewLastID;
+          this.vReviewLastID = response.data.vReviewLastID;
 
           // Update likes for each category
           this.listingsLikes =  this.listingsLikes.concat(response.data.listingsLikes || []);
           this.reviewsLikes = this.reviewsLikes.concat(response.data.reviewsLikes || []);
           this.producersUpdatesLikes = this.producersUpdatesLikes.concat(response.data.producersUpdatesLikes || []);
           this.venuesUpdatesLikes = this.venuesUpdatesLikes.concat(response.data.venuesUpdatesLikes || []);
+          this.producerReviewsLikes = this.producerReviewsLikes.concat(response.data.producerReviewsLikes || []);
+          this.venueReviewsLikes = this.venueReviewsLikes.concat(response.data.venueReviewsLikes || []);
         }
         
       }

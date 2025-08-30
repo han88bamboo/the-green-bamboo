@@ -97,8 +97,8 @@ def get_likes_count(content_id, content_type):
         # Get unique field 
         unique_field = get_unique_field(content_type)
 
-        # If table name is reviewsUserVotes
-        if table_name == "reviewsUserVotes":
+        # If table name is reviewsUserVotes or producerReviewsUserVotes or venueReviewsUserVotes
+        if table_name == "reviewsUserVotes" or table_name == "producerReviewsUserVotes" or table_name == "venueReviewsUserVotes":
             cursor.execute(f"""
                            SELECT upvotes FROM "{table_name}"
                            WHERE "id" = %s
@@ -134,10 +134,7 @@ def get_likes_count(content_id, content_type):
 
 # Get a list of content id user has liked based on a list of content ids given
 def get_liked_content_ids(user_id, user_type, content_type, content_ids):
-    """
-    Returns a list of content IDs liked by a given user.
-    Works for reviewsUserVotes, producerUpdateLikes, venueUpdateLikes, listingsLikes, 88BContentLikes.
-    """
+
     conn = g.db
     with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 
@@ -145,11 +142,11 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
         table_name = get_table_name(content_type, "like")
         unique_field = get_unique_field(content_type)
 
-        # ---------- reviewsUserVotes ----------
-        if table_name == "reviewsUserVotes" and user_type == "user":
-            cursor.execute("""
+        # ---------- reviewsUserVotes or producerReviewsUserVotes or venueReviewsUserVotes ----------
+        if (table_name == "reviewsUserVotes" or table_name == "producerReviewsUserVotes" or table_name == "venueReviewsUserVotes") and user_type == "user":
+            cursor.execute(f"""
                 SELECT "reviewId", "upvotes"
-                FROM "reviewsUserVotes"
+                FROM "{table_name}"
                 WHERE "reviewId" = ANY(%s)
             """, (content_ids,))
             rows = cursor.fetchall()
@@ -160,6 +157,7 @@ def get_liked_content_ids(user_id, user_type, content_type, content_ids):
                 if user_id in [upvote['userId'] for upvote in row['upvotes']]:
                     liked_review_ids.append(row['reviewId'])
             return liked_review_ids
+
 
         # ---------- producerUpdateLikes / venueUpdateLikes ----------
         if table_name in ("producerUpdateLikes", "venueUpdateLikes"):
@@ -202,6 +200,18 @@ def get_table_name(content_type, feature):
         elif feature == "comment":
             return "listingReviewsComments"
         
+    elif content_type == "pReview":
+        if feature == "like" or feature == "unlike":
+            return "producerReviewsUserVotes"
+        elif feature == "comment":
+            return "producerReviewsComments"
+
+    elif content_type == "vReview":
+        if feature == "like" or feature == "unlike":
+            return "venueReviewsUserVotes"
+        elif feature == "comment":
+            return "venueReviewsComments"
+
     elif content_type == "pUpdate":
         if feature == "like" or feature == "unlike":
             return "producerUpdateLikes"
@@ -230,7 +240,7 @@ def get_unique_field(content_type):
     if content_type == "Listing":
         return "listingId"
 
-    elif content_type == "Review":
+    elif content_type == "Review" or content_type == "pReview" or content_type == "vReview":
         return "reviewId"
 
     elif content_type == "pUpdate":
@@ -290,12 +300,11 @@ def getRandomListings(user_id, user_type):
             cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
             listings_data = cursor.fetchall()
 
-            # Determine if there are 10 records for listings from random date
             if len(listings_data) < num_records:
 
                 # Get listings that have been created today
                 # Set random limit
-                limit = random.randint(2, 10)
+                limit = random.randint(4, 10)
                 cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
                 additional_listings = cursor.fetchall()
                 listings_data.extend(additional_listings)
@@ -480,7 +489,7 @@ def getRandomListings(user_id, user_type):
         return jsonify({"error": str(e)}), 500
 
 # -----------------------------------------------------------------------------------------
-# [POST] Get next 30 random content - Edited By CP [25 Aug]
+# [POST] Get next 30 random content (will include producerReviews as well as venueReviews here)
 @blueprint.route("/getNext30", methods=['POST'])
 def getNext30():
     conn = g.db
@@ -510,11 +519,25 @@ def getNext30():
     else:
         vUpdateLastID = None
 
+    pReviewLastID = data.get('pReviewLastID')
+    if pReviewLastID:
+        pReviewLastID = int(pReviewLastID)
+    else:
+        pReviewLastID = None
+
+    vReviewLastID = data.get('vReviewLastID')
+    if vReviewLastID:
+        vReviewLastID = int(vReviewLastID)
+    else:
+        vReviewLastID = None
+
     # Initialize list
     listings_data = []
     recent_reviews = []
     producers_updates = []
     venues_updates = []
+    producer_reviews = []
+    venue_reviews = []
 
     try:
 
@@ -600,7 +623,6 @@ def getNext30():
                     listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
 
 
-
             # Get reviews by users within the last 2 weeks after reviewsLastID
             random_records = random.randint(8, 12)
             cursor.execute("""
@@ -633,6 +655,68 @@ def getNext30():
 
                 # Get number of likes
                 review['totalLikes'] = get_likes_count(review['id'], 'Review')
+
+
+            # Get producer or venue reviews after *ReviewLastID
+            if limit > 0:
+
+                # Get producer reviews
+                cursor.execute("""
+                    SELECT * FROM "producerReviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND (%s IS NULL OR "id" > %s)
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (pReviewLastID, pReviewLastID, 5))
+                producer_reviews = cursor.fetchall()
+
+                # Get venue reviews
+                cursor.execute("""
+                    SELECT * FROM "venueReviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND (%s IS NULL OR "id" > %s)
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (vReviewLastID, vReviewLastID, 5))
+                venue_reviews = cursor.fetchall()
+
+                # Get producerName and photo
+                if producer_reviews:
+                    for review in producer_reviews:
+                        cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (review['producerID'],))
+                        producer = cursor.fetchone()
+                        review['producerName'] = producer['producerName'] if producer else None
+                        review['producerPhoto'] = producer['photo'] if producer else None
+
+                        review['contentType'] = 'pReview'
+
+                        # Get top comments
+                        review['topComments'] = get_top_comments(review['id'], 'pReview')
+
+                        # Get number of likes
+                        review['totalLikes'] = get_likes_count(review['id'], 'pReview')
+
+                # Get venueName and photo
+                if venue_reviews:
+                    for review in venue_reviews:
+                        cursor.execute('SELECT "venueName", "photo" FROM "venues" WHERE "id" = %s', (review['venueID'],))
+                        venue = cursor.fetchone()
+                        review['venueName'] = venue['venueName'] if venue else None
+                        review['venuePhoto'] = venue['photo'] if venue else None
+
+                        review['contentType'] = 'vReview'
+
+                        # Get top comments
+                        review['topComments'] = get_top_comments(review['id'], 'vReview')
+
+                        # Get number of likes
+                        review['totalLikes'] = get_likes_count(review['id'], 'vReview')
+
+                # Set last IDs
+                pReviewLastID = producer_reviews[-1]['id'] if producer_reviews else None
+                vReviewLastID = venue_reviews[-1]['id'] if venue_reviews else None
+
+                limit -= len(producer_reviews) + len(venue_reviews)
 
             # Get producer or venue updates after *UpdateLastID
             if limit > 0:
@@ -715,7 +799,7 @@ def getNext30():
                     # Get number of likes
                     update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
 
-        if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) == 0:
+        if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) == 0:
             return jsonify([])
         
 
@@ -723,11 +807,14 @@ def getNext30():
         if user_id and user_type:
             listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
             reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in recent_reviews])
-            producers_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in producers_updates])
-            venues_updates_likes = get_liked_content_ids(user_id, user_type, "Update", [row["id"] for row in venues_updates])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "vUpdate", [row["id"] for row in venues_updates])
+
+            producer_reviews_likes = get_liked_content_ids(user_id, user_type, "pReview", [row["id"] for row in producer_reviews])
+            venue_reviews_likes = get_liked_content_ids(user_id, user_type, "vReview", [row["id"] for row in venue_reviews])
 
         # Shuffle data 
-        content = listings_data + recent_reviews + producers_updates + venues_updates
+        content = listings_data + recent_reviews + producers_updates + venues_updates + producer_reviews + venue_reviews
         random.shuffle(content)
 
         return jsonify({
@@ -740,7 +827,11 @@ def getNext30():
             "listingsLikes": listings_likes,
             "reviewsLikes": reviews_likes,
             "producersUpdatesLikes": producers_updates_likes,
-            "venuesUpdatesLikes": venues_updates_likes
+            "venuesUpdatesLikes": venues_updates_likes,
+            "producerReviewsLikes": producer_reviews_likes,
+            "venueReviewsLikes": venue_reviews_likes,
+            "pReviewLastID": pReviewLastID,
+            "vReviewLastID": vReviewLastID
         })
 
     except Exception as e:

@@ -1080,6 +1080,29 @@ CREATE TABLE "listingReviewsComments" (
 );
 
 
+-- ========= "producerReviewsComments" =========
+CREATE TABLE "producerReviewsComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "reviewId" INTEGER REFERENCES "producerReviews"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "producerReviewsComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- ========= "venueReviewsComments" ===========
+CREATE TABLE "venueReviewsComments" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER,
+    "userType" VARCHAR(50), -- e.g., 'producer', 'venue', 'user'
+    "reviewId" INTEGER REFERENCES "venueReviews"("id") ON DELETE CASCADE,
+    "parentId" INTEGER REFERENCES "venueReviewsComments"("id") ON DELETE CASCADE,
+    "comment" TEXT NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ========= "producerUpdateComments" =========
 CREATE TABLE "producerUpdateComments" (
     "id" SERIAL PRIMARY KEY,
