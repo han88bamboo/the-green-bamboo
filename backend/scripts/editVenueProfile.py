@@ -2033,29 +2033,29 @@ def uploadPDFMenu():
                 "message": "Venue not found"
             }), 404
         
-        # Get current PDF URL for cleanup if exists
-        current_pdf_url = venue.get('pdfMenuUrl') if isinstance(venue, dict) else venue[1]
+        # Get current menu URLs for cleanup if exists
+        current_menu_urls = venue.get('pdfMenuUrl') if isinstance(venue, dict) else venue[1]
         
-        # Upload new PDF to S3
-        pdf_url = s3pdfMenu.uploadBase64PDFToS3(pdf_menu_data)
+        # Convert PDF to images and upload to S3
+        menu_urls_json = s3pdfMenu.uploadBase64PDFToImageS3(pdf_menu_data)
         
-        if not pdf_url:
+        if not menu_urls_json:
             return jsonify({
                 "code": 500,
-                "message": "Failed to upload PDF to S3"
+                "message": "Failed to convert PDF to images and upload to S3"
             }), 500
         
-        # Delete old PDF from S3 if exists
-        if current_pdf_url:
+        # Delete old menu images from S3 if exists
+        if current_menu_urls:
             try:
-                s3pdfMenu.deletePDFFromS3(current_pdf_url)
+                s3pdfMenu.deleteMenuImagesFromS3(current_menu_urls)
             except Exception as e:
-                print(f"Warning: Failed to delete old PDF: {e}")
+                print(f"Warning: Failed to delete old menu images: {e}")
         
-        # Update venue with new PDF URL
+        # Update venue with new menu URLs JSON
         cursor.execute(
             'UPDATE venues SET "pdfMenuUrl" = %s WHERE id = %s',
-            (pdf_url, venue_id)
+            (menu_urls_json, venue_id)
         )
         
         conn.commit()
@@ -2063,8 +2063,8 @@ def uploadPDFMenu():
         return jsonify({
             "code": 201,
             "success": True,
-            "message": "PDF menu uploaded successfully!",
-            "menuUrl": pdf_url
+            "message": "PDF menu converted to images and uploaded successfully!",
+            "menuUrls": menu_urls_json
         }), 201
         
     except Exception as e:
@@ -2075,7 +2075,7 @@ def uploadPDFMenu():
         
         return jsonify({
             "code": 500,
-            "message": "An error occurred while uploading PDF menu"
+            "message": "An error occurred while converting PDF to images and uploading menu"
         }), 500
     
     finally:
