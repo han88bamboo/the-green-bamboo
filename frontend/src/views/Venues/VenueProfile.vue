@@ -573,55 +573,55 @@
 
                         <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
                             <span v-if="targetVenue.yearOpened">
-                                <strong>Year Opened:&nbsp;</strong> {{ targetVenue.yearOpened }}
+                                <strong>Year Opened: </strong> {{ targetVenue.yearOpened }}
                             </span>
                             <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)">
                                 | </span>
                             <span v-if="targetVenue.openForReservations">
-                                <strong>Open for Reservations:&nbsp;</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
+                                <strong>Open for Reservations: </strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
                             </span>
                             <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.website">
-                                <strong>Website:&nbsp;</strong> 
+                                <strong>Website: </strong> 
                                 <a :href="targetVenue.website" target="_blank">
                                     {{ targetVenue.website }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.instagram">
-                                <strong>Instagram:&nbsp;</strong> 
+                                <strong>Instagram: </strong> 
                                 <a :href="targetVenue.instagram" target="_blank">
                                     {{ formatInstagramHandle(targetVenue.instagram) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.facebook">
-                                <strong>Facebook:&nbsp;</strong> 
+                                <strong>Facebook: </strong> 
                                 <a :href="targetVenue.facebook" target="_blank">
                                     {{ formatFacebookHandle(targetVenue.facebook) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.tiktok">
-                                <strong>TikTok:&nbsp;</strong> 
+                                <strong>TikTok: </strong> 
                                 <a :href="targetVenue.tiktok" target="_blank">
                                     {{ formatTikTokHandle(targetVenue.tiktok) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.email">
-                                <strong>Email:&nbsp;</strong> 
+                                <strong>Email: </strong> 
                                 <a :href="`mailto:${targetVenue.email}`">
                                     {{ targetVenue.email }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.phoneNumber">
-                                <strong>Phone:&nbsp;</strong>{{ targetVenue.phoneNumber }}
+                                <strong>Phone: </strong>{{ targetVenue.phoneNumber }}
                             </span>
                             <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
                             <span v-if="targetVenue.whatsappNumber">
-                                <strong>WhatsApp:&nbsp;</strong> 
+                                <strong>WhatsApp: </strong> 
                                 <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
                                     {{ targetVenue.whatsappNumber }}
                                 </a>
