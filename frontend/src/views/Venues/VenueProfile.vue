@@ -573,12 +573,12 @@
 
                         <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
                             <span v-if="targetVenue.yearOpened">
-                                <strong>Year Opened: </strong> {{ targetVenue.yearOpened }}
+                                <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
                             </span>
                             <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)">
                                 | </span>
                             <span v-if="targetVenue.openForReservations">
-                                <strong>Open for Reservations: </strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
+                                <strong class="mobile-view-hide">Open for Reservations: </strong><strong class="mobile-view-show">Reservations: </strong>{{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
                             </span>
                             <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.website">
