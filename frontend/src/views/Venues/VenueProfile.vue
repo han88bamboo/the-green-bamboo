@@ -582,9 +582,9 @@
                             </span>
                             <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.website">
-                                <strong>Website: </strong> 
+                                <strong class="mobile-view-hide">Website: </strong> 
                                 <a :href="targetVenue.website" target="_blank">
-                                    {{ targetVenue.website }}
+                                    {{ formatWebsiteDisplay(targetVenue.website) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
@@ -610,7 +610,7 @@
                             </span>
                             <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.email">
-                                <strong>Email: </strong> 
+                                <strong class="mobile-view-hide">Email: </strong> 
                                 <a :href="`mailto:${targetVenue.email}`">
                                     {{ targetVenue.email }}
                                 </a>
@@ -4579,6 +4579,10 @@ export default {
             if (!url) return '';
             const match = url.match(/tiktok\.com\/@([^/?]+)/);
             return match ? `@${match[1]}` : url;
+        },
+        formatWebsiteDisplay(url) {
+            if (!url) return '';
+            return url.replace(/^https?:\/\//, '');
         },
 
         // Setup auto-resize functionality for textareas
