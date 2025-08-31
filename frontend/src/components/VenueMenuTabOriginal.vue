@@ -2249,6 +2249,33 @@ export default {
     },
     methods: {
 
+        // Helper function for accent folding/normalization
+        normalizeAccents(text) {
+            if (!text) return '';
+            // Use Unicode normalization to decompose accented characters, then remove diacritical marks
+            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        },
+
+        // Helper function for space and punctuation normalization
+        normalizeSpacing(text) {
+            if (!text) return '';
+            // Remove spaces, hyphens, apostrophes, periods, and other common punctuation
+            return text.replace(/[\s\-'.:;()]/g, '');
+        },
+
+        // Combined normalization function for fuzzy matching
+        normalizeForSearch(text) {
+            if (!text) return '';
+            return this.normalizeSpacing(this.normalizeAccents(text.toLowerCase()));
+        },
+
+        // Enhanced fuzzy matching function
+        fuzzyMatch(searchTerm, targetText) {
+            const normalizedSearch = this.normalizeForSearch(searchTerm);
+            const normalizedTarget = this.normalizeForSearch(targetText);
+            return normalizedTarget.includes(normalizedSearch);
+        },
+
         // Sync editableMainSections from editMenu (called when editMenu changes)
         syncEditableMainSections() {
             // Prevent infinite loops by checking if we're already syncing
@@ -3271,8 +3298,8 @@ export default {
                         subsections: []
                     };
 
-                    // Check if main section name matches search term
-                    let mainSectionMatches = mainSection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                    // Check if main section name matches search term (using fuzzy matching)
+                    let mainSectionMatches = this.fuzzyMatch(this.searchMenuTerm, mainSection.sectionName);
                     
                     // If main section matches, include all its items and subsections
                     if (mainSectionMatches) {
@@ -3297,8 +3324,8 @@ export default {
                                 sectionMenu: []
                             };
 
-                            // Check if subsection name matches
-                            let subsectionMatches = subsection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                            // Check if subsection name matches (using fuzzy matching)
+                            let subsectionMatches = this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName);
                             
                             if (subsectionMatches) {
                                 // If subsection matches, include all its items
@@ -3337,15 +3364,15 @@ export default {
         itemMatchesSearch(menuItem) {
             const searchTerm = this.searchMenuTerm.toLowerCase();
             
-            // Check item details for matches
+            // Check item details for matches using fuzzy matching
             if (menuItem.itemDetails) {
                 const details = menuItem.itemDetails;
                 return (
-                    (details.itemName && details.itemName.toLowerCase().includes(searchTerm)) ||
-                    (details.itemType && details.itemType.toLowerCase().includes(searchTerm)) ||
-                    (details.itemProducer && details.itemProducer.toLowerCase().includes(searchTerm)) ||
-                    (details.itemCountry && details.itemCountry.toLowerCase().includes(searchTerm)) ||
-                    (details.itemDesc && details.itemDesc.toLowerCase().includes(searchTerm))
+                    (details.itemName && this.fuzzyMatch(searchTerm, details.itemName)) ||
+                    (details.itemType && this.fuzzyMatch(searchTerm, details.itemType)) ||
+                    (details.itemProducer && this.fuzzyMatch(searchTerm, details.itemProducer)) ||
+                    (details.itemCountry && this.fuzzyMatch(searchTerm, details.itemCountry)) ||
+                    (details.itemDesc && this.fuzzyMatch(searchTerm, details.itemDesc))
                 );
             }
             
