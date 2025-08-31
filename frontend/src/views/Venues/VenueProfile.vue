@@ -359,8 +359,8 @@
                                 <div v-else>
                                     <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i>
                                     </h5>
-                                    <h6 class="text-body-secondary mobile-view-show mb-1">{{
-                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i></h6>
+                                    <p class="text-body-secondary mobile-view-show mb-1 fs-7">{{
+                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i></p>
                                 </div>
                             </div>
 
@@ -557,7 +557,7 @@
                         <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                         <!-- Description -->
                         <div class="row" >
-                            <div class="col-12 pe-lg-0 ps-0 mt-2">
+                            <div class="col-12 pe-lg-0 ps-0">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
                                     <label for="venueDescInput"> Venue Description </label>
@@ -566,7 +566,7 @@
                                 </div>
                                 
 
-                        <p v-if="!editProfile" class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 ">
+                        <p v-if="!editProfile" class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 ">
                             <span v-if="targetVenue.yearOpened">
                                 <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
                             </span>
@@ -3715,7 +3715,7 @@
 
     <!-- Dining Menu Modal -->
     <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl m-0">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="diningMenuModalLabel">
@@ -3731,13 +3731,13 @@
                             v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="previousPage" 
                             :disabled="currentPdfPage <= 1"
-                            class="btn btn-primary me-2"
+                            class="btn btn-primary "
                             style="min-width: 50px; height: 50px;">
                             ←
                         </button>
                         
                         <!-- Menu Image Container -->
-                        <div class="pdf-container flex-grow-1 position-relative">
+                        <div class="m-0 pdf-container flex-grow-1 position-relative">
                             <div v-if="hasPdfMenu" class="text-center">
                                 <img 
                                     :src="pdfMenuUrls[currentPdfPage - 1]"
@@ -3760,7 +3760,7 @@
                             v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="nextPage" 
                             :disabled="currentPdfPage >= pdfMenuUrls.length"
-                            class="btn btn-primary ms-2"
+                            class="btn btn-primary "
                             style="min-width: 50px; height: 50px;">
                             →
                         </button>
@@ -3772,7 +3772,7 @@
                             v-for="(url, index) in pdfMenuUrls"
                             :key="index"
                             @click="goToPage(index + 1)"
-                            :class="['carousel-indicator-dot', { 'active': currentPdfPage === index + 1 }]"
+                            :class="['carousel-indicator-dot p-0', { 'active': currentPdfPage === index + 1 }]"
                             :aria-label="`Go to page ${index + 1}`"
                         ></button>
                     </div>
