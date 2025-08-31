@@ -561,7 +561,7 @@
 
                         <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                         <!-- Description -->
-                        <div class="row scrollable">
+                        <div class="row scrollable" style="overflow-x:hidden !important; ">
                             <div class="col-12 pe-lg-0 ps-0 mt-2">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
@@ -571,55 +571,55 @@
                                 </div>
                                 
 
-                        <p class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 letter-spacing-desktop">
+                        <p v-if="!editProfile" class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 ">
                             <span v-if="targetVenue.yearOpened">
                                 <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
                             </span>
-                            <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)">
+                            <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2">
                                 | </span>
                             <span v-if="targetVenue.openForReservations">
                                 <strong class="mobile-view-hide">Open for Reservations: </strong><strong class="mobile-view-show">Reservations: </strong>{{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
                             </span>
-                            <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.website">
                                 <strong class="mobile-view-hide">Website: </strong> 
                                 <a :href="targetVenue.website" target="_blank">
                                     {{ formatWebsiteDisplay(targetVenue.website) }}
                                 </a>
                             </span>
-                            <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.instagram">
                                 <i class="bi bi-instagram"></i><span>: </span>
                                 <a :href="targetVenue.instagram" target="_blank">
                                     {{ formatInstagramHandle(targetVenue.instagram) }}
                                 </a>
                             </span>
-                            <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.facebook">
                                 <i class="bi bi-facebook"></i><span>: </span>
                                 <a :href="targetVenue.facebook" target="_blank">
                                     {{ formatFacebookHandle(targetVenue.facebook) }}
                                 </a>
                             </span>
-                            <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.tiktok">
                                 <i class="bi bi-tiktok"></i><span>: </span>
                                 <a :href="targetVenue.tiktok" target="_blank">
                                     {{ formatTikTokHandle(targetVenue.tiktok) }}
                                 </a>
                             </span>
-                            <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.email">
                                 <i class="bi bi-envelope-fill"></i><span>: </span>
                                 <a :href="`mailto:${targetVenue.email}`">
                                     {{ targetVenue.email }}
                                 </a>
                             </span>
-                            <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
+                            <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.phoneNumber">
                                 <i class="bi bi-telephone-fill"></i><span>: </span>{{ targetVenue.phoneNumber }}
                             </span>
-                            <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
+                            <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber" class="px-lg-2"> | </span>
                             <span v-if="targetVenue.whatsappNumber">
                                 <i class="bi bi-whatsapp"></i><span>: </span>
                                 <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
@@ -4597,7 +4597,7 @@ export default {
         },
         formatWebsiteDisplay(url) {
             if (!url) return '';
-            return url.replace(/^https?:\/\//, '');
+            return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
         },
 
         // Setup auto-resize functionality for textareas
