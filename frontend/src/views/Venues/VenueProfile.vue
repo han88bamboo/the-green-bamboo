@@ -561,7 +561,7 @@
 
                         <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                         <!-- Description -->
-                        <div class="row scrollable" style="overflow-x:hidden !important; ">
+                        <div class="row" >
                             <div class="col-12 pe-lg-0 ps-0 mt-2">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
@@ -627,6 +627,38 @@
                                 </a>
                             </span>
                         </p>
+
+                        <!-- Desktop Only Rating and Follow Section -->
+                        <div class="row mt-3 d-none d-lg-block">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <!-- Average Rating Display -->
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 me-2"
+                                            style="font-weight: bold; color: black;">
+                                            {{ getAverageVenueRatings() }}
+                                            <span style="color: #f0b358">★</span>
+                                            ({{ filteredVenueReviews.length }} {{ filteredVenueReviews.length === 1 ? 'Review' : 'Reviews' }})
+                                        </h4>
+                                    </div>
+                                    
+                                    <!-- Follow Button -->
+                                    <div class="d-flex gap-2">
+                                        <button v-if="viewerType === 'user' && !userFollowing"
+                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            @click="editFollow('follow')" style="font-weight: bold;">
+                                            + Follow Venue
+                                        </button>
+                                        <button v-else-if="viewerType === 'user' && userFollowing"
+                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            @click="editFollow('unfollow')"
+                                            style="font-weight: bold; background-color:rgb(249, 115, 106);">
+                                            Following
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                             </div>
                         </div>
@@ -1403,7 +1435,7 @@
                         <div class="d-flex gap-2">
                             <!-- Follow Button -->
                             <button v-if="viewerType === 'user' && !userFollowing"
-                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                                class="d-lg-none btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                                 @click="editFollow('follow')" style="font-weight: bold;">
                                 + Follow
                             </button>
@@ -1433,10 +1465,6 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-
-
-
-
 
                         </div>
                     </div>
