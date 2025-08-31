@@ -346,7 +346,7 @@
 
 
                             <!-- Country -->
-                            <div class="col-7 pe-0 ps-0">
+                            <div class="col-12 col-lg-7 pe-0 ps-0">
 
                                 <!-- [if] editing profile -->
                                 <div v-if="editProfile">
@@ -357,10 +357,10 @@
 
                                 <!-- [else] not editing -->
                                 <div v-else>
-                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}
+                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i>
                                     </h5>
                                     <h6 class="text-body-secondary mobile-view-show mb-1">{{
-                                        targetVenue['originLocation'] }}</h6>
+                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i></h6>
                                 </div>
                             </div>
 
@@ -550,12 +550,7 @@
                                     <input type="text" class="form-control mb-3" id="venueTypeInput"
                                         aria-describedby="venueType" v-model="editVenueType">
                                 </div>
-                                <!-- [else] not editing -->
-                                <div v-else class="ps-0 pe-0">
-                                    <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                        <i>{{ targetVenue["venueType"] || "" }}</i>
-                                    </p>
-                                </div>
+
                             </div>
                         </div>
 
@@ -755,7 +750,7 @@
                                 @click="submitPDFMenu"
                                 :disabled="!pdfMenuBase64"
                             >
-                                Upload PDF Menu
+                                Click to Upload PDF Menu (Make sure to Save profile edits first!)
                             </button>
                         </div>
 
@@ -1137,19 +1132,22 @@
                     <div class="col-12">
                         <div v-if="targetVenue.venueDesc.length > 320">
                             <p v-if="!showFullDescription"
-                                class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                                class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                                style="white-space: pre-wrap;">
                                 {{ targetVenue["venueDesc"].slice(0, 320) + (targetVenue["venueDesc"].length
                                 > 320 ? '...' : '')}}
                                 <a @click="showFullDescription = true" style="font-weight: bold;">(Read
                                     More)</a>
                             </p>
-                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                                style="white-space: pre-wrap;">
                                 {{ targetVenue["venueDesc"] }}
                                 <a @click="showFullDescription = false" style="font-weight: bold;">(Read
                                     Less)</a>
                             </p>
                         </div>
-                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
+                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                            style="white-space: pre-wrap;">
                             {{ targetVenue["venueDesc"] }}
                         </p>
                     </div>
@@ -1418,10 +1416,10 @@
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
-                    <div class="col-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
+                    <div class="col-12 col-lg-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
-                        <div v-if="hasPdfMenu" class="d-flex justify-content-end w-100 mobile-justify-content-start">
+                        <div v-if="hasPdfMenu" class="d-none d-lg-flex justify-content-end w-100 mobile-justify-content-start">
                             <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
@@ -1465,7 +1463,13 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-
+                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                    style="font-weight: bold;">
+                                Dining Menu
+                            </button>
                         </div>
                     </div>
 
