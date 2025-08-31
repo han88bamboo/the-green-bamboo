@@ -1157,7 +1157,7 @@
                 <!-- View Mode: Venue Info + Buttons -->
                 <div v-if="!editProfile" class="row text-start">
                     <!-- Venue Info -->
-                    <div class="col-7 mobile-col-12 mobile-mb-2">
+                    <div class="col-9 mobile-col-12 mobile-mb-2">
                         <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
                         <div v-if="hasAmenities" class="mt-3 d-lg-none">
                             <button 
@@ -1418,7 +1418,7 @@
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
-                    <div class="col-5 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
+                    <div class="col-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
                         <div v-if="hasPdfMenu" class="d-flex justify-content-end w-100 mobile-justify-content-start">
