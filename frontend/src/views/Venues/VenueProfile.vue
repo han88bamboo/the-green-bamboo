@@ -562,7 +562,7 @@
                         <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                         <!-- Description -->
                         <div class="row scrollable">
-                            <div class="col-12 pe-lg-0 ps-0">
+                            <div class="col-12 pe-lg-0 ps-0 mt-2">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
                                     <label for="venueDescInput"> Venue Description </label>
@@ -571,7 +571,7 @@
                                 </div>
                                 
 
-                        <p class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
+                        <p class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 letter-spacing-desktop">
                             <span v-if="targetVenue.yearOpened">
                                 <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
                             </span>
@@ -7685,8 +7685,12 @@ Thank you!`
 </script>
 
 <style>
-
-
+@media (min-width: 992px){
+.letter-spacing-desktop{    
+letter-spacing: 1px;
+        word-spacing: 2px;
+}
+}
 
 @media (max-width: 991px) {
 .mobile-justify-content-start {
