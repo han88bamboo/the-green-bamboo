@@ -589,39 +589,39 @@
                             </span>
                             <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.instagram">
-                                <strong>Instagram: </strong> 
+                                <i class="bi bi-instagram"></i><span>: </span>
                                 <a :href="targetVenue.instagram" target="_blank">
                                     {{ formatInstagramHandle(targetVenue.instagram) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.facebook">
-                                <strong>Facebook: </strong> 
+                                <i class="bi bi-facebook"></i><span>: </span>
                                 <a :href="targetVenue.facebook" target="_blank">
                                     {{ formatFacebookHandle(targetVenue.facebook) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.tiktok">
-                                <strong>TikTok: </strong> 
+                                <i class="bi bi-tiktok"></i><span>: </span>
                                 <a :href="targetVenue.tiktok" target="_blank">
                                     {{ formatTikTokHandle(targetVenue.tiktok) }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.email">
-                                <strong class="mobile-view-hide">Email: </strong> 
+                                <i class="bi bi-envelope-fill"></i><span>: </span>
                                 <a :href="`mailto:${targetVenue.email}`">
                                     {{ targetVenue.email }}
                                 </a>
                             </span>
                             <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
                             <span v-if="targetVenue.phoneNumber">
-                                <strong>Phone: </strong>{{ targetVenue.phoneNumber }}
+                                <i class="bi bi-telephone-fill"></i><span>: </span>{{ targetVenue.phoneNumber }}
                             </span>
                             <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
                             <span v-if="targetVenue.whatsappNumber">
-                                <strong>WhatsApp: </strong> 
+                                <i class="bi bi-whatsapp"></i><span>: </span>
                                 <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
                                     {{ targetVenue.whatsappNumber }}
                                 </a>
