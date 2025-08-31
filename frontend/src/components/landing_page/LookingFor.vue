@@ -132,6 +132,10 @@ export default {
             { name: 'Phoenix Aroma', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Phoenix Aroma (Feng Xiang)' } },
           ]
         },
+        {
+          id: 'venue', name: 'Venue', params: { browseDrinkType: 'Venue' }, active: false, menuFlipped: false, menuStyle: {},
+          subcategories: []
+        },
       ],
       itemRefs: {},
       menuRefs: {},
@@ -268,14 +272,14 @@ export default {
 .mega-menu {
   position: absolute;
   top: 100%;
-  left: 0;
+  left: 50%;
   background: white;
   min-width: 200px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
+  transform: translateX(-50%) translateY(-10px);
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
   z-index: 10000;
   border-top: 3px solid #027562;
@@ -285,7 +289,7 @@ export default {
 .mega-menu.position-top {
   top: auto;
   bottom: 100%;
-  transform: translateY(10px);
+  transform: translateX(-50%) translateY(10px);
   border-top: none;
   border-bottom: 3px solid #027562;
 }
@@ -294,11 +298,11 @@ export default {
 .category-item .mega-menu.active {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 .category-item .mega-menu.active.position-top {
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 .mega-menu-content {
@@ -361,8 +365,6 @@ export default {
   }
 
   .mega-menu {
-    left: 50%;
-    transform: translateX(-50%);
     max-height: none;
     overflow: visible;
     min-width: 180px;
@@ -379,13 +381,11 @@ export default {
   .mega-menu.active {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
   }
 
   .mega-menu.active.position-top {
     opacity: 1;
     visibility: visible;
-    transform: translateX(-50%) translateY(0);
   }
 
   .subcategory-link {
