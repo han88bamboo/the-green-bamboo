@@ -2818,7 +2818,7 @@ INSERT INTO "venues" (
     'Not open on Christmas', 
     NULL, 
     NULL,
-    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/29bbeff8-4f21-4140-9d24-8f0cedd2c029.pdf'
+    '["https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_001.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_002.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_003.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_004.png"]'
 ), 
 (   
     10,
@@ -2935,6 +2935,24 @@ INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NU
 INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
 INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
 
+
+UPDATE venues 
+SET 
+   "venueName" = 'Orh Gao Taproom Craft Beer Bar',
+    "venueType" = 'Craft Beer Taproom',
+    "venueDesc" = 'Nobody does sake like we do. Every sake is tasted by us first. Menu tasting notes are written by us because you deserve to know your sakes better. In addition, a specially curated highball list for your drinking pleasure. We make proper strength highballs ranging from refreshing to smoky and peaty whiskies. Traditional craft, modern perspectives. 15 Rotating Craft Sake List. New sakes every week. Resident Sake Sommelier approved. Sakes by glass, micro-flights & curated sake journeys. Bodaimoto, Muroka Nama Genshu, Spontaneous Fermentation, Aged Sake, Ancient & Modern Sake lovers unite.',
+    "originLocation" = 'Singapore',
+    "yearOpened" = 2000,
+     "openForReservations" = NULL,
+  "website" = 'https://therumcartel.com/',
+      "instagram" = 'https://www.instagram.com/yeastside.sg/',
+      "facebook" = 'https://www.facebook.com/yeastside.sg/',
+  "tiktok" = NULL,
+   "email" = 'tzhehan@gmail.com',
+  "phoneNumber" = '97897103',
+   "whatsappNumber" = NULL,
+   "photo" = 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b4e600aa-fac1-4aeb-b6b4-3f6eb6d740b2.jpg'
+    WHERE id = 11;
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
