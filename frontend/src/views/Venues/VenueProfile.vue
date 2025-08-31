@@ -571,7 +571,7 @@
                                 </div>
                                 
 
-                        <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
+                        <p class="ps-2 text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
                             <span v-if="targetVenue.yearOpened">
                                 <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
                             </span>
