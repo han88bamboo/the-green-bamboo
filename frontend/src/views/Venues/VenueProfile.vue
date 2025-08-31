@@ -1126,9 +1126,24 @@
                 <div v-if="!editProfile" class="row text-start">
                     <!-- Venue Info -->
                     <div class="col-7 mobile-col-12 mobile-mb-2">
+                        <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
+                        <div v-if="hasAmenities" class="mt-3 d-lg-none">
+                            <button 
+                                class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#amenitiesCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="amenitiesCollapse"
+                            >
+                                <span class="fw-bold">Features & Amenities</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
+
                         <!-- Amenities Section -->
-                        <div v-if="hasAmenities" class="mt-3">
-                            <h6 class="fw-bold mb-2">Amenities & Features</h6>
+                        <div v-if="hasAmenities" class="mt-3 collapse d-lg-block" id="amenitiesCollapse">
+                            <h6 class="fw-bold mb-2 d-none d-lg-block">Features & Amenities</h6>
                             <div class="d-flex flex-wrap gap-1">
                                 <!-- Payment Methods -->
                                 <span v-if="targetVenue.amenities?.paymentCash" class="badge bg-primary me-1 mb-1">
