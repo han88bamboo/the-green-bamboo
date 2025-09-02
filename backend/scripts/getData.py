@@ -56,6 +56,7 @@
 #           [Others]
 #           /getDrinkTypes (GET), /getTypeCategories (GET), /getModRequests (GET),
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
+#           /getVenueMainTypes (GET), /getVenueSubTypes (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
@@ -5505,6 +5506,36 @@ def getObservationTags():
         return jsonify([])
 
     return jsonify(observation_tags_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] venueMainTypes
+@blueprint.route("/getVenueMainTypes")
+def getVenueMainTypes():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venueMainTypes" ORDER BY "venueMainType"')
+        venue_main_types_data = cursor.fetchall()
+
+    if not venue_main_types_data:
+        return jsonify([])
+
+    return jsonify(venue_main_types_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] venueSubTypes  
+@blueprint.route("/getVenueSubTypes")
+def getVenueSubTypes():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venueSubTypes" ORDER BY "venueSubType"')
+        venue_sub_types_data = cursor.fetchall()
+
+    if not venue_sub_types_data:
+        return jsonify([])
+
+    return jsonify(venue_sub_types_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] colours
