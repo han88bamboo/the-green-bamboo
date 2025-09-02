@@ -942,31 +942,33 @@
 
                 <!-- row 4A: add photo, friends, location-->
                 <div class="row">
+                  <p class="text-start mb-0 fw-bold">
+                    <span class="badge rounded-pill step-index my-2">1</span>
+                    Where You Drank It 
+                    <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Where and who you drank it with!
+                    </span>
+                  </p>
                   <div class="col-3 mobile-col-4">
                     <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
                       style="display: none" />
-                    <label for="reviewPhoto">
-                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24"
-                          fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round"
-                          stroke-linejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <path d="M20.4 14.5L16 10 4 20"></path>
-                          <circle cx="19" cy="19" r="3" fill="black"></circle>
-                          <line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line>
-                          <line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line>
-                        </svg>
+                    <label for="reviewPhoto" class="upload-label d-block w-100">
+                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button photo-dropzone">
+                        <div>
+                          <h2>📷</h2>
+                          <div>Upload</div>
+                        </div>
                       </div>
 
-                      <div v-else class="row mobile-review-svg-button">
-                        <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
-                          loading="lazy" />
+                      <div v-else class="mobile-review-svg-button">
+                        <img :src="selectedImage || image64" alt="" id="output"
+                            class="review-preview-photo" loading="lazy" />
                       </div>
                     </label>
+
                     <div class="row justify-content-center mb-2">
                       <div class="col-sm-7 text-center mt-2">
-                        <button v-if="image64 !== null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">
+                        <button v-if="image64 !== null" class="btn btn-sm tertiary-square-btn mb-1" @click="clearPhoto">
                           Clear Photo
                         </button>
                       </div>
@@ -1059,92 +1061,13 @@
                   </div>
                 </div>
 
-                <!-- row 3: review and vintage -->
-                <div class="row">
-                  <div class="col justify-content-start mb-3">
-                    <div class="row mb-2">
-                      <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
-                        class="col-12">
-                        <p class="text-start mb-0 fw-bold">Vintage
-                          <span
-                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
-                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                            For wine and sake, you can review specific vintage years.
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="row mb-2">
-                      <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
-                        class="col-4">
-                        <input v-model="variant" type="text" class="form-control" id="vintage"
-                          placeholder="e.g. 2020" />
-                      </div>
-                    </div>
-                    <!-- Labels row -->
-                    <div class="row mb-2">
-                      <div class="col-12">
-                        <p class="text-start mb-0 fw-bold">
-                          Review<span class="text-danger">*</span>
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                    <!-- Input fields row -->
-                    <div class="row">
-                      <div class="col-12">
-                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Min 20 characters"></textarea>
-                      </div>
-                    </div>
-
-                    <div v-if="reviewDescError !== ''" class="col-md-12">
-                      <p class="text-danger text-start mb-2 fw-bold">
-                        {{ reviewDescError }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- row 4: buttons (would recommend, would buy again) -->
-                <div class="row">
-                  <!-- Would Recommend Section -->
-                  <div class="col-md-6 mb-3 text-start">
-                    <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
-                    <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
-                      <option value="" selected disabled>
-                        Select Yes / No
-                      </option>
-                      <option :value="true">Yes</option>
-                      <option :value="false">No</option>
-                      <option :value="null">–</option>
-                    </select>
-                  </div>
-
-                  <!-- Would Buy Again Section -->
-                  <div class="col-md-6 mb-3 text-start">
-                    <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
-                    <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
-                      <option value="" disabled selected>
-                        Select Yes / No
-                      </option>
-                      <option :value="true">Yes</option>
-                      <option :value="false">No</option>
-                      <option :value="null">–</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- row 5: rating -->
+                <!-- row 2: rating -->
                 <div class="row">
                   <div class="col-12 mb-3">
                     <div class="row align-items-center text-start">
-                      <p class="text-star mb-1 fw-bold">
-                        My Rating<span class="text-danger">*</span>
+                      <p class="text-star mb-1 fw-bold my-2">
+                      <span class="badge rounded-pill step-index ">2</span>
+                        &nbsp;My Rating<span class="text-danger">*</span>
                       </p>
                       <label for="customRange2" class="form-label">
                         <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
@@ -1177,6 +1100,88 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- row 4: review and vintage -->
+                <div class="row">
+                  <div class="col justify-content-start mb-3">
+                    <div class="row mb-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-12">
+                        <p class="text-start mb-0 fw-bold">Vintage
+                          <span
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                            For wine and sake, you can review specific vintage years.
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="row mb-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage"
+                          placeholder="e.g. 2020" />
+                      </div>
+                    </div>
+                    <!-- Labels row -->
+                    <div class="row mb-2">
+                      <div class="col-12">
+                        <p class="text-start mb-0 fw-bold">
+                          <span class="badge rounded-pill step-index">3</span>&nbsp;
+                          Review<span class="text-danger">*</span>
+                        </p>
+
+                      </div>
+                    </div>
+
+                    <!-- Input fields row -->
+                    <div class="row">
+                      <div class="col-12">
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
+                          rows="3" placeholder="Min 20 characters"></textarea>
+                      </div>
+                    </div>
+
+                    <div v-if="reviewDescError !== ''" class="col-md-12">
+                      <p class="text-danger text-start mb-2 fw-bold">
+                        {{ reviewDescError }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 5: buttons (would recommend, would buy again) -->
+                <div class="row">
+                  <!-- Would Recommend Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                    <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
+                      <option value="" selected disabled>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+
+                  <!-- Would Buy Again Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                    <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
+                      <option value="" disabled selected>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+                </div>
+
+                
 
                 <!-- row 6: extend review -->
                 <div class="row">
@@ -1381,8 +1386,8 @@
 
                 <!-- row 10: flavour tags -->
                 <div class="row">
-                  <div class="form-group mb-3 text-start">
-                    <p class="text-start mb-1 fw-bold">Flavour Tags</p>
+                  <div class="form-group mb-3 text-start ">
+                    <p class="text-start mb-1 fw-bold my-2"><span class="badge rounded-pill step-index">4</span>&nbsp;Flavour Tags</p>
                     <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
                       Selected flavour tags:
                       <div class="row">
@@ -1451,7 +1456,7 @@
                 <!-- row 11: observation tags -->
                 <div class="row">
                   <div class="form-group mb-3 text-start">
-                    <p class="text-start mb-1 fw-bold">Action Tags</p>
+                    <p class="text-start mb-1 fw-bold my-2"><span class="badge rounded-pill step-index">5</span>&nbsp;Action Tags</p>
                     <div v-if="selectedObservations.length > 0" class="form-label pb-2">
                       Selected action tags:
                       <div class="row">
@@ -5387,520 +5392,547 @@ export default {
 </script>
 
 <style scoped>
-.image-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
-  animation: fadeIn 0.3s ease;
-}
 
-.image-modal-container {
-  position: relative;
-  max-width: 80vw;
-  max-height: 80vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .step-index { background: wheat ; color: black; border:  2px solid #f0b358;  width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size:15px}
 
-.enlarged-image {
-  max-width: 100%;
-  max-height: 80vh;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  animation: zoomIn 0.3s ease;
-}
-
-.image-modal-close {
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  z-index: 1;
-}
-
-.image-modal-close:hover {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes zoomIn {
-  from { 
-    opacity: 0; 
-    transform: scale(0.8); 
+  .image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    animation: fadeIn 0.3s ease;
   }
-  to { 
-    opacity: 1; 
-    transform: scale(1); 
-  }
-}
 
-/* Clickable images */
-.clickable-image {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.clickable-image:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Plus sign styling - match the image dimensions */
-/* .add-button {
-  width: 100%;
-  height: 0;
-  padding-bottom: 100%; 
-  position: relative;
-  border-radius: 8px;
-  background-color: rgba(131, 169, 232, 0.1);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  display: block;
-} */
-
-.add-button:hover {
-  background-color: rgba(131, 169, 232, 0.2);
-  border-color: #6c94d6;
-}
-
-.add-button svg {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 30px;
-  height: 30px;
-}
-
-/* Ensure images maintain consistent sizing */
-.review-image:not(.add-button) {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 4px;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
   .image-modal-container {
-    max-width: 95vw;
-    max-height: 70vh;
+    position: relative;
+    max-width: 80vw;
+    max-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  
+
   .enlarged-image {
-    max-height: 70vh;
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.3s ease;
   }
-  
+
   .image-modal-close {
-    top: -30px;
-    right: -15px;
-    width: 35px;
-    height: 35px;
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 1;
   }
-}
 
-.venue-item {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-}
+  .image-modal-close:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
 
-.venue-item:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-.venue-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: white;
-  text-decoration: none;
-  display: block;
-}
+  @keyframes zoomIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.8); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
 
-.venue-name:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
+  /* Clickable images */
+  .clickable-image {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-.vintages-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
+  .clickable-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 
-.vintage-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
+  /* Plus sign styling - match the image dimensions */
+  /* .add-button {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; 
+    position: relative;
+    border-radius: 8px;
+    background-color: rgba(131, 169, 232, 0.1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: block;
+  } */
 
-.vintage-badge:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
+  .add-button:hover {
+    background-color: rgba(131, 169, 232, 0.2);
+    border-color: #6c94d6;
+  }
 
-.no-venues {
-  text-align: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
-}
+  .add-button svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+  }
 
-.no-venues-icon {
-  font-size: 3rem;
-  margin-bottom: 16px;
-  opacity: 0.6;
-}
+  /* Ensure images maintain consistent sizing */
+  .review-image:not(.add-button) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+  }
 
-.location-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  opacity: 0.8;
-}
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .image-modal-container {
+      max-width: 95vw;
+      max-height: 70vh;
+    }
+    
+    .enlarged-image {
+      max-height: 70vh;
+    }
+    
+    .image-modal-close {
+      top: -30px;
+      right: -15px;
+      width: 35px;
+      height: 35px;
+    }
+  }
 
-/* Auto-resizing textarea styles */
-.auto-resize-textarea {
-  resize: vertical;
-  min-height: 38px;
-  transition: height 0.2s ease;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  width: 100%;
-  box-sizing: border-box;
-}
+  .venue-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+  }
 
-.auto-resize-textarea:focus {
-  border-color: #006A50;
-  box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
-}
+  .venue-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
 
-/* Location input container and home option dropdown styles */
-.location-input-container {
-  position: relative;
-}
+  .venue-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: white;
+    text-decoration: none;
+    display: block;
+  }
 
-.home-option-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  max-height: 200px;
-  overflow-y: auto;
-}
+  .venue-name:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
 
-.home-option-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #333;
-}
+  .vintages-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
 
-.home-option-item:hover {
-  background-color: #f8f9fa;
-}
+  .vintage-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
 
-.home-option-item:last-child {
-  border-bottom: none;
-}
+  .vintage-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
 
-/* Ensure the Google Maps autocomplete dropdown appears below the home option dropdown */
-.pac-container {
-  z-index: 1000 !important;
-  transition: margin-top 0.2s ease !important;
-}
+  .no-venues {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+  }
 
-/* Style for the location input wrapper */
-.location-input-wrapper {
-  position: relative;
-  width: 100%;
-}
+  .no-venues-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
 
-/* Extended review preview styles - NYT paywall style */
-.extended-preview-container {
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
-}
+  .location-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    opacity: 0.8;
+  }
 
-.extended-preview-container:hover {
-  border-color: #6c757d;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+  /* Auto-resizing textarea styles */
+  .auto-resize-textarea {
+    resize: vertical;
+    min-height: 38px;
+    transition: height 0.2s ease;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    width: 100%;
+    box-sizing: border-box;
+  }
 
-.preview-content {
-  padding: 20px;
-  height: 200px;
-  /* Fixed height for preview */
-  overflow: hidden;
-  position: relative;
-}
+  .auto-resize-textarea:focus {
+    border-color: #006A50;
+    box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+  }
 
-.preview-input-field {
-  height: 35px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
+  /* Location input container and home option dropdown styles */
+  .location-input-container {
+    position: relative;
+  }
 
-.preview-input-field::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  right: 10px;
-  height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      #dee2e6 20%,
-      #dee2e6 80%,
-      transparent 100%);
-  transform: translateY(-50%);
-}
+  .home-option-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+  }
 
-.preview-fade-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 140px;
-  /* Increased height for stronger fade */
-  background: linear-gradient(to bottom,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.4) 30%,
-      /* Earlier fade start */
-      rgba(255, 255, 255, 0.8) 60%,
-      rgba(255, 255, 255, 0.95) 80%,
-      rgba(255, 255, 255, 1) 100%);
-  /* Stronger fade */
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  padding: 15px;
-}
+  .home-option-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+  }
 
-.preview-cta {
-  color: #333;
-  font-size: 1rem;
-  font-weight: 900;
-  /* Extra bold */
-  text-align: center;
-  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
-    0px 0px 12px rgba(0, 0, 0, 0.3),
-    1px 1px 4px rgba(0, 0, 0, 0.3);
-  /* Heavy shadow */
-  transition: all 0.3s ease;
-  background: none;
-  /* Remove background */
-  border: none;
-  /* Remove border */
-  padding: 0;
-  /* Remove padding */
-  border-radius: 0;
-  /* Remove border radius */
-  backdrop-filter: none;
-  /* Remove backdrop filter */
-  box-shadow: none;
-  /* Remove box shadow */
-}
+  .home-option-item:hover {
+    background-color: #f8f9fa;
+  }
 
-.extended-preview-container:hover {
-  color: #000;
-  /* Darker on hover */
-  transform: translateY(-1px);
-  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
-    0px 0px 15px rgba(0, 0, 0, 0.7),
-    2px 2px 6px rgba(0, 0, 0, 1);
-  /* Even heavier shadow on hover */
-}
+  .home-option-item:last-child {
+    border-bottom: none;
+  }
 
+  /* Ensure the Google Maps autocomplete dropdown appears below the home option dropdown */
+  .pac-container {
+    z-index: 1000 !important;
+    transition: margin-top 0.2s ease !important;
+  }
 
-/* Style for preview color buttons */
-.preview-color-btn {
-  margin-right: 2px !important;
-  padding: 0 !important;
-}
+  /* Style for the location input wrapper */
+  .location-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+  /* Extended review preview styles - NYT paywall style */
+  .extended-preview-container {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .extended-preview-container:hover {
+    border-color: #6c757d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
   .preview-content {
-    padding: 15px;
-    height: 150px;
+    padding: 20px;
+    height: 200px;
+    /* Fixed height for preview */
+    overflow: hidden;
+    position: relative;
+  }
+
+  .preview-input-field {
+    height: 35px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-input-field::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #dee2e6 20%,
+        #dee2e6 80%,
+        transparent 100%);
+    transform: translateY(-50%);
   }
 
   .preview-fade-overlay {
-    height: 100px;
-    /* Increased for mobile too */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    /* Increased height for stronger fade */
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 30%,
+        /* Earlier fade start */
+        rgba(255, 255, 255, 0.8) 60%,
+        rgba(255, 255, 255, 0.95) 80%,
+        rgba(255, 255, 255, 1) 100%);
+    /* Stronger fade */
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    padding: 15px;
   }
 
   .preview-cta {
-    font-size: 0.9rem;
-    font-weight: 800;
-    /* Slightly less bold on mobile but still heavy */
-    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
-      0px 0px 10px rgba(0, 0, 0, 0.6),
-      1px 1px 3px rgba(0, 0, 0, 0.9);
-    /* Adjusted for mobile */
-  }
-
-  .preview-color-btn {
-    width: 16px !important;
-    height: 16px !important;
-    margin-right: 1px !important;
-  }
-}
-
-/* Paywall Styles */
-.paywall-container {
-  position: relative;
-  overflow: hidden;
-  max-height: 1000px;
-}
-
-.paywall-container>*:not(.paywall-overlay) {
-  pointer-events: none;
-  user-select: none;
-}
-
-.paywall-overlay {
-  position: absolute;
-  top: 0;
-  left: -100vw;
-  right: -100vw;
-  bottom: 0;
-  z-index: 9999;
-  pointer-events: none;
-  width: 300vw;
-  height: 100%;
-  min-height: 600px;
-}
-
-.paywall-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom,
-      transparent 0%,
-      transparent 70%,
-      rgba(255, 255, 255, 0.1) 75%,
-      rgba(255, 255, 255, 0.3) 80%,
-      rgba(255, 255, 255, 0.6) 85%,
-      rgba(255, 255, 255, 0.8) 90%,
-      rgba(255, 255, 255, 0.95) 95%,
-      rgba(255, 255, 255, 1) 100%,
-      rgba(255, 255, 255, 1) 100%);
-  backdrop-filter: blur(1.15px);
-}
-
-.paywall-content {
-  position: absolute;
-  top: 60%;
-  left: 48%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: all !important;
-  z-index: 10001;
-}
-
-.paywall-signup-btn {
-  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 50px;
-  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  pointer-events: all !important;
-  cursor: pointer;
-}
-
-.paywall-signup-btn {
-  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 50px;
-  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.paywall-signup-btn:hover {
-  background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
-  color: white;
-}
-
-.paywall-signup-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
-}
-
-/* Responsive adjustments for paywall */
-@media (max-width: 768px) {
-  .paywall-signup-btn {
+    color: #333;
     font-size: 1rem;
-    padding: 14px 28px;
+    font-weight: 900;
+    /* Extra bold */
+    text-align: center;
+    text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
+      0px 0px 12px rgba(0, 0, 0, 0.3),
+      1px 1px 4px rgba(0, 0, 0, 0.3);
+    /* Heavy shadow */
+    transition: all 0.3s ease;
+    background: none;
+    /* Remove background */
+    border: none;
+    /* Remove border */
+    padding: 0;
+    /* Remove padding */
+    border-radius: 0;
+    /* Remove border radius */
+    backdrop-filter: none;
+    /* Remove backdrop filter */
+    box-shadow: none;
+    /* Remove box shadow */
   }
+
+  .extended-preview-container:hover {
+    color: #000;
+    /* Darker on hover */
+    transform: translateY(-1px);
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
+      0px 0px 15px rgba(0, 0, 0, 0.7),
+      2px 2px 6px rgba(0, 0, 0, 1);
+    /* Even heavier shadow on hover */
+  }
+
+
+  /* Style for preview color buttons */
+  .preview-color-btn {
+    margin-right: 2px !important;
+    padding: 0 !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .preview-content {
+      padding: 15px;
+      height: 150px;
+    }
+
+    .preview-fade-overlay {
+      height: 100px;
+      /* Increased for mobile too */
+    }
+
+    .preview-cta {
+      font-size: 0.9rem;
+      font-weight: 800;
+      /* Slightly less bold on mobile but still heavy */
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
+        0px 0px 10px rgba(0, 0, 0, 0.6),
+        1px 1px 3px rgba(0, 0, 0, 0.9);
+      /* Adjusted for mobile */
+    }
+
+    .preview-color-btn {
+      width: 16px !important;
+      height: 16px !important;
+      margin-right: 1px !important;
+    }
+  }
+
+  /* Paywall Styles */
+  .paywall-container {
+    position: relative;
+    overflow: hidden;
+    max-height: 1000px;
+  }
+
+  .paywall-container>*:not(.paywall-overlay) {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .paywall-overlay {
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    right: -100vw;
+    bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+    width: 300vw;
+    height: 100%;
+    min-height: 600px;
+  }
+
+  .paywall-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 70%,
+        rgba(255, 255, 255, 0.1) 75%,
+        rgba(255, 255, 255, 0.3) 80%,
+        rgba(255, 255, 255, 0.6) 85%,
+        rgba(255, 255, 255, 0.8) 90%,
+        rgba(255, 255, 255, 0.95) 95%,
+        rgba(255, 255, 255, 1) 100%,
+        rgba(255, 255, 255, 1) 100%);
+    backdrop-filter: blur(1.15px);
+  }
+
+  .paywall-content {
+    position: absolute;
+    top: 60%;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: all !important;
+    z-index: 10001;
+  }
+
+  .paywall-signup-btn {
+    background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: all !important;
+    cursor: pointer;
+  }
+
+  .paywall-signup-btn {
+    background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .paywall-signup-btn:hover {
+    background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
+    color: white;
+  }
+
+  .paywall-signup-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
+  }
+
+  /* Responsive adjustments for paywall */
+  @media (max-width: 768px) {
+    .paywall-signup-btn {
+      font-size: 1rem;
+      padding: 14px 28px;
+    }
+  }
+
+  /* Make the label a full-width container */
+.upload-label { display:block; width:100%; }
+
+/* Same square frame in both states */
+.mobile-review-svg-button{
+  width:100%;
+  aspect-ratio:1/1;        /* keep square */
+  border-radius:12px;
+  overflow:hidden;
 }
+
+/* Placeholder styling */
+.photo-dropzone{
+  display:flex; align-items:center; justify-content:center;
+  height:100%;
+  border:2px dashed #cfcfcf; background:#fafafa; cursor:pointer;
+}
+
+/* Preview image fills the same frame */
+.review-preview-photo{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+
 </style>
