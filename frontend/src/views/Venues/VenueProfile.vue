@@ -546,9 +546,26 @@
                             <div class="col-12 pe-lg-0 ps-0">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
-                                    <label for="venueTypeInput"> Venue Type </label>
-                                    <input type="text" class="form-control mb-3" id="venueTypeInput"
-                                        aria-describedby="venueType" v-model="editVenueType">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="venueMainTypeSelect">Venue Main Type</label>
+                                            <select class="form-control mb-3" id="venueMainTypeSelect" v-model="editVenueMainType">
+                                                <option value="">Select Main Type</option>
+                                                <option v-for="mainType in venueMainTypes" :key="mainType.id" :value="mainType.id">
+                                                    {{ mainType.venueMainType }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="venueSubTypeSelect">Venue Sub Type</label>
+                                            <select class="form-control mb-3" id="venueSubTypeSelect" v-model="editVenueSubType">
+                                                <option value="">Select Sub Type</option>
+                                                <option v-for="subType in venueSubTypes" :key="subType.id" :value="subType.id">
+                                                    {{ subType.venueSubType }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
 
                             </div>
@@ -4112,6 +4129,8 @@ export default {
 
             // Data
             servingTypes: [],
+            venueMainTypes: [],
+            venueSubTypes: [],
             loadedListings: [],
             loadedProducers: [],
             mostPopular: [],
@@ -4151,7 +4170,8 @@ export default {
 
             // Editable fields
             editVenueName: '',
-            editVenueType: '',
+            editVenueMainType: '',
+            editVenueSubType: '',
             editVenueDesc: '',
             editCountry: '',
             editYearOpened: null,
@@ -4566,6 +4586,11 @@ export default {
             this.venueExists = false;
         }
 
+        // Load venue type options for dropdowns
+        console.log('🔄 VenueProfile: Loading venue type data...');
+        this.loadVenueMainTypes();
+        this.loadVenueSubTypes();
+
         var userID = localStorage.getItem('88B_accID')
         if (userID != null) {
             this.user_id = userID;
@@ -4611,6 +4636,32 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     methods: {
+        // Load venue type data for dropdowns
+        async loadVenueMainTypes() {
+            try {
+                console.log('🔄 Loading venue main types from:', `${process.env.VUE_APP_API_URL}/getData/getVenueMainTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMainTypes`);
+                console.log('✅ Venue main types response:', response.data);
+                this.venueMainTypes = response.data;
+                console.log('✅ Venue main types loaded, count:', this.venueMainTypes.length);
+            } catch (error) {
+                console.error('❌ Error loading venue main types:', error);
+                console.error('❌ Error response:', error.response);
+            }
+        },
+        async loadVenueSubTypes() {
+            try {
+                console.log('🔄 Loading venue sub types from:', `${process.env.VUE_APP_API_URL}/getData/getVenueSubTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueSubTypes`);
+                console.log('✅ Venue sub types response:', response.data);
+                this.venueSubTypes = response.data;
+                console.log('✅ Venue sub types loaded, count:', this.venueSubTypes.length);
+            } catch (error) {
+                console.error('❌ Error loading venue sub types:', error);
+                console.error('❌ Error response:', error.response);
+            }
+        },
+        
         // Helper methods for social media formatting
         formatInstagramHandle(url) {
             if (!url) return '';
@@ -4777,7 +4828,8 @@ export default {
                     this.editProfilePhoto = this.targetVenue["photo"];
                     this.targetVenueOriginalPhoto = this.targetVenue["photo"];
                     this.editVenueName = this.targetVenue["venueName"];
-                    this.editVenueType = this.targetVenue['venueType'];
+                    this.editVenueMainType = this.targetVenue["venueMainType"];
+                    this.editVenueSubType = this.targetVenue["venueSubType"];
                     this.editVenueDesc = this.targetVenue["venueDesc"];
                     this.editCountry = this.targetVenue["originLocation"];
                     this.editYearOpened = this.targetVenue["yearOpened"];
@@ -5833,7 +5885,8 @@ export default {
         exitProfileEdit() {
             // Reset all edit fields to their original values
             this.editVenueName = this.targetVenue.venueName || '';
-            this.editVenueType = this.targetVenue.venueType || '';
+            this.editVenueMainType = this.targetVenue.venueMainType || '';
+            this.editVenueSubType = this.targetVenue.venueSubType || '';
             this.editVenueDesc = this.targetVenue.venueDesc || '';
             this.editCountry = this.targetVenue.originLocation || '';
             this.editYearOpened = this.targetVenue.yearOpened || '';
@@ -5871,7 +5924,8 @@ export default {
             console.log("image64 type:", typeof this.editProfilePhoto);
             console.log("image64 length:", this.editProfilePhoto ? this.editProfilePhoto.length : 0);
             console.log("venueName:", this.editVenueName);
-            console.log("venueType:", this.editVenueType);
+            console.log("venueMainType:", this.editVenueMainType);
+            console.log("venueSubType:", this.editVenueSubType);
             console.log("venueDesc:", this.editVenueDesc);
             console.log("originLocation:", this.editCountry);
             console.log("yearOpened:", this.editYearOpened);
@@ -5892,7 +5946,8 @@ export default {
             const payload = {
                 venueID: this.targetVenue['id'],
                 venueName: this.editVenueName,
-                venueType: this.editVenueType,
+                venueMainType: this.editVenueMainType,
+                venueSubType: this.editVenueSubType,
                 venueDesc: this.editVenueDesc,
                 originLocation: this.editCountry,
                 yearOpened: this.editYearOpened,
