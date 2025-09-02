@@ -4828,8 +4828,8 @@ export default {
                     this.editProfilePhoto = this.targetVenue["photo"];
                     this.targetVenueOriginalPhoto = this.targetVenue["photo"];
                     this.editVenueName = this.targetVenue["venueName"];
-                    this.editVenueMainType = this.targetVenue["venueMainType"];
-                    this.editVenueSubType = this.targetVenue["venueSubType"];
+                    this.editVenueMainType = this.targetVenue["venueMainTypeId"];
+                    this.editVenueSubType = this.targetVenue["venueSubTypeId"];
                     this.editVenueDesc = this.targetVenue["venueDesc"];
                     this.editCountry = this.targetVenue["originLocation"];
                     this.editYearOpened = this.targetVenue["yearOpened"];
@@ -5885,8 +5885,8 @@ export default {
         exitProfileEdit() {
             // Reset all edit fields to their original values
             this.editVenueName = this.targetVenue.venueName || '';
-            this.editVenueMainType = this.targetVenue.venueMainType || '';
-            this.editVenueSubType = this.targetVenue.venueSubType || '';
+            this.editVenueMainType = this.targetVenue.venueMainTypeId || '';
+            this.editVenueSubType = this.targetVenue.venueSubTypeId || '';
             this.editVenueDesc = this.targetVenue.venueDesc || '';
             this.editCountry = this.targetVenue.originLocation || '';
             this.editYearOpened = this.targetVenue.yearOpened || '';
