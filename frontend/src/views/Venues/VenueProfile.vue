@@ -357,10 +357,10 @@
 
                                 <!-- [else] not editing -->
                                 <div v-else>
-                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i>
+                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i>{{ targetVenue["venueMainType"] }}<span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']"> </span>{{ targetVenue["venueSubType"] }}</i>
                                     </h5>
                                     <p class="text-body-secondary mobile-view-show mb-1 fs-7">{{
-                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && targetVenue['venueType']">, </span><i>{{ targetVenue["venueType"] }}</i></p>
+                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i>{{ targetVenue["venueMainType"] }}<span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']"> </span>{{ targetVenue["venueSubType"] }}</i></p>
                                 </div>
                             </div>
 
