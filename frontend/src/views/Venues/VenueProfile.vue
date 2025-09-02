@@ -357,10 +357,10 @@
 
                                 <!-- [else] not editing -->
                                 <div v-else>
-                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i>{{ targetVenue["venueMainType"] }}<span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">&nbsp;</span>{{ targetVenue["venueSubType"] }}</i>
+                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i><span v-if="targetVenue['venueMainType']">{{ targetVenue["venueMainType"] }}</span><span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">, </span><span v-if="targetVenue['venueSubType']">{{ targetVenue["venueSubType"] }}</span></i>
                                     </h5>
                                     <p class="text-body-secondary mobile-view-show mb-1 fs-7">{{
-                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i>{{ targetVenue["venueMainType"] }}<span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">&nbsp;</span>{{ targetVenue["venueSubType"] }}</i></p>
+                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i><span v-if="targetVenue['venueMainType']">{{ targetVenue["venueMainType"] }}</span><span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">, </span><span v-if="targetVenue['venueSubType']">{{ targetVenue["venueSubType"] }}</span></i></p>
                                 </div>
                             </div>
 
@@ -548,20 +548,20 @@
                                 <div v-if="editProfile">
                                     <div class="row">
                                         <div class="col-6">
-                                            <label for="venueMainTypeSelect">Venue Main Type</label>
-                                            <select class="form-control mb-3" id="venueMainTypeSelect" v-model="editVenueMainType">
-                                                <option value="">Select Main Type</option>
-                                                <option v-for="mainType in venueMainTypes" :key="mainType.id" :value="mainType.id">
-                                                    {{ mainType.venueMainType }}
+                                            <label for="venueSubTypeSelect">Venue Type</label>
+                                            <select class="form-control mb-3" id="venueSubTypeSelect" v-model="editVenueSubType">
+                                                <option value="">Select</option>
+                                                <option v-for="subType in venueSubTypes" :key="subType.id" :value="subType.id">
+                                                    {{ subType.venueSubType }}
                                                 </option>
                                             </select>
                                         </div>
                                         <div class="col-6">
-                                            <label for="venueSubTypeSelect">Venue Sub Type</label>
-                                            <select class="form-control mb-3" id="venueSubTypeSelect" v-model="editVenueSubType">
-                                                <option value="">Select Sub Type</option>
-                                                <option v-for="subType in venueSubTypes" :key="subType.id" :value="subType.id">
-                                                    {{ subType.venueSubType }}
+                                            <label for="venueMainTypeSelect">Venue Sub-Type</label>
+                                            <select class="form-control mb-3" id="venueMainTypeSelect" v-model="editVenueMainType">
+                                                <option value="">Select</option>
+                                                <option v-for="mainType in venueMainTypes" :key="mainType.id" :value="mainType.id">
+                                                    {{ mainType.venueMainType }}
                                                 </option>
                                             </select>
                                         </div>
