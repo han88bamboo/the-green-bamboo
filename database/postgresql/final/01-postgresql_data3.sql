@@ -197,6 +197,18 @@ CREATE TABLE "observationTags" (
     "observationTag" VARCHAR(255)
 );
 
+-- ========= "venueMainTypes" =========
+CREATE TABLE "venueMainTypes" (
+    "id" SERIAL PRIMARY KEY,
+    "venueMainType" VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- ========= "venueSubTypes" =========
+CREATE TABLE "venueSubTypes" (
+    "id" SERIAL PRIMARY KEY,
+    "venueSubType" VARCHAR(255) NOT NULL UNIQUE
+);
+
 -- ========= "producers" =========
 CREATE TABLE "producers" (
     "id" SERIAL PRIMARY KEY,
@@ -268,7 +280,9 @@ CREATE TABLE "venues" (
     "email" TEXT,
     "phoneNumber" TEXT,
     "whatsappNumber" TEXT,
-    "pdfMenuUrl" TEXT DEFAULT NULL
+    "pdfMenuUrl" TEXT DEFAULT NULL,
+    "venueMainType" INTEGER REFERENCES "venueMainTypes"("id") ON DELETE SET NULL,
+    "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL
 );
 
 -- ========= "venueAmenities" =========
@@ -590,7 +604,7 @@ CREATE TABLE "reviews" (
     "aroma" VARCHAR(750),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
     "taste" VARCHAR(750),
-    "observationTag" TEXT[], -- Contains "observationTags"("id")s
+    "observationTag" TEXT[], -- Contains "observationTags" text
     "address" VARCHAR(255),
     "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
