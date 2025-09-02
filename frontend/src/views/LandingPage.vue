@@ -2654,7 +2654,8 @@ button.btn.selected {
     border-radius: 8px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateY(-10px); 
+    transform: translateX(-25px) !important;
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 10000;
     border-top: 3px solid #027562;
@@ -2760,7 +2761,8 @@ button.btn.selected {
         position: absolute;
         top: 100%;
         left: 50%;
-        transform: translateX(-50%);
+        /*transform: translateX(-50%);*/
+        transform: translateX(-25%) !important;
         opacity: 0;
         visibility: hidden;
         max-height: none;
