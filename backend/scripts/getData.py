@@ -4757,7 +4757,13 @@ def getVenue(id):
                     WHEN v."pdfMenuUrl" = '' THEN NULL
                     ELSE v."pdfMenuUrl"::json
                 END AS "pdfMenuUrl",
-                v.username, v."venueType", v."stripeCustomerId", v.pin,
+                v.username, v."stripeCustomerId", v.pin,
+                -- Get venue main type details
+                v."venueMainType" AS "venueMainTypeId",
+                vmt."venueMainType" AS "venueMainType",
+                -- Get venue sub type details  
+                v."venueSubType" AS "venueSubTypeId",
+                vst."venueSubType" AS "venueSubType",
                 -- Build amenities JSON
                 COALESCE((
                     SELECT row_to_json(va)
@@ -4824,8 +4830,10 @@ def getVenue(id):
                     WHERE u."venueId" = v.id
                 ), '[]') AS updates
             FROM venues v
+            LEFT JOIN "venueMainTypes" vmt ON v."venueMainType" = vmt.id
+            LEFT JOIN "venueSubTypes" vst ON v."venueSubType" = vst.id
             WHERE v.id = %s
-            GROUP BY v.id
+            GROUP BY v.id, vmt."venueMainType", vst."venueSubType"
         """
 
         cur.execute(query, (id,))
