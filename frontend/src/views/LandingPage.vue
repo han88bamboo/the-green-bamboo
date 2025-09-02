@@ -10,7 +10,7 @@
             <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
-            <h4 class=" mobile-fs-6 mobile-px-4 pb-4">
+            <h4 class=" mobile-fs-6 mobile-px-4 pb-0">
                 Drink-X lets you search, discover, review and share any drink you want.
             </h4>
             
@@ -1981,16 +1981,23 @@ button.btn.selected {
 }
 
 @media (max-width: 767px) {
-    .hero-section {
-        padding-top: 80%; /* taller mobile height */
-    }
+  .hero-section {
+    padding-top: 75%; /* taller mobile height */
+  }
 }
 
-@media (min-width: 768px) {
-    .hero-section {
-        padding-top: 20%; /* desktop height stays the same */
-    }
+@media (min-width: 768px) and (max-width: 1024px) {
+  .hero-section {
+    padding-top: 35%; /* iPad / tablet */
+  }
 }
+
+@media (min-width: 1025px) {
+  .hero-section {
+    padding-top: 22%; /* desktop */
+  }
+}
+
 
 .hero-bg {
     position: absolute;
