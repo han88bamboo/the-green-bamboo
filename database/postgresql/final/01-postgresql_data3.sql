@@ -68,6 +68,7 @@ DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
 DROP TABLE IF EXISTS "systemSettings" CASCADE;
+DROP TABLE IF EXISTS "myCellarItemsChangelog" CASCADE;
 DROP TABLE IF EXISTS "myCellarItems" CASCADE;
 DROP TABLE IF EXISTS "myCellarCollections" CASCADE;
 
@@ -1137,6 +1138,29 @@ CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
 CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
 CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
 
+-- ========= "myCellarItemsChangelog" =========
+CREATE TABLE "myCellarItemsChangelog" (
+    "id" SERIAL PRIMARY KEY,
+    "cellarItemID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE CASCADE, -- Reference to the cellar item
+    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'DELETED'
+    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityOwned', 'status', 'consumption')
+    "oldValue" TEXT, -- Previous value (JSON string for complex data)
+    "newValue" TEXT, -- New value (JSON string for complex data)
+    "changeDescription" TEXT, -- Human-readable description of the change
+    "quantityDelta" INTEGER DEFAULT NULL, -- For quantity changes: +5, -2, etc.
+    "triggeredBy" VARCHAR(50) DEFAULT 'USER', -- 'USER', 'SYSTEM', 'IMPORT', 'API'
+    "changeDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for changelog performance
+CREATE INDEX idx_changelog_cellar_item ON "myCellarItemsChangelog" ("cellarItemID");
+CREATE INDEX idx_changelog_change_type ON "myCellarItemsChangelog" ("changeType");
+CREATE INDEX idx_changelog_date ON "myCellarItemsChangelog" ("changeDate");
+CREATE INDEX idx_changelog_field ON "myCellarItemsChangelog" ("fieldName");
+
+-- Composite index for common queries (item history by date)
+CREATE INDEX idx_changelog_item_date ON "myCellarItemsChangelog" ("cellarItemID", "changeDate" DESC);
+
 -- Trigger to update updatedDate on myCellarItems
 CREATE OR REPLACE FUNCTION update_cellar_updated_date()
 RETURNS TRIGGER AS $$
@@ -1164,3 +1188,170 @@ CREATE TRIGGER trigger_update_cellar_collections_updated_date
     BEFORE UPDATE ON "myCellarCollections"
     FOR EACH ROW
     EXECUTE FUNCTION update_cellar_collections_updated_date();
+
+-- ========= CHANGELOG TRIGGERS FOR myCellarItems =========
+
+-- Function to log cellar item changes
+CREATE OR REPLACE FUNCTION log_cellar_item_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    change_desc TEXT;
+    qty_delta INTEGER;
+BEGIN
+    -- Handle INSERT (new item created)
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO "myCellarItemsChangelog" (
+            "cellarItemID", "changeType", "changeDescription", 
+            "newValue", "quantityDelta", "changeDate"
+        ) VALUES (
+            NEW."id", 'CREATED', 
+            'New cellar item added: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = NEW."listingID"), 'Unknown item'),
+            json_build_object(
+                'quantityOwned', NEW."quantityOwned",
+                'drinkFormat', NEW."drinkFormat",
+                'status', NEW."status",
+                'consumption', NEW."consumption",
+                'currentLocation', NEW."currentLocation"
+            )::text,
+            NEW."quantityOwned",
+            CURRENT_TIMESTAMP
+        );
+        RETURN NEW;
+    END IF;
+
+    -- Handle UPDATE (item modified)
+    IF TG_OP = 'UPDATE' THEN
+        -- Quantity changed
+        IF OLD."quantityOwned" != NEW."quantityOwned" THEN
+            qty_delta := NEW."quantityOwned" - OLD."quantityOwned";
+            change_desc := 'Quantity changed from ' || OLD."quantityOwned" || ' to ' || NEW."quantityOwned";
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "quantityDelta", "changeDate"
+            ) VALUES (
+                NEW."id", 'QUANTITY_UPDATED', 'quantityOwned', 
+                OLD."quantityOwned"::text, NEW."quantityOwned"::text,
+                change_desc, qty_delta, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Status changed
+        IF OLD."status" != NEW."status" THEN
+            change_desc := 'Status changed from "' || OLD."status" || '" to "' || NEW."status" || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'STATUS_CHANGED', 'status', 
+                OLD."status", NEW."status", change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Consumption status changed
+        IF OLD."consumption" != NEW."consumption" THEN
+            change_desc := 'Consumption status changed from "' || OLD."consumption" || '" to "' || NEW."consumption" || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'CONSUMPTION_CHANGED', 'consumption', 
+                OLD."consumption", NEW."consumption", change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Location changed
+        IF OLD."currentLocation" != NEW."currentLocation" OR 
+           COALESCE(OLD."subLocation", '') != COALESCE(NEW."subLocation", '') THEN
+            change_desc := 'Location changed from "' || COALESCE(OLD."currentLocation", '') || 
+                          CASE WHEN OLD."subLocation" IS NOT NULL THEN ' (' || OLD."subLocation" || ')' ELSE '' END ||
+                          '" to "' || COALESCE(NEW."currentLocation", '') ||
+                          CASE WHEN NEW."subLocation" IS NOT NULL THEN ' (' || NEW."subLocation" || ')' ELSE '' END || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'LOCATION_CHANGED', 'currentLocation', 
+                json_build_object('currentLocation', OLD."currentLocation", 'subLocation', OLD."subLocation")::text,
+                json_build_object('currentLocation', NEW."currentLocation", 'subLocation', NEW."subLocation")::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Notes updated
+        IF COALESCE(OLD."noteToSelf", '') != COALESCE(NEW."noteToSelf", '') OR
+           COALESCE(OLD."suggestedFoodPairing", '') != COALESCE(NEW."suggestedFoodPairing", '') THEN
+            change_desc := 'Notes or food pairing updated';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'NOTES_UPDATED', 'notes', 
+                json_build_object('noteToSelf', OLD."noteToSelf", 'suggestedFoodPairing', OLD."suggestedFoodPairing")::text,
+                json_build_object('noteToSelf', NEW."noteToSelf", 'suggestedFoodPairing', NEW."suggestedFoodPairing")::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Financial information updated
+        IF OLD."purchasePrice" IS DISTINCT FROM NEW."purchasePrice" OR
+           OLD."currentValueEstimation" IS DISTINCT FROM NEW."currentValueEstimation" OR
+           OLD."purchaseCurrency" != NEW."purchaseCurrency" OR
+           OLD."currentValueCurrency" != NEW."currentValueCurrency" THEN
+            change_desc := 'Financial information updated';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'FINANCIAL_UPDATED', 'financial', 
+                json_build_object(
+                    'purchasePrice', OLD."purchasePrice", 
+                    'purchaseCurrency', OLD."purchaseCurrency",
+                    'currentValueEstimation', OLD."currentValueEstimation",
+                    'currentValueCurrency', OLD."currentValueCurrency"
+                )::text,
+                json_build_object(
+                    'purchasePrice', NEW."purchasePrice", 
+                    'purchaseCurrency', NEW."purchaseCurrency",
+                    'currentValueEstimation', NEW."currentValueEstimation",
+                    'currentValueCurrency', NEW."currentValueCurrency"
+                )::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- Handle DELETE (item removed)
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO "myCellarItemsChangelog" (
+            "cellarItemID", "changeType", "changeDescription", 
+            "oldValue", "changeDate"
+        ) VALUES (
+            OLD."id", 'DELETED', 
+            'Cellar item removed: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = OLD."listingID"), 'Unknown item'),
+            json_build_object(
+                'quantityOwned', OLD."quantityOwned",
+                'status', OLD."status",
+                'consumption', OLD."consumption"
+            )::text,
+            CURRENT_TIMESTAMP
+        );
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ language 'plpgsql';
+
+-- Create the trigger
+CREATE TRIGGER trigger_log_cellar_item_changes
+    AFTER INSERT OR UPDATE OR DELETE ON "myCellarItems"
+    FOR EACH ROW
+    EXECUTE FUNCTION log_cellar_item_changes();
