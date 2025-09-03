@@ -162,23 +162,51 @@ def reorderTextSections():
 
 @blueprint.route('/uploadSectionImage', methods=['POST'])
 def uploadSectionImage():
-    data = request.get_json()
-    
     try:
+        data = request.get_json()
+        
+        if not data or 'image64' not in data:
+            return jsonify({
+                "code": 400,
+                "message": "Missing image data"
+            }), 400
+        
         # Validate image format and size
         base64_string = data['image64']
         
-        # Upload to S3
-        image_url = s3Images.uploadBase64ImageToS3(base64_string)
+        # Add some basic validation
+        if not base64_string:
+            return jsonify({
+                "code": 400,
+                "message": "Empty image data"
+            }), 400
         
-        return jsonify({
-            "code": 200,
-            "imageUrl": image_url
-        }), 200
+        try:
+            # Upload to S3 - make sure this function exists and works
+            image_url = s3Images.uploadBase64ImageToS3(base64_string)
+            
+            if not image_url:
+                return jsonify({
+                    "code": 500,
+                    "message": "Failed to upload image to S3"
+                }), 500
+                
+            return jsonify({
+                "code": 200,
+                "imageUrl": image_url,
+                "message": "Image uploaded successfully"
+            }), 200
+            
+        except Exception as s3_error:
+            print(f"S3 upload error: {str(s3_error)}")
+            return jsonify({
+                "code": 500,
+                "message": f"S3 upload failed: {str(s3_error)}"
+            }), 500
         
     except Exception as e:
-        print(str(e))
+        print(f"Upload image error: {str(e)}")
         return jsonify({
             "code": 500,
-            "message": "Error uploading image"
+            "message": f"Server error: {str(e)}"
         }), 500
