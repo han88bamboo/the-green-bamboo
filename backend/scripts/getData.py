@@ -84,6 +84,7 @@ from decimal import Decimal
 from datetime import datetime, timezone, date, timedelta
 from scripts import pointsHelperFunc
 from scripts import pointsHelperFunc
+from scripts.currencyService import currency_converter
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -5686,6 +5687,28 @@ def getProducersProfileViewsByProducer(id):
 
 
 # -----------------------------------------------------------------------------------------
+# Helper function for currency conversion in cellar endpoints
+def convert_price_to_usd(amount, currency):
+    """
+    Convert price to USD only if currency is not USD.
+    Returns the amount in USD or None if conversion fails.
+    """
+    if amount is None:
+        return None
+    
+    # If already USD, return as-is (no conversion needed)
+    if currency == 'USD' or currency is None:
+        return float(amount)
+    
+    # Convert non-USD currencies to USD
+    try:
+        return currency_converter.convert_to_usd(amount, currency)
+    except Exception as e:
+        print(f"Currency conversion failed for {amount} {currency}: {e}")
+        # Fallback: treat as USD
+        return float(amount)
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get cellar data for a specific account (user, producer, or venue)
 # Parameters: ownerType (string: 'user', 'producer', 'venue'), ownerID (int)
 # Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
@@ -5857,9 +5880,22 @@ def getCellarData(ownerType, ownerID):
             drink_type_summary[dt]['count'] += 1
             drink_type_summary[dt]['bottles'] += item['quantityOwned']
         
-        # Financial summary
-        total_purchase_value = sum(item['purchasePrice'] for item in items if item['purchasePrice'])
-        total_current_value = sum(item['currentValueEstimation'] for item in items if item['currentValueEstimation'])
+        # Financial summary with currency conversion
+        total_purchase_value = 0
+        total_current_value = 0
+        
+        for item in items:
+            # Convert purchase price to USD
+            if item['purchasePrice']:
+                purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item['purchaseCurrency'])
+                if purchase_price_usd:
+                    total_purchase_value += purchase_price_usd
+            
+            # Convert current value to USD  
+            if item['currentValueEstimation']:
+                current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item['currentValueCurrency'])
+                if current_value_usd:
+                    total_current_value += current_value_usd
         
         # Convert Decimal objects to float for JSON serialization
         for item in items:
@@ -5892,7 +5928,9 @@ def getCellarData(ownerType, ownerID):
                     "financialSummary": {
                         "totalPurchaseValue": float(total_purchase_value) if total_purchase_value else 0,
                         "totalCurrentValue": float(total_current_value) if total_current_value else 0,
-                        "estimatedGainLoss": float(total_current_value - total_purchase_value) if total_current_value and total_purchase_value else 0
+                        "estimatedGainLoss": float(total_current_value - total_purchase_value) if total_current_value and total_purchase_value else 0,
+                        "displayCurrency": "USD",
+                        "currencyNote": "All values converted to USD using current exchange rates"
                     }
                 },
                 "metadata": {
@@ -6008,15 +6046,22 @@ def getCellarDashboard(ownerType, ownerID):
             current_value = item[5]
             current_value_currency = item[6] or 'USD'
             
-            # For simplicity, we'll treat all currencies as equivalent to USD
-            # In production, you'd want proper currency conversion
+            # Convert to USD using currency service (only for non-USD currencies)
             if purchase_price is not None:
-                total_purchase_cost_usd += purchase_price * quantity
+                purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
+                if purchase_price_usd is not None:
+                    total_purchase_cost_usd += purchase_price_usd * quantity
+                else:
+                    items_without_purchase_price += quantity
             else:
                 items_without_purchase_price += quantity
                 
             if current_value is not None:
-                total_current_value_usd += current_value * quantity
+                current_value_usd = convert_price_to_usd(current_value, current_value_currency)
+                if current_value_usd is not None:
+                    total_current_value_usd += current_value_usd * quantity
+                else:
+                    items_without_current_value += quantity
             else:
                 items_without_current_value += quantity
             
@@ -6030,8 +6075,8 @@ def getCellarDashboard(ownerType, ownerID):
             sub_location = item[10] or 'Not Specified'
             collection = item[13] or 'Default'
             
-            # Helper function to update breakdown
-            def update_breakdown(breakdown_dict, key, quantity, purchase_price, current_value):
+            # Helper function to update breakdown with currency conversion
+            def update_breakdown(breakdown_dict, key, quantity, purchase_price, current_value, purchase_currency, current_value_currency):
                 if key not in breakdown_dict:
                     breakdown_dict[key] = {
                         'count': 0,
@@ -6044,24 +6089,32 @@ def getCellarDashboard(ownerType, ownerID):
                 breakdown_dict[key]['count'] += quantity
                 
                 if purchase_price is not None:
-                    breakdown_dict[key]['totalPurchaseCost'] += purchase_price * quantity
+                    purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
+                    if purchase_price_usd is not None:
+                        breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd * quantity
+                    else:
+                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += quantity
                 else:
                     breakdown_dict[key]['itemsWithoutPurchasePrice'] += quantity
                     
                 if current_value is not None:
-                    breakdown_dict[key]['totalCurrentValue'] += current_value * quantity
+                    current_value_usd = convert_price_to_usd(current_value, current_value_currency)
+                    if current_value_usd is not None:
+                        breakdown_dict[key]['totalCurrentValue'] += current_value_usd * quantity
+                    else:
+                        breakdown_dict[key]['itemsWithoutCurrentValue'] += quantity
                 else:
                     breakdown_dict[key]['itemsWithoutCurrentValue'] += quantity
             
             # Update all breakdowns
-            update_breakdown(breakdown_by_country, country, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_drink_type, drink_type, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_category, category, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_format, drink_format, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_consumption, consumption, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_location, location, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_sub_location, sub_location, quantity, purchase_price, current_value)
-            update_breakdown(breakdown_by_collection, collection, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_country, country, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_drink_type, drink_type, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_category, category, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_format, drink_format, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_consumption, consumption, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_location, location, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_sub_location, sub_location, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_collection, collection, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
         
         # Generate qualifiers for financial data
         purchase_cost_qualifier = None
@@ -6145,7 +6198,9 @@ def getCellarDashboard(ownerType, ownerID):
                 'itemsWithoutPurchasePrice': items_without_purchase_price,
                 'itemsWithoutCurrentValue': items_without_current_value,
                 'purchaseCostQualifier': purchase_cost_qualifier,
-                'currentValueQualifier': current_value_qualifier
+                'currentValueQualifier': current_value_qualifier,
+                'displayCurrency': 'USD',
+                'currencyNote': 'All values converted to USD using current exchange rates'
             },
             'breakdowns': {
                 'byCountry': breakdown_by_country,
