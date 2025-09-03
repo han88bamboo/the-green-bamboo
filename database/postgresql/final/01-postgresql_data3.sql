@@ -1161,35 +1161,37 @@ CREATE INDEX idx_changelog_field ON "myCellarItemsChangelog" ("fieldName");
 -- Composite index for common queries (item history by date)
 CREATE INDEX idx_changelog_item_date ON "myCellarItemsChangelog" ("cellarItemID", "changeDate" DESC);
 
--- Trigger to update updatedDate on myCellarItems
-CREATE OR REPLACE FUNCTION update_cellar_updated_date()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW."updatedDate" = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- ========= OPTIONAL: Auto-update timestamps (can be handled in backend instead) =========
+-- Uncomment these if you want automatic updatedDate handling at database level
 
-CREATE TRIGGER trigger_update_cellar_updated_date
-    BEFORE UPDATE ON "myCellarItems"
-    FOR EACH ROW
-    EXECUTE FUNCTION update_cellar_updated_date();
+-- CREATE OR REPLACE FUNCTION update_cellar_updated_date()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW."updatedDate" = CURRENT_TIMESTAMP;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
 
--- Trigger to update updatedDate on myCellarCollections
-CREATE OR REPLACE FUNCTION update_cellar_collections_updated_date()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW."updatedDate" = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
+-- CREATE TRIGGER trigger_update_cellar_updated_date
+--     BEFORE UPDATE ON "myCellarItems"
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_cellar_updated_date();
 
-CREATE TRIGGER trigger_update_cellar_collections_updated_date
-    BEFORE UPDATE ON "myCellarCollections"
-    FOR EACH ROW
-    EXECUTE FUNCTION update_cellar_collections_updated_date();
+-- CREATE OR REPLACE FUNCTION update_cellar_collections_updated_date()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW."updatedDate" = CURRENT_TIMESTAMP;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
 
--- ========= CHANGELOG TRIGGERS FOR myCellarItems =========
+-- CREATE TRIGGER trigger_update_cellar_collections_updated_date
+--     BEFORE UPDATE ON "myCellarCollections"
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_cellar_collections_updated_date();
+
+-- ========= CHANGELOG TRIGGERS FOR myCellarItems (RECOMMENDED) =========
+-- This provides bulletproof audit trail regardless of how data is modified
 
 -- Function to log cellar item changes
 CREATE OR REPLACE FUNCTION log_cellar_item_changes()
@@ -1263,8 +1265,8 @@ BEGIN
         END IF;
 
         -- Location changed
-        IF OLD."currentLocation" != NEW."currentLocation" OR 
-           COALESCE(OLD."subLocation", '') != COALESCE(NEW."subLocation", '') THEN
+        IF OLD."currentLocation" IS DISTINCT FROM NEW."currentLocation" OR 
+           OLD."subLocation" IS DISTINCT FROM NEW."subLocation" THEN
             change_desc := 'Location changed from "' || COALESCE(OLD."currentLocation", '') || 
                           CASE WHEN OLD."subLocation" IS NOT NULL THEN ' (' || OLD."subLocation" || ')' ELSE '' END ||
                           '" to "' || COALESCE(NEW."currentLocation", '') ||
@@ -1282,8 +1284,8 @@ BEGIN
         END IF;
 
         -- Notes updated
-        IF COALESCE(OLD."noteToSelf", '') != COALESCE(NEW."noteToSelf", '') OR
-           COALESCE(OLD."suggestedFoodPairing", '') != COALESCE(NEW."suggestedFoodPairing", '') THEN
+        IF OLD."noteToSelf" IS DISTINCT FROM NEW."noteToSelf" OR
+           OLD."suggestedFoodPairing" IS DISTINCT FROM NEW."suggestedFoodPairing" THEN
             change_desc := 'Notes or food pairing updated';
             
             INSERT INTO "myCellarItemsChangelog" (
@@ -1300,8 +1302,8 @@ BEGIN
         -- Financial information updated
         IF OLD."purchasePrice" IS DISTINCT FROM NEW."purchasePrice" OR
            OLD."currentValueEstimation" IS DISTINCT FROM NEW."currentValueEstimation" OR
-           OLD."purchaseCurrency" != NEW."purchaseCurrency" OR
-           OLD."currentValueCurrency" != NEW."currentValueCurrency" THEN
+           OLD."purchaseCurrency" IS DISTINCT FROM NEW."purchaseCurrency" OR
+           OLD."currentValueCurrency" IS DISTINCT FROM NEW."currentValueCurrency" THEN
             change_desc := 'Financial information updated';
             
             INSERT INTO "myCellarItemsChangelog" (
