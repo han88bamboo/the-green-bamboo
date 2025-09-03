@@ -5917,6 +5917,267 @@ def getCellarData(ownerType, ownerID):
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get cellar dashboard data with analytics and historical trends
+@blueprint.route("/getCellarDashboard/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCellarDashboard(ownerType, ownerID):
+    """
+    Comprehensive cellar dashboard endpoint that provides:
+    1. Total items count across all collections
+    2. Total purchase cost with completeness warnings
+    3. Total current value with completeness warnings
+    4. Breakdown by various categories (country, type, format, etc.)
+    5. Historical data for plotting graphs over time
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor()
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Main query to get all cellar items with related data
+        cellar_query = """
+        SELECT 
+            ci.id,
+            ci.quantityOwned,
+            ci.drinkFormat,
+            ci.purchasePrice,
+            ci.purchaseCurrency,
+            ci.currentValueEstimation,
+            ci.currentValueCurrency,
+            ci.status,
+            ci.consumption,
+            ci.currentLocation,
+            ci.subLocation,
+            ci.addedDate,
+            ci.updatedDate,
+            cc.collectionName,
+            cc.id as collectionID,
+            l.listingName,
+            l.originCountry,
+            l.drinkType,
+            l.typeCategory,
+            l.abv,
+            l.producerID,
+            p.producerName
+        FROM "myCellarItems" ci
+        LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
+        LEFT JOIN "listings" l ON ci."listingID" = l.id
+        LEFT JOIN "producers" p ON l."producerID" = p.id
+        WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+        ORDER BY ci."addedDate" DESC
+        """
+        
+        cur.execute(cellar_query, (ownerID, ownerType))
+        items = cur.fetchall()
+        
+        if not items:
+            return jsonify({
+                "code": 404,
+                "message": "No cellar items found for this owner."
+            }), 404
+        
+        # Initialize counters and totals
+        total_items = 0
+        total_purchase_cost_usd = 0
+        total_current_value_usd = 0
+        items_without_purchase_price = 0
+        items_without_current_value = 0
+        
+        # Breakdown dictionaries
+        breakdown_by_country = {}
+        breakdown_by_drink_type = {}
+        breakdown_by_category = {}
+        breakdown_by_format = {}
+        breakdown_by_consumption = {}
+        breakdown_by_location = {}
+        breakdown_by_sub_location = {}
+        breakdown_by_collection = {}
+        
+        # Process each item
+        for item in items:
+            quantity = item[1] or 0
+            total_items += quantity
+            
+            purchase_price = item[3]
+            purchase_currency = item[4] or 'USD'
+            current_value = item[5]
+            current_value_currency = item[6] or 'USD'
+            
+            # For simplicity, we'll treat all currencies as equivalent to USD
+            # In production, you'd want proper currency conversion
+            if purchase_price is not None:
+                total_purchase_cost_usd += purchase_price * quantity
+            else:
+                items_without_purchase_price += quantity
+                
+            if current_value is not None:
+                total_current_value_usd += current_value * quantity
+            else:
+                items_without_current_value += quantity
+            
+            # Extract breakdown data
+            country = item[16] or 'Unknown'
+            drink_type = item[17] or 'Unknown'
+            category = item[18] or 'Unknown'
+            drink_format = item[2] or 'Bottle'
+            consumption = item[8] or 'Unknown'
+            location = item[9] or 'Unknown'
+            sub_location = item[10] or 'Not Specified'
+            collection = item[13] or 'Default'
+            
+            # Helper function to update breakdown
+            def update_breakdown(breakdown_dict, key, quantity, purchase_price, current_value):
+                if key not in breakdown_dict:
+                    breakdown_dict[key] = {
+                        'count': 0,
+                        'totalPurchaseCost': 0,
+                        'totalCurrentValue': 0,
+                        'itemsWithoutPurchasePrice': 0,
+                        'itemsWithoutCurrentValue': 0
+                    }
+                
+                breakdown_dict[key]['count'] += quantity
+                
+                if purchase_price is not None:
+                    breakdown_dict[key]['totalPurchaseCost'] += purchase_price * quantity
+                else:
+                    breakdown_dict[key]['itemsWithoutPurchasePrice'] += quantity
+                    
+                if current_value is not None:
+                    breakdown_dict[key]['totalCurrentValue'] += current_value * quantity
+                else:
+                    breakdown_dict[key]['itemsWithoutCurrentValue'] += quantity
+            
+            # Update all breakdowns
+            update_breakdown(breakdown_by_country, country, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_drink_type, drink_type, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_category, category, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_format, drink_format, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_consumption, consumption, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_location, location, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_sub_location, sub_location, quantity, purchase_price, current_value)
+            update_breakdown(breakdown_by_collection, collection, quantity, purchase_price, current_value)
+        
+        # Generate qualifiers for financial data
+        purchase_cost_qualifier = None
+        if items_without_purchase_price > 0:
+            purchase_cost_qualifier = f"This is an estimate only - you have not entered the purchase price of {items_without_purchase_price} bottles in your cellar"
+        
+        current_value_qualifier = None
+        if items_without_current_value > 0:
+            current_value_qualifier = f"This is an estimate only - you have not entered the current market value of {items_without_current_value} bottles in your cellar"
+        
+        # Get historical data for graphs
+        historical_query = """
+        SELECT 
+            DATE_TRUNC('month', cl."changeDate") as month,
+            cl."changeType",
+            cl."quantityDelta",
+            cl."newValue",
+            cl."fieldName"
+        FROM "myCellarItemsChangelog" cl
+        JOIN "myCellarItems" ci ON cl."cellarItemID" = ci.id
+        JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
+        WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+        AND cl."changeDate" >= NOW() - INTERVAL '12 months'
+        ORDER BY cl."changeDate" ASC
+        """
+        
+        cur.execute(historical_query, (ownerID, ownerType))
+        changelog_items = cur.fetchall()
+        
+        # Process historical data
+        monthly_data = {}
+        
+        for log_item in changelog_items:
+            month = log_item[0].strftime('%Y-%m') if log_item[0] else None
+            change_type = log_item[1]
+            quantity_delta = log_item[2] or 0
+            new_value = log_item[3]
+            field_name = log_item[4]
+            
+            if month not in monthly_data:
+                monthly_data[month] = {
+                    'totalItems': 0,
+                    'itemsAdded': 0,
+                    'itemsRemoved': 0,
+                    'valueChanges': 0
+                }
+            
+            if change_type == 'CREATED':
+                monthly_data[month]['itemsAdded'] += 1
+                monthly_data[month]['totalItems'] += 1
+            elif change_type == 'QUANTITY_UPDATED':
+                if quantity_delta > 0:
+                    monthly_data[month]['itemsAdded'] += quantity_delta
+                else:
+                    monthly_data[month]['itemsRemoved'] += abs(quantity_delta)
+                monthly_data[month]['totalItems'] += quantity_delta
+            elif change_type == 'FINANCIAL_UPDATED' and field_name == 'currentValueEstimation':
+                try:
+                    value = float(new_value) if new_value else 0
+                    monthly_data[month]['valueChanges'] += value
+                except (ValueError, TypeError):
+                    pass
+        
+        # Convert monthly data to list for frontend consumption
+        historical_timeline = []
+        for month, data in sorted(monthly_data.items()):
+            historical_timeline.append({
+                'month': month,
+                'totalItems': data['totalItems'],
+                'itemsAdded': data['itemsAdded'],
+                'itemsRemoved': data['itemsRemoved'],
+                'valueChanges': round(data['valueChanges'], 2)
+            })
+        
+        # Prepare final response
+        dashboard_data = {
+            'summary': {
+                'totalItems': total_items,
+                'totalPurchaseCost': round(total_purchase_cost_usd, 2),
+                'totalCurrentValue': round(total_current_value_usd, 2),
+                'itemsWithoutPurchasePrice': items_without_purchase_price,
+                'itemsWithoutCurrentValue': items_without_current_value,
+                'purchaseCostQualifier': purchase_cost_qualifier,
+                'currentValueQualifier': current_value_qualifier
+            },
+            'breakdowns': {
+                'byCountry': breakdown_by_country,
+                'byDrinkType': breakdown_by_drink_type,
+                'byCategory': breakdown_by_category,
+                'byFormat': breakdown_by_format,
+                'byConsumption': breakdown_by_consumption,
+                'byLocation': breakdown_by_location,
+                'bySubLocation': breakdown_by_sub_location,
+                'byCollection': breakdown_by_collection
+            },
+            'historicalData': {
+                'timeline': historical_timeline,
+                'dataPoints': len(historical_timeline)
+            }
+        }
+        
+        return jsonify({
+            "code": 200,
+            "data": dashboard_data,
+            "message": f"Successfully retrieved cellar dashboard data for {ownerType} {ownerID}."
+        })
+        
+    except Exception as e:
+        print(f"Error in getCellarDashboard: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving cellar dashboard data: {str(e)}"
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get best rated expressions for a producer
 @blueprint.route("/getBestRatedExpressions/<producerID>")
 def getBestRatedExpressions(producerID):
