@@ -1196,77 +1196,170 @@
 
           <!-- Text Sections -->
       <div v-if="selfView || textSections.length > 0" class="mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
-          <button 
-            v-if="selfView" 
-            @click="editingTextSections = !editingTextSections"
-            class="btn btn-primary"
-          >
-            {{ editingTextSections ? 'Done Editing' : 'Edit Sections' }}
-          </button>
-        </div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
+    <button 
+      v-if="selfView" 
+      @click="editingTextSections = !editingTextSections"
+      class="btn btn-primary"
+    >
+      {{ editingTextSections ? 'Done Editing' : 'Edit Sections' }}
+    </button>
+  </div>
 
-        <!-- Display Mode -->
-        <div v-if="!editingTextSections">
-          <div 
-            v-for="section in textSections" 
-            :key="section.id"
-            class="mb-4 p-3 border rounded"
-          >
-            <h5 class="fw-bold mb-3">{{ section.sectionTitle }}</h5>
-            <div v-html="section.richTextContent" class="text-section-content"></div>
+  <!-- Display Mode -->
+  <div v-if="!editingTextSections">
+    <div 
+      v-for="section in textSections" 
+      :key="section.id"
+      class="row mb-2"
+    >
+      <!-- Section Header Button (like VenueMenuTab) -->
+      <div class="col-12 d-grid mobile-px-0">
+        <button 
+          type="button" 
+          class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+          data-bs-toggle="collapse" 
+          :data-bs-target="'#collapseTextSection' + section.id"
+          aria-expanded="true" 
+          :aria-controls="'collapseTextSection' + section.id"
+          style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+        >
+          {{ section.sectionTitle }} ↓
+        </button>
+      </div>
+
+      <!-- Section Content (Collapsible) -->
+      <div class="collapse show" :id="'collapseTextSection' + section.id">
+        <div class="container text-start">
+          <div class="col-12 my-3">
+            <div class="text-start text-section-content" v-html="section.richTextContent"></div>
           </div>
         </div>
-
-        <!-- Edit Mode -->
-        <div v-if="editingTextSections && selfView">
-          <draggable 
-            v-model="textSections" 
-            group="textSections"
-            @change="reorderSections"
-            :disabled="false"
-            handle=".drag-handle"
-            animation="150"
-            class="mb-3"
-          >
-            <template #item="{ element: section }">
-              <div class="card mb-3">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <div class="d-flex align-items-center">
-                    <span class="drag-handle me-2" style="cursor: move;">⋮⋮</span>
-                    <strong>{{ section.sectionTitle || 'New Section' }}</strong>
-                  </div>
-                  <div>
-                    <button 
-                      @click="editSection(section)"
-                      class="btn btn-sm btn-outline-primary me-2"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      @click="deleteSection(section.id)"
-                      class="btn btn-sm btn-outline-danger"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div v-html="section.richTextContent" class="text-section-preview"></div>
-                </div>
-              </div>
-            </template>
-          </draggable>
-
-          <button 
-            @click="addNewSection"
-            class="btn btn-success mb-3"
-          >
-            Add New Section
-          </button>
-        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Edit Mode -->
+  <div v-if="editingTextSections && selfView">
+    <draggable 
+      v-model="textSections" 
+      group="textSections"
+      @change="reorderSections"
+      :disabled="false"
+      handle=".drag-handle"
+      animation="150"
+      class="mb-3"
+    >
+      <template #item="{ element: section }">
+        <div class="row mb-2 drag-handle" :data-section-order="section.sectionOrder">
+          <!-- Drag Handle -->
+          <!-- <div class="col-1 d-flex align-items-center justify-content-center">
+            <span class="drag-handle" style="cursor: move; font-size: 1.2em; color: #6c757d;">⋮⋮</span>
+          </div> -->
+          
+          <!-- Section Name (like VenueMenuTab edit mode) -->
+          <div class="col-8 d-grid pe-0 mobile-view-hide">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-end-0 fs-5 fw-bold text-start"
+              data-bs-toggle="collapse"
+              :data-bs-target="'#collapseEditTextSection' + section.id"
+              aria-expanded="true"
+              :aria-controls="'collapseEditTextSection' + section.id"
+              style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+            >
+              {{ section.sectionTitle || 'New Section' }}
+            </button>
+          </div>
+          <div class="col-6 d-grid ps-0 pe-0 mobile-view-show">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-end-0 fs-6 fw-bold text-start"
+              data-bs-toggle="collapse"
+              :data-bs-target="'#collapseEditTextSection' + section.id"
+              aria-expanded="true"
+              :aria-controls="'collapseEditTextSection' + section.id"
+              style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+            >
+              {{ section.sectionTitle || 'New Section' }}
+            </button>
+          </div>
+
+          <!-- Edit Section Button -->
+          <div class="col-2 d-grid p-0 mobile-view-hide">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-0 pe-2 text-center"
+              @click="editSection(section)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+              </svg>
+              Edit
+            </button>
+          </div>
+
+          <div class="col-2 d-grid p-0 mobile-view-show pe-0">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-0 px-0 text-center"
+              @click="editSection(section)"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Delete Section -->
+          <div class="col-2 d-grid ps-0 mobile-view-hide">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center"
+              @click="deleteSection(section.id)"
+            >
+              <svg xmlns='http://www.w3.org/2000/svg' width="20" height="20"
+                fill='#f5f5f5' class="pb-1" viewBox='0 0 16 16'>
+                <path d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z' />
+              </svg>
+            </button>
+          </div>
+
+          <div class="col-1 d-grid ps-0 pe-0 mobile-view-show">
+            <button type="button"
+              class="btn secondary-btn-not-rounded rounded-start-0 px-0 text-center"
+              @click="deleteSection(section.id)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                class="bi bi-sort-down" xmlns="http://www.w3.org/2000/svg">
+                <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
+                    stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                </g>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Section Content Preview (Collapsible) -->
+          <div class="collapse show" :id="'collapseEditTextSection' + section.id">
+            <div class="col-12 my-3">
+              <div class="p-3 border rounded bg-light">
+                <!-- <small class="text-muted">Preview:</small> -->
+                <div class="text-section-preview text-start" v-html="section.richTextContent"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </draggable>
+
+    <button 
+      @click="addNewSection"
+      class="btn btn-success mb-3"
+    >
+      Add New Section
+    </button>
+  </div>
+</div>
 
       <!-- Rich Text Editor Modal -->
       <div class="modal fade" id="textSectionModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
@@ -6783,11 +6876,14 @@ Thank you!`
     this.editingSectionContent = section.richTextContent;
     this.showModal();
 
-    this.$nextTick(() => {
-      if (this.$refs.richTextEditor) {
-        this.$refs.richTextEditor.updateContent(section.sectionTitle, section.richTextContent);
-      }
-    });
+    // Add small delay to ensure modal is fully rendered before updating content
+    setTimeout(() => {
+      this.$nextTick(() => {
+        if (this.$refs.richTextEditor) {
+          this.$refs.richTextEditor.updateContent(section.sectionTitle, section.richTextContent);
+        }
+      });
+    }, 100); // 100ms delay should be sufficient for modal to render
   },
 
   // Save section (add or update)
@@ -7058,5 +7154,47 @@ Thank you!`
 
 #textSectionModal .ql-tooltip {
   z-index: 1060;
+}
+
+.text-section-content img,
+.text-section-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Ensure text content doesn't overflow */
+.text-section-content,
+.text-section-preview {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Additional container constraints */
+.text-section-content,
+.text-section-preview {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Preview height constraint */
+.text-section-preview {
+  max-height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, #f8f9fa);
+  pointer-events: none;
 }
 </style>

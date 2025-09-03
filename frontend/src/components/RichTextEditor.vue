@@ -38,12 +38,24 @@ export default {
   emits: ['content-changed', 'title-changed'],
   data() {
     return {
-      quill: null,
+      // Don't put quill in reactive data - this causes the issue!
       sectionTitle: this.initialTitle
     }
   },
+  // Create quill as a plain property, not reactive data
+  created() {
+    this.quill = null; // Plain variable, not reactive
+  },
   mounted() {
-    this.initializeEditor();
+    this.$nextTick(() => {
+      this.initializeEditor();
+    });
+  },
+  beforeUnmount() {
+    if (this.quill) {
+      this.quill.off('text-change');
+      this.quill = null;
+    }
   },
   watch: {
     sectionTitle(newTitle) {
@@ -53,15 +65,21 @@ export default {
     initialTitle(newTitle) {
       this.sectionTitle = newTitle;
     },
-    
+
     initialContent(newContent) {
       if (this.quill && newContent !== this.quill.root.innerHTML) {
-        this.quill.root.innerHTML = newContent;
+        // Use clipboard API instead of innerHTML
+        this.quill.clipboard.dangerouslyPasteHTML(0, newContent || '');
       }
     }
   },
   methods: {
     initializeEditor() {
+      if (!this.$refs.editor) {
+        console.error('Editor ref not found');
+        return;
+      }
+
       const toolbarOptions = [
         ['bold', 'italic', 'underline'],
         ['link'],
@@ -70,6 +88,7 @@ export default {
         ['clean']
       ];
 
+      // Create Quill instance as plain variable (not reactive)
       this.quill = new Quill(this.$refs.editor, {
         theme: 'snow',
         modules: {
@@ -82,9 +101,9 @@ export default {
         }
       });
 
-      // Set initial content
+      // Set initial content using clipboard API
       if (this.initialContent) {
-        this.quill.root.innerHTML = this.initialContent;
+        this.quill.clipboard.dangerouslyPasteHTML(0, this.initialContent);
       }
 
       // Listen for content changes
@@ -97,10 +116,10 @@ export default {
       const input = document.createElement('input');
       input.setAttribute('type', 'file');
       input.setAttribute('accept', 'image/png');
-      input.click();
-
+      
       input.onchange = async () => {
         const file = input.files[0];
+        if (!file) return;
         
         // Check file size (5MB limit)
         if (file.size > 5 * 1024 * 1024) {
@@ -114,6 +133,10 @@ export default {
           return;
         }
 
+        // Get current selection
+        const range = this.quill.getSelection(true);
+        const index = range ? range.index : this.quill.getLength();
+
         const reader = new FileReader();
         reader.onload = async (e) => {
           const base64String = e.target.result.replace(/^data:image\/png;base64,/, '');
@@ -124,21 +147,26 @@ export default {
               { image64: base64String }
             );
 
-            if (response.data.code === 200) {
-              const range = this.quill.getSelection();
-              this.quill.insertEmbed(range.index, 'image', response.data.imageUrl);
+            if (response.data.code === 200 && response.data.imageUrl) {
+              this.quill.insertEmbed(index, 'image', response.data.imageUrl);
+              this.quill.setSelection(index + 1, 0);
+            } else {
+              alert('Image upload failed');
             }
           } catch (error) {
             console.error('Error uploading image:', error);
             alert('Error uploading image');
           }
         };
+        
         reader.readAsDataURL(file);
       };
+      
+      input.click();
     },
 
     getContent() {
-      return this.quill.root.innerHTML;
+      return this.quill ? this.quill.root.innerHTML : '';
     },
 
     getTitle() {
@@ -155,17 +183,23 @@ export default {
       this.sectionTitle = title;
     },
 
-    updateContent(title, content) {
-      this.sectionTitle = title;
+    clearContent() {
       if (this.quill) {
-        this.quill.root.innerHTML = content;
+        this.quill.setText(''); // Clear all content
+        this.sectionTitle = ''; // Clear title as well
+        this.$emit('content-changed', '');
+        this.$emit('title-changed', '');
       }
     },
 
-    clearContent() {
-      this.sectionTitle = '';
+    updateContent(title, content) {
+      this.sectionTitle = title;
       if (this.quill) {
-        this.quill.root.innerHTML = '';
+        // Use clipboard API to properly set HTML content with images
+        this.quill.clipboard.dangerouslyPasteHTML(0, content || '');
+        // Emit the content to sync with parent
+        this.$emit('content-changed', content || '');
+        this.$emit('title-changed', title || '');
       }
     }
   }
