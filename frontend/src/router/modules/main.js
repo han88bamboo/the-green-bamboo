@@ -64,9 +64,19 @@ const routes = [
     component: () => import(/* webpackChunkName: "main" */ "@/views/SuccessfulOnboarding.vue"),
   },
   {
-    path: "/my-cellar",
+    path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
     name: "myCellar",
-    component: () => import(/* webpackChunkName: "main" */ "@/views/MyCellar.vue"),
+    component: () => import('@/views/MyCellarPage.vue'),
+    props: true,
+    beforeEnter: (to, from, next) => {
+      // Validate ownerType parameter
+      const validOwnerTypes = ['user', 'producer', 'venue'];
+      if (!validOwnerTypes.includes(to.params.ownerType)) {
+        next({ name: 'not-found' });
+      } else {
+        next();
+      }
+    }
   },
 ];
 

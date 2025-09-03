@@ -1,0 +1,1069 @@
+<template>
+  <NavBar />
+  
+  <main>
+    <!-- Page Header -->
+    <section class="page-header py-4">
+      <div class="container">
+        <div class="row">
+          <div class="col-12">
+            <h1 class="page-title fw-bold mb-0">My Cellar</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <section class="main-content py-4">
+      <div class="container">
+        <div class="row">
+          <!-- Left Column - Collections & Items (8/12 columns) -->
+          <div class="col-12 col-lg-8">
+            <!-- Tab Navigation -->
+            <div class="tabs-container mb-4">
+              <nav class="tabs-nav">
+                <ul class="nav nav-pills nav-fill">
+                  <!-- All Drinks Tab (Active) -->
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link active"
+                      :class="{ active: activeTab === 'all' }"
+                      @click="setActiveTab('all')"
+                      type="button"
+                    >
+                      All Drinks in Cellar
+                      <span class="item-count ms-2" v-if="!loading">{{ totalItemCount }} Items</span>
+                      <span class="item-count ms-2" v-else>...</span>
+                    </button>
+                  </li>
+                  <!-- Add Collection Tab -->
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link nav-link-add-collection"
+                      @click="openAddCollectionModal"
+                      type="button"
+                    >
+                      <i class="bi bi-plus-circle me-2"></i>
+                      Add new Collection
+                    </button>
+                  </li>
+                  <!-- Dynamic Collection Tabs -->
+                  <li class="nav-item" v-for="collection in collections" :key="collection.id">
+                    <button 
+                      class="nav-link"
+                      :class="{ active: activeTab === collection.id }"
+                      @click="setActiveTab(collection.id)"
+                      type="button"
+                      v-if="!collection.isDefault"
+                    >
+                      {{ collection.collectionName }}
+                      <span class="item-count ms-2">{{ collection.itemCount }} Items</span>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+
+            <!-- Filters Row -->
+            <div class="filters-container mb-4">
+              <div class="row g-3">
+                <!-- Search Input -->
+                <div class="col-12 col-md-4">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bi bi-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Search by name or producer..."
+                      v-model="searchQuery"
+                      @input="debouncedSearch"
+                    >
+                  </div>
+                </div>
+
+                <!-- Vintage Filter -->
+                <div class="col-6 col-md-2">
+                  <select class="form-select" v-model="filters.vintage">
+                    <option value="">Any Vintage</option>
+                    <option v-for="year in vintageOptions" :key="year" :value="year">
+                      {{ year }}
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Size Filter -->
+                <div class="col-6 col-md-2">
+                  <select class="form-select" v-model="filters.size">
+                    <option value="">Any Size</option>
+                    <option value="187">187ml</option>
+                    <option value="375">375ml</option>
+                    <option value="750">750ml</option>
+                    <option value="1500">1.5L</option>
+                  </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="col-6 col-md-2">
+                  <select class="form-select" v-model="filters.status">
+                    <option value="">Any Status</option>
+                    <option value="In Possession">In Cellar</option>
+                    <option value="On Its Way">On Its Way</option>
+                    <option value="Wishlisted">Wishlisted</option>
+                    <option value="Consumed">Consumed</option>
+                  </select>
+                </div>
+
+                <!-- Drink Now Checkbox -->
+                <div class="col-6 col-md-2">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="drinkNowFilter"
+                      v-model="filters.drinkNow"
+                    >
+                    <label class="form-check-label" for="drinkNowFilter">
+                      Only drink-now
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Items Grid -->
+            <div class="items-grid">
+              <!-- Loading Skeletons -->
+              <div v-if="loading" class="row">
+                <div 
+                  v-for="n in 9" 
+                  :key="'skeleton-' + n"
+                  class="col-12 col-md-6 col-lg-4 mb-4"
+                >
+                  <div class="card cellar-item-skeleton">
+                    <div class="skeleton-image"></div>
+                    <div class="card-body">
+                      <div class="skeleton-line skeleton-title"></div>
+                      <div class="skeleton-line skeleton-subtitle"></div>
+                      <div class="skeleton-line skeleton-notes"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error State -->
+              <div v-else-if="error" class="text-center py-5">
+                <div class="alert alert-danger" role="alert">
+                  <h4 class="alert-heading">Error Loading Cellar</h4>
+                  <p>{{ error }}</p>
+                  <button class="btn btn-outline-danger" @click="loadCellarData">
+                    Try Again
+                  </button>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div v-else-if="filteredItems.length === 0" class="empty-state text-center py-5">
+                <div class="empty-icon mb-3">
+                  🍷
+                </div>
+                <h3 class="mb-2">No bottles match your filters</h3>
+                <p class="text-muted">
+                  Try adjusting your search criteria or add some drinks to your cellar.
+                </p>
+                <button class="btn btn-primary" @click="clearFilters">
+                  Clear Filters
+                </button>
+              </div>
+
+              <!-- Items Cards -->
+              <div v-else class="row">
+                <div 
+                  v-for="item in paginatedItems" 
+                  :key="item.cellarItemId"
+                  class="col-12 col-md-6 col-lg-4 mb-4"
+                >
+                  <div 
+                    class="card cellar-item-card h-100"
+                    @click="openItemDetails(item)"
+                    role="button"
+                    tabindex="0"
+                    @keyup.enter="openItemDetails(item)"
+                  >
+                    <!-- Image Area -->
+                    <div class="card-img-container">
+                      <img 
+                        :src="item.drinkPhoto || '/placeholder-bottle.png'"
+                        :alt="item.listingName"
+                        class="card-img-top"
+                        @error="onImageError"
+                      >
+                      <!-- Quantity Badge -->
+                      <div class="quantity-badge">
+                        x{{ item.quantityOwned }}
+                      </div>
+                    </div>
+
+                    <!-- Info Band -->
+                    <div class="card-body">
+                      <div class="card-content">
+                        <!-- Primary Line -->
+                        <h6 class="card-title" :title="item.listingName">
+                          {{ item.listingName }}
+                        </h6>
+                        
+                        <!-- Secondary Line -->
+                        <p class="card-subtitle text-muted mb-2">
+                          {{ item.drinkType }}
+                          <span v-if="item.typeCategory"> • {{ item.typeCategory }}</span>
+                        </p>
+
+                        <!-- Producer -->
+                        <p class="card-producer text-muted mb-2" v-if="item.producerName">
+                          {{ item.producerName }}
+                        </p>
+
+                        <!-- Notes (Optional Tertiary) -->
+                        <p 
+                          class="card-notes text-muted small" 
+                          v-if="item.noteToSelf"
+                          :title="item.noteToSelf"
+                        >
+                          {{ item.noteToSelf }}
+                        </p>
+
+                        <!-- Status Affordances -->
+                        <div class="status-info mt-2">
+                          <span 
+                            class="status-badge badge"
+                            :class="getStatusBadgeClass(item.status)"
+                          >
+                            {{ item.status }}
+                          </span>
+                          <div class="drink-dates mt-1" v-if="item.drinkByDate || item.drinkOnwardsDate">
+                            <small class="text-muted">
+                              <span v-if="item.drinkOnwardsDate">
+                                Drink from: {{ formatDate(item.drinkOnwardsDate) }}
+                              </span>
+                              <span v-if="item.drinkByDate">
+                                Drink by: {{ formatDate(item.drinkByDate) }}
+                              </span>
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Hover Actions (Desktop Only) -->
+                      <div class="hover-actions d-none d-lg-flex">
+                        <button 
+                          class="btn btn-sm btn-outline-primary"
+                          @click.stop="consumeItem(item)"
+                          title="Coming soon"
+                          disabled
+                        >
+                          Consume
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-secondary"
+                          @click.stop="adjustItem(item)"
+                          title="Coming soon"
+                          disabled
+                        >
+                          Adjust
+                        </button>
+                        <button 
+                          class="btn btn-sm btn-outline-info"
+                          @click.stop="moveItem(item)"
+                          title="Coming soon"
+                          disabled
+                        >
+                          Move
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div v-if="totalPages > 1" class="pagination-container mt-4">
+                <nav aria-label="Cellar items pagination">
+                  <ul class="pagination justify-content-start">
+                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                      <button 
+                        class="page-link" 
+                        @click="goToPage(currentPage - 1)"
+                        :disabled="currentPage === 1"
+                      >
+                        Previous
+                      </button>
+                    </li>
+                    <li 
+                      class="page-item" 
+                      :class="{ active: page === currentPage }"
+                      v-for="page in visiblePages" 
+                      :key="page"
+                    >
+                      <button class="page-link" @click="goToPage(page)">
+                        {{ page }}
+                      </button>
+                    </li>
+                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                      <button 
+                        class="page-link" 
+                        @click="goToPage(currentPage + 1)"
+                        :disabled="currentPage === totalPages"
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column - Add Drink Placeholder (4/12 columns) -->
+          <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+            <div class="add-drink-placeholder">
+              <div class="placeholder-content text-center p-4">
+                <div class="placeholder-icon mb-3">
+                  <i class="bi bi-plus-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                </div>
+                <h4 class="placeholder-title mb-2">Add a Drink to Cellar</h4>
+                <p class="placeholder-text text-muted">
+                  Coming next - Add drinks to your personal cellar with detailed tracking options.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modals -->
+    <!-- Item Details Modal (Stub) -->
+    <div 
+      class="modal fade" 
+      id="itemDetailsModal" 
+      tabindex="-1" 
+      aria-labelledby="itemDetailsModalLabel" 
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-id" id="itemDetailsModalLabel">
+              {{ selectedItem?.listingName || 'Item Details' }}
+            </h5>
+            <button 
+              type="button" 
+              class="btn-close" 
+              data-bs-dismiss="modal" 
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center py-4">
+              <i class="bi bi-gear" style="font-size: 3rem; color: #6c757d;"></i>
+              <h4 class="mt-3">Item Details - Coming Next</h4>
+              <p class="text-muted">
+                Detailed item view with editing capabilities will be available soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Collection Modal (Stub) -->
+    <div 
+      class="modal fade" 
+      id="addCollectionModal" 
+      tabindex="-1" 
+      aria-labelledby="addCollectionModalLabel" 
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCollectionModalLabel">Add New Collection</h5>
+            <button 
+              type="button" 
+              class="btn-close" 
+              data-bs-dismiss="modal" 
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="text-center py-4">
+              <i class="bi bi-collection" style="font-size: 3rem; color: #6c757d;"></i>
+              <h4 class="mt-3">Collection Management - Coming Next</h4>
+              <p class="text-muted">
+                Create and organize custom collections for your cellar items.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <FooterBar />
+</template>
+
+<script>
+import NavBar from '@/components/NavBar.vue'
+import FooterBar from '@/components/FooterBar.vue'
+
+export default {
+  name: 'myCellar',
+  components: {
+    NavBar,
+    FooterBar
+  },
+  props: {
+    ownerType: {
+      type: String,
+      required: true,
+      validator: value => ['user', 'producer', 'venue'].includes(value)
+    },
+    id: {
+      type: String,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    }
+  },
+  data() {
+    return {
+      // Data loading states
+      loading: true,
+      error: null,
+      
+      // Tabs and collections
+      activeTab: 'all',
+      collections: [],
+      
+      // Items and filtering
+      allItems: [],
+      searchQuery: '',
+      filters: {
+        vintage: '',
+        size: '',
+        status: '',
+        drinkNow: false
+      },
+      
+      // Pagination
+      currentPage: 1,
+      itemsPerPage: 24,
+      
+      // Modal states
+      selectedItem: null,
+      
+      // Dashboard data
+      dashboardData: null,
+      
+      // Search debouncing
+      searchTimeout: null
+    }
+  },
+  computed: {
+    // Total item count for the active tab
+    totalItemCount() {
+      if (this.activeTab === 'all') {
+        return this.allItems.length
+      }
+      const collection = this.collections.find(c => c.id === this.activeTab)
+      return collection ? collection.itemCount : 0
+    },
+    
+    // Get items for active tab/collection
+    tabItems() {
+      if (this.activeTab === 'all') {
+        return this.allItems
+      }
+      return this.allItems.filter(item => item.collectionId === this.activeTab)
+    },
+    
+    // Apply search and filters
+    filteredItems() {
+      let items = this.tabItems
+      
+      // Search filter
+      if (this.searchQuery.trim()) {
+        const query = this.searchQuery.toLowerCase()
+        items = items.filter(item => 
+          item.listingName.toLowerCase().includes(query) ||
+          (item.producerName && item.producerName.toLowerCase().includes(query))
+        )
+      }
+      
+      // Vintage filter
+      if (this.filters.vintage) {
+        items = items.filter(item => item.variant == this.filters.vintage)
+      }
+      
+      // Size filter
+      if (this.filters.size) {
+        items = items.filter(item => item.volumeML == this.filters.size)
+      }
+      
+      // Status filter
+      if (this.filters.status) {
+        items = items.filter(item => item.status === this.filters.status)
+      }
+      
+      // Drink now filter
+      if (this.filters.drinkNow) {
+        const today = new Date()
+        items = items.filter(item => {
+          if (!item.drinkOnwardsDate && !item.drinkByDate) return false
+          
+          const drinkFrom = item.drinkOnwardsDate ? new Date(item.drinkOnwardsDate) : null
+          const drinkBy = item.drinkByDate ? new Date(item.drinkByDate) : null
+          
+          const afterDrinkFrom = !drinkFrom || today >= drinkFrom
+          const beforeDrinkBy = !drinkBy || today <= drinkBy
+          
+          return afterDrinkFrom && beforeDrinkBy
+        })
+      }
+      
+      return items
+    },
+    
+    // Pagination calculations
+    totalPages() {
+      return Math.ceil(this.filteredItems.length / this.itemsPerPage)
+    },
+    
+    paginatedItems() {
+      const start = (this.currentPage - 1) * this.itemsPerPage
+      const end = start + this.itemsPerPage
+      return this.filteredItems.slice(start, end)
+    },
+    
+    visiblePages() {
+      const pages = []
+      const maxVisible = 5
+      let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2))
+      let end = Math.min(this.totalPages, start + maxVisible - 1)
+      
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1)
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i)
+      }
+      return pages
+    },
+    
+    // Vintage options for filter dropdown
+    vintageOptions() {
+      const vintages = new Set()
+      this.allItems.forEach(item => {
+        if (item.variant) {
+          vintages.add(item.variant)
+        }
+      })
+      return Array.from(vintages).sort((a, b) => b - a)
+    }
+  },
+  watch: {
+    // Watch route params for changes
+    '$route'(to, from) {
+      if (to.params.ownerType !== from.params.ownerType || 
+          to.params.id !== from.params.id) {
+        this.loadCellarData()
+      }
+    },
+    
+    // Reset pagination when filters change
+    'filters': {
+      handler() {
+        this.currentPage = 1
+      },
+      deep: true
+    },
+    
+    searchQuery() {
+      this.currentPage = 1
+    }
+  },
+  async mounted() {
+    await this.loadCellarData()
+  },
+  beforeUnmount() {
+    // Cancel any pending search timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout)
+    }
+  },
+  methods: {
+    // Data loading
+    async loadCellarData() {
+      this.loading = true
+      this.error = null
+      
+      try {
+        // Load dashboard and items data in parallel
+        const [dashboardResponse, itemsResponse] = await Promise.all([
+          this.fetchCellarDashboard(),
+          this.fetchCellarItems()
+        ])
+        
+        this.dashboardData = dashboardResponse.data
+        this.allItems = itemsResponse.data.items || []
+        this.collections = itemsResponse.data.collections || []
+        
+      } catch (error) {
+        console.error('Error loading cellar data:', error)
+        this.error = error.message || 'Failed to load cellar data'
+      } finally {
+        this.loading = false
+      }
+    },
+    
+    async fetchCellarDashboard() {
+      // TODO: Replace with actual API call using project's axios wrapper
+      const response = await this.$axios.get(`/get-data/getCellarDashboard/${this.ownerType}/${this.id}`)
+      return response.data
+    },
+    
+    async fetchCellarItems() {
+      // TODO: Replace with actual API call using project's axios wrapper
+      const params = new URLSearchParams()
+      if (this.activeTab !== 'all') {
+        params.append('collectionId', this.activeTab)
+      }
+      
+      const response = await this.$axios.get(`/get-data/getCellarData/${this.ownerType}/${this.id}?${params}`)
+      return response.data
+    },
+    
+    // Tab management
+    setActiveTab(tabId) {
+      this.activeTab = tabId
+      this.currentPage = 1
+      // TODO: Fetch filtered data if needed
+    },
+    
+    // Filter management
+    debouncedSearch() {
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout)
+      }
+      this.searchTimeout = setTimeout(() => {
+        // Search is handled by computed property
+        // This debouncing prevents excessive filtering during typing
+      }, 300)
+    },
+    
+    clearFilters() {
+      this.searchQuery = ''
+      this.filters = {
+        vintage: '',
+        size: '',
+        status: '',
+        drinkNow: false
+      }
+      this.currentPage = 1
+    },
+    
+    // Pagination
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page
+        // Scroll to top of items grid
+        this.$nextTick(() => {
+          document.querySelector('.items-grid')?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          })
+        })
+      }
+    },
+    
+    // Modal management
+    openItemDetails(item) {
+      this.selectedItem = item
+      // Use Bootstrap's modal API
+      const modal = new bootstrap.Modal(document.getElementById('itemDetailsModal'))
+      modal.show()
+    },
+    
+    openAddCollectionModal() {
+      const modal = new bootstrap.Modal(document.getElementById('addCollectionModal'))
+      modal.show()
+    },
+    
+    // Item actions (stubs for now)
+    consumeItem(item) {
+      console.log('Consume item:', item)
+      // TODO: Implement consume functionality
+    },
+    
+    adjustItem(item) {
+      console.log('Adjust item:', item)
+      // TODO: Implement adjust functionality
+    },
+    
+    moveItem(item) {
+      console.log('Move item:', item)
+      // TODO: Implement move functionality
+    },
+    
+    // Utility methods
+    formatDate(dateString) {
+      if (!dateString) return ''
+      const date = new Date(dateString)
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      })
+    },
+    
+    getStatusBadgeClass(status) {
+      const statusClasses = {
+        'In Possession': 'bg-success',
+        'On Its Way': 'bg-info',
+        'Wishlisted': 'bg-warning',
+        'Consumed': 'bg-secondary',
+        'Held Elsewhere': 'bg-primary'
+      }
+      return statusClasses[status] || 'bg-secondary'
+    },
+    
+    onImageError(event) {
+      event.target.src = '/placeholder-bottle.png'
+    }
+  }
+}
+</script>
+
+<style scoped>
+/* Page Layout */
+.page-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.page-title {
+  color: #212529;
+  font-size: 2rem;
+}
+
+/* Tabs */
+.tabs-container {
+  background-color: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.nav-pills .nav-link {
+  color: #6c757d;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  transition: all 0.15s ease-in-out;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.nav-pills .nav-link.active {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.nav-link-add-collection {
+  border: 2px dashed #dee2e6 !important;
+  background-color: transparent !important;
+}
+
+.nav-link-add-collection:hover {
+  border-color: #adb5bd !important;
+  background-color: #f8f9fa !important;
+}
+
+.item-count {
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* Filters */
+.filters-container {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Items Grid */
+.items-grid {
+  min-height: 400px;
+}
+
+/* Item Cards */
+.cellar-item-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.cellar-item-card:hover {
+  border-color: #0d6efd;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.cellar-item-card:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+.card-img-container {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background-color: #f8f9fa;
+}
+
+.card-img-top {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.2s ease-in-out;
+}
+
+.cellar-item-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+.quantity-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.card-body {
+  position: relative;
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-subtitle {
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.card-producer {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.card-notes {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.status-info {
+  border-top: 1px solid #f8f9fa;
+  padding-top: 0.5rem;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+}
+
+.drink-dates {
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+/* Hover Actions */
+.hover-actions {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  gap: 0.5rem;
+  opacity: 0;
+  transform: translateY(1rem);
+  transition: all 0.2s ease-in-out;
+}
+
+.cellar-item-card:hover .hover-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Loading Skeletons */
+.cellar-item-skeleton {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.skeleton-image {
+  height: 200px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.skeleton-line {
+  height: 1rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-title {
+  width: 80%;
+}
+
+.skeleton-subtitle {
+  width: 60%;
+}
+
+.skeleton-notes {
+  width: 90%;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty State */
+.empty-state .empty-icon {
+  font-size: 4rem;
+  opacity: 0.5;
+}
+
+/* Right Column Placeholder */
+.add-drink-placeholder {
+  background-color: #fff;
+  border: 2px dashed #dee2e6;
+  border-radius: 0.5rem;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-content {
+  max-width: 300px;
+}
+
+.placeholder-title {
+  color: #495057;
+  margin-bottom: 1rem;
+}
+
+.placeholder-text {
+  line-height: 1.5;
+}
+
+/* Pagination */
+.pagination-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .hover-actions {
+    display: none !important;
+  }
+  
+  .add-drink-placeholder {
+    margin-top: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .filters-container .row > div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .nav-pills .nav-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .item-count {
+    display: block;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-img-container {
+    height: 150px;
+  }
+  
+  .card-body {
+    padding: 0.75rem;
+  }
+  
+  .card-title {
+    font-size: 0.9rem;
+  }
+  
+  .pagination-container {
+    justify-content: center;
+  }
+}
+</style>
