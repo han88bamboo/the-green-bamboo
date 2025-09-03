@@ -68,6 +68,8 @@ DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
 DROP TABLE IF EXISTS "systemSettings" CASCADE;
+DROP TABLE IF EXISTS "myCellarItems" CASCADE;
+DROP TABLE IF EXISTS "myCellarCollections" CASCADE;
 
 -- to enable trigram index for fuzzy search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -1058,3 +1060,106 @@ CREATE TABLE "systemSettings" (
     "settingDescription" TEXT,
     "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ========= "myCellarCollections" =========
+CREATE TABLE "myCellarCollections" (
+    "id" SERIAL PRIMARY KEY,
+    "ownerID" INTEGER NOT NULL, -- Account ID (user, producer, or venue)
+    "ownerType" VARCHAR(50) NOT NULL, -- 'user', 'producer', 'venue'
+    "collectionName" VARCHAR(255) NOT NULL,
+    "isDefault" BOOLEAN DEFAULT FALSE, -- True for the default collection
+    "isPublic" BOOLEAN DEFAULT FALSE, -- True if publicly viewable
+    "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE ("ownerID", "ownerType", "collectionName"), -- Prevent duplicate collection names per owner
+    UNIQUE ("ownerID", "ownerType", "isDefault") DEFERRABLE INITIALLY DEFERRED -- Only one default collection per owner
+);
+
+-- Create index for faster lookups
+CREATE INDEX idx_cellar_collections_owner ON "myCellarCollections" ("ownerID", "ownerType");
+
+-- ========= "myCellarItems" =========
+CREATE TABLE "myCellarItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- Reference to the drink listing
+    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE SET NULL, -- Collection this item belongs to
+    "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
+    
+    -- Inventory Details
+    "quantityOwned" INTEGER DEFAULT 1,
+    "drinkFormat" VARCHAR(50) DEFAULT 'Bottle', -- 'Bottle', 'Can', 'Sample', etc.
+    "volumeML" INTEGER, -- Volume in milliliters
+    
+    -- Important Dates
+    "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date
+    "drinkOnwardsDate" DATE DEFAULT NULL, -- Earliest recommended consumption date
+    "purchaseDate" DATE DEFAULT NULL,
+    "deliveryDate" DATE DEFAULT NULL,
+    
+    -- Financial Information
+    "purchasePrice" DECIMAL(10,2) DEFAULT NULL,
+    "purchaseCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
+    "currentValueEstimation" DECIMAL(10,2) DEFAULT NULL,
+    "currentValueCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
+    
+    -- Purchase Location (following reviews table pattern)
+    "purchasePlaceName" VARCHAR(255) DEFAULT NULL, -- Name of place purchased (for non-venue locations)
+    "purchaseAddress" VARCHAR(255) DEFAULT NULL, -- Address from Google Maps API (similar to reviews.address)
+    
+    -- Status and Condition
+    "status" VARCHAR(50) DEFAULT 'In Possession', -- 'In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed'
+    "consumption" VARCHAR(50) DEFAULT 'Unopened', -- 'Opened', 'Unopened', 'Empty',
+    
+    -- Storage Location
+    "currentLocation" VARCHAR(255) DEFAULT 'At Home', -- 'At Home', 'At Friend''s Home', 'At Restaurant', or custom
+    "subLocation" VARCHAR(255) DEFAULT NULL, -- 'In my attic', 'Wine fridge', etc. - custom location details
+    
+    -- User Notes and Pairing
+    "suggestedFoodPairing" TEXT DEFAULT NULL, -- User-defined food pairing suggestions
+    "noteToSelf" TEXT DEFAULT NULL, -- Personal notes about this bottle
+    
+    -- Metadata
+    "addedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_status CHECK ("status" IN ('In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed')),
+    CONSTRAINT check_consumption CHECK ("consumption" IN ('Opened', 'Unopened', 'Empty')),
+    CONSTRAINT check_quantity_positive CHECK ("quantityOwned" >= 0),
+    CONSTRAINT check_volume_positive CHECK ("volumeML" IS NULL OR "volumeML" > 0),
+    CONSTRAINT check_price_positive CHECK ("purchasePrice" IS NULL OR "purchasePrice" >= 0),
+    CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0)
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_cellar_listing ON "myCellarItems" ("listingID");
+CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
+CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
+CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
+
+-- Trigger to update updatedDate on myCellarItems
+CREATE OR REPLACE FUNCTION update_cellar_updated_date()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW."updatedDate" = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER trigger_update_cellar_updated_date
+    BEFORE UPDATE ON "myCellarItems"
+    FOR EACH ROW
+    EXECUTE FUNCTION update_cellar_updated_date();
+
+-- Trigger to update updatedDate on myCellarCollections
+CREATE OR REPLACE FUNCTION update_cellar_collections_updated_date()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW."updatedDate" = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER trigger_update_cellar_collections_updated_date
+    BEFORE UPDATE ON "myCellarCollections"
+    FOR EACH ROW
+    EXECUTE FUNCTION update_cellar_collections_updated_date();
