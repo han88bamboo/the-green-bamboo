@@ -5686,6 +5686,237 @@ def getProducersProfileViewsByProducer(id):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get cellar data for a specific account (user, producer, or venue)
+# Parameters: ownerType (string: 'user', 'producer', 'venue'), ownerID (int)
+# Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
+#                   includeConsumed (default: false), sortBy (default: addedDate)
+@blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCellarData(ownerType, ownerID):
+    try:
+        conn = g.db
+        cur = conn.cursor()
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Get query parameters
+        collection_id = request.args.get('collectionId')
+        status_filter = request.args.get('status')
+        drink_type = request.args.get('drinkType')
+        include_consumed = request.args.get('includeConsumed', 'false').lower() == 'true'
+        sort_by = request.args.get('sortBy', 'addedDate')
+        
+        # Validate sort_by parameter
+        valid_sort_fields = ['addedDate', 'listingName', 'quantityOwned', 'drinkByDate', 'purchaseDate']
+        if sort_by not in valid_sort_fields:
+            sort_by = 'addedDate'
+        
+        # Build dynamic WHERE clause
+        where_conditions = ['cc."ownerID" = %s', 'cc."ownerType" = %s']
+        params = [ownerID, ownerType]
+        
+        if collection_id:
+            where_conditions.append('cc."id" = %s')
+            params.append(collection_id)
+        
+        if not include_consumed:
+            where_conditions.append('ci."status" != %s')
+            params.append('Consumed')
+        
+        if status_filter:
+            where_conditions.append('ci."status" = %s')
+            params.append(status_filter)
+        
+        if drink_type:
+            where_conditions.append('l."drinkType" = %s')
+            params.append(drink_type)
+        
+        where_clause = ' AND '.join(where_conditions)
+        
+        # Main query to get cellar items with all related data
+        items_query = f"""
+            SELECT 
+                -- Cellar Item Details
+                ci."id" as cellarItemId,
+                ci."quantityOwned",
+                ci."drinkFormat",
+                ci."volumeML",
+                ci."status",
+                ci."consumption",
+                ci."currentLocation",
+                ci."subLocation",
+                ci."purchasePrice",
+                ci."purchaseCurrency",
+                ci."currentValueEstimation",
+                ci."currentValueCurrency",
+                ci."drinkByDate",
+                ci."drinkOnwardsDate",
+                ci."purchaseDate",
+                ci."deliveryDate",
+                ci."noteToSelf",
+                ci."suggestedFoodPairing",
+                ci."variant",
+                ci."addedDate",
+                ci."updatedDate",
+                
+                -- Collection Info
+                cc."collectionName",
+                cc."id" as collectionId,
+                cc."isDefault",
+                cc."isPublic",
+                
+                -- Listing Details
+                l."id" as listingId,
+                l."listingName",
+                l."drinkType",
+                l."typeCategory",
+                l."originCountry",
+                l."abv",
+                l."age",
+                l."photo" as drinkPhoto,
+                l."officialDesc",
+                
+                -- Producer Info
+                p."producerName",
+                
+                -- Bottler Info (if different from producer)
+                bp."producerName" as bottlerName,
+                
+                -- Purchase Venue Info
+                pv."venueName" as purchaseVenueName,
+                ci."purchasePlaceName",
+                ci."purchaseAddress",
+                
+                -- Average Rating
+                COALESCE(AVG(r."rating"), 0) as averageRating,
+                COUNT(r."id") as reviewCount
+                
+            FROM "myCellarItems" ci
+            LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            LEFT JOIN "listings" l ON ci."listingID" = l."id"
+            LEFT JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN "producers" bp ON l."bottlerID" = bp."id"
+            LEFT JOIN "venues" pv ON ci."purchaseVenueID" = pv."id"
+            LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE {where_clause}
+            GROUP BY ci."id", cc."id", l."id", p."id", bp."id", pv."id"
+            ORDER BY ci."{sort_by}" DESC
+        """
+        
+        cur.execute(items_query, params)
+        items = cur.fetchall()
+        
+        # Get collections summary for this owner
+        collections_query = """
+            SELECT 
+                cc."id",
+                cc."collectionName",
+                cc."isDefault",
+                cc."isPublic",
+                cc."createdDate",
+                cc."updatedDate",
+                COUNT(ci."id") as itemCount,
+                SUM(ci."quantityOwned") as totalBottles,
+                SUM(CASE WHEN ci."status" = 'Consumed' THEN ci."quantityOwned" ELSE 0 END) as consumedBottles,
+                SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
+                SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
+            FROM "myCellarCollections" cc
+            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID"
+            WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+            GROUP BY cc."id"
+            ORDER BY cc."isDefault" DESC, cc."collectionName"
+        """
+        
+        cur.execute(collections_query, [ownerID, ownerType])
+        collections = cur.fetchall()
+        
+        # Calculate summary statistics
+        total_items = len(items)
+        total_bottles = sum(item['quantityOwned'] for item in items)
+        total_collections = len(collections)
+        
+        # Status breakdown
+        status_summary = {}
+        for item in items:
+            status = item['status']
+            if status not in status_summary:
+                status_summary[status] = {'count': 0, 'bottles': 0}
+            status_summary[status]['count'] += 1
+            status_summary[status]['bottles'] += item['quantityOwned']
+        
+        # Drink type breakdown
+        drink_type_summary = {}
+        for item in items:
+            dt = item['drinkType'] or 'Unknown'
+            if dt not in drink_type_summary:
+                drink_type_summary[dt] = {'count': 0, 'bottles': 0}
+            drink_type_summary[dt]['count'] += 1
+            drink_type_summary[dt]['bottles'] += item['quantityOwned']
+        
+        # Financial summary
+        total_purchase_value = sum(item['purchasePrice'] for item in items if item['purchasePrice'])
+        total_current_value = sum(item['currentValueEstimation'] for item in items if item['currentValueEstimation'])
+        
+        # Convert Decimal objects to float for JSON serialization
+        for item in items:
+            if item['purchasePrice']:
+                item['purchasePrice'] = float(item['purchasePrice'])
+            if item['currentValueEstimation']:
+                item['currentValueEstimation'] = float(item['currentValueEstimation'])
+            if item['averageRating']:
+                item['averageRating'] = float(item['averageRating'])
+            if item['abv']:
+                item['abv'] = float(item['abv'])
+        
+        for collection in collections:
+            if collection['totalPurchaseValue']:
+                collection['totalPurchaseValue'] = float(collection['totalPurchaseValue'])
+            if collection['totalCurrentValue']:
+                collection['totalCurrentValue'] = float(collection['totalCurrentValue'])
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "items": items,
+                "collections": collections,
+                "summary": {
+                    "totalItems": total_items,
+                    "totalBottles": total_bottles,
+                    "totalCollections": total_collections,
+                    "statusBreakdown": status_summary,
+                    "drinkTypeBreakdown": drink_type_summary,
+                    "financialSummary": {
+                        "totalPurchaseValue": float(total_purchase_value) if total_purchase_value else 0,
+                        "totalCurrentValue": float(total_current_value) if total_current_value else 0,
+                        "estimatedGainLoss": float(total_current_value - total_purchase_value) if total_current_value and total_purchase_value else 0
+                    }
+                },
+                "metadata": {
+                    "ownerType": ownerType,
+                    "ownerID": ownerID,
+                    "filters": {
+                        "collectionId": collection_id,
+                        "status": status_filter,
+                        "drinkType": drink_type,
+                        "includeConsumed": include_consumed,
+                        "sortBy": sort_by
+                    }
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in getCellarData: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving cellar data: {str(e)}"
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get best rated expressions for a producer
 @blueprint.route("/getBestRatedExpressions/<producerID>")
 def getBestRatedExpressions(producerID):
