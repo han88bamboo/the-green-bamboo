@@ -1088,7 +1088,7 @@ CREATE TABLE "myCellarItems" (
     -- Inventory Details
     "quantityOwned" INTEGER DEFAULT 1,
     "drinkFormat" VARCHAR(50) DEFAULT 'Bottle', -- 'Bottle', 'Can', 'Sample', etc.
-    "volumeML" INTEGER, -- Volume in milliliters
+    "volumeML" INTEGER DEFAULT NULL, -- Volume in milliliters
     
     -- Important Dates
     "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date
@@ -1103,12 +1103,13 @@ CREATE TABLE "myCellarItems" (
     "currentValueCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
     
     -- Purchase Location (following reviews table pattern)
+    "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL DEFAULT NULL, -- If purchased from a known venue
     "purchasePlaceName" VARCHAR(255) DEFAULT NULL, -- Name of place purchased (for non-venue locations)
     "purchaseAddress" VARCHAR(255) DEFAULT NULL, -- Address from Google Maps API (similar to reviews.address)
     
     -- Status and Condition
     "status" VARCHAR(50) DEFAULT 'In Possession', -- 'In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed'
-    "consumption" VARCHAR(50) DEFAULT 'Unopened', -- 'Opened', 'Unopened', 'Empty',
+    "consumption" VARCHAR(50) DEFAULT 'Unopened', -- 'Opened', 'Unopened', 'Empty'
     
     -- Storage Location
     "currentLocation" VARCHAR(255) DEFAULT 'At Home', -- 'At Home', 'At Friend''s Home', 'At Restaurant', or custom
