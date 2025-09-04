@@ -49,39 +49,22 @@ def get_top_comments(content_id, content_type):
         """, (content_id,))
         comments = cursor.fetchall()
 
-        # Loop through each comment and get the username or producerName or venueName
+        # Loop through each comment
         if comments:
             for comment in comments:
 
-                if comment["userType"] == "user":
-                    cursor.execute("""
-                        SELECT "username", photo
-                        FROM "users"
-                        WHERE "id" = %s
-                    """, (comment["userId"],))
-                    result = cursor.fetchone()
-                    comment["username"] = result["username"]
-                    comment["photo"] = result["photo"]
+                # Get the username or producerName or venueName
+                commenter_info = get_commenter_info(comment['userId'], comment['userType'])
+                comment['username'] = commenter_info['username']
+                comment['userPhoto'] = commenter_info['photo']
 
-                elif comment["userType"] == "producer":
-                    cursor.execute("""
-                        SELECT "producerName", photo
-                        FROM "producers"
-                        WHERE "id" = %s
-                    """, (comment["userId"],))
-                    result = cursor.fetchone()
-                    comment["username"] = result["producerName"]
-                    comment["photo"] = result["photo"]
-
-                elif comment["userType"] == "venue":
-                    cursor.execute("""
-                        SELECT "venueName", photo
-                        FROM "venues"
-                        WHERE "id" = %s
-                    """, (comment["userId"],))
-                    result = cursor.fetchone()
-                    comment["username"] = result["venueName"]
-                    comment["photo"] = result["photo"]
+                # Get the number of reply comments
+                cursor.execute(f"""
+                    SELECT COUNT(*) FROM "{table_name}"
+                    WHERE "parentId" = %s
+                """, (comment['id'],))
+                reply_count = cursor.fetchone()
+                comment['replyCount'] = reply_count['count'] if reply_count else 0
 
         return comments
 
@@ -465,10 +448,9 @@ def getRandomListings(user_id, user_type):
                         update['contentType'] = 'pUpdate'
 
                         # Get producer name
-                        cursor.execute("""SELECT "producerName", photo FROM producers WHERE id = %s""", (update['producerId'],))
-                        producer_data = cursor.fetchone()
-                        update['producerName'] = producer_data['producerName'] if producer_data else None
-                        update['producerPhoto'] = producer_data['photo'] if producer_data else None
+                        producer_info = get_commenter_info(update['producerId'], 'producer')
+                        update['producerName'] = producer_info['username']
+                        update['producerPhoto'] = producer_info['photo']
 
                         # Get top 3 comments
                         update['topComments'] = get_top_comments(update['id'], 'pUpdate')
@@ -481,10 +463,9 @@ def getRandomListings(user_id, user_type):
                         update['contentType'] = 'vUpdate'
 
                         # Get venue name
-                        cursor.execute("""SELECT "venueName", photo FROM venues WHERE id = %s""", (update['venueId'],))
-                        venue_data = cursor.fetchone()
-                        update['venueName'] = venue_data['venueName'] if venue_data else None
-                        update['venuePhoto'] = venue_data['photo'] if venue_data else None
+                        venue_info = get_commenter_info(update['venueId'], 'venue')
+                        update['venueName'] = venue_info['username']
+                        update['venuePhoto'] = venue_info['photo']
 
                         # Get top 3 comments
                         update['topComments'] = get_top_comments(update['id'], 'vUpdate')
@@ -716,15 +697,15 @@ def getNext30():
                 # Get review details
                 if producer_reviews:
                     for review in producer_reviews:
-                        cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (review['producerID'],))
-                        producer = cursor.fetchone()
-                        review['producerName'] = producer['producerName'] if producer else None
+
+                        # Get producerName
+                        producer_info = get_commenter_info(review['producerID'], 'producer')
+                        review['producerName'] = producer_info['username']
 
                         # Get reviewer username and userPhoto
-                        cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
-                        user_data = cursor.fetchone()
-                        review['username'] = user_data['username'] if user_data else None
-                        review['userPhoto'] = user_data['photo'] if user_data else None
+                        reviewer_info = get_commenter_info(review['userID'], 'user')
+                        review['username'] = reviewer_info['username']
+                        review['userPhoto'] = reviewer_info['photo']
 
                         # Set content type
                         review['contentType'] = 'pReview'
@@ -738,15 +719,14 @@ def getNext30():
                 # Get venueName and photo
                 if venue_reviews:
                     for review in venue_reviews:
-                        cursor.execute('SELECT "venueName" FROM "venues" WHERE "id" = %s', (review['venueID'],))
-                        venue = cursor.fetchone()
-                        review['venueName'] = venue['venueName'] if venue else None
+                        venue_info = get_commenter_info(review['venueID'], 'venue')
+                        review['venueName'] = venue_info['username']
+                        review['venuePhoto'] = venue_info['photo']
 
                         # Get reviewer username and userPhoto
-                        cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
-                        user_data = cursor.fetchone()
-                        review['username'] = user_data['username'] if user_data else None
-                        review['userPhoto'] = user_data['photo'] if user_data else None
+                        reviewer_info = get_commenter_info(review['userID'], 'user')
+                        review['username'] = reviewer_info['username']
+                        review['userPhoto'] = reviewer_info['photo']
 
                         # Set content type
                         review['contentType'] = 'vReview'
@@ -833,10 +813,9 @@ def getNext30():
                     update['contentType'] = 'vUpdate'
                     
                     # Get venue name
-                    cursor.execute('SELECT "venueName", "photo" FROM "venues" WHERE "id" = %s', (update['venueId'],))
-                    venue = cursor.fetchone()
-                    update['venueName'] = venue['venueName'] if venue else None
-                    update['venuePhoto'] = venue['photo'] if venue else None
+                    venue_info = get_commenter_info(update['venueId'], 'venue')
+                    update['venueName'] = venue_info['username']
+                    update['venuePhoto'] = venue_info['photo']
 
                     # Get top 3 comments
                     update['topComments'] = get_top_comments(update['id'], 'vUpdate')
@@ -1118,27 +1097,7 @@ def addComment():
             added_comment = cursor.fetchone()
 
             # Get the commenter username and photo 
-            if user_type == 'user':
-                cursor.execute("""
-                    SELECT "username", "photo"
-                    FROM "users"
-                    WHERE "id" = %s
-                """, (user_id,))
-                user_info = cursor.fetchone()
-            elif user_type == 'producer':
-                cursor.execute("""
-                    SELECT "producerName", "photo"
-                    FROM "producers"
-                    WHERE "id" = %s
-                """, (user_id,))
-                user_info = cursor.fetchone()
-            elif user_type == 'venue':
-                cursor.execute("""
-                    SELECT "venueName", "photo"
-                    FROM "venues"
-                    WHERE "id" = %s
-                """, (user_id,))
-                user_info = cursor.fetchone()
+            user_info = get_commenter_info(user_id, user_type)
 
             added_comment["photo"] = user_info['photo']
             added_comment["username"] = user_info['username']
