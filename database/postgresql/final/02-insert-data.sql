@@ -4366,6 +4366,14 @@ INSERT INTO "myCellarCollections" (
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
+INSERT INTO "myCellarCollections" (
+    "ownerID", "ownerType", "collectionName", "isDefault", "isPublic", 
+    "createdDate", "updatedDate"
+) VALUES (
+    3, 'user', 'Test Beer Collection', FALSE, FALSE, 
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
 -- Item 1: Listing ID 1179024
 INSERT INTO "myCellarItems" (
     "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
@@ -4375,7 +4383,7 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1179024, 1, 2022, 2, 'Bottle', 750,
+    1179024, 2, 2022, 2, 'Bottle', 750,
     '2030-12-31', '2025-01-01', '2024-08-15', '2024-08-20',
     89.99, 'USD', 95.00, 'USD',
     NULL, 'Local Wine Shop', '123 Main Street, City, State',
@@ -4411,7 +4419,7 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1037431, 1, 2021, 3, 'Bottle', 750,
+    1037431, 2, 2021, 3, 'Bottle', 750,
     '2028-03-15', '2025-06-01', '2024-06-25', '2024-06-28',
     67.75, 'USD', 72.00, 'USD',
     NULL, 'Neighborhood Liquor Store', '789 Pine Street, Suburb',
