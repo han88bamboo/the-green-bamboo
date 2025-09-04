@@ -197,7 +197,7 @@
                     <!-- Image Area -->
                     <div class="card-img-container">
                       <img 
-                        :src="item.drinkPhoto || '/placeholder-bottle.png'"
+                        :src="getItemImageUrl(item)"
                         :alt="item.listingName"
                         class="card-img-top"
                         @error="onImageError"
@@ -623,6 +623,11 @@ export default {
         this.allItems = itemsResponse.data?.items || itemsResponse.items || []
         this.collections = itemsResponse.data?.collections || itemsResponse.collections || []
         
+        // Debug: log first item to see what image properties are available
+        if (this.allItems.length > 0) {
+          console.log('Sample cellar item data:', this.allItems[0]);
+        }
+        
       } catch (error) {
         console.error('Error loading cellar data:', error)
         this.error = error.message || 'Failed to load cellar data'
@@ -738,7 +743,27 @@ export default {
     },
     
     onImageError(event) {
-      event.target.src = '/placeholder-bottle.png'
+      event.target.src = 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'
+    },
+    
+    // Get the proper image URL for a cellar item
+    getItemImageUrl(item) {
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      
+      // Try different possible photo properties from the API response
+      const photoPath = item.drinkPhoto || item.photo || item.listingPhoto;
+      
+      if (photoPath) {
+        // If it's already a full URL, use it as-is
+        if (photoPath.startsWith('http')) {
+          return photoPath;
+        }
+        // Otherwise, prepend the backend base URL
+        return `${baseUrl}${photoPath.startsWith('/') ? '' : '/'}${photoPath}`;
+      }
+      
+      // Fallback to default image
+      return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739';
     }
   }
 }
