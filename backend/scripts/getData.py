@@ -5886,32 +5886,32 @@ def getCellarData(ownerType, ownerID):
         
         for item in items:
             # Convert purchase price to USD
-            if item['purchasePrice']:
-                purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item['purchaseCurrency'])
+            if item.get('purchasePrice'):
+                purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item.get('purchaseCurrency'))
                 if purchase_price_usd:
                     total_purchase_value += purchase_price_usd
             
             # Convert current value to USD  
-            if item['currentValueEstimation']:
-                current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item['currentValueCurrency'])
+            if item.get('currentValueEstimation'):
+                current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item.get('currentValueCurrency'))
                 if current_value_usd:
                     total_current_value += current_value_usd
         
         # Convert Decimal objects to float for JSON serialization
         for item in items:
-            if item['purchasePrice']:
+            if item.get('purchasePrice'):
                 item['purchasePrice'] = float(item['purchasePrice'])
-            if item['currentValueEstimation']:
+            if item.get('currentValueEstimation'):
                 item['currentValueEstimation'] = float(item['currentValueEstimation'])
-            if item['averageRating']:
+            if item.get('averageRating') is not None:
                 item['averageRating'] = float(item['averageRating'])
-            if item['abv']:
+            if item.get('abv'):
                 item['abv'] = float(item['abv'])
         
         for collection in collections:
-            if collection['totalPurchaseValue']:
+            if collection.get('totalPurchaseValue'):
                 collection['totalPurchaseValue'] = float(collection['totalPurchaseValue'])
-            if collection['totalCurrentValue']:
+            if collection.get('totalCurrentValue'):
                 collection['totalCurrentValue'] = float(collection['totalCurrentValue'])
         
         return jsonify({
