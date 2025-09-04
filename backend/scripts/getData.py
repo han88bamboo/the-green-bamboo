@@ -5726,7 +5726,7 @@ def convert_price_to_usd(amount, currency):
 def getCellarData(ownerType, ownerID):
     try:
         conn = g.db
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
