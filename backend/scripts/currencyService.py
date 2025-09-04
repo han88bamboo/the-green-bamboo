@@ -9,13 +9,13 @@ Dependencies:
     - forex-python==1.8
 
 Usage:
-    from currencyService import currency_converter
+    from scripts.currencyService import currency_converter
     
     usd_amount = currency_converter.convert_to_usd(100, 'EUR')
     rate = currency_converter.get_exchange_rate('GBP', 'USD')
 """
 
-from forex_python.converter import CurrencyConverter, CurrencyRates
+from forex_python.converter import CurrencyRates, CurrencyCodes
 from forex_python.bitcoin import BtcConverter
 from datetime import datetime, timedelta
 import logging
@@ -30,12 +30,14 @@ class CellarCurrencyConverter:
     """
     Enhanced currency converter for cellar management system.
     Provides USD conversion with caching, error handling, and fallback mechanisms.
+    Uses forex-python package for real-time rates.
     """
     
     def __init__(self):
         """Initialize the currency converter with caching capabilities."""
-        self.converter = CurrencyConverter()
+        # Initialize forex-python classes
         self.rates = CurrencyRates()
+        self.codes = CurrencyCodes()
         self.btc_converter = BtcConverter()  # For cryptocurrency support if needed
         
         # Cache settings
@@ -174,18 +176,18 @@ class CellarCurrencyConverter:
         except Exception as e:
             logger.warning(f"API rate retrieval failed for {from_currency} to {to_currency}: {e}")
             
-            # Try fallback calculation
-            if from_currency in self.fallback_rates and to_currency in self.fallback_rates:
-                # Convert via USD: from_currency -> USD -> to_currency
-                from_usd_rate = self.fallback_rates[from_currency]
-                to_usd_rate = self.fallback_rates[to_currency]
-                fallback_rate = from_usd_rate / to_usd_rate
-                
-                logger.info(f"Using fallback rate {from_currency} to {to_currency}: {fallback_rate}")
-                return fallback_rate
+        # Try fallback calculation
+        if from_currency in self.fallback_rates and to_currency in self.fallback_rates:
+            # Convert via USD: from_currency -> USD -> to_currency
+            from_usd_rate = self.fallback_rates[from_currency]
+            to_usd_rate = self.fallback_rates[to_currency]
+            fallback_rate = from_usd_rate / to_usd_rate
             
-            logger.error(f"No fallback rate available for {from_currency} to {to_currency}")
-            return None
+            logger.info(f"Using fallback rate {from_currency} to {to_currency}: {fallback_rate}")
+            return fallback_rate
+        
+        logger.error(f"No fallback rate available for {from_currency} to {to_currency}")
+        return None
     
     def convert_to_usd(self, amount, from_currency):
         """
