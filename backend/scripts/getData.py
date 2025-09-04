@@ -5773,7 +5773,7 @@ def getCellarData(ownerType, ownerID):
         items_query = f"""
             SELECT 
                 -- Cellar Item Details
-                ci."id" as cellarItemId,
+                ci."id" as "cellarItemId",
                 ci."quantityOwned",
                 ci."drinkFormat",
                 ci."volumeML",
@@ -5797,12 +5797,12 @@ def getCellarData(ownerType, ownerID):
                 
                 -- Collection Info
                 cc."collectionName",
-                cc."id" as collectionId,
+                cc."id" as "collectionId",
                 cc."isDefault",
                 cc."isPublic",
                 
                 -- Listing Details
-                l."id" as listingId,
+                l."id" as "listingId",
                 l."listingName",
                 l."drinkType",
                 l."typeCategory",
@@ -5816,10 +5816,10 @@ def getCellarData(ownerType, ownerID):
                 p."producerName",
                 
                 -- Bottler Info (if different from producer)
-                bp."producerName" as bottlerName,
+                bp."producerName" as "bottlerName",
                 
                 -- Purchase Venue Info
-                pv."venueName" as purchaseVenueName,
+                pv."venueName" as "purchaseVenueName",
                 ci."purchasePlaceName",
                 ci."purchaseAddress",
                 
@@ -6003,7 +6003,7 @@ def getCellarDashboard(ownerType, ownerID):
             ci."addedDate",
             ci."updatedDate",
             cc."collectionName",
-            cc."id" as collectionID,
+            cc."id" as "collectionID",
             l."listingName",
             l."originCountry",
             l."drinkType",
