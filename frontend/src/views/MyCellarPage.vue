@@ -619,9 +619,9 @@ export default {
           this.fetchCellarItems()
         ])
         
-        this.dashboardData = dashboardResponse.data
-        this.allItems = itemsResponse.data.items || []
-        this.collections = itemsResponse.data.collections || []
+        this.dashboardData = dashboardResponse.data || dashboardResponse
+        this.allItems = itemsResponse.data?.items || itemsResponse.items || []
+        this.collections = itemsResponse.data?.collections || itemsResponse.collections || []
         
       } catch (error) {
         console.error('Error loading cellar data:', error)
@@ -632,19 +632,21 @@ export default {
     },
     
     async fetchCellarDashboard() {
-      // TODO: Replace with actual API call using project's axios wrapper
-      const response = await this.$axios.get(`/get-data/getCellarDashboard/${this.ownerType}/${this.id}`)
+      // Use full URL for development since proxy doesn't handle /getData
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      const response = await this.$axios.get(`${baseUrl}/getData/getCellarDashboard/${this.ownerType}/${this.id}`)
       return response.data
     },
     
     async fetchCellarItems() {
-      // TODO: Replace with actual API call using project's axios wrapper
+      // Use full URL for development since proxy doesn't handle /getData
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
       const params = new URLSearchParams()
       if (this.activeTab !== 'all') {
         params.append('collectionId', this.activeTab)
       }
       
-      const response = await this.$axios.get(`/get-data/getCellarData/${this.ownerType}/${this.id}?${params}`)
+      const response = await this.$axios.get(`${baseUrl}/getData/getCellarData/${this.ownerType}/${this.id}?${params}`)
       return response.data
     },
     
