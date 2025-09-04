@@ -5809,7 +5809,7 @@ def getCellarData(ownerType, ownerID):
                 l."originCountry",
                 l."abv",
                 l."age",
-                l."photo" as drinkPhoto,
+                l."photo" as "drinkPhoto",
                 l."officialDesc",
                 
                 -- Producer Info
