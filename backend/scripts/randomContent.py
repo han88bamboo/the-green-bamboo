@@ -10,8 +10,9 @@
 #   [Comments]
 #   /addComment [POST], /editComment [POST], /deleteComment [DELETE]
 
-#   [Content Retrieval - On respective page] - not created yet
+#   [Content Retrieval - On respective page]
 #   /getListingComments [GET], /getReviewComments [GET]
+#   /getProducerReviewsComments [GET], /getVenueReviewsComments [GET] - not done 
 
 # -----------------------------------------------------------------------------------------
 
@@ -1234,9 +1235,6 @@ def deleteComment():
         return jsonify({"error": "Failed to delete comment"}), 500
 
 
-
-
-
 # -----------------------------------------------------------------------------------------
 # [GET] Retrieve comments for a specific listings and check if current user likes the listing
 @blueprint.route("/getListingComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
@@ -1289,8 +1287,6 @@ def getListingComments(user_id, user_type, content_id):
     except Exception as e:
         print("Error occurred while retrieving comments:", e)
         return jsonify({"error": "Failed to retrieve comments"}), 500
-
-
 
 
 # -----------------------------------------------------------------------------------------
@@ -1354,6 +1350,7 @@ def getReviewComments(user_id, user_type, content_id):
     except Exception as e:
         print("Error occurred while retrieving comments:", e)
         return jsonify({"error": "Failed to retrieve comments"}), 500
+
 
 
 
