@@ -1,4 +1,13 @@
 # Port: 5000
+# 
+# URL NAMING CONVENTION:
+# This file (getData.py) uses MIXED naming patterns:
+# - MOST routes use camelCase: /getCellarData, /getUsers, /createAccount (majority pattern)
+# - SOME routes use kebab-case: /bottle-listings, /producer-listings (legacy exceptions)
+# The Flask blueprint is registered with prefix "/getData/" (matching filename)
+# 
+# For consistency, new routes should follow the MAJORITY camelCase pattern.
+#
 # Routes: 
 #           [Account Requests]
 #           /getAccountRequests (GET), 
