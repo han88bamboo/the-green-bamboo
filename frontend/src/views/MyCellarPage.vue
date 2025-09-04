@@ -20,26 +20,39 @@
           <!-- Left Column - Collections & Items (8/12 columns) -->
           <div class="col-12 col-lg-8">
             <!-- Tab Navigation -->
-            <div class="tabs-container mb-4">
+            <div class="tabs-container">
               <nav class="tabs-nav">
-                <ul class="nav nav-pills nav-fill">
-                  <!-- All Drinks Tab (Active) -->
+                <ul class="nav nav-tabs folder-tabs">
+                  <!-- All Drinks Tab -->
                   <li class="nav-item">
                     <button 
-                      class="nav-link active"
+                      class="nav-link folder-tab"
                       :class="{ active: activeTab === 'all' }"
                       @click="setActiveTab('all')"
                       type="button"
                     >
                       All Drinks in Cellar
-                      <span class="item-count ms-2" v-if="!loading">{{ totalItemCount }} Items</span>
-                      <span class="item-count ms-2" v-else>...</span>
+                      <span class="item-count" v-if="!loading">{{ totalItemCount }} Items</span>
+                      <span class="item-count" v-else>...</span>
                     </button>
                   </li>
-                  <!-- Add Collection Tab -->
+                  <!-- Dynamic Collection Tabs -->
+                  <li class="nav-item" v-for="collection in collections" :key="collection.id">
+                    <button 
+                      class="nav-link folder-tab"
+                      :class="{ active: activeTab === collection.id }"
+                      @click="setActiveTab(collection.id)"
+                      type="button"
+                      v-if="!collection.isDefault"
+                    >
+                      {{ collection.collectionName }}
+                      <span class="item-count">{{ collection.itemCount }} Items</span>
+                    </button>
+                  </li>
+                  <!-- Add Collection Ghost Tab -->
                   <li class="nav-item">
                     <button 
-                      class="nav-link nav-link-add-collection"
+                      class="nav-link folder-tab ghost-tab"
                       type="button"
                       data-bs-toggle="modal"
                       data-bs-target="#addCollectionModal"
@@ -48,93 +61,82 @@
                       Add new Collection
                     </button>
                   </li>
-                  <!-- Dynamic Collection Tabs -->
-                  <li class="nav-item" v-for="collection in collections" :key="collection.id">
-                    <button 
-                      class="nav-link"
-                      :class="{ active: activeTab === collection.id }"
-                      @click="setActiveTab(collection.id)"
-                      type="button"
-                      v-if="!collection.isDefault"
-                    >
-                      {{ collection.collectionName }}
-                      <span class="item-count ms-2">{{ collection.itemCount }} Items</span>
-                    </button>
-                  </li>
                 </ul>
               </nav>
             </div>
 
-            <!-- Filters Row -->
-            <div class="filters-container mb-4">
-              <div class="row g-3">
-                <!-- Search Input -->
-                <div class="col-12 col-md-4">
-                  <div class="input-group">
-                    <span class="input-group-text">
-                      <i class="bi bi-search"></i>
-                    </span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Search by name or producer..."
-                      v-model="searchQuery"
-                      @input="debouncedSearch"
-                    >
+            <!-- Cellar Surface - unified container for filters and items -->
+            <section class="cellar-surface">
+              <!-- Filters Row -->
+              <div class="filters-container">
+                <div class="row g-3">
+                  <!-- Search Input -->
+                  <div class="col-12 col-md-4">
+                    <div class="input-group">
+                      <span class="input-group-text">
+                        <i class="bi bi-search"></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Search by name or producer..."
+                        v-model="searchQuery"
+                        @input="debouncedSearch"
+                      >
+                    </div>
                   </div>
-                </div>
 
-                <!-- Vintage Filter -->
-                <div class="col-6 col-md-2">
-                  <select class="form-select" v-model="filters.vintage">
-                    <option value="">Any Vintage</option>
-                    <option v-for="year in vintageOptions" :key="year" :value="year">
-                      {{ year }}
-                    </option>
-                  </select>
-                </div>
+                  <!-- Vintage Filter -->
+                  <div class="col-6 col-md-2">
+                    <select class="form-select" v-model="filters.vintage">
+                      <option value="">Any Vintage</option>
+                      <option v-for="year in vintageOptions" :key="year" :value="year">
+                        {{ year }}
+                      </option>
+                    </select>
+                  </div>
 
-                <!-- Size Filter -->
-                <div class="col-6 col-md-2">
-                  <select class="form-select" v-model="filters.size">
-                    <option value="">Any Size</option>
-                    <option value="187">187ml</option>
-                    <option value="375">375ml</option>
-                    <option value="750">750ml</option>
-                    <option value="1500">1.5L</option>
-                  </select>
-                </div>
+                  <!-- Size Filter -->
+                  <div class="col-6 col-md-2">
+                    <select class="form-select" v-model="filters.size">
+                      <option value="">Any Size</option>
+                      <option value="187">187ml</option>
+                      <option value="375">375ml</option>
+                      <option value="750">750ml</option>
+                      <option value="1500">1.5L</option>
+                    </select>
+                  </div>
 
-                <!-- Status Filter -->
-                <div class="col-6 col-md-2">
-                  <select class="form-select" v-model="filters.status">
-                    <option value="">Any Status</option>
-                    <option value="In Possession">In Cellar</option>
-                    <option value="On Its Way">On Its Way</option>
-                    <option value="Wishlisted">Wishlisted</option>
-                    <option value="Consumed">Consumed</option>
-                  </select>
-                </div>
+                  <!-- Status Filter -->
+                  <div class="col-6 col-md-2">
+                    <select class="form-select" v-model="filters.status">
+                      <option value="">Any Status</option>
+                      <option value="In Possession">In Cellar</option>
+                      <option value="On Its Way">On Its Way</option>
+                      <option value="Wishlisted">Wishlisted</option>
+                      <option value="Consumed">Consumed</option>
+                    </select>
+                  </div>
 
-                <!-- Drink Now Checkbox -->
-                <div class="col-6 col-md-2">
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="drinkNowFilter"
-                      v-model="filters.drinkNow"
-                    >
-                    <label class="form-check-label" for="drinkNowFilter">
-                      Only drink-now
-                    </label>
+                  <!-- Drink Now Checkbox -->
+                  <div class="col-6 col-md-2">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="drinkNowFilter"
+                        v-model="filters.drinkNow"
+                      >
+                      <label class="form-check-label" for="drinkNowFilter">
+                        Only drink-now
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Items Grid -->
-            <div class="items-grid">
+              <!-- Items Grid -->
+              <div class="items-grid">
               <!-- Loading Skeletons -->
               <div v-if="loading" class="row">
                 <div 
@@ -325,6 +327,7 @@
                 </nav>
               </div>
             </div>
+            </section>
           </div>
 
           <!-- Right Column - Add Drink Placeholder (4/12 columns) -->
@@ -783,55 +786,111 @@ export default {
 
 /* Tabs */
 .tabs-container {
-  background-color: #fff;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  position: relative;
+  z-index: 10;
+  margin-bottom: 0;
 }
 
-.nav-pills .nav-link {
+.folder-tabs {
+  border: none;
+  display: flex;
+  gap: 0.25rem;
+  align-items: flex-end;
+  padding-left: 1rem;
+  margin-bottom: 0;
+}
+
+.folder-tabs .nav-item {
+  flex: none;
+}
+
+.folder-tab {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
   color: #6c757d;
-  border-radius: 0.375rem;
   font-weight: 500;
   padding: 0.75rem 1rem;
   transition: all 0.15s ease-in-out;
+  position: relative;
+  margin-bottom: 0;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.nav-pills .nav-link:hover {
-  background-color: #f8f9fa;
+.folder-tab:hover {
+  background-color: #e9ecef;
   color: #495057;
+  border-color: #adb5bd;
 }
 
-.nav-pills .nav-link.active {
-  background-color: #0d6efd;
-  color: #fff;
+.folder-tab.active {
+  background-color: #fff;
+  color: #212529;
+  border-color: #dee2e6;
+  z-index: 2;
+  position: relative;
 }
 
-.nav-link-add-collection {
-  border: 2px dashed #dee2e6 !important;
-  background-color: transparent !important;
+.folder-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #fff;
+  z-index: 3;
 }
 
-.nav-link-add-collection:hover {
-  border-color: #adb5bd !important;
+.ghost-tab {
+  border: 1px dashed #dee2e6 !important;
   background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  opacity: 0.7;
+}
+
+.ghost-tab:hover {
+  border-color: #adb5bd !important;
+  background-color: #e9ecef !important;
+  color: #495057 !important;
+  opacity: 0.85;
+}
+
+.ghost-tab .bi-plus-circle {
+  font-size: 0.875rem;
 }
 
 .item-count {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   opacity: 0.8;
+  margin-left: 0.5rem;
+}
+
+/* Cellar Surface - unified container */
+.cellar-surface {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0 0.5rem 0.5rem 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  position: relative;
+  z-index: 1;
+  margin-top: -1px;
 }
 
 /* Filters */
 .filters-container {
-  background-color: #fff;
   padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-bottom: 1px solid #f8f9fa;
 }
 
 /* Items Grid */
 .items-grid {
   min-height: 400px;
+  padding: 0 1rem 1rem 1rem;
 }
 
 /* Item Cards */
@@ -1059,14 +1118,32 @@ export default {
     margin-bottom: 0.5rem;
   }
   
-  .nav-pills .nav-link {
+  .folder-tabs {
+    padding-left: 0.5rem;
+    gap: 0.125rem;
+    flex-wrap: wrap;
+  }
+  
+  .folder-tab {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
+    height: 2.5rem;
+    border-radius: 8px 8px 0 0;
   }
   
   .item-count {
     display: block;
+    font-size: 0.7rem;
+    margin-left: 0;
+    margin-top: 0.125rem;
+  }
+  
+  .ghost-tab .bi-plus-circle {
     font-size: 0.75rem;
+  }
+  
+  .cellar-surface {
+    border-radius: 0 0.375rem 0.375rem 0.375rem;
   }
 }
 
@@ -1085,6 +1162,25 @@ export default {
   
   .pagination-container {
     justify-content: center;
+  }
+  
+  .folder-tabs {
+    padding-left: 0.25rem;
+  }
+  
+  .folder-tab {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+    height: 2.25rem;
+    border-radius: 6px 6px 0 0;
+  }
+  
+  .filters-container {
+    padding: 0.75rem;
+  }
+  
+  .items-grid {
+    padding: 0 0.75rem 0.75rem 0.75rem;
   }
 }
 </style>
