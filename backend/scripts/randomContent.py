@@ -256,7 +256,39 @@ def get_unique_field(content_type):
     return None
 
 
+# Get commenter info 
+def get_commenter_info(user_id, user_type):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 
+        if user_type == "user":
+            cursor.execute("""
+                SELECT "username", photo
+                FROM "users"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["username"], "photo": result["photo"]}
+
+        elif user_type == "producer":
+            cursor.execute("""
+                SELECT "producerName", photo
+                FROM "producers"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["producerName"], "photo": result["photo"]}
+
+        elif user_type == "venue":
+            cursor.execute("""
+                SELECT "venueName", photo
+                FROM "venues"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["venueName"], "photo": result["photo"]}
+
+    return {"username": None, "photo": None}
 
 
 
@@ -1236,7 +1268,7 @@ def deleteComment():
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] Retrieve comments for a specific listings and check if current user likes the listing
+# [GET] Retrieve comments for a specific listings and check if current user likes the listing - first retrieval 
 @blueprint.route("/getListingComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
 def getListingComments(user_id, user_type, content_id):
 
@@ -1260,8 +1292,38 @@ def getListingComments(user_id, user_type, content_id):
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
                 WHERE "{unique_field}" = %s
+                ORDER BY "createdAt" DESC
+                LIMIT 30
             """, (content_id,))
             comments = cursor.fetchall()
+
+            replies = []
+            main_comments = {}
+
+            for comment in comments:
+                
+                # Extract comments if it is a reply
+                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
+                    replies.append(comment)
+
+                else:
+                    # Extract commenter username and photo
+                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+                    main_comments[comment['id']] = comment
+
+            # Nest replies under their respective parent comments
+            for reply in replies:
+
+                # Extract commenter username and photo
+                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                parent_comment = main_comments.get(reply['parentId'])
+
+                if parent_comment:
+                    parent_comment.setdefault('replies', []).append(reply)
+
 
             # Check if the current user likes the content
 
@@ -1280,7 +1342,7 @@ def getListingComments(user_id, user_type, content_id):
             
 
             return jsonify({
-                "comments": comments,
+                "comments": main_comments,
                 "userLiked": user_likes
             }), 200
 
@@ -1290,9 +1352,76 @@ def getListingComments(user_id, user_type, content_id):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific listings - subsequent retrievals
+@blueprint.route("/getMoreListingComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreListingComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Listing", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+            
+            # Retrieve the unique field
+            unique_field = get_unique_field("Listing")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            replies = []
+            main_comments = {}
+
+            for comment in comments:
+                
+                # Extract comments if it is a reply
+                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
+                    replies.append(comment)
+
+                else:
+                    # Extract commenter username and photo
+                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+                    main_comments[comment['id']] = comment
+
+            # Nest replies under their respective parent comments
+            for reply in replies:
+
+                # Extract commenter username and photo
+                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                parent_comment = main_comments.get(reply['parentId'])
+
+                if parent_comment:
+                    parent_comment.setdefault('replies', []).append(reply)
+
+
+            return jsonify({
+                "comments": main_comments
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Retrieve comments for a specific review and check if current user liked the review
-@blueprint.route("/getReviewComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
-def getReviewComments(user_id, user_type, content_id):
+@blueprint.route("/getReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getReviewComments(user_id, content_id):
 
     try:
         conn = g.db
@@ -1317,6 +1446,34 @@ def getReviewComments(user_id, user_type, content_id):
             """, (content_id,))
             comments = cursor.fetchall()
 
+            # Extract reply comments
+            replies = []
+
+            main_comments = {}
+
+            for comment in comments:
+                # Extract comments if it is a reply
+                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
+                    replies.append(comment)
+
+                else:
+                    # Extract commenter username and photo
+                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+                    main_comments[comment['id']] = comment
+
+            # Nest replies under their respective parent comments
+            for reply in replies:
+
+                # Extract commenter username and photo
+                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                parent_comment = main_comments.get(reply['parentId'])
+
+                if parent_comment:
+                    parent_comment.setdefault('replies', []).append(reply)
+
             # Check if the current user likes the content
 
             # Get the table name
@@ -1332,8 +1489,6 @@ def getReviewComments(user_id, user_type, content_id):
             """, (content_id,))
             review_upvotes = cursor.fetchone() 
 
-            print(review_upvotes)
-
             # Loop through upvotes to check if user id is present
             user_liked = False
             if review_upvotes:
@@ -1343,13 +1498,191 @@ def getReviewComments(user_id, user_type, content_id):
                         break
 
             return jsonify({
-                "comments": comments,
+                "comments": main_comments,
                 "userLiked": user_liked
             }), 200
 
     except Exception as e:
         print("Error occurred while retrieving comments:", e)
         return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for producer review and check if current user liked the review
+@blueprint.route("/getProducerReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getProducerReviewComments(user_id, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("pReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("pReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            # Extract reply comments
+            replies = []
+
+            main_comments = {}
+
+            for comment in comments:
+                # Extract comments if it is a reply
+                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
+                    replies.append(comment)
+
+                else:
+                    # Extract commenter username and photo
+                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+                    main_comments[comment['id']] = comment
+
+            # Nest replies under their respective parent comments
+            for reply in replies:
+
+                # Extract commenter username and photo
+                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                parent_comment = main_comments.get(reply['parentId'])
+
+                if parent_comment:
+                    parent_comment.setdefault('replies', []).append(reply)
+
+            # Check if the current user likes the content
+
+            # Get the table name
+            likes_table = get_table_name("pReview", "like")
+
+            if not likes_table:
+                return jsonify({"error": "No table found"}), 400
+
+            # Check if the user likes the content
+            cursor.execute(f"""
+                SELECT upvotes FROM "{likes_table}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            review_upvotes = cursor.fetchone() 
+
+            # Loop through upvotes to check if user id is present
+            user_likes = False
+            if review_upvotes:
+                for upvote in review_upvotes['upvotes']:
+                    if upvote['userId'] == user_id:
+                        user_likes = True
+                        break
+            return jsonify({
+                "comments": main_comments,
+                "userLiked": user_likes
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+    
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for venue review and check if current user liked the review
+@blueprint.route("/getVenueReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getVenueReviewComments(user_id, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("vReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("vReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            # Extract reply comments
+            replies = []
+
+            main_comments = {}
+
+            for comment in comments:
+                # Extract comments if it is a reply
+                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
+                    replies.append(comment)
+
+                else:
+                    # Extract commenter username and photo
+                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+                    main_comments[comment['id']] = comment
+
+            # Nest replies under their respective parent comments
+            for reply in replies:
+
+                # Extract commenter username and photo
+                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                parent_comment = main_comments.get(reply['parentId'])
+
+                if parent_comment:
+                    parent_comment.setdefault('replies', []).append(reply)
+
+            # Check if the current user likes the content
+
+            # Get the table name
+            likes_table = get_table_name("vReview", "like")
+
+            if not likes_table:
+                return jsonify({"error": "No table found"}), 400
+
+            # Check if the user likes the content
+            cursor.execute(f"""
+                SELECT upvotes FROM "{likes_table}"
+                WHERE "{unique_field}" = %s
+            """, (content_id,))
+            review_upvotes = cursor.fetchone() 
+
+            # Loop through upvotes to check if user id is present
+            user_likes = False
+            if review_upvotes:
+                for upvote in review_upvotes['upvotes']:
+                    if upvote['userId'] == user_id:
+                        user_likes = True
+                        break
+
+            return jsonify({
+                "comments": main_comments,
+                "userLiked": user_likes
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+    
 
 
 
