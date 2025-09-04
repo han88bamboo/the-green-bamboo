@@ -156,7 +156,7 @@ import { computed } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 
 export default {
-  name: 'MyCellar',
+  name: 'MyCellar - Coming Soon',
   components: {
     NavBar
   },

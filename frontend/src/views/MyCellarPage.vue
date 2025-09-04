@@ -40,8 +40,9 @@
                   <li class="nav-item">
                     <button 
                       class="nav-link nav-link-add-collection"
-                      @click="openAddCollectionModal"
                       type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#addCollectionModal"
                     >
                       <i class="bi bi-plus-circle me-2"></i>
                       Add new Collection
@@ -186,10 +187,12 @@
                 >
                   <div 
                     class="card cellar-item-card h-100"
-                    @click="openItemDetails(item)"
                     role="button"
                     tabindex="0"
-                    @keyup.enter="openItemDetails(item)"
+                    data-bs-toggle="modal"
+                    data-bs-target="#itemDetailsModal"
+                    @click="setSelectedItem(item)"
+                    @keyup.enter="setSelectedItem(item)"
                   >
                     <!-- Image Area -->
                     <div class="card-img-container">
@@ -354,7 +357,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-id" id="itemDetailsModalLabel">
+            <h5 class="modal-title" id="itemDetailsModalLabel">
               {{ selectedItem?.listingName || 'Item Details' }}
             </h5>
             <button 
@@ -410,18 +413,16 @@
     </div>
   </main>
 
-  <FooterBar />
 </template>
 
 <script>
 import NavBar from '@/components/NavBar.vue'
-import FooterBar from '@/components/FooterBar.vue'
+import { useToast } from "vue-toastification";
 
 export default {
   name: 'myCellar',
   components: {
-    NavBar,
-    FooterBar
+    NavBar
   },
   props: {
     ownerType: {
@@ -690,17 +691,10 @@ export default {
       }
     },
     
-    // Modal management
-    openItemDetails(item) {
-      this.selectedItem = item
-      // Use Bootstrap's modal API
-      const modal = new bootstrap.Modal(document.getElementById('itemDetailsModal'))
-      modal.show()
-    },
     
-    openAddCollectionModal() {
-      const modal = new bootstrap.Modal(document.getElementById('addCollectionModal'))
-      modal.show()
+    // Modal management  
+    setSelectedItem(item) {
+      this.selectedItem = item
     },
     
     // Item actions (stubs for now)

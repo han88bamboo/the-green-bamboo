@@ -67,16 +67,7 @@ const routes = [
     path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
     name: "myCellar",
     component: () => import('@/views/MyCellarPage.vue'),
-    props: true,
-    beforeEnter: (to, from, next) => {
-      // Validate ownerType parameter
-      const validOwnerTypes = ['user', 'producer', 'venue'];
-      if (!validOwnerTypes.includes(to.params.ownerType)) {
-        next({ name: 'not-found' });
-      } else {
-        next();
-      }
-    }
+    props: true
   },
 ];
 
