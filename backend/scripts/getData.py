@@ -5977,7 +5977,7 @@ def getCellarDashboard(ownerType, ownerID):
     """
     try:
         conn = g.db
-        cur = conn.cursor()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
         
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
@@ -5989,38 +5989,40 @@ def getCellarDashboard(ownerType, ownerID):
         # Main query to get all cellar items with related data
         cellar_query = """
         SELECT 
-            ci.id,
-            ci.quantityOwned,
-            ci.drinkFormat,
-            ci.purchasePrice,
-            ci.purchaseCurrency,
-            ci.currentValueEstimation,
-            ci.currentValueCurrency,
-            ci.status,
-            ci.consumption,
-            ci.currentLocation,
-            ci.subLocation,
-            ci.addedDate,
-            ci.updatedDate,
-            cc.collectionName,
-            cc.id as collectionID,
-            l.listingName,
-            l.originCountry,
-            l.drinkType,
-            l.typeCategory,
-            l.abv,
-            l.producerID,
-            p.producerName
+            ci."id",
+            ci."quantityOwned",
+            ci."drinkFormat",
+            ci."purchasePrice",
+            ci."purchaseCurrency",
+            ci."currentValueEstimation",
+            ci."currentValueCurrency",
+            ci."status",
+            ci."consumption",
+            ci."currentLocation",
+            ci."subLocation",
+            ci."addedDate",
+            ci."updatedDate",
+            cc."collectionName",
+            cc."id" as collectionID,
+            l."listingName",
+            l."originCountry",
+            l."drinkType",
+            l."typeCategory",
+            l."abv",
+            l."producerID",
+            p."producerName"
         FROM "myCellarItems" ci
-        LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
-        LEFT JOIN "listings" l ON ci."listingID" = l.id
-        LEFT JOIN "producers" p ON l."producerID" = p.id
+        LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+        LEFT JOIN "listings" l ON ci."listingID" = l."id"
+        LEFT JOIN "producers" p ON l."producerID" = p."id"
         WHERE cc."ownerID" = %s AND cc."ownerType" = %s
         ORDER BY ci."addedDate" DESC
         """
         
         cur.execute(cellar_query, (ownerID, ownerType))
         items = cur.fetchall()
+        
+        print(f"DEBUG: Found {len(items)} cellar items for {ownerType} {ownerID}")
         
         if not items:
             return jsonify({
@@ -6047,13 +6049,13 @@ def getCellarDashboard(ownerType, ownerID):
         
         # Process each item
         for item in items:
-            quantity = item[1] or 0
+            quantity = item.get('quantityOwned') or 0
             total_items += quantity
             
-            purchase_price = item[3]
-            purchase_currency = item[4] or 'USD'
-            current_value = item[5]
-            current_value_currency = item[6] or 'USD'
+            purchase_price = item.get('purchasePrice')
+            purchase_currency = item.get('purchaseCurrency') or 'USD'
+            current_value = item.get('currentValueEstimation')
+            current_value_currency = item.get('currentValueCurrency') or 'USD'
             
             # Convert to USD using currency service (only for non-USD currencies)
             if purchase_price is not None:
@@ -6075,14 +6077,14 @@ def getCellarDashboard(ownerType, ownerID):
                 items_without_current_value += quantity
             
             # Extract breakdown data
-            country = item[16] or 'Unknown'
-            drink_type = item[17] or 'Unknown'
-            category = item[18] or 'Unknown'
-            drink_format = item[2] or 'Bottle'
-            consumption = item[8] or 'Unknown'
-            location = item[9] or 'Unknown'
-            sub_location = item[10] or 'Not Specified'
-            collection = item[13] or 'Default'
+            country = item.get('originCountry') or 'Unknown'
+            drink_type = item.get('drinkType') or 'Unknown'
+            category = item.get('typeCategory') or 'Unknown'
+            drink_format = item.get('drinkFormat') or 'Bottle'
+            consumption = item.get('consumption') or 'Unknown'
+            location = item.get('currentLocation') or 'Unknown'
+            sub_location = item.get('subLocation') or 'Not Specified'
+            collection = item.get('collectionName') or 'Default'
             
             # Helper function to update breakdown with currency conversion
             def update_breakdown(breakdown_dict, key, quantity, purchase_price, current_value, purchase_currency, current_value_currency):
@@ -6157,11 +6159,11 @@ def getCellarDashboard(ownerType, ownerID):
         monthly_data = {}
         
         for log_item in changelog_items:
-            month = log_item[0].strftime('%Y-%m') if log_item[0] else None
-            change_type = log_item[1]
-            quantity_delta = log_item[2] or 0
-            new_value = log_item[3]
-            field_name = log_item[4]
+            month = log_item.get('month').strftime('%Y-%m') if log_item.get('month') else None
+            change_type = log_item.get('changeType')
+            quantity_delta = log_item.get('quantityDelta') or 0
+            new_value = log_item.get('newValue')
+            field_name = log_item.get('fieldName')
             
             if month not in monthly_data:
                 monthly_data[month] = {
@@ -6240,6 +6242,9 @@ def getCellarDashboard(ownerType, ownerID):
             "code": 500,
             "message": f"Error retrieving cellar dashboard data: {str(e)}"
         }), 500
+    finally:
+        if 'cur' in locals():
+            cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get best rated expressions for a producer
