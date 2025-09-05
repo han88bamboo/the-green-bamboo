@@ -414,7 +414,7 @@
                     </span>
                   </div>
                   
-                  <!-- Row 2: Country / Type / Category -->
+                  <!-- Row 2: Country / Type / Category / Style -->
                   <div class="info-row mb-2">
                     <span class="info-text text-muted">
                       <template v-if="selectedGroup.representative.originCountry">{{ selectedGroup.representative.originCountry }}</template>
@@ -422,33 +422,36 @@
                       <template v-if="selectedGroup.representative.drinkType">{{ selectedGroup.representative.drinkType }}</template>
                       <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"> | </template>
                       <template v-if="selectedGroup.representative.typeCategory">{{ selectedGroup.representative.typeCategory }}</template>
+                      <template v-if="selectedGroup.representative.typeCategory && selectedGroup.representative.drinkStyle"> | </template>
+                      <template v-if="selectedGroup.representative.drinkStyle">{{ selectedGroup.representative.drinkStyle }}</template>
                     </span>
                   </div>
 
-                  <!-- Row 3: Drinking Window & Market Value -->
-                  <div class="info-row mb-2">
+                  <!-- Row 3: Drinking Window -->
+                  <div class="info-row mb-2" v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
                     <span class="info-text text-muted">
-                      <template v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
-                        <strong>Drinking Window:&nbsp;</strong>
-                        <template v-if="selectedGroup.representative.drinkOnwardsDate">{{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}</template>
-                        <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> – </template>
-                        <template v-if="selectedGroup.representative.drinkByDate">{{ formatDate(selectedGroup.representative.drinkByDate) }}</template>
-                      </template>
-                      <template v-if="(selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate) && selectedGroup.representative.currentValueEstimation"> | </template>
-                      <template v-if="selectedGroup.representative.currentValueEstimation">
-                        <strong>Market Value:</strong> {{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}
-                      </template>
+                      <strong>Drinking Window:&nbsp;</strong>
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate">{{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}</template>
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> – </template>
+                      <template v-if="selectedGroup.representative.drinkByDate">{{ formatDate(selectedGroup.representative.drinkByDate) }}</template>
                     </span>
                   </div>
 
-                  <!-- Row 4: Food Pairing -->
+                  <!-- Row 4: Market Value -->
+                  <div class="info-row mb-2" v-if="selectedGroup.representative.currentValueEstimation">
+                    <span class="info-text text-muted">
+                      <strong>Market Value:</strong> {{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}
+                    </span>
+                  </div>
+
+                  <!-- Row 5: Food Pairing -->
                   <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
                     <span class="info-text text-muted">
                       <strong>Suggested Pairing:</strong> {{ selectedGroup.representative.suggestedFoodPairing }}
                     </span>
                   </div>
 
-                  <!-- Row 5: Quantity Owned -->
+                  <!-- Row 6: Quantity Owned -->
                   <div class="info-row mb-3">
                     <span class="info-text">
                       <strong>Quantity Owned:</strong> {{ selectedGroup.bottleCount }}
@@ -1047,9 +1050,13 @@ export default {
         this.allItems = itemsResponse.data?.items || itemsResponse.items || []
         this.collections = itemsResponse.data?.collections || itemsResponse.collections || []
         
-        // Debug: log first item to see what image properties are available
+        // Debug: log first item to see what properties are available
         if (this.allItems.length > 0) {
           console.log('Sample cellar item data:', this.allItems[0]);
+          console.log('Available fields in first item:', Object.keys(this.allItems[0]));
+          console.log('drinkStyle field:', this.allItems[0].drinkStyle);
+          console.log('typeCategory field:', this.allItems[0].typeCategory);
+          console.log('drinkType field:', this.allItems[0].drinkType);
         }
         
       } catch (error) {
