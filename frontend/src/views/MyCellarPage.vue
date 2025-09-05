@@ -570,8 +570,8 @@
                     <div class="col-md-4">
                       <label class="form-label">Consumption Status</label>
                       <select class="form-select" :value="selectedItem.consumption">
-                        <option value="Closed">Closed</option>
-                        <option value="Open">Open</option>
+                        <option value="Unopened">Unopened</option>
+                        <option value="Opened">Opened</option>
                         <option value="Empty">Empty</option>
                       </select>
                     </div>
