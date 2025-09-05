@@ -183,8 +183,8 @@
               <!-- Items Cards -->
               <div v-else class="row">
                 <div 
-                  v-for="item in paginatedItems" 
-                  :key="item.cellarItemId"
+                  v-for="group in paginatedItems" 
+                  :key="`${group.listingId}_${group.variant || 'no-variant'}`"
                   class="col-12 col-md-6 col-lg-4 mb-4"
                 >
                   <div 
@@ -193,20 +193,20 @@
                     tabindex="0"
                     data-bs-toggle="modal"
                     data-bs-target="#itemDetailsModal"
-                    @click="setSelectedItem(item)"
-                    @keyup.enter="setSelectedItem(item)"
+                    @click="setSelectedGroup(group)"
+                    @keyup.enter="setSelectedGroup(group)"
                   >
                     <!-- Image Area -->
                     <div class="card-img-container">
                       <img 
-                        :src="getItemImageUrl(item)"
-                        :alt="item.listingName"
+                        :src="getItemImageUrl(group.representative)"
+                        :alt="group.representative.listingName"
                         class="card-img-top"
                         @error="onImageError"
                       >
-                      <!-- Quantity Badge -->
+                      <!-- Bottle Count Badge -->
                       <div class="quantity-badge">
-                        x{{ item.quantityOwned }}
+                        {{ group.bottleCount }} bottle{{ group.bottleCount !== 1 ? 's' : '' }}
                       </div>
                     </div>
 
@@ -214,45 +214,53 @@
                     <div class="card-body">
                       <div class="card-content">
                         <!-- Primary Line -->
-                        <h6 class="card-title" :title="item.listingName">
-                          {{ item.listingName }}
+                        <h6 class="card-title" :title="group.representative.listingName">
+                          {{ group.representative.listingName }}
+                          <span v-if="group.representative.variant" class="text-muted ms-1">
+                            ({{ group.representative.variant }})
+                          </span>
                         </h6>
                         
                         <!-- Secondary Line -->
                         <p class="card-subtitle text-muted mb-2">
-                          {{ item.drinkType }}
-                          <span v-if="item.typeCategory"> • {{ item.typeCategory }}</span>
+                          {{ group.representative.drinkType }}
+                          <span v-if="group.representative.typeCategory"> • {{ group.representative.typeCategory }}</span>
                         </p>
 
                         <!-- Producer -->
-                        <p class="card-producer text-muted mb-2" v-if="item.producerName">
-                          {{ item.producerName }}
+                        <p class="card-producer text-muted mb-2" v-if="group.representative.producerName">
+                          {{ group.representative.producerName }}
                         </p>
 
-                        <!-- Notes (Optional Tertiary) -->
+                        <!-- Notes (from representative bottle) -->
                         <p 
                           class="card-notes text-muted small" 
-                          v-if="item.noteToSelf"
-                          :title="item.noteToSelf"
+                          v-if="group.representative.noteToSelf"
+                          :title="group.representative.noteToSelf"
                         >
-                          {{ item.noteToSelf }}
+                          {{ group.representative.noteToSelf }}
                         </p>
 
-                        <!-- Status Affordances -->
+                        <!-- Status Overview -->
                         <div class="status-info mt-2">
-                          <span 
-                            class="status-badge badge"
-                            :class="getStatusBadgeClass(item.status)"
-                          >
-                            {{ item.status }}
-                          </span>
-                          <div class="drink-dates mt-1" v-if="item.drinkByDate || item.drinkOnwardsDate">
+                          <div class="status-breakdown">
+                            <span 
+                              v-for="(count, status) in getGroupStatusBreakdown(group.bottles)"
+                              :key="status"
+                              class="status-badge badge me-1"
+                              :class="getStatusBadgeClass(status)"
+                              :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
+                            >
+                              {{ count }}x {{ status }}
+                            </span>
+                          </div>
+                          <div class="drink-dates mt-1" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
                             <small class="text-muted">
-                              <span v-if="item.drinkOnwardsDate">
-                                Drink from: {{ formatDate(item.drinkOnwardsDate) }}
+                              <span v-if="group.representative.drinkOnwardsDate">
+                                Drink from: {{ formatDate(group.representative.drinkOnwardsDate) }}
                               </span>
-                              <span v-if="item.drinkByDate">
-                                Drink by: {{ formatDate(item.drinkByDate) }}
+                              <span v-if="group.representative.drinkByDate">
+                                Drink by: {{ formatDate(group.representative.drinkByDate) }}
                               </span>
                             </small>
                           </div>
@@ -263,7 +271,7 @@
                       <div class="hover-actions d-none d-lg-flex">
                         <button 
                           class="btn btn-sm btn-outline-primary"
-                          @click.stop="consumeItem(item)"
+                          @click.stop="consumeGroup(group)"
                           title="Coming soon"
                           disabled
                         >
@@ -271,7 +279,7 @@
                         </button>
                         <button 
                           class="btn btn-sm btn-outline-secondary"
-                          @click.stop="adjustItem(item)"
+                          @click.stop="adjustGroup(group)"
                           title="Coming soon"
                           disabled
                         >
@@ -279,7 +287,7 @@
                         </button>
                         <button 
                           class="btn btn-sm btn-outline-info"
-                          @click.stop="moveItem(item)"
+                          @click.stop="moveGroup(group)"
                           title="Coming soon"
                           disabled
                         >
@@ -361,7 +369,10 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="itemDetailsModalLabel">
-              {{ selectedItem?.listingName || 'Item Details' }}
+              {{ selectedGroup?.representative?.listingName || 'Item Details' }}
+              <span v-if="selectedGroup?.representative?.variant" class="text-muted">
+                ({{ selectedGroup.representative.variant }})
+              </span>
             </h5>
             <button 
               type="button" 
@@ -370,15 +381,15 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body" v-if="selectedItem">
+          <div class="modal-body" v-if="selectedGroup">
             <!-- Header Row: Image + Drink Information -->
             <div class="modal-header-content row mb-4">
               <!-- Left Column - Image -->
               <div class="col-md-3">
                 <div class="item-image-container">
                   <img 
-                    :src="getItemImageUrl(selectedItem)"
-                    :alt="selectedItem.listingName"
+                    :src="getItemImageUrl(selectedGroup.representative)"
+                    :alt="selectedGroup.representative.listingName"
                     class="item-detail-image"
                     @error="onImageError"
                   >
@@ -393,20 +404,31 @@
                   <!-- Row 1: Producer | Bottler -->
                   <div class="info-row mb-2">
                     <span class="info-text">
-                      <strong>Producer:</strong> {{ selectedItem.producerName || 'N/A' }}
-                      <span v-if="selectedItem.bottlerName || selectedItem.producerName" class="mx-2">|</span>
-                      <strong>Bottler:</strong> {{ selectedItem.bottlerName || 'Original Bottling' }}
+                      <strong>Producer:</strong> {{ selectedGroup.representative.producerName || 'N/A' }}
+                      <span v-if="selectedGroup.representative.bottlerName || selectedGroup.representative.producerName" class="mx-2">|</span>
+                      <strong>Bottler:</strong> {{ selectedGroup.representative.bottlerName || 'Original Bottling' }}
                     </span>
                   </div>
                   
                   <!-- Row 2: Country • Type • Category -->
-                  <div class="info-row mb-3">
+                  <div class="info-row mb-2">
                     <span class="info-text text-muted">
-                      <template v-if="selectedItem.originCountry">{{ selectedItem.originCountry }}</template>
-                      <template v-if="selectedItem.originCountry && selectedItem.drinkType"> • </template>
-                      <template v-if="selectedItem.drinkType">{{ selectedItem.drinkType }}</template>
-                      <template v-if="selectedItem.drinkType && selectedItem.typeCategory"> • </template>
-                      <template v-if="selectedItem.typeCategory">{{ selectedItem.typeCategory }}</template>
+                      <template v-if="selectedGroup.representative.originCountry">{{ selectedGroup.representative.originCountry }}</template>
+                      <template v-if="selectedGroup.representative.originCountry && selectedGroup.representative.drinkType"> • </template>
+                      <template v-if="selectedGroup.representative.drinkType">{{ selectedGroup.representative.drinkType }}</template>
+                      <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"> • </template>
+                      <template v-if="selectedGroup.representative.typeCategory">{{ selectedGroup.representative.typeCategory }}</template>
+                    </span>
+                  </div>
+                  
+                  <!-- Row 3: Group Summary -->
+                  <div class="info-row mb-3">
+                    <span class="info-text">
+                      <strong>You have {{ selectedGroup.bottleCount }} bottle{{ selectedGroup.bottleCount !== 1 ? 's' : '' }}</strong>
+                      <span v-if="selectedGroup.representative.variant" class="mx-2">•</span>
+                      <span v-if="selectedGroup.representative.variant">
+                        <strong>Vintage:</strong> {{ selectedGroup.representative.variant }}
+                      </span>
                     </span>
                   </div>
                   
@@ -416,7 +438,7 @@
                       type="button" 
                       class="btn btn-primary btn-md"
                       data-bs-dismiss="modal"
-                      @click="goToListingPage(selectedItem)"
+                      @click="goToListingPage(selectedGroup.representative)"
                     >
                       Learn more about this drink
                     </button>
@@ -425,19 +447,78 @@
               </div>
             </div>
 
-            <!-- Editable Sections - Full Width -->
+            <!-- Individual Bottles Management -->
+            <div class="individual-bottles-section mb-4">
+              <h6 class="section-header">Individual Bottles Management</h6>
+              <div class="bottles-list">
+                <div 
+                  v-for="(bottle, index) in selectedGroup.bottles" 
+                  :key="bottle.cellarItemId"
+                  class="bottle-item p-3 mb-3 border rounded"
+                  :class="{ 'bottle-consumed': bottle.status === 'Consumed' }"
+                >
+                  <div class="row align-items-center">
+                    <div class="col-md-2">
+                      <strong>Bottle #{{ index + 1 }}</strong>
+                      <br>
+                      <small class="text-muted">ID: {{ bottle.quantityVariantID }}</small>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small">Status</label>
+                      <select class="form-select form-select-sm" :value="bottle.status">
+                        <option value="In Possession">In Possession</option>
+                        <option value="On Its Way">On Its Way</option>
+                        <option value="Purchased">Purchased</option>
+                        <option value="Held Elsewhere">Held Elsewhere</option>
+                        <option value="Wishlisted">Wishlisted</option>
+                        <option value="Consumed">Consumed</option>
+                      </select>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small">Consumption</label>
+                      <select class="form-select form-select-sm" :value="bottle.consumption">
+                        <option value="Unopened">Unopened</option>
+                        <option value="Opened">Opened</option>
+                        <option value="Empty">Empty</option>
+                      </select>
+                    </div>
+                    <div class="col-md-2">
+                      <label class="form-label small">Location</label>
+                      <input 
+                        type="text" 
+                        class="form-control form-control-sm" 
+                        :value="bottle.currentLocation" 
+                        placeholder="Location"
+                      >
+                    </div>
+                    <div class="col-md-2">
+                      <button 
+                        class="btn btn-sm btn-outline-primary w-100"
+                        @click="editIndividualBottle(bottle)"
+                        title="Edit this specific bottle"
+                      >
+                        <i class="bi bi-pencil"></i> Edit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shared Properties for Group -->
             <div class="editable-sections">
               <div class="detail-section">
-                <!-- Item Details -->
-                <h6 class="section-header">Item Details</h6>
+                <!-- Group Details -->
+                <h6 class="section-header">Group Details</h6>
                 <div class="row g-3 mb-4">
                   <div class="col-md-3">
-                    <label class="form-label">Quantity</label>
-                    <input type="number" class="form-control" :value="selectedItem.quantityOwned" min="0">
+                    <label class="form-label">Total Bottles</label>
+                    <input type="number" class="form-control" :value="selectedGroup.bottleCount" readonly>
+                    <small class="text-muted">Each bottle tracked individually above</small>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Format</label>
-                    <select class="form-select" :value="selectedItem.drinkFormat">
+                    <select class="form-select" :value="selectedGroup.representative.drinkFormat">
                       <option value="Bottle">Bottle</option>
                       <option value="Can">Can</option>
                       <option value="Sample">Sample</option>
@@ -445,12 +526,12 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Vintage</label>
-                    <input type="number" class="form-control" :value="selectedItem.variant" min="1900" max="2030">
+                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030">
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Volume</label>
                     <div class="input-group">
-                      <input type="number" class="form-control" :value="selectedItem.volumeML" step="0.1" min="0">
+                      <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
                       <select class="form-select volume-unit-select">
                         <option value="ml" selected>ml</option>
                         <option value="oz">oz</option>
@@ -469,7 +550,7 @@
                       <input 
                         type="text" 
                         class="form-control date-input" 
-                        :value="formatDateForInput(selectedItem.drinkOnwardsDate)"
+                        :value="formatDateForInput(selectedGroup.representative.drinkOnwardsDate)"
                         placeholder="MM/DD/YYYY"
                       >
                       <span class="input-group-text">
@@ -483,7 +564,7 @@
                       <input 
                         type="text" 
                         class="form-control date-input" 
-                        :value="formatDateForInput(selectedItem.drinkByDate)"
+                        :value="formatDateForInput(selectedGroup.representative.drinkByDate)"
                         placeholder="MM/DD/YYYY"
                       >
                       <span class="input-group-text">
@@ -502,7 +583,7 @@
                       <input 
                         type="text" 
                         class="form-control date-input" 
-                        :value="formatDateForInput(selectedItem.purchaseDate)"
+                        :value="formatDateForInput(selectedGroup.representative.purchaseDate)"
                         placeholder="MM/DD/YYYY"
                       >
                       <span class="input-group-text">
@@ -516,7 +597,7 @@
                       <input 
                         type="text" 
                         class="form-control date-input" 
-                        :value="formatDateForInput(selectedItem.deliveryDate)"
+                        :value="formatDateForInput(selectedGroup.representative.deliveryDate)"
                         placeholder="MM/DD/YYYY"
                       >
                       <span class="input-group-text">
@@ -530,7 +611,7 @@
                       <input 
                         type="text" 
                         class="form-control" 
-                        :value="selectedItem.purchasePlaceName"
+                        :value="selectedGroup.representative.purchasePlaceName"
                         placeholder="Enter location"
                       >
                       <span class="input-group-text" title="Google Maps integration coming soon">
@@ -541,7 +622,7 @@
                   <div class="col-md-6">
                     <label class="form-label">Price of Purchase</label>
                     <div class="input-group">
-                      <select class="form-select currency-select" :value="selectedItem.purchaseCurrency">
+                      <select class="form-select currency-select" :value="selectedGroup.representative.purchaseCurrency">
                         <option value="USD" selected>USD</option>
                         <option value="EUR">EUR</option>
                         <option value="GBP">GBP</option>
@@ -552,7 +633,7 @@
                       <input 
                         type="number" 
                         class="form-control" 
-                        :value="selectedItem.purchasePrice"
+                        :value="selectedGroup.representative.purchasePrice"
                         step="0.01" 
                         min="0"
                         placeholder="0.00"
@@ -561,58 +642,17 @@
                   </div>
                 </div>
 
-                <!-- Status and Storage -->
-                <h6 class="section-header">Status & Storage</h6>
+                <!-- Default Collection -->
+                <h6 class="section-header">Collection</h6>
                 <div class="row g-3 mb-4">
-                  <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <select class="form-select" :value="selectedItem.status">
-                      <option value="In Possession">In Possession</option>
-                      <option value="On Its Way">On Its Way</option>
-                      <option value="Purchased">Purchased</option>
-                      <option value="Held Elsewhere">Held Elsewhere</option>
-                      <option value="Wishlisted">Wishlisted</option>
-                      <option value="Consumed">Consumed</option>
-                    </select>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Consumption Status</label>
-                    <select class="form-select" :value="selectedItem.consumption">
-                      <option value="Unopened">Unopened</option>
-                      <option value="Opened">Opened</option>
-                      <option value="Empty">Empty</option>
-                    </select>
-                  </div>
-                  <div class="col-md-4">
+                  <div class="col-md-6">
                     <label class="form-label">Collection</label>
-                    <select class="form-select" :value="selectedItem.collectionId">
+                    <select class="form-select" :value="selectedGroup.representative.collectionId">
                       <option value="">Default Collection</option>
                       <option v-for="collection in collections" :key="collection.id" :value="collection.id">
                         {{ collection.collectionName }}
                       </option>
                     </select>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Current Storage Location</label>
-                    <div class="input-group">
-                      <select class="form-select" :value="selectedItem.currentLocation">
-                        <option value="In Collection">In Collection</option>
-                      </select>
-                      <button class="btn btn-outline-secondary" type="button" title="Add new location">
-                        <i class="bi bi-plus"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Storage Sub-location</label>
-                    <div class="input-group">
-                      <select class="form-select" :value="selectedItem.subLocation">
-                        <option value="">Select sub-location</option>
-                      </select>
-                      <button class="btn btn-outline-secondary" type="button" title="Add new sub-location">
-                        <i class="bi bi-plus"></i>
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -622,7 +662,7 @@
                   <div class="col-md-6">
                     <label class="form-label">Current Market Value</label>
                     <div class="input-group">
-                      <select class="form-select currency-select" :value="selectedItem.currentValueCurrency">
+                      <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
                         <option value="USD" selected>USD</option>
                         <option value="EUR">EUR</option>
                         <option value="GBP">GBP</option>
@@ -633,7 +673,7 @@
                       <input 
                         type="number" 
                         class="form-control" 
-                        :value="selectedItem.currentValueEstimation"
+                        :value="selectedGroup.representative.currentValueEstimation"
                         step="0.01" 
                         min="0"
                         placeholder="0.00"
@@ -643,7 +683,7 @@
                   <div class="col-md-6">
                     <label class="form-label">Suggested Food Pairing</label>
                     <div class="input-group">
-                      <select class="form-select" :value="selectedItem.suggestedFoodPairing">
+                      <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
                         <option value="">Select pairing</option>
                       </select>
                       <button class="btn btn-outline-secondary" type="button" title="Add new pairing">
@@ -660,7 +700,7 @@
                     <textarea 
                       class="form-control" 
                       rows="3" 
-                      :value="selectedItem.noteToSelf"
+                      :value="selectedGroup.representative.noteToSelf"
                       placeholder="Add your notes here..."
                     ></textarea>
                   </div>
@@ -669,10 +709,39 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary" disabled title="Save functionality coming soon">
-              Save Changes
-            </button>
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <!-- Left side: Group actions -->
+              <div class="action-buttons">
+                <div class="dropdown">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-three-dots"></i> Group Actions
+                  </button>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" @click="consumeBottle('one')">
+                      <i class="bi bi-cup"></i> Consume One Bottle
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" @click="moveGroup">
+                      <i class="bi bi-arrow-left-right"></i> Move Group
+                    </a></li>
+                    <li><a class="dropdown-item" href="#" @click="duplicateGroup">
+                      <i class="bi bi-files"></i> Duplicate Group
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="#" @click="deleteGroup">
+                      <i class="bi bi-trash"></i> Delete All Bottles
+                    </a></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Right side: Close and Save -->
+              <div class="close-save-buttons">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="saveGroupChanges">
+                  <i class="bi bi-check-lg"></i> Save Changes
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -762,7 +831,7 @@ export default {
       itemsPerPage: 24,
       
       // Modal states
-      selectedItem: null,
+      selectedGroup: null,
       
       // Dashboard data
       dashboardData: null,
@@ -789,51 +858,85 @@ export default {
       return this.allItems.filter(item => item.collectionId === this.activeTab)
     },
     
-    // Apply search and filters
-    filteredItems() {
-      let items = this.tabItems
+    // Group items by listing + variant for display
+    groupedItems() {
+      const groups = {}
       
-      // Search filter
+      this.tabItems.forEach(item => {
+        // Create unique key for listing + variant combination
+        const groupKey = `${item.listingId}_${item.variant || 'no-variant'}`
+        
+        if (!groups[groupKey]) {
+          groups[groupKey] = {
+            // Use first item as representative for display
+            representative: item,
+            // Track all individual bottles in this group
+            bottles: [],
+            // Count of bottles in this group
+            bottleCount: 0,
+            // Group identification
+            listingId: item.listingId,
+            variant: item.variant,
+            listingName: item.listingName
+          }
+        }
+        
+        groups[groupKey].bottles.push(item)
+        groups[groupKey].bottleCount = groups[groupKey].bottles.length
+      })
+      
+      return Object.values(groups)
+    },
+    
+    // Apply search and filters to grouped items
+    filteredItems() {
+      let groups = this.groupedItems
+      
+      // Search filter - search within the representative item
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase()
-        items = items.filter(item => 
-          item.listingName.toLowerCase().includes(query) ||
-          (item.producerName && item.producerName.toLowerCase().includes(query))
+        groups = groups.filter(group => 
+          group.representative.listingName.toLowerCase().includes(query) ||
+          (group.representative.producerName && group.representative.producerName.toLowerCase().includes(query))
         )
       }
       
       // Vintage filter
       if (this.filters.vintage) {
-        items = items.filter(item => item.variant == this.filters.vintage)
+        groups = groups.filter(group => group.representative.variant == this.filters.vintage)
       }
       
       // Size filter
       if (this.filters.size) {
-        items = items.filter(item => item.volumeML == this.filters.size)
+        groups = groups.filter(group => group.representative.volumeML == this.filters.size)
       }
       
-      // Status filter
+      // Status filter - check if any bottle in the group matches
       if (this.filters.status) {
-        items = items.filter(item => item.status === this.filters.status)
+        groups = groups.filter(group => 
+          group.bottles.some(bottle => bottle.status === this.filters.status)
+        )
       }
       
-      // Drink now filter
+      // Drink now filter - check if any bottle in the group is ready to drink
       if (this.filters.drinkNow) {
         const today = new Date()
-        items = items.filter(item => {
-          if (!item.drinkOnwardsDate && !item.drinkByDate) return false
-          
-          const drinkFrom = item.drinkOnwardsDate ? new Date(item.drinkOnwardsDate) : null
-          const drinkBy = item.drinkByDate ? new Date(item.drinkByDate) : null
-          
-          const afterDrinkFrom = !drinkFrom || today >= drinkFrom
-          const beforeDrinkBy = !drinkBy || today <= drinkBy
-          
-          return afterDrinkFrom && beforeDrinkBy
+        groups = groups.filter(group => {
+          return group.bottles.some(bottle => {
+            if (!bottle.drinkOnwardsDate && !bottle.drinkByDate) return false
+            
+            const drinkFrom = bottle.drinkOnwardsDate ? new Date(bottle.drinkOnwardsDate) : null
+            const drinkBy = bottle.drinkByDate ? new Date(bottle.drinkByDate) : null
+            
+            const afterDrinkFrom = !drinkFrom || today >= drinkFrom
+            const beforeDrinkBy = !drinkBy || today <= drinkBy
+            
+            return afterDrinkFrom && beforeDrinkBy
+          })
         })
       }
       
-      return items
+      return groups
     },
     
     // Pagination calculations
@@ -998,38 +1101,77 @@ export default {
     
     
     // Modal management  
-    setSelectedItem(item) {
-      this.selectedItem = item
+    setSelectedGroup(group) {
+      this.selectedGroup = group
     },
-    
+
+    // Get status breakdown for a group
+    getGroupStatusBreakdown(items) {
+      const breakdown = {}
+      items.forEach(item => {
+        const status = item.consumption || 'Unopened'
+        breakdown[status] = (breakdown[status] || 0) + 1
+      })
+      return breakdown
+    },
+
     // Navigate to listing page
-    goToListingPage(item) {
-      if (item.listingId && item.listingName) {
+    goToListingPage(group) {
+      if (group.listingId && group.representative.drinkName) {
         // Small delay to allow modal dismiss to complete
         setTimeout(() => {
-          const listingName = item.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
-          this.$router.push(`/listing/view/${item.listingId}/${listingName}`)
+          const listingName = group.representative.drinkName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+          this.$router.push(`/listing/view/${group.listingId}/${listingName}`)
         }, 150)
       }
     },
-    
-    // Item actions (stubs for now)
-    consumeItem(item) {
-      console.log('Consume item:', item)
-      // TODO: Implement consume functionality
+
+    // Group actions
+    consumeBottle(type = 'one') {
+      console.log('Consume bottle from group:', this.selectedGroup, 'type:', type)
+      // TODO: Implement consume functionality for individual bottles
     },
-    
-    adjustItem(item) {
-      console.log('Adjust item:', item)
-      // TODO: Implement adjust functionality
+
+    moveGroup() {
+      console.log('Move group:', this.selectedGroup)
+      // TODO: Implement move functionality for entire group
     },
-    
-    moveItem(item) {
-      console.log('Move item:', item)
-      // TODO: Implement move functionality
+
+    duplicateGroup() {
+      console.log('Duplicate group:', this.selectedGroup)
+      // TODO: Implement duplicate functionality for entire group
     },
-    
-    // Utility methods
+
+    deleteGroup() {
+      console.log('Delete group:', this.selectedGroup)
+      // TODO: Implement delete functionality for entire group
+    },
+
+    saveGroupChanges() {
+      console.log('Save group changes:', this.selectedGroup)
+      // TODO: Implement save functionality for group updates
+    },
+
+    // Individual bottle management
+    editIndividualBottle(bottle) {
+      console.log('Edit individual bottle:', bottle)
+      // TODO: Implement individual bottle editing
+    },
+
+    updateBottleStatus(bottle, newStatus) {
+      console.log('Update bottle status:', bottle, 'to:', newStatus)
+      // TODO: Update individual bottle status
+    },
+
+    updateBottleConsumption(bottle, newConsumption) {
+      console.log('Update bottle consumption:', bottle, 'to:', newConsumption)
+      // TODO: Update individual bottle consumption status
+    },
+
+    updateBottleLocation(bottle, newLocation) {
+      console.log('Update bottle location:', bottle, 'to:', newLocation)
+      // TODO: Update individual bottle location
+    },    // Utility methods
     formatDate(dateString) {
       if (!dateString) return ''
       const date = new Date(dateString)
@@ -1066,9 +1208,12 @@ export default {
       event.target.src = 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'
     },
     
-    // Get the proper image URL for a cellar item
-    getItemImageUrl(item) {
+    // Get the proper image URL for a cellar item or group
+    getItemImageUrl(itemOrGroup) {
       const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      
+      // For grouped items, use the representative item's photo
+      const item = itemOrGroup.representative || itemOrGroup;
       
       // Try different possible photo properties from the API response
       const photoPath = item.drinkPhoto || item.photo || item.listingPhoto;

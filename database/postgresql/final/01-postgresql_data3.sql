@@ -1087,7 +1087,7 @@ CREATE TABLE "myCellarItems" (
     "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
     
     -- Inventory Details
-    "quantityOwned" INTEGER DEFAULT 1,
+    "quantityVariantID" INTEGER DEFAULT 1,
     "drinkFormat" VARCHAR(50) DEFAULT 'Bottle', -- 'Bottle', 'Can', 'Sample', etc.
     "volumeML" INTEGER DEFAULT NULL, -- Volume in milliliters
     
@@ -1126,7 +1126,7 @@ CREATE TABLE "myCellarItems" (
     
     CONSTRAINT check_status CHECK ("status" IN ('In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed')),
     CONSTRAINT check_consumption CHECK ("consumption" IN ('Opened', 'Unopened', 'Empty')),
-    CONSTRAINT check_quantity_positive CHECK ("quantityOwned" >= 0),
+    CONSTRAINT check_quantity_variant_positive CHECK ("quantityVariantID" >= 1),
     CONSTRAINT check_volume_positive CHECK ("volumeML" IS NULL OR "volumeML" > 0),
     CONSTRAINT check_price_positive CHECK ("purchasePrice" IS NULL OR "purchasePrice" >= 0),
     CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0)
@@ -1143,7 +1143,7 @@ CREATE TABLE "myCellarItemsChangelog" (
     "id" SERIAL PRIMARY KEY,
     "cellarItemID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE CASCADE, -- Reference to the cellar item
     "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'DELETED'
-    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityOwned', 'status', 'consumption')
+    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityVariantID', 'status', 'consumption')
     "oldValue" TEXT, -- Previous value (JSON string for complex data)
     "newValue" TEXT, -- New value (JSON string for complex data)
     "changeDescription" TEXT, -- Human-readable description of the change
@@ -1198,7 +1198,6 @@ CREATE OR REPLACE FUNCTION log_cellar_item_changes()
 RETURNS TRIGGER AS $$
 DECLARE
     change_desc TEXT;
-    qty_delta INTEGER;
 BEGIN
     -- Handle INSERT (new item created)
     IF TG_OP = 'INSERT' THEN
@@ -1209,13 +1208,13 @@ BEGIN
             NEW."id", 'CREATED', 
             'New cellar item added: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = NEW."listingID"), 'Unknown item'),
             json_build_object(
-                'quantityOwned', NEW."quantityOwned",
+                'quantityVariantID', NEW."quantityVariantID",
                 'drinkFormat', NEW."drinkFormat",
                 'status', NEW."status",
                 'consumption', NEW."consumption",
                 'currentLocation', NEW."currentLocation"
             )::text,
-            NEW."quantityOwned",
+            1, -- Each record represents one bottle
             CURRENT_TIMESTAMP
         );
         RETURN NEW;
@@ -1223,21 +1222,6 @@ BEGIN
 
     -- Handle UPDATE (item modified)
     IF TG_OP = 'UPDATE' THEN
-        -- Quantity changed
-        IF OLD."quantityOwned" != NEW."quantityOwned" THEN
-            qty_delta := NEW."quantityOwned" - OLD."quantityOwned";
-            change_desc := 'Quantity changed from ' || OLD."quantityOwned" || ' to ' || NEW."quantityOwned";
-            
-            INSERT INTO "myCellarItemsChangelog" (
-                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
-                "changeDescription", "quantityDelta", "changeDate"
-            ) VALUES (
-                NEW."id", 'QUANTITY_UPDATED', 'quantityOwned', 
-                OLD."quantityOwned"::text, NEW."quantityOwned"::text,
-                change_desc, qty_delta, CURRENT_TIMESTAMP
-            );
-        END IF;
-
         -- Status changed
         IF OLD."status" != NEW."status" THEN
             change_desc := 'Status changed from "' || OLD."status" || '" to "' || NEW."status" || '"';
@@ -1339,7 +1323,7 @@ BEGIN
             OLD."id", 'DELETED', 
             'Cellar item removed: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = OLD."listingID"), 'Unknown item'),
             json_build_object(
-                'quantityOwned', OLD."quantityOwned",
+                'quantityVariantID', OLD."quantityVariantID",
                 'status', OLD."status",
                 'consumption', OLD."consumption"
             )::text,

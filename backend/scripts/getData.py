@@ -5722,6 +5722,12 @@ def convert_price_to_usd(amount, currency):
 # Parameters: ownerType (string: 'user', 'producer', 'venue'), ownerID (int)
 # Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
 #                   includeConsumed (default: false), sortBy (default: addedDate)
+# 
+# NOTE: Each record in myCellarItems now represents one physical bottle/item with its own
+# consumption status (Unopened/Opened/Empty). Items are uniquely identified by:
+# - listingID (different products)
+# - variant (different vintages/versions of same product) 
+# - quantityVariantID (individual bottles of same listing+variant combination)
 @blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCellarData(ownerType, ownerID):
     try:
@@ -5743,7 +5749,7 @@ def getCellarData(ownerType, ownerID):
         sort_by = request.args.get('sortBy', 'addedDate')
         
         # Validate sort_by parameter
-        valid_sort_fields = ['addedDate', 'listingName', 'quantityOwned', 'drinkByDate', 'purchaseDate']
+        valid_sort_fields = ['addedDate', 'listingName', 'quantityVariantID', 'drinkByDate', 'purchaseDate']
         if sort_by not in valid_sort_fields:
             sort_by = 'addedDate'
         
@@ -5774,7 +5780,7 @@ def getCellarData(ownerType, ownerID):
             SELECT 
                 -- Cellar Item Details
                 ci."id" as "cellarItemId",
-                ci."quantityOwned",
+                ci."quantityVariantID",
                 ci."drinkFormat",
                 ci."volumeML",
                 ci."status",
@@ -5852,8 +5858,8 @@ def getCellarData(ownerType, ownerID):
                 cc."createdDate",
                 cc."updatedDate",
                 COUNT(ci."id") as itemCount,
-                SUM(ci."quantityOwned") as totalBottles,
-                SUM(CASE WHEN ci."status" = 'Consumed' THEN ci."quantityOwned" ELSE 0 END) as consumedBottles,
+                COUNT(ci."id") as totalBottles,
+                SUM(CASE WHEN ci."status" = 'Consumed' THEN 1 ELSE 0 END) as consumedBottles,
                 SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
                 SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
             FROM "myCellarCollections" cc
@@ -5868,7 +5874,7 @@ def getCellarData(ownerType, ownerID):
         
         # Calculate summary statistics
         total_items = len(items)
-        total_bottles = sum(item['quantityOwned'] for item in items)
+        total_bottles = len(items)  # Now each item represents one bottle/item
         total_collections = len(collections)
         
         # Status breakdown
@@ -5878,7 +5884,7 @@ def getCellarData(ownerType, ownerID):
             if status not in status_summary:
                 status_summary[status] = {'count': 0, 'bottles': 0}
             status_summary[status]['count'] += 1
-            status_summary[status]['bottles'] += item['quantityOwned']
+            status_summary[status]['bottles'] += 1  # Each item is one bottle now
         
         # Drink type breakdown
         drink_type_summary = {}
@@ -5887,7 +5893,7 @@ def getCellarData(ownerType, ownerID):
             if dt not in drink_type_summary:
                 drink_type_summary[dt] = {'count': 0, 'bottles': 0}
             drink_type_summary[dt]['count'] += 1
-            drink_type_summary[dt]['bottles'] += item['quantityOwned']
+            drink_type_summary[dt]['bottles'] += 1  # Each item is one bottle now
         
         # Financial summary with currency conversion
         total_purchase_value = 0
@@ -5969,11 +5975,14 @@ def getCellarData(ownerType, ownerID):
 def getCellarDashboard(ownerType, ownerID):
     """
     Comprehensive cellar dashboard endpoint that provides:
-    1. Total items count across all collections
+    1. Total items count across all collections (each item = 1 physical bottle)
     2. Total purchase cost with completeness warnings
     3. Total current value with completeness warnings
     4. Breakdown by various categories (country, type, format, etc.)
     5. Historical data for plotting graphs over time
+    
+    NOTE: Updated for new schema where each record represents one physical item
+    with individual consumption tracking (Unopened/Opened/Empty per item).
     """
     try:
         conn = g.db
@@ -5990,7 +5999,7 @@ def getCellarDashboard(ownerType, ownerID):
         cellar_query = """
         SELECT 
             ci."id",
-            ci."quantityOwned",
+            ci."quantityVariantID",
             ci."drinkFormat",
             ci."purchasePrice",
             ci."purchaseCurrency",
@@ -6002,6 +6011,8 @@ def getCellarDashboard(ownerType, ownerID):
             ci."subLocation",
             ci."addedDate",
             ci."updatedDate",
+            ci."variant",
+            ci."listingID",
             cc."collectionName",
             cc."id" as "collectionID",
             l."listingName",
@@ -6046,10 +6057,12 @@ def getCellarDashboard(ownerType, ownerID):
         breakdown_by_location = {}
         breakdown_by_sub_location = {}
         breakdown_by_collection = {}
+        breakdown_by_listing_variant = {}  # Track unique listing+variant combinations
         
         # Process each item
         for item in items:
-            quantity = item.get('quantityOwned') or 0
+            # Each item represents one physical bottle/item
+            quantity = 1  # Changed from item.get('quantityOwned') or 0
             total_items += quantity
             
             purchase_price = item.get('purchasePrice')
@@ -6086,8 +6099,15 @@ def getCellarDashboard(ownerType, ownerID):
             sub_location = item.get('subLocation') or 'Not Specified'
             collection = item.get('collectionName') or 'Default'
             
+            # Create unique listing+variant identifier for tracking
+            listing_id = item.get('listingID')
+            variant = item.get('variant') or 'No Variant'
+            listing_name = item.get('listingName') or 'Unknown Listing'
+            listing_variant_key = f"{listing_name} - Variant: {variant}" if variant != 'No Variant' else listing_name
+            
             # Helper function to update breakdown with currency conversion
-            def update_breakdown(breakdown_dict, key, quantity, purchase_price, current_value, purchase_currency, current_value_currency):
+            def update_breakdown(breakdown_dict, key, purchase_price, current_value, purchase_currency, current_value_currency):
+                """Updated to work with individual items (quantity always = 1)"""
                 if key not in breakdown_dict:
                     breakdown_dict[key] = {
                         'count': 0,
@@ -6097,35 +6117,36 @@ def getCellarDashboard(ownerType, ownerID):
                         'itemsWithoutCurrentValue': 0
                     }
                 
-                breakdown_dict[key]['count'] += quantity
+                breakdown_dict[key]['count'] += 1  # Each item counts as 1
                 
                 if purchase_price is not None:
                     purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
                     if purchase_price_usd is not None:
-                        breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd * quantity
+                        breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd  # No quantity multiplication
                     else:
-                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += quantity
+                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
                 else:
-                    breakdown_dict[key]['itemsWithoutPurchasePrice'] += quantity
+                    breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
                     
                 if current_value is not None:
                     current_value_usd = convert_price_to_usd(current_value, current_value_currency)
                     if current_value_usd is not None:
-                        breakdown_dict[key]['totalCurrentValue'] += current_value_usd * quantity
+                        breakdown_dict[key]['totalCurrentValue'] += current_value_usd  # No quantity multiplication
                     else:
-                        breakdown_dict[key]['itemsWithoutCurrentValue'] += quantity
+                        breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
                 else:
-                    breakdown_dict[key]['itemsWithoutCurrentValue'] += quantity
+                    breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
             
             # Update all breakdowns
-            update_breakdown(breakdown_by_country, country, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_drink_type, drink_type, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_category, category, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_format, drink_format, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_consumption, consumption, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_location, location, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_sub_location, sub_location, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_collection, collection, quantity, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_country, country, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_drink_type, drink_type, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_category, category, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_format, drink_format, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_consumption, consumption, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_location, location, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_sub_location, sub_location, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_collection, collection, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_listing_variant, listing_variant_key, purchase_price, current_value, purchase_currency, current_value_currency)
         
         # Generate qualifiers for financial data
         purchase_cost_qualifier = None
@@ -6176,12 +6197,12 @@ def getCellarDashboard(ownerType, ownerID):
             if change_type == 'CREATED':
                 monthly_data[month]['itemsAdded'] += 1
                 monthly_data[month]['totalItems'] += 1
-            elif change_type == 'QUANTITY_UPDATED':
-                if quantity_delta > 0:
-                    monthly_data[month]['itemsAdded'] += quantity_delta
-                else:
-                    monthly_data[month]['itemsRemoved'] += abs(quantity_delta)
-                monthly_data[month]['totalItems'] += quantity_delta
+            elif change_type == 'DELETED':
+                monthly_data[month]['itemsRemoved'] += 1
+                monthly_data[month]['totalItems'] -= 1
+            elif change_type == 'STATUS_CHANGED' and new_value == 'Consumed':
+                # Don't count as removed from cellar, just status change
+                pass
             elif change_type == 'FINANCIAL_UPDATED' and field_name == 'currentValueEstimation':
                 try:
                     value = float(new_value) if new_value else 0
@@ -6221,7 +6242,8 @@ def getCellarDashboard(ownerType, ownerID):
                 'byConsumption': breakdown_by_consumption,
                 'byLocation': breakdown_by_location,
                 'bySubLocation': breakdown_by_sub_location,
-                'byCollection': breakdown_by_collection
+                'byCollection': breakdown_by_collection,
+                'byListingVariant': breakdown_by_listing_variant
             },
             'historicalData': {
                 'timeline': historical_timeline,

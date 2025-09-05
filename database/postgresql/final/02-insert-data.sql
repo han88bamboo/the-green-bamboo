@@ -4376,14 +4376,14 @@ INSERT INTO "myCellarCollections" (
 
 -- Item 1: Listing ID 1179024
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1179024, 2, 2022, 2, 'Bottle', 750,
+    1179024, 2, 2022, 1, 'Bottle', 750,
     '2030-12-31', '2025-01-01', '2024-08-15', '2024-08-20',
     89.99, 'USD', 95.00, 'USD',
     NULL, 'Local Wine Shop', '123 Main Street, City, State',
@@ -4394,7 +4394,7 @@ INSERT INTO "myCellarItems" (
 
 -- Item 2: Listing ID 1040419
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
@@ -4412,14 +4412,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 3: Listing ID 1037431
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1037431, 2, 2021, 3, 'Bottle', 750,
+    1037431, 2, 2021, 1, 'Bottle', 750,
     '2028-03-15', '2025-06-01', '2024-06-25', '2024-06-28',
     67.75, 'USD', 72.00, 'USD',
     NULL, 'Neighborhood Liquor Store', '789 Pine Street, Suburb',
@@ -4428,9 +4428,9 @@ INSERT INTO "myCellarItems" (
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
--- Item 4: Listing ID 1177334
+-- Item 4a: Listing ID 1177334
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
@@ -4446,16 +4446,52 @@ INSERT INTO "myCellarItems" (
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
--- Item 5: Listing ID 1
+-- Item 4b: Listing ID 1177334
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1, 1, NULL, 6, 'Can', 330,
+    1177334, 1, 2020, 2, 'Bottle', 700,
+    '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
+    199.99, 'USD', 220.00, 'USD',
+    NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
+    'In Possession', 'Unopened', 'At Home', 'Study room bar',
+    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 4c: Listing ID 1177334
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1177334, 1, 2020, 3, 'Bottle', 700,
+    '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
+    199.99, 'USD', 220.00, 'USD',
+    NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
+    'In Possession', 'Unopened', 'At Home', 'Study room bar',
+    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 5: Listing ID 1
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1, 1, NULL, 1, 'Can', 330,
     '2025-12-31', '2024-01-01', '2024-09-10', '2024-09-10',
     15.99, 'USD', 16.00, 'USD',
     NULL, 'Grocery Store', '654 Market Street, City Center',
@@ -4466,7 +4502,7 @@ INSERT INTO "myCellarItems" (
 
 -- Item 6: Listing ID 2
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityOwned", "drinkFormat", "volumeML",
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
