@@ -486,6 +486,104 @@
               </div>
             </div>
 
+            <!-- Drink Details -->
+            <div class="drink-details-section mb-4">
+              <h6 class="section-header text-start">Drink Details</h6>
+              <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                  <label class="form-label">Vintage</label>
+                  <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030" readonly>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Format</label>
+                  <select class="form-select" :value="selectedGroup.representative.drinkFormat">
+                    <option value="Bottle">Bottle</option>
+                    <option value="Can">Can</option>
+                    <option value="Sample">Sample</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Volume</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
+                    <select class="form-select volume-unit-select">
+                      <option value="ml" selected>ml</option>
+                      <option value="oz">oz</option>
+                      <option value="l">L</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label">Current Market Value</label>
+                  <div class="input-group">
+                    <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
+                      <option value="USD" selected>USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                      <option value="JPY">JPY</option>
+                      <option value="CAD">CAD</option>
+                      <option value="AUD">AUD</option>
+                    </select>
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      :value="selectedGroup.representative.currentValueEstimation"
+                      step="0.01" 
+                      min="0"
+                      placeholder="0.00"
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <label class="form-label">Drink Onwards Date</label>
+                  <div class="input-group">
+                    <input 
+                      type="text" 
+                      class="form-control date-input" 
+                      :value="formatDateForInput(selectedGroup.representative.drinkOnwardsDate)"
+                      placeholder="MM/DD/YYYY"
+                    >
+                    <span class="input-group-text">
+                      <i class="bi bi-calendar3"></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Drink By Date</label>
+                  <div class="input-group">
+                    <input 
+                      type="text" 
+                      class="form-control date-input" 
+                      :value="formatDateForInput(selectedGroup.representative.drinkByDate)"
+                      placeholder="MM/DD/YYYY"
+                    >
+                    <span class="input-group-text">
+                      <i class="bi bi-calendar3"></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Suggested Food Pairing</label>
+                  <div class="input-group">
+                    <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
+                      <option value="">Select pairing</option>
+                      <option 
+                        v-if="selectedGroup.representative.suggestedFoodPairing" 
+                        :value="selectedGroup.representative.suggestedFoodPairing"
+                        selected
+                      >
+                        {{ selectedGroup.representative.suggestedFoodPairing }}
+                      </option>
+                    </select>
+                    <button class="btn btn-outline-secondary" type="button">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Individual Bottles Management -->
             <div class="individual-bottles-section mb-4">
               <div class="d-flex justify-content-between align-items-center mb-3">
@@ -649,107 +747,6 @@
                       >
                         <i class="bi bi-pencil"></i> Edit Individual Bottle Details
                       </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Shared Properties for Group -->
-            <div class="editable-sections">
-              <div class="detail-section">
-                <!-- Drink Details -->
-                <h6 class="section-header">Drink Details</h6>
-                <div class="row g-3 mb-4">
-                  <div class="col-md-3">
-                    <label class="form-label">Vintage</label>
-                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030" readonly>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Format</label>
-                    <select class="form-select" :value="selectedGroup.representative.drinkFormat">
-                      <option value="Bottle">Bottle</option>
-                      <option value="Can">Can</option>
-                      <option value="Sample">Sample</option>
-                    </select>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Volume</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
-                      <select class="form-select volume-unit-select">
-                        <option value="ml" selected>ml</option>
-                        <option value="oz">oz</option>
-                        <option value="l">L</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Current Market Value</label>
-                    <div class="input-group">
-                      <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
-                        <option value="USD" selected>USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="JPY">JPY</option>
-                        <option value="CAD">CAD</option>
-                        <option value="AUD">AUD</option>
-                      </select>
-                      <input 
-                        type="number" 
-                        class="form-control" 
-                        :value="selectedGroup.representative.currentValueEstimation"
-                        step="0.01" 
-                        min="0"
-                        placeholder="0.00"
-                      >
-                    </div>
-                  </div>
-                </div>
-
-                <div class="row g-3 mb-4">
-                  <div class="col-md-4">
-                    <label class="form-label">Drink Onwards Date</label>
-                    <div class="input-group">
-                      <input 
-                        type="text" 
-                        class="form-control date-input" 
-                        :value="formatDateForInput(selectedGroup.representative.drinkOnwardsDate)"
-                        placeholder="MM/DD/YYYY"
-                      >
-                      <span class="input-group-text">
-                        <i class="bi bi-calendar3"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Drink By Date</label>
-                    <div class="input-group">
-                      <input 
-                        type="text" 
-                        class="form-control date-input" 
-                        :value="formatDateForInput(selectedGroup.representative.drinkByDate)"
-                        placeholder="MM/DD/YYYY"
-                      >
-                      <span class="input-group-text">
-                        <i class="bi bi-calendar3"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-md-4">
-                    <label class="form-label">Suggested Food Pairing</label>
-                    <div class="input-group">
-                      <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
-                        <option value="">Select pairing</option>
-                        <option 
-                          v-if="selectedGroup.representative.suggestedFoodPairing" 
-                          :value="selectedGroup.representative.suggestedFoodPairing"
-                          selected
-                        >
-                          {{ selectedGroup.representative.suggestedFoodPairing }}
-                        </option>
-                      </select>
-                      <button class="btn btn-outline-secondary" type="button">+</button>
                     </div>
                   </div>
                 </div>
