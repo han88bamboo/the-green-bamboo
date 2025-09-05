@@ -371,7 +371,8 @@
             ></button>
           </div>
           <div class="modal-body" v-if="selectedItem">
-            <div class="row">
+            <!-- Header Row: Image + Drink Information -->
+            <div class="modal-header-content row mb-4">
               <!-- Left Column - Image -->
               <div class="col-md-4">
                 <div class="item-image-container">
@@ -384,276 +385,284 @@
                 </div>
               </div>
 
-              <!-- Right Column - Details -->
+              <!-- Right Column - Drink Information Summary -->
               <div class="col-md-8">
-                <!-- Drink Information (Read-only) -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Drink Information</h6>
+                <div class="drink-info-summary">
+                  <h6 class="section-header mb-3">Drink Information</h6>
                   <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label">Producer</label>
-                      <input type="text" class="form-control" :value="selectedItem.producerName" readonly>
+                    <div class="col-sm-6">
+                      <div class="info-item">
+                        <label class="info-label">Producer</label>
+                        <p class="info-value">{{ selectedItem.producerName || 'N/A' }}</p>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Bottler</label>
-                      <input type="text" class="form-control" :value="selectedItem.bottlerName || 'Original Bottling'" readonly>
+                    <div class="col-sm-6">
+                      <div class="info-item">
+                        <label class="info-label">Country of Origin</label>
+                        <p class="info-value">{{ selectedItem.originCountry || 'N/A' }}</p>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Country of Origin</label>
-                      <input type="text" class="form-control" :value="selectedItem.originCountry" readonly>
+                    <div class="col-sm-6">
+                      <div class="info-item">
+                        <label class="info-label">Drink Type</label>
+                        <p class="info-value">{{ selectedItem.drinkType || 'N/A' }}</p>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Drink Type</label>
-                      <input type="text" class="form-control" :value="selectedItem.drinkType" readonly>
+                    <div class="col-sm-6">
+                      <div class="info-item">
+                        <label class="info-label">Category</label>
+                        <p class="info-value">{{ selectedItem.typeCategory || 'N/A' }}</p>
+                      </div>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Drink Category</label>
-                      <input type="text" class="form-control" :value="selectedItem.typeCategory" readonly>
+                    <div class="col-12" v-if="selectedItem.bottlerName">
+                      <div class="info-item">
+                        <label class="info-label">Bottler</label>
+                        <p class="info-value">{{ selectedItem.bottlerName }}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <!-- Editable Item Details -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Item Details</h6>
-                  <div class="row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Quantity</label>
-                      <input type="number" class="form-control" :value="selectedItem.quantityOwned" min="0">
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Format</label>
-                      <select class="form-select" :value="selectedItem.drinkFormat">
-                        <option value="Bottle">Bottle</option>
-                        <option value="Can">Can</option>
-                        <option value="Sample">Sample</option>
+            <!-- Editable Sections - Full Width -->
+            <div class="editable-sections">
+              <div class="detail-section">
+                <!-- Item Details -->
+                <h6 class="section-header">Item Details</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-3">
+                    <label class="form-label">Quantity</label>
+                    <input type="number" class="form-control" :value="selectedItem.quantityOwned" min="0">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Format</label>
+                    <select class="form-select" :value="selectedItem.drinkFormat">
+                      <option value="Bottle">Bottle</option>
+                      <option value="Can">Can</option>
+                      <option value="Sample">Sample</option>
+                    </select>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Vintage</label>
+                    <input type="number" class="form-control" :value="selectedItem.variant" min="1900" max="2030">
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Volume</label>
+                    <div class="input-group">
+                      <input type="number" class="form-control" :value="selectedItem.volumeML" step="0.1" min="0">
+                      <select class="form-select volume-unit-select">
+                        <option value="ml" selected>ml</option>
+                        <option value="oz">oz</option>
+                        <option value="l">L</option>
                       </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Vintage</label>
-                      <input type="number" class="form-control" :value="selectedItem.variant" min="1900" max="2030">
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Volume</label>
-                      <div class="input-group">
-                        <input type="number" class="form-control" :value="selectedItem.volumeML" step="0.1" min="0">
-                        <select class="form-select volume-unit-select">
-                          <option value="ml" selected>ml</option>
-                          <option value="oz">oz</option>
-                          <option value="l">L</option>
-                        </select>
-                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Drinking Window -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Drinking Window</h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label">Drink Onwards Date</label>
-                      <div class="input-group">
-                        <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(selectedItem.drinkOnwardsDate)"
-                          placeholder="MM/DD/YYYY"
-                        >
-                        <span class="input-group-text">
-                          <i class="bi bi-calendar3"></i>
-                        </span>
-                      </div>
+                <h6 class="section-header">Drinking Window</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label">Drink Onwards Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control date-input" 
+                        :value="formatDateForInput(selectedItem.drinkOnwardsDate)"
+                        placeholder="MM/DD/YYYY"
+                      >
+                      <span class="input-group-text">
+                        <i class="bi bi-calendar3"></i>
+                      </span>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Drink By Date</label>
-                      <div class="input-group">
-                        <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(selectedItem.drinkByDate)"
-                          placeholder="MM/DD/YYYY"
-                        >
-                        <span class="input-group-text">
-                          <i class="bi bi-calendar3"></i>
-                        </span>
-                      </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Drink By Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control date-input" 
+                        :value="formatDateForInput(selectedItem.drinkByDate)"
+                        placeholder="MM/DD/YYYY"
+                      >
+                      <span class="input-group-text">
+                        <i class="bi bi-calendar3"></i>
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 <!-- Procurement Details -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Procurement Details</h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label">Date of Purchase</label>
-                      <div class="input-group">
-                        <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(selectedItem.purchaseDate)"
-                          placeholder="MM/DD/YYYY"
-                        >
-                        <span class="input-group-text">
-                          <i class="bi bi-calendar3"></i>
-                        </span>
-                      </div>
+                <h6 class="section-header">Procurement Details</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label">Date of Purchase</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control date-input" 
+                        :value="formatDateForInput(selectedItem.purchaseDate)"
+                        placeholder="MM/DD/YYYY"
+                      >
+                      <span class="input-group-text">
+                        <i class="bi bi-calendar3"></i>
+                      </span>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Delivery Date</label>
-                      <div class="input-group">
-                        <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(selectedItem.deliveryDate)"
-                          placeholder="MM/DD/YYYY"
-                        >
-                        <span class="input-group-text">
-                          <i class="bi bi-calendar3"></i>
-                        </span>
-                      </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Delivery Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control date-input" 
+                        :value="formatDateForInput(selectedItem.deliveryDate)"
+                        placeholder="MM/DD/YYYY"
+                      >
+                      <span class="input-group-text">
+                        <i class="bi bi-calendar3"></i>
+                      </span>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Place of Purchase</label>
-                      <div class="input-group">
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          :value="selectedItem.purchasePlaceName"
-                          placeholder="Enter location"
-                        >
-                        <span class="input-group-text" title="Google Maps integration coming soon">
-                          <i class="bi bi-geo-alt"></i>
-                        </span>
-                      </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Place of Purchase</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control" 
+                        :value="selectedItem.purchasePlaceName"
+                        placeholder="Enter location"
+                      >
+                      <span class="input-group-text" title="Google Maps integration coming soon">
+                        <i class="bi bi-geo-alt"></i>
+                      </span>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Price of Purchase</label>
-                      <div class="input-group">
-                        <select class="form-select currency-select" :value="selectedItem.purchaseCurrency">
-                          <option value="USD" selected>USD</option>
-                          <option value="EUR">EUR</option>
-                          <option value="GBP">GBP</option>
-                          <option value="JPY">JPY</option>
-                          <option value="CAD">CAD</option>
-                          <option value="AUD">AUD</option>
-                        </select>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          :value="selectedItem.purchasePrice"
-                          step="0.01" 
-                          min="0"
-                          placeholder="0.00"
-                        >
-                      </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Price of Purchase</label>
+                    <div class="input-group">
+                      <select class="form-select currency-select" :value="selectedItem.purchaseCurrency">
+                        <option value="USD" selected>USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                      </select>
+                      <input 
+                        type="number" 
+                        class="form-control" 
+                        :value="selectedItem.purchasePrice"
+                        step="0.01" 
+                        min="0"
+                        placeholder="0.00"
+                      >
                     </div>
                   </div>
                 </div>
 
                 <!-- Status and Storage -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Status & Storage</h6>
-                  <div class="row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Status</label>
-                      <select class="form-select" :value="selectedItem.status">
-                        <option value="In Possession">In Possession</option>
-                        <option value="On Its Way">On Its Way</option>
-                        <option value="Purchased">Purchased</option>
-                        <option value="Held Elsewhere">Held Elsewhere</option>
-                        <option value="Wishlisted">Wishlisted</option>
-                        <option value="Consumed">Consumed</option>
+                <h6 class="section-header">Status & Storage</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" :value="selectedItem.status">
+                      <option value="In Possession">In Possession</option>
+                      <option value="On Its Way">On Its Way</option>
+                      <option value="Purchased">Purchased</option>
+                      <option value="Held Elsewhere">Held Elsewhere</option>
+                      <option value="Wishlisted">Wishlisted</option>
+                      <option value="Consumed">Consumed</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Consumption Status</label>
+                    <select class="form-select" :value="selectedItem.consumption">
+                      <option value="Unopened">Unopened</option>
+                      <option value="Opened">Opened</option>
+                      <option value="Empty">Empty</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Collection</label>
+                    <select class="form-select" :value="selectedItem.collectionId">
+                      <option value="">Default Collection</option>
+                      <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                        {{ collection.collectionName }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Current Storage Location</label>
+                    <div class="input-group">
+                      <select class="form-select" :value="selectedItem.currentLocation">
+                        <option value="In Collection">In Collection</option>
                       </select>
+                      <button class="btn btn-outline-secondary" type="button" title="Add new location">
+                        <i class="bi bi-plus"></i>
+                      </button>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Consumption Status</label>
-                      <select class="form-select" :value="selectedItem.consumption">
-                        <option value="Unopened">Unopened</option>
-                        <option value="Opened">Opened</option>
-                        <option value="Empty">Empty</option>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Storage Sub-location</label>
+                    <div class="input-group">
+                      <select class="form-select" :value="selectedItem.subLocation">
+                        <option value="">Select sub-location</option>
                       </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Collection</label>
-                      <select class="form-select" :value="selectedItem.collectionId">
-                        <option value="">Default Collection</option>
-                        <option v-for="collection in collections" :key="collection.id" :value="collection.id">
-                          {{ collection.collectionName }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Current Storage Location</label>
-                      <div class="input-group">
-                        <select class="form-select" :value="selectedItem.currentLocation">
-                          <option value="In Collection">In Collection</option>
-                        </select>
-                        <button class="btn btn-outline-secondary" type="button" title="Add new location">
-                          <i class="bi bi-plus"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Storage Sub-location</label>
-                      <div class="input-group">
-                        <select class="form-select" :value="selectedItem.subLocation">
-                          <option value="">Select sub-location</option>
-                        </select>
-                        <button class="btn btn-outline-secondary" type="button" title="Add new sub-location">
-                          <i class="bi bi-plus"></i>
-                        </button>
-                      </div>
+                      <button class="btn btn-outline-secondary" type="button" title="Add new sub-location">
+                        <i class="bi bi-plus"></i>
+                      </button>
                     </div>
                   </div>
                 </div>
 
                 <!-- Additional Information -->
-                <div class="detail-section mb-4">
-                  <h6 class="section-header">Additional Information</h6>
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label">Current Market Value</label>
-                      <div class="input-group">
-                        <select class="form-select currency-select" :value="selectedItem.currentValueCurrency">
-                          <option value="USD" selected>USD</option>
-                          <option value="EUR">EUR</option>
-                          <option value="GBP">GBP</option>
-                          <option value="JPY">JPY</option>
-                          <option value="CAD">CAD</option>
-                          <option value="AUD">AUD</option>
-                        </select>
-                        <input 
-                          type="number" 
-                          class="form-control" 
-                          :value="selectedItem.currentValueEstimation"
-                          step="0.01" 
-                          min="0"
-                          placeholder="0.00"
-                        >
-                      </div>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Suggested Food Pairing</label>
-                      <div class="input-group">
-                        <select class="form-select" :value="selectedItem.suggestedFoodPairing">
-                          <option value="">Select pairing</option>
-                        </select>
-                        <button class="btn btn-outline-secondary" type="button" title="Add new pairing">
-                          <i class="bi bi-plus"></i>
-                        </button>
-                      </div>
-                    </div>
-                    <div class="col-12">
-                      <label class="form-label">Notes</label>
-                      <textarea 
+                <h6 class="section-header">Additional Information</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <label class="form-label">Current Market Value</label>
+                    <div class="input-group">
+                      <select class="form-select currency-select" :value="selectedItem.currentValueCurrency">
+                        <option value="USD" selected>USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                      </select>
+                      <input 
+                        type="number" 
                         class="form-control" 
-                        rows="3" 
-                        :value="selectedItem.noteToSelf"
-                        placeholder="Add your notes here..."
-                      ></textarea>
+                        :value="selectedItem.currentValueEstimation"
+                        step="0.01" 
+                        min="0"
+                        placeholder="0.00"
+                      >
                     </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label">Suggested Food Pairing</label>
+                    <div class="input-group">
+                      <select class="form-select" :value="selectedItem.suggestedFoodPairing">
+                        <option value="">Select pairing</option>
+                      </select>
+                      <button class="btn btn-outline-secondary" type="button" title="Add new pairing">
+                        <i class="bi bi-plus"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Notes -->
+                <h6 class="section-header">Notes</h6>
+                <div class="row">
+                  <div class="col-12">
+                    <textarea 
+                      class="form-control" 
+                      rows="3" 
+                      :value="selectedItem.noteToSelf"
+                      placeholder="Add your notes here..."
+                    ></textarea>
                   </div>
                 </div>
               </div>
@@ -1400,40 +1409,78 @@ export default {
   max-width: 1200px;
 }
 
+.modal-header-content {
+  border-bottom: 2px solid #f0f0f0;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem !important;
+}
+
 .item-image-container {
   background-color: #f8f9fa;
   border-radius: 0.5rem;
   padding: 1rem;
-  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+  min-height: 280px;
 }
 
 .item-detail-image {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 300px;
   object-fit: contain;
   border-radius: 0.375rem;
 }
 
+.drink-info-summary {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-item {
+  margin-bottom: 0.75rem;
+}
+
+.info-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.info-value {
+  font-size: 1rem;
+  color: #212529;
+  margin: 0;
+  font-weight: 500;
+}
+
+.editable-sections {
+  background-color: #fafbfc;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
 .detail-section {
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 1rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .detail-section:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  margin-bottom: 0 !important;
 }
 
 .section-header {
   color: #495057;
   font-weight: 600;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
   border-bottom: 2px solid #e9ecef;
+  font-size: 1.1rem;
 }
 
 .currency-select {
@@ -1478,13 +1525,30 @@ export default {
     margin: 0.5rem auto;
   }
   
+  .modal-header-content {
+    flex-direction: column;
+  }
+  
   .item-image-container {
     min-height: 200px;
     padding: 0.75rem;
+    margin-bottom: 1rem;
   }
   
   .item-detail-image {
     max-height: 250px;
+  }
+  
+  .drink-info-summary {
+    margin-top: 1rem;
+  }
+  
+  .editable-sections {
+    padding: 1rem;
+  }
+  
+  .detail-section {
+    padding: 1rem;
   }
   
   .currency-select {
