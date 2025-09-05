@@ -431,6 +431,42 @@
                       </span>
                     </span>
                   </div>
+
+                  <!-- Row 4: Drinking Window -->
+                  <div class="info-row mb-2" v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
+                    <span class="info-text text-muted">
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate">
+                        <strong>Drink from:</strong> {{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}
+                      </template>
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> • </template>
+                      <template v-if="selectedGroup.representative.drinkByDate">
+                        <strong>Drink by:</strong> {{ formatDate(selectedGroup.representative.drinkByDate) }}
+                      </template>
+                    </span>
+                  </div>
+
+                  <!-- Row 5: Collection & Market Value -->
+                  <div class="info-row mb-2">
+                    <span class="info-text text-muted">
+                      <template v-if="selectedGroup.representative.collectionId">
+                        <strong>Collection:</strong> {{ collections.find(c => c.id === selectedGroup.representative.collectionId)?.collectionName || 'Default Collection' }}
+                      </template>
+                      <template v-else>
+                        <strong>Collection:</strong> Default Collection
+                      </template>
+                      <template v-if="selectedGroup.representative.currentValueEstimation"> • </template>
+                      <template v-if="selectedGroup.representative.currentValueEstimation">
+                        <strong>Market Value:</strong> {{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}
+                      </template>
+                    </span>
+                  </div>
+
+                  <!-- Row 6: Food Pairing -->
+                  <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
+                    <span class="info-text text-muted">
+                      <strong>Suggested Pairing:</strong> {{ selectedGroup.representative.suggestedFoodPairing }}
+                    </span>
+                  </div>
                   
                   <!-- Learn More Button -->
                   <div class="learn-more-section">
