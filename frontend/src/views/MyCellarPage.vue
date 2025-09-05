@@ -368,18 +368,31 @@
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="itemDetailsModalLabel">
-              {{ selectedGroup?.representative?.listingName || 'Item Details' }}
-              <span v-if="selectedGroup?.representative?.variant" class="text-muted">
-                ({{ selectedGroup.representative.variant }})
-              </span>
-            </h5>
-            <button 
-              type="button" 
-              class="btn-close" 
-              data-bs-dismiss="modal" 
-              aria-label="Close"
-            ></button>
+            <div class="d-flex justify-content-between align-items-center w-100">
+              <div>
+                <h5 class="modal-title mb-0" id="itemDetailsModalLabel">
+                  {{ selectedGroup?.representative?.listingName || 'Item Details' }}
+                  <span v-if="selectedGroup?.representative?.variant" class="text-muted">
+                    ({{ selectedGroup.representative.variant }})
+                  </span>
+                </h5>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="collection-selector" v-if="selectedGroup?.representative">
+                  <select class="form-select form-select-sm collection-status-select" :value="selectedGroup.representative.collectionId" style="min-width: 220px;">
+                    <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                      {{ collection.id === selectedGroup.representative.collectionId ? 'Currently In: ' : 'Move To: ' }}{{ collection.collectionName }}
+                    </option>
+                  </select>
+                </div>
+                <button 
+                  type="button" 
+                  class="btn-close" 
+                  data-bs-dismiss="modal" 
+                  aria-label="Close"
+                ></button>
+              </div>
+            </div>
           </div>
           <div class="modal-body" v-if="selectedGroup">
             <!-- Header Row: Image + Drink Information -->
@@ -673,6 +686,31 @@
                   </div>
                 </div>
 
+                <!-- Current Market Value -->
+                <h6 class="section-header">Current Market Value</h6>
+                <div class="row g-3 mb-4">
+                  <div class="col-md-6">
+                    <div class="input-group">
+                      <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
+                        <option value="USD" selected>USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                      </select>
+                      <input 
+                        type="number" 
+                        class="form-control" 
+                        :value="selectedGroup.representative.currentValueEstimation"
+                        step="0.01" 
+                        min="0"
+                        placeholder="0.00"
+                      >
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Drinking Window -->
                 <h6 class="section-header">Drinking Window</h6>
                 <div class="row g-3 mb-4">
@@ -704,55 +742,20 @@
                       </span>
                     </div>
                   </div>
-                </div>
-
-                <!-- Default Collection -->
-                <h6 class="section-header">Collection</h6>
-                <div class="row g-3 mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label">Collection</label>
-                    <select class="form-select" :value="selectedGroup.representative.collectionId">
-                      <option value="">Default Collection</option>
-                      <option v-for="collection in collections" :key="collection.id" :value="collection.id">
-                        {{ collection.collectionName }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Additional Information -->
-                <h6 class="section-header">Additional Information</h6>
-                <div class="row g-3 mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label">Current Market Value</label>
-                    <div class="input-group">
-                      <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
-                        <option value="USD" selected>USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="JPY">JPY</option>
-                        <option value="CAD">CAD</option>
-                        <option value="AUD">AUD</option>
-                      </select>
-                      <input 
-                        type="number" 
-                        class="form-control" 
-                        :value="selectedGroup.representative.currentValueEstimation"
-                        step="0.01" 
-                        min="0"
-                        placeholder="0.00"
-                      >
-                    </div>
-                  </div>
                   <div class="col-md-6">
                     <label class="form-label">Suggested Food Pairing</label>
                     <div class="input-group">
                       <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
                         <option value="">Select pairing</option>
+                        <option value="Red Meat">Red Meat</option>
+                        <option value="White Meat">White Meat</option>
+                        <option value="Seafood">Seafood</option>
+                        <option value="Cheese">Cheese</option>
+                        <option value="Dessert">Dessert</option>
+                        <option value="Spicy Food">Spicy Food</option>
+                        <option value="Vegetarian">Vegetarian</option>
                       </select>
-                      <button class="btn btn-outline-secondary" type="button" title="Add new pairing">
-                        <i class="bi bi-plus"></i>
-                      </button>
+                      <button class="btn btn-outline-secondary" type="button">+</button>
                     </div>
                   </div>
                 </div>
@@ -1871,6 +1874,41 @@ export default {
     margin-top: 2rem;
   }
 }
+
+/* Collection Selector in Modal Header */
+.collection-selector {
+  text-align: right;
+}
+
+.collection-selector .form-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.collection-selector .form-select {
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.collection-selector .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.collection-status-select {
+  font-weight: 500;
+}
+
+.collection-status-select option {
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
+/* Note: Individual option color styling is limited in browsers, 
+   but this provides the text prefixes as requested */
 
 /* Bottle Counter Controls */
 .bottle-counter-controls {
