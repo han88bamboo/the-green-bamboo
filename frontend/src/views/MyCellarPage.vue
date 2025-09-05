@@ -399,7 +399,7 @@
               <!-- Right Column - Drink Information Summary -->
               <div class="col-md-9">
                 <div class="drink-info-summary">
-                  <h6 class="section-header mb-3">Drink Information</h6>
+                  <h6 class="section-header mb-3">Summary of Drink Information</h6>
                   
                   <!-- Row 1: Producer | Bottler -->
                   <div class="info-row mb-2">
