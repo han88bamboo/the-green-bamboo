@@ -661,11 +661,11 @@
                 <!-- Group Details -->
                 <h6 class="section-header">Group Details</h6>
                 <div class="row g-3 mb-4">
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label class="form-label">Vintage</label>
-                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030">
+                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030" readonly>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label class="form-label">Format</label>
                     <select class="form-select" :value="selectedGroup.representative.drinkFormat">
                       <option value="Bottle">Bottle</option>
@@ -673,7 +673,7 @@
                       <option value="Sample">Sample</option>
                     </select>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <label class="form-label">Volume</label>
                     <div class="input-group">
                       <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
@@ -684,12 +684,8 @@
                       </select>
                     </div>
                   </div>
-                </div>
-
-                <!-- Current Market Value -->
-                <h6 class="section-header">Current Market Value</h6>
-                <div class="row g-3 mb-4">
-                  <div class="col-md-6">
+                  <div class="col-md-3">
+                    <label class="form-label">Current Market Value</label>
                     <div class="input-group">
                       <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
                         <option value="USD" selected>USD</option>
@@ -714,7 +710,7 @@
                 <!-- Drinking Window -->
                 <h6 class="section-header">Drinking Window</h6>
                 <div class="row g-3 mb-4">
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     <label class="form-label">Drink Onwards Date</label>
                     <div class="input-group">
                       <input 
@@ -728,7 +724,7 @@
                       </span>
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     <label class="form-label">Drink By Date</label>
                     <div class="input-group">
                       <input 
@@ -742,18 +738,18 @@
                       </span>
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-4">
                     <label class="form-label">Suggested Food Pairing</label>
                     <div class="input-group">
                       <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
                         <option value="">Select pairing</option>
-                        <option value="Red Meat">Red Meat</option>
-                        <option value="White Meat">White Meat</option>
-                        <option value="Seafood">Seafood</option>
-                        <option value="Cheese">Cheese</option>
-                        <option value="Dessert">Dessert</option>
-                        <option value="Spicy Food">Spicy Food</option>
-                        <option value="Vegetarian">Vegetarian</option>
+                        <option 
+                          v-if="selectedGroup.representative.suggestedFoodPairing" 
+                          :value="selectedGroup.representative.suggestedFoodPairing"
+                          selected
+                        >
+                          {{ selectedGroup.representative.suggestedFoodPairing }}
+                        </option>
                       </select>
                       <button class="btn btn-outline-secondary" type="button">+</button>
                     </div>
