@@ -396,11 +396,11 @@
                     </div>
                     <div class="col-md-6">
                       <label class="form-label">Bottler</label>
-                      <input type="text" class="form-control" :value="selectedItem.bottler || 'Original Bottling'" readonly>
+                      <input type="text" class="form-control" :value="selectedItem.bottlerName || 'Original Bottling'" readonly>
                     </div>
                     <div class="col-md-6">
                       <label class="form-label">Country of Origin</label>
-                      <input type="text" class="form-control" :value="selectedItem.country" readonly>
+                      <input type="text" class="form-control" :value="selectedItem.originCountry" readonly>
                     </div>
                     <div class="col-md-6">
                       <label class="form-label">Drink Type</label>
@@ -423,7 +423,7 @@
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Format</label>
-                      <select class="form-select" :value="selectedItem.format">
+                      <select class="form-select" :value="selectedItem.drinkFormat">
                         <option value="Bottle">Bottle</option>
                         <option value="Can">Can</option>
                         <option value="Sample">Sample</option>
@@ -520,7 +520,7 @@
                         <input 
                           type="text" 
                           class="form-control" 
-                          :value="selectedItem.placeOfPurchase"
+                          :value="selectedItem.purchasePlaceName"
                           placeholder="Enter location"
                         >
                         <span class="input-group-text" title="Google Maps integration coming soon">
@@ -531,7 +531,7 @@
                     <div class="col-md-6">
                       <label class="form-label">Price of Purchase</label>
                       <div class="input-group">
-                        <select class="form-select currency-select">
+                        <select class="form-select currency-select" :value="selectedItem.purchaseCurrency">
                           <option value="USD" selected>USD</option>
                           <option value="EUR">EUR</option>
                           <option value="GBP">GBP</option>
@@ -569,7 +569,7 @@
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Consumption Status</label>
-                      <select class="form-select" :value="selectedItem.consumptionStatus">
+                      <select class="form-select" :value="selectedItem.consumption">
                         <option value="Closed">Closed</option>
                         <option value="Open">Open</option>
                         <option value="Empty">Empty</option>
@@ -587,7 +587,7 @@
                     <div class="col-md-6">
                       <label class="form-label">Current Storage Location</label>
                       <div class="input-group">
-                        <select class="form-select" :value="selectedItem.storageLocation">
+                        <select class="form-select" :value="selectedItem.currentLocation">
                           <option value="In Collection">In Collection</option>
                         </select>
                         <button class="btn btn-outline-secondary" type="button" title="Add new location">
@@ -598,7 +598,7 @@
                     <div class="col-md-6">
                       <label class="form-label">Storage Sub-location</label>
                       <div class="input-group">
-                        <select class="form-select" :value="selectedItem.storageSubLocation">
+                        <select class="form-select" :value="selectedItem.subLocation">
                           <option value="">Select sub-location</option>
                         </select>
                         <button class="btn btn-outline-secondary" type="button" title="Add new sub-location">
@@ -616,7 +616,7 @@
                     <div class="col-md-6">
                       <label class="form-label">Current Market Value</label>
                       <div class="input-group">
-                        <select class="form-select currency-select">
+                        <select class="form-select currency-select" :value="selectedItem.currentValueCurrency">
                           <option value="USD" selected>USD</option>
                           <option value="EUR">EUR</option>
                           <option value="GBP">GBP</option>
@@ -627,7 +627,7 @@
                         <input 
                           type="number" 
                           class="form-control" 
-                          :value="selectedItem.currentMarketValue"
+                          :value="selectedItem.currentValueEstimation"
                           step="0.01" 
                           min="0"
                           placeholder="0.00"
@@ -637,7 +637,7 @@
                     <div class="col-md-6">
                       <label class="form-label">Suggested Food Pairing</label>
                       <div class="input-group">
-                        <select class="form-select" :value="selectedItem.foodPairing">
+                        <select class="form-select" :value="selectedItem.suggestedFoodPairing">
                           <option value="">Select pairing</option>
                         </select>
                         <button class="btn btn-outline-secondary" type="button" title="Add new pairing">
