@@ -736,19 +736,6 @@
                       </div>
                     </div>
                   </div>
-
-                  <!-- Edit Button Row -->
-                  <div class="row">
-                    <div class="col-12">
-                      <button 
-                        class="btn btn-sm btn-outline-primary"
-                        @click="editIndividualBottle(bottle)"
-                        title="Edit this specific bottle"
-                      >
-                        <i class="bi bi-pencil"></i> Edit Individual Bottle Details
-                      </button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
