@@ -475,7 +475,23 @@
 
             <!-- Individual Bottles Management -->
             <div class="individual-bottles-section mb-4">
-              <h6 class="section-header">Individual Bottles Management</h6>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="section-header mb-0">Individual Bottles Management</h6>
+                <div class="bottle-counter-controls d-flex align-items-center">
+                  <span class="bottle-counter me-2">
+                    <i class="bi bi-bottle me-1"></i>
+                    {{ selectedGroup.bottleCount }} bottle{{ selectedGroup.bottleCount !== 1 ? 's' : '' }}
+                  </span>
+                  <button 
+                    class="btn btn-sm btn-outline-primary d-flex align-items-center"
+                    @click="addNewBottle"
+                    title="Add new bottle to this group"
+                  >
+                    <i class="bi bi-plus-circle me-1"></i>
+                    Add Bottle
+                  </button>
+                </div>
+              </div>
               <div class="bottles-list">
                 <div 
                   v-for="(bottle, index) in selectedGroup.bottles" 
@@ -632,16 +648,11 @@
                 <!-- Group Details -->
                 <h6 class="section-header">Group Details</h6>
                 <div class="row g-3 mb-4">
-                  <div class="col-md-3">
-                    <label class="form-label">Total Bottles</label>
-                    <input type="number" class="form-control" :value="selectedGroup.bottleCount" readonly>
-                    <small class="text-muted">Each bottle tracked individually above</small>
-                  </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label">Vintage</label>
                     <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030">
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label">Format</label>
                     <select class="form-select" :value="selectedGroup.representative.drinkFormat">
                       <option value="Bottle">Bottle</option>
@@ -649,7 +660,7 @@
                       <option value="Sample">Sample</option>
                     </select>
                   </div>
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <label class="form-label">Volume</label>
                     <div class="input-group">
                       <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
@@ -1200,6 +1211,47 @@ export default {
     editIndividualBottle(bottle) {
       console.log('Edit individual bottle:', bottle)
       // TODO: Implement individual bottle editing
+    },
+
+    addNewBottle() {
+      if (!this.selectedGroup) return
+      
+      console.log('Adding new bottle to group:', this.selectedGroup)
+      
+      // Create a new bottle object with default values
+      const newBottle = {
+        // Generate a temporary ID (in real implementation, this would come from backend)
+        cellarItemId: `temp_${Date.now()}`,
+        quantityVariantID: `temp_variant_${Date.now()}`,
+        listingId: this.selectedGroup.listingId,
+        variant: this.selectedGroup.variant,
+        
+        // Default status values
+        status: 'In Possession',
+        consumption: 'Unopened',
+        currentLocation: '',
+        subLocation: '',
+        noteToSelf: '',
+        
+        // Copy shared properties from representative bottle
+        drinkFormat: this.selectedGroup.representative.drinkFormat,
+        volumeML: this.selectedGroup.representative.volumeML,
+        
+        // Default procurement details
+        purchaseDate: null,
+        deliveryDate: null,
+        purchasePlaceName: '',
+        purchasePrice: null,
+        purchaseCurrency: 'USD'
+      }
+      
+      // Add to the group's bottles array
+      this.selectedGroup.bottles.push(newBottle)
+      
+      // Update bottle count
+      this.selectedGroup.bottleCount = this.selectedGroup.bottles.length
+      
+      // TODO: In real implementation, this would make an API call to create the bottle in the backend
     },
 
     updateBottleStatus(bottle, newStatus) {
@@ -1818,6 +1870,47 @@ export default {
   .add-drink-placeholder {
     margin-top: 2rem;
   }
+}
+
+/* Bottle Counter Controls */
+.bottle-counter-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-left: auto;
+}
+
+.bottle-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  color: #495057;
+}
+
+.bottle-count i {
+  font-size: 16px;
+  color: #6c757d;
+}
+
+.btn-add-bottle {
+  font-size: 14px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background-color: #28a745;
+  border-color: #28a745;
+  transition: all 0.3s ease;
+}
+
+.btn-add-bottle:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+  transform: translateY(-1px);
+}
+
+.btn-add-bottle i {
+  margin-right: 5px;
+  font-size: 12px;
 }
 
 @media (max-width: 768px) {
