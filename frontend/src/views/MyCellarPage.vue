@@ -658,8 +658,8 @@
             <!-- Shared Properties for Group -->
             <div class="editable-sections">
               <div class="detail-section">
-                <!-- Group Details -->
-                <h6 class="section-header">Group Details</h6>
+                <!-- Drink Details -->
+                <h6 class="section-header">Drink Details</h6>
                 <div class="row g-3 mb-4">
                   <div class="col-md-3">
                     <label class="form-label">Vintage</label>
@@ -707,8 +707,6 @@
                   </div>
                 </div>
 
-                <!-- Drinking Window -->
-                <h6 class="section-header">Drinking Window</h6>
                 <div class="row g-3 mb-4">
                   <div class="col-md-4">
                     <label class="form-label">Drink Onwards Date</label>
