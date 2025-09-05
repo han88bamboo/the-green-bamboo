@@ -5812,6 +5812,7 @@ def getCellarData(ownerType, ownerID):
                 l."listingName",
                 l."drinkType",
                 l."typeCategory",
+                l."drinkStyle",
                 l."originCountry",
                 l."abv",
                 l."age",
