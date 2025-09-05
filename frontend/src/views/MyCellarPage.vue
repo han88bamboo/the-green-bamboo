@@ -398,6 +398,12 @@
                     </div>
                     <div class="col-sm-6">
                       <div class="info-item">
+                        <label class="info-label">Bottler</label>
+                        <p class="info-value">{{ selectedItem.bottlerName || 'Original Bottling' }}</p>
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="info-item">
                         <label class="info-label">Country of Origin</label>
                         <p class="info-value">{{ selectedItem.originCountry || 'N/A' }}</p>
                       </div>
@@ -412,12 +418,6 @@
                       <div class="info-item">
                         <label class="info-label">Category</label>
                         <p class="info-value">{{ selectedItem.typeCategory || 'N/A' }}</p>
-                      </div>
-                    </div>
-                    <div class="col-12" v-if="selectedItem.bottlerName">
-                      <div class="info-item">
-                        <label class="info-label">Bottler</label>
-                        <p class="info-value">{{ selectedItem.bottlerName }}</p>
                       </div>
                     </div>
                   </div>
