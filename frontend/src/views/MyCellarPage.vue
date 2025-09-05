@@ -1631,10 +1631,12 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .info-row {
   line-height: 1.4;
+  text-align: left;
 }
 
 .info-text {
