@@ -477,7 +477,7 @@
                       type="button" 
                       class="btn btn-primary btn-md"
                       data-bs-dismiss="modal"
-                      @click="goToListingPage(selectedGroup.representative)"
+                      @click="goToListingPage(selectedGroup)"
                     >
                       Learn more about this drink
                     </button>
@@ -1153,10 +1153,10 @@ export default {
 
     // Navigate to listing page
     goToListingPage(group) {
-      if (group.listingId && group.representative.drinkName) {
+      if (group.listingId && group.representative.listingName) {
         // Small delay to allow modal dismiss to complete
         setTimeout(() => {
-          const listingName = group.representative.drinkName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+          const listingName = group.representative.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
           this.$router.push(`/listing/view/${group.listingId}/${listingName}`)
         }, 150)
       }
