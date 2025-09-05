@@ -480,16 +480,22 @@
                 <div 
                   v-for="(bottle, index) in selectedGroup.bottles" 
                   :key="bottle.cellarItemId"
-                  class="bottle-item p-3 mb-3 border rounded"
+                  class="bottle-item p-4 mb-3 border rounded"
                   :class="{ 'bottle-consumed': bottle.status === 'Consumed' }"
                 >
-                  <div class="row align-items-center">
-                    <div class="col-md-2">
-                      <strong>Bottle #{{ index + 1 }}</strong>
-                      <br>
-                      <small class="text-muted">ID: {{ bottle.quantityVariantID }}</small>
+                  <!-- Bottle Header -->
+                  <div class="row mb-3">
+                    <div class="col-12">
+                      <h6 class="mb-1">
+                        <strong>Bottle #{{ index + 1 }}</strong>
+                        <small class="text-muted ms-2">ID: {{ bottle.quantityVariantID }}</small>
+                      </h6>
                     </div>
-                    <div class="col-md-3">
+                  </div>
+
+                  <!-- Row 1: Status, Consumption, Location, Sub Location, Notes -->
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-2">
                       <label class="form-label small">Status</label>
                       <select class="form-select form-select-sm" :value="bottle.status">
                         <option value="In Possession">In Possession</option>
@@ -500,7 +506,7 @@
                         <option value="Consumed">Consumed</option>
                       </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                       <label class="form-label small">Consumption</label>
                       <select class="form-select form-select-sm" :value="bottle.consumption">
                         <option value="Unopened">Unopened</option>
@@ -518,12 +524,101 @@
                       >
                     </div>
                     <div class="col-md-2">
+                      <label class="form-label small">Sub Location</label>
+                      <input 
+                        type="text" 
+                        class="form-control form-control-sm" 
+                        :value="bottle.subLocation" 
+                        placeholder="Sub-location"
+                      >
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label small">Notes</label>
+                      <textarea 
+                        class="form-control form-control-sm" 
+                        rows="2" 
+                        :value="bottle.noteToSelf"
+                        placeholder="Add notes for this bottle..."
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Place of Purchase, Purchase Date, Delivery Date, Price of Purchase -->
+                  <div class="row g-3 mb-3">
+                    <div class="col-md-3">
+                      <label class="form-label small">Place of Purchase</label>
+                      <div class="input-group input-group-sm">
+                        <input 
+                          type="text" 
+                          class="form-control" 
+                          :value="bottle.purchasePlaceName"
+                          placeholder="Enter location"
+                        >
+                        <span class="input-group-text" title="Google Maps integration coming soon">
+                          <i class="bi bi-geo-alt"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small">Date of Purchase</label>
+                      <div class="input-group input-group-sm">
+                        <input 
+                          type="text" 
+                          class="form-control date-input" 
+                          :value="formatDateForInput(bottle.purchaseDate)"
+                          placeholder="MM/DD/YYYY"
+                        >
+                        <span class="input-group-text">
+                          <i class="bi bi-calendar3"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small">Delivery Date</label>
+                      <div class="input-group input-group-sm">
+                        <input 
+                          type="text" 
+                          class="form-control date-input" 
+                          :value="formatDateForInput(bottle.deliveryDate)"
+                          placeholder="MM/DD/YYYY"
+                        >
+                        <span class="input-group-text">
+                          <i class="bi bi-calendar3"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <label class="form-label small">Price of Purchase</label>
+                      <div class="input-group input-group-sm">
+                        <select class="form-select currency-select" :value="bottle.purchaseCurrency">
+                          <option value="USD" selected>USD</option>
+                          <option value="EUR">EUR</option>
+                          <option value="GBP">GBP</option>
+                          <option value="JPY">JPY</option>
+                          <option value="CAD">CAD</option>
+                          <option value="AUD">AUD</option>
+                        </select>
+                        <input 
+                          type="number" 
+                          class="form-control" 
+                          :value="bottle.purchasePrice"
+                          step="0.01" 
+                          min="0"
+                          placeholder="0.00"
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Edit Button Row -->
+                  <div class="row">
+                    <div class="col-12">
                       <button 
-                        class="btn btn-sm btn-outline-primary w-100"
+                        class="btn btn-sm btn-outline-primary"
                         @click="editIndividualBottle(bottle)"
                         title="Edit this specific bottle"
                       >
-                        <i class="bi bi-pencil"></i> Edit
+                        <i class="bi bi-pencil"></i> Edit Individual Bottle Details
                       </button>
                     </div>
                   </div>
@@ -543,16 +638,16 @@
                     <small class="text-muted">Each bottle tracked individually above</small>
                   </div>
                   <div class="col-md-3">
+                    <label class="form-label">Vintage</label>
+                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030">
+                  </div>
+                  <div class="col-md-3">
                     <label class="form-label">Format</label>
                     <select class="form-select" :value="selectedGroup.representative.drinkFormat">
                       <option value="Bottle">Bottle</option>
                       <option value="Can">Can</option>
                       <option value="Sample">Sample</option>
                     </select>
-                  </div>
-                  <div class="col-md-3">
-                    <label class="form-label">Vintage</label>
-                    <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030">
                   </div>
                   <div class="col-md-3">
                     <label class="form-label">Volume</label>
@@ -596,74 +691,6 @@
                       <span class="input-group-text">
                         <i class="bi bi-calendar3"></i>
                       </span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Procurement Details -->
-                <h6 class="section-header">Procurement Details</h6>
-                <div class="row g-3 mb-4">
-                  <div class="col-md-6">
-                    <label class="form-label">Date of Purchase</label>
-                    <div class="input-group">
-                      <input 
-                        type="text" 
-                        class="form-control date-input" 
-                        :value="formatDateForInput(selectedGroup.representative.purchaseDate)"
-                        placeholder="MM/DD/YYYY"
-                      >
-                      <span class="input-group-text">
-                        <i class="bi bi-calendar3"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Delivery Date</label>
-                    <div class="input-group">
-                      <input 
-                        type="text" 
-                        class="form-control date-input" 
-                        :value="formatDateForInput(selectedGroup.representative.deliveryDate)"
-                        placeholder="MM/DD/YYYY"
-                      >
-                      <span class="input-group-text">
-                        <i class="bi bi-calendar3"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Place of Purchase</label>
-                    <div class="input-group">
-                      <input 
-                        type="text" 
-                        class="form-control" 
-                        :value="selectedGroup.representative.purchasePlaceName"
-                        placeholder="Enter location"
-                      >
-                      <span class="input-group-text" title="Google Maps integration coming soon">
-                        <i class="bi bi-geo-alt"></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <label class="form-label">Price of Purchase</label>
-                    <div class="input-group">
-                      <select class="form-select currency-select" :value="selectedGroup.representative.purchaseCurrency">
-                        <option value="USD" selected>USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="JPY">JPY</option>
-                        <option value="CAD">CAD</option>
-                        <option value="AUD">AUD</option>
-                      </select>
-                      <input 
-                        type="number" 
-                        class="form-control" 
-                        :value="selectedGroup.representative.purchasePrice"
-                        step="0.01" 
-                        min="0"
-                        placeholder="0.00"
-                      >
                     </div>
                   </div>
                 </div>
@@ -716,19 +743,6 @@
                         <i class="bi bi-plus"></i>
                       </button>
                     </div>
-                  </div>
-                </div>
-
-                <!-- Notes -->
-                <h6 class="section-header">Notes</h6>
-                <div class="row">
-                  <div class="col-12">
-                    <textarea 
-                      class="form-control" 
-                      rows="3" 
-                      :value="selectedGroup.representative.noteToSelf"
-                      placeholder="Add your notes here..."
-                    ></textarea>
                   </div>
                 </div>
               </div>
