@@ -389,37 +389,36 @@
               <div class="col-md-8">
                 <div class="drink-info-summary">
                   <h6 class="section-header mb-3">Drink Information</h6>
-                  <div class="row g-3">
-                    <div class="col-sm-6">
-                      <div class="info-item">
-                        <label class="info-label">Producer</label>
-                        <p class="info-value">{{ selectedItem.producerName || 'N/A' }}</p>
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <div class="info-item">
-                        <label class="info-label">Bottler</label>
-                        <p class="info-value">{{ selectedItem.bottlerName || 'Original Bottling' }}</p>
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <div class="info-item">
-                        <label class="info-label">Country of Origin</label>
-                        <p class="info-value">{{ selectedItem.originCountry || 'N/A' }}</p>
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <div class="info-item">
-                        <label class="info-label">Drink Type</label>
-                        <p class="info-value">{{ selectedItem.drinkType || 'N/A' }}</p>
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <div class="info-item">
-                        <label class="info-label">Category</label>
-                        <p class="info-value">{{ selectedItem.typeCategory || 'N/A' }}</p>
-                      </div>
-                    </div>
+                  
+                  <!-- Row 1: Producer | Bottler -->
+                  <div class="info-row mb-2">
+                    <span class="info-text">
+                      <strong>Producer:</strong> {{ selectedItem.producerName || 'N/A' }}
+                      <span v-if="selectedItem.bottlerName || selectedItem.producerName" class="mx-2">|</span>
+                      <strong>Bottler:</strong> {{ selectedItem.bottlerName || 'Original Bottling' }}
+                    </span>
+                  </div>
+                  
+                  <!-- Row 2: Country • Type • Category -->
+                  <div class="info-row mb-3">
+                    <span class="info-text text-muted">
+                      <template v-if="selectedItem.originCountry">{{ selectedItem.originCountry }}</template>
+                      <template v-if="selectedItem.originCountry && selectedItem.drinkType"> • </template>
+                      <template v-if="selectedItem.drinkType">{{ selectedItem.drinkType }}</template>
+                      <template v-if="selectedItem.drinkType && selectedItem.typeCategory"> • </template>
+                      <template v-if="selectedItem.typeCategory">{{ selectedItem.typeCategory }}</template>
+                    </span>
+                  </div>
+                  
+                  <!-- Learn More Button -->
+                  <div class="learn-more-section">
+                    <button 
+                      type="button" 
+                      class="btn btn-primary btn-sm"
+                      @click="goToListingPage(selectedItem)"
+                    >
+                      Learn more about this drink
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1002,6 +1001,14 @@ export default {
       this.selectedItem = item
     },
     
+    // Navigate to listing page
+    goToListingPage(item) {
+      if (item.listingId && item.listingName) {
+        const listingName = item.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+        this.$router.push(`/listing/view/${item.listingId}/${listingName}`)
+      }
+    },
+    
     // Item actions (stubs for now)
     consumeItem(item) {
       console.log('Consume item:', item)
@@ -1436,6 +1443,25 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.info-row {
+  line-height: 1.4;
+}
+
+.info-text {
+  font-size: 0.95rem;
+  color: #212529;
+}
+
+.info-text strong {
+  font-weight: 600;
+  color: #495057;
+}
+
+.learn-more-section {
+  margin-top: auto;
+  padding-top: 0.5rem;
 }
 
 .info-item {
