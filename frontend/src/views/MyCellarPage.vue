@@ -374,7 +374,7 @@
             <!-- Header Row: Image + Drink Information -->
             <div class="modal-header-content row mb-4">
               <!-- Left Column - Image -->
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <div class="item-image-container">
                   <img 
                     :src="getItemImageUrl(selectedItem)"
@@ -386,7 +386,7 @@
               </div>
 
               <!-- Right Column - Drink Information Summary -->
-              <div class="col-md-8">
+              <div class="col-md-9">
                 <div class="drink-info-summary">
                   <h6 class="section-header mb-3">Drink Information</h6>
                   
@@ -414,7 +414,8 @@
                   <div class="learn-more-section">
                     <button 
                       type="button" 
-                      class="btn btn-primary btn-sm"
+                      class="btn btn-primary btn-md"
+                      data-bs-dismiss="modal"
                       @click="goToListingPage(selectedItem)"
                     >
                       Learn more about this drink
@@ -1004,8 +1005,11 @@ export default {
     // Navigate to listing page
     goToListingPage(item) {
       if (item.listingId && item.listingName) {
-        const listingName = item.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
-        this.$router.push(`/listing/view/${item.listingId}/${listingName}`)
+        // Small delay to allow modal dismiss to complete
+        setTimeout(() => {
+          const listingName = item.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+          this.$router.push(`/listing/view/${item.listingId}/${listingName}`)
+        }, 150)
       }
     },
     
@@ -1429,7 +1433,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 280px;
 }
 
 .item-detail-image {
