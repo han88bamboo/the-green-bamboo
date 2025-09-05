@@ -224,7 +224,7 @@
                         <!-- Secondary Line -->
                         <p class="card-subtitle text-muted mb-2">
                           {{ group.representative.drinkType }}
-                          <span v-if="group.representative.typeCategory"> • {{ group.representative.typeCategory }}</span>
+                          <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                         </p>
 
                         <!-- Producer -->
@@ -401,70 +401,57 @@
                 <div class="drink-info-summary">
                   <h6 class="section-header mb-3">Summary of Drink Information</h6>
                   
-                  <!-- Row 1: Producer | Bottler -->
+                  <!-- Row 1: Producer | Bottler | Vintage -->
                   <div class="info-row mb-2">
                     <span class="info-text">
                       <strong>Producer:</strong> {{ selectedGroup.representative.producerName || 'N/A' }}
                       <span v-if="selectedGroup.representative.bottlerName || selectedGroup.representative.producerName" class="mx-2">|</span>
                       <strong>Bottler:</strong> {{ selectedGroup.representative.bottlerName || 'Original Bottling' }}
-                    </span>
-                  </div>
-                  
-                  <!-- Row 2: Country • Type • Category -->
-                  <div class="info-row mb-2">
-                    <span class="info-text text-muted">
-                      <template v-if="selectedGroup.representative.originCountry">{{ selectedGroup.representative.originCountry }}</template>
-                      <template v-if="selectedGroup.representative.originCountry && selectedGroup.representative.drinkType"> • </template>
-                      <template v-if="selectedGroup.representative.drinkType">{{ selectedGroup.representative.drinkType }}</template>
-                      <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"> • </template>
-                      <template v-if="selectedGroup.representative.typeCategory">{{ selectedGroup.representative.typeCategory }}</template>
-                    </span>
-                  </div>
-                  
-                  <!-- Row 3: Group Summary -->
-                  <div class="info-row mb-3">
-                    <span class="info-text">
-                      <strong>You have {{ selectedGroup.bottleCount }} bottle{{ selectedGroup.bottleCount !== 1 ? 's' : '' }}</strong>
-                      <span v-if="selectedGroup.representative.variant" class="mx-2">•</span>
+                      <span v-if="selectedGroup.representative.variant" class="mx-2">|</span>
                       <span v-if="selectedGroup.representative.variant">
                         <strong>Vintage:</strong> {{ selectedGroup.representative.variant }}
                       </span>
                     </span>
                   </div>
-
-                  <!-- Row 4: Drinking Window -->
-                  <div class="info-row mb-2" v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
+                  
+                  <!-- Row 2: Country / Type / Category -->
+                  <div class="info-row mb-2">
                     <span class="info-text text-muted">
-                      <template v-if="selectedGroup.representative.drinkOnwardsDate">
-                        <strong>Drink from:</strong> {{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}
-                      </template>
-                      <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> • </template>
-                      <template v-if="selectedGroup.representative.drinkByDate">
-                        <strong>Drink by:</strong> {{ formatDate(selectedGroup.representative.drinkByDate) }}
-                      </template>
+                      <template v-if="selectedGroup.representative.originCountry">{{ selectedGroup.representative.originCountry }}</template>
+                      <template v-if="selectedGroup.representative.originCountry && selectedGroup.representative.drinkType"> | </template>
+                      <template v-if="selectedGroup.representative.drinkType">{{ selectedGroup.representative.drinkType }}</template>
+                      <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"> | </template>
+                      <template v-if="selectedGroup.representative.typeCategory">{{ selectedGroup.representative.typeCategory }}</template>
                     </span>
                   </div>
 
-                  <!-- Row 5: Collection & Market Value -->
+                  <!-- Row 3: Drinking Window & Market Value -->
                   <div class="info-row mb-2">
                     <span class="info-text text-muted">
-                      <template v-if="selectedGroup.representative.collectionId">
-                        <strong>Collection:</strong> {{ collections.find(c => c.id === selectedGroup.representative.collectionId)?.collectionName || 'Default Collection' }}
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
+                        <strong>Drinking Window:&nbsp;</strong>
+                        <template v-if="selectedGroup.representative.drinkOnwardsDate">{{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}</template>
+                        <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> – </template>
+                        <template v-if="selectedGroup.representative.drinkByDate">{{ formatDate(selectedGroup.representative.drinkByDate) }}</template>
                       </template>
-                      <template v-else>
-                        <strong>Collection:</strong> Default Collection
-                      </template>
-                      <template v-if="selectedGroup.representative.currentValueEstimation"> • </template>
+                      <template v-if="(selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate) && selectedGroup.representative.currentValueEstimation"> | </template>
                       <template v-if="selectedGroup.representative.currentValueEstimation">
                         <strong>Market Value:</strong> {{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}
                       </template>
                     </span>
                   </div>
 
-                  <!-- Row 6: Food Pairing -->
+                  <!-- Row 4: Food Pairing -->
                   <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
                     <span class="info-text text-muted">
                       <strong>Suggested Pairing:</strong> {{ selectedGroup.representative.suggestedFoodPairing }}
+                    </span>
+                  </div>
+
+                  <!-- Row 5: Quantity Owned -->
+                  <div class="info-row mb-3">
+                    <span class="info-text">
+                      <strong>Quantity Owned:</strong> {{ selectedGroup.bottleCount }}
                     </span>
                   </div>
                   
@@ -1211,11 +1198,28 @@ export default {
     formatDate(dateString) {
       if (!dateString) return ''
       const date = new Date(dateString)
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      })
+      
+      // Get day with ordinal suffix
+      const day = date.getDate()
+      const ordinalSuffix = this.getOrdinalSuffix(day)
+      
+      // Get month name and year
+      const month = date.toLocaleDateString('en-US', { month: 'short' })
+      const year = date.getFullYear()
+      
+      return `${day}${ordinalSuffix} ${month} ${year}`
+    },
+    
+    getOrdinalSuffix(day) {
+      if (day >= 11 && day <= 13) {
+        return 'th'
+      }
+      switch (day % 10) {
+        case 1: return 'st'
+        case 2: return 'nd'
+        case 3: return 'rd'
+        default: return 'th'
+      }
     },
     
     formatDateForInput(dateString) {
