@@ -404,12 +404,12 @@
                   <!-- Row 1: Producer | Bottler | Vintage -->
                   <div class="info-row mb-2">
                     <span class="info-text">
-                      <strong>Producer:</strong> {{ selectedGroup.representative.producerName || 'N/A' }}
+                      <strong>Producer:</strong> <span class="text-muted">{{ selectedGroup.representative.producerName || 'N/A' }}</span>
                       <span v-if="selectedGroup.representative.bottlerName || selectedGroup.representative.producerName" class="mx-2">|</span>
-                      <strong>Bottler:</strong> {{ selectedGroup.representative.bottlerName || 'Original Bottling' }}
+                      <strong>Bottler:</strong> <span class="text-muted">{{ selectedGroup.representative.bottlerName || 'Original Bottling' }}</span>
                       <span v-if="selectedGroup.representative.variant" class="mx-2">|</span>
                       <span v-if="selectedGroup.representative.variant">
-                        <strong>Vintage:</strong> {{ selectedGroup.representative.variant }}
+                        <strong>Vintage:</strong> <span class="text-muted">{{ selectedGroup.representative.variant }}</span>
                       </span>
                     </span>
                   </div>
@@ -431,30 +431,30 @@
                   <div class="info-row mb-2" v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
                     <span class="info-text text-muted">
                       <strong>Drinking Window:&nbsp;</strong>
-                      <template v-if="selectedGroup.representative.drinkOnwardsDate">{{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}</template>
+                      <template v-if="selectedGroup.representative.drinkOnwardsDate"><span class="editable-value">{{ formatDate(selectedGroup.representative.drinkOnwardsDate) }}</span></template>
                       <template v-if="selectedGroup.representative.drinkOnwardsDate && selectedGroup.representative.drinkByDate"> – </template>
-                      <template v-if="selectedGroup.representative.drinkByDate">{{ formatDate(selectedGroup.representative.drinkByDate) }}</template>
+                      <template v-if="selectedGroup.representative.drinkByDate"><span class="editable-value">{{ formatDate(selectedGroup.representative.drinkByDate) }}</span></template>
                     </span>
                   </div>
 
                   <!-- Row 4: Market Value -->
                   <div class="info-row mb-2" v-if="selectedGroup.representative.currentValueEstimation">
                     <span class="info-text text-muted">
-                      <strong>Market Value:</strong> {{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}
+                      <strong>Market Value:</strong> <span class="editable-value">{{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}</span>
                     </span>
                   </div>
 
                   <!-- Row 5: Food Pairing -->
                   <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
                     <span class="info-text text-muted">
-                      <strong>Suggested Pairing:</strong> {{ selectedGroup.representative.suggestedFoodPairing }}
+                      <strong>Suggested Pairing:</strong> <span class="editable-value">{{ selectedGroup.representative.suggestedFoodPairing }}</span>
                     </span>
                   </div>
 
                   <!-- Row 6: Quantity Owned -->
                   <div class="info-row mb-3">
                     <span class="info-text">
-                      <strong>Quantity Owned:</strong> {{ selectedGroup.bottleCount }}
+                      <strong>Quantity Owned:</strong> <span class="editable-value">{{ selectedGroup.bottleCount }}</span>
                     </span>
                   </div>
                   
@@ -1654,6 +1654,16 @@ export default {
 .info-text strong {
   font-weight: 600;
   color: #495057;
+}
+
+.editable-value {
+  color: #1c6bb0 !important;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.editable-value:hover {
+  color: #495057 !important;
 }
 
 .learn-more-section {
