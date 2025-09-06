@@ -350,7 +350,7 @@
                 </div>
                 <div class="card-body">
                   <form @submit.prevent="addDrinkToCellar">
-                    <!-- Producer Search (Optional) -->
+                    <!-- Producer Search -->
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
                         Producer (Optional)
@@ -580,13 +580,13 @@
                       <h6 class="section-header text-start mb-3">
                         <i class="bi bi-collection me-2"></i>
                         Group Properties
-                        <small class="text-muted d-block fw-normal">Applied to all items in this drink group</small>
+                        <small class="text-muted d-block fw-normal">Values applied to only Master Item within this group.</small>
                       </h6>
 
                       <!-- Row 1: Vintage, Format, Volume -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-4" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
-                          <label class="form-label text-start">Vintage (Optional)</label>
+                          <label class="form-label text-start">Vintage</label>
                           <input 
                             type="number" 
                             class="form-control"
@@ -630,7 +630,7 @@
                       <!-- Row 2: Market Value -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
-                          <label class="form-label text-start">Current Market Value (Optional)</label>
+                          <label class="form-label text-start">Current Market Value</label>
                           <div class="input-group">
                             <select class="form-select" v-model="addDrinkForm.currentValueCurrency" style="max-width: 80px;">
                               <option value="USD">USD</option>
@@ -655,7 +655,7 @@
                       <!-- Row 3: Drinking Window -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                          <label class="form-label text-start">Drink Onwards Date (Optional)</label>
+                          <label class="form-label text-start">Drink Onwards Date</label>
                           <div class="input-group">
                             <input 
                               type="date" 
@@ -668,7 +668,7 @@
                           </div>
                         </div>
                         <div class="col-md-6">
-                          <label class="form-label text-start">Drink By Date (Optional)</label>
+                          <label class="form-label text-start">Drink By Date</label>
                           <div class="input-group">
                             <input 
                               type="date" 
@@ -685,7 +685,7 @@
                       <!-- Row 4: Food Pairing -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
-                          <label class="form-label text-start">Suggested Food Pairing (Optional)</label>
+                          <label class="form-label text-start">Suggested Food Pairing</label>
                           <div class="input-group">
                             <input 
                               type="text" 
@@ -754,7 +754,7 @@
                       <!-- Row 2: Storage Location, Sub Location -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                          <label class="form-label text-start">Storage Location (Optional)</label>
+                          <label class="form-label text-start">Storage Location</label>
                           <input 
                             type="text" 
                             class="form-control"
@@ -763,7 +763,7 @@
                           />
                         </div>
                         <div class="col-md-6">
-                          <label class="form-label text-start">Sub Location (Optional)</label>
+                          <label class="form-label text-start">Sub Location</label>
                           <input 
                             type="text" 
                             class="form-control"
@@ -776,7 +776,7 @@
                       <!-- Row 3: Place of Purchase -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
-                          <label class="form-label text-start">Place of Purchase (Optional)</label>
+                          <label class="form-label text-start">Place of Purchase</label>
                           <div class="input-group">
                             <input 
                               type="text" 
@@ -794,7 +794,7 @@
                       <!-- Row 4: Purchase Date, Delivery Date, Purchase Price -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-4">
-                          <label class="form-label text-start">Purchase Date (Optional)</label>
+                          <label class="form-label text-start">Purchase Date</label>
                           <div class="input-group">
                             <input 
                               type="date" 
@@ -807,7 +807,7 @@
                           </div>
                         </div>
                         <div class="col-md-4">
-                          <label class="form-label text-start">Delivery Date (Optional)</label>
+                          <label class="form-label text-start">Delivery Date</label>
                           <div class="input-group">
                             <input 
                               type="date" 
@@ -820,7 +820,7 @@
                           </div>
                         </div>
                         <div class="col-md-4">
-                          <label class="form-label text-start">Purchase Price (Optional)</label>
+                          <label class="form-label text-start">Purchase Price</label>
                           <div class="input-group">
                             <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
                               <option value="USD">USD</option>
@@ -845,7 +845,7 @@
                       <!-- Row 5: Personal Notes -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
-                          <label class="form-label text-start">Personal Notes (Optional)</label>
+                          <label class="form-label text-start">Personal Notes</label>
                           <textarea 
                             class="form-control"
                             v-model="addDrinkForm.personalNotes"
