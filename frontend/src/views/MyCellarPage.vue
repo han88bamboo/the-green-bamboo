@@ -574,6 +574,21 @@
                       </div>
                     </div>
 
+                    <!-- Quantity Section -->
+                    <div class="form-group mb-3" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                      <label class="form-label text-start">
+                        Quantity to Add<span class="text-danger">*</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.quantity"
+                        min="1"
+                        required
+                        placeholder="Number of bottles"
+                      />
+                    </div>
+
                     <!-- Group Properties Section -->
                     <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
                       <hr>
@@ -710,22 +725,9 @@
                         </small>
                       </h6>
 
-                      <!-- Row 1: Quantity, Status, Consumption -->
+                      <!-- Row 1: Status, Consumption -->
                       <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                          <label class="form-label text-start">
-                            Quantity <span class="text-danger">*</span>
-                          </label>
-                          <input 
-                            type="number" 
-                            class="form-control"
-                            v-model="addDrinkForm.quantity"
-                            min="1"
-                            required
-                            placeholder="Number of bottles"
-                          />
-                        </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Status</label>
                           <select 
                             class="form-select"
@@ -738,7 +740,7 @@
                             <option value="Wishlisted">Wishlisted</option>
                           </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Consumption</label>
                           <select 
                             class="form-select"
@@ -791,9 +793,9 @@
                         </div>
                       </div>
 
-                      <!-- Row 4: Purchase Date, Delivery Date, Purchase Price -->
+                      <!-- Row 4: Purchase Date, Delivery Date -->
                       <div class="row g-3 mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Purchase Date</label>
                           <div class="input-group">
                             <input 
@@ -806,7 +808,7 @@
                             </span>
                           </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Delivery Date</label>
                           <div class="input-group">
                             <input 
@@ -819,7 +821,11 @@
                             </span>
                           </div>
                         </div>
-                        <div class="col-md-4">
+                      </div>
+
+                      <!-- Row 5: Purchase Price -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
                           <label class="form-label text-start">Purchase Price</label>
                           <div class="input-group">
                             <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
@@ -842,7 +848,7 @@
                         </div>
                       </div>
 
-                      <!-- Row 5: Personal Notes -->
+                      <!-- Row 6: Personal Notes -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
                           <label class="form-label text-start">Personal Notes</label>
