@@ -585,7 +585,7 @@
 
                       <!-- Row 1: Vintage, Format, Volume -->
                       <div class="row g-3 mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-4" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
                           <label class="form-label text-start">Vintage (Optional)</label>
                           <input 
                             type="number" 
@@ -596,7 +596,7 @@
                             placeholder="e.g., 2020"
                           />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4" :class="{ 'col-md-6': !addDrinkForm.selectedDrink || !['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType) }">
                           <label class="form-label text-start">Format</label>
                           <select 
                             class="form-select"
@@ -607,7 +607,7 @@
                             <option value="Sample">Sample</option>
                           </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-4" :class="{ 'col-md-6': !addDrinkForm.selectedDrink || !['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType) }">
                           <label class="form-label text-start">Volume</label>
                           <div class="input-group">
                             <input 
