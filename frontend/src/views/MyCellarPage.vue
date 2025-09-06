@@ -632,7 +632,7 @@
                             <input 
                               type="number" 
                               class="form-control"
-                              v-model="addDrinkForm.volumeML"
+                              v-model="addDrinkForm.volumeNumber"
                               step="0.1" 
                               min="0"
                               placeholder="750"
@@ -1061,7 +1061,7 @@
                 <div class="col-md-3">
                   <label class="form-label">Volume</label>
                   <div class="input-group">
-                    <input type="number" class="form-control" :value="selectedGroup.representative.volumeML" step="0.1" min="0">
+                    <input type="number" class="form-control" :value="selectedGroup.representative.volumeNumber" step="0.1" min="0">
                     <select class="form-select volume-unit-select">
                       <option value="ml" selected>ml</option>
                       <option value="oz">oz</option>
@@ -1461,7 +1461,7 @@ export default {
         // Group properties (applied to all items in the drink group)
         vintage: null,
         format: 'Bottle',
-        volumeML: 750,
+        volumeNumber: 750,
         volumeUnit: 'ml',
         currentValueEstimation: null,
         currentValueCurrency: 'USD',
@@ -1558,7 +1558,7 @@ export default {
       
       // Size filter
       if (this.filters.size) {
-        groups = groups.filter(group => group.representative.volumeML == this.filters.size)
+        groups = groups.filter(group => group.representative.volumeNumber == this.filters.size)
       }
       
       // Status filter - check if any bottle in the group matches
@@ -1861,7 +1861,7 @@ export default {
         
         // Copy shared properties from representative bottle
         drinkFormat: this.selectedGroup.representative.drinkFormat,
-        volumeML: this.selectedGroup.representative.volumeML,
+        volumeNumber: this.selectedGroup.representative.volumeNumber,
         
         // Default procurement details
         purchaseDate: null,
@@ -2111,13 +2111,29 @@ export default {
           ownerType: this.ownerType,
           ownerId: this.id,
           quantity: this.addDrinkForm.quantity,
-          status: this.addDrinkForm.status,
+          
+          // Group properties (master record)
+          format: this.addDrinkForm.format,
+          volumeNumber: this.addDrinkForm.volumeNumber,
+          volumeUnit: this.addDrinkForm.volumeUnit,
+          currentValueEstimation: this.addDrinkForm.currentValueEstimation,
+          currentValueCurrency: this.addDrinkForm.currentValueCurrency,
+          drinkOnwardsDate: this.addDrinkForm.drinkOnwardsDate,
+          drinkByDate: this.addDrinkForm.drinkByDate,
+          suggestedFoodPairing: this.addDrinkForm.suggestedFoodPairing,
           variant: this.addDrinkForm.vintage,
+          
+          // Individual properties
+          status: this.addDrinkForm.status,
+          consumption: this.addDrinkForm.consumption,
           storageLocation: this.addDrinkForm.storageLocation,
-          personalNotes: this.addDrinkForm.personalNotes,
+          subLocation: this.addDrinkForm.subLocation,
+          purchasePlaceName: this.addDrinkForm.purchasePlaceName,
+          purchaseDate: this.addDrinkForm.purchaseDate,
+          deliveryDate: this.addDrinkForm.deliveryDate,
           purchasePrice: this.addDrinkForm.purchasePrice,
           purchaseCurrency: this.addDrinkForm.purchaseCurrency,
-          purchaseDate: this.addDrinkForm.purchaseDate,
+          personalNotes: this.addDrinkForm.personalNotes,
           collectionId: this.addDrinkForm.selectedCollectionId
         };
 
@@ -2161,15 +2177,31 @@ export default {
         selectedDrink: {},
         drinkDebounceTimer: null,
         
-        // Cellar-specific fields
+        // Group properties (applied to all items in the drink group)
         vintage: null,
+        format: 'Bottle',
+        volumeNumber: 750,
+        volumeUnit: 'ml',
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
         quantity: 1,
         status: 'In Possession',
+        consumption: 'Unopened',
+        storageLocation: '',
+        subLocation: '',
+        purchasePlaceName: '',
+        purchaseDate: null,
+        deliveryDate: null,
         purchasePrice: null,
         purchaseCurrency: 'USD',
-        purchaseDate: null,
-        storageLocation: '',
         personalNotes: '',
+        
+        // Collection selection
         selectedCollectionId: null
       };
       

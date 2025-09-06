@@ -163,23 +163,16 @@ def addToCellar():
         purchase_price = parse_price(data.get('purchasePrice'))
         current_value_estimation = parse_price(data.get('currentValueEstimation'))
         
-        # Parse volume and convert to milliliters
-        volume_ml = None
-        if data.get('volumeML'):
+        # Parse volume - store as user entered (no conversion)
+        volume_number = None
+        volume_unit = None
+        if data.get('volumeNumber'):  # Frontend now sends volumeNumber
             try:
-                volume_value = float(data['volumeML'])
-                volume_unit = data.get('volumeUnit', 'ml').lower()
-                
-                # Convert to milliliters
-                if volume_unit == 'l':
-                    volume_ml = int(volume_value * 1000)
-                elif volume_unit == 'oz':
-                    volume_ml = int(volume_value * 29.5735)  # 1 oz = 29.5735 ml
-                else:  # assume ml
-                    volume_ml = int(volume_value)
-                    
+                volume_number = float(data['volumeNumber'])
+                volume_unit = data.get('volumeUnit', 'ml')  # Keep original unit
             except (ValueError, TypeError):
-                volume_ml = None
+                volume_number = None
+                volume_unit = None
         
         # Parse variant (vintage)  
         variant = None
@@ -202,11 +195,11 @@ def addToCellar():
             cur.execute("""
                 INSERT INTO "myCellarItems" (
                     "listingID", "collectionID", "variant", "quantityVariantID",
-                    "drinkFormat", "volumeML", "drinkByDate", "drinkOnwardsDate",
+                    "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
                     "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
                     "status", "consumption", "currentLocation", "addedDate", "updatedDate"
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 ) RETURNING "id"
             """, (
                 data['listingId'],
@@ -214,7 +207,8 @@ def addToCellar():
                 variant,
                 1,  # Master record
                 data.get('format', 'Bottle'),
-                volume_ml,
+                volume_number,
+                volume_unit,
                 drink_by_date,
                 drink_onwards_date,
                 current_value_estimation,
@@ -238,9 +232,11 @@ def addToCellar():
                 update_fields.append('"drinkFormat" = %s')
                 update_values.append(data['format'])
             
-            if volume_ml is not None:
-                update_fields.append('"volumeML" = %s')
-                update_values.append(volume_ml)
+            if volume_number is not None:
+                update_fields.append('"volumeNumber" = %s')
+                update_values.append(volume_number)
+                update_fields.append('"volumeUnit" = %s')
+                update_values.append(volume_unit)
             
             if drink_by_date is not None:
                 update_fields.append('"drinkByDate" = %s')

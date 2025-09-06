@@ -5724,7 +5724,7 @@ def convert_price_to_usd(amount, currency):
 #                   includeConsumed (default: false), includeArchived (default: false), sortBy (default: addedDate)
 # 
 # NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
-# (drinkFormat, volumeML, drinkByDate, drinkOnwardsDate, currentValueEstimation, 
+# (drinkFormat, volumeNumber, volumeUnit, drinkByDate, drinkOnwardsDate, currentValueEstimation, 
 # currentValueCurrency, suggestedFoodPairing) and quantityVariantID > 1 holds individual
 # bottle details. Each record represents one physical bottle with its own consumption status.
 # Archived items are excluded by default unless includeArchived=true is specified.
@@ -5804,7 +5804,8 @@ def getCellarData(ownerType, ownerID):
                 
                 -- Shared Properties from Master Record
                 master."drinkFormat",
-                master."volumeML",
+                master."volumeNumber",
+                master."volumeUnit",
                 master."drinkByDate",
                 master."drinkOnwardsDate",
                 master."currentValueEstimation",
