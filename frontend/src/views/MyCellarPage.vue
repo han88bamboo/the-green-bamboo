@@ -1473,7 +1473,7 @@ export default {
         quantity: 1,
         status: 'In Possession',
         consumption: 'Unopened',
-        currentLocation: '',
+        currentLocation: 'At Home',
         subLocation: '',
         purchasePlaceName: '',
         purchaseDate: null,
@@ -1855,7 +1855,7 @@ export default {
         // Default status values
         status: 'In Possession',
         consumption: 'Unopened',
-        currentLocation: '',
+        currentLocation: 'At Home',
         subLocation: '',
         noteToSelf: '',
         
@@ -2105,58 +2105,77 @@ export default {
       this.addingToCellar = true;
 
       try {
-        // Prepare cellar item data
+        // Prepare cellar item data according to backend API specification
         const cellarData = {
+          // Required fields
           listingId: this.addDrinkForm.selectedDrink.id,
           ownerType: this.ownerType,
-          ownerId: this.id,
-          quantity: this.addDrinkForm.quantity,
+          ownerId: parseInt(this.id),
+          quantity: parseInt(this.addDrinkForm.quantity),
           
-          // Group properties (master record)
-          format: this.addDrinkForm.format,
-          volumeNumber: this.addDrinkForm.volumeNumber,
-          volumeUnit: this.addDrinkForm.volumeUnit,
-          currentValueEstimation: this.addDrinkForm.currentValueEstimation,
-          currentValueCurrency: this.addDrinkForm.currentValueCurrency,
-          drinkOnwardsDate: this.addDrinkForm.drinkOnwardsDate,
-          drinkByDate: this.addDrinkForm.drinkByDate,
-          suggestedFoodPairing: this.addDrinkForm.suggestedFoodPairing,
-          variant: this.addDrinkForm.vintage,
+          // Group properties (master record) - only sent if they have values
+          ...(this.addDrinkForm.format && { format: this.addDrinkForm.format }),
+          ...(this.addDrinkForm.volumeNumber && { volumeNumber: parseFloat(this.addDrinkForm.volumeNumber) }),
+          ...(this.addDrinkForm.volumeUnit && { volumeUnit: this.addDrinkForm.volumeUnit }),
+          ...(this.addDrinkForm.currentValueEstimation && { currentValueEstimation: parseFloat(this.addDrinkForm.currentValueEstimation) }),
+          ...(this.addDrinkForm.currentValueCurrency && { currentValueCurrency: this.addDrinkForm.currentValueCurrency }),
+          ...(this.addDrinkForm.drinkOnwardsDate && { drinkOnwardsDate: this.addDrinkForm.drinkOnwardsDate }),
+          ...(this.addDrinkForm.drinkByDate && { drinkByDate: this.addDrinkForm.drinkByDate }),
+          ...(this.addDrinkForm.suggestedFoodPairing && this.addDrinkForm.suggestedFoodPairing.trim() && { suggestedFoodPairing: this.addDrinkForm.suggestedFoodPairing.trim() }),
+          ...(this.addDrinkForm.vintage && { variant: parseInt(this.addDrinkForm.vintage) }),
           
-          // Individual properties
-          status: this.addDrinkForm.status,
-          consumption: this.addDrinkForm.consumption,
-          currentLocation: this.addDrinkForm.currentLocation,  // Database field name
-          subLocation: this.addDrinkForm.subLocation,
-          purchasePlaceName: this.addDrinkForm.purchasePlaceName,
-          purchaseDate: this.addDrinkForm.purchaseDate,
-          deliveryDate: this.addDrinkForm.deliveryDate,
-          purchasePrice: this.addDrinkForm.purchasePrice,
-          purchaseCurrency: this.addDrinkForm.purchaseCurrency,
-          personalNotes: this.addDrinkForm.personalNotes,
-          collectionId: this.addDrinkForm.selectedCollectionId
+          // Individual properties (applied to each bottle)
+          ...(this.addDrinkForm.status && { status: this.addDrinkForm.status }),
+          ...(this.addDrinkForm.consumption && { consumption: this.addDrinkForm.consumption }),
+          ...(this.addDrinkForm.currentLocation && this.addDrinkForm.currentLocation.trim() && { currentLocation: this.addDrinkForm.currentLocation.trim() }),
+          ...(this.addDrinkForm.subLocation && this.addDrinkForm.subLocation.trim() && { subLocation: this.addDrinkForm.subLocation.trim() }),
+          ...(this.addDrinkForm.purchasePlaceName && this.addDrinkForm.purchasePlaceName.trim() && { purchasePlaceName: this.addDrinkForm.purchasePlaceName.trim() }),
+          ...(this.addDrinkForm.purchaseDate && { purchaseDate: this.addDrinkForm.purchaseDate }),
+          ...(this.addDrinkForm.deliveryDate && { deliveryDate: this.addDrinkForm.deliveryDate }),
+          ...(this.addDrinkForm.purchasePrice && { purchasePrice: parseFloat(this.addDrinkForm.purchasePrice) }),
+          ...(this.addDrinkForm.purchaseCurrency && { purchaseCurrency: this.addDrinkForm.purchaseCurrency }),
+          ...(this.addDrinkForm.personalNotes && this.addDrinkForm.personalNotes.trim() && { personalNotes: this.addDrinkForm.personalNotes.trim() }),
+          
+          // Collection selection (optional, will use default if not provided)
+          ...(this.addDrinkForm.selectedCollectionId && { collectionId: parseInt(this.addDrinkForm.selectedCollectionId) })
         };
 
-        // TODO: Replace with actual API endpoint for adding to cellar
-        // const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
-        // const response = await this.$axios.post(`${baseUrl}/cellar/addToCellar`, cellarData);
-        
-        // For now, simulate the API call
-        console.log('Adding to cellar:', cellarData);
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+        // Call the actual API endpoint
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const response = await this.$axios.post(`${baseUrl}/editCellar/addToCellar`, cellarData);
 
-        // Reset form on success
-        this.resetAddDrinkForm();
-        
-        // Reload cellar data to show the new item
-        await this.loadCellarData();
-        
-        // TODO: Show success message
-        console.log('Successfully added to cellar!');
+        if (response.status === 201 && response.data.code === 201) {
+          // Success! Reset form and reload data
+          this.resetAddDrinkForm();
+          
+          // Reload cellar data to show the new item
+          await this.loadCellarData();
+          
+          // Show success message
+          console.log('Successfully added to cellar!', response.data);
+          
+          // Optional: You can add a toast notification here
+          // this.$toast.success(`Successfully added ${response.data.data.quantity} bottle(s) to cellar!`);
+          
+        } else {
+          throw new Error(response.data.message || 'Failed to add to cellar');
+        }
 
       } catch (error) {
         console.error('Error adding to cellar:', error);
-        // TODO: Show error message
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to add drink to cellar';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        // Optional: You can add a toast notification here
+        // this.$toast.error(errorMessage);
+        console.error('Error message:', errorMessage);
+        
       } finally {
         this.addingToCellar = false;
       }
@@ -2192,7 +2211,7 @@ export default {
         quantity: 1,
         status: 'In Possession',
         consumption: 'Unopened',
-        currentLocation: '',
+        currentLocation: 'At Home',
         subLocation: '',
         purchasePlaceName: '',
         purchaseDate: null,
