@@ -58,7 +58,7 @@
             <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
                 <i class="bi bi-pencil me-4" style="cursor:pointer" @click="editMode = true"></i>
 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: 'Listing' }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: contentType }">
                     <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
                 </svg>
             </div>
@@ -77,11 +77,48 @@
                     class="form-control"
                 />
                 <div class="d-flex justify-content-end mt-2">
-                    <button @click="editComment(comment, 'Listing')" class="btn btn-primary mt-2">Update</button>
+                    <button @click="editComment(comment, contentType)" class="btn btn-primary mt-2">Update</button>
                     <button @click="editMode = false" class="btn btn-secondary mt-2 ms-2">Cancel</button>
                 </div>
             </div>
         </div>
+
+        <!-- Row 3: Reply Input -->
+        <div class="row mt-3">
+
+            <!-- Reply button as word -->
+            <div v-if="!replyMode" class="mt-0 pt-0" style="cursor: pointer; font-size: 0.9em; color: #0d6efd;">
+                <span @click="replyMode = !replyMode">Reply</span>
+            </div>
+
+            <!-- Reply Input -->
+            <div v-if="replyMode" class="col">
+                <input v-model="replyContent" class="form-control" placeholder="Write a reply..." />
+                <div class="d-flex justify-content-end mt-2">
+                    <button @click="postReply(comment.id)" class="btn btn-primary">Reply</button>
+                    <button @click="replyContent = '', replyMode = false" class="btn btn-secondary ms-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 4: Reply Section-->
+        <div v-if="comment.replies && comment.replies.length > 0" class="replies-container mt-3">
+            <div 
+                v-for="reply in comment.replies" 
+                :key="reply.id" 
+                class="reply-item mb-3"
+            >
+                <CommentBox 
+                :comment="reply" 
+                :userID="userID" 
+                :userType="userType" 
+                :contentId="contentID" 
+                contentType="contentType"
+                @comment-deleted="$emit('comment-deleted', $event)" 
+                />
+            </div>
+        </div>
+
     </div>
 
     <!-- Delete Comment Modal-->
@@ -123,6 +160,14 @@ export default {
             type: String,
             required: false
         },
+        contentID: {
+            type: String,
+            required: false
+        },
+        contentType: {
+            type: String,
+            required: false
+        }
     },
     data() {
         return {
@@ -133,6 +178,9 @@ export default {
                 commentId: null,
                 contentType: null
             },
+
+            replyMode: false,
+            replyContent: "",
         };
     },
     methods: {
@@ -280,6 +328,79 @@ export default {
             }
         },
 
+        // Function to post a reply to a comment
+        async postReply() {
+
+            // Check if user is logged in
+            if (!this.userID || !this.userType) {
+                // Redirect to login page
+                this.$router.push({ path: "/login" });
+                return;
+            }
+
+            // Check if replyContent is empty
+            if (!this.replyContent || this.replyContent.trim() === "") {
+                const toast = useToast();
+                toast.error("Reply cannot be empty.");
+                return;
+            }
+
+            try {
+                const response = await this.$axios.post(
+                `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+                {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: this.contentType,
+                    contentId: this.contentID,
+                    comment: this.replyContent.trim(),
+                    parent_id: this.comment.id
+                }
+                );
+
+                if (response.status === 201) {
+                    // Clear the reply input
+                    this.replyContent = "";
+                    this.replyMode = false;
+
+                    // Show message
+                    const toast = useToast();
+                    toast.success("Reply posted successfully.");
+
+                    // Optionally, you can emit an event to notify the parent component to refresh comments
+                    this.$emit("reply-posted");
+                }
+
+            } catch (error) {
+                console.error("Error posting reply:", error);
+                const toast = useToast();
+                toast.error("Failed to post reply. Please try again later.");
+            }
+        },
+
     }
 };
 </script>
+
+<style scoped>
+.replies-container {
+  position: relative;
+  padding-left: 1.5rem; /* space for the vertical line */
+}
+
+.replies-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0.5rem; /* horizontal position of the line */
+  width: 2px;   /* line thickness */
+  height: 100%;
+  background-color: #ccc; /* light gray line */
+  border-radius: 2px;     /* optional rounding */
+}
+
+.reply-item {
+  margin-left: 1rem; /* nested replies are indented */
+}
+
+</style>

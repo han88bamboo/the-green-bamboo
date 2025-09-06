@@ -2284,7 +2284,10 @@
 
           <!-- Comments List -->
           <div v-for="comment in comments" :key="comment.id" class="row mb-3">
-            <CommentBox :comment="comment" :userID="userID" :userType="userType" @comment-deleted="removeComment"  />
+            <CommentBox 
+              :comment="comment" :userID="userID" :userType="userType" 
+              :contentId="listing_id" contentType="Listing"
+              @comment-deleted="removeComment"  />
           </div>
 
           <!-- Load More Comments Button -->
