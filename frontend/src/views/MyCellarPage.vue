@@ -587,11 +587,11 @@
             <!-- Individual Bottles Management -->
             <div class="individual-bottles-section mb-4">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="section-header mb-0">Individual Bottles Management</h6>
+                <h6 class="section-header mb-0">Individual Item Management</h6>
                 <div class="bottle-counter-controls d-flex align-items-center">
                   <span class="bottle-counter me-2">
                     <i class="bi bi-bottle me-1"></i>
-                    {{ selectedGroup.bottleCount }} bottle{{ selectedGroup.bottleCount !== 1 ? 's' : '' }}
+                    {{ selectedGroup.bottleCount }} Item{{ selectedGroup.bottleCount !== 1 ? 's' : '' }} of same label and vintage
                   </span>
                   <button 
                     class="btn btn-sm btn-outline-primary d-flex align-items-center"
@@ -613,9 +613,9 @@
                   <!-- Bottle Header -->
                   <div class="row mb-3">
                     <div class="col-12">
-                      <h6 class="mb-1">
+                      <h6 class="mb-1 text-start">
                         <strong>Bottle #{{ index + 1 }}</strong>
-                        <small class="text-muted ms-2">ID: {{ bottle.quantityVariantID }}</small>
+                        <small class="text-muted ms-2">Quantity Variant ID: {{ bottle.quantityVariantID }}</small>
                       </h6>
                     </div>
                   </div>
