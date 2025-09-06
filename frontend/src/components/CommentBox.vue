@@ -1,0 +1,285 @@
+<template>
+    <!-- Commenter Photo Section -->
+    <div class="col-auto me-3">
+        <router-link
+            :to="{
+            path: getProfileLink(comment.userId, comment.userType, comment.username)
+            }"
+            class="primary-clickable-text"
+        >
+            <img
+            v-if="comment.photo"
+            :src="comment.photo"
+            class="rounded-circle"
+            alt="Profile Photo"
+            width="30"
+            height="30"
+            style="object-fit: cover;"
+            />
+            <svg
+            v-else
+            xmlns="http://www.w3.org/2000/svg"
+            width="30"
+            height="30"
+            fill="currentColor"
+            class="bi bi-person-circle"
+            viewBox="0 0 16 16"
+            style="object-fit: cover;"
+            >
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
+            </svg>
+        </router-link>
+    </div>
+    
+    <!-- Comment Box-->
+    <div class="col bg-light rounded p-2">
+
+        <!-- Row 1: User Name-->
+        <div class="d-flex align-items-start">
+            <!-- User name and comment date diff at the top left corner -->
+            <span>
+                <!-- User name-->
+                <router-link
+                :to="{ path: getProfileLink(comment.userId, comment.userType, comment.username) }"
+                class="primary-clickable-text"
+                >
+                    <b>@{{ comment.username }}</b>
+                </router-link>
+
+                <!-- Comment date diff-->
+                <span class="text-muted ms-2" style="font-size: 0.8em;">
+                    {{ getTimeDifference(comment.createdAt) }}
+                </span>
+
+            </span>
+            
+            <!-- Edit and Delete Button at the top right corner-->
+            <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
+                <i class="bi bi-pencil me-4" style="cursor:pointer" @click="editMode = true"></i>
+
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: 'Listing' }">
+                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Row 2: Comment Text-->
+        <div class="row mt-2">
+            <span>{{ comment.comment }}</span>
+
+            <!-- Edit comment input -->
+            <div v-if="editMode" class="mt-2">
+                <input
+                    v-model="updatedComment"
+                    @keyup.enter="editComment(comment)"
+                    type="text"
+                    class="form-control"
+                />
+                <div class="d-flex justify-content-end mt-2">
+                    <button @click="editComment(comment, 'Listing')" class="btn btn-primary mt-2">Update</button>
+                    <button @click="editMode = false" class="btn btn-secondary mt-2 ms-2">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Comment Modal-->
+    <div class="modal fade" id="deleteComment" tabindex="-1" aria-labelledby="deleteCommentLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteCommentLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteComment">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+<script>
+import { useToast } from "vue-toastification";
+
+export default {
+    name: "CommentBox",
+    props: {
+        comment: {
+            type: Array,
+            required: true
+        },
+        userID: {
+            type: String,
+            required: false
+        },
+        userType: {
+            type: String,
+            required: false
+        },
+    },
+    data() {
+        return {
+            editMode: false,
+            updatedComment: this.comment.comment,
+
+            deleteCommentItems: {
+                commentId: null,
+                contentType: null
+            },
+        };
+    },
+    methods: {
+        //remove %20 from url
+        slugify(text) {
+            if (!text) return "";
+            return text
+                .toString()
+                .toLowerCase()
+                .replace(/\s+/g, '')
+                .replace(/[^\w]/g, '');
+        },
+
+        // Function to get time difference in human-readable format
+        getTimeDifference(date) {
+            let currentDate = new Date();
+            let updateDate = new Date(date);
+            let timeDifference = currentDate - updateDate;
+            let seconds = Math.floor(timeDifference / 1000);
+            let minutes = Math.floor(seconds / 60);
+            let hours = Math.floor(minutes / 60);
+            let days = Math.floor(hours / 24);
+            let months = Math.floor(days / 30);
+            let years = Math.floor(months / 12);
+            if (years > 0) {
+                return years + (years === 1 ? " year ago" : " years ago");
+            } else if (months > 0) {
+                return months + (months === 1 ? " month ago" : " months ago");
+            } else if (days > 0) {
+                return days + (days === 1 ? " day ago" : " days ago");
+            } else if (hours > 0) {
+                return hours + (hours === 1 ? " hour ago" : " hours ago");
+            } else if (minutes > 0) {
+                return minutes + (minutes === 1 ? " minute ago" : " minutes ago");
+            } else {
+                return seconds + (seconds === 1 ? " second ago" : " seconds ago");
+            }
+        },
+
+        // Function to get profileLink based on userType
+        getProfileLink(userId, userType, name) {
+
+            switch (userType) {
+                case 'user':
+                return `/profile/user/${userId}/${this.slugify(name)}`;
+                case 'producer':
+                return `/profile/producer/${userId}/${this.slugify(name)}`;
+                case 'venue':
+                return `/profile/venue/${userId}/${this.slugify(name)}`;
+                default:
+                return null;
+            }
+        },
+
+        // Function to check if comment is made by current user
+        isCommentOwner(commentUserId, commentUserType) {
+            return this.userID == commentUserId && this.userType == commentUserType;
+        },
+
+        // Function to edit comment 
+        async editComment(comment, contentType) {
+
+            // Check if updatedComment is empty
+            if (!this.updatedComment || this.updatedComment.trim() === "") {
+                const toast = useToast();
+                toast.error("Comment cannot be empty.");
+                return;
+            }
+
+            // Check if updatedComment is different from the original comment
+            if (this.updatedComment.trim() === comment.comment.trim()) {
+                const toast = useToast();
+                toast.error("Comment is identical to the original.");
+                return;
+            }
+
+            try {
+                const response = await this.$axios.put(
+                `${process.env.VUE_APP_API_URL}/randomContent/editComment`,
+                {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: contentType,
+                    commentId: comment.id,
+                    newComment: this.updatedComment.trim()
+                }
+                );
+
+                if (response.status === 201) {
+                    this.updatedComment = "";
+
+                    // Update the comment in the UI
+                    comment.comment = response.data.newComment
+
+                    // Exit edit mode
+                    this.editMode = false;
+
+                    // Show message
+                    const toast = useToast();
+                    toast.success("Comment updated successfully.");
+                }
+
+            } catch (error) {
+                console.error("Error editing comment:", error);
+                const toast = useToast();
+                toast.error("Failed to edit comment. Please try again later.");
+            }
+        },
+
+        // Function to delete comment 
+        async deleteComment() {
+            try {
+                const response = await this.$axios.delete(
+                `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
+                {
+                    data: {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: this.deleteCommentItems.contentType,
+                    commentId: this.deleteCommentItems.commentId
+                    }
+                }
+                );
+
+
+                // Reset deleteCommentItems
+                this.deleteCommentItems = {
+                    commentId: null,
+                    contentType: null
+                };
+
+                // Show message
+                if (response.status === 200) {
+                    const toast = useToast();
+                    toast.success("Comment deleted successfully.");
+
+                    // 🔥 tell parent to remove this comment
+                    this.$emit("comment-deleted", this.comment.id);
+                }
+
+            } catch (error) {
+                console.error("Error deleting comment:", error);
+                const toast = useToast();
+                toast.error("Failed to delete comment. Please try again later.");
+            }
+        },
+
+    }
+};
+</script>

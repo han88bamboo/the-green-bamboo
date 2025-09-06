@@ -1284,19 +1284,21 @@ def getListingComments(user_id, user_type, content_id):
 
 
             # Check if the current user likes the content
+            user_likes = False
 
-            # Get the table name
-            likes_table = get_table_name("Listing", "like")
+            if user_id and user_type:
+                # Get the table name
+                likes_table = get_table_name("Listing", "like")
 
-            if not likes_table:
-                return jsonify({"error": "No table found"}), 400
-            
-            # Check if the user likes the content
-            cursor.execute(f"""
-                SELECT * FROM "{likes_table}"
-                WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
-            """, (content_id, user_id, user_type))
-            user_likes = cursor.fetchone() is not None
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+                
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT * FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                user_likes = cursor.fetchone() is not None
             
 
             return jsonify({
@@ -1434,26 +1436,28 @@ def getReviewComments(user_id, content_id):
     
             # Check if the current user likes the content
 
-            # Get the table name
-            likes_table = get_table_name("Review", "like")
-
-            if not likes_table:
-                return jsonify({"error": "No table found"}), 400
-
-            # Check if the user likes the content
-            cursor.execute(f"""
-                SELECT upvotes FROM "{likes_table}"
-                WHERE "{unique_field}" = %s
-            """, (content_id,))
-            review_upvotes = cursor.fetchone() 
-
-            # Loop through upvotes to check if user id is present
             user_liked = False
-            if review_upvotes:
-                for upvote in review_upvotes['upvotes']:
-                    if upvote['userId'] == user_id:
-                        user_liked = True
-                        break
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("Review", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_liked = True
+                            break
 
             return jsonify({
                 "comments": comments,
@@ -1589,27 +1593,29 @@ def getProducerReviewComments(user_id, content_id):
 
 
             # Check if the current user likes the content
-
-            # Get the table name
-            likes_table = get_table_name("pReview", "like")
-
-            if not likes_table:
-                return jsonify({"error": "No table found"}), 400
-
-            # Check if the user likes the content
-            cursor.execute(f"""
-                SELECT upvotes FROM "{likes_table}"
-                WHERE "{unique_field}" = %s
-            """, (content_id,))
-            review_upvotes = cursor.fetchone() 
-
-            # Loop through upvotes to check if user id is present
             user_likes = False
-            if review_upvotes:
-                for upvote in review_upvotes['upvotes']:
-                    if upvote['userId'] == user_id:
-                        user_likes = True
-                        break
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("pReview", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_likes = True
+                            break
+
             return jsonify({
                 "comments": comments,
                 "lastCommentId": comments[-1]['id'] if comments else None,
@@ -1746,27 +1752,28 @@ def getVenueReviewComments(user_id, content_id):
 
 
             # Check if the current user likes the content
-
-            # Get the table name
-            likes_table = get_table_name("vReview", "like")
-
-            if not likes_table:
-                return jsonify({"error": "No table found"}), 400
-
-            # Check if the user likes the content
-            cursor.execute(f"""
-                SELECT upvotes FROM "{likes_table}"
-                WHERE "{unique_field}" = %s
-            """, (content_id,))
-            review_upvotes = cursor.fetchone() 
-
-            # Loop through upvotes to check if user id is present
             user_likes = False
-            if review_upvotes:
-                for upvote in review_upvotes['upvotes']:
-                    if upvote['userId'] == user_id:
-                        user_likes = True
-                        break
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("vReview", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_likes = True
+                            break
 
             return jsonify({
                 "comments": comments,

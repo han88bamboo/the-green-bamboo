@@ -1603,13 +1603,22 @@
 
                                         <!-- Row 1: User Name-->
                                         <div class="d-flex align-items-start">
-                                          <!-- User name at the top left corner-->
-                                          <router-link
-                                            :to="{ path: getProfileLink(comment.userId, comment.userType, comment.username) }"
-                                            class="primary-clickable-text"
-                                          >
-                                            <b>@{{ comment.username }}</b>
-                                          </router-link>
+                                          <!-- User name and comment date diff at the top left corner-->
+                                          <span>
+                                            <!-- User name-->
+                                            <router-link
+                                              :to="{ path: getProfileLink(comment.userId, comment.userType, comment.username) }"
+                                              class="primary-clickable-text"
+                                            >
+                                              <b>@{{ comment.username }}</b>
+                                            </router-link>
+
+                                            <!-- Comment date diff-->
+                                            <span class="text-muted ms-2" style="font-size: 0.8em;">
+                                                {{ getTimeDifference(comment.createdAt) }}
+                                            </span>
+                                          </span>
+                                          
 
                                           <!-- Edit and Delete Button at the top right corner-->
                                           <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
