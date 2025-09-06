@@ -764,7 +764,7 @@
                           <input 
                             type="text" 
                             class="form-control"
-                            v-model="addDrinkForm.storageLocation"
+                            v-model="addDrinkForm.currentLocation"
                             placeholder="e.g., Wine fridge, Cellar rack 3"
                           />
                         </div>
@@ -1473,7 +1473,7 @@ export default {
         quantity: 1,
         status: 'In Possession',
         consumption: 'Unopened',
-        storageLocation: '',
+        currentLocation: '',
         subLocation: '',
         purchasePlaceName: '',
         purchaseDate: null,
@@ -2126,7 +2126,7 @@ export default {
           // Individual properties
           status: this.addDrinkForm.status,
           consumption: this.addDrinkForm.consumption,
-          storageLocation: this.addDrinkForm.storageLocation,
+          currentLocation: this.addDrinkForm.currentLocation,  // Database field name
           subLocation: this.addDrinkForm.subLocation,
           purchasePlaceName: this.addDrinkForm.purchasePlaceName,
           purchaseDate: this.addDrinkForm.purchaseDate,
@@ -2192,7 +2192,7 @@ export default {
         quantity: 1,
         status: 'In Possession',
         consumption: 'Unopened',
-        storageLocation: '',
+        currentLocation: '',
         subLocation: '',
         purchasePlaceName: '',
         purchaseDate: null,

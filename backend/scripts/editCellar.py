@@ -293,7 +293,7 @@ def addToCellar():
                 data.get('purchaseAddress', '').strip() or None,
                 data.get('status', 'In Possession'),
                 data.get('consumption', 'Unopened'),
-                data.get('storageLocation', 'At Home'),
+                data.get('currentLocation', 'At Home'),  # Database field: currentLocation
                 data.get('subLocation', '').strip() or None,
                 data.get('personalNotes', '').strip() or None,
                 False,  # Not archived
