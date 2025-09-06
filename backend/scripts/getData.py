@@ -5723,11 +5723,10 @@ def convert_price_to_usd(amount, currency):
 # Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
 #                   includeConsumed (default: false), sortBy (default: addedDate)
 # 
-# NOTE: Each record in myCellarItems now represents one physical bottle/item with its own
-# consumption status (Unopened/Opened/Empty). Items are uniquely identified by:
-# - listingID (different products)
-# - variant (different vintages/versions of same product) 
-# - quantityVariantID (individual bottles of same listing+variant combination)
+# NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
+# (drinkFormat, volumeML, drinkByDate, drinkOnwardsDate, currentValueEstimation, 
+# currentValueCurrency, suggestedFoodPairing) and quantityVariantID > 1 holds individual
+# bottle details. Each record represents one physical bottle with its own consumption status.
 @blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCellarData(ownerType, ownerID):
     try:
@@ -5776,30 +5775,33 @@ def getCellarData(ownerType, ownerID):
         where_clause = ' AND '.join(where_conditions)
         
         # Main query to get cellar items with all related data
+        # Updated to join with master records for shared properties
         items_query = f"""
             SELECT 
-                -- Cellar Item Details
+                -- Individual Bottle Details
                 ci."id" as "cellarItemId",
                 ci."quantityVariantID",
-                ci."drinkFormat",
-                ci."volumeML",
                 ci."status",
                 ci."consumption",
                 ci."currentLocation",
                 ci."subLocation",
                 ci."purchasePrice",
                 ci."purchaseCurrency",
-                ci."currentValueEstimation",
-                ci."currentValueCurrency",
-                ci."drinkByDate",
-                ci."drinkOnwardsDate",
                 ci."purchaseDate",
                 ci."deliveryDate",
                 ci."noteToSelf",
-                ci."suggestedFoodPairing",
                 ci."variant",
                 ci."addedDate",
                 ci."updatedDate",
+                
+                -- Shared Properties from Master Record
+                master."drinkFormat",
+                master."volumeML",
+                master."drinkByDate",
+                master."drinkOnwardsDate",
+                master."currentValueEstimation",
+                master."currentValueCurrency",
+                master."suggestedFoodPairing",
                 
                 -- Collection Info
                 cc."collectionName",
@@ -5835,6 +5837,12 @@ def getCellarData(ownerType, ownerID):
                 COUNT(r."id") as reviewCount
                 
             FROM "myCellarItems" ci
+            -- Join with master record for shared properties
+            LEFT JOIN "myCellarItems" master ON (
+                master."listingID" = ci."listingID" 
+                AND master."variant" = ci."variant" 
+                AND master."quantityVariantID" = 1
+            )
             LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             LEFT JOIN "listings" l ON ci."listingID" = l."id"
             LEFT JOIN "producers" p ON l."producerID" = p."id"
@@ -5842,7 +5850,7 @@ def getCellarData(ownerType, ownerID):
             LEFT JOIN "venues" pv ON ci."purchaseVenueID" = pv."id"
             LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
             WHERE {where_clause}
-            GROUP BY ci."id", cc."id", l."id", p."id", bp."id", pv."id"
+            GROUP BY ci."id", master."id", cc."id", l."id", p."id", bp."id", pv."id"
             ORDER BY ci."{sort_by}" DESC
         """
         
@@ -5982,7 +5990,8 @@ def getCellarDashboard(ownerType, ownerID):
     4. Breakdown by various categories (country, type, format, etc.)
     5. Historical data for plotting graphs over time
     
-    NOTE: Updated for new schema where each record represents one physical item
+    NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
+    (drinkFormat, currentValueEstimation, etc.) and each record represents one physical item
     with individual consumption tracking (Unopened/Opened/Empty per item).
     """
     try:
@@ -5997,15 +6006,14 @@ def getCellarDashboard(ownerType, ownerID):
             }), 400
         
         # Main query to get all cellar items with related data
+        # Updated to join with master records for shared properties
         cellar_query = """
         SELECT 
+            -- Individual Bottle Details
             ci."id",
             ci."quantityVariantID",
-            ci."drinkFormat",
             ci."purchasePrice",
             ci."purchaseCurrency",
-            ci."currentValueEstimation",
-            ci."currentValueCurrency",
             ci."status",
             ci."consumption",
             ci."currentLocation",
@@ -6014,6 +6022,13 @@ def getCellarDashboard(ownerType, ownerID):
             ci."updatedDate",
             ci."variant",
             ci."listingID",
+            
+            -- Shared Properties from Master Record
+            master."drinkFormat",
+            master."currentValueEstimation",
+            master."currentValueCurrency",
+            
+            -- Collection and Listing Data
             cc."collectionName",
             cc."id" as "collectionID",
             l."listingName",
@@ -6024,6 +6039,12 @@ def getCellarDashboard(ownerType, ownerID):
             l."producerID",
             p."producerName"
         FROM "myCellarItems" ci
+        -- Join with master record for shared properties
+        LEFT JOIN "myCellarItems" master ON (
+            master."listingID" = ci."listingID" 
+            AND master."variant" = ci."variant" 
+            AND master."quantityVariantID" = 1
+        )
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
@@ -6063,13 +6084,14 @@ def getCellarDashboard(ownerType, ownerID):
         # Process each item
         for item in items:
             # Each item represents one physical bottle/item
-            quantity = 1  # Changed from item.get('quantityOwned') or 0
+            quantity = 1  # Each record = 1 bottle in new schema
             total_items += quantity
             
+            # Get financial data - purchase price is per bottle, current value from master
             purchase_price = item.get('purchasePrice')
             purchase_currency = item.get('purchaseCurrency') or 'USD'
-            current_value = item.get('currentValueEstimation')
-            current_value_currency = item.get('currentValueCurrency') or 'USD'
+            current_value = item.get('currentValueEstimation')  # From master record
+            current_value_currency = item.get('currentValueCurrency') or 'USD'  # From master record
             
             # Convert to USD using currency service (only for non-USD currencies)
             if purchase_price is not None:
@@ -6094,7 +6116,7 @@ def getCellarDashboard(ownerType, ownerID):
             country = item.get('originCountry') or 'Unknown'
             drink_type = item.get('drinkType') or 'Unknown'
             category = item.get('typeCategory') or 'Unknown'
-            drink_format = item.get('drinkFormat') or 'Bottle'
+            drink_format = item.get('drinkFormat') or 'Bottle'  # From master record
             consumption = item.get('consumption') or 'Unknown'
             location = item.get('currentLocation') or 'Unknown'
             sub_location = item.get('subLocation') or 'Not Specified'
