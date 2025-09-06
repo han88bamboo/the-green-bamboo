@@ -574,103 +574,286 @@
                       </div>
                     </div>
 
-                    <!-- Vintage (for wines/champagne) -->
-                    <div 
-                      class="form-group mb-3"
-                      v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)"
-                    >
-                      <label class="form-label text-start">Vintage (Optional)</label>
-                      <input 
-                        type="number" 
-                        class="form-control"
-                        v-model="addDrinkForm.vintage"
-                        min="1900" 
-                        max="2030"
-                        placeholder="e.g., 2020"
-                      />
-                    </div>
+                    <!-- Group Properties Section -->
+                    <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                      <hr>
+                      <h6 class="section-header text-start mb-3">
+                        <i class="bi bi-collection me-2"></i>
+                        Group Properties
+                        <small class="text-muted d-block fw-normal">Applied to all items in this drink group</small>
+                      </h6>
 
-                    <!-- Quantity -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">
-                        Quantity <span class="text-danger">*</span>
-                      </label>
-                      <input 
-                        type="number" 
-                        class="form-control"
-                        v-model="addDrinkForm.quantity"
-                        min="1"
-                        required
-                        placeholder="Number of bottles"
-                      />
-                    </div>
+                      <!-- Row 1: Vintage, Format, Volume -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Vintage (Optional)</label>
+                          <input 
+                            type="number" 
+                            class="form-control"
+                            v-model="addDrinkForm.vintage"
+                            min="1900" 
+                            max="2030"
+                            placeholder="e.g., 2020"
+                          />
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Format</label>
+                          <select 
+                            class="form-select"
+                            v-model="addDrinkForm.format"
+                          >
+                            <option value="Bottle">Bottle</option>
+                            <option value="Can">Can</option>
+                            <option value="Sample">Sample</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Volume</label>
+                          <div class="input-group">
+                            <input 
+                              type="number" 
+                              class="form-control"
+                              v-model="addDrinkForm.volumeML"
+                              step="0.1" 
+                              min="0"
+                              placeholder="750"
+                            />
+                            <select class="form-select" v-model="addDrinkForm.volumeUnit" style="max-width: 70px;">
+                              <option value="ml">ml</option>
+                              <option value="oz">oz</option>
+                              <option value="l">L</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
 
-                    <!-- Status -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">Status</label>
-                      <select 
-                        class="form-select"
-                        v-model="addDrinkForm.status"
-                      >
-                        <option value="In Possession">In Cellar</option>
-                        <option value="On Its Way">On Its Way</option>
-                        <option value="Wishlisted">Wishlisted</option>
-                      </select>
-                    </div>
+                      <!-- Row 2: Market Value -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                          <label class="form-label text-start">Current Market Value (Optional)</label>
+                          <div class="input-group">
+                            <select class="form-select" v-model="addDrinkForm.currentValueCurrency" style="max-width: 80px;">
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                              <option value="JPY">JPY</option>
+                              <option value="CAD">CAD</option>
+                              <option value="AUD">AUD</option>
+                            </select>
+                            <input 
+                              type="number" 
+                              class="form-control"
+                              v-model="addDrinkForm.currentValueEstimation"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      </div>
 
-                    <!-- Purchase Price -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">Purchase Price (Optional)</label>
-                      <div class="input-group">
-                        <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
-                          <option value="USD">USD</option>
-                          <option value="EUR">EUR</option>
-                          <option value="GBP">GBP</option>
-                          <option value="JPY">JPY</option>
-                          <option value="CAD">CAD</option>
-                          <option value="AUD">AUD</option>
-                        </select>
-                        <input 
-                          type="number" 
-                          class="form-control"
-                          v-model="addDrinkForm.purchasePrice"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                        />
+                      <!-- Row 3: Drinking Window -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label class="form-label text-start">Drink Onwards Date (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="date" 
+                              class="form-control"
+                              v-model="addDrinkForm.drinkOnwardsDate"
+                            />
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar3"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label text-start">Drink By Date (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="date" 
+                              class="form-control"
+                              v-model="addDrinkForm.drinkByDate"
+                            />
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar3"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Row 4: Food Pairing -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                          <label class="form-label text-start">Suggested Food Pairing (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="addDrinkForm.suggestedFoodPairing"
+                              placeholder="e.g., Grilled salmon, Dark chocolate"
+                            />
+                            <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <!-- Purchase Date -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">Purchase Date (Optional)</label>
-                      <input 
-                        type="date" 
-                        class="form-control"
-                        v-model="addDrinkForm.purchaseDate"
-                      />
-                    </div>
+                    <!-- Individual Item Properties Section -->
+                    <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                      <hr>
+                      <h6 class="section-header text-start mb-3">
+                        <i class="bi bi-bottle me-2"></i>
+                        Individual Item Properties
+                        <small class="text-muted d-block fw-normal">
+                          Applied to each individual bottle (can be adjusted later)
+                        </small>
+                      </h6>
 
-                    <!-- Storage Location -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">Storage Location (Optional)</label>
-                      <input 
-                        type="text" 
-                        class="form-control"
-                        v-model="addDrinkForm.storageLocation"
-                        placeholder="e.g., Wine fridge, Cellar rack 3"
-                      />
-                    </div>
+                      <!-- Row 1: Quantity, Status, Consumption -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                          <label class="form-label text-start">
+                            Quantity <span class="text-danger">*</span>
+                          </label>
+                          <input 
+                            type="number" 
+                            class="form-control"
+                            v-model="addDrinkForm.quantity"
+                            min="1"
+                            required
+                            placeholder="Number of bottles"
+                          />
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Status</label>
+                          <select 
+                            class="form-select"
+                            v-model="addDrinkForm.status"
+                          >
+                            <option value="In Possession">In Possession</option>
+                            <option value="On Its Way">On Its Way</option>
+                            <option value="Purchased">Purchased</option>
+                            <option value="Held Elsewhere">Held Elsewhere</option>
+                            <option value="Wishlisted">Wishlisted</option>
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Consumption</label>
+                          <select 
+                            class="form-select"
+                            v-model="addDrinkForm.consumption"
+                          >
+                            <option value="Unopened">Unopened</option>
+                            <option value="Opened">Opened</option>
+                            <option value="Empty">Empty</option>
+                          </select>
+                        </div>
+                      </div>
 
-                    <!-- Personal Notes -->
-                    <div class="form-group mb-3">
-                      <label class="form-label text-start">Personal Notes (Optional)</label>
-                      <textarea 
-                        class="form-control"
-                        v-model="addDrinkForm.personalNotes"
-                        rows="3"
-                        placeholder="Add your personal notes about this bottle..."
-                      ></textarea>
+                      <!-- Row 2: Storage Location, Sub Location -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                          <label class="form-label text-start">Storage Location (Optional)</label>
+                          <input 
+                            type="text" 
+                            class="form-control"
+                            v-model="addDrinkForm.storageLocation"
+                            placeholder="e.g., Wine fridge, Cellar rack 3"
+                          />
+                        </div>
+                        <div class="col-md-6">
+                          <label class="form-label text-start">Sub Location (Optional)</label>
+                          <input 
+                            type="text" 
+                            class="form-control"
+                            v-model="addDrinkForm.subLocation"
+                            placeholder="e.g., Shelf 2, Position A3"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Row 3: Place of Purchase -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                          <label class="form-label text-start">Place of Purchase (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="addDrinkForm.purchasePlaceName"
+                              placeholder="e.g., Wine shop, Online store"
+                            />
+                            <span class="input-group-text" title="Google Maps integration coming soon">
+                              <i class="bi bi-geo-alt"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Row 4: Purchase Date, Delivery Date, Purchase Price -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Purchase Date (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="date" 
+                              class="form-control"
+                              v-model="addDrinkForm.purchaseDate"
+                            />
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar3"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Delivery Date (Optional)</label>
+                          <div class="input-group">
+                            <input 
+                              type="date" 
+                              class="form-control"
+                              v-model="addDrinkForm.deliveryDate"
+                            />
+                            <span class="input-group-text">
+                              <i class="bi bi-calendar3"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label text-start">Purchase Price (Optional)</label>
+                          <div class="input-group">
+                            <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
+                              <option value="USD">USD</option>
+                              <option value="EUR">EUR</option>
+                              <option value="GBP">GBP</option>
+                              <option value="JPY">JPY</option>
+                              <option value="CAD">CAD</option>
+                              <option value="AUD">AUD</option>
+                            </select>
+                            <input 
+                              type="number" 
+                              class="form-control"
+                              v-model="addDrinkForm.purchasePrice"
+                              step="0.01"
+                              min="0"
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Row 5: Personal Notes -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                          <label class="form-label text-start">Personal Notes (Optional)</label>
+                          <textarea 
+                            class="form-control"
+                            v-model="addDrinkForm.personalNotes"
+                            rows="3"
+                            placeholder="Add your personal notes about these bottles..."
+                          ></textarea>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- Submit Button -->
@@ -1239,14 +1422,28 @@ export default {
         selectedDrink: {},
         drinkDebounceTimer: null,
         
-        // Cellar-specific fields
+        // Group properties (applied to all items in the drink group)
         vintage: null,
+        format: 'Bottle',
+        volumeML: 750,
+        volumeUnit: 'ml',
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
         quantity: 1,
         status: 'In Possession',
+        consumption: 'Unopened',
+        storageLocation: '',
+        subLocation: '',
+        purchasePlaceName: '',
+        purchaseDate: null,
+        deliveryDate: null,
         purchasePrice: null,
         purchaseCurrency: 'USD',
-        purchaseDate: null,
-        storageLocation: '',
         personalNotes: ''
       },
       
@@ -2853,6 +3050,50 @@ export default {
   
   .add-drink-to-cellar .cellar-item-preview .text-primary {
     font-size: 0.75rem;
+  }
+}
+
+/* Form Section Styling */
+.form-section {
+  border: 1px solid #e9ecef;
+  border-radius: 0.375rem;
+  padding: 1.5rem;
+  background-color: #fafbfc;
+  margin-bottom: 1rem;
+}
+
+.form-section .section-header {
+  color: #495057;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-section .section-header i {
+  color: #6c757d;
+}
+
+.form-section .section-header small {
+  color: #6c757d;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+/* Text alignment overrides */
+.form-section .form-label.text-start,
+.form-section .section-header {
+  text-align: left !important;
+}
+
+/* Responsive adjustments for form sections */
+@media (max-width: 768px) {
+  .form-section {
+    padding: 1rem;
+  }
+  
+  .form-section .section-header {
+    font-size: 1rem;
   }
 }
 </style>
