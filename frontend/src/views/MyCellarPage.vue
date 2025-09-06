@@ -21,7 +21,7 @@
           <div class="col-12 col-lg-8">
             <!-- Tab Navigation -->
             <div class="tabs-container">
-              <nav class="tabs-nav">
+              <nav class="tabs-nav p-0">
                 <ul class="nav nav-tabs folder-tabs">
                   <!-- All Drinks Tab -->
                   <li class="nav-item">
@@ -446,6 +446,131 @@
                         <small class="text-success fw-bold">
                           ✓ Drink Selected: {{ addDrinkForm.selectedDrink.listingName }}
                         </small>
+                      </div>
+                    </div>
+
+                    <!-- Drink Preview Section -->
+                    <div 
+                      v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id"
+                      class="cellar-item-preview mb-4"
+                    >
+                      <hr>
+                      <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Drink Preview:</p>
+                      
+                      <!-- Desktop Preview -->
+                      <div class="row d-none d-md-flex">
+                        <!-- Item Image -->
+                        <div class="col-3 text-center">
+                          <img 
+                            :src="getPreviewImageUrl(addDrinkForm.selectedDrink)"
+                            class="preview-image"
+                            style="width: 120px; height: 120px; object-fit: contain;"
+                            @error="onImageError"
+                          />
+                        </div>
+
+                        <!-- Item Information -->
+                        <div class="col-9">
+                          <!-- Item Name with Vintage -->
+                          <div class="row mb-2">
+                            <div class="col-12">
+                              <h6 class="fw-bold text-start text-decoration-underline mb-0"
+                                  style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                {{ addDrinkForm.selectedDrink.listingName }}
+                                <span v-if="addDrinkForm.vintage"> [{{ addDrinkForm.vintage }} Vintage]</span>
+                              </h6>
+                            </div>
+                          </div>
+
+                          <!-- Item Details -->
+                          <div class="row mb-2">
+                            <div class="col-12">
+                              <p class="text-start mb-1 text-muted"
+                                 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <span v-if="addDrinkForm.selectedDrink.producerName">
+                                  {{ addDrinkForm.selectedDrink.producerName }} |
+                                </span>
+                                <span v-if="addDrinkForm.selectedDrink.drinkType">
+                                  {{ addDrinkForm.selectedDrink.drinkType }} |
+                                </span>
+                                <span v-if="addDrinkForm.selectedDrink.typeCategory">
+                                  {{ addDrinkForm.selectedDrink.typeCategory }} |
+                                </span>
+                                <span v-if="addDrinkForm.selectedDrink.abv">
+                                  {{ addDrinkForm.selectedDrink.abv }}% ABV |
+                                </span>
+                                <span v-if="addDrinkForm.selectedDrink.originCountry">
+                                  {{ addDrinkForm.selectedDrink.originCountry }}
+                                </span>
+                              </p>
+
+                              <!-- Description -->
+                              <p class="text-start fst-italic mb-1 small text-muted"
+                                 style="height: 40px; max-height: 40px; overflow-y: auto;">
+                                <span v-if="addDrinkForm.selectedDrink.officialDesc">
+                                  {{ addDrinkForm.selectedDrink.officialDesc }}
+                                </span>
+                                <span v-else class="text-muted">
+                                  No description available
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          <!-- Cellar Details -->
+                          <div class="row">
+                            <div class="col-12">
+                              <p class="text-start fw-bold text-primary mb-0">
+                                <span v-if="addDrinkForm.quantity">
+                                  Adding {{ addDrinkForm.quantity }} bottle{{ addDrinkForm.quantity !== 1 ? 's' : '' }}
+                                </span>
+                                <span v-if="addDrinkForm.status" class="ms-2">
+                                  | Status: {{ addDrinkForm.status }}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Mobile Preview -->
+                      <div class="row d-md-none">
+                        <!-- Item Image -->
+                        <div class="col-4 text-center">
+                          <img 
+                            :src="getPreviewImageUrl(addDrinkForm.selectedDrink)"
+                            class="preview-image-mobile"
+                            style="width: 80px; height: 80px; object-fit: contain;"
+                            @error="onImageError"
+                          />
+                        </div>
+
+                        <!-- Item Information -->
+                        <div class="col-8">
+                          <!-- Item Name -->
+                          <h6 class="fw-bold text-start text-decoration-underline mb-1 small">
+                            {{ addDrinkForm.selectedDrink.listingName }}
+                            <span v-if="addDrinkForm.vintage"> [{{ addDrinkForm.vintage }}]</span>
+                          </h6>
+
+                          <!-- Item Details -->
+                          <p class="text-start mb-1 small text-muted">
+                            <span v-if="addDrinkForm.selectedDrink.producerName">
+                              {{ addDrinkForm.selectedDrink.producerName }}
+                            </span>
+                            <span v-if="addDrinkForm.selectedDrink.drinkType">
+                              | {{ addDrinkForm.selectedDrink.drinkType }}
+                            </span>
+                            <span v-if="addDrinkForm.selectedDrink.abv">
+                              | {{ addDrinkForm.selectedDrink.abv }}% ABV
+                            </span>
+                          </p>
+
+                          <!-- Cellar Details -->
+                          <p class="text-start fw-bold text-primary mb-0 small">
+                            Adding {{ addDrinkForm.quantity || 1 }} bottle{{ (addDrinkForm.quantity || 1) !== 1 ? 's' : '' }}
+                          </p>
+                        </div>
                       </div>
                     </div>
 
@@ -1598,6 +1723,26 @@ export default {
       return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739';
     },
 
+    // Get preview image URL for selected drink in add form
+    getPreviewImageUrl(drink) {
+      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      
+      // Try different possible photo properties from the API response
+      const photoPath = drink.photo || drink.drinkPhoto || drink.listingPhoto;
+      
+      if (photoPath) {
+        // If it's already a full URL, use it as-is
+        if (photoPath.startsWith('http')) {
+          return photoPath;
+        }
+        // Otherwise, prepend the backend base URL
+        return `${baseUrl}${photoPath.startsWith('/') ? '' : '/'}${photoPath}`;
+      }
+      
+      // Fallback to default image
+      return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739';
+    },
+
     // Add to cellar functionality
     // Debounced producer search
     debouncedSearchProducers() {
@@ -2178,6 +2323,45 @@ export default {
   text-align: left !important;
 }
 
+/* Drink Preview Section */
+.add-drink-to-cellar .cellar-item-preview {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.add-drink-to-cellar .cellar-item-preview hr {
+  margin: 0 0 1rem 0;
+  border-color: #dee2e6;
+}
+
+.add-drink-to-cellar .preview-image,
+.add-drink-to-cellar .preview-image-mobile {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  padding: 0.5rem;
+}
+
+.add-drink-to-cellar .cellar-item-preview h6 {
+  color: #212529;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.add-drink-to-cellar .cellar-item-preview .text-muted {
+  color: #6c757d !important;
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.add-drink-to-cellar .cellar-item-preview .text-primary {
+  color: #0d6efd !important;
+  font-size: 0.875rem;
+}
+
 /* Success message styling */
 .add-drink-to-cellar .bg-light {
   background-color: #e7f3ff !important;
@@ -2652,6 +2836,23 @@ export default {
   .add-drink-to-cellar .list-group-item {
     padding: 0.5rem;
     font-size: 0.8rem;
+  }
+  
+  .add-drink-to-cellar .cellar-item-preview {
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+  }
+  
+  .add-drink-to-cellar .cellar-item-preview h6 {
+    font-size: 0.875rem;
+  }
+  
+  .add-drink-to-cellar .cellar-item-preview .text-muted {
+    font-size: 0.75rem;
+  }
+  
+  .add-drink-to-cellar .cellar-item-preview .text-primary {
+    font-size: 0.75rem;
   }
 }
 </style>
