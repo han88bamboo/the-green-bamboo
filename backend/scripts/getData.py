@@ -5721,12 +5721,13 @@ def convert_price_to_usd(amount, currency):
 # [GET] Get cellar data for a specific account (user, producer, or venue)
 # Parameters: ownerType (string: 'user', 'producer', 'venue'), ownerID (int)
 # Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
-#                   includeConsumed (default: false), sortBy (default: addedDate)
+#                   includeConsumed (default: false), includeArchived (default: false), sortBy (default: addedDate)
 # 
 # NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
 # (drinkFormat, volumeML, drinkByDate, drinkOnwardsDate, currentValueEstimation, 
 # currentValueCurrency, suggestedFoodPairing) and quantityVariantID > 1 holds individual
 # bottle details. Each record represents one physical bottle with its own consumption status.
+# Archived items are excluded by default unless includeArchived=true is specified.
 @blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCellarData(ownerType, ownerID):
     try:
@@ -5745,6 +5746,7 @@ def getCellarData(ownerType, ownerID):
         status_filter = request.args.get('status')
         drink_type = request.args.get('drinkType')
         include_consumed = request.args.get('includeConsumed', 'false').lower() == 'true'
+        include_archived = request.args.get('includeArchived', 'false').lower() == 'true'
         sort_by = request.args.get('sortBy', 'addedDate')
         
         # Validate sort_by parameter
@@ -5755,6 +5757,11 @@ def getCellarData(ownerType, ownerID):
         # Build dynamic WHERE clause
         where_conditions = ['cc."ownerID" = %s', 'cc."ownerType" = %s']
         params = [ownerID, ownerType]
+        
+        # By default, exclude archived items unless specifically requested
+        if not include_archived:
+            where_conditions.append('ci."archiveStatus" = %s')
+            params.append(False)
         
         if collection_id:
             where_conditions.append('cc."id" = %s')
@@ -5793,6 +5800,7 @@ def getCellarData(ownerType, ownerID):
                 ci."variant",
                 ci."addedDate",
                 ci."updatedDate",
+                ci."archiveStatus",
                 
                 -- Shared Properties from Master Record
                 master."drinkFormat",
@@ -5872,7 +5880,7 @@ def getCellarData(ownerType, ownerID):
                 SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
                 SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
             FROM "myCellarCollections" cc
-            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID"
+            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
             WHERE cc."ownerID" = %s AND cc."ownerType" = %s
             GROUP BY cc."id"
             ORDER BY cc."isDefault" DESC, cc."collectionName"
@@ -5965,6 +5973,7 @@ def getCellarData(ownerType, ownerID):
                         "status": status_filter,
                         "drinkType": drink_type,
                         "includeConsumed": include_consumed,
+                        "includeArchived": include_archived,
                         "sortBy": sort_by
                     }
                 }
@@ -5993,6 +6002,8 @@ def getCellarDashboard(ownerType, ownerID):
     NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
     (drinkFormat, currentValueEstimation, etc.) and each record represents one physical item
     with individual consumption tracking (Unopened/Opened/Empty per item).
+    
+    Archived items are excluded from all calculations and breakdowns.
     """
     try:
         conn = g.db
@@ -6022,6 +6033,7 @@ def getCellarDashboard(ownerType, ownerID):
             ci."updatedDate",
             ci."variant",
             ci."listingID",
+            ci."archiveStatus",
             
             -- Shared Properties from Master Record
             master."drinkFormat",
@@ -6048,7 +6060,7 @@ def getCellarDashboard(ownerType, ownerID):
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
-        WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+        WHERE cc."ownerID" = %s AND cc."ownerType" = %s AND ci."archiveStatus" = FALSE
         ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
         """
         
@@ -6192,6 +6204,7 @@ def getCellarDashboard(ownerType, ownerID):
         JOIN "myCellarItems" ci ON cl."cellarItemID" = ci.id
         JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
         WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+        AND ci."archiveStatus" = FALSE
         AND cl."changeDate" >= NOW() - INTERVAL '12 months'
         ORDER BY cl."changeDate" ASC
         """
