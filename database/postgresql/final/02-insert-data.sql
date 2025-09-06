@@ -4435,7 +4435,7 @@ INSERT INTO "myCellarItems" (
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
-    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
 ) VALUES (
     1177334, 1, 2020, 1, 'Bottle', 700,
     '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
@@ -4443,7 +4443,7 @@ INSERT INTO "myCellarItems" (
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
     'In Possession', 'Unopened', 'At Home', 'Study room bar',
     'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle - 4a',
-    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE
 );
 
 -- Item 4b: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
@@ -4471,7 +4471,7 @@ INSERT INTO "myCellarItems" (
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
-    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
 ) VALUES (
     1177334, 1, 2020, 3, NULL, NULL,
     NULL, NULL, '2024-09-01', '2024-09-05',
@@ -4479,7 +4479,7 @@ INSERT INTO "myCellarItems" (
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
     'In Possession', 'Unopened', 'At Home', 'Study room bar',
     NULL, 'Third bottle from same purchase - 4c',
-    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE
 );
 
 -- Item 5: Listing ID 1
