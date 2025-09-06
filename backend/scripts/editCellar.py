@@ -18,6 +18,7 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # -----------------------------------------------------------------------------------------
 # [POST] Add bottles to cellar
 # - Creates master record with shared properties and individual bottle records
+# - Uses listing, variant, format, volume number, and volume unit as composite key
 # - Handles automatic collection creation if owner has no collections
 # - Supports all owner types: user, producer, venue
 # - Validates all input data and handles currency conversion
@@ -169,11 +170,34 @@ def addToCellar():
             except (ValueError, TypeError):
                 variant = None
         
-        # Check if master record already exists for this listing+variant combination
+        # Validate format, volume combination consistency
+        format_value = data.get('format', 'Bottle')
+        if not format_value:
+            format_value = 'Bottle'  # Default format
+        
+        # Ensure volume information is consistent
+        if volume_number is not None and not volume_unit:
+            return jsonify({
+                "code": 400,
+                "message": "Volume unit is required when volume number is provided"
+            }), 400
+        
+        # Check if master record already exists for this listing+variant+format+volume combination
         cur.execute("""
             SELECT "id" FROM "myCellarItems" 
-            WHERE "listingID" = %s AND "variant" = %s AND "quantityVariantID" = 1
-        """, (data['listingId'], variant))
+            WHERE "listingID" = %s 
+            AND "variant" = %s 
+            AND "quantityVariantID" = 1
+            AND "drinkFormat" = %s
+            AND "volumeNumber" = %s
+            AND "volumeUnit" = %s
+        """, (
+            data['listingId'], 
+            variant, 
+            format_value,
+            volume_number,
+            volume_unit
+        ))
         
         master_record = cur.fetchone()
         
@@ -193,7 +217,7 @@ def addToCellar():
                 collection_id,
                 variant,
                 1,  # Master record
-                data.get('format', 'Bottle'),
+                format_value,
                 volume_number,
                 volume_unit,
                 drink_by_date,
@@ -212,18 +236,9 @@ def addToCellar():
             master_id = master_record['id']
             
             # Update master record with new shared properties if provided
+            # Note: drinkFormat, volumeNumber, volumeUnit are now part of the key and won't be updated
             update_fields = []
             update_values = []
-            
-            if data.get('format'):
-                update_fields.append('"drinkFormat" = %s')
-                update_values.append(data['format'])
-            
-            if volume_number is not None:
-                update_fields.append('"volumeNumber" = %s')
-                update_values.append(volume_number)
-                update_fields.append('"volumeUnit" = %s')
-                update_values.append(volume_unit)
             
             if drink_by_date is not None:
                 update_fields.append('"drinkByDate" = %s')
@@ -255,12 +270,22 @@ def addToCellar():
                 """
                 cur.execute(update_query, update_values)
         
-        # Get next quantityVariantID for this listing+variant combination
+        # Get next quantityVariantID for this listing+variant+format+volume combination
         cur.execute("""
             SELECT MAX("quantityVariantID") as max_variant_id 
             FROM "myCellarItems" 
-            WHERE "listingID" = %s AND "variant" = %s
-        """, (data['listingId'], variant))
+            WHERE "listingID" = %s 
+            AND "variant" = %s
+            AND "drinkFormat" = %s
+            AND "volumeNumber" = %s
+            AND "volumeUnit" = %s
+        """, (
+            data['listingId'], 
+            variant,
+            format_value,
+            volume_number,
+            volume_unit
+        ))
         
         result = cur.fetchone()
         next_variant_id = (result['max_variant_id'] or 0) + 1
@@ -317,6 +342,9 @@ def addToCellar():
                 "listingId": data['listingId'],
                 "listingName": listing['listingName'],
                 "variant": variant,
+                "drinkFormat": format_value,
+                "volumeNumber": volume_number,
+                "volumeUnit": volume_unit,
                 "quantity": quantity,
                 "addedDate": datetime.now().isoformat()
             }

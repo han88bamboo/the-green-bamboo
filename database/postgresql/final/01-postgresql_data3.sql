@@ -1136,8 +1136,8 @@ CREATE TABLE "myCellarItems" (
      "suggestedFoodPairing" IS NULL)
     ),
     
-    -- Ensure unique master record per listing+variant combination
-    UNIQUE ("listingID", "variant", "quantityVariantID") DEFERRABLE INITIALLY DEFERRED
+    -- Ensure unique master record per listing+variant+format+volume combination
+    UNIQUE ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit", "quantityVariantID") DEFERRABLE INITIALLY DEFERRED
 );
 
 -- Create indexes for performance
@@ -1148,8 +1148,8 @@ CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDa
 CREATE INDEX idx_cellar_archive_status ON "myCellarItems" ("archiveStatus");
 
 -- Master-Detail Pattern Indexes
-CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "quantityVariantID");
-CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant") WHERE "quantityVariantID" = 1;
+CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit", "quantityVariantID");
+CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit") WHERE "quantityVariantID" = 1;
 
 -- ========= "myCellarItemsChangelog" =========
 CREATE TABLE "myCellarItemsChangelog" (

@@ -5847,9 +5847,10 @@ def getCellarData(ownerType, ownerID):
                 
             FROM "myCellarItems" ci
             -- Join with master record for shared properties
+            -- Join with master record for shared properties
             LEFT JOIN "myCellarItems" master ON (
                 master."listingID" = ci."listingID" 
-                AND master."variant" = ci."variant" 
+                AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
                 AND master."quantityVariantID" = 1
             )
             LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
@@ -6055,7 +6056,7 @@ def getCellarDashboard(ownerType, ownerID):
         -- Join with master record for shared properties
         LEFT JOIN "myCellarItems" master ON (
             master."listingID" = ci."listingID" 
-            AND master."variant" = ci."variant" 
+            AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
             AND master."quantityVariantID" = 1
         )
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
