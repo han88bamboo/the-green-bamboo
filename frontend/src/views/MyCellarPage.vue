@@ -340,7 +340,7 @@
 
           <!-- Right Column - Add Drink Placeholder (4/12 columns) -->
           <div class="col-12 col-lg-4 mt-4 mt-lg-0">
-            <div class="add-drink-placeholder">
+            <div class="add-a–drink">
               <div class="placeholder-content text-center p-4">
                 <div class="placeholder-icon mb-3">
                   <i class="bi bi-plus-circle" style="font-size: 3rem; color: #6c757d;"></i>
