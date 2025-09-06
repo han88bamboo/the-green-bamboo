@@ -609,6 +609,8 @@
                   :key="bottle.cellarItemId"
                   class="bottle-item p-4 mb-3 border rounded"
                   :class="{ 'bottle-consumed': bottle.status === 'Consumed' }"
+
+                  style="border-color: #0dcaf0 !important;"
                 >
                   <!-- Bottle Header -->
                   <div class="row mb-3">
@@ -734,6 +736,21 @@
                           placeholder="0.00"
                         >
                       </div>
+                    </div>
+                  </div>
+
+                  <!-- Archive Button Row -->
+                  <div class="row">
+                    <div class="col-12 text-center">
+                      <button 
+                        type="button" 
+                        class="btn btn-danger btn-sm"
+                        @click="archiveBottle(bottle.cellarItemId)"
+                        title="Archive this item"
+                      >
+                        <i class="bi bi-archive me-1"></i>
+                        Archive Item
+                      </button>
                     </div>
                   </div>
                 </div>
