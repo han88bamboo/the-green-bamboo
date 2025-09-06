@@ -1091,7 +1091,8 @@ CREATE TABLE "myCellarItems" (
     
     -- SHARED PROPERTIES (only stored in quantityVariantID = 1, NULL for others)
     "drinkFormat" VARCHAR(50) DEFAULT NULL, -- 'Bottle', 'Can', 'Sample', etc. [MASTER ONLY]
-    "volumeML" INTEGER DEFAULT NULL, -- Volume in milliliters [MASTER ONLY]
+    "volumeNumber" DECIMAL(10,2) DEFAULT NULL, -- Volume number [MASTER ONLY]
+    "volumeUnit" VARCHAR(10) DEFAULT NULL,
     "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date [MASTER ONLY]
     "drinkOnwardsDate" DATE DEFAULT NULL, -- Earliest recommended consumption date [MASTER ONLY]
     "currentValueEstimation" DECIMAL(10,2) DEFAULT NULL, -- Current market value [MASTER ONLY]
@@ -1120,18 +1121,19 @@ CREATE TABLE "myCellarItems" (
     CONSTRAINT check_status CHECK ("status" IN ('In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed')),
     CONSTRAINT check_consumption CHECK ("consumption" IN ('Opened', 'Unopened', 'Empty')),
     CONSTRAINT check_quantity_variant_positive CHECK ("quantityVariantID" >= 1),
-    CONSTRAINT check_volume_positive CHECK ("volumeML" IS NULL OR "volumeML" > 0),
+    CONSTRAINT check_volume_positive CHECK ("volumeNumber" IS NULL OR "volumeNumber" > 0),
     CONSTRAINT check_price_positive CHECK ("purchasePrice" IS NULL OR "purchasePrice" >= 0),
     CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0),
     
     -- Master-Detail Pattern Constraints
     -- Only quantityVariantID = 1 can have shared properties
+    
     CONSTRAINT check_master_shared_properties CHECK (
-        ("quantityVariantID" = 1) OR 
-        ("quantityVariantID" > 1 AND "drinkFormat" IS NULL AND "volumeML" IS NULL AND 
-         "drinkByDate" IS NULL AND "drinkOnwardsDate" IS NULL AND 
-         "currentValueEstimation" IS NULL AND "currentValueCurrency" IS NULL AND 
-         "suggestedFoodPairing" IS NULL)
+    ("quantityVariantID" = 1) OR 
+    ("quantityVariantID" > 1 AND "drinkFormat" IS NULL AND "volumeNumber" IS NULL AND "volumeUnit" IS NULL AND
+     "drinkByDate" IS NULL AND "drinkOnwardsDate" IS NULL AND 
+     "currentValueEstimation" IS NULL AND "currentValueCurrency" IS NULL AND 
+     "suggestedFoodPairing" IS NULL)
     ),
     
     -- Ensure unique master record per listing+variant combination
