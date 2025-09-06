@@ -464,7 +464,7 @@
                           <img 
                             :src="getPreviewImageUrl(addDrinkForm.selectedDrink)"
                             class="preview-image"
-                            style="width: 120px; height: 120px; object-fit: contain;"
+                            style="max-width: 80px; max-height: 80px; object-fit: contain;"
                             @error="onImageError"
                           />
                         </div>
