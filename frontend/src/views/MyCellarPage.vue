@@ -338,17 +338,229 @@
             </section>
           </div>
 
-          <!-- Right Column - Add Drink Placeholder (4/12 columns) -->
+          <!-- Right Column - Add Drink to Cellar (4/12 columns) -->
           <div class="col-12 col-lg-4 mt-4 mt-lg-0">
-            <div class="add-a–drink">
-              <div class="placeholder-content text-center p-4">
-                <div class="placeholder-icon mb-3">
-                  <i class="bi bi-plus-circle" style="font-size: 3rem; color: #6c757d;"></i>
+            <div class="add-drink-to-cellar">
+              <div class="card h-100">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add a Drink to Cellar
+                  </h5>
                 </div>
-                <h4 class="placeholder-title mb-2">Add a Drink to Cellar</h4>
-                <p class="placeholder-text text-muted">
-                  Coming next - Add drinks to your personal cellar with detailed tracking options.
-                </p>
+                <div class="card-body">
+                  <form @submit.prevent="addDrinkToCellar">
+                    <!-- Producer Search (Optional) -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">
+                        Producer (Optional)
+                        <small class="text-muted d-block">Select a producer to filter drink search</small>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="form-control"
+                        v-model="addDrinkForm.producerSearchQuery"
+                        @input="debouncedSearchProducers"
+                        placeholder="Search for a producer to filter drinks..."
+                      />
+                      <ul 
+                        class="list-group mt-1"
+                        v-if="addDrinkForm.producerSearchResults && addDrinkForm.producerSearchResults.length > 0 && addDrinkForm.producerSearchQuery"
+                      >
+                        <li 
+                          v-for="producer in addDrinkForm.producerSearchResults" 
+                          :key="producer.id"
+                          class="list-group-item list-group-item-action"
+                          @click="selectProducer(producer)"
+                        >
+                          {{ producer.producerName }}
+                          <small class="text-muted">
+                            ({{ producer.originCountry }})
+                          </small>
+                        </li>
+                      </ul>
+                      <!-- Show selected producer -->
+                      <div 
+                        v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
+                        class="mt-2 p-2 bg-light border rounded"
+                      >
+                        <small class="text-success fw-bold">
+                          ✓ Producer Selected: {{ addDrinkForm.selectedProducer.producerName }}
+                          <button 
+                            type="button" 
+                            class="btn btn-sm btn-outline-danger ms-2"
+                            @click="clearSelectedProducer"
+                          >
+                            Clear
+                          </button>
+                        </small>
+                      </div>
+                    </div>
+
+                    <!-- Drink Search -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">
+                        Drink Name <span class="text-danger">*</span>
+                        <small class="text-muted d-block">Start typing to search for drinks</small>
+                        <small 
+                          v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
+                          class="text-info fw-bold d-block"
+                        >
+                          Filtered by {{ addDrinkForm.selectedProducer.producerName }}
+                        </small>
+                      </label>
+                      <input 
+                        type="text" 
+                        class="form-control"
+                        v-model="addDrinkForm.searchQuery"
+                        @input="debouncedSearchDrinks"
+                        :placeholder="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id ? 
+                          'Search drinks from ' + addDrinkForm.selectedProducer.producerName : 
+                          'Enter a drink name to search...'"
+                        required
+                      />
+                      <ul 
+                        class="list-group mt-1"
+                        v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0 && addDrinkForm.searchQuery"
+                      >
+                        <li 
+                          v-for="listing in addDrinkForm.searchResults" 
+                          :key="listing.id"
+                          class="list-group-item list-group-item-action"
+                          @click="selectDrink(listing)"
+                        >
+                          {{ listing.listingName }}
+                          <small class="text-muted d-block">
+                            Producer: {{ listing.producerName }} | 
+                            Type: {{ listing.drinkType }} | 
+                            ABV: {{ listing.abv ? listing.abv + '%' : 'N/A' }} |
+                            Country: {{ listing.originCountry }}
+                          </small>
+                        </li>
+                      </ul>
+                      <!-- Show selected drink -->
+                      <div 
+                        v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id" 
+                        class="mt-2 p-2 bg-light border rounded"
+                      >
+                        <small class="text-success fw-bold">
+                          ✓ Drink Selected: {{ addDrinkForm.selectedDrink.listingName }}
+                        </small>
+                      </div>
+                    </div>
+
+                    <!-- Vintage (for wines/champagne) -->
+                    <div 
+                      class="form-group mb-3"
+                      v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)"
+                    >
+                      <label class="form-label">Vintage (Optional)</label>
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.vintage"
+                        min="1900" 
+                        max="2030"
+                        placeholder="e.g., 2020"
+                      />
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">
+                        Quantity <span class="text-danger">*</span>
+                      </label>
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.quantity"
+                        min="1"
+                        required
+                        placeholder="Number of bottles"
+                      />
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">Status</label>
+                      <select 
+                        class="form-select"
+                        v-model="addDrinkForm.status"
+                      >
+                        <option value="In Possession">In Cellar</option>
+                        <option value="On Its Way">On Its Way</option>
+                        <option value="Wishlisted">Wishlisted</option>
+                      </select>
+                    </div>
+
+                    <!-- Purchase Price -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">Purchase Price (Optional)</label>
+                      <div class="input-group">
+                        <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
+                          <option value="USD">USD</option>
+                          <option value="EUR">EUR</option>
+                          <option value="GBP">GBP</option>
+                          <option value="JPY">JPY</option>
+                          <option value="CAD">CAD</option>
+                          <option value="AUD">AUD</option>
+                        </select>
+                        <input 
+                          type="number" 
+                          class="form-control"
+                          v-model="addDrinkForm.purchasePrice"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Purchase Date -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">Purchase Date (Optional)</label>
+                      <input 
+                        type="date" 
+                        class="form-control"
+                        v-model="addDrinkForm.purchaseDate"
+                      />
+                    </div>
+
+                    <!-- Storage Location -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">Storage Location (Optional)</label>
+                      <input 
+                        type="text" 
+                        class="form-control"
+                        v-model="addDrinkForm.storageLocation"
+                        placeholder="e.g., Wine fridge, Cellar rack 3"
+                      />
+                    </div>
+
+                    <!-- Personal Notes -->
+                    <div class="form-group mb-3">
+                      <label class="form-label">Personal Notes (Optional)</label>
+                      <textarea 
+                        class="form-control"
+                        v-model="addDrinkForm.personalNotes"
+                        rows="3"
+                        placeholder="Add your personal notes about this bottle..."
+                      ></textarea>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid">
+                      <button 
+                        type="submit" 
+                        class="btn btn-primary"
+                        :disabled="!canAddToCellar || addingToCellar"
+                      >
+                        <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -886,7 +1098,35 @@ export default {
       dashboardData: null,
       
       // Search debouncing
-      searchTimeout: null
+      searchTimeout: null,
+
+      // Add drink to cellar form
+      addDrinkForm: {
+        // Producer search
+        producerSearchQuery: '',
+        producerSearchResults: [],
+        selectedProducer: {},
+        producerDebounceTimer: null,
+        
+        // Drink search
+        searchQuery: '',
+        searchResults: [],
+        selectedDrink: {},
+        drinkDebounceTimer: null,
+        
+        // Cellar-specific fields
+        vintage: null,
+        quantity: 1,
+        status: 'In Possession',
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        purchaseDate: null,
+        storageLocation: '',
+        personalNotes: ''
+      },
+      
+      // Add to cellar state
+      addingToCellar: false
     }
   },
   computed: {
@@ -1024,6 +1264,13 @@ export default {
         }
       })
       return Array.from(vintages).sort((a, b) => b - a)
+    },
+
+    // Form validation for add to cellar
+    canAddToCellar() {
+      return this.addDrinkForm.selectedDrink && 
+             this.addDrinkForm.selectedDrink.id && 
+             this.addDrinkForm.quantity > 0
     }
   },
   watch: {
@@ -1054,6 +1301,15 @@ export default {
     // Cancel any pending search timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout)
+    }
+    
+    // Cancel any pending add drink form timers
+    if (this.addDrinkForm.producerDebounceTimer) {
+      clearTimeout(this.addDrinkForm.producerDebounceTimer)
+    }
+    
+    if (this.addDrinkForm.drinkDebounceTimer) {
+      clearTimeout(this.addDrinkForm.drinkDebounceTimer)
     }
   },
   methods: {
@@ -1340,6 +1596,188 @@ export default {
       
       // Fallback to default image
       return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739';
+    },
+
+    // Add to cellar functionality
+    // Debounced producer search
+    debouncedSearchProducers() {
+      // Clear previous timeout
+      if (this.addDrinkForm.producerDebounceTimer) {
+        clearTimeout(this.addDrinkForm.producerDebounceTimer);
+      }
+
+      // Set new timeout
+      this.addDrinkForm.producerDebounceTimer = setTimeout(() => {
+        this.searchProducers();
+      }, 300);
+    },
+
+    // Search producers API call
+    async searchProducers() {
+      if (!this.addDrinkForm.producerSearchQuery || this.addDrinkForm.producerSearchQuery.trim().length < 2) {
+        this.addDrinkForm.producerSearchResults = [];
+        return;
+      }
+
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const response = await this.$axios.get(`${baseUrl}/getData/getProducerNamesDynamicSearch/${this.addDrinkForm.producerSearchQuery}`);
+
+        if (response.status === 200) {
+          this.addDrinkForm.producerSearchResults = response.data.slice(0, 10); // Limit to 10 results
+        }
+      } catch (error) {
+        console.error('Error searching producers:', error);
+        this.addDrinkForm.producerSearchResults = [];
+      }
+    },
+
+    // Select producer
+    selectProducer(producer) {
+      this.addDrinkForm.selectedProducer = producer;
+      this.addDrinkForm.producerSearchQuery = producer.producerName;
+      this.addDrinkForm.producerSearchResults = [];
+      
+      // Reset drink search when producer changes
+      this.addDrinkForm.searchQuery = '';
+      this.addDrinkForm.searchResults = [];
+      this.addDrinkForm.selectedDrink = {};
+    },
+
+    // Clear selected producer
+    clearSelectedProducer() {
+      this.addDrinkForm.selectedProducer = {};
+      this.addDrinkForm.producerSearchQuery = '';
+      this.addDrinkForm.producerSearchResults = [];
+      
+      // Reset drink search
+      this.addDrinkForm.searchQuery = '';
+      this.addDrinkForm.searchResults = [];
+      this.addDrinkForm.selectedDrink = {};
+    },
+
+    // Debounced drink search
+    debouncedSearchDrinks() {
+      // Clear previous timeout
+      if (this.addDrinkForm.drinkDebounceTimer) {
+        clearTimeout(this.addDrinkForm.drinkDebounceTimer);
+      }
+
+      // Set new timeout
+      this.addDrinkForm.drinkDebounceTimer = setTimeout(() => {
+        this.searchDrinks();
+      }, 300);
+    },
+
+    // Search drinks API call
+    async searchDrinks() {
+      if (!this.addDrinkForm.searchQuery || this.addDrinkForm.searchQuery.trim().length < 2) {
+        this.addDrinkForm.searchResults = [];
+        return;
+      }
+
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        let response;
+        
+        // If a producer is selected, search only within that producer's listings
+        if (this.addDrinkForm.selectedProducer && this.addDrinkForm.selectedProducer.id) {
+          response = await this.$axios.get(`${baseUrl}/getData/getListingNamesByProducer/${this.addDrinkForm.searchQuery}/${this.addDrinkForm.selectedProducer.id}`);
+        } else {
+          // Otherwise, search all listings
+          response = await this.$axios.get(`${baseUrl}/getData/getListingNamesDynamicSearch/${this.addDrinkForm.searchQuery}`);
+        }
+
+        if (response.status === 200) {
+          this.addDrinkForm.searchResults = response.data.slice(0, 10); // Limit to 10 results
+        }
+      } catch (error) {
+        console.error('Error searching drinks:', error);
+        this.addDrinkForm.searchResults = [];
+      }
+    },
+
+    // Select drink
+    selectDrink(listing) {
+      this.addDrinkForm.selectedDrink = listing;
+      this.addDrinkForm.searchQuery = listing.listingName;
+      this.addDrinkForm.searchResults = [];
+    },
+
+    // Add drink to cellar
+    async addDrinkToCellar() {
+      if (!this.canAddToCellar) {
+        return;
+      }
+
+      this.addingToCellar = true;
+
+      try {
+        // Prepare cellar item data
+        const cellarData = {
+          listingId: this.addDrinkForm.selectedDrink.id,
+          ownerType: this.ownerType,
+          ownerId: this.id,
+          quantity: this.addDrinkForm.quantity,
+          status: this.addDrinkForm.status,
+          variant: this.addDrinkForm.vintage,
+          storageLocation: this.addDrinkForm.storageLocation,
+          personalNotes: this.addDrinkForm.personalNotes,
+          purchasePrice: this.addDrinkForm.purchasePrice,
+          purchaseCurrency: this.addDrinkForm.purchaseCurrency,
+          purchaseDate: this.addDrinkForm.purchaseDate
+        };
+
+        // TODO: Replace with actual API endpoint for adding to cellar
+        // const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        // const response = await this.$axios.post(`${baseUrl}/cellar/addToCellar`, cellarData);
+        
+        // For now, simulate the API call
+        console.log('Adding to cellar:', cellarData);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API delay
+
+        // Reset form on success
+        this.resetAddDrinkForm();
+        
+        // Reload cellar data to show the new item
+        await this.loadCellarData();
+        
+        // TODO: Show success message
+        console.log('Successfully added to cellar!');
+
+      } catch (error) {
+        console.error('Error adding to cellar:', error);
+        // TODO: Show error message
+      } finally {
+        this.addingToCellar = false;
+      }
+    },
+
+    // Reset add drink form
+    resetAddDrinkForm() {
+      this.addDrinkForm = {
+        // Producer search
+        producerSearchQuery: '',
+        producerSearchResults: [],
+        selectedProducer: {},
+        producerDebounceTimer: null,
+        
+        // Drink search
+        searchQuery: '',
+        searchResults: [],
+        selectedDrink: {},
+        drinkDebounceTimer: null,
+        
+        // Cellar-specific fields
+        vintage: null,
+        quantity: 1,
+        status: 'In Possession',
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        purchaseDate: null,
+        storageLocation: '',
+        personalNotes: ''
+      };
     }
   }
 }
@@ -1641,27 +2079,125 @@ export default {
 }
 
 /* Right Column Placeholder */
-.add-drink-placeholder {
-  background-color: #fff;
-  border: 2px dashed #dee2e6;
-  border-radius: 0.5rem;
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.add-drink-to-cellar .card {
+  border: 1px solid #dee2e6;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.placeholder-content {
-  max-width: 300px;
+.add-drink-to-cellar .card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
 }
 
-.placeholder-title {
+.add-drink-to-cellar .form-label {
+  font-weight: 500;
   color: #495057;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.placeholder-text {
-  line-height: 1.5;
+.add-drink-to-cellar .form-control,
+.add-drink-to-cellar .form-select {
+  border: 1px solid #ced4da;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.add-drink-to-cellar .form-control:focus,
+.add-drink-to-cellar .form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.add-drink-to-cellar .list-group {
+  max-height: 200px;
+  overflow-y: auto;
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.add-drink-to-cellar .list-group-item {
+  cursor: pointer;
+  padding: 0.75rem;
+  border-color: #dee2e6;
+}
+
+.add-drink-to-cellar .list-group-item:hover {
+  background-color: #f8f9fa;
+}
+
+.add-drink-to-cellar .list-group-item:first-child {
+  border-top-left-radius: 0.375rem;
+  border-top-right-radius: 0.375rem;
+}
+
+.add-drink-to-cellar .list-group-item:last-child {
+  border-bottom-left-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.add-drink-to-cellar .btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  font-weight: 500;
+}
+
+.add-drink-to-cellar .btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.add-drink-to-cellar .btn-primary:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  opacity: 0.65;
+}
+
+.add-drink-to-cellar .spinner-border-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Form group spacing */
+.add-drink-to-cellar .form-group {
+  position: relative;
+}
+
+/* Success message styling */
+.add-drink-to-cellar .bg-light {
+  background-color: #e7f3ff !important;
+  border-color: #86b7fe !important;
+}
+
+.add-drink-to-cellar .text-success {
+  color: #198754 !important;
+}
+
+/* Input group styling */
+.add-drink-to-cellar .input-group .form-select {
+  border-right: none;
+}
+
+.add-drink-to-cellar .input-group .form-control {
+  border-left: none;
+}
+
+.add-drink-to-cellar .input-group .form-select:focus {
+  border-right: none;
+  box-shadow: none;
+}
+
+.add-drink-to-cellar .input-group .form-control:focus {
+  border-left: none;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.add-drink-to-cellar .input-group:focus-within .form-select {
+  border-color: #86b7fe;
+}
+
+.add-drink-to-cellar .input-group:focus-within .form-control {
+  border-color: #86b7fe;
 }
 
 /* Pagination */
@@ -1865,8 +2401,59 @@ export default {
     display: none !important;
   }
   
-  .add-drink-placeholder {
+  .add-drink-to-cellar {
     margin-top: 2rem;
+  }
+  
+  .add-drink-to-cellar .card-body {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .filters-container .row > div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .folder-tabs {
+    padding-left: 0.5rem;
+    gap: 0.125rem;
+    flex-wrap: wrap;
+  }
+  
+  .folder-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    height: 2.5rem;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .item-count {
+    display: block;
+    font-size: 0.7rem;
+    margin-left: 0;
+    margin-top: 0.125rem;
+  }
+  
+  .ghost-tab .bi-plus-circle {
+    font-size: 0.75rem;
+  }
+  
+  .cellar-surface {
+    border-radius: 0 0.375rem 0.375rem 0.375rem;
+  }
+  
+  .add-drink-to-cellar .form-label {
+    font-size: 0.875rem;
+  }
+  
+  .add-drink-to-cellar .form-control,
+  .add-drink-to-cellar .form-select {
+    font-size: 0.875rem;
   }
 }
 
@@ -2018,6 +2605,36 @@ export default {
   
   .items-grid {
     padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+  
+  .add-drink-to-cellar .card-header {
+    padding: 0.75rem;
+  }
+  
+  .add-drink-to-cellar .card-body {
+    padding: 0.75rem;
+  }
+  
+  .add-drink-to-cellar .form-label {
+    font-size: 0.8rem;
+    margin-bottom: 0.375rem;
+  }
+  
+  .add-drink-to-cellar .form-control,
+  .add-drink-to-cellar .form-select,
+  .add-drink-to-cellar textarea {
+    font-size: 0.8rem;
+    padding: 0.375rem 0.5rem;
+  }
+  
+  .add-drink-to-cellar .btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+  }
+  
+  .add-drink-to-cellar .list-group-item {
+    padding: 0.5rem;
+    font-size: 0.8rem;
   }
 }
 </style>
