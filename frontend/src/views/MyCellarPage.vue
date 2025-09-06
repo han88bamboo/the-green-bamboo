@@ -352,9 +352,9 @@
                   <form @submit.prevent="addDrinkToCellar">
                     <!-- Producer Search (Optional) -->
                     <div class="form-group mb-3">
-                      <label class="form-label">
+                      <label class="form-label text-start">
                         Producer (Optional)
-                        <small class="text-muted d-block">Select a producer to filter drink search</small>
+                        <small class="text-muted d-block text-start">Select a producer to filter drink search</small>
                       </label>
                       <input 
                         type="text" 
@@ -382,7 +382,7 @@
                       <!-- Show selected producer -->
                       <div 
                         v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
-                        class="mt-2 p-2 bg-light border rounded"
+                        class="mt-2 p-2 bg-light border rounded text-start"
                       >
                         <small class="text-success fw-bold">
                           ✓ Producer Selected: {{ addDrinkForm.selectedProducer.producerName }}
@@ -399,12 +399,12 @@
 
                     <!-- Drink Search -->
                     <div class="form-group mb-3">
-                      <label class="form-label">
+                      <label class="form-label text-start">
                         Drink Name <span class="text-danger">*</span>
-                        <small class="text-muted d-block">Start typing to search for drinks</small>
+                        <small class="text-muted d-block text-start">Start typing to search for drinks</small>
                         <small 
                           v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
-                          class="text-info fw-bold d-block"
+                          class="text-info fw-bold d-block text-start"
                         >
                           Filtered by {{ addDrinkForm.selectedProducer.producerName }}
                         </small>
@@ -441,7 +441,7 @@
                       <!-- Show selected drink -->
                       <div 
                         v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id" 
-                        class="mt-2 p-2 bg-light border rounded"
+                        class="mt-2 p-2 bg-light border rounded text-start"
                       >
                         <small class="text-success fw-bold">
                           ✓ Drink Selected: {{ addDrinkForm.selectedDrink.listingName }}
@@ -454,7 +454,7 @@
                       class="form-group mb-3"
                       v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)"
                     >
-                      <label class="form-label">Vintage (Optional)</label>
+                      <label class="form-label text-start">Vintage (Optional)</label>
                       <input 
                         type="number" 
                         class="form-control"
@@ -467,7 +467,7 @@
 
                     <!-- Quantity -->
                     <div class="form-group mb-3">
-                      <label class="form-label">
+                      <label class="form-label text-start">
                         Quantity <span class="text-danger">*</span>
                       </label>
                       <input 
@@ -482,7 +482,7 @@
 
                     <!-- Status -->
                     <div class="form-group mb-3">
-                      <label class="form-label">Status</label>
+                      <label class="form-label text-start">Status</label>
                       <select 
                         class="form-select"
                         v-model="addDrinkForm.status"
@@ -495,7 +495,7 @@
 
                     <!-- Purchase Price -->
                     <div class="form-group mb-3">
-                      <label class="form-label">Purchase Price (Optional)</label>
+                      <label class="form-label text-start">Purchase Price (Optional)</label>
                       <div class="input-group">
                         <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
                           <option value="USD">USD</option>
@@ -518,7 +518,7 @@
 
                     <!-- Purchase Date -->
                     <div class="form-group mb-3">
-                      <label class="form-label">Purchase Date (Optional)</label>
+                      <label class="form-label text-start">Purchase Date (Optional)</label>
                       <input 
                         type="date" 
                         class="form-control"
@@ -528,7 +528,7 @@
 
                     <!-- Storage Location -->
                     <div class="form-group mb-3">
-                      <label class="form-label">Storage Location (Optional)</label>
+                      <label class="form-label text-start">Storage Location (Optional)</label>
                       <input 
                         type="text" 
                         class="form-control"
@@ -539,7 +539,7 @@
 
                     <!-- Personal Notes -->
                     <div class="form-group mb-3">
-                      <label class="form-label">Personal Notes (Optional)</label>
+                      <label class="form-label text-start">Personal Notes (Optional)</label>
                       <textarea 
                         class="form-control"
                         v-model="addDrinkForm.personalNotes"
@@ -2093,6 +2093,20 @@ export default {
   font-weight: 500;
   color: #495057;
   margin-bottom: 0.5rem;
+  text-align: left !important;
+  display: block;
+  width: 100%;
+}
+
+.add-drink-to-cellar .form-label small {
+  text-align: left !important;
+  display: block;
+  width: 100%;
+}
+
+.add-drink-to-cellar .form-group {
+  position: relative;
+  text-align: left !important;
 }
 
 .add-drink-to-cellar .form-control,
@@ -2161,16 +2175,19 @@ export default {
 /* Form group spacing */
 .add-drink-to-cellar .form-group {
   position: relative;
+  text-align: left !important;
 }
 
 /* Success message styling */
 .add-drink-to-cellar .bg-light {
   background-color: #e7f3ff !important;
   border-color: #86b7fe !important;
+  text-align: left !important;
 }
 
 .add-drink-to-cellar .text-success {
   color: #198754 !important;
+  text-align: left !important;
 }
 
 /* Input group styling */
