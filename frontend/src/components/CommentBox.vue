@@ -58,7 +58,7 @@
             <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
                 <i class="bi bi-pencil me-4" style="cursor:pointer" @click="editMode = true"></i>
 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: contentType }">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="$emit('set-delete-comment', { commentId: comment.id, contentType: contentType })">
                     <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
                 </svg>
             </div>
@@ -84,7 +84,7 @@
         </div>
 
         <!-- Row 3: Reply Input -->
-        <div class="row mt-3">
+        <div v-if="!hideReply" class="row mt-3">
 
             <!-- Reply button as word -->
             <div v-if="!replyMode" class="mt-0 pt-0" style="cursor: pointer; font-size: 0.9em; color: #0d6efd;">
@@ -109,36 +109,19 @@
                 class="reply-item mb-3"
             >
                 <CommentBox 
-                :comment="reply" 
-                :userID="userID" 
-                :userType="userType" 
-                :contentId="contentID" 
-                contentType="contentType"
-                @comment-deleted="$emit('comment-deleted', $event)" 
+                    :comment="reply" 
+                    :userID="userID" 
+                    :userType="userType" 
+                    :contentId="contentId" 
+                    :hideReply="true"
+                    :contentType="contentType"
+                    @set-delete-comment="$emit('set-delete-comment', $event)"
                 />
             </div>
         </div>
 
     </div>
 
-    <!-- Delete Comment Modal-->
-    <div class="modal fade" id="deleteComment" tabindex="-1" aria-labelledby="deleteCommentLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCommentLabel">Confirm Deletion</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this comment?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteComment">Delete</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </template>
 
 
@@ -160,13 +143,17 @@ export default {
             type: String,
             required: false
         },
-        contentID: {
+        contentId: {
             type: String,
             required: false
         },
         contentType: {
             type: String,
             required: false
+        },
+        hideReply: {
+            type: Boolean,
+            default: false
         }
     },
     data() {
@@ -290,44 +277,6 @@ export default {
             }
         },
 
-        // Function to delete comment 
-        async deleteComment() {
-            try {
-                const response = await this.$axios.delete(
-                `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
-                {
-                    data: {
-                    userId: this.userID,
-                    userType: this.userType,
-                    contentType: this.deleteCommentItems.contentType,
-                    commentId: this.deleteCommentItems.commentId
-                    }
-                }
-                );
-
-
-                // Reset deleteCommentItems
-                this.deleteCommentItems = {
-                    commentId: null,
-                    contentType: null
-                };
-
-                // Show message
-                if (response.status === 200) {
-                    const toast = useToast();
-                    toast.success("Comment deleted successfully.");
-
-                    // 🔥 tell parent to remove this comment
-                    this.$emit("comment-deleted", this.comment.id);
-                }
-
-            } catch (error) {
-                console.error("Error deleting comment:", error);
-                const toast = useToast();
-                toast.error("Failed to delete comment. Please try again later.");
-            }
-        },
-
         // Function to post a reply to a comment
         async postReply() {
 
@@ -352,9 +301,9 @@ export default {
                     userId: this.userID,
                     userType: this.userType,
                     contentType: this.contentType,
-                    contentId: this.contentID,
+                    contentId: this.contentId,
                     comment: this.replyContent.trim(),
-                    parent_id: this.comment.id
+                    parentId: this.comment.id
                 }
                 );
 
@@ -367,8 +316,8 @@ export default {
                     const toast = useToast();
                     toast.success("Reply posted successfully.");
 
-                    // Optionally, you can emit an event to notify the parent component to refresh comments
-                    this.$emit("reply-posted");
+                    // Emit event to parent to refresh comments
+                    this.$emit("comment-replied", { parentId: this.comment.id, reply: response.data.comment } );
                 }
 
             } catch (error) {

@@ -2284,10 +2284,12 @@
 
           <!-- Comments List -->
           <div v-for="comment in comments" :key="comment.id" class="row mb-3">
+
             <CommentBox 
               :comment="comment" :userID="userID" :userType="userType" 
-              :contentId="listing_id" contentType="Listing"
-              @comment-deleted="removeComment"  />
+              :contentId="listing_id" contentType="Listing" 
+              @set-delete-comment="deleteCommentItems = $event" 
+              @comment-replied="handleReply"/>
           </div>
 
           <!-- Load More Comments Button -->
@@ -2298,6 +2300,25 @@
           <!-- No More Comments Message -->
           <div class="text-center" v-if="!hasMoreComments">
             <p>No more comments to load.</p>
+          </div>
+
+          <!-- Delete Comment Modal-->
+          <div class="modal fade" id="deleteComment" tabindex="-1" aria-labelledby="deleteCommentLabel" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-scrollable modal-xl">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="deleteCommentLabel">Confirm Deletion</h5>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                          <p>Are you sure you want to delete this comment?</p>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteComment">Delete</button>
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                  </div>
+              </div>
           </div>
 
         </div>
@@ -2960,6 +2981,10 @@ export default {
       userLikedListing: false,
       hasMoreComments: true,
       newComment: "",
+      deleteCommentItems: {
+          commentId: null,
+          contentType: null
+      },
     };
   },
   mounted() {
@@ -5447,10 +5472,75 @@ export default {
         }
     },
 
-    // Remove comment from the list after deletion
-    removeComment(commentId) {
-      this.comments = this.comments.filter(c => c.id !== commentId);
+    // Recursive helper to remove a comment or reply by ID
+    removeCommentById(commentId, commentsArray) {
+      for (let i = 0; i < commentsArray.length; i++) {
+        const comment = commentsArray[i];
+
+        // If this is the comment we want to remove
+        if (comment.id === commentId) {
+          commentsArray.splice(i, 1); // reactive removal
+          return true; // stop searching
+        }
+
+        // If it has replies, search recursively
+        if (comment.replies?.length) {
+          const removed = this.removeCommentById(commentId, comment.replies);
+          if (removed) return true;
+        }
+      }
+      return false; // comment not found
     },
+
+    // Function to delete comment 
+    async deleteComment() {
+
+        try {
+            const response = await this.$axios.delete(
+            `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
+            {
+                data: {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: this.deleteCommentItems.contentType,
+                    commentId: this.deleteCommentItems.commentId
+                }
+            }
+            );
+
+            // Show message
+            if (response.status === 200) {
+                const toast = useToast();
+                toast.success("Comment deleted successfully.");
+
+                // Remove the comment or reply from the comments array
+                this.removeCommentById(this.deleteCommentItems.commentId, this.comments);
+
+                // Reset deleteCommentItems
+                this.deleteCommentItems = {
+                    commentId: null,
+                    contentType: null
+                };
+
+            }
+
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            const toast = useToast();
+            toast.error("Failed to delete comment. Please try again later.");
+        }
+    },
+
+    // Function to add reply to a comment
+    handleReply({ parentId, reply }) {
+      // Find the parent comment
+      const parent = this.comments.find(c => c.id == parentId);
+      if (parent) {
+        parent.replies.unshift(reply);
+      }
+    },
+
+    
 
   },
 };
