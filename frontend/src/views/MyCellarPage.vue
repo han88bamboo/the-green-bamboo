@@ -345,7 +345,7 @@
                 <div class="card-header">
                   <h5 class="card-title mb-0">
                     <i class="bi bi-plus-circle me-2"></i>
-                    Add a Drink to Cellar
+                    Add Drink(s) to Cellar
                   </h5>
                 </div>
                 <div class="card-body">
