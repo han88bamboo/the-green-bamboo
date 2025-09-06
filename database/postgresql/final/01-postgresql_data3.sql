@@ -1103,7 +1103,7 @@ CREATE TABLE "myCellarItems" (
     "deliveryDate" DATE DEFAULT NULL,
     "purchasePrice" DECIMAL(10,2) DEFAULT NULL,
     "purchaseCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
-    "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL DEFAULT NULL, -- If purchased from a known venue
+    "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- If purchased from a known venue
     "purchasePlaceName" VARCHAR(255) DEFAULT NULL, -- Name of place purchased (for non-venue locations)
     "purchaseAddress" VARCHAR(255) DEFAULT NULL, -- Address from Google Maps API (similar to reviews.address)
     "status" VARCHAR(50) DEFAULT 'In Possession', -- 'In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed'
@@ -1111,6 +1111,7 @@ CREATE TABLE "myCellarItems" (
     "currentLocation" VARCHAR(255) DEFAULT 'At Home', -- 'At Home', 'At Friend''s Home', 'At Restaurant', or custom
     "subLocation" VARCHAR(255) DEFAULT NULL, -- 'In my attic', 'Wine fridge', etc. - custom location details
     "noteToSelf" TEXT DEFAULT NULL, -- Personal notes about this specific bottle
+    "archiveStatus" BOOLEAN DEFAULT FALSE, -- True if bottle is archived (soft delete), False if active
     
     -- Metadata
     "addedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1142,6 +1143,7 @@ CREATE INDEX idx_cellar_listing ON "myCellarItems" ("listingID");
 CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
 CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
 CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
+CREATE INDEX idx_cellar_archive_status ON "myCellarItems" ("archiveStatus");
 
 -- Master-Detail Pattern Indexes
 CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "quantityVariantID");
@@ -1151,7 +1153,7 @@ CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant")
 CREATE TABLE "myCellarItemsChangelog" (
     "id" SERIAL PRIMARY KEY,
     "cellarItemID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE CASCADE, -- Reference to the cellar item
-    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'DELETED'
+    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'ARCHIVE_CHANGED', 'DELETED'
     "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityVariantID', 'status', 'consumption')
     "oldValue" TEXT, -- Previous value (JSON string for complex data)
     "newValue" TEXT, -- New value (JSON string for complex data)
@@ -1289,6 +1291,22 @@ BEGIN
                 json_build_object('noteToSelf', OLD."noteToSelf", 'suggestedFoodPairing', OLD."suggestedFoodPairing")::text,
                 json_build_object('noteToSelf', NEW."noteToSelf", 'suggestedFoodPairing', NEW."suggestedFoodPairing")::text,
                 change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Archive status changed
+        IF OLD."archiveStatus" != NEW."archiveStatus" THEN
+            change_desc := CASE 
+                WHEN NEW."archiveStatus" = TRUE THEN 'Bottle archived'
+                ELSE 'Bottle restored from archive'
+            END;
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'ARCHIVE_CHANGED', 'archiveStatus', 
+                OLD."archiveStatus"::text, NEW."archiveStatus"::text, change_desc, CURRENT_TIMESTAMP
             );
         END IF;
 
