@@ -1250,38 +1250,37 @@ def getListingComments(user_id, user_type, content_id):
             # Get comments for the specific content
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
-                WHERE "{unique_field}" = %s
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
                 ORDER BY "createdAt" DESC
                 LIMIT 30
             """, (content_id,))
             comments = cursor.fetchall()
 
-            replies = []
-            main_comments = {}
-
             for comment in comments:
                 
-                # Extract comments if it is a reply
-                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
-                    replies.append(comment)
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
 
-                else:
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
                     # Extract commenter username and photo
-                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
-                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
-                    main_comments[comment['id']] = comment
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
 
-            # Nest replies under their respective parent comments
-            for reply in replies:
-
-                # Extract commenter username and photo
-                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
-                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
-
-                parent_comment = main_comments.get(reply['parentId'])
-
-                if parent_comment:
-                    parent_comment.setdefault('replies', []).append(reply)
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
 
 
             # Check if the current user likes the content
@@ -1301,7 +1300,8 @@ def getListingComments(user_id, user_type, content_id):
             
 
             return jsonify({
-                "comments": main_comments,
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
                 "userLiked": user_likes
             }), 200
 
@@ -1334,42 +1334,41 @@ def getMoreListingComments(content_id, last_comment_id):
             # Get comments for the specific content
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
-                WHERE "{unique_field}" = %s AND id < %s
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
                 ORDER BY "createdAt" DESC
                 LIMIT 30
             """, (content_id, last_comment_id))
             comments = cursor.fetchall()
 
-            replies = []
-            main_comments = {}
-
             for comment in comments:
                 
-                # Extract comments if it is a reply
-                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
-                    replies.append(comment)
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
 
-                else:
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
                     # Extract commenter username and photo
-                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
-                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
-                    main_comments[comment['id']] = comment
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
 
-            # Nest replies under their respective parent comments
-            for reply in replies:
-
-                # Extract commenter username and photo
-                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
-                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
-
-                parent_comment = main_comments.get(reply['parentId'])
-
-                if parent_comment:
-                    parent_comment.setdefault('replies', []).append(reply)
-
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
 
             return jsonify({
-                "comments": main_comments
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
             }), 200
 
     except Exception as e:
@@ -1378,7 +1377,7 @@ def getMoreListingComments(content_id, last_comment_id):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] Retrieve comments for a specific review and check if current user liked the review
+# [GET] Retrieve comments for a specific review and check if current user liked the review - first retrieval
 @blueprint.route("/getReviewComments/<user_id>/<content_id>", methods=['GET'])
 def getReviewComments(user_id, content_id):
 
@@ -1401,38 +1400,38 @@ def getReviewComments(user_id, content_id):
             # Get comments for the specific content
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
-                WHERE "{unique_field}" = %s
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
             """, (content_id,))
             comments = cursor.fetchall()
 
-            # Extract reply comments
-            replies = []
-
-            main_comments = {}
-
             for comment in comments:
-                # Extract comments if it is a reply
-                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
-                    replies.append(comment)
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
 
-                else:
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
                     # Extract commenter username and photo
-                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
-                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
-                    main_comments[comment['id']] = comment
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
 
-            # Nest replies under their respective parent comments
-            for reply in replies:
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
 
-                # Extract commenter username and photo
-                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
-                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
-
-                parent_comment = main_comments.get(reply['parentId'])
-
-                if parent_comment:
-                    parent_comment.setdefault('replies', []).append(reply)
-
+    
             # Check if the current user likes the content
 
             # Get the table name
@@ -1457,7 +1456,8 @@ def getReviewComments(user_id, content_id):
                         break
 
             return jsonify({
-                "comments": main_comments,
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
                 "userLiked": user_liked
             }), 200
 
@@ -1467,7 +1467,72 @@ def getReviewComments(user_id, content_id):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] Retrieve comments for producer review and check if current user liked the review
+# [GET] Retrieve comments for a specific review - subsequent retrievals
+@blueprint.route("/getMoreReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreReviewComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Review", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("Review")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for producer review and check if current user liked the review - first retrieval
 @blueprint.route("/getProducerReviewComments/<user_id>/<content_id>", methods=['GET'])
 def getProducerReviewComments(user_id, content_id):
 
@@ -1490,37 +1555,38 @@ def getProducerReviewComments(user_id, content_id):
             # Get comments for the specific content
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
-                WHERE "{unique_field}" = %s
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
             """, (content_id,))
             comments = cursor.fetchall()
 
-            # Extract reply comments
-            replies = []
-
-            main_comments = {}
 
             for comment in comments:
-                # Extract comments if it is a reply
-                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
-                    replies.append(comment)
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
 
-                else:
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                    LIMIT 30
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
                     # Extract commenter username and photo
-                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
-                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
-                    main_comments[comment['id']] = comment
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
 
-            # Nest replies under their respective parent comments
-            for reply in replies:
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
 
-                # Extract commenter username and photo
-                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
-                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
-
-                parent_comment = main_comments.get(reply['parentId'])
-
-                if parent_comment:
-                    parent_comment.setdefault('replies', []).append(reply)
 
             # Check if the current user likes the content
 
@@ -1545,7 +1611,8 @@ def getProducerReviewComments(user_id, content_id):
                         user_likes = True
                         break
             return jsonify({
-                "comments": main_comments,
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
                 "userLiked": user_likes
             }), 200
         
@@ -1555,7 +1622,73 @@ def getProducerReviewComments(user_id, content_id):
     
 
 # -----------------------------------------------------------------------------------------
-# [GET] Retrieve comments for venue review and check if current user liked the review
+# [GET] Retrieve comments for producer review - subsequent retrievals
+@blueprint.route("/getMoreProducerReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreProducerReviewComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("pReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("pReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for venue review and check if current user liked the review - first retrieval
 @blueprint.route("/getVenueReviewComments/<user_id>/<content_id>", methods=['GET'])
 def getVenueReviewComments(user_id, content_id):
 
@@ -1578,37 +1711,39 @@ def getVenueReviewComments(user_id, content_id):
             # Get comments for the specific content
             cursor.execute(f"""
                 SELECT * FROM "{table_name}"
-                WHERE "{unique_field}" = %s
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
             """, (content_id,))
             comments = cursor.fetchall()
 
-            # Extract reply comments
-            replies = []
-
-            main_comments = {}
 
             for comment in comments:
-                # Extract comments if it is a reply
-                if comment['parentId'] and comment['parentId'] != '' and comment['parentId'] is not None:
-                    replies.append(comment)
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
 
-                else:
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                    LIMIT 30
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
                     # Extract commenter username and photo
-                    comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
-                    comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
-                    main_comments[comment['id']] = comment
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
 
-            # Nest replies under their respective parent comments
-            for reply in replies:
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
 
-                # Extract commenter username and photo
-                reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
-                reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
-
-                parent_comment = main_comments.get(reply['parentId'])
-
-                if parent_comment:
-                    parent_comment.setdefault('replies', []).append(reply)
 
             # Check if the current user likes the content
 
@@ -1634,7 +1769,8 @@ def getVenueReviewComments(user_id, content_id):
                         break
 
             return jsonify({
-                "comments": main_comments,
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
                 "userLiked": user_likes
             }), 200
         
@@ -1643,7 +1779,69 @@ def getVenueReviewComments(user_id, content_id):
         return jsonify({"error": "Failed to retrieve comments"}), 500
     
 
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for venue review - subsequent retrievals
+@blueprint.route("/getMoreVenueReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreVenueReviewComments(content_id, last_comment_id):
 
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
 
+            # Retrieve the table name
+            table_name = get_table_name("vReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("vReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
 
 
