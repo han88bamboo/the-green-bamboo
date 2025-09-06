@@ -4428,7 +4428,7 @@ INSERT INTO "myCellarItems" (
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
--- Item 4a: Listing ID 1177334
+-- Item 4a: Listing ID 1177334 (MASTER RECORD - contains shared properties)
 INSERT INTO "myCellarItems" (
     "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
@@ -4442,11 +4442,11 @@ INSERT INTO "myCellarItems" (
     199.99, 'USD', 220.00, 'USD',
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
     'In Possession', 'Unopened', 'At Home', 'Study room bar',
-    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle',
+    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle - 4a',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
--- Item 4b: Listing ID 1177334
+-- Item 4b: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
 INSERT INTO "myCellarItems" (
     "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
@@ -4455,16 +4455,16 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1177334, 1, 2020, 2, 'Bottle', 700,
-    '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
-    199.99, 'USD', 220.00, 'USD',
+    1177334, 1, 2020, 2, NULL, NULL,
+    NULL, NULL, '2024-09-01', '2024-09-05',
+    199.99, 'USD', NULL, NULL,
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
     'In Possession', 'Unopened', 'At Home', 'Study room bar',
-    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle',
+    NULL, 'Second bottle from same purchase - 4b',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
--- Item 4c: Listing ID 1177334
+-- Item 4c: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
 INSERT INTO "myCellarItems" (
     "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeML",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
@@ -4473,12 +4473,12 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1177334, 1, 2020, 3, 'Bottle', 700,
-    '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
-    199.99, 'USD', 220.00, 'USD',
+    1177334, 1, 2020, 3, NULL, NULL,
+    NULL, NULL, '2024-09-01', '2024-09-05',
+    199.99, 'USD', NULL, NULL,
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
     'In Possession', 'Unopened', 'At Home', 'Study room bar',
-    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle',
+    NULL, 'Third bottle from same purchase - 4c',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
 
