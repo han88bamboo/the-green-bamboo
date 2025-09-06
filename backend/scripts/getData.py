@@ -5851,7 +5851,7 @@ def getCellarData(ownerType, ownerID):
             LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
             WHERE {where_clause}
             GROUP BY ci."id", master."id", cc."id", l."id", p."id", bp."id", pv."id"
-            ORDER BY ci."{sort_by}" DESC
+            ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
         """
         
         cur.execute(items_query, params)
@@ -6049,7 +6049,7 @@ def getCellarDashboard(ownerType, ownerID):
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
         WHERE cc."ownerID" = %s AND cc."ownerType" = %s
-        ORDER BY ci."addedDate" DESC
+        ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
         """
         
         cur.execute(cellar_query, (ownerID, ownerType))
