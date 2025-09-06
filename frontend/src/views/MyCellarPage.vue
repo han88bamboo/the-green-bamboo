@@ -587,21 +587,21 @@
             <!-- Individual Bottles Management -->
             <div class="individual-bottles-section mb-4">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6 class="section-header mb-0">Individual Item Management</h6>
-                <div class="bottle-counter-controls d-flex align-items-center">
-                  <span class="bottle-counter me-2">
+                <div class="d-flex align-items-center">
+                  <h6 class="section-header mb-0 me-3">Individual Item Management</h6>
+                  <span class="bottle-counter">
                     <i class="bi bi-bottle me-1"></i>
                     {{ selectedGroup.bottleCount }} Item{{ selectedGroup.bottleCount !== 1 ? 's' : '' }} of same label and vintage
                   </span>
-                  <button 
-                    class="btn btn-sm btn-outline-primary d-flex align-items-center"
-                    @click="addNewBottle"
-                    title="Add new bottle to this group"
-                  >
-                    <i class="bi bi-plus-circle me-1"></i>
-                    Add Bottle
-                  </button>
                 </div>
+                <button 
+                  class="btn btn-sm btn-outline-primary d-flex align-items-center"
+                  @click="addNewBottle"
+                  title="Add new bottle to this group"
+                >
+                  <i class="bi bi-plus-circle me-1"></i>
+                  Add Bottle
+                </button>
               </div>
               <div class="bottles-list">
                 <div 
