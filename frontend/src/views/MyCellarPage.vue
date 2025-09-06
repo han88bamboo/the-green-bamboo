@@ -866,6 +866,32 @@
                       </div>
                     </div>
 
+                    <!-- Collection Selection Section -->
+                    <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                      <hr>
+                      <h6 class="section-header text-start mb-3">
+                        <i class="bi bi-collection me-2"></i>
+                        Collection Selection
+                        <small class="text-muted d-block fw-normal">Choose which collection to add these bottles to.</small>
+                      </h6>
+
+                      <!-- Collection Dropdown -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                          <label class="form-label text-start">Select Collection</label>
+                          <select 
+                            class="form-select"
+                            v-model="addDrinkForm.selectedCollectionId"
+                          >
+                            <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                              {{ collection.collectionName }}
+                            </option>
+                          </select>
+                          <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                        </div>
+                      </div>
+                    </div>
+
                     <!-- Submit Button -->
                     <div class="d-grid">
                       <button 
@@ -1454,7 +1480,10 @@ export default {
         deliveryDate: null,
         purchasePrice: null,
         purchaseCurrency: 'USD',
-        personalNotes: ''
+        personalNotes: '',
+        
+        // Collection selection
+        selectedCollectionId: null
       },
       
       // Add to cellar state
@@ -1660,6 +1689,17 @@ export default {
         this.dashboardData = dashboardResponse.data || dashboardResponse
         this.allItems = itemsResponse.data?.items || itemsResponse.items || []
         this.collections = itemsResponse.data?.collections || itemsResponse.collections || []
+        
+        // Set default collection for add drink form if not already set
+        if (this.collections.length > 0 && !this.addDrinkForm.selectedCollectionId) {
+          const defaultCollection = this.collections.find(c => c.isDefault)
+          if (defaultCollection) {
+            this.addDrinkForm.selectedCollectionId = defaultCollection.id
+          } else {
+            // If no default collection found, use the first one
+            this.addDrinkForm.selectedCollectionId = this.collections[0].id
+          }
+        }
         
         // Debug: log first item to see what properties are available
         if (this.allItems.length > 0) {
@@ -2077,7 +2117,8 @@ export default {
           personalNotes: this.addDrinkForm.personalNotes,
           purchasePrice: this.addDrinkForm.purchasePrice,
           purchaseCurrency: this.addDrinkForm.purchaseCurrency,
-          purchaseDate: this.addDrinkForm.purchaseDate
+          purchaseDate: this.addDrinkForm.purchaseDate,
+          collectionId: this.addDrinkForm.selectedCollectionId
         };
 
         // TODO: Replace with actual API endpoint for adding to cellar
@@ -2128,8 +2169,20 @@ export default {
         purchaseCurrency: 'USD',
         purchaseDate: null,
         storageLocation: '',
-        personalNotes: ''
+        personalNotes: '',
+        selectedCollectionId: null
       };
+      
+      // Set default collection if collections are available
+      if (this.collections.length > 0) {
+        const defaultCollection = this.collections.find(c => c.isDefault)
+        if (defaultCollection) {
+          this.addDrinkForm.selectedCollectionId = defaultCollection.id
+        } else {
+          // If no default collection found, use the first one
+          this.addDrinkForm.selectedCollectionId = this.collections[0].id
+        }
+      }
     }
   }
 }
