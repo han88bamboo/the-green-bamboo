@@ -1087,38 +1087,30 @@ CREATE TABLE "myCellarItems" (
     "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
     
     -- Inventory Details
-    "quantityVariantID" INTEGER DEFAULT 1,
-    "drinkFormat" VARCHAR(50) DEFAULT 'Bottle', -- 'Bottle', 'Can', 'Sample', etc.
-    "volumeML" INTEGER DEFAULT NULL, -- Volume in milliliters
+    "quantityVariantID" INTEGER DEFAULT 1, -- 1 = master record, >1 = individual bottles
     
-    -- Important Dates
-    "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date
-    "drinkOnwardsDate" DATE DEFAULT NULL, -- Earliest recommended consumption date
+    -- SHARED PROPERTIES (only stored in quantityVariantID = 1, NULL for others)
+    "drinkFormat" VARCHAR(50) DEFAULT NULL, -- 'Bottle', 'Can', 'Sample', etc. [MASTER ONLY]
+    "volumeML" INTEGER DEFAULT NULL, -- Volume in milliliters [MASTER ONLY]
+    "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date [MASTER ONLY]
+    "drinkOnwardsDate" DATE DEFAULT NULL, -- Earliest recommended consumption date [MASTER ONLY]
+    "currentValueEstimation" DECIMAL(10,2) DEFAULT NULL, -- Current market value [MASTER ONLY]
+    "currentValueCurrency" VARCHAR(3) DEFAULT NULL, -- ISO currency code [MASTER ONLY]
+    "suggestedFoodPairing" TEXT DEFAULT NULL, -- User-defined food pairing suggestions [MASTER ONLY]
+    
+    -- INDIVIDUAL BOTTLE PROPERTIES (stored for each bottle including master)
     "purchaseDate" DATE DEFAULT NULL,
     "deliveryDate" DATE DEFAULT NULL,
-    
-    -- Financial Information
     "purchasePrice" DECIMAL(10,2) DEFAULT NULL,
     "purchaseCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
-    "currentValueEstimation" DECIMAL(10,2) DEFAULT NULL,
-    "currentValueCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
-    
-    -- Purchase Location (following reviews table pattern)
     "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL DEFAULT NULL, -- If purchased from a known venue
     "purchasePlaceName" VARCHAR(255) DEFAULT NULL, -- Name of place purchased (for non-venue locations)
     "purchaseAddress" VARCHAR(255) DEFAULT NULL, -- Address from Google Maps API (similar to reviews.address)
-    
-    -- Status and Condition
     "status" VARCHAR(50) DEFAULT 'In Possession', -- 'In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed'
     "consumption" VARCHAR(50) DEFAULT 'Unopened', -- 'Opened', 'Unopened', 'Empty'
-    
-    -- Storage Location
     "currentLocation" VARCHAR(255) DEFAULT 'At Home', -- 'At Home', 'At Friend''s Home', 'At Restaurant', or custom
     "subLocation" VARCHAR(255) DEFAULT NULL, -- 'In my attic', 'Wine fridge', etc. - custom location details
-    
-    -- User Notes and Pairing
-    "suggestedFoodPairing" TEXT DEFAULT NULL, -- User-defined food pairing suggestions
-    "noteToSelf" TEXT DEFAULT NULL, -- Personal notes about this bottle
+    "noteToSelf" TEXT DEFAULT NULL, -- Personal notes about this specific bottle
     
     -- Metadata
     "addedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -1129,7 +1121,20 @@ CREATE TABLE "myCellarItems" (
     CONSTRAINT check_quantity_variant_positive CHECK ("quantityVariantID" >= 1),
     CONSTRAINT check_volume_positive CHECK ("volumeML" IS NULL OR "volumeML" > 0),
     CONSTRAINT check_price_positive CHECK ("purchasePrice" IS NULL OR "purchasePrice" >= 0),
-    CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0)
+    CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0),
+    
+    -- Master-Detail Pattern Constraints
+    -- Only quantityVariantID = 1 can have shared properties
+    CONSTRAINT check_master_shared_properties CHECK (
+        ("quantityVariantID" = 1) OR 
+        ("quantityVariantID" > 1 AND "drinkFormat" IS NULL AND "volumeML" IS NULL AND 
+         "drinkByDate" IS NULL AND "drinkOnwardsDate" IS NULL AND 
+         "currentValueEstimation" IS NULL AND "currentValueCurrency" IS NULL AND 
+         "suggestedFoodPairing" IS NULL)
+    ),
+    
+    -- Ensure unique master record per listing+variant combination
+    UNIQUE ("listingID", "variant", "quantityVariantID") DEFERRABLE INITIALLY DEFERRED
 );
 
 -- Create indexes for performance
@@ -1137,6 +1142,10 @@ CREATE INDEX idx_cellar_listing ON "myCellarItems" ("listingID");
 CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
 CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
 CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
+
+-- Master-Detail Pattern Indexes
+CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "quantityVariantID");
+CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant") WHERE "quantityVariantID" = 1;
 
 -- ========= "myCellarItemsChangelog" =========
 CREATE TABLE "myCellarItemsChangelog" (
