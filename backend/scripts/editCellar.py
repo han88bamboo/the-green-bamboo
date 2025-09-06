@@ -11,19 +11,6 @@ from psycopg2.extras import RealDictCursor
 from decimal import Decimal, InvalidOperation
 import psycopg2
 
-# Import currency conversion function from existing service
-try:
-    from scripts.currencyService import convert_price_to_usd
-except ImportError:
-    # Fallback function if currency service is not available
-    def convert_price_to_usd(amount, currency):
-        """Fallback currency conversion - returns amount as-is for USD"""
-        if currency == 'USD' or currency is None:
-            return amount
-        # In production, this should use real exchange rates
-        # For now, return as-is and log the limitation
-        print(f"Warning: Currency conversion not available for {currency}, using amount as-is")
-        return amount
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
