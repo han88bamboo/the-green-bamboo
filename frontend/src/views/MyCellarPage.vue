@@ -598,9 +598,9 @@
                         <small class="text-muted d-block fw-normal">Values applied to only Master Item within this group.</small>
                       </h6>
 
-                      <!-- Row 1: Vintage, Format, Volume -->
-                      <div class="row g-3 mb-3">
-                        <div class="col-md-4" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
+                      <!-- Row 1: Vintage -->
+                      <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
+                        <div class="col-md-12">
                           <label class="form-label text-start">Vintage</label>
                           <input 
                             type="number" 
@@ -611,7 +611,11 @@
                             placeholder="e.g., 2020"
                           />
                         </div>
-                        <div class="col-md-4" :class="{ 'col-md-6': !addDrinkForm.selectedDrink || !['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType) }">
+                      </div>
+
+                      <!-- Row 2: Format, Volume -->
+                      <div class="row g-3 mb-3">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Format</label>
                           <select 
                             class="form-select"
@@ -622,7 +626,7 @@
                             <option value="Sample">Sample</option>
                           </select>
                         </div>
-                        <div class="col-md-4" :class="{ 'col-md-6': !addDrinkForm.selectedDrink || !['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType) }">
+                        <div class="col-md-6">
                           <label class="form-label text-start">Volume</label>
                           <div class="input-group">
                             <input 
@@ -642,7 +646,7 @@
                         </div>
                       </div>
 
-                      <!-- Row 2: Market Value -->
+                      <!-- Row 3: Market Value -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
                           <label class="form-label text-start">Current Market Value</label>
@@ -667,7 +671,7 @@
                         </div>
                       </div>
 
-                      <!-- Row 3: Drinking Window -->
+                      <!-- Row 4: Drinking Window -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-6">
                           <label class="form-label text-start">Drink Onwards Date</label>
@@ -697,7 +701,7 @@
                         </div>
                       </div>
 
-                      <!-- Row 4: Food Pairing -->
+                      <!-- Row 5: Food Pairing -->
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
                           <label class="form-label text-start">Suggested Food Pairing</label>
@@ -721,7 +725,7 @@
                         <i class="bi bi-bottle me-2"></i>
                         Individual Item Properties
                         <small class="text-muted d-block fw-normal">
-                          Applied to each individual bottle (can be adjusted later)
+                          Values here are applied to every individual bottle (can be adjusted later in the cellar)
                         </small>
                       </h6>
 
