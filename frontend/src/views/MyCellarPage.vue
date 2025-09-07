@@ -1466,8 +1466,8 @@
                       <i class="bi bi-files"></i> Duplicate Group
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" @click="deleteGroup">
-                      <i class="bi bi-trash"></i> Delete All Bottles
+                    <li><a class="dropdown-item text-danger" href="#" @click="archiveGroup">
+                      <i class="bi bi-archive"></i> Archive All Bottles
                     </a></li>
                   </ul>
                 </div>
@@ -2283,9 +2283,26 @@ export default {
       // TODO: Implement duplicate functionality for entire group
     },
 
-    deleteGroup() {
-      console.log('Delete group:', this.selectedGroup)
-      // TODO: Implement delete functionality for entire group
+    archiveGroup() {
+      if (!this.selectedGroup || !this.selectedGroup.bottles) {
+        console.error('No group selected or no bottles in group');
+        return;
+      }
+
+      const bottleCount = this.selectedGroup.bottles.length;
+      const confirmMessage = `Are you sure you want to archive all ${bottleCount} bottle${bottleCount !== 1 ? 's' : ''} in this group? This action cannot be undone.`;
+      
+      if (confirm(confirmMessage)) {
+        // Archive all bottles in the group
+        this.selectedGroup.bottles.forEach(bottle => {
+          if (!this.modalEditing.archivedBottles.includes(bottle.cellarItemId)) {
+            this.modalEditing.archivedBottles.push(bottle.cellarItemId);
+          }
+        });
+        
+        this.modalEditing.hasChanges = true;
+        console.log(`Archived ${bottleCount} bottles from group:`, this.selectedGroup);
+      }
     },
 
     saveGroupChanges() {
