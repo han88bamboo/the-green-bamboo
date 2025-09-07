@@ -16,14 +16,10 @@
 
         <!-- Display listings after data loaded -->
         <div>
-
             <div class="row mt-2">
-
                 <!-- BACK BUTTON, FORM TITLE, BROWSE TERM -->
                 <div class="col-md-4 col-12">
-
                     <div class="row">
-
                         <!-- Back Button -->
                         <div class="d-grid col-1">
                             <button class="btn btn-sm" @click="() => { this.$router.go(-1) }">
@@ -49,9 +45,9 @@
                             </p>
                         </div>
                     </div>
-
                 </div>
 
+                <!-- Filters  -->
                 <div class="col-md-8 col-12">
 
                     <div class="row d-flex justify-content-center">
@@ -77,8 +73,7 @@
 
                         <!-- Clear All Filters Button -->
                         <div class="col-lg-2 col-md-3 col-6 mb-2">
-                            <button class="btn btn-outline-danger w-100" @click="clearAllFilters()"
-                                v-if="hasActiveFilters()">
+                            <button class="btn btn-outline-danger w-100" @click="clearAllFilters()" :disabled="!hasActiveFilters()">
                                 <span>Clear</span>
                             </button>
                         </div>
@@ -144,7 +139,7 @@
                         </div>
 
                         <!-- Rating Filter -->
-                        <div class="col-lg-2 col-md-3 col-sm-6 col-12 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
                             <button class="btn btn-filter dropdown-toggle w-100" type="button" data-bs-toggle="dropdown"
                                 aria-expanded="false" :aria-label="getFilterAriaLabel()"
                                 :class="{ 'filter-active': hasActiveFilters() }">
@@ -191,7 +186,7 @@
                                     </div>
 
                                     <!-- Action Buttons -->
-                                    <div class="d-flex gap-2">
+                                    <!-- <div class="d-flex gap-2">
                                         <button type="button" class="btn btn-sm btn-outline-secondary flex-fill"
                                             @click="clearRatingFilters">
                                             Clear
@@ -200,7 +195,7 @@
                                             @click="applyRatingFilters" :disabled="hasRatingConflict()">
                                             Apply
                                         </button>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </div>
@@ -253,126 +248,130 @@
                 <!-- Results Header -->
                 <div class="row mt-3">
                     <div class="col-12">
-                        <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide" v-if="venues.listing && venues.listing.length > 0">
+                        <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide"
+                            v-if="venues.listing && venues.listing.length > 0">
                             Viewing: {{ venues.listing.length }} {{ effectiveBrowseTerm }} {{ venues.listing.length ===
-                                1 ? 'Listing' :
-                                'Listings' }}
+                                1 ? 'Listing' : 'Listings' }}
                         </p>
-                        <p class="fw-bold fs-6 m-0 py-2" v-else-if="!venues.loading">No {{ effectiveBrowseTerm }} Listings Found!</p>
+                        <p class="fw-bold fs-6 m-0 py-2" v-else-if="!venues.loading">No {{ effectiveBrowseTerm }}
+                            Listings Found!</p>
                     </div>
                 </div>
 
                 <!-- Display Listings -->
                 <div class="text-start">
-                    <div class="row" v-for="resultListing in venues.listing" :key="resultListing.id">
+                    <div class="venue-listing-row mb-3" v-for="resultListing in venues.listing" :key="resultListing.id">
+                        <router-link
+                            :to="{ path: '/profile/venue/' + resultListing.id + '/' + slugify(resultListing.venueName) }"
+                            class="venue-listing-link">
 
-                        <!-- MOBILE VIEW-->
-                        <!-- Image -->
-                        <div
-                            class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
-                            <router-link
-                                :to="{ path: '/profile/venue/' + resultListing.id + '/' + slugify(resultListing.venueName) }">
-                                <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'"
-                                    class="img-fluid rounded" :alt="resultListing.venueName"
-                                    style="width: 100%; height: 120px; object-fit: cover;">
-                            </router-link>
-                        </div>
-                        <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
-                            <!-- Listing Name + Router Link -->
-                            <router-link class="xtext-dark xtext-decoration-none"
-                                :to="{ path: '/profile/venue/' + resultListing.id + '/' + slugify(resultListing.venueName) }">
-                                <h6 class="fw-bold mb-1 mobile-fs-6">{{ resultListing.venueName }}</h6>
-                            </router-link>
-                            <p class="text-start mb-1 mobile-fs-7">
-                                <strong>{{ resultListing.originLocation }}</strong>
-                                <span v-if="resultListing.venueMainTypeName"> • {{ resultListing.venueMainTypeName }}</span>
-                                <span v-if="resultListing.venueSubTypeName"> • {{ resultListing.venueSubTypeName }}</span>
-                            </p>
-                            <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
-                                {{ resultListing["venueDesc"]?.length > 60
-                                    ? resultListing["venueDesc"].substring(0, 60) + "..."
-                                    : resultListing["venueDesc"] || "No description available" }}
-                            </p>
-                        </div>
-                        <!-- Rating ★ -->
-                        <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
-                            <div class="d-flex flex-column align-items-center ps-lg-3">
-                                <div class="d-flex align-items-center justify-content-center mb-1">
-                                    <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ?
-                                        resultListing.averageRating : '-'
-                                        }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor"
-                                        class="bi bi-star-fill ms-1" viewBox="0 0 16 16" style="color: gold;"
-                                        v-if="resultListing.averageRating !== '-'">
-                                        <path
-                                            d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
-                                    </svg>
+                            <!-- MOBILE VIEW-->
+                            <div class="row mobile-view-show">
+                                <!-- Image -->
+                                <div
+                                    class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen">
+                                    <ImgLoader :Photo="resultListing.photo || ''" :default-photo="defaultProfilePhoto"
+                                        :imgAlt="resultListing.venueName" :loading="imageLoading"
+                                        @error="handleImageError" ref="venueImageRef" />
                                 </div>
-                                <!-- Bookmark Icon -->
-                                <BookmarkIcon v-if="user" :listing="resultListing" :user="user"
-                                    @icon-clicked="handleIconClick" />
-                            </div>
-                        </div>
 
-                        <!-- DESKTOP VIEW-->
-                        <!-- Image  -->
-                        <div class="d-flex justify-content-end col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
-                            <router-link
-                                :to="{ path: '/profile/venue/' + resultListing.id + '/' + slugify(resultListing.venueName) }">
-                                <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'"
-                                    class="img-fluid rounded" :alt="resultListing.venueName"
-                                    style="width: 200px; height: 200px; object-fit: cover;">
-                            </router-link>
-                        </div>
+                                <!-- Details -->
+                                <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1">
+                                    <!-- Listing Name -->
+                                    <h6 class="fw-bold mb-1 mobile-fs-6">{{ resultListing.venueName }}</h6>
+                                    <p class="text-start mb-1 mobile-fs-7">
+                                        <strong>{{ resultListing.originLocation }}</strong>
+                                        <span v-if="resultListing.venueMainTypeName"> • {{
+                                            resultListing.venueMainTypeName }}</span>
+                                        <span v-if="resultListing.venueSubTypeName"> • {{ resultListing.venueSubTypeName
+                                            }}</span>
+                                    </p>
+                                    <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
+                                        {{ resultListing["venueDesc"]?.length > 60
+                                            ? resultListing["venueDesc"].substring(0, 60) + "..."
+                                            : resultListing["venueDesc"] || "No description available" }}
+                                    </p>
+                                </div>
 
-                        <!-- Details -->
-                        <div class="row col-9 mobile-view-hide">
-                            <div class="col-lg-6 col-12">
-                                <!-- Listing Name + Router Link -->
-                                <router-link class="text-dark text-decoration-none"
-                                    :to="{ path: '/profile/venue/' + resultListing.id + '/' + slugify(resultListing.venueName) }">
-                                    <h5 class="fw-bold mb-2">{{ resultListing.venueName }}</h5>
-                                </router-link>
-                                <!-- Producer + Type Info -->
-                                <p class="mb-1">
-                                    <strong>Location:</strong> {{ resultListing.originLocation }}
-                                </p>
-                                <p class="mb-1" v-if="resultListing.venueMainTypeName">
-                                    <strong>Type:</strong> {{ resultListing.venueMainTypeName }}
-                                </p>
-                                <p class="mb-1" v-if="resultListing.venueSubTypeName">
-                                    <strong>Sub Type:</strong> {{ resultListing.venueSubTypeName }}
-                                </p>
-                            </div>
-
-                            <div class="d-flex justify-content-end col-lg-5 col-12"
-                                style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                <!-- Rating & Bookmark -->
-                                <div class="d-flex flex-column align-items-end">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ?
-                                            resultListing.averageRating :
-                                            '-' }}</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"
-                                            style="color: gold;" v-if="resultListing.averageRating !== '-'">
-                                            <path
-                                                d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
-                                        </svg>
+                                <!-- Rating ★ -->
+                                <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
+                                    <div class="d-flex flex-column align-items-center ps-lg-3">
+                                        <div class="d-flex align-items-center justify-content-center mb-1">
+                                            <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ?
+                                                resultListing.averageRating : '-'
+                                                }}</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16"
+                                                style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                                <path
+                                                    d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                            </svg>
+                                        </div>
+                                        <!-- Bookmark Icon -->
+                                        <BookmarkIcon v-if="user" :listing="resultListing" :user="user"
+                                            @icon-clicked="handleIconClick" />
                                     </div>
-                                    <!-- Bookmark Icon -->
-                                    <BookmarkIcon v-if="user" :listing="resultListing" :user="user"
-                                        @icon-clicked="handleIconClick" />
                                 </div>
                             </div>
-                            <!-- Description -->
-                            <p class="mt-1 fst-italic scrollable-long">
-                                {{ resultListing["venueDesc"]?.length > 200
-                                    ? resultListing["venueDesc"].substring(0, 200) + "..."
-                                    : resultListing["venueDesc"] || "No description available" }}
-                            </p>
-                        </div>
-                        <hr>
+
+                            <!-- DESKTOP VIEW-->
+                            <div class="row mobile-view-hide align-items-center">
+                                <!-- Image on the left -->
+                                <div class="col-3 image-container mobile-px-0">
+                                    <ImgLoader :Photo="resultListing.photo || ''" :default-photo="defaultProfilePhoto"
+                                        :imgAlt="resultListing.venueName" :loading="imageLoading"
+                                        @image-selected="handleImageSelected" @image-reverted="handleImageReverted"
+                                        @image-removed="handleImageRemoved" @error="handleImageError"
+                                        ref="venueImageRef" />
+                                </div>
+
+                                <!-- Details on the right -->
+                                <div class="col-9">
+                                    <div class="row">
+                                        <div class="col-lg-8 col-12">
+                                            <!-- Listing Name -->
+                                            <h5 class="fw-bold mb-2">{{ resultListing.venueName }}</h5>
+
+                                            <!-- Producer + Type Info -->
+                                            <p class="mb-1">
+                                                <strong>Location:</strong> {{ resultListing.originLocation }}
+                                            </p>
+                                            <p class="mb-1" v-if="resultListing.venueMainTypeName">
+                                                <strong>Type:</strong> {{ resultListing.venueMainTypeName }}
+                                            </p>
+                                            <p class="mb-1" v-if="resultListing.venueSubTypeName">
+                                                <strong>Sub Type:</strong> {{ resultListing.venueSubTypeName }}
+                                            </p>
+
+                                            <!-- Description -->
+                                            <p class="mt-1 fst-italic scrollable-long">
+                                                {{ resultListing["venueDesc"]?.length > 200
+                                                    ? resultListing["venueDesc"].substring(0, 200) + "..."
+                                                    : resultListing["venueDesc"] || "No description available" }}
+                                            </p>
+                                        </div>
+
+                                        <!-- Rating & Bookmark -->
+                                        <div
+                                            class="col-lg-4 col-12 d-flex flex-column align-items-end justify-content-start">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ?
+                                                    resultListing.averageRating : '-' }}</span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                    fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"
+                                                    style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                                    <path
+                                                        d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                                </svg>
+                                            </div>
+                                            <!-- Bookmark Icon -->
+                                            <BookmarkIcon v-if="user" :listing="resultListing" :user="user"
+                                                @icon-clicked="handleIconClick" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </router-link>
                     </div>
 
                     <!-- Load More Indicator -->
@@ -394,13 +393,15 @@
 import NavBar from '@/components/NavBar.vue';
 import BookmarkIcon from '@/components/BookmarkIcon.vue';
 import BookmarkModal from '@/components/BookmarkModal.vue';
+import ImgLoader from '@/components/elements/ImgLoader.vue';
 
 export default {
     name: "BrowseVenues",
     components: {
         NavBar,
         BookmarkIcon,
-        BookmarkModal
+        BookmarkModal,
+        ImgLoader
     },
     data() {
         return {
@@ -408,16 +409,16 @@ export default {
             loadError: false,
             role: localStorage.getItem('88B_accType'),
 
-            // Browse parameters from route
-            browseDrinkType: this.$route.params.browseDrinkType, // Main drink type (e.g., 'Whisky')
-            browseTypeCategory: this.$route.params.browseTypeCategory, // Optional subcategory (e.g., 'Single Malt')
+            // if theres no image set, we need a fallback image
+            defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337",
 
             // Filter options
             browseFilters: {
                 venueMainType: '',
                 venueSubType: '',
                 minRating: '',
-                maxRating: ''
+                maxRating: '',
+                sortCategory: ''
             },
 
             // Filter dropdown lists
@@ -518,6 +519,17 @@ export default {
             } catch (error) {
                 console.warn('Failed to load user data from storage:', error);
             }
+        },
+
+        /**
+         * Handle image-related errors
+         * @param {string} errorMessage - Error message from component
+         */
+        handleImageError(errorMessage) {
+            console.error('Image error:', errorMessage)
+
+            // Show user-friendly error message
+            this.showErrorMessage(errorMessage)
         },
 
         slugify(text) {
@@ -798,14 +810,6 @@ export default {
 </script>
 
 <style scoped>
-.image-container img {
-    transition: transform 0.2s ease-in-out;
-}
-
-.image-container img:hover {
-    transform: scale(1.05);
-}
-
 .scrollable-long {
     max-height: 4em;
     overflow: hidden;
@@ -881,13 +885,15 @@ export default {
     }
 }
 
+
+
 @media (max-width: 768px) {
     .mobile-view-hide {
         display: none !important;
     }
 
     .mobile-view-show {
-        display: block !important;
+        display: flex !important;
     }
 
     .mobile-col-2 {
@@ -967,5 +973,49 @@ export default {
 
 .dropdown-item {
     transition: all 0.2s ease;
+}
+
+/* Remove link styling and add hover effects */
+.venue-listing-link {
+    text-decoration: none !important;
+    color: inherit !important;
+    display: block;
+}
+
+.venue-listing-link:hover,
+.venue-listing-link:focus,
+.venue-listing-link:active,
+.venue-listing-link:visited {
+    text-decoration: none !important;
+    color: inherit !important;
+}
+
+/* Hover effect for the entire listing row */
+.venue-listing-row {
+    padding: 15px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.venue-listing-row:hover {
+    background-color: #dfdfdf;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Ensure images maintain proper spacing */
+.image-container {
+    padding-right: 15px;
+}
+
+/* Mobile specific adjustments */
+@media (max-width: 768px) {
+    .venue-listing-row {
+        padding: 10px;
+    }
+    
+    .image-container {
+        padding-right: 0;
+        margin-bottom: 10px;
+    }
 }
 </style>

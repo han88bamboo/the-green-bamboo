@@ -11,7 +11,7 @@
             :ref="el => itemRefs[category.id] = el" @mouseenter="handleMouseEnter(category)"
             @mouseleave="handleMouseLeave(category)">
 
-            <router-link :to="{ name: 'browse', params: category.params }" class="category-link"
+            <router-link :to="{ name: 'browseDrink', params: category.params }" class="category-link"
               @click.prevent="toggleMobileCategoryMenu(category, $event)">
               {{ category.name }}
             </router-link>
@@ -23,12 +23,12 @@
             }" :style="category.menuStyle">
               <div class="mega-menu-content">
                 <!-- Main Category Link -->
-                <router-link :to="{ name: 'browse', params: category.params }" class="subcategory-link main-category">
+                <router-link :to="{ name: 'browseDrink', params: category.params }" class="subcategory-link main-category">
                   {{ category.name }}
                 </router-link>
                 <!-- Subcategory Links -->
                 <router-link v-for="sub in category.subcategories" :key="sub.name"
-                  :to="{ name: 'browse', params: sub.params }" class="subcategory-link">
+                  :to="{ name: 'browseDrink', params: sub.params }" class="subcategory-link">
                   {{ sub.name }}
                 </router-link>
               </div>
@@ -131,11 +131,7 @@ export default {
             { name: 'Rice Aroma', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Rice Aroma (Mi Xiang)' } },
             { name: 'Phoenix Aroma', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Phoenix Aroma (Feng Xiang)' } },
           ]
-        },
-        {
-          id: 'venue', name: 'Venue', params: { browseDrinkType: 'Venue' }, active: false, menuFlipped: false, menuStyle: {},
-          subcategories: []
-        },
+        }
       ],
       itemRefs: {},
       menuRefs: {},
@@ -170,7 +166,7 @@ export default {
 
       } else {
         // For desktop, allow the router link to navigate
-        this.$router.push({ name: 'browse', params: category.params });
+        this.$router.push({ name: 'browseDrink', params: category.params });
       }
     },
 

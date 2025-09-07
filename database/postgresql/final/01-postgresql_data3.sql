@@ -288,6 +288,10 @@ CREATE TABLE "venues" (
     "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL
 );
 
+-- ALTER TABLE your_table_name 
+-- ADD COLUMN "venueMainType" INTEGER REFERENCES "venueMainTypes"("id") ON DELETE SET NULL,
+-- ADD COLUMN "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL;
+
 -- ========= "venueAmenities" =========
 CREATE TABLE "venueAmenities" (
     "id" SERIAL PRIMARY KEY,
