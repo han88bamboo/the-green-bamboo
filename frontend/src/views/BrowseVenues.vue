@@ -317,7 +317,7 @@
                             <!-- DESKTOP VIEW-->
                             <div class="row mobile-view-hide align-items-center">
                                 <!-- Image on the left -->
-                                <div class="col-3 image-container mobile-px-0">
+                                <div class="col-auto image-container mobile-px-0">
                                     <ImgLoader :Photo="resultListing.photo || ''" :default-photo="defaultProfilePhoto"
                                         :imgAlt="resultListing.venueName" :loading="imageLoading"
                                         @image-selected="handleImageSelected" @image-reverted="handleImageReverted"
@@ -326,7 +326,7 @@
                                 </div>
 
                                 <!-- Details on the right -->
-                                <div class="col-9">
+                                <div class="col">
                                     <div class="row">
                                         <div class="col-lg-8 col-12">
                                             <!-- Listing Name -->

@@ -319,14 +319,15 @@ export default {
 .image-wrapper {
   position: relative;
   display: block;
-  width: 100%;
+  width: 200px;
+  height: 200px;
   overflow: hidden;
   border-radius: 8px;
 }
 
 .producer-bottle-listing-page-image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
   border-radius: 8px;
   transition: opacity 0.3s ease;
@@ -441,13 +442,14 @@ export default {
 }
 
 /* Mobile responsive adjustments */
-@media (max-width: 768px) {
-  .producer-bottle-listing-page-image {
-    height: 150px;
+@media (max-width: 999px) {
+  .image-wrapper {
+    width: 120px;
+    height: 120px;
   }
-  
+
   .image-loading-container {
-    height: 150px;
+    height: 120px;
   }
   
   .image-controls {
