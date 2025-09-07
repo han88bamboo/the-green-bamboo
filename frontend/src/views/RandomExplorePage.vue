@@ -1444,7 +1444,8 @@
                                     <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                     <div class="d-grid">
                                       <router-link
-                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) + '/?reviewId=' + content.id }"
+                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName),
+                                                query: { reviewId: content.id } }"
                                         class="primary-clickable-text"
                                       >
                                         <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
