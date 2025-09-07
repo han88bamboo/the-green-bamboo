@@ -621,7 +621,7 @@ def getNext30():
             update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
 
             # Get dated listings 
-            random_records = random.randint(3, 8)
+            random_records = random.randint(5, 12)
             cursor.execute("""
                 SELECT * FROM "listings"
                 WHERE "addedDate" = %s
@@ -631,7 +631,7 @@ def getNext30():
             limit -= len(listings_data)
             
             # Get today's created listings after newListingsLastID
-            random_records = random.randint(3, 10)
+            random_records = random.randint(5, 10)
             
             if newListingsLastID and newListingsLastID != '':
                 cursor.execute("""
@@ -791,7 +791,7 @@ def getNext30():
             # Get producer or venue updates after *UpdateLastID
             if limit > 0:
 
-                random_records = random.randint(4, 7)
+                random_records = random.randint(5, 8)
                 if update_type == 'producerUpdates':
                     cursor.execute("""
                         SELECT * FROM "producersUpdates"
@@ -812,7 +812,7 @@ def getNext30():
 
                 else:
                     # Randomly decide how many go to producers vs venues
-                    producers_limit = random.randint(0, limit)   # any number between 0 and remaining
+                    producers_limit = random.randint(3, limit)   # any number between 0 and remaining
                     venue_limit = limit - producers_limit 
 
                     cursor.execute("""
