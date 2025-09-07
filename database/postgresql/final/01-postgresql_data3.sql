@@ -1089,6 +1089,7 @@ CREATE TABLE "myCellarItems" (
     
     -- Inventory Details
     "quantityVariantID" INTEGER DEFAULT 1, -- 1 = master record, >1 = individual bottles
+    "variantGroupID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE SET NULL, -- Groups versions with the same information across all these fields (collectionID, listingID, variant, drinkFormat, volumeNumber, volumeUnit), by referencing the primary master item's ID
     
     -- SHARED PROPERTIES (only stored in quantityVariantID = 1, NULL for others)
     "drinkFormat" VARCHAR(50) DEFAULT NULL, -- 'Bottle', 'Can', 'Sample', etc. [MASTER ONLY]
@@ -1147,6 +1148,7 @@ CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
 CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
 CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
 CREATE INDEX idx_cellar_archive_status ON "myCellarItems" ("archiveStatus");
+CREATE INDEX idx_cellar_variant_group ON "myCellarItems" ("variantGroupID");
 
 -- Master-Detail Pattern Indexes
 CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit", "quantityVariantID");
