@@ -4,8 +4,6 @@ from psycopg2.extras import execute_values
 
 from flask import Blueprint, g, request, jsonify
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
-from datetime import datetime
-from urllib.request import urlopen
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +13,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 logger.info(project_root)
 
-# -- ========= "venueMainTypes" =========
-# CREATE TABLE "venueMainTypes" (
-#     "id" SERIAL PRIMARY KEY,
-#     "venueMainType" VARCHAR(255) NOT NULL UNIQUE
-# );
-
-# -- ========= "venueSubTypes" =========
-# CREATE TABLE "venueSubTypes" (
-#     "id" SERIAL PRIMARY KEY,
-#     "venueSubType" VARCHAR(255) NOT NULL UNIQUE
-# );
 @blueprint.route("/", methods=['GET'])
 def getVenues():
     conn = g.db
@@ -43,6 +30,9 @@ def getVenues():
         venue_type = request.args.get('venueType', '', type=str)
         venue_main_type = request.args.get('venueMainType', type=int)
         venue_sub_type = request.args.get('venueSubType', type=int)
+        min_rating = request.args.get('minRating', type=float)
+        max_rating = request.args.get('maxRating', type=float)
+        sort_by = request.args.get('sort', type=str)
         
         # Determine if this is the first load
         is_first_load = cursor_id is None
@@ -71,7 +61,32 @@ def getVenues():
             query_params.append(venue_sub_type)
         
         where_clause = f"WHERE {' AND '.join(where_conditions)}" if where_conditions else ""
+
+        # Build dynamic HAVING clause for rating filters
+        having_conditions = []
+        if min_rating is not None:
+            having_conditions.append('COALESCE(ROUND(AVG(vr.rating), 1), 0) >= %s')
+            query_params.append(min_rating)
         
+        if max_rating is not None:
+            having_conditions.append('COALESCE(ROUND(AVG(vr.rating), 1), 0) <= %s')
+            query_params.append(max_rating)
+        
+        having_clause = f"HAVING {' AND '.join(having_conditions)}" if having_conditions else ""
+
+        # Determine order by clause
+        order_by_clause = 'ORDER BY v.id DESC' # Default
+        sort_map = {
+            'Alphabetical (A - Z)': 'ORDER BY v."venueName" ASC',
+            'Alphabetical (Z - A)': 'ORDER BY v."venueName" DESC',
+            'Date (Newest - Oldest)': 'ORDER BY v."yearOpened" DESC, v.id DESC',
+            'Date (Oldest - Newest)': 'ORDER BY v."yearOpened" ASC, v.id ASC',
+            'Ratings (Highest - Lowest)': 'ORDER BY "averageRating" DESC, v.id DESC',
+            'Ratings (Lowest - Highest)': 'ORDER BY "averageRating" ASC, v.id ASC'
+        }
+        if sort_by in sort_map:
+            order_by_clause = sort_map[sort_by]
+
         # Query with one extra item to check if there are more results
         venues_query = f"""
             SELECT 
@@ -120,7 +135,8 @@ def getVenues():
                 v."whatsappNumber",
                 vmt."venueMainType",
                 vst."venueSubType"
-            ORDER BY v.id DESC
+            {having_clause}
+            {order_by_clause}
             LIMIT %s
         """
         

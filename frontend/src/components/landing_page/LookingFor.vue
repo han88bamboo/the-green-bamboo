@@ -46,7 +46,7 @@ export default {
     return {
       categories: [
         {
-          id: 'wine', name: 'Wine', params: { browseDrinkType: 'Wine' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'wine', name: '🍷 Wine', params: { browseDrinkType: 'Wine' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Red Wine', params: { browseDrinkType: 'Wine', browseTypeCategory: 'Red Wine' } },
             { name: 'White Wine', params: { browseDrinkType: 'Wine', browseTypeCategory: 'White Wine' } },
@@ -57,7 +57,7 @@ export default {
           ]
         },
         {
-          id: 'beer', name: 'Beer', params: { browseDrinkType: 'Beer' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'beer', name: '🍺 Beer', params: { browseDrinkType: 'Beer' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'IPA (India Pale Ale)', params: { browseDrinkType: 'Beer', browseTypeCategory: 'IPA (India Pale Ale)' } },
             { name: 'Lager', params: { browseDrinkType: 'Beer', browseTypeCategory: 'Lager' } },
@@ -69,7 +69,7 @@ export default {
           ]
         },
         {
-          id: 'sake', name: 'Sake', params: { browseDrinkType: 'Sake' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'sake', name: '🍶 Sake', params: { browseDrinkType: 'Sake' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Junmai', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Junmai' } },
             { name: 'Junmai Ginjo', params: { browseDrinkType: 'Sake', browseTypeCategory: 'Junmai Ginjo' } },
@@ -80,7 +80,7 @@ export default {
           ]
         },
         {
-          id: 'whisky', name: 'Whisky', params: { browseDrinkType: 'Whisky' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'whisky', name: '🥃 Whisky', params: { browseDrinkType: 'Whisky' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Single Malt', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Malt' } },
             { name: 'Single Grain', params: { browseDrinkType: 'Whisky', browseTypeCategory: 'Single Grain' } },
@@ -92,7 +92,7 @@ export default {
           ]
         },
         {
-          id: 'rum', name: 'Rum', params: { browseDrinkType: 'Rum' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'rum', name: '🎋 Rum', params: { browseDrinkType: 'Rum' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Traditional Rum', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Molasses - Traditional Rum (Column Still)' } },
             { name: 'Pure Single Rum', params: { browseDrinkType: 'Rum', browseTypeCategory: 'Molasses - Pure Single Rum (Pot Still)' } },
@@ -102,7 +102,7 @@ export default {
           ]
         },
         {
-          id: 'tequila', name: 'Tequila', params: { browseDrinkType: 'Tequila' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'tequila', name: '🌵 Tequila', params: { browseDrinkType: 'Tequila' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Blanco', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Blanco (Unaged / White)' } },
             { name: 'Reposado', params: { browseDrinkType: 'Tequila', browseTypeCategory: 'Reposado (Aged)' } },
@@ -112,7 +112,7 @@ export default {
           ]
         },
         {
-          id: 'gin', name: 'Gin', params: { browseDrinkType: 'Gin' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'gin', name: '🍸 Gin', params: { browseDrinkType: 'Gin' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'London Dry', params: { browseDrinkType: 'Gin', browseTypeCategory: 'London Dry' } },
             { name: 'Contemporary', params: { browseDrinkType: 'Gin', browseTypeCategory: 'Contemporary' } },
@@ -123,7 +123,7 @@ export default {
           ]
         },
         {
-          id: 'baijiu', name: 'Baijiu', params: { browseDrinkType: 'Baijiu' }, active: false, menuFlipped: false, menuStyle: {},
+          id: 'baijiu', name: '🀄️ Baijiu', params: { browseDrinkType: 'Baijiu' }, active: false, menuFlipped: false, menuStyle: {},
           subcategories: [
             { name: 'Strong Aroma', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Strong Aroma (Nong Xiang)' } },
             { name: 'Light Aroma', params: { browseDrinkType: 'Baijiu', browseTypeCategory: 'Light Aroma (Qing Xiang)' } },

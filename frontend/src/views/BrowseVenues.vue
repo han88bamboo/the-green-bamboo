@@ -330,7 +330,7 @@
 
                                             <!-- Producer + Type Info -->
                                             <p class="mb-1">
-                                                <strong>Location:</strong> {{ resultListing.originLocation }}
+                                                <strong>{{ resultListing.originLocation && resultListing.originLocation.trim() !== '' ? resultListing.originLocation : 'N/A' }}</strong>
                                             </p>
                                             <p class="mb-1" v-if="resultListing.venueMainTypeName">
                                                 <strong>Type:</strong> {{ resultListing.venueMainTypeName }}
@@ -636,7 +636,17 @@ export default {
                         params.append('venueSubType', subType.id);
                     }
                 }
-                // Note: Rating and sort filters will be added here once backend is updated.
+                
+                if (this.browseFilters.minRating) {
+                    params.append('minRating', this.browseFilters.minRating);
+                }
+                if (this.browseFilters.maxRating) {
+                    params.append('maxRating', this.browseFilters.maxRating);
+                }
+
+                if (this.sortSelection.category) {
+                    params.append('sort', this.sortSelection.category);
+                }
 
                 if (isLoadMore && this.venues.nextCursor) {
                     params.append('cursor', this.venues.nextCursor);
@@ -698,6 +708,7 @@ export default {
                 minRating: '',
                 maxRating: ''
             };
+            this.sortSelection.category = '';
             this.applyFilters();
         },
 
@@ -720,32 +731,7 @@ export default {
         },
 
         sortResults() {
-            let category = this.sortSelection.category;
-            // Note: Sorting is currently client-side. This will be moved to the backend.
-            if (category === 'Alphabetical (A - Z)') {
-                this.venues.listing.sort((a, b) => a.venueName.localeCompare(b.venueName));
-            } else if (category === 'Alphabetical (Z - A)') {
-                this.venues.listing.sort((a, b) => b.venueName.localeCompare(a.venueName));
-            } else if (category === 'Date (Newest - Oldest)') {
-                this.venues.listing.sort((a, b) => new Date(b.addedDate) - new Date(a.addedDate));
-            } else if (category === 'Date (Oldest - Newest)') {
-                this.venues.listing.sort((a, b) => new Date(a.addedDate) - new Date(b.addedDate));
-            } else if (category === 'Ratings (Highest - Lowest)') {
-                this.venues.listing.sort((a, b) => {
-                    const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                    const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
-                    return bRating - aRating;
-                });
-            } else if (category === 'Ratings (Lowest - Highest)') {
-                this.venues.listing.sort((a, b) => {
-                    const aRating = a.averageRating === '-' ? 0 : parseFloat(a.averageRating);
-                    const bRating = b.averageRating === '-' ? 0 : parseFloat(b.averageRating);
-                    return aRating - bRating;
-                });
-            } else {
-                // Default: Smart Order (reload from backend)
-                this.loadVenues(false);
-            }
+            this.loadVenues(false);
         },
 
         handleIconClick(data) {

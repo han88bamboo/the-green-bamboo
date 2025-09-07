@@ -379,6 +379,13 @@
                         </div>
                     </div>
                 </div>
+
+                <button class="btn fw-semibold px-4" 
+                    @click="$router.push({ name: 'browseVenue' })"
+                    style="background-color: #3CB371; border-color: #3CB371; color: white;"    
+                >
+                    Find venue
+                </button>
             </div>
         </div>
     </section>
