@@ -5844,13 +5844,8 @@ def getCellarData(ownerType, ownerID):
                 COUNT(r."id") as reviewCount
                 
             FROM "myCellarItems" ci
-            -- Join with master record for shared properties
-            -- Join with master record for shared properties
-            LEFT JOIN "myCellarItems" master ON (
-                master."listingID" = ci."listingID" 
-                AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
-                AND master."quantityVariantID" = 1
-            )
+            -- Join with master record for shared properties using variantGroupID
+            LEFT JOIN "myCellarItems" master ON master."id" = ci."variantGroupID"
             LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             LEFT JOIN "listings" l ON ci."listingID" = l."id"
             LEFT JOIN "producers" p ON l."producerID" = p."id"
@@ -6126,12 +6121,8 @@ def getCellarDashboard(ownerType, ownerID):
             l."producerID",
             p."producerName"
         FROM "myCellarItems" ci
-        -- Join with master record for shared properties
-        LEFT JOIN "myCellarItems" master ON (
-            master."listingID" = ci."listingID" 
-            AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
-            AND master."quantityVariantID" = 1
-        )
+        -- Join with master record for shared properties using variantGroupID
+        LEFT JOIN "myCellarItems" master ON master."id" = ci."variantGroupID"
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
