@@ -1012,7 +1012,7 @@
                 <button 
                   type="button" 
                   class="btn-close" 
-                  @click="closeItemDetailsModal"
+                  data-bs-dismiss="modal"
                   aria-label="Close"
                 ></button>
               </div>
@@ -1475,7 +1475,7 @@
 
               <!-- Right side: Close and Save -->
               <div class="close-save-buttons">
-                <button type="button" class="btn btn-secondary" @click="closeItemDetailsModal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" @click="saveModalChanges" :disabled="!modalEditing.hasChanges">
                   <i class="bi bi-check-lg"></i> Save Changes
                 </button>
@@ -2046,30 +2046,6 @@ export default {
         newBottles: [],
         originalCollectionId: group.representative?.collectionId || group.collectionId,
         selectedCollectionId: group.representative?.collectionId || group.collectionId
-      };
-    },
-
-    closeItemDetailsModal() {
-      if (this.modalEditing.hasChanges) {
-        if (confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
-          this.selectedGroup = null;
-          this.resetModalState();
-        }
-      } else {
-        this.selectedGroup = null;
-        this.resetModalState();
-      }
-    },
-
-    resetModalState() {
-      this.modalEditing = {
-        hasChanges: false,
-        masterData: {},
-        bottleChanges: {},
-        archivedBottles: [],
-        newBottles: [],
-        originalCollectionId: null,
-        selectedCollectionId: null
       };
     },
 
