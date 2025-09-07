@@ -1454,13 +1454,29 @@
                                     </div>
                                   </div>  
 
+                                  <!-- pReview or vReview -->
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'">
+                                    <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
+                                    <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
+                                    <div class="d-grid">
+                                      <router-link
+                                        :to="getProfileLink((content.venueID ? content.venueID : content.producerID), (content.venueID ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
+                                        class="primary-clickable-text"
+                                      >
+                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                          Read More
+                                        </button>
+                                      </router-link>
+                                    </div>
+                                  </div>
+
                                   <!-- Update -->
                                   <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'">
                                     <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
                                     <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                     <div class="d-grid">
                                       <router-link
-                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) }"
+                                        :to="getProfileLink((content.venueId ? content.venueId : content.producerId), (content.venueId ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
                                         class="primary-clickable-text"
                                       >
                                         <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">

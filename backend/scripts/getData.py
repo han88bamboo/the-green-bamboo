@@ -3541,6 +3541,15 @@ def getProducerReviewsByProducerId(id):
             del review["upvotes"]
             del review["downvotes"]
 
+            # Get comments count for each review 
+            cursor.execute("""
+                SELECT COUNT(*) AS "commentsCount"
+                FROM "producerReviewsComments"
+                WHERE "reviewId" = %s
+            """, (review["id"],))
+            comments_count = cursor.fetchone()
+            review["commentsCount"] = comments_count["commentsCount"] if comments_count else 0
+
         return jsonify(reviews_data)
 
 # [GET] Home reviews - reviews where location IS NULL (Home tastings)

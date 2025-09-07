@@ -4,7 +4,7 @@
     tabindex="-1" 
     style="display: block; background: rgba(0,0,0,0.5);"
   >
-    <div class="modal-dialolg modal-lg">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
 
         <!-- Modal Title and x button -->
@@ -23,7 +23,7 @@
           <div v-for="comment in comments" :key="comment.id" class="mb-3">
             <CommentBox 
               :comment="comment" :userID="userID" :userType="userType" 
-              :contentId="contentId" contentType="Review" 
+              :contentId="contentId" :contentType="contentType" 
               @set-delete-comment="openDeleteModal" 
               @comment-replied="handleReply"
             />
@@ -110,9 +110,20 @@ export default {
         // Function to fetch comments for the given contentId
         async fetchComments() {
 
+            let endpointName = "";
+
+            if (this.contentType === "Review") {
+                endpointName = "getReviewComments";
+            } else if (this.contentType === "pReview") {
+                endpointName = "getProducerReviewComments";
+            } else if (this.contentType === "vReview") {
+                endpointName = "getVenueReviewComments";
+            } 
+
+            
             try {
                 const response = await this.$axios.get(
-                    `${process.env.VUE_APP_API_URL}/randomContent/getReviewComments/${this.userID}/${this.contentId}`
+                    `${process.env.VUE_APP_API_URL}/randomContent/${endpointName}/${this.userID}/${this.contentId}`
                 );
                 this.comments = response.data.comments;
                 this.lastCommentID = response.data.lastCommentId;

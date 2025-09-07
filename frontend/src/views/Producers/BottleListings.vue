@@ -1867,7 +1867,7 @@
                   <!-- Comments Modal for each review - Added by CP -->
                   <CommentsModal v-if="showModal" 
                     :userID="userID" :userType="userType"
-                    :contentId="review.id"
+                    :contentId="review.id" :contentType="'Review'"
                     @close="showModal = false" 
                   />
 
