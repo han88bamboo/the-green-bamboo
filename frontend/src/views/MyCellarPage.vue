@@ -1483,9 +1483,9 @@ export default {
         
         // Group properties (applied to all items in the drink group)
         vintage: null,
-        format: 'Bottle',
-        volumeNumber: 750,
-        volumeUnit: 'ml',
+        format: 'Bottle', // Default fallback, will be updated when drink is selected
+        volumeNumber: 700, // Default fallback, will be updated when drink is selected
+        volumeUnit: 'ml', // Default fallback, will be updated when drink is selected
         currentValueEstimation: null,
         currentValueCurrency: 'USD',
         drinkOnwardsDate: null,
@@ -1675,6 +1675,44 @@ export default {
       const hasSelectedDrink = this.addDrinkForm.selectedDrink && this.addDrinkForm.selectedDrink.id;
       const hasValidQuantity = this.addDrinkForm.quantity > 0;
       return hasSelectedDrink && hasValidQuantity;
+    },
+
+    // Conditional defaults based on drinkType
+    defaultFormat() {
+      if (!this.addDrinkForm.selectedDrink || !this.addDrinkForm.selectedDrink.drinkType) {
+        return 'Bottle'; // Fallback default
+      }
+      
+      const drinkType = this.addDrinkForm.selectedDrink.drinkType.toLowerCase();
+      
+      if (drinkType === 'beer') {
+        return 'Can';
+      }
+      // For Wine, Sake, and any other drinkType
+      return 'Bottle';
+    },
+
+    defaultVolumeNumber() {
+      if (!this.addDrinkForm.selectedDrink || !this.addDrinkForm.selectedDrink.drinkType) {
+        return 700; // Fallback default for any other drinkType
+      }
+      
+      const drinkType = this.addDrinkForm.selectedDrink.drinkType.toLowerCase();
+      
+      if (drinkType === 'beer') {
+        return 355;
+      } else if (drinkType === 'wine') {
+        return 750;
+      } else if (drinkType === 'sake') {
+        return 720;
+      }
+      // Any other drinkType
+      return 700;
+    },
+
+    defaultVolumeUnit() {
+      // All drink types use 'ml' as default
+      return 'ml';
     }
   },
   watch: {
@@ -1713,6 +1751,19 @@ export default {
         
         this.lastCanAddToCellarState = newValue;
       }
+    },
+
+    // Watch for changes to selectedDrink to apply conditional defaults
+    'addDrinkForm.selectedDrink': {
+      handler(newDrink, oldDrink) {
+        // Only apply defaults if we actually have a new drink with a drinkType
+        if (newDrink && newDrink.id && newDrink.drinkType && 
+            (!oldDrink || oldDrink.id !== newDrink.id)) {
+          console.log('TZHFrontendLog: selectedDrink changed, applying conditional defaults for drinkType:', newDrink.drinkType);
+          this.applyDrinkTypeDefaults();
+        }
+      },
+      deep: true
     }
   },
   async mounted() {
@@ -2220,8 +2271,28 @@ export default {
       this.addDrinkForm.selectedDrink = listing;
       this.addDrinkForm.searchQuery = listing.listingName;
       this.addDrinkForm.searchResults = [];
+      
+      // Apply conditional defaults based on drinkType
+      this.applyDrinkTypeDefaults();
+      
       console.log('TZHFrontendLog: Updated addDrinkForm.selectedDrink:', JSON.stringify(this.addDrinkForm.selectedDrink, null, 2));
+      console.log('TZHFrontendLog: Applied conditional defaults - format:', this.addDrinkForm.format, 'volume:', this.addDrinkForm.volumeNumber, this.addDrinkForm.volumeUnit);
       console.log('TZHFrontendLog: canAddToCellar after selection:', this.canAddToCellar);
+    },
+
+    // Apply conditional defaults based on selected drink's drinkType
+    applyDrinkTypeDefaults() {
+      // Update form defaults based on computed properties
+      this.addDrinkForm.format = this.defaultFormat;
+      this.addDrinkForm.volumeNumber = this.defaultVolumeNumber;
+      this.addDrinkForm.volumeUnit = this.defaultVolumeUnit;
+      
+      console.log('TZHFrontendLog: Applied drinkType defaults:', {
+        drinkType: this.addDrinkForm.selectedDrink?.drinkType,
+        format: this.addDrinkForm.format,
+        volumeNumber: this.addDrinkForm.volumeNumber,
+        volumeUnit: this.addDrinkForm.volumeUnit
+      });
     },
 
     // ============ Purchase Location Google Maps Methods ============
@@ -2487,9 +2558,9 @@ export default {
         
         // Group properties (applied to all items in the drink group)
         vintage: null,
-        format: 'Bottle',
-        volumeNumber: 750,
-        volumeUnit: 'ml',
+        format: 'Bottle', // Default fallback, will be updated when drink is selected
+        volumeNumber: 700, // Default fallback, will be updated when drink is selected
+        volumeUnit: 'ml', // Default fallback, will be updated when drink is selected
         currentValueEstimation: null,
         currentValueCurrency: 'USD',
         drinkOnwardsDate: null,
