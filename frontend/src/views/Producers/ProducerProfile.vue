@@ -3052,7 +3052,7 @@
                   class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
                   type="button"
                   :id="'button-addon2-' + review.id"
-                  @click="addComment(review.id, 'Review')"
+                  @click="addComment(review.id, 'pReview')"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                     class="bi bi-send" viewBox="0 0 16 16">
@@ -7197,7 +7197,7 @@ Thank you!`
           // Clear the input field for review comments
           if (response.status === 201) {
               // Add 1 to commentsCount in the review
-              const review = this.reviews.find(r => r.id === contentId);
+              const review = this.filteredTourReviews.find(r => r.id === contentId);
               if (review) {
                   review.commentsCount = (review.commentsCount || 0) + 1;
               }

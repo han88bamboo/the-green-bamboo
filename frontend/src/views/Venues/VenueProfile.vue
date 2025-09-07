@@ -2312,53 +2312,86 @@
                                         {{ review.reviewDesc }}
                                     </div>
 
-                                    <!-- Upvote/Downvote Logic -->
-                                    <div style="display: flex !important;" class="text-start mb-1">
-                                        <!-- Upvote -->
-                                        <svg v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(user_id))"
-                                            @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg"
-                                            width="20" height="20" fill="currentColor" class="bi bi-caret-up"
-                                            viewBox="0 0 16 16">
-                                            <path d="M3.204 11h9.592L8 5.519zm-.753-.659
-                                    4.796-5.48a1 1 0 0 1
-                                    1.506 0l4.796 5.48c.566.647.106
-                                    1.659-.753 1.659H3.204a1
-                                    1 0 0 1-.753-1.659" />
-                                        </svg>
-                                        <svg v-else @click="voteReview(review, 'unupvote')"
-                                            xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
-                                            <path d="m7.247 4.86-4.796
-                                    5.481c-.566.647-.106
-                                    1.659.753 1.659h9.592a1 1 0 0
-                                    0 .753-1.659l-4.796-5.48a1 1 0 0
-                                    0-1.506 0z" />
-                                        </svg>
-                                        <!-- Score -->
-                                        <span class="mx-2">
-                                            {{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}
-                                        </span>
-                                        <!-- Downvote -->
-                                        <svg v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(user_id))"
-                                            @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg"
-                                            width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3"
-                                            viewBox="0 0 16 16">
-                                            <path d="M3.204 5h9.592L8
-                                    10.481zm-.753.659
-                                    4.796 5.48a1 1 0 0 0
-                                    1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1
-                                    1 0 0 0-.753 1.659" />
-                                        </svg>
-                                        <svg v-else @click="voteReview(review, 'undownvote')"
-                                            xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                            fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
-                                            <path d="M7.247 11.14 2.451
-                                    5.658C1.885 5.013 2.345 4
-                                    3.204 4h9.592a1 1 0 0 1
-                                    .753 1.659l-4.796 5.48a1 1 0 0
-                                    1-1.506 0z" />
-                                        </svg>
+
+                                    <div class="d-flex align-items-center mb-1">
+                                        <!-- Upvote/Downvote Logic -->
+                                        <div style="display: flex !important;" class="text-start mb-1">
+                                            <!-- Upvote -->
+                                            <svg v-if="!JSON.stringify(review.userVotes.upvotes).includes(JSON.stringify(user_id))"
+                                                @click="voteReview(review, 'upvote')" xmlns="http://www.w3.org/2000/svg"
+                                                width="20" height="20" fill="currentColor" class="bi bi-caret-up"
+                                                viewBox="0 0 16 16">
+                                                <path d="M3.204 11h9.592L8 5.519zm-.753-.659
+                                        4.796-5.48a1 1 0 0 1
+                                        1.506 0l4.796 5.48c.566.647.106
+                                        1.659-.753 1.659H3.204a1
+                                        1 0 0 1-.753-1.659" />
+                                            </svg>
+                                            <svg v-else @click="voteReview(review, 'unupvote')"
+                                                xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-caret-up-fill" viewBox="0 0 16 16">
+                                                <path d="m7.247 4.86-4.796
+                                        5.481c-.566.647-.106
+                                        1.659.753 1.659h9.592a1 1 0 0
+                                        0 .753-1.659l-4.796-5.48a1 1 0 0
+                                        0-1.506 0z" />
+                                            </svg>
+                                            <!-- Score -->
+                                            <span class="mx-2">
+                                                {{ review.userVotes.upvotes.length - review.userVotes.downvotes.length }}
+                                            </span>
+                                            <!-- Downvote -->
+                                            <svg v-if="!JSON.stringify(review.userVotes.downvotes).includes(JSON.stringify(user_id))"
+                                                @click="voteReview(review, 'downvote')" xmlns="http://www.w3.org/2000/svg"
+                                                width="20" height="20" fill="currentColor" class="bi bi-caret-down me-3"
+                                                viewBox="0 0 16 16">
+                                                <path d="M3.204 5h9.592L8
+                                        10.481zm-.753.659
+                                        4.796 5.48a1 1 0 0 0
+                                        1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1
+                                        1 0 0 0-.753 1.659" />
+                                            </svg>
+                                            <svg v-else @click="voteReview(review, 'undownvote')"
+                                                xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                                                fill="currentColor" class="bi bi-caret-down-fill me-3" viewBox="0 0 16 16">
+                                                <path d="M7.247 11.14 2.451
+                                        5.658C1.885 5.013 2.345 4
+                                        3.204 4h9.592a1 1 0 0 1
+                                        .753 1.659l-4.796 5.48a1 1 0 0
+                                        1-1.506 0z" />
+                                            </svg>
+                                        </div>
+
+                                        <!-- Add Comment Button - Added By CP -->
+                                        <button @click="addCommentMode=true"
+                                            class="p-0 text-secondary me-2"
+                                            style="border: none; background: none; font-size: inherit;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                                            <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                                            <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                            </svg>
+                                            <span class="text-decoration-underline ms-2">Add Comment</span>
+                                        </button>
+
+                                        <!-- View Comments for Review Button - Added by CP -->
+                                        <button v-if="review.commentsCount > 0" @click="showCommentModal=true"
+                                            class="p-0 text-secondary me-2"
+                                            style="border: none; background: none; font-size: inherit;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                                            <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                                            <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                                            </svg>
+                                            <span class="text-decoration-underline ms-2">View Comments</span>
+                                        </button>
+
+                                        <!-- Comments Modal for each review - Added by CP -->
+                                        <CommentsModal v-if="showCommentModal" 
+                                            :userID="user_id" :userType="userType"
+                                            :contentId="review.id" :contentType="'vReview'"
+                                            @close="showCommentModal = false" 
+                                        />
                                     </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -2384,6 +2417,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <!-- Larger image modal when user clicks the photo -->
                         <div class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1"
                             aria-labelledby="venueReviewModalLabel" aria-hidden="true">
@@ -2395,6 +2429,60 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Add Comment Input - Added by CP -->
+                        <div v-if="addCommentMode" class="row w-100 py-3">
+                        <div class="input-group">
+                            <input
+                            type="text"
+                            class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                            placeholder="Write a comment..."
+                            aria-label="Write a comment..."
+                            :aria-describedby="'button-addon2-' + review.id"
+                            v-model="newReviewComment"  
+                            />
+
+                            <!-- Comment Button (Desktop) -->
+                            <button
+                            class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                            type="button"
+                            :id="'button-addon2-' + review.id"
+                            @click="addComment(review.id, 'vReview')"
+                            >
+                            Comment
+                            </button>
+
+                            <!-- Comment Button (Mobile) -->
+                            <button
+                            class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                            type="button"
+                            :id="'button-addon2-' + review.id"
+                            @click="addComment(review.id, 'vReview')"
+                            >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-send" viewBox="0 0 16 16">
+                                <path
+                                d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                                    14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                                    7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                                    0 0 1 .54.11ZM6.636 10.07l2.761 
+                                    4.338L14.13 2.576zm6.787-8.201L1.591 
+                                    6.602l4.339 2.76z"
+                                />
+                            </svg>
+                            </button>
+
+                            <!-- Cancel Button -->
+                            <button
+                            class="btn btn-outline-secondary rounded ms-2"
+                            type="button"
+                            @click="newReviewComment = '', addCommentMode = false"
+                            >
+                            Cancel
+                            </button>
+                        </div>
+
                         </div>
 
                         <hr class="mt-4 mb-2" />
@@ -3857,6 +3945,8 @@ import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
+import CommentsModal from '@/components/CommentsModal.vue';
+
 
 // Import Phosphor Icons
 import { 
@@ -3875,6 +3965,8 @@ import {
 
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
+
+import { useToast } from 'vue-toastification';
 
 export default {
     name: 'profileVenue',
@@ -3898,7 +3990,8 @@ export default {
         PhToilet,
         PhHouseSimple,
         PhUsersFour,
-        PhLaptop
+        PhLaptop,
+        CommentsModal
     },
   setup() {
     // Create reactive references for meta data
@@ -4455,6 +4548,18 @@ export default {
             // badge popup related
             earnedBadges: [],
             showBadgePopup: false,
+
+            // Comments - Added by CP
+            deleteCommentItems: {
+                commentId: null,
+                contentType: null
+            },
+            showDeleteModal: false,
+
+            showCommentModal: false,
+            addCommentMode: false,
+            newReviewComment: "", 
+    
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -7650,7 +7755,58 @@ Thank you!`
             
             // No need to analyze PDF since we're now using image arrays
             // The page count is automatically available from the pdfMenuUrls array length
-        }
+        },
+
+        // Function to add comment - Added By CP
+        async addComment(contentId, contentType) {
+            if (!this.user_id || !this.userType) {
+                // Route to login page
+                this.$router.push({ name: 'Login' });
+                return;
+            }
+
+            let comment = "";
+            comment = this.newReviewComment.trim();
+
+            if (comment == "") {
+                const toast = useToast();
+                toast.error("Comment cannot be empty.");
+                return;
+            }
+            
+
+            try {
+                const response = await this.$axios.post(
+                `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+                {
+                    userId: this.user_id,
+                    userType: this.userType,
+                    contentId: contentId,
+                    contentType: contentType,
+                    comment: comment
+                }
+                );
+
+                // Clear the input field for review comments
+                if (response.status === 201) {
+                    // Add 1 to commentsCount in the review
+                    const review = this.filteredVenueReviews.find(r => r.id === contentId);
+                    if (review) {
+                        review.commentsCount = (review.commentsCount || 0) + 1;
+                    }
+                    this.newReviewComment = "";
+                    this.addCommentMode = false;
+                    const toast = useToast();
+                    toast.success("Reply added successfully.");
+                }
+                
+
+            } catch (error) {
+                console.error("Error adding comment:", error);
+                const toast = useToast();
+                toast.error("Failed to add comment. Please try again later.");
+            }
+        },
     },
     watch: {
         // Watch for dataLoaded changes
@@ -7767,6 +7923,7 @@ Thank you!`
             });
         }
     },
+
     }
     }    
 </script>
