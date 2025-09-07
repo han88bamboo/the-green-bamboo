@@ -1486,7 +1486,7 @@
       </div>
     </div>
 
-    <!-- Add Collection Modal (Stub) -->
+    <!-- Add Collection Modal -->
     <div 
       class="modal fade" 
       id="addCollectionModal" 
@@ -1506,13 +1506,81 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="text-center py-4">
-              <i class="bi bi-collection" style="font-size: 3rem; color: #6c757d;"></i>
-              <h4 class="mt-3">Collection Management - Coming Next</h4>
-              <p class="text-muted">
-                Create and organize custom collections for your cellar items.
-              </p>
-            </div>
+            <form @submit.prevent="createNewCollection">
+              <div class="mb-3">
+                <label for="newCollectionName" class="form-label">Collection Name <span class="text-danger">*</span></label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="newCollectionName"
+                  v-model="newCollectionForm.collectionName"
+                  :class="{ 'is-invalid': newCollectionForm.errors.collectionName }"
+                  placeholder="Enter collection name..."
+                  maxlength="255"
+                  required
+                >
+                <div v-if="newCollectionForm.errors.collectionName" class="invalid-feedback">
+                  {{ newCollectionForm.errors.collectionName }}
+                </div>
+                <div class="form-text">
+                  Create a custom collection to organize your bottles (e.g., "Special Occasions", "Daily Drinkers", "Vintage Collection")
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="newCollectionIsPublic"
+                    v-model="newCollectionForm.isPublic"
+                  >
+                  <label class="form-check-label" for="newCollectionIsPublic">
+                    Make this collection public
+                  </label>
+                  <div class="form-text">
+                    Public collections can be viewed by other users (feature coming soon)
+                  </div>
+                </div>
+              </div>
+
+              <!-- <div class="mb-3">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    id="newCollectionIsDefault"
+                    v-model="newCollectionForm.isDefault"
+                  >
+                  <label class="form-check-label" for="newCollectionIsDefault">
+                    Set as default collection
+                  </label>
+                  <div class="form-text">
+                    New bottles will be added to the default collection when no specific collection is selected
+                  </div>
+                </div>
+              </div> -->
+
+              <div v-if="newCollectionForm.error" class="alert alert-danger" role="alert">
+                {{ newCollectionForm.error }}
+              </div>
+
+              <div v-if="newCollectionForm.success" class="alert alert-success" role="alert">
+                {{ newCollectionForm.success }}
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button 
+              type="button" 
+              class="btn btn-primary" 
+              @click="createNewCollection"
+              :disabled="newCollectionForm.loading || !newCollectionForm.collectionName.trim()"
+            >
+              <span v-if="newCollectionForm.loading" class="spinner-border spinner-border-sm me-2"></span>
+              {{ newCollectionForm.loading ? 'Creating...' : 'Create Collection' }}
+            </button>
           </div>
         </div>
       </div>
@@ -1572,6 +1640,19 @@ export default {
       
       // Modal states
       selectedGroup: null,
+      
+      // New Collection form
+      newCollectionForm: {
+        collectionName: '',
+        isPublic: false,
+        isDefault: false,
+        loading: false,
+        error: null,
+        success: null,
+        errors: {
+          collectionName: null
+        }
+      },
       
       // Dashboard data
       dashboardData: null,
@@ -1907,7 +1988,15 @@ export default {
     }
   },
   async mounted() {
-    await this.loadCellarData()
+    await this.loadCellarData();
+    
+    // Add event listener for modal close to reset form
+    const addCollectionModal = document.getElementById('addCollectionModal');
+    if (addCollectionModal) {
+      addCollectionModal.addEventListener('hidden.bs.modal', () => {
+        this.resetNewCollectionForm();
+      });
+    }
   },
   beforeUnmount() {
     // Cancel any pending search timeout
@@ -1922,6 +2011,12 @@ export default {
     
     if (this.addDrinkForm.drinkDebounceTimer) {
       clearTimeout(this.addDrinkForm.drinkDebounceTimer)
+    }
+
+    // Clean up modal event listeners
+    const addCollectionModal = document.getElementById('addCollectionModal');
+    if (addCollectionModal) {
+      addCollectionModal.removeEventListener('hidden.bs.modal', this.resetNewCollectionForm);
     }
   },
   methods: {
@@ -2884,9 +2979,116 @@ export default {
           this.addDrinkForm.selectedCollectionId = defaultCollection.id
         } else {
           // If no default collection found, use the first one
-          this.addDrinkForm.selectedCollectionId = this.collections[0].id
         }
       }
+    },
+
+    // Collection Management Methods
+    async createNewCollection() {
+      try {
+        // Reset form state
+        this.newCollectionForm.loading = true;
+        this.newCollectionForm.error = null;
+        this.newCollectionForm.success = null;
+        this.newCollectionForm.errors.collectionName = null;
+
+        // Validate collection name
+        const collectionName = this.newCollectionForm.collectionName.trim();
+        if (!collectionName) {
+          this.newCollectionForm.errors.collectionName = 'Collection name is required';
+          this.newCollectionForm.loading = false;
+          return;
+        }
+
+        if (collectionName.length > 255) {
+          this.newCollectionForm.errors.collectionName = 'Collection name must be 255 characters or less';
+          this.newCollectionForm.loading = false;
+          return;
+        }
+
+        // Check for duplicate names (client-side check)
+        const existingCollection = this.collections.find(c => 
+          c.collectionName.toLowerCase() === collectionName.toLowerCase()
+        );
+        if (existingCollection) {
+          this.newCollectionForm.errors.collectionName = 'A collection with this name already exists';
+          this.newCollectionForm.loading = false;
+          return;
+        }
+
+        // Prepare request data
+        const payload = {
+          ownerType: this.ownerType,
+          ownerId: parseInt(this.id),
+          collectionName: collectionName,
+          isPublic: this.newCollectionForm.isPublic,
+          isDefault: this.newCollectionForm.isDefault
+        };
+
+        console.log('Creating new collection with payload:', payload);
+
+        // Make API call
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const fullUrl = `${baseUrl}/editCellar/createCollection`;
+        const response = await axios.post(fullUrl, payload);
+
+        if (response.data.success) {
+          // Show success message
+          this.newCollectionForm.success = response.data.message;
+
+          // Add the new collection to the local collections list
+          const newCollection = response.data.data;
+          this.collections.push(newCollection);
+
+          // If this is the new default collection, update other collections
+          if (newCollection.isDefault) {
+            this.collections.forEach(collection => {
+              if (collection.id !== newCollection.id) {
+                collection.isDefault = false;
+              }
+            });
+          }
+
+          // Reset form after a short delay
+          setTimeout(() => {
+            this.resetNewCollectionForm();
+            // Close the modal
+            const closeButton = document.querySelector('#addCollectionModal .btn-close');
+            if (closeButton) {
+              closeButton.click();
+            }
+          }, 1500);
+
+          console.log('Collection created successfully:', newCollection);
+        } else {
+          this.newCollectionForm.error = response.data.message || 'Failed to create collection';
+        }
+
+      } catch (error) {
+        console.error('Error creating collection:', error);
+        
+        if (error.response && error.response.data) {
+          this.newCollectionForm.error = error.response.data.message || 'Failed to create collection';
+        } else {
+          this.newCollectionForm.error = 'Network error. Please try again.';
+        }
+      } finally {
+        this.newCollectionForm.loading = false;
+      }
+    },
+
+    resetNewCollectionForm() {
+      this.newCollectionForm = {
+        collectionName: '',
+        isPublic: false,
+        isDefault: false,
+        loading: false,
+        error: null,
+        success: null,
+        errors: {
+          collectionName: null
+        }
+      };
     },
   }
 }
