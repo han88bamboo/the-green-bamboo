@@ -5800,15 +5800,15 @@ def getCellarData(ownerType, ownerID):
                 ci."updatedDate",
                 ci."archiveStatus",
                 
-                -- Shared Properties from Master Record
-                master."drinkFormat",
-                master."volumeNumber",
-                master."volumeUnit",
-                master."drinkByDate",
-                master."drinkOnwardsDate",
-                master."currentValueEstimation",
-                master."currentValueCurrency",
-                master."suggestedFoodPairing",
+                -- Shared Properties from Master Record (or current item if it's the master)
+                COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
+                COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
+                COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
+                COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
+                COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
+                COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
+                COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
+                COALESCE(master."suggestedFoodPairing", ci."suggestedFoodPairing") as "suggestedFoodPairing",
                 
                 -- Collection Info
                 cc."collectionName",
@@ -5844,8 +5844,8 @@ def getCellarData(ownerType, ownerID):
                 COUNT(r."id") as reviewCount
                 
             FROM "myCellarItems" ci
-            -- Join with master record for shared properties using variantGroupID
-            LEFT JOIN "myCellarItems" master ON master."id" = ci."variantGroupID"
+            -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
+            LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
             LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             LEFT JOIN "listings" l ON ci."listingID" = l."id"
             LEFT JOIN "producers" p ON l."producerID" = p."id"
@@ -6105,10 +6105,10 @@ def getCellarDashboard(ownerType, ownerID):
             ci."listingID",
             ci."archiveStatus",
             
-            -- Shared Properties from Master Record
-            master."drinkFormat",
-            master."currentValueEstimation",
-            master."currentValueCurrency",
+            -- Shared Properties from Master Record (or current item if it's the master)
+            COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
+            COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
+            COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
             
             -- Collection and Listing Data
             cc."collectionName",
@@ -6121,8 +6121,8 @@ def getCellarDashboard(ownerType, ownerID):
             l."producerID",
             p."producerName"
         FROM "myCellarItems" ci
-        -- Join with master record for shared properties using variantGroupID
-        LEFT JOIN "myCellarItems" master ON master."id" = ci."variantGroupID"
+        -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
+        LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
