@@ -1372,6 +1372,7 @@ def createCollection():
         
         # Parse optional fields
         is_public = bool(data.get('isPublic', False))
+        # Default to FALSE for new collections unless explicitly requested
         is_default = bool(data.get('isDefault', False))
         
         print(f"TZHBackendLog: Optional fields - isPublic: {is_public}, isDefault: {is_default}")

@@ -1496,7 +1496,7 @@
     >
       <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header text-start">
             <h5 class="modal-title" id="addCollectionModalLabel">Add New Collection</h5>
             <button 
               type="button" 
@@ -1505,7 +1505,7 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body text-start">
             <form @submit.prevent="createNewCollection">
               <div class="mb-3">
                 <label for="newCollectionName" class="form-label">Collection Name <span class="text-danger">*</span></label>
@@ -3021,8 +3021,8 @@ export default {
           ownerType: this.ownerType,
           ownerId: parseInt(this.id),
           collectionName: collectionName,
-          isPublic: this.newCollectionForm.isPublic,
-          isDefault: this.newCollectionForm.isDefault
+          isPublic: this.newCollectionForm.isPublic
+          // Note: isDefault is not included since this functionality is disabled in UI
         };
 
         console.log('Creating new collection with payload:', payload);

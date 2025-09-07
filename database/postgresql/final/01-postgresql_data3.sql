@@ -1073,9 +1073,13 @@ CREATE TABLE "myCellarCollections" (
     "isPublic" BOOLEAN DEFAULT FALSE, -- True if publicly viewable
     "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE ("ownerID", "ownerType", "collectionName"), -- Prevent duplicate collection names per owner
-    UNIQUE ("ownerID", "ownerType", "isDefault") DEFERRABLE INITIALLY DEFERRED -- Only one default collection per owner
+    UNIQUE ("ownerID", "ownerType", "collectionName") -- Prevent duplicate collection names per owner
 );
+
+-- Create partial unique constraint: only one default collection per owner
+CREATE UNIQUE INDEX idx_cellar_collections_default_unique 
+ON "myCellarCollections" ("ownerID", "ownerType") 
+WHERE "isDefault" = TRUE;
 
 -- Create index for faster lookups
 CREATE INDEX idx_cellar_collections_owner ON "myCellarCollections" ("ownerID", "ownerType");
