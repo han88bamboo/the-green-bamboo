@@ -43,7 +43,7 @@ def get_top_comments(content_id, content_type):
 
         cursor.execute(f"""
             SELECT * FROM "{table_name}"
-            WHERE "{unique_field}" = %s
+            WHERE "{unique_field}" = %s AND "parentId" IS NULL
             ORDER BY "createdAt" DESC
             LIMIT 3
         """, (content_id,))
@@ -67,6 +67,26 @@ def get_top_comments(content_id, content_type):
                 comment['replyCount'] = reply_count['count'] if reply_count else 0
 
         return comments
+
+
+# Get total number of comments 
+def get_total_comments(content_id, content_type):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name 
+        table_name = get_table_name(content_type, "comment")
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type)
+
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM "{table_name}"
+            WHERE "{unique_field}" = %s
+        """, (content_id,))
+
+        count = cursor.fetchone()
+        return count['count'] if count else 0
 
 
 # Get number of likes on content
@@ -353,7 +373,10 @@ def getRandomListings(user_id, user_type):
                 # Get number of likes
                 listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
 
-            # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to a week ago)
+                # Get number of comments
+                listing['totalComments'] = get_total_comments(listing['id'], 'Listing')
+
+            # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to two week ago)
             # Set random limit
             limit = random.randint(3, 8)
             if len(listings_data) < num_records:
@@ -386,6 +409,9 @@ def getRandomListings(user_id, user_type):
 
                     # Get number of likes
                     review['totalLikes'] = get_likes_count(review['id'], 'Review')
+
+                    # Get total number of comments
+                    review['totalComments'] = get_total_comments(review['id'], 'Review')
 
             reviews_last_id = reviews[-1]['id'] if reviews else None
 
@@ -458,6 +484,9 @@ def getRandomListings(user_id, user_type):
                         # Get number of likes
                         update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
 
+                        # Get total number of comments
+                        update['totalComments'] = get_total_comments(update['id'], 'pUpdate')
+
                 if len(venues_updates):
                     for update in venues_updates:
                         update['contentType'] = 'vUpdate'
@@ -472,6 +501,9 @@ def getRandomListings(user_id, user_type):
 
                         # Get number of likes
                         update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
+
+                        # Get total number of comments
+                        update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
 
         if not listings_data:
             return jsonify({"error": "No listings found for selected date"}), 400
@@ -637,6 +669,9 @@ def getNext30():
                     # Get number of likes
                     listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
 
+                    # Get total number of comments
+                    listing['totalComments'] = get_total_comments(listing['id'], 'Listing')
+
 
             # Get reviews by users within the last 2 weeks after reviewsLastID
             random_records = random.randint(8, 12)
@@ -670,6 +705,9 @@ def getNext30():
 
                 # Get number of likes
                 review['totalLikes'] = get_likes_count(review['id'], 'Review')
+
+                # Get total number of comments
+                review['totalComments'] = get_total_comments(review['id'], 'Review')
 
 
             # Get producer or venue reviews after *ReviewLastID
@@ -717,6 +755,9 @@ def getNext30():
                         # Get number of likes
                         review['totalLikes'] = get_likes_count(review['id'], 'pReview')
 
+                        # Get total number of comments
+                        review['totalComments'] = get_total_comments(review['id'], 'pReview')
+
                 # Get venueName and photo
                 if venue_reviews:
                     for review in venue_reviews:
@@ -737,6 +778,9 @@ def getNext30():
 
                         # Get number of likes
                         review['totalLikes'] = get_likes_count(review['id'], 'vReview')
+
+                        # Get total number of comments
+                        review['totalComments'] = get_total_comments(review['id'], 'vReview')
 
                 # Set last IDs
                 pReviewLastID = producer_reviews[-1]['id'] if producer_reviews else None
@@ -807,6 +851,9 @@ def getNext30():
                     # Get number of likes
                     update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
 
+                    # Get total number of comments
+                    update['totalComments'] = get_total_comments(update['id'], 'pUpdate')
+
             if venues_updates:
                 vUpdateLastID = venues_updates[-1]['id']
 
@@ -823,6 +870,9 @@ def getNext30():
 
                     # Get number of likes
                     update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
+
+                    # Get total number of comments
+                    update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
 
         if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) == 0:
             return jsonify([])
@@ -841,6 +891,8 @@ def getNext30():
         # Shuffle data 
         content = listings_data + recent_reviews + producers_updates + venues_updates + producer_reviews + venue_reviews
         random.shuffle(content)
+
+        print(f"Total content fetched: {len(content)}")
 
         return jsonify({
             "content": content,

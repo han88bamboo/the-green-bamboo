@@ -1829,6 +1829,7 @@
                     Detailed Review >
                   </a>
 
+                  <!-- Share Button -->
                   <button @click="shareReview(review)"
                     class="btn btn-link p-0 text-decoration-underline text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
@@ -1839,6 +1840,35 @@
                     </svg>
                     Share
                   </button>
+                  
+                  <!-- View Comments for Review Button - Added by CP -->
+                  <button v-if="review.commentsCount > 0" @click="showModal=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">View Comments</span>
+                  </button>
+
+                  <!-- Else show add comment button -->
+                  <button v-else @click="addCommentMode=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">Add Comment</span>
+                  </button>
+
+                  <!-- Comments Modal for each review added by CP -->
+                  <CommentsModal v-if="showModal" 
+                    :userID="userID" :userType="userType"
+                    :contentId="review.id"
+                    @close="showModal = false" 
+                  />
 
                   <div class="dropdown text-end">
                     <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
@@ -2270,6 +2300,63 @@ tag, index
                 </div>
               </div>
             </div>
+
+
+            <!-- Add Comment Input - Added by CP -->
+            <div v-if="addCommentMode" class="row w-100 py-3">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                  placeholder="Write a comment..."
+                  aria-label="Write a comment..."
+                  :aria-describedby="'button-addon2-' + review.id"
+                  v-model="newReviewComment"  
+                />
+
+                <!-- Comment Button (Desktop) -->
+                <button
+                  class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'Review')"
+                >
+                  Comment
+                </button>
+
+                <!-- Comment Button (Mobile) -->
+                <button
+                  class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'Review')"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-send" viewBox="0 0 16 16">
+                    <path
+                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                        14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                        7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                        0 0 1 .54.11ZM6.636 10.07l2.761 
+                        4.338L14.13 2.576zm6.787-8.201L1.591 
+                        6.602l4.339 2.76z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Cancel Button -->
+                <button
+                  class="btn btn-outline-secondary rounded ms-2"
+                  type="button"
+                  @click="newReviewComment = '', addCommentMode = false"
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </div>
+
+            
             <hr class="mt-4 mb-2" />
           </div>
 
@@ -2550,6 +2637,7 @@ import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
 import BadgePopup from '@/components/BadgePopup.vue';
 import CommentBox from '@/components/CommentBox.vue';
+import CommentsModal from '@/components/CommentsModal.vue';
 import { useToast } from "vue-toastification";
 
 // load in control 
@@ -2564,7 +2652,8 @@ export default {
     LoadingWithFunFact,
     VintageList,
     BadgePopup,
-    CommentBox
+    CommentBox,
+    CommentsModal
   },
   setup() {
     // Create reactive references for meta data
@@ -3040,6 +3129,10 @@ export default {
           commentId: null,
           contentType: null
       },
+
+      showModal: false,
+      addCommentMode: false,
+      newReviewComment: "", 
     };
   },
   mounted() {
@@ -5537,9 +5630,15 @@ export default {
             return;
         }
 
-        // Use the correct contentId key
-        const commentText = this.newComment;
-        if (!commentText || commentText.trim() === "") {
+        // Use the correct comment 
+        let comment = "";
+        if (this.newComment.trim() == "") {
+          comment = this.newReviewComment.trim();
+        } else {
+          comment = this.newComment.trim();
+        }
+
+        if (comment == "") {
             const toast = useToast();
             toast.error("Comment cannot be empty.");
             return;
@@ -5553,17 +5652,30 @@ export default {
                 userType: this.userType,
                 contentId: contentId,
                 contentType: contentType,
-                comment: commentText.trim()
+                comment: comment
             }
             );
 
-            // Clear the input field for this contentId
-            if (response.status === 201) {
+            // Clear the input field for listing comments
+            if (response.status === 201 && contentType == 'Listing') {
                 // Add the new comment to the top of the comments array
                 this.comments.unshift(response.data.comment);
                 this.newComment = "";
                 const toast = useToast();
                 toast.success("Comment added successfully.");
+            }
+
+            // Clear the input field for review comments
+            if (response.status === 201 && contentType == 'Review') {
+                // Add 1 to commentsCount in the review
+                const review = this.reviews.find(r => r.id === contentId);
+                if (review) {
+                    review.commentsCount = (review.commentsCount || 0) + 1;
+                }
+                this.newReviewComment = "";
+                this.addCommentMode = false;
+                const toast = useToast();
+                toast.success("Reply added successfully.");
             }
             
 

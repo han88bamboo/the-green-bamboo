@@ -1655,6 +1655,16 @@
                                 </div>
                               </div>
 
+                              <!-- View More Comments button -->
+                              <div v-if="content.totalComments > 3" class="row w-100 mt-2 mb-2 text-center">
+                                <router-link 
+                                  :to="getContentLink(content)" 
+                                  style="cursor:pointer; color:blue; text-decoration: none;"
+                                >
+                                  View More Comments
+                                </router-link>
+                              </div>
+
                             </div>
                           </div>
                         </div>
@@ -3335,6 +3345,21 @@ methods: {
           return `/profile/producer/${userId}/${this.slugify(name)}`;
         case 'venue':
           return `/profile/venue/${userId}/${this.slugify(name)}`;
+        default:
+          return null;
+      }
+    },
+
+    // Function to get content link based on contentType
+    getContentLink(content) {
+      switch (content.contentType) {
+        case 'Listing':
+        case 'Review':
+          return `/listing/view/${content.id}/${this.slugify(content.listingName)}`;
+        case 'pReview':
+          return `/profile/producer/${content.producerId}/${this.slugify(content.producerName)}`;
+        case 'vReview':
+          return `/profile/venue/${content.venueId}/${this.slugify(content.venueName)}`;
         default:
           return null;
       }

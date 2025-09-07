@@ -279,7 +279,8 @@ export default {
 
         // Function to post a reply to a comment
         async postReply() {
-
+            console.log("Posting reply to comment ID:", this.comment.id);
+            console.log("Reply content:", this.replyContent);
             // Check if user is logged in
             if (!this.userID || !this.userType) {
                 // Redirect to login page
