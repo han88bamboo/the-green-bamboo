@@ -204,9 +204,9 @@
                         class="card-img-top"
                         @error="onImageError"
                       >
-                      <!-- Bottle Count Badge -->
-                      <div class="quantity-badge">
-                        {{ group.bottleCount }} bottle{{ group.bottleCount !== 1 ? 's' : '' }}
+                      <!-- Combined Quantity and Volume Badge -->
+                      <div class="quantity-volume-badge">
+                        {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
                       </div>
                     </div>
 
@@ -2004,6 +2004,31 @@ export default {
       }
       return statusClasses[status] || 'bg-secondary'
     },
+
+    getContainerType(format, count) {
+      if (!format) {
+        // Default to bottle if no format is specified
+        return count === 1 ? 'bottle' : 'bottles'
+      }
+
+      const formatLower = format.toLowerCase()
+      
+      if (formatLower === 'can') {
+        return count === 1 ? 'can' : 'cans'
+      } else if (formatLower === 'sample') {
+        return count === 1 ? 'sample bottle' : 'sample bottles'
+      } else {
+        // Default to bottle for 'bottle' format or any other format
+        return count === 1 ? 'bottle' : 'bottles'
+      }
+    },
+
+    getVolumeText(representative) {
+      if (representative.volumeNumber && representative.volumeUnit) {
+        return `/${representative.volumeNumber}${representative.volumeUnit}`
+      }
+      return ''
+    },
     
     onImageError(event) {
       event.target.src = 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'
@@ -2647,16 +2672,17 @@ export default {
   transform: scale(1.05);
 }
 
-.quantity-badge {
+.quantity-volume-badge {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(13, 202, 240, 0.9);
   color: white;
   padding: 0.25rem 0.5rem;
   border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 600;
+  backdrop-filter: blur(4px);
 }
 
 .card-body {
