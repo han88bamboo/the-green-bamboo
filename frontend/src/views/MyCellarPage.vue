@@ -774,7 +774,7 @@
                             type="text" 
                             class="form-control"
                             v-model="addDrinkForm.subLocation"
-                            placeholder="e.g., Shelf 2, Position A3"
+                            placeholder="e.g., Minibar, Kitchen cabinet"
                           />
                         </div>
                       </div>
