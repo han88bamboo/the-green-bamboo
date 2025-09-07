@@ -1119,7 +1119,7 @@
                   <input 
                     type="number" 
                     class="form-control" 
-                    :value="selectedGroup.representative.variant" 
+                    :value="getMasterFieldValue('variant')" 
                     @input="onMasterFieldChange('variant', $event.target.value)"
                     min="1900" 
                     max="2030" 
@@ -1130,7 +1130,7 @@
                   <label class="form-label">Format</label>
                   <select 
                     class="form-select" 
-                    :value="selectedGroup.representative.drinkFormat"
+                    :value="getMasterFieldValue('drinkFormat')"
                     @change="onMasterFieldChange('drinkFormat', $event.target.value)"
                   >
                     <option value="Bottle">Bottle</option>
@@ -1144,14 +1144,14 @@
                     <input 
                       type="number" 
                       class="form-control" 
-                      :value="selectedGroup.representative.volumeNumber" 
+                      :value="getMasterFieldValue('volumeNumber')" 
                       @input="onMasterFieldChange('volumeNumber', $event.target.value)"
                       step="0.1" 
                       min="0"
                     >
                     <select 
                       class="form-select volume-unit-select"
-                      :value="selectedGroup.representative.volumeUnit"
+                      :value="getMasterFieldValue('volumeUnit')"
                       @change="onMasterFieldChange('volumeUnit', $event.target.value)"
                     >
                       <option value="ml" selected>ml</option>
@@ -1165,7 +1165,7 @@
                   <div class="input-group">
                     <select 
                       class="form-select currency-select" 
-                      :value="selectedGroup.representative.currentValueCurrency"
+                      :value="getMasterFieldValue('currentValueCurrency')"
                       @change="onMasterFieldChange('currentValueCurrency', $event.target.value)"
                     >
                       <option value="USD" selected>USD</option>
@@ -1178,7 +1178,7 @@
                     <input 
                       type="number" 
                       class="form-control" 
-                      :value="selectedGroup.representative.currentValueEstimation"
+                      :value="getMasterFieldValue('currentValueEstimation')"
                       @input="onMasterFieldChange('currentValueEstimation', $event.target.value)"
                       step="0.01" 
                       min="0"
@@ -1195,7 +1195,7 @@
                     <input 
                       type="date" 
                       class="form-control" 
-                      :value="selectedGroup.representative.drinkOnwardsDate"
+                      :value="getMasterFieldValue('drinkOnwardsDate')"
                       @change="onMasterFieldChange('drinkOnwardsDate', $event.target.value)"
                       ref="modalDrinkOnwardsDateInput"
                     >
@@ -1215,7 +1215,7 @@
                     <input 
                       type="date" 
                       class="form-control" 
-                      :value="selectedGroup.representative.drinkByDate"
+                      :value="getMasterFieldValue('drinkByDate')"
                       @change="onMasterFieldChange('drinkByDate', $event.target.value)"
                       ref="modalDrinkByDateInput"
                     >
@@ -1235,7 +1235,7 @@
                     <input 
                       type="text"
                       class="form-control"
-                      :value="selectedGroup.representative.suggestedFoodPairing"
+                      :value="getMasterFieldValue('suggestedFoodPairing')"
                       @input="onMasterFieldChange('suggestedFoodPairing', $event.target.value)"
                       placeholder="Enter food pairing suggestion"
                     >
@@ -2072,23 +2072,58 @@ export default {
 
     // Get current value for bottle field (with change tracking)
     getBottleFieldValue(cellarItemId, field) {
+      let value;
       if (this.modalEditing.bottleChanges[cellarItemId] && 
           Object.prototype.hasOwnProperty.call(this.modalEditing.bottleChanges[cellarItemId], field)) {
-        return this.modalEditing.bottleChanges[cellarItemId][field];
+        value = this.modalEditing.bottleChanges[cellarItemId][field];
+      } else {
+        const bottle = this.selectedGroup.bottles.find(b => b.cellarItemId === cellarItemId);
+        value = bottle ? bottle[field] : '';
       }
       
-      const bottle = this.selectedGroup.bottles.find(b => b.cellarItemId === cellarItemId);
-      return bottle ? bottle[field] : '';
+      // Format dates for HTML date inputs (YYYY-MM-DD format)
+      if ((field.includes('Date') || field === 'purchaseDate' || field === 'deliveryDate') && value) {
+        return this.formatDateForInput(value);
+      }
+      
+      return value;
     },
 
     // Get current value for master field (with change tracking)
     getMasterFieldValue(field) {
+      let value;
       if (Object.prototype.hasOwnProperty.call(this.modalEditing.masterData, field)) {
-        return this.modalEditing.masterData[field];
+        value = this.modalEditing.masterData[field];
+      } else {
+        const masterBottle = this.selectedGroup.bottles.find(b => b.quantityVariantID === 1);
+        value = masterBottle ? masterBottle[field] : '';
       }
       
-      const masterBottle = this.selectedGroup.bottles.find(b => b.quantityVariantID === 1);
-      return masterBottle ? masterBottle[field] : '';
+      // Format dates for HTML date inputs (YYYY-MM-DD format)
+      if ((field.includes('Date') || field === 'drinkOnwardsDate' || field === 'drinkByDate') && value) {
+        return this.formatDateForInput(value);
+      }
+      
+      return value;
+    },
+
+    // Format date for HTML date input (YYYY-MM-DD)
+    formatDateForInput(dateValue) {
+      if (!dateValue) return '';
+      
+      try {
+        const date = new Date(dateValue);
+        if (isNaN(date.getTime())) return '';
+        
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}`;
+      } catch (error) {
+        console.warn('Error formatting date for input:', dateValue, error);
+        return '';
+      }
     },
 
     // Check if bottle is new
@@ -2269,17 +2304,6 @@ export default {
         case 3: return 'rd'
         default: return 'th'
       }
-    },
-    
-    formatDateForInput(dateString) {
-      if (!dateString) return ''
-      const date = new Date(dateString)
-      if (isNaN(date.getTime())) return ''
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
-      })
     },
     
     getStatusBadgeClass(status) {
