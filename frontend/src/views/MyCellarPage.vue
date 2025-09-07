@@ -1769,6 +1769,8 @@ export default {
           console.log('typeCategory field:', this.allItems[0].typeCategory);
           console.log('drinkType field:', this.allItems[0].drinkType);
           console.log('variantGroupID field:', this.allItems[0].variantGroupID);
+          console.log('volumeNumber field:', this.allItems[0].volumeNumber, 'type:', typeof this.allItems[0].volumeNumber);
+          console.log('volumeUnit field:', this.allItems[0].volumeUnit);
         }
         
       } catch (error) {
@@ -2025,9 +2027,29 @@ export default {
 
     getVolumeText(representative) {
       if (representative.volumeNumber && representative.volumeUnit) {
-        return `/${representative.volumeNumber}${representative.volumeUnit}`
+        // Debug: log the original value and type
+        console.log('Volume debugging - Original volumeNumber:', representative.volumeNumber, 'type:', typeof representative.volumeNumber)
+        
+        // Format volume number to remove unnecessary decimal places
+        const formattedVolume = this.formatVolumeNumber(representative.volumeNumber)
+        console.log('Volume debugging - Formatted volumeNumber:', formattedVolume)
+        
+        return `/${formattedVolume}${representative.volumeUnit}`
       }
       return ''
+    },
+
+    formatVolumeNumber(volumeNumber) {
+      // Convert to number if it's a string
+      const num = parseFloat(volumeNumber)
+      
+      // If it's a whole number, return as integer
+      if (num % 1 === 0) {
+        return num.toString()
+      }
+      
+      // Otherwise, return with minimal decimal places
+      return num.toString()
     },
     
     onImageError(event) {
