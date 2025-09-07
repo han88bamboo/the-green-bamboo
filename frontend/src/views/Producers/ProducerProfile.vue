@@ -4676,7 +4676,6 @@ export default {
         console.log("DEBUG: Producer reviews data:", response.data);
         this.filteredTourReviews = response.data || [];
 
-        console.log("filteredTourReviews:", this.filteredTourReviews);
         this.detailedReview = this.filteredTourReviews[0] || null;
       } catch (error) {
         console.error("ERROR FETCHING REVIEWS: Failed to load producer reviews");

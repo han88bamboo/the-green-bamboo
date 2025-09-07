@@ -3273,7 +3273,6 @@ methods: {
           this.moreContent = false;
         } else {
           this.contents.push(...response.data.content);
-          console.log(response.data.content);
 
           // Update last IDs for pagination
           this.datedListingLastID = response.data.datedListingLastID;
@@ -3626,7 +3625,6 @@ methods: {
           const currentUrl = window.location.origin;
 
           await navigator.clipboard.writeText(currentUrl + endpoint);
-          console.log("Link copied to clipboard:", currentUrl + endpoint);
         }
 
         // Show success modal
