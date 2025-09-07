@@ -2265,10 +2265,19 @@ export default {
         console.log('SaveModalChanges response:', response);
         
         if (response.data.success) {
-          // Reload cellar data to reflect changes
-          await this.loadCellarData();
+          // Simulate clicking the close button to ensure proper cleanup
+          const closeButton = document.querySelector('#itemDetailsModal .btn-close');
+          if (closeButton) {
+            closeButton.click();
+          }
+          
+          // Reset state and reload data
           this.selectedGroup = null;
           this.resetModalState();
+          
+          // Reload cellar data to reflect changes
+          await this.loadCellarData();
+          
           // Show success message
           alert('Changes saved successfully!');
         } else {
