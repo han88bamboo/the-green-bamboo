@@ -1533,7 +1533,7 @@
                                   </span>
 
                                   <!-- Share Modal -->
-                                  <div v-show="openShareModal" class="modal fade" id="shareReviewModal" tabindex="-1" style="display: block;"  aria-labelledby="shareReviewModalLabel"
+                                  <div v-if="openShareModal" class="modal" id="shareReviewModal" tabindex="-1" style="display: block;"  aria-labelledby="shareReviewModalLabel"
                                     aria-hidden="true">
                                     <div class="modal-dialog">
                                       <!-- SHARE SUCCESS -->
