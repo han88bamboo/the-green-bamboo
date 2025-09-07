@@ -680,8 +680,14 @@
                               type="date" 
                               class="form-control"
                               v-model="addDrinkForm.drinkOnwardsDate"
+                              ref="drinkOnwardsDateInput"
                             />
-                            <span class="input-group-text">
+                            <span 
+                              class="input-group-text date-picker-trigger"
+                              @click="$refs.drinkOnwardsDateInput.showPicker()"
+                              role="button"
+                              title="Open calendar"
+                            >
                               <i class="bi bi-calendar3"></i>
                             </span>
                           </div>
@@ -693,8 +699,14 @@
                               type="date" 
                               class="form-control"
                               v-model="addDrinkForm.drinkByDate"
+                              ref="drinkByDateInput"
                             />
-                            <span class="input-group-text">
+                            <span 
+                              class="input-group-text date-picker-trigger"
+                              @click="$refs.drinkByDateInput.showPicker()"
+                              role="button"
+                              title="Open calendar"
+                            >
                               <i class="bi bi-calendar3"></i>
                             </span>
                           </div>
@@ -829,8 +841,14 @@
                               type="date" 
                               class="form-control"
                               v-model="addDrinkForm.purchaseDate"
+                              ref="purchaseDateInput"
                             />
-                            <span class="input-group-text">
+                            <span 
+                              class="input-group-text date-picker-trigger"
+                              @click="$refs.purchaseDateInput.showPicker()"
+                              role="button"
+                              title="Open calendar"
+                            >
                               <i class="bi bi-calendar3"></i>
                             </span>
                           </div>
@@ -842,8 +860,14 @@
                               type="date" 
                               class="form-control"
                               v-model="addDrinkForm.deliveryDate"
+                              ref="deliveryDateInput"
                             />
-                            <span class="input-group-text">
+                            <span 
+                              class="input-group-text date-picker-trigger"
+                              @click="$refs.deliveryDateInput.showPicker()"
+                              role="button"
+                              title="Open calendar"
+                            >
                               <i class="bi bi-calendar3"></i>
                             </span>
                           </div>
@@ -3000,6 +3024,35 @@ export default {
 .add-drink-to-cellar .form-group {
   position: relative;
   text-align: left !important;
+}
+
+/* Date Picker Trigger Styling */
+.date-picker-trigger {
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+}
+
+.date-picker-trigger:hover {
+  background-color: #e7f3ff !important;
+  border-color: #0d6efd !important;
+  color: #0d6efd !important;
+}
+
+.date-picker-trigger:active {
+  background-color: #cce7ff !important;
+  border-color: #0a58ca !important;
+  color: #0a58ca !important;
+  transform: scale(0.98);
+}
+
+.date-picker-trigger i {
+  font-size: 1.1rem;
+  transition: transform 0.15s ease-in-out;
+}
+
+.date-picker-trigger:hover i {
+  transform: scale(1.1);
 }
 
 /* Drink Preview Section */
