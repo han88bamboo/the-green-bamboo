@@ -1714,18 +1714,8 @@ export default {
     console.log('TZHFrontendLog: Google Places available:', typeof window.google?.maps?.places !== 'undefined');
     
     await this.loadCellarData()
-    
-    // Setup Google Maps observer for autocomplete functionality
-    this.$nextTick(() => {
-      this.setupGoogleMapsObserver();
-    });
   },
   beforeUnmount() {
-    // Clean up Google Maps observer
-    if (this._googleMapsObserver) {
-      this._googleMapsObserver.disconnect();
-    }
-    
     // Cancel any pending search timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout)
@@ -2263,59 +2253,6 @@ export default {
       // For now, return null since venue ID is optional
       console.log('TZHFrontendLog: checkVenueIfExists called with place:', _place?.name || 'unknown');
       return null;
-    },
-
-    // Setup observer to watch for Google Maps autocomplete container
-    setupGoogleMapsObserver() {
-      // Create a mutation observer to watch for the PAC container
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          mutation.addedNodes.forEach((node) => {
-            if (node.nodeType === 1 && node.classList && node.classList.contains('pac-container')) {
-              // Google Maps autocomplete container was added, apply our positioning
-              console.log('TZHFrontendLog: Google Maps PAC container detected, adjusting position');
-              this.adjustGoogleMapsPosition();
-            }
-          });
-        });
-      });
-
-      // Start observing the document body for new elements
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-
-      // Store the observer so we can disconnect it later
-      this._googleMapsObserver = observer;
-      
-      console.log('TZHFrontendLog: Google Maps observer setup complete');
-    },
-
-    // Method to adjust Google Maps autocomplete position
-    adjustGoogleMapsPosition() {
-      // Wait a bit for the DOM to update and Google Maps to create its container
-      setTimeout(() => {
-        const pacContainer = document.querySelector('.pac-container');
-        if (pacContainer) {
-          console.log('TZHFrontendLog: Adjusting Google Maps position');
-
-          // Ensure the autocomplete dropdown appears correctly
-          pacContainer.style.position = 'absolute';
-          pacContainer.style.zIndex = '1051'; // Above Bootstrap modals
-          
-          // Get the input field position to calculate proper offset
-          const inputField = this.$refs.purchaseLocationInput?.$el || document.querySelector('[placeholder*="Wine shop"]');
-          if (inputField) {
-            const inputRect = inputField.getBoundingClientRect();
-            pacContainer.style.top = (inputRect.bottom + window.scrollY) + 'px';
-            pacContainer.style.left = inputRect.left + 'px';
-            pacContainer.style.width = inputRect.width + 'px';
-          }
-        } else {
-          console.log('TZHFrontendLog: PAC container not found');
-        }
-      }, 100);
     },
 
     // ============ End Purchase Location Methods ============
