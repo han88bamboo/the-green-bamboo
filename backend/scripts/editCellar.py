@@ -758,23 +758,34 @@ def editCellar():
         
         # 1. Handle Collection Changes
         collection_change = changes.get('collectionChange', {})
+        print(f"TZHBackendLog: Collection change data: {collection_change}")
+        
         if collection_change and collection_change.get('from') != collection_change.get('to'):
             new_collection_id = collection_change.get('to')
+            print(f"TZHBackendLog: Collection change detected - from: {collection_change.get('from')} to: {new_collection_id}")
+            
             if new_collection_id:
-                print(f"TZHBackendLog: Changing collection to: {new_collection_id}")
+                # Convert to integer for database comparison
+                try:
+                    new_collection_id = int(new_collection_id)
+                    print(f"TZHBackendLog: Changing collection to: {new_collection_id}")
+                except (ValueError, TypeError):
+                    error_msg = f"Invalid collection ID: {new_collection_id}"
+                    print(f"TZHBackendLog: {error_msg}")
+                    return jsonify({
+                        "code": 400,
+                        "message": error_msg
+                    }), 400
                 
                 # Verify new collection exists and belongs to same owner
                 cur.execute("""
-                    SELECT cc."id", cc."ownerID", cc."ownerType",
-                           current_cc."ownerID" as current_owner_id, current_cc."ownerType" as current_owner_type
+                    SELECT cc."ownerID", cc."ownerType"
                     FROM "myCellarCollections" cc
-                    CROSS JOIN "myCellarCollections" current_cc
-                    INNER JOIN "myCellarItems" ci ON current_cc."id" = ci."collectionID"
-                    WHERE cc."id" = %s AND ci."id" = %s
-                """, (new_collection_id, master_record['id']))
+                    WHERE cc."id" = %s
+                """, (new_collection_id,))
                 
-                collection_check = cur.fetchone()
-                if not collection_check:
+                new_collection = cur.fetchone()
+                if not new_collection:
                     error_msg = f"Target collection {new_collection_id} not found"
                     print(f"TZHBackendLog: {error_msg}")
                     return jsonify({
@@ -782,9 +793,26 @@ def editCellar():
                         "message": error_msg
                     }), 404
                 
+                # Get current collection owner info
+                cur.execute("""
+                    SELECT cc."ownerID", cc."ownerType"
+                    FROM "myCellarCollections" cc
+                    INNER JOIN "myCellarItems" ci ON cc."id" = ci."collectionID"
+                    WHERE ci."id" = %s
+                """, (master_record['id'],))
+                
+                current_collection = cur.fetchone()
+                if not current_collection:
+                    error_msg = f"Current collection not found for master record"
+                    print(f"TZHBackendLog: {error_msg}")
+                    return jsonify({
+                        "code": 404,
+                        "message": error_msg
+                    }), 404
+                
                 # Ensure new collection belongs to same owner
-                if (collection_check['ownerID'] != collection_check['current_owner_id'] or 
-                    collection_check['ownerType'] != collection_check['current_owner_type']):
+                if (new_collection['ownerID'] != current_collection['ownerID'] or 
+                    new_collection['ownerType'] != current_collection['ownerType']):
                     error_msg = f"Cannot move items to collection owned by different user"
                     print(f"TZHBackendLog: {error_msg}")
                     return jsonify({
@@ -802,6 +830,8 @@ def editCellar():
                 affected_rows = cur.rowcount
                 print(f"TZHBackendLog: Updated collection for {affected_rows} items")
                 changes_made["collection_changed"] = True
+        else:
+            print(f"TZHBackendLog: No collection change needed - from: {collection_change.get('from')} to: {collection_change.get('to')}")
         
         # 2. Handle Master Data Updates (shared properties)
         master_data = changes.get('masterData', {})
@@ -1147,17 +1177,22 @@ def editCellar():
         
         print(f"TZHBackendLog: Changes summary: {changes_made}")
         print("TZHBackendLog: editCellar completed successfully")
-        print("TZHBackendLog: ===========================================")
         
-        return jsonify({
+        # Prepare successful response
+        success_response = {
             "code": 200,
             "success": True,
             "message": "Cellar items updated successfully",
             "data": {
-                "variantGroupID": variant_group_id,
+                "variantGroupID": int(variant_group_id) if variant_group_id else None,
                 "changesSummary": changes_made
             }
-        })
+        }
+        
+        print(f"TZHBackendLog: About to return success response: {success_response}")
+        print("TZHBackendLog: ===========================================")
+        
+        return jsonify(success_response)
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error in editCellar: {str(e)}")

@@ -2249,6 +2249,11 @@ export default {
         const fullUrl = `${baseUrl}/editCellar/editCellar`;
         const response = await axios.post(fullUrl, payload);
         
+        console.log('SaveModalChanges response:', response);
+        console.log('Response data:', response.data);
+        console.log('Response data success:', response.data.success);
+        console.log('Response data success type:', typeof response.data.success);
+        
         if (response.data.success) {
           // Reload cellar data to reflect changes
           await this.loadCellarData();
@@ -2257,6 +2262,7 @@ export default {
           // Show success message
           alert('Changes saved successfully!');
         } else {
+          console.log('Success check failed - response.data:', response.data);
           alert('Error saving changes: ' + (response.data.message || 'Unknown error'));
         }
       } catch (error) {
