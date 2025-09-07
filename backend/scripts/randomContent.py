@@ -502,6 +502,7 @@ def getRandomListings(user_id, user_type):
         print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+
 # -----------------------------------------------------------------------------------------
 # [POST] Get next 30 random content (will include producerReviews as well as venueReviews here)
 @blueprint.route("/getNext30", methods=['POST'])

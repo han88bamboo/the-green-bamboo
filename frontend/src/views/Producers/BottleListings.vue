@@ -3028,7 +3028,7 @@ export default {
 
       showImageModal: false,
       enlargedImageSrc: '',
-      enlargedImageAlt: ''
+      enlargedImageAlt: '',
 
       // Comments - Added by CP
       comments: [],
@@ -5492,7 +5492,7 @@ export default {
       
       // Restore body scrolling
       document.body.style.overflow = '';
-    }
+    },
 
     // Retrieve comments for the listing (initial load)
     async loadComments() {
@@ -5507,6 +5507,25 @@ export default {
         
       } catch (error) {
         console.error("Error loading comments:", error);
+      }
+    },
+
+    // Function to load more comments (pagination)
+    async loadMoreComments() {
+      if (!this.hasMoreComments) return;
+
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/randomContent/getMoreListingComments/${this.listing_id}/${this.lastCommentID}`
+        );
+
+        // Append new comments to the existing array
+        this.comments = this.comments.concat(response.data.comments);
+        this.lastCommentID = response.data.lastCommentId;
+        this.hasMoreComments = response.data.comments.length == 30; // 30 is from the backend limit hardcode
+
+      } catch (error) {
+        console.error("Error loading more comments:", error);
       }
     },
 
