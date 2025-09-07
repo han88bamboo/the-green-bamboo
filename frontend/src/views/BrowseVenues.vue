@@ -315,7 +315,7 @@
                             </div>
 
                             <!-- DESKTOP VIEW-->
-                            <div class="row mobile-view-hide align-items-center">
+                            <div class="row mobile-view-hide align-items-start">
                                 <!-- Image on the left -->
                                 <div class="col-auto image-container mobile-px-0">
                                     <ImgLoader :Photo="resultListing.photo || ''" :default-photo="defaultProfilePhoto"
@@ -379,6 +379,11 @@
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
+                    </div>
+
+                    <!-- End of Results Message -->
+                    <div class="text-center text-muted py-3" v-if="!venues.hasNextPage && !venues.loading && venues.listing.length > 0">
+                        <p class="mb-0">You've reached the end of the list.</p>
                     </div>
                 </div>
 
