@@ -96,7 +96,18 @@
                     </select>
                   </div>
 
-                  <!-- Size Filter -->
+                  <!-- Drink Type Filter -->
+                  <div class="col-6 col-md-2">
+                    <select class="form-select" v-model="filters.drinkType">
+                      <option value="">Any Type</option>
+                      <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
+                        {{ drinkType }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Size Filter (Commented Out) -->
+                  <!-- 
                   <div class="col-6 col-md-2">
                     <select class="form-select" v-model="filters.size">
                       <option value="">Any Size</option>
@@ -106,6 +117,7 @@
                       <option value="1500">1.5L</option>
                     </select>
                   </div>
+                  -->
 
                   <!-- Status Filter -->
                   <div class="col-6 col-md-2">
@@ -127,7 +139,11 @@
                         id="drinkNowFilter"
                         v-model="filters.drinkNow"
                       >
-                      <label class="form-check-label" for="drinkNowFilter">
+                      <label 
+                        class="form-check-label" 
+                        for="drinkNowFilter"
+                        title="Show only bottles drinkable now (no drinking window specified, or current date is within the drinking window)"
+                      >
                         Only drink-now
                       </label>
                     </div>
@@ -1493,7 +1509,7 @@ export default {
       searchQuery: '',
       filters: {
         vintage: '',
-        size: '',
+        drinkType: '',
         status: '',
         drinkNow: false
       },
@@ -1643,10 +1659,15 @@ export default {
         groups = groups.filter(group => group.representative.variant == this.filters.vintage)
       }
       
-      // Size filter
-      if (this.filters.size) {
-        groups = groups.filter(group => group.representative.volumeNumber == this.filters.size)
+      // Drink type filter
+      if (this.filters.drinkType) {
+        groups = groups.filter(group => group.representative.drinkType === this.filters.drinkType)
       }
+      
+      // Size filter (commented out)
+      // if (this.filters.size) {
+      //   groups = groups.filter(group => group.representative.volumeNumber == this.filters.size)
+      // }
       
       // Status filter - check if any bottle in the group matches
       if (this.filters.status) {
@@ -1660,7 +1681,8 @@ export default {
         const today = new Date()
         groups = groups.filter(group => {
           return group.bottles.some(bottle => {
-            if (!bottle.drinkOnwardsDate && !bottle.drinkByDate) return false
+            // If no drinking window is specified, consider it drinkable now
+            if (!bottle.drinkOnwardsDate && !bottle.drinkByDate) return true
             
             const drinkFrom = bottle.drinkOnwardsDate ? new Date(bottle.drinkOnwardsDate) : null
             const drinkBy = bottle.drinkByDate ? new Date(bottle.drinkByDate) : null
@@ -1712,6 +1734,17 @@ export default {
         }
       })
       return Array.from(vintages).sort((a, b) => b - a)
+    },
+
+    // Drink type options for filter dropdown
+    drinkTypeOptions() {
+      const drinkTypes = new Set()
+      this.allItems.forEach(item => {
+        if (item.drinkType) {
+          drinkTypes.add(item.drinkType)
+        }
+      })
+      return Array.from(drinkTypes).sort()
     },
 
     // Form validation for add to cellar
@@ -1917,7 +1950,7 @@ export default {
       this.searchQuery = ''
       this.filters = {
         vintage: '',
-        size: '',
+        drinkType: '',
         status: '',
         drinkNow: false
       }
