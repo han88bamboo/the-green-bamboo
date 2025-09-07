@@ -1841,6 +1841,18 @@
                     Share
                   </button>
                   
+                  
+                  <!-- Add Comment Button - Added By CP -->
+                  <button @click="addCommentMode=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">Add Comment</span>
+                  </button>
+
                   <!-- View Comments for Review Button - Added by CP -->
                   <button v-if="review.commentsCount > 0" @click="showModal=true"
                     class="p-0 text-secondary me-2"
@@ -1852,18 +1864,7 @@
                     <span class="text-decoration-underline ms-2">View Comments</span>
                   </button>
 
-                  <!-- Else show add comment button -->
-                  <button v-else @click="addCommentMode=true"
-                    class="p-0 text-secondary me-2"
-                    style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
-                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
-                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                    </svg>
-                    <span class="text-decoration-underline ms-2">Add Comment</span>
-                  </button>
-
-                  <!-- Comments Modal for each review added by CP -->
+                  <!-- Comments Modal for each review - Added by CP -->
                   <CommentsModal v-if="showModal" 
                     :userID="userID" :userType="userType"
                     :contentId="review.id"
@@ -2418,7 +2419,7 @@ tag, index
             <CommentBox 
               :comment="comment" :userID="userID" :userType="userType" 
               :contentId="listing_id" contentType="Listing" 
-              @set-delete-comment="deleteCommentItems = $event" 
+              @set-delete-comment="openDeleteModal" 
               @comment-replied="handleReply"/>
           </div>
 
@@ -2433,23 +2434,24 @@ tag, index
           </div>
 
           <!-- Delete Comment Modal-->
-          <div class="modal fade" id="deleteComment" tabindex="-1" aria-labelledby="deleteCommentLabel" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-scrollable modal-xl">
-                  <div class="modal-content">
-                      <div class="modal-header">
-                          <h5 class="modal-title" id="deleteCommentLabel">Confirm Deletion</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                          <p>Are you sure you want to delete this comment?</p>
-                      </div>
-                      <div class="modal-footer">
-                          <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="deleteComment">Delete</button>
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      </div>
-                  </div>
+          <div v-if="showDeleteModal" class="modal fade show" tabindex="-1" style="display:block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirm Deletion</h5>
+                  <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
+                  <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
+                </div>
               </div>
+            </div>
           </div>
+
 
         </div>
         <!-- comments end -->
@@ -3129,6 +3131,7 @@ export default {
           commentId: null,
           contentType: null
       },
+      showDeleteModal: false,
 
       showModal: false,
       addCommentMode: false,
@@ -5686,6 +5689,11 @@ export default {
         }
     },
 
+    openDeleteModal(payload) {
+      this.deleteCommentItems = payload;
+      this.showDeleteModal = true; // now the modal renders
+    },
+    
     // Recursive helper to remove a comment or reply by ID
     removeCommentById(commentId, commentsArray) {
       for (let i = 0; i < commentsArray.length; i++) {
@@ -5735,6 +5743,9 @@ export default {
                     commentId: null,
                     contentType: null
                 };
+
+                // Close the modal
+                this.showDeleteModal = false;
 
             }
 

@@ -24,10 +24,30 @@
             <CommentBox 
               :comment="comment" :userID="userID" :userType="userType" 
               :contentId="contentId" contentType="Review" 
-              @set-delete-comment="deleteCommentItems = $event" 
+              @set-delete-comment="openDeleteModal" 
               @comment-replied="handleReply"
             />
           </div>
+
+          <!-- Delete Comment Modal-->
+            <div v-if="showDeleteModal" id="deleteComment" class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
+                    <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
+                </div>
+                </div>
+            </div>
+            </div>
+
 
 
           <p v-if="comments.length === 0">No comments yet.</p>
@@ -78,6 +98,11 @@ export default {
             comments: [], // This will hold the comments for the review
             lastCommentID: null,
             hasMoreComments: false,
+            showDeleteModal: false,
+            deleteCommentItems: {
+                commentId: null,
+                contentType: null
+            },
         };
     },
     methods: {
@@ -96,6 +121,11 @@ export default {
                 console.error("Error fetching comments:", error);
             }
 
+        },
+
+        openDeleteModal(payload) {
+            this.deleteCommentItems = payload;
+            this.showDeleteModal = true; // now the modal renders
         },
 
         // Recursive helper to remove a comment or reply by ID
@@ -147,6 +177,9 @@ export default {
                         commentId: null,
                         contentType: null
                     };
+
+                    // Close the modal
+                    this.showDeleteModal = false;
 
                 }
 
