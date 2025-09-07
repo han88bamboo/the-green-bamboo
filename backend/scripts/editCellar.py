@@ -601,6 +601,13 @@ def addToCellar():
             }
         }
         
+        print(f"TZHBackendLog: Final response summary:")
+        print(f"TZHBackendLog:   - Requested quantity: {quantity}")
+        print(f"TZHBackendLog:   - Master record ID: {master_id}")
+        print(f"TZHBackendLog:   - Created bottle IDs: {created_bottle_ids}")
+        print(f"TZHBackendLog:   - Total bottles created: {len(created_bottle_ids)}")
+        print(f"TZHBackendLog:   - Collection ID: {collection_id}")
+        
         print(f"TZHBackendLog: Preparing response: {json.dumps(response_data, indent=2, default=str)}")
         print("TZHBackendLog: Returning success response")
         print("TZHBackendLog: ===========================================")
