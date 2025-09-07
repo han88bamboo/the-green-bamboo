@@ -265,7 +265,7 @@ def addToCellar():
         
         if not master_record:
             print("TZHBackendLog: No existing master record found, creating new master record")
-            # Create master record (quantityVariantID = 1) with shared properties
+            # Create master record (quantityVariantID = 1) with shared properties AND first bottle's individual properties
             master_insert_data = (
                 data['listingId'],
                 collection_id,
@@ -279,9 +279,20 @@ def addToCellar():
                 current_value_estimation,
                 data.get('currentValueCurrency', 'USD'),
                 data.get('suggestedFoodPairing', '').strip() or None,
-                'In Possession',  # Default status for master record
-                'Unopened',      # Default consumption for master record
-                'At Home',       # Default location for master record
+                # Individual properties for the first bottle (not defaults!)
+                purchase_date,
+                delivery_date,
+                purchase_price,
+                data.get('purchaseCurrency', 'USD'),
+                data.get('purchaseVenueId'),
+                data.get('purchasePlaceName', '').strip() or None,
+                data.get('purchaseAddress', '').strip() or None,
+                data.get('status', 'In Possession'),
+                data.get('consumption', 'Unopened'),
+                data.get('currentLocation', 'At Home'),
+                data.get('subLocation', '').strip() or None,
+                data.get('personalNotes', '').strip() or None,
+                False,  # Not archived
                 datetime.now(),
                 datetime.now()
             )
@@ -293,16 +304,26 @@ def addToCellar():
                     "listingID", "collectionID", "variant", "quantityVariantID",
                     "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
                     "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
-                    "status", "consumption", "currentLocation", "addedDate", "updatedDate"
+                    "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+                    "status", "consumption", "currentLocation", "subLocation",
+                    "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 ) RETURNING "id"
             """, master_insert_data)
             master_id = cur.fetchone()['id']
             print(f"TZHBackendLog: Created master record with ID: {master_id}")
+            
+            # Add master ID to created bottles list since it represents the first bottle
+            created_bottle_ids = [master_id]
         else:
             master_id = master_record['id']
             print(f"TZHBackendLog: Found existing master record with ID: {master_id}")
+            
+            # For existing master record, we need to create a new individual bottle record for the first bottle
+            # since the existing master already represents someone else's first bottle
+            created_bottle_ids = []
             
             # Update master record with new shared properties if provided
             # Note: drinkFormat, volumeNumber, volumeUnit are now part of the key and won't be updated
@@ -361,56 +382,118 @@ def addToCellar():
         ))
         
         result = cur.fetchone()
-        next_variant_id = (result['max_variant_id'] or 0) + 1
-        print(f"TZHBackendLog: Next quantityVariantID will be: {next_variant_id}")
+        # Since we just created/found a master record (quantityVariantID = 1), 
+        # individual bottles should start from 2
+        max_existing_id = result['max_variant_id'] or 0
+        if max_existing_id == 0:
+            # This shouldn't happen since we just created a master record, but handle gracefully
+            next_variant_id = 2
+            print("TZHBackendLog: Warning: No existing records found, but master should exist. Starting from 2.")
+        else:
+            next_variant_id = max_existing_id + 1
+        print(f"TZHBackendLog: Next quantityVariantID will be: {next_variant_id} (max existing: {max_existing_id})")
         
         # Create individual bottle records
-        created_bottle_ids = []
         print(f"TZHBackendLog: Creating {quantity} individual bottle records...")
         
-        for i in range(quantity):
-            current_variant_id = next_variant_id + i
-            print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
+        if not master_record:
+            # New master record case: master record IS the first bottle
+            if quantity == 1:
+                print("TZHBackendLog: Quantity is 1, only master record needed (already created)")
+            else:
+                # Create additional bottle records for quantities 2 and beyond
+                print(f"TZHBackendLog: Creating {quantity - 1} additional individual bottle records...")
+                
+                for i in range(1, quantity):  # Start from 1 (second bottle) since master is first bottle
+                    current_variant_id = next_variant_id + i - 1  # Adjust indexing
+                    print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
+                    
+                    bottle_insert_data = (
+                        data['listingId'],
+                        collection_id,
+                        variant,
+                        current_variant_id,  # Individual bottle ID
+                        purchase_date,
+                        delivery_date,
+                        purchase_price,
+                        data.get('purchaseCurrency', 'USD'),
+                        data.get('purchaseVenueId'),  # If provided
+                        data.get('purchasePlaceName', '').strip() or None,
+                        data.get('purchaseAddress', '').strip() or None,
+                        data.get('status', 'In Possession'),
+                        data.get('consumption', 'Unopened'),
+                        data.get('currentLocation', 'At Home'),  # Database field: currentLocation
+                        data.get('subLocation', '').strip() or None,
+                        data.get('personalNotes', '').strip() or None,
+                        False,  # Not archived
+                        datetime.now(),
+                        datetime.now()
+                    )
+                    
+                    print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
+                    
+                    cur.execute("""
+                        INSERT INTO "myCellarItems" (
+                            "listingID", "collectionID", "variant", "quantityVariantID",
+                            "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                            "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+                            "status", "consumption", "currentLocation", "subLocation",
+                            "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        ) RETURNING "id"
+                    """, bottle_insert_data)
+                    
+                    bottle_id = cur.fetchone()['id']
+                    created_bottle_ids.append(bottle_id)
+                    print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
+        else:
+            # Existing master record case: need to create ALL bottles as individual records
+            print(f"TZHBackendLog: Master record exists, creating {quantity} individual bottle records...")
             
-            bottle_insert_data = (
-                data['listingId'],
-                collection_id,
-                variant,
-                current_variant_id,  # Individual bottle ID
-                purchase_date,
-                delivery_date,
-                purchase_price,
-                data.get('purchaseCurrency', 'USD'),
-                data.get('purchaseVenueId'),  # If provided
-                data.get('purchasePlaceName', '').strip() or None,
-                data.get('purchaseAddress', '').strip() or None,
-                data.get('status', 'In Possession'),
-                data.get('consumption', 'Unopened'),
-                data.get('currentLocation', 'At Home'),  # Database field: currentLocation
-                data.get('subLocation', '').strip() or None,
-                data.get('personalNotes', '').strip() or None,
-                False,  # Not archived
-                datetime.now(),
-                datetime.now()
-            )
-            
-            print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
-            
-            cur.execute("""
-                INSERT INTO "myCellarItems" (
-                    "listingID", "collectionID", "variant", "quantityVariantID",
-                    "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
-                    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
-                    "status", "consumption", "currentLocation", "subLocation",
-                    "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
-                ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                ) RETURNING "id"
-            """, bottle_insert_data)
-            
-            bottle_id = cur.fetchone()['id']
-            created_bottle_ids.append(bottle_id)
-            print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
+            for i in range(quantity):
+                current_variant_id = next_variant_id + i
+                print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
+                
+                bottle_insert_data = (
+                    data['listingId'],
+                    collection_id,
+                    variant,
+                    current_variant_id,  # Individual bottle ID
+                    purchase_date,
+                    delivery_date,
+                    purchase_price,
+                    data.get('purchaseCurrency', 'USD'),
+                    data.get('purchaseVenueId'),  # If provided
+                    data.get('purchasePlaceName', '').strip() or None,
+                    data.get('purchaseAddress', '').strip() or None,
+                    data.get('status', 'In Possession'),
+                    data.get('consumption', 'Unopened'),
+                    data.get('currentLocation', 'At Home'),  # Database field: currentLocation
+                    data.get('subLocation', '').strip() or None,
+                    data.get('personalNotes', '').strip() or None,
+                    False,  # Not archived
+                    datetime.now(),
+                    datetime.now()
+                )
+                
+                print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
+                
+                cur.execute("""
+                    INSERT INTO "myCellarItems" (
+                        "listingID", "collectionID", "variant", "quantityVariantID",
+                        "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                        "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+                        "status", "consumption", "currentLocation", "subLocation",
+                        "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                    ) VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) RETURNING "id"
+                """, bottle_insert_data)
+                
+                bottle_id = cur.fetchone()['id']
+                created_bottle_ids.append(bottle_id)
+                print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
         
         # Commit the transaction
         print("TZHBackendLog: Committing transaction...")
