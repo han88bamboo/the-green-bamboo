@@ -243,32 +243,37 @@ def addToCellar():
         
         # Check if master record already exists for this listing+variant+format+volume combination FOR THIS OWNER
         print("TZHBackendLog: Checking for existing master record...")
-        print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']} in collection {collection_id}")
+        print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']}")
         
-        # First, let's debug what's actually in the database for this user
+        # First, let's debug what's actually in the database for this user (across all collections)
         cur.execute("""
-            SELECT "id", "listingID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit", "collectionID"
-            FROM "myCellarItems" 
-            WHERE "listingID" = %s 
-            AND "collectionID" = %s
-            ORDER BY "quantityVariantID"
-        """, (data['listingId'], collection_id))
+            SELECT ci."id", ci."listingID", ci."variant", ci."quantityVariantID", ci."drinkFormat", 
+                   ci."volumeNumber", ci."volumeUnit", ci."collectionID", cc."collectionName"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE ci."listingID" = %s 
+            AND cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+            ORDER BY ci."quantityVariantID"
+        """, (data['listingId'], data['ownerId'], data['ownerType']))
         
         all_user_items = cur.fetchall()
-        print(f"TZHBackendLog: All existing items for this listing and collection:")
+        print(f"TZHBackendLog: All existing items for this listing across all user's collections:")
         for item in all_user_items:
             print(f"TZHBackendLog:   Item: {dict(item)}")
         
-        # Now look for the specific master record
+        # Now look for the specific master record across all user's collections
         cur.execute("""
-            SELECT "id" FROM "myCellarItems" 
-            WHERE "listingID" = %s 
-            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
-            AND "quantityVariantID" = 1
-            AND "drinkFormat" = %s
-            AND "volumeNumber" = %s
-            AND "volumeUnit" = %s
-            AND "collectionID" = %s
+            SELECT ci."id", ci."collectionID" FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE ci."listingID" = %s 
+            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+            AND ci."quantityVariantID" = 1
+            AND ci."drinkFormat" = %s
+            AND ci."volumeNumber" = %s
+            AND ci."volumeUnit" = %s
+            AND cc."ownerID" = %s
+            AND cc."ownerType" = %s
         """, (
             data['listingId'], 
             variant, 
@@ -276,10 +281,23 @@ def addToCellar():
             format_value,
             volume_number,
             volume_unit,
-            collection_id
+            data['ownerId'],
+            data['ownerType']
         ))
         
         master_record = cur.fetchone()
+        existing_master_collection_id = None
+        
+        if master_record:
+            existing_master_collection_id = master_record['collectionID']
+            print(f"TZHBackendLog: Found existing master record with ID: {master_record['id']} in collection {existing_master_collection_id}")
+            
+            # Check if the master record is in a different collection than the requested one
+            if existing_master_collection_id != collection_id:
+                print(f"TZHBackendLog: Master record is in collection {existing_master_collection_id}, but new bottles requested for collection {collection_id}")
+                print(f"TZHBackendLog: Will add bottles to the existing master's collection ({existing_master_collection_id}) to keep them grouped")
+                # Use the existing master's collection to keep bottles grouped together
+                collection_id = existing_master_collection_id
         
         if not master_record:
             print("TZHBackendLog: No existing master record found, creating new master record")
@@ -337,7 +355,7 @@ def addToCellar():
             created_bottle_ids = [master_id]
         else:
             master_id = master_record['id']
-            print(f"TZHBackendLog: Found existing master record with ID: {master_id}")
+            print(f"TZHBackendLog: Found existing master record with ID: {master_id} in collection {collection_id}")
             
             # For existing master record, we need to create a new individual bottle record for the first bottle
             # since the existing master already represents someone else's first bottle
@@ -384,14 +402,16 @@ def addToCellar():
         # Get next quantityVariantID for this listing+variant+format+volume combination FOR THIS OWNER
         print("TZHBackendLog: Getting next quantityVariantID...")
         cur.execute("""
-            SELECT MAX("quantityVariantID") as max_variant_id 
-            FROM "myCellarItems" 
-            WHERE "listingID" = %s 
-            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
-            AND "drinkFormat" = %s
-            AND "volumeNumber" = %s
-            AND "volumeUnit" = %s
-            AND "collectionID" = %s
+            SELECT MAX(ci."quantityVariantID") as max_variant_id 
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE ci."listingID" = %s 
+            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+            AND ci."drinkFormat" = %s
+            AND ci."volumeNumber" = %s
+            AND ci."volumeUnit" = %s
+            AND cc."ownerID" = %s
+            AND cc."ownerType" = %s
         """, (
             data['listingId'], 
             variant,
@@ -399,7 +419,8 @@ def addToCellar():
             format_value,
             volume_number,
             volume_unit,
-            collection_id
+            data['ownerId'],
+            data['ownerType']
         ))
         
         result = cur.fetchone()
@@ -543,15 +564,20 @@ def addToCellar():
         
         # Query all records for this listing+variant combination for this owner to see the full picture
         cur.execute("""
-            SELECT "id", "quantityVariantID", "status", "consumption", "currentLocation", 
-                   "purchasePrice", "drinkFormat", "volumeNumber", "volumeUnit",
-                   "variant", "noteToSelf", "subLocation", "purchasePlaceName"
-            FROM "myCellarItems" 
-            WHERE "listingID" = %s 
-            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
-            AND "collectionID" = %s
-            ORDER BY "quantityVariantID"
-        """, (data['listingId'], variant, variant, collection_id))
+            SELECT ci."id", ci."quantityVariantID", ci."status", ci."consumption", ci."currentLocation", 
+                   ci."purchasePrice", ci."drinkFormat", ci."volumeNumber", ci."volumeUnit",
+                   ci."variant", ci."noteToSelf", ci."subLocation", ci."purchasePlaceName", ci."collectionID"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE ci."listingID" = %s 
+            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+            AND ci."drinkFormat" = %s
+            AND ci."volumeNumber" = %s
+            AND ci."volumeUnit" = %s
+            AND cc."ownerID" = %s
+            AND cc."ownerType" = %s
+            ORDER BY ci."quantityVariantID"
+        """, (data['listingId'], variant, variant, format_value, volume_number, volume_unit, data['ownerId'], data['ownerType']))
         all_records = cur.fetchall()
         print(f"TZHBackendLog: All records for this listing+variant:")
         for record in all_records:

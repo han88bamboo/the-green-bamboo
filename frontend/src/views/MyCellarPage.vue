@@ -1541,13 +1541,21 @@ export default {
       return this.allItems.filter(item => item.collectionId === this.activeTab)
     },
     
-    // Group items by listing + variant for display
+    // Group items by listing + variant + format + volume for display
     groupedItems() {
       const groups = {}
       
       this.tabItems.forEach(item => {
-        // Create unique key for listing + variant combination
-        const groupKey = `${item.listingId}_${item.variant || 'no-variant'}`
+        // Create unique key for listing + variant + format + volume combination
+        // Normalize volume number to handle floating point precision issues
+        const normalizedVolume = item.volumeNumber ? parseFloat(item.volumeNumber).toString() : 'no-volume';
+        const groupKey = `${item.listingId}_${item.variant || 'no-variant'}_${item.drinkFormat || 'no-format'}_${normalizedVolume}_${item.volumeUnit || 'no-unit'}`
+        
+        // Debug logging for grouping
+        if (this.activeTab === 'all' && this.tabItems.length < 20) { // Only log when not too many items
+          console.log(`TZHFrontendLog: Grouping item ${item.id} with key: ${groupKey}`);
+          console.log(`TZHFrontendLog:   - listingId: ${item.listingId}, variant: ${item.variant}, format: ${item.drinkFormat}, volume: ${item.volumeNumber} ${item.volumeUnit}`);
+        }
         
         if (!groups[groupKey]) {
           groups[groupKey] = {
@@ -1560,6 +1568,9 @@ export default {
             // Group identification
             listingId: item.listingId,
             variant: item.variant,
+            drinkFormat: item.drinkFormat,
+            volumeNumber: item.volumeNumber,
+            volumeUnit: item.volumeUnit,
             listingName: item.listingName
           }
         }
