@@ -1144,12 +1144,17 @@
                   <label class="form-label">Drink Onwards Date</label>
                   <div class="input-group">
                     <input 
-                      type="text" 
-                      class="form-control date-input" 
-                      :value="formatDateForInput(selectedGroup.representative.drinkOnwardsDate)"
-                      placeholder="MM/DD/YYYY"
+                      type="date" 
+                      class="form-control" 
+                      :value="selectedGroup.representative.drinkOnwardsDate"
+                      ref="modalDrinkOnwardsDateInput"
                     >
-                    <span class="input-group-text">
+                    <span 
+                      class="input-group-text date-picker-trigger"
+                      @click="$refs.modalDrinkOnwardsDateInput.showPicker()"
+                      role="button"
+                      title="Open calendar"
+                    >
                       <i class="bi bi-calendar3"></i>
                     </span>
                   </div>
@@ -1158,12 +1163,17 @@
                   <label class="form-label">Drink By Date</label>
                   <div class="input-group">
                     <input 
-                      type="text" 
-                      class="form-control date-input" 
-                      :value="formatDateForInput(selectedGroup.representative.drinkByDate)"
-                      placeholder="MM/DD/YYYY"
+                      type="date" 
+                      class="form-control" 
+                      :value="selectedGroup.representative.drinkByDate"
+                      ref="modalDrinkByDateInput"
                     >
-                    <span class="input-group-text">
+                    <span 
+                      class="input-group-text date-picker-trigger"
+                      @click="$refs.modalDrinkByDateInput.showPicker()"
+                      role="button"
+                      title="Open calendar"
+                    >
                       <i class="bi bi-calendar3"></i>
                     </span>
                   </div>
@@ -1295,12 +1305,17 @@
                       <label class="form-label small">Date of Purchase</label>
                       <div class="input-group input-group-sm">
                         <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(bottle.purchaseDate)"
-                          placeholder="MM/DD/YYYY"
+                          type="date" 
+                          class="form-control" 
+                          :value="bottle.purchaseDate"
+                          :ref="`bottlePurchaseDate${index}`"
                         >
-                        <span class="input-group-text">
+                        <span 
+                          class="input-group-text date-picker-trigger"
+                          @click="$refs[`bottlePurchaseDate${index}`][0].showPicker()"
+                          role="button"
+                          title="Open calendar"
+                        >
                           <i class="bi bi-calendar3"></i>
                         </span>
                       </div>
@@ -1309,12 +1324,17 @@
                       <label class="form-label small">Delivery Date</label>
                       <div class="input-group input-group-sm">
                         <input 
-                          type="text" 
-                          class="form-control date-input" 
-                          :value="formatDateForInput(bottle.deliveryDate)"
-                          placeholder="MM/DD/YYYY"
+                          type="date" 
+                          class="form-control" 
+                          :value="bottle.deliveryDate"
+                          :ref="`bottleDeliveryDate${index}`"
                         >
-                        <span class="input-group-text">
+                        <span 
+                          class="input-group-text date-picker-trigger"
+                          @click="$refs[`bottleDeliveryDate${index}`][0].showPicker()"
+                          role="button"
+                          title="Open calendar"
+                        >
                           <i class="bi bi-calendar3"></i>
                         </span>
                       </div>
