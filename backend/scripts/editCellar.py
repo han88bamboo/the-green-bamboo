@@ -245,26 +245,10 @@ def addToCellar():
         print("TZHBackendLog: Checking for existing master record...")
         print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']}")
         
-        # First, let's debug what's actually in the database for this user (across all collections)
+        # Look for existing master record (quantityVariantID = 1) across all user's collections
+        # This will be the group leader for items with identical properties
         cur.execute("""
-            SELECT ci."id", ci."listingID", ci."variant", ci."quantityVariantID", ci."drinkFormat", 
-                   ci."volumeNumber", ci."volumeUnit", ci."collectionID", cc."collectionName"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE ci."listingID" = %s 
-            AND cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-            ORDER BY ci."quantityVariantID"
-        """, (data['listingId'], data['ownerId'], data['ownerType']))
-        
-        all_user_items = cur.fetchall()
-        print(f"TZHBackendLog: All existing items for this listing across all user's collections:")
-        for item in all_user_items:
-            print(f"TZHBackendLog:   Item: {dict(item)}")
-        
-        # Now look for the specific master record across all user's collections
-        cur.execute("""
-            SELECT ci."id", ci."collectionID" FROM "myCellarItems" ci
+            SELECT ci."id", ci."collectionID", ci."variantGroupID" FROM "myCellarItems" ci
             JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             WHERE ci."listingID" = %s 
             AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
@@ -287,10 +271,13 @@ def addToCellar():
         
         master_record = cur.fetchone()
         existing_master_collection_id = None
+        group_variant_id = None
         
         if master_record:
             existing_master_collection_id = master_record['collectionID']
+            group_variant_id = master_record['variantGroupID']
             print(f"TZHBackendLog: Found existing master record with ID: {master_record['id']} in collection {existing_master_collection_id}")
+            print(f"TZHBackendLog: Existing group variantGroupID: {group_variant_id}")
             
             # Check if the master record is in a different collection than the requested one
             if existing_master_collection_id != collection_id:
@@ -339,7 +326,7 @@ def addToCellar():
             
             cur.execute("""
                 INSERT INTO "myCellarItems" (
-                    "listingID", "collectionID", "variant", "quantityVariantID",
+                    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                     "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
                     "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
                     "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
@@ -347,11 +334,22 @@ def addToCellar():
                     "status", "consumption", "currentLocation", "subLocation",
                     "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                 ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                 ) RETURNING "id"
             """, master_insert_data)
             master_id = cur.fetchone()['id']
             print(f"TZHBackendLog: Created master record with ID: {master_id}")
+            
+            # Update the variantGroupID to point to itself (self-reference for group leader)
+            cur.execute("""
+                UPDATE "myCellarItems" 
+                SET "variantGroupID" = %s 
+                WHERE "id" = %s
+            """, (master_id, master_id))
+            print(f"TZHBackendLog: Updated master record variantGroupID to self-reference: {master_id}")
+            
+            # Set group_variant_id for subsequent bottle creation
+            group_variant_id = master_id
             
             # Add master ID to created bottles list since it represents the first bottle
             created_bottle_ids = [master_id]
@@ -466,20 +464,21 @@ def addToCellar():
                         data.get('personalNotes', '').strip() or None,
                         False,  # Not archived
                         datetime.now(),
-                        datetime.now()
+                        datetime.now(),
+                        group_variant_id  # Reference to master record's ID
                     )
                     
                     print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
                     
                     cur.execute("""
                         INSERT INTO "myCellarItems" (
-                            "listingID", "collectionID", "variant", "quantityVariantID",
+                            "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                             "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
                             "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
                             "status", "consumption", "currentLocation", "subLocation",
                             "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                         ) VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                         ) RETURNING "id"
                     """, bottle_insert_data)
                     
@@ -513,20 +512,21 @@ def addToCellar():
                     data.get('personalNotes', '').strip() or None,
                     False,  # Not archived
                     datetime.now(),
-                    datetime.now()
+                    datetime.now(),
+                    group_variant_id  # Reference to master record's ID
                 )
                 
                 print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
                 
                 cur.execute("""
                     INSERT INTO "myCellarItems" (
-                        "listingID", "collectionID", "variant", "quantityVariantID",
+                        "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                         "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
                         "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
                         "status", "consumption", "currentLocation", "subLocation",
                         "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
                     ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) RETURNING "id"
                 """, bottle_insert_data)
                 
