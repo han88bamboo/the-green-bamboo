@@ -20,37 +20,46 @@
         <!-- Modal Body -->
         <div class="modal-body">
         
-          <div v-for="comment in comments" :key="comment.id" class="mb-3">
-            <CommentBox 
-              :comment="comment" :userID="userID" :userType="userType" 
-              :contentId="contentId" :contentType="contentType" 
-              @set-delete-comment="openDeleteModal" 
-              @comment-replied="handleReply"
-            />
-          </div>
+            <div v-for="comment in comments" :key="comment.id" class="mb-3">
+                <CommentBox 
+                :comment="comment" :userID="userID" :userType="userType" 
+                :contentId="contentId" :contentType="contentType" 
+                @set-delete-comment="openDeleteModal" 
+                @comment-replied="handleReply"
+                />
+            </div>
 
-          <!-- Delete Comment Modal-->
+            <!-- Delete Comment Modal-->
             <div v-if="showDeleteModal" id="deleteComment" class="modal fade show" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
-            <div class="modal-dialog modal-dialog-scrollable">
-                <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Confirm Deletion</h5>
-                    <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this comment?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
-                    <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
-                </div>
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Deletion</h5>
+                        <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete this comment?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
+                        <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
+                    </div>
+                    </div>
                 </div>
             </div>
+
+            <!-- Load More Button -->
+            <div v-if="hasMoreComments" class="d-grid gap-2">
+                <button 
+                class="btn btn-primary" 
+                @click="loadMoreComments"
+                >
+                Load More Comments
+                </button>
             </div>
 
-
-
-          <p v-if="comments.length === 0">No comments yet.</p>
+            <!-- No comments message -->
+            <p v-if="comments.length === 0">No comments yet.</p>
         </div>
         <div class="modal-footer">
           <button 
@@ -132,6 +141,33 @@ export default {
                 console.error("Error fetching comments:", error);
             }
 
+        },
+
+        // Function to load more comments (pagination)
+        async loadMoreComments() {
+            if (!this.hasMoreComments) return;
+
+            let endpointName = "";
+
+            if (this.contentType === "Review") {
+                endpointName = "getMoreReviewComments";
+            } else if (this.contentType === "pReview") {
+                endpointName = "getMoreProducerReviewComments";
+            } else if (this.contentType === "vReview") {
+                endpointName = "getMoreVenueReviewComments";
+            } 
+
+            try {
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/randomContent/${endpointName}/${this.contentId}?lastCommentId=${this.lastCommentID}`
+                );
+                const newComments = response.data.comments;
+                this.comments.push(...newComments);
+                this.lastCommentID = response.data.lastCommentId;
+                this.hasMoreComments = newComments.length == 30;
+            } catch (error) {
+                console.error("Error loading more comments:", error);
+            }
         },
 
         openDeleteModal(payload) {
