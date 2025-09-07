@@ -201,15 +201,17 @@ def addToCellar():
         
         print(f"TZHBackendLog: Parsed prices - purchase: {purchase_price}, current_value: {current_value_estimation}")
         
-        # Parse volume - store as user entered (no conversion)
+        # Parse volume - normalize for better matching (no unit conversion)
         volume_number = None
         volume_unit = None
         print(f"TZHBackendLog: Parsing volume - raw volumeNumber: {data.get('volumeNumber')}")
         if data.get('volumeNumber'):  # Frontend now sends volumeNumber
             try:
-                volume_number = float(data['volumeNumber'])
-                volume_unit = data.get('volumeUnit', 'ml')  # Keep original unit
-                print(f"TZHBackendLog: Parsed volume: {volume_number} {volume_unit}")
+                # Normalize to 2 decimal places for consistent matching
+                volume_number = round(float(data['volumeNumber']), 2)
+                # Normalize volume unit to lowercase for case-insensitive matching
+                volume_unit = data.get('volumeUnit', 'ml').lower().strip()
+                print(f"TZHBackendLog: Parsed and normalized volume: {volume_number} {volume_unit}")
             except (ValueError, TypeError) as e:
                 print(f"TZHBackendLog: Volume parsing failed: {e}")
                 volume_number = None
@@ -230,7 +232,9 @@ def addToCellar():
         format_value = data.get('format', 'Bottle')
         if not format_value:
             format_value = 'Bottle'  # Default format
-        print(f"TZHBackendLog: Format value: {format_value}")
+        # Normalize format to proper case for consistent matching
+        format_value = format_value.strip().title()  # "bottle" -> "Bottle", "CAN" -> "Can"
+        print(f"TZHBackendLog: Normalized format value: {format_value}")
         
         # Ensure volume information is consistent
         if volume_number is not None and not volume_unit:
@@ -247,24 +251,25 @@ def addToCellar():
         
         # Look for existing master record (quantityVariantID = 1) across all user's collections
         # This will be the group leader for items with identical properties
+        # Use normalized values and case-insensitive matching for better grouping
         cur.execute("""
             SELECT ci."id", ci."collectionID", ci."variantGroupID" FROM "myCellarItems" ci
             JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             WHERE ci."listingID" = %s 
             AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
             AND ci."quantityVariantID" = 1
-            AND ci."drinkFormat" = %s
-            AND ci."volumeNumber" = %s
-            AND ci."volumeUnit" = %s
+            AND UPPER(ci."drinkFormat") = UPPER(%s)
+            AND ROUND(CAST(ci."volumeNumber" AS NUMERIC), 2) = %s
+            AND LOWER(ci."volumeUnit") = %s
             AND cc."ownerID" = %s
             AND cc."ownerType" = %s
         """, (
             data['listingId'], 
             variant, 
             variant,  # For the NULL check
-            format_value,
-            volume_number,
-            volume_unit,
+            format_value,  # Case-insensitive comparison via UPPER()
+            volume_number,  # Already normalized to 2 decimal places
+            volume_unit,   # Already normalized to lowercase
             data['ownerId'],
             data['ownerType']
         ))
