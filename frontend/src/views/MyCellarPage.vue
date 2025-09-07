@@ -2245,7 +2245,9 @@ export default {
           }
         };
 
-        const response = await axios.post('/api/editCellar', payload);
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const fullUrl = `${baseUrl}/editCellar/editCellar`;
+        const response = await axios.post(fullUrl, payload);
         
         if (response.data.success) {
           // Reload cellar data to reflect changes
