@@ -2940,6 +2940,12 @@ export default {
     };
   },
   mounted() {
+    // Debug Google Maps API availability
+    console.log('TZHFrontendLog: [BottleListings] Google Maps API key:', process.env.VUE_APP_GOOGLE_MAPS_API_KEY ? 'Available' : 'Missing');
+    console.log('TZHFrontendLog: [BottleListings] Google object available:', typeof window.google !== 'undefined');
+    console.log('TZHFrontendLog: [BottleListings] Google Maps available:', typeof window.google?.maps !== 'undefined');
+    console.log('TZHFrontendLog: [BottleListings] Google Places available:', typeof window.google?.maps?.places !== 'undefined');
+    
     try {
       // Get the query string parameters (listing ID) from the URL
       this.listing_id = this.$route.params.listingID;

@@ -783,16 +783,40 @@
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
                           <label class="form-label text-start">Place of Purchase</label>
-                          <div class="input-group">
-                            <input 
-                              type="text" 
-                              class="form-control"
-                              v-model="addDrinkForm.purchasePlaceName"
-                              placeholder="e.g., Wine shop, Online store"
-                            />
-                            <span class="input-group-text" title="Google Maps integration coming soon">
-                              <i class="bi bi-geo-alt"></i>
-                            </span>
+                          <div class="purchase-location-container" style="position: relative;">
+                            <!-- Google Maps Autocomplete Input -->
+                            <div class="input-group">
+                              <div class="location-input-wrapper" style="position: relative; width: 100%;">
+                                <GMapAutocomplete 
+                                  placeholder="e.g., Wine shop, Online store, or enter manually"
+                                  @place_changed="setPurchasePlaceFromAutocomplete"
+                                  @input="onPurchaseLocationInput"
+                                  class="form-control input-with-icon" 
+                                  ref="purchaseLocationInput"
+                                  :value="addDrinkForm.purchaseLocationInputValue"
+                                  :options="{ types: ['establishment'] }"
+                                >
+                                </GMapAutocomplete>
+                              </div>
+                              <span class="input-group-text" :title="addDrinkForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                                <i class="bi bi-geo-alt" :class="{ 'text-success': addDrinkForm.selectedPurchasePlace }"></i>
+                              </span>
+                            </div>
+                            
+                            <!-- Location confirmation display -->
+                            <div v-if="addDrinkForm.selectedPurchasePlace && addDrinkForm.selectedPurchaseAddress" 
+                                 class="alert alert-success mt-2 mb-0 small">
+                              📍 Selected: {{ addDrinkForm.selectedPurchasePlace }}
+                              <br>
+                              <small class="text-muted">{{ addDrinkForm.selectedPurchaseAddress }}</small>
+                              <button 
+                                type="button" 
+                                class="btn btn-sm btn-outline-danger ms-2"
+                                @click="clearSelectedPurchaseLocation"
+                              >
+                                Clear
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1476,6 +1500,13 @@ export default {
         currentLocation: 'At Home',
         subLocation: '',
         purchasePlaceName: '',
+        
+        // Purchase location with Google Maps integration
+        purchaseLocationInputValue: '', // Input field value for Google Maps autocomplete
+        selectedPurchasePlace: '', // Name from Google Maps (for purchasePlaceName)
+        selectedPurchaseAddress: '', // Address from Google Maps (for purchaseAddress)
+        selectedPurchaseVenueId: null, // Optional venue ID if applicable
+        
         purchaseDate: null,
         deliveryDate: null,
         purchasePrice: null,
@@ -1487,7 +1518,10 @@ export default {
       },
       
       // Add to cellar state
-      addingToCellar: false
+      addingToCellar: false,
+      
+      // Debug tracking
+      lastCanAddToCellarState: null
     }
   },
   computed: {
@@ -1629,9 +1663,9 @@ export default {
 
     // Form validation for add to cellar
     canAddToCellar() {
-      return this.addDrinkForm.selectedDrink && 
-             this.addDrinkForm.selectedDrink.id && 
-             this.addDrinkForm.quantity > 0
+      const hasSelectedDrink = this.addDrinkForm.selectedDrink && this.addDrinkForm.selectedDrink.id;
+      const hasValidQuantity = this.addDrinkForm.quantity > 0;
+      return hasSelectedDrink && hasValidQuantity;
     }
   },
   watch: {
@@ -1653,12 +1687,45 @@ export default {
     
     searchQuery() {
       this.currentPage = 1
+    },
+    
+    // Watch canAddToCellar for debug logging
+    canAddToCellar(newValue, oldValue) {
+      if (newValue !== oldValue) {
+        const hasSelectedDrink = this.addDrinkForm.selectedDrink && this.addDrinkForm.selectedDrink.id;
+        const hasValidQuantity = this.addDrinkForm.quantity > 0;
+        
+        console.log('TZHFrontendLog: canAddToCellar validation state changed:');
+        console.log('TZHFrontendLog:   hasSelectedDrink:', hasSelectedDrink);
+        console.log('TZHFrontendLog:   selectedDrink.id:', this.addDrinkForm.selectedDrink?.id);
+        console.log('TZHFrontendLog:   hasValidQuantity:', hasValidQuantity);
+        console.log('TZHFrontendLog:   quantity:', this.addDrinkForm.quantity);
+        console.log('TZHFrontendLog:   canAddToCellar result:', newValue);
+        
+        this.lastCanAddToCellarState = newValue;
+      }
     }
   },
   async mounted() {
+    // Debug Google Maps API availability
+    console.log('TZHFrontendLog: Google Maps API key:', process.env.VUE_APP_GOOGLE_MAPS_API_KEY ? 'Available' : 'Missing');
+    console.log('TZHFrontendLog: Google object available:', typeof window.google !== 'undefined');
+    console.log('TZHFrontendLog: Google Maps available:', typeof window.google?.maps !== 'undefined');
+    console.log('TZHFrontendLog: Google Places available:', typeof window.google?.maps?.places !== 'undefined');
+    
     await this.loadCellarData()
+    
+    // Setup Google Maps observer for autocomplete functionality
+    this.$nextTick(() => {
+      this.setupGoogleMapsObserver();
+    });
   },
   beforeUnmount() {
+    // Clean up Google Maps observer
+    if (this._googleMapsObserver) {
+      this._googleMapsObserver.disconnect();
+    }
+    
     // Cancel any pending search timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout)
@@ -2026,14 +2093,17 @@ export default {
 
     // Select producer
     selectProducer(producer) {
+      console.log('TZHFrontendLog: selectProducer called with producer:', JSON.stringify(producer, null, 2));
       this.addDrinkForm.selectedProducer = producer;
       this.addDrinkForm.producerSearchQuery = producer.producerName;
       this.addDrinkForm.producerSearchResults = [];
       
       // Reset drink search when producer changes
+      console.log('TZHFrontendLog: Resetting drink search due to producer change');
       this.addDrinkForm.searchQuery = '';
       this.addDrinkForm.searchResults = [];
       this.addDrinkForm.selectedDrink = {};
+      console.log('TZHFrontendLog: Updated selectedProducer:', JSON.stringify(this.addDrinkForm.selectedProducer, null, 2));
     },
 
     // Clear selected producer
@@ -2063,7 +2133,11 @@ export default {
 
     // Search drinks API call
     async searchDrinks() {
+      console.log('TZHFrontendLog: searchDrinks called with query:', this.addDrinkForm.searchQuery);
+      console.log('TZHFrontendLog: Selected producer for filtering:', JSON.stringify(this.addDrinkForm.selectedProducer, null, 2));
+      
       if (!this.addDrinkForm.searchQuery || this.addDrinkForm.searchQuery.trim().length < 2) {
+        console.log('TZHFrontendLog: Search query too short, clearing results');
         this.addDrinkForm.searchResults = [];
         return;
       }
@@ -2071,40 +2145,231 @@ export default {
       try {
         const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
         let response;
+        let searchUrl;
         
         // If a producer is selected, search only within that producer's listings
         if (this.addDrinkForm.selectedProducer && this.addDrinkForm.selectedProducer.id) {
-          response = await this.$axios.get(`${baseUrl}/getData/getListingNamesByProducer/${this.addDrinkForm.searchQuery}/${this.addDrinkForm.selectedProducer.id}`);
+          searchUrl = `${baseUrl}/getData/getListingNamesByProducer/${this.addDrinkForm.searchQuery}/${this.addDrinkForm.selectedProducer.id}`;
+          console.log('TZHFrontendLog: Searching drinks by producer with URL:', searchUrl);
+          response = await this.$axios.get(searchUrl);
         } else {
           // Otherwise, search all listings
-          response = await this.$axios.get(`${baseUrl}/getData/getListingNamesDynamicSearch/${this.addDrinkForm.searchQuery}`);
+          searchUrl = `${baseUrl}/getData/getListingNamesDynamicSearch/${this.addDrinkForm.searchQuery}`;
+          console.log('TZHFrontendLog: Searching all drinks with URL:', searchUrl);
+          response = await this.$axios.get(searchUrl);
         }
 
+        console.log('TZHFrontendLog: Drink search response status:', response.status);
+        console.log('TZHFrontendLog: Drink search response data length:', response.data ? response.data.length : 'no data');
+        
         if (response.status === 200) {
           this.addDrinkForm.searchResults = response.data.slice(0, 10); // Limit to 10 results
+          console.log('TZHFrontendLog: Updated search results:', JSON.stringify(this.addDrinkForm.searchResults, null, 2));
         }
       } catch (error) {
-        console.error('Error searching drinks:', error);
+        console.error('TZHFrontendLog: Error searching drinks:', error);
         this.addDrinkForm.searchResults = [];
       }
     },
 
     // Select drink
     selectDrink(listing) {
+      console.log('TZHFrontendLog: selectDrink called with listing:', JSON.stringify(listing, null, 2));
       this.addDrinkForm.selectedDrink = listing;
       this.addDrinkForm.searchQuery = listing.listingName;
       this.addDrinkForm.searchResults = [];
+      console.log('TZHFrontendLog: Updated addDrinkForm.selectedDrink:', JSON.stringify(this.addDrinkForm.selectedDrink, null, 2));
+      console.log('TZHFrontendLog: canAddToCellar after selection:', this.canAddToCellar);
     },
+
+    // ============ Purchase Location Google Maps Methods ============
+    
+    // Handle place selection from Google Maps autocomplete for purchase location
+    setPurchasePlaceFromAutocomplete(place) {
+      console.log('TZHFrontendLog: setPurchasePlaceFromAutocomplete called with place:', place);
+      
+      if (place && place.geometry) {
+        this.addDrinkForm.selectedPurchasePlace = place.name || place.formatted_address;
+        this.addDrinkForm.selectedPurchaseAddress = place.formatted_address;
+        this.addDrinkForm.purchaseLocationInputValue = this.addDrinkForm.selectedPurchasePlace;
+        
+        // Set purchasePlaceName for backend compatibility
+        this.addDrinkForm.purchasePlaceName = this.addDrinkForm.selectedPurchasePlace;
+        
+        // Check if this is a known venue (optional - for future use)
+        this.addDrinkForm.selectedPurchaseVenueId = this.checkVenueIfExists(place);
+        
+        console.log('TZHFrontendLog: Purchase location selected:', {
+          place: this.addDrinkForm.selectedPurchasePlace,
+          address: this.addDrinkForm.selectedPurchaseAddress,
+          venueId: this.addDrinkForm.selectedPurchaseVenueId
+        });
+      }
+    },
+
+    // Handle input changes for purchase location
+    onPurchaseLocationInput(event) {
+      // Handle both string values and event objects
+      const inputValue = typeof event === 'string' ? event : event.target.value;
+      this.addDrinkForm.purchaseLocationInputValue = inputValue;
+      
+      // If user is typing manually (not from autocomplete), clear the selection
+      if (inputValue !== this.addDrinkForm.selectedPurchasePlace) {
+        this.addDrinkForm.selectedPurchasePlace = '';
+        this.addDrinkForm.selectedPurchaseAddress = '';
+        this.addDrinkForm.selectedPurchaseVenueId = null;
+        
+        // Set manual entry as purchasePlaceName (only if inputValue is not empty)
+        this.addDrinkForm.purchasePlaceName = inputValue ? inputValue.trim() : '';
+      }
+    },
+
+    // Handle focus on purchase location input
+    onPurchaseLocationFocus() {
+      // Could be used for future enhancements like showing recent places
+      console.log('TZHFrontendLog: Purchase location input focused');
+    },
+
+    // Handle blur on purchase location input
+    onPurchaseLocationBlur() {
+      // Ensure manual entry is captured
+      if (this.addDrinkForm.purchaseLocationInputValue && !this.addDrinkForm.selectedPurchasePlace) {
+        this.addDrinkForm.purchasePlaceName = this.addDrinkForm.purchaseLocationInputValue.trim();
+        console.log('TZHFrontendLog: Manual purchase location entry captured:', this.addDrinkForm.purchasePlaceName);
+      }
+    },
+
+    // Handle keydown on purchase location input
+    onPurchaseLocationKeydown(event) {
+      // Could be used for handling special keys like Enter, Escape, etc.
+      console.log('TZHFrontendLog: Purchase location keydown:', event.key);
+    },
+
+    // Clear selected purchase location
+    clearSelectedPurchaseLocation() {
+      this.addDrinkForm.selectedPurchasePlace = '';
+      this.addDrinkForm.selectedPurchaseAddress = '';
+      this.addDrinkForm.selectedPurchaseVenueId = null;
+      this.addDrinkForm.purchaseLocationInputValue = '';
+      this.addDrinkForm.purchasePlaceName = '';
+      
+      console.log('TZHFrontendLog: Purchase location cleared');
+    },
+
+    // Check if place exists as a venue (optional functionality)
+    checkVenueIfExists(_place) {
+      // This would check against a venues database in the future
+      // Parameter _place would be used to lookup venue by place.place_id or place.name
+      // For now, return null since venue ID is optional
+      console.log('TZHFrontendLog: checkVenueIfExists called with place:', _place?.name || 'unknown');
+      return null;
+    },
+
+    // Setup observer to watch for Google Maps autocomplete container
+    setupGoogleMapsObserver() {
+      // Create a mutation observer to watch for the PAC container
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1 && node.classList && node.classList.contains('pac-container')) {
+              // Google Maps autocomplete container was added, apply our positioning
+              console.log('TZHFrontendLog: Google Maps PAC container detected, adjusting position');
+              this.adjustGoogleMapsPosition();
+            }
+          });
+        });
+      });
+
+      // Start observing the document body for new elements
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+
+      // Store the observer so we can disconnect it later
+      this._googleMapsObserver = observer;
+      
+      console.log('TZHFrontendLog: Google Maps observer setup complete');
+    },
+
+    // Method to adjust Google Maps autocomplete position
+    adjustGoogleMapsPosition() {
+      // Wait a bit for the DOM to update and Google Maps to create its container
+      setTimeout(() => {
+        const pacContainer = document.querySelector('.pac-container');
+        if (pacContainer) {
+          console.log('TZHFrontendLog: Adjusting Google Maps position');
+
+          // Ensure the autocomplete dropdown appears correctly
+          pacContainer.style.position = 'absolute';
+          pacContainer.style.zIndex = '1051'; // Above Bootstrap modals
+          
+          // Get the input field position to calculate proper offset
+          const inputField = this.$refs.purchaseLocationInput?.$el || document.querySelector('[placeholder*="Wine shop"]');
+          if (inputField) {
+            const inputRect = inputField.getBoundingClientRect();
+            pacContainer.style.top = (inputRect.bottom + window.scrollY) + 'px';
+            pacContainer.style.left = inputRect.left + 'px';
+            pacContainer.style.width = inputRect.width + 'px';
+          }
+        } else {
+          console.log('TZHFrontendLog: PAC container not found');
+        }
+      }, 100);
+    },
+
+    // ============ End Purchase Location Methods ============
 
     // Add drink to cellar
     async addDrinkToCellar() {
+      console.log('TZHFrontendLog: ===========================================');
+      console.log('TZHFrontendLog: Starting addDrinkToCellar process');
+      console.log('TZHFrontendLog: Form validation check - canAddToCellar:', this.canAddToCellar);
+      console.log('TZHFrontendLog: Selected drink:', JSON.stringify(this.addDrinkForm.selectedDrink, null, 2));
+      console.log('TZHFrontendLog: Current form state:', JSON.stringify(this.addDrinkForm, null, 2));
+      
       if (!this.canAddToCellar) {
+        console.log('TZHFrontendLog: Form validation failed - cannot add to cellar');
         return;
       }
 
       this.addingToCellar = true;
+      console.log('TZHFrontendLog: Set addingToCellar flag to true');
 
       try {
+        console.log('TZHFrontendLog: Starting data preparation...');
+        
+        // Log each form field before processing
+        console.log('TZHFrontendLog: Raw form fields:');
+        console.log('TZHFrontendLog:   - selectedDrink.id:', this.addDrinkForm.selectedDrink.id);
+        console.log('TZHFrontendLog:   - ownerType:', this.ownerType);
+        console.log('TZHFrontendLog:   - ownerId:', this.id);
+        console.log('TZHFrontendLog:   - quantity:', this.addDrinkForm.quantity);
+        console.log('TZHFrontendLog:   - format:', this.addDrinkForm.format);
+        console.log('TZHFrontendLog:   - volumeNumber:', this.addDrinkForm.volumeNumber);
+        console.log('TZHFrontendLog:   - volumeUnit:', this.addDrinkForm.volumeUnit);
+        console.log('TZHFrontendLog:   - vintage:', this.addDrinkForm.vintage);
+        console.log('TZHFrontendLog:   - currentValueEstimation:', this.addDrinkForm.currentValueEstimation);
+        console.log('TZHFrontendLog:   - currentValueCurrency:', this.addDrinkForm.currentValueCurrency);
+        console.log('TZHFrontendLog:   - drinkOnwardsDate:', this.addDrinkForm.drinkOnwardsDate);
+        console.log('TZHFrontendLog:   - drinkByDate:', this.addDrinkForm.drinkByDate);
+        console.log('TZHFrontendLog:   - suggestedFoodPairing:', this.addDrinkForm.suggestedFoodPairing);
+        console.log('TZHFrontendLog:   - status:', this.addDrinkForm.status);
+        console.log('TZHFrontendLog:   - consumption:', this.addDrinkForm.consumption);
+        console.log('TZHFrontendLog:   - currentLocation:', this.addDrinkForm.currentLocation);
+        console.log('TZHFrontendLog:   - subLocation:', this.addDrinkForm.subLocation);
+        console.log('TZHFrontendLog:   - purchasePlaceName:', this.addDrinkForm.purchasePlaceName);
+        console.log('TZHFrontendLog:   - selectedPurchasePlace:', this.addDrinkForm.selectedPurchasePlace);
+        console.log('TZHFrontendLog:   - selectedPurchaseAddress:', this.addDrinkForm.selectedPurchaseAddress);
+        console.log('TZHFrontendLog:   - selectedPurchaseVenueId:', this.addDrinkForm.selectedPurchaseVenueId);
+        console.log('TZHFrontendLog:   - purchaseLocationInputValue:', this.addDrinkForm.purchaseLocationInputValue);
+        console.log('TZHFrontendLog:   - purchaseDate:', this.addDrinkForm.purchaseDate);
+        console.log('TZHFrontendLog:   - deliveryDate:', this.addDrinkForm.deliveryDate);
+        console.log('TZHFrontendLog:   - purchasePrice:', this.addDrinkForm.purchasePrice);
+        console.log('TZHFrontendLog:   - purchaseCurrency:', this.addDrinkForm.purchaseCurrency);
+        console.log('TZHFrontendLog:   - personalNotes:', this.addDrinkForm.personalNotes);
+        console.log('TZHFrontendLog:   - selectedCollectionId:', this.addDrinkForm.selectedCollectionId);
+
         // Prepare cellar item data according to backend API specification
         const cellarData = {
           // Required fields
@@ -2129,7 +2394,12 @@ export default {
           ...(this.addDrinkForm.consumption && { consumption: this.addDrinkForm.consumption }),
           ...(this.addDrinkForm.currentLocation && this.addDrinkForm.currentLocation.trim() && { currentLocation: this.addDrinkForm.currentLocation.trim() }),
           ...(this.addDrinkForm.subLocation && this.addDrinkForm.subLocation.trim() && { subLocation: this.addDrinkForm.subLocation.trim() }),
+          
+          // Purchase location data (Google Maps integration)
           ...(this.addDrinkForm.purchasePlaceName && this.addDrinkForm.purchasePlaceName.trim() && { purchasePlaceName: this.addDrinkForm.purchasePlaceName.trim() }),
+          ...(this.addDrinkForm.selectedPurchaseAddress && this.addDrinkForm.selectedPurchaseAddress.trim() && { purchaseAddress: this.addDrinkForm.selectedPurchaseAddress.trim() }),
+          ...(this.addDrinkForm.selectedPurchaseVenueId && { purchaseVenueId: parseInt(this.addDrinkForm.selectedPurchaseVenueId) }),
+          
           ...(this.addDrinkForm.purchaseDate && { purchaseDate: this.addDrinkForm.purchaseDate }),
           ...(this.addDrinkForm.deliveryDate && { deliveryDate: this.addDrinkForm.deliveryDate }),
           ...(this.addDrinkForm.purchasePrice && { purchasePrice: parseFloat(this.addDrinkForm.purchasePrice) }),
@@ -2140,29 +2410,61 @@ export default {
           ...(this.addDrinkForm.selectedCollectionId && { collectionId: parseInt(this.addDrinkForm.selectedCollectionId) })
         };
 
+        console.log('TZHFrontendLog: Prepared cellar data payload:', JSON.stringify(cellarData, null, 2));
+        console.log('TZHFrontendLog: Payload size:', JSON.stringify(cellarData).length, 'characters');
+        console.log('TZHFrontendLog: Number of fields in payload:', Object.keys(cellarData).length);
+
         // Call the actual API endpoint
         const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
-        const response = await this.$axios.post(`${baseUrl}/editCellar/addToCellar`, cellarData);
+        const fullUrl = `${baseUrl}/editCellar/addToCellar`;
+        console.log('TZHFrontendLog: Making API call to:', fullUrl);
+        console.log('TZHFrontendLog: Request headers will include axios defaults');
+        
+        const response = await this.$axios.post(fullUrl, cellarData);
+
+        console.log('TZHFrontendLog: API call completed');
+        console.log('TZHFrontendLog: Response status:', response.status);
+        console.log('TZHFrontendLog: Response headers:', JSON.stringify(response.headers, null, 2));
+        console.log('TZHFrontendLog: Response data:', JSON.stringify(response.data, null, 2));
 
         if (response.status === 201 && response.data.code === 201) {
+          console.log('TZHFrontendLog: Success response received');
+          console.log('TZHFrontendLog: Master ID created:', response.data.data.masterId);
+          console.log('TZHFrontendLog: Bottle IDs created:', response.data.data.bottleIds);
+          console.log('TZHFrontendLog: Collection ID used:', response.data.data.collectionId);
+          console.log('TZHFrontendLog: Number of bottles added:', response.data.data.quantity);
+          
           // Success! Reset form and reload data
+          console.log('TZHFrontendLog: Resetting form...');
           this.resetAddDrinkForm();
           
           // Reload cellar data to show the new item
+          console.log('TZHFrontendLog: Reloading cellar data...');
           await this.loadCellarData();
+          console.log('TZHFrontendLog: Cellar data reloaded successfully');
           
           // Show success message
-          console.log('Successfully added to cellar!', response.data);
+          console.log('TZHFrontendLog: Process completed successfully!', response.data);
           
           // Optional: You can add a toast notification here
           // this.$toast.success(`Successfully added ${response.data.data.quantity} bottle(s) to cellar!`);
           
         } else {
+          console.log('TZHFrontendLog: Unexpected response status or code');
+          console.log('TZHFrontendLog: Expected status 201 and code 201, got status:', response.status, 'code:', response.data.code);
           throw new Error(response.data.message || 'Failed to add to cellar');
         }
 
       } catch (error) {
-        console.error('Error adding to cellar:', error);
+        console.log('TZHFrontendLog: Error occurred during process');
+        console.error('TZHFrontendLog: Error object:', error);
+        console.error('TZHFrontendLog: Error message:', error.message);
+        
+        if (error.response) {
+          console.error('TZHFrontendLog: Error response status:', error.response.status);
+          console.error('TZHFrontendLog: Error response headers:', JSON.stringify(error.response.headers, null, 2));
+          console.error('TZHFrontendLog: Error response data:', JSON.stringify(error.response.data, null, 2));
+        }
         
         // Show user-friendly error message
         let errorMessage = 'Failed to add drink to cellar';
@@ -2172,12 +2474,16 @@ export default {
           errorMessage = error.message;
         }
         
+        console.error('TZHFrontendLog: Final error message:', errorMessage);
+        
         // Optional: You can add a toast notification here
         // this.$toast.error(errorMessage);
-        console.error('Error message:', errorMessage);
         
       } finally {
+        console.log('TZHFrontendLog: Setting addingToCellar flag to false');
         this.addingToCellar = false;
+        console.log('TZHFrontendLog: Frontend process completed');
+        console.log('TZHFrontendLog: ===========================================');
       }
     },
 
@@ -2214,6 +2520,13 @@ export default {
         currentLocation: 'At Home',
         subLocation: '',
         purchasePlaceName: '',
+        
+        // Purchase location with Google Maps integration
+        purchaseLocationInputValue: '', // Input field value for Google Maps autocomplete
+        selectedPurchasePlace: '', // Name from Google Maps (for purchasePlaceName)
+        selectedPurchaseAddress: '', // Address from Google Maps (for purchaseAddress)
+        selectedPurchaseVenueId: null, // Optional venue ID if applicable
+        
         purchaseDate: null,
         deliveryDate: null,
         purchasePrice: null,
@@ -3209,5 +3522,63 @@ export default {
   .form-section .section-header {
     font-size: 1rem;
   }
+}
+
+/* Google Maps Purchase Location Styles */
+.purchase-location-container {
+  position: relative;
+}
+
+.purchase-location-container .input-with-icon {
+  border-right: none;
+}
+
+.purchase-location-container .input-group-text .bi-geo-alt.text-success {
+  color: #198754 !important;
+}
+
+.purchase-location-container .alert {
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0;
+}
+
+.purchase-location-container .alert .btn-sm {
+  padding: 0.125rem 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* Global Google Maps autocomplete dropdown styling */
+:global(.pac-container) {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  z-index: 1051 !important; /* Above Bootstrap modals */
+}
+
+:global(.pac-item) {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+:global(.pac-item:hover) {
+  background-color: #f8f9fa;
+}
+
+:global(.pac-item:last-child) {
+  border-bottom: none;
+}
+
+:global(.pac-item-query) {
+  font-weight: 600;
+  color: #212529;
+}
+
+:global(.pac-matched) {
+  font-weight: 700;
+  color: #0d6efd;
 }
 </style>
