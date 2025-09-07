@@ -1196,7 +1196,7 @@
                     <div class="col-12">
                       <h6 class="mb-1 text-start">
                         <strong>Bottle #{{ index + 1 }}</strong>
-                        <small class="text-muted ms-2">Quantity Variant ID: {{ bottle.quantityVariantID }}</small>
+                        <small class="text-muted ms-2">Variant Group ID: {{ bottle.variantGroupID }} | Quantity Variant ID: {{ bottle.quantityVariantID }}</small>
                       </h6>
                     </div>
                   </div>
@@ -1546,15 +1546,13 @@ export default {
       const groups = {}
       
       this.tabItems.forEach(item => {
-        // Create unique key for listing + variant + format + volume combination
-        // Normalize volume number to handle floating point precision issues
-        const normalizedVolume = item.volumeNumber ? parseFloat(item.volumeNumber).toString() : 'no-volume';
-        const groupKey = `${item.listingId}_${item.variant || 'no-variant'}_${item.drinkFormat || 'no-format'}_${normalizedVolume}_${item.volumeUnit || 'no-unit'}`
+        // Use variantGroupID for grouping - items with the same variantGroupID belong together
+        const groupKey = item.variantGroupID || `standalone_${item.cellarItemId}`
         
         // Debug logging for grouping
         if (this.activeTab === 'all' && this.tabItems.length < 20) { // Only log when not too many items
-          console.log(`TZHFrontendLog: Grouping item ${item.id} with key: ${groupKey}`);
-          console.log(`TZHFrontendLog:   - listingId: ${item.listingId}, variant: ${item.variant}, format: ${item.drinkFormat}, volume: ${item.volumeNumber} ${item.volumeUnit}`);
+          console.log(`TZHFrontendLog: Grouping item ${item.cellarItemId} with variantGroupID: ${item.variantGroupID}`);
+          console.log(`TZHFrontendLog:   - Using groupKey: ${groupKey}`);
         }
         
         if (!groups[groupKey]) {
@@ -1566,6 +1564,7 @@ export default {
             // Count of bottles in this group
             bottleCount: 0,
             // Group identification
+            variantGroupID: item.variantGroupID,
             listingId: item.listingId,
             variant: item.variant,
             drinkFormat: item.drinkFormat,
@@ -1769,6 +1768,7 @@ export default {
           console.log('drinkStyle field:', this.allItems[0].drinkStyle);
           console.log('typeCategory field:', this.allItems[0].typeCategory);
           console.log('drinkType field:', this.allItems[0].drinkType);
+          console.log('variantGroupID field:', this.allItems[0].variantGroupID);
         }
         
       } catch (error) {
@@ -1910,6 +1910,7 @@ export default {
         // Generate a temporary ID (in real implementation, this would come from backend)
         cellarItemId: `temp_${Date.now()}`,
         quantityVariantID: `temp_variant_${Date.now()}`,
+        variantGroupID: this.selectedGroup.variantGroupID, // Inherit the group's variantGroupID
         listingId: this.selectedGroup.listingId,
         variant: this.selectedGroup.variant,
         

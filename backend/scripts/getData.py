@@ -5785,6 +5785,7 @@ def getCellarData(ownerType, ownerID):
                 -- Individual Bottle Details
                 ci."id" as "cellarItemId",
                 ci."quantityVariantID",
+                ci."variantGroupID",
                 ci."status",
                 ci."consumption",
                 ci."currentLocation",
@@ -6008,6 +6009,7 @@ def testGetCellarData(ownerType, ownerID):
             mci."listingID",
             mci."collectionID",
             mci."quantityVariantID",
+            mci."variantGroupID",
             mci."drinkFormat",
             mci."volumeNumber",
             mci."volumeUnit",
@@ -6095,6 +6097,7 @@ def getCellarDashboard(ownerType, ownerID):
             -- Individual Bottle Details
             ci."id",
             ci."quantityVariantID",
+            ci."variantGroupID",
             ci."purchasePrice",
             ci."purchaseCurrency",
             ci."status",
