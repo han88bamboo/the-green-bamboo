@@ -241,24 +241,42 @@ def addToCellar():
                 "message": error_msg
             }), 400
         
-        # Check if master record already exists for this listing+variant+format+volume combination
+        # Check if master record already exists for this listing+variant+format+volume combination FOR THIS OWNER
         print("TZHBackendLog: Checking for existing master record...")
-        print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit}")
+        print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']} in collection {collection_id}")
         
+        # First, let's debug what's actually in the database for this user
+        cur.execute("""
+            SELECT "id", "listingID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit", "collectionID"
+            FROM "myCellarItems" 
+            WHERE "listingID" = %s 
+            AND "collectionID" = %s
+            ORDER BY "quantityVariantID"
+        """, (data['listingId'], collection_id))
+        
+        all_user_items = cur.fetchall()
+        print(f"TZHBackendLog: All existing items for this listing and collection:")
+        for item in all_user_items:
+            print(f"TZHBackendLog:   Item: {dict(item)}")
+        
+        # Now look for the specific master record
         cur.execute("""
             SELECT "id" FROM "myCellarItems" 
             WHERE "listingID" = %s 
-            AND "variant" = %s 
+            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
             AND "quantityVariantID" = 1
             AND "drinkFormat" = %s
             AND "volumeNumber" = %s
             AND "volumeUnit" = %s
+            AND "collectionID" = %s
         """, (
             data['listingId'], 
             variant, 
+            variant,  # For the NULL check
             format_value,
             volume_number,
-            volume_unit
+            volume_unit,
+            collection_id
         ))
         
         master_record = cur.fetchone()
@@ -363,22 +381,25 @@ def addToCellar():
                 cur.execute(update_query, update_values)
                 print("TZHBackendLog: Master record updated")
         
-        # Get next quantityVariantID for this listing+variant+format+volume combination
+        # Get next quantityVariantID for this listing+variant+format+volume combination FOR THIS OWNER
         print("TZHBackendLog: Getting next quantityVariantID...")
         cur.execute("""
             SELECT MAX("quantityVariantID") as max_variant_id 
             FROM "myCellarItems" 
             WHERE "listingID" = %s 
-            AND "variant" = %s
+            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
             AND "drinkFormat" = %s
             AND "volumeNumber" = %s
             AND "volumeUnit" = %s
+            AND "collectionID" = %s
         """, (
             data['listingId'], 
             variant,
+            variant,  # For the NULL check
             format_value,
             volume_number,
-            volume_unit
+            volume_unit,
+            collection_id
         ))
         
         result = cur.fetchone()
@@ -520,15 +541,17 @@ def addToCellar():
             bottle_data = cur.fetchone()
             print(f"TZHBackendLog: Bottle record {bottle_id} in database: {dict(bottle_data) if bottle_data else 'NOT FOUND'}")
         
-        # Query all records for this listing+variant combination to see the full picture
+        # Query all records for this listing+variant combination for this owner to see the full picture
         cur.execute("""
             SELECT "id", "quantityVariantID", "status", "consumption", "currentLocation", 
                    "purchasePrice", "drinkFormat", "volumeNumber", "volumeUnit",
                    "variant", "noteToSelf", "subLocation", "purchasePlaceName"
             FROM "myCellarItems" 
-            WHERE "listingID" = %s AND "variant" = %s
+            WHERE "listingID" = %s 
+            AND ("variant" = %s OR ("variant" IS NULL AND %s IS NULL))
+            AND "collectionID" = %s
             ORDER BY "quantityVariantID"
-        """, (data['listingId'], variant))
+        """, (data['listingId'], variant, variant, collection_id))
         all_records = cur.fetchall()
         print(f"TZHBackendLog: All records for this listing+variant:")
         for record in all_records:
