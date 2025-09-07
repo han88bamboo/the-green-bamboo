@@ -1492,8 +1492,9 @@
 
                               <!-- Second Row: Like / Comment / Share -->
                               <div class="row w-100 border-top pt-2">
-                                <div class="col d-flex justify-content-around d-none d-md-flex">
+                                <div class="col d-flex justify-content-around flex-wrap">
 
+                                  <!-- UnLike Button -->
                                   <span v-if="hasLikedContent(content.id, content.contentType)" class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-hand-thumbs-up-fill" viewBox="0 0 16 16"
                                     style="cursor: pointer;" @click="unlikeContent(content.id, content.contentType)">
@@ -1502,6 +1503,7 @@
                                     <span style="cursor: pointer;" @click="unlikeContent(content.id, content.contentType)">Unlike</span>
                                   </span>
 
+                                  <!-- Like Button-->
                                   <span v-else class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                         class="bi bi-hand-thumbs-up me-1" viewBox="0 0 16 16" style="cursor: pointer;"
@@ -1511,7 +1513,7 @@
                                     <span style="cursor: pointer;" @click="likeContent(content.id, content.contentType)">Like</span>
                                   </span>
 
-
+                                  <!-- Comment Button -->
                                   <span class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots me-1" viewBox="0 0 16 16">
                                       <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
@@ -1520,14 +1522,60 @@
                                     <span style="cursor: pointer;">Comment</span>
                                   </span>
 
+                                  <!-- Share Button -->
                                   <span class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
                                       class="bi bi-share me-1" viewBox="0 0 16 16">
                                       <path
                                         d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
                                     </svg>
-                                    <span style="cursor: pointer;">Share</span>
+                                    <span style="cursor: pointer;" @click="shareContent(content)">Share</span>
                                   </span>
+
+                                  <!-- Share Modal -->
+                                  <div v-show="openShareModal" class="modal fade" id="shareReviewModal" tabindex="-1" style="display: block;"  aria-labelledby="shareReviewModalLabel"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog">
+                                      <!-- SHARE SUCCESS -->
+                                      <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
+                                        <div class="modal-body text-center p-4">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                                            class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                            <path
+                                              d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
+                                          </svg>
+                                          <br>
+                                          <span>{{ shareSuccessMessage }}</span>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" @click="openShareModal = false" data-bs-dismiss="modal">
+                                            Close
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      <!-- SHARE ERROR -->
+                                      <div class="text-danger fw-bold fs-5 modal-content" v-if="shareError">
+                                        <div class="modal-body text-center p-4">
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                                            class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                            <path
+                                              d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+                                          </svg>
+                                          <br>
+                                          <span>{{ shareErrorMessage }}</span>
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal"
+                                            data-bs-dismiss="modal">
+                                            Close
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
 
                                 </div>
                               </div>
@@ -2340,7 +2388,16 @@ export default {
         commentId: null,
         contentType: null
       },
-      topCommentsToUpdate: []
+      topCommentsToUpdate: [],
+
+      // Share variables
+      openShareModal: false,
+      shareSuccess: false,
+      shareSuccessMessage: "",
+      shareError: false,
+      shareErrorMessage: "",
+
+
     };
   },
   mounted() {
@@ -3374,8 +3431,10 @@ methods: {
         case 'Review':
           return `/listing/view/${content.id}/${this.slugify(content.listingName)}`;
         case 'pReview':
+        case 'pUpdate':
           return `/profile/producer/${content.producerId}/${this.slugify(content.producerName)}`;
         case 'vReview':
+        case 'vUpdate':
           return `/profile/venue/${content.venueId}/${this.slugify(content.venueName)}`;
         default:
           return null;
@@ -3519,7 +3578,38 @@ methods: {
         const toast = useToast();
         toast.error("Failed to delete comment. Please try again later.");
       }
+    },
+
+    // Function to copy link to clipboard
+    async shareContent(content) {
+
+      try {
+
+        let endpoint = this.getContentLink(content);
+        console.log("Endpoint to copy:", endpoint);
+        
+        if (endpoint) {
+          // Add the hostname 
+          const currentUrl = window.location.origin;
+
+          await navigator.clipboard.writeText(currentUrl + endpoint);
+          console.log("Link copied to clipboard:", currentUrl + endpoint);
+        }
+
+        // Show success modal
+        this.shareSuccessMessage = "Review link copied! You can share it now";
+        this.shareSuccess = true;
+        this.shareError = false;
+        this.openShareModal = true;
+      } catch (err) {
+        console.error("Failed to copy link:", err);
+        this.shareSuccessMessage = "Failed to copy link";
+        this.shareSuccess = false;
+        this.shareError = true;
+        this.openShareModal = true;
+      }
     }
+
 
   },
 };
