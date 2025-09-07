@@ -5987,6 +5987,79 @@ def getCellarData(ownerType, ownerID):
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [GET] Test endpoint to get raw row-by-row cellar data for debugging
+@blueprint.route("/testGetCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
+def testGetCellarData(ownerType, ownerID):
+    """
+    Test endpoint to retrieve raw row-by-row information from myCellarItems table.
+    This is for debugging purposes to see exactly what's in the database without
+    any complex joins or grouping logic that might obscure data issues.
+    
+    Returns all rows for the specified owner with basic listing information.
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Simple query to get all raw cellar data with basic listing info
+        query = """
+        SELECT 
+            mci."id" as "myCellarItemID",
+            mci."listingID",
+            mci."collectionID",
+            mci."quantityVariantID",
+            mci."drinkFormat",
+            mci."volumeNumber",
+            mci."volumeUnit",
+            mci."variant",
+            mci."status",
+            mci."consumption",
+            mci."currentValueEstimation",
+            mci."purchaseDate",
+            mci."purchasePrice",
+            mci."archiveStatus",
+            mci."addedDate",
+            mci."currentLocation",
+            mci."subLocation",
+            mci."noteToSelf",
+            cc."ownerID",
+            cc."ownerType",
+            cc."collectionName",
+            l."listingName" as "listingTitle",
+            l."producerID",
+            l."drinkType"
+        FROM "myCellarItems" mci
+        LEFT JOIN "myCellarCollections" cc ON mci."collectionID" = cc."id"
+        LEFT JOIN "listings" l ON mci."listingID" = l."id"
+        WHERE cc."ownerType" = %s 
+        AND cc."ownerID" = %s
+        AND mci."archiveStatus" = FALSE
+        ORDER BY mci."listingID", mci."variant", mci."drinkFormat", mci."volumeNumber", mci."volumeUnit", mci."quantityVariantID"
+        """
+        
+        cur.execute(query, (ownerType, ownerID))
+        raw_items = cur.fetchall()
+        
+        # Convert to list of dictionaries for JSON serialization
+        items_list = []
+        for item in raw_items:
+            items_list.append(dict(item))
+        
+        return jsonify({
+            "code": 200,
+            "message": "Raw cellar data retrieved successfully",
+            "totalRows": len(items_list),
+            "data": items_list
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in testGetCellarData: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving test cellar data: {str(e)}"
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get cellar dashboard data with analytics and historical trends
 @blueprint.route("/getCellarDashboard/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCellarDashboard(ownerType, ownerID):

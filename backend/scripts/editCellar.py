@@ -298,6 +298,8 @@ def addToCellar():
                 print(f"TZHBackendLog: Will add bottles to the existing master's collection ({existing_master_collection_id}) to keep them grouped")
                 # Use the existing master's collection to keep bottles grouped together
                 collection_id = existing_master_collection_id
+        else:
+            print(f"TZHBackendLog: No existing master record found for listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit}")
         
         if not master_record:
             print("TZHBackendLog: No existing master record found, creating new master record")
@@ -399,41 +401,36 @@ def addToCellar():
                 cur.execute(update_query, update_values)
                 print("TZHBackendLog: Master record updated")
         
-        # Get next quantityVariantID for this listing+variant+format+volume combination FOR THIS OWNER
+        # Get next quantityVariantID - SIMPLIFIED APPROACH
         print("TZHBackendLog: Getting next quantityVariantID...")
-        cur.execute("""
-            SELECT MAX(ci."quantityVariantID") as max_variant_id 
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE ci."listingID" = %s 
-            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
-            AND ci."drinkFormat" = %s
-            AND ci."volumeNumber" = %s
-            AND ci."volumeUnit" = %s
-            AND cc."ownerID" = %s
-            AND cc."ownerType" = %s
-        """, (
-            data['listingId'], 
-            variant,
-            variant,  # For the NULL check
-            format_value,
-            volume_number,
-            volume_unit,
-            data['ownerId'],
-            data['ownerType']
-        ))
         
-        result = cur.fetchone()
-        # Since we just created/found a master record (quantityVariantID = 1), 
-        # individual bottles should start from 2
-        max_existing_id = result['max_variant_id'] or 0
-        if max_existing_id == 0:
-            # This shouldn't happen since we just created a master record, but handle gracefully
-            next_variant_id = 2
-            print("TZHBackendLog: Warning: No existing records found, but master should exist. Starting from 2.")
+        if not master_record:
+            # New master record case
+            next_variant_id = 2  # Master is 1, so next individual bottle is 2
+            print(f"TZHBackendLog: New master record created, next quantityVariantID will be: {next_variant_id}")
         else:
+            # Existing master record case
+            # Find the absolute maximum quantityVariantID for this listing+variant in this collection
+            # This ensures we never have conflicts, even if there are multiple volume groups
+            cur.execute("""
+                SELECT MAX("quantityVariantID") as max_id
+                FROM "myCellarItems"
+                WHERE "listingID" = %s 
+                AND "variant" = %s
+                AND "collectionID" = %s
+            """, (
+                data['listingId'], 
+                variant,
+                existing_master_collection_id
+            ))
+            
+            result = cur.fetchone()
+            max_existing_id = result['max_id'] or 1
             next_variant_id = max_existing_id + 1
-        print(f"TZHBackendLog: Next quantityVariantID will be: {next_variant_id} (max existing: {max_existing_id})")
+            print(f"TZHBackendLog: Found max quantityVariantID {max_existing_id} for listing+variant, next will be: {next_variant_id}")
+            
+            # IMPORTANT: This means different volume groups will have non-consecutive quantityVariantIDs
+            # But that's OK - the grouping is determined by the master record's format+volume, not by sequence
         
         # Create individual bottle records
         print(f"TZHBackendLog: Creating {quantity} individual bottle records...")
@@ -562,7 +559,7 @@ def addToCellar():
             bottle_data = cur.fetchone()
             print(f"TZHBackendLog: Bottle record {bottle_id} in database: {dict(bottle_data) if bottle_data else 'NOT FOUND'}")
         
-        # Query all records for this listing+variant combination for this owner to see the full picture
+        # Query all records for this specific drink group (same listing+variant+format+volume) for this owner
         cur.execute("""
             SELECT ci."id", ci."quantityVariantID", ci."status", ci."consumption", ci."currentLocation", 
                    ci."purchasePrice", ci."drinkFormat", ci."volumeNumber", ci."volumeUnit",
@@ -571,9 +568,11 @@ def addToCellar():
             JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
             WHERE ci."listingID" = %s 
             AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
-            AND ci."drinkFormat" = %s
-            AND ci."volumeNumber" = %s
-            AND ci."volumeUnit" = %s
+            AND (
+                (ci."quantityVariantID" = 1 AND ci."drinkFormat" = %s AND ci."volumeNumber" = %s AND ci."volumeUnit" = %s)
+                OR 
+                (ci."quantityVariantID" > 1 AND ci."drinkFormat" IS NULL AND ci."volumeNumber" IS NULL AND ci."volumeUnit" IS NULL)
+            )
             AND cc."ownerID" = %s
             AND cc."ownerType" = %s
             ORDER BY ci."quantityVariantID"
