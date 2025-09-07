@@ -4589,14 +4589,14 @@ INSERT INTO "myCellarCollections" (
 
 -- Item 1: Listing ID 1179024
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1179024, 2, 2022, 1, 'Bottle', 750, 'ml',
+    1179024, 2, 2022, 1, 1, 'Bottle', 750, 'ml',
     '2030-12-31', '2025-01-01', '2024-08-15', '2024-08-20',
     89.99, 'USD', 95.00, 'USD',
     NULL, 'Local Wine Shop', '123 Main Street, City, State',
@@ -4607,14 +4607,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 2: Listing ID 1040419
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1040419, 1, NULL, 1, 'Bottle', 500, 'ml',
+    1040419, 1, NULL, 1, 2, 'Bottle', 500, 'ml',
     '2035-06-30', '2026-01-01', '2024-07-10', '2024-07-12',
     125.50, 'USD', 140.00, 'USD',
     NULL, 'Premium Spirits Store', '456 Oak Avenue, Downtown',
@@ -4625,14 +4625,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 3: Listing ID 1037431
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1037431, 2, 2021, 1, 'Bottle', 750, 'ml',
+    1037431, 2, 2021, 1, 3, 'Bottle', 750, 'ml',
     '2028-03-15', '2025-06-01', '2024-06-25', '2024-06-28',
     67.75, 'USD', 72.00, 'USD',
     NULL, 'Neighborhood Liquor Store', '789 Pine Street, Suburb',
@@ -4643,14 +4643,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 4a: Listing ID 1177334 (MASTER RECORD - contains shared properties)
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
 ) VALUES (
-    1177334, 1, 2020, 1, 'Bottle', 700, 'ml',
+    1177334, 1, 2020, 1, 4, 'Bottle', 700, 'ml',
     '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
     199.99, 'USD', 220.00, 'USD',
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
@@ -4661,14 +4661,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 4b: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1177334, 1, 2020, 2, NULL, NULL, NULL,
+    1177334, 1, 2020, 2, 4, NULL, NULL, NULL,
     NULL, NULL, '2024-09-01', '2024-09-05',
     199.99, 'USD', NULL, NULL,
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
@@ -4679,14 +4679,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 4c: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
 ) VALUES (
-    1177334, 1, 2020, 3, NULL, NULL, NULL,
+    1177334, 1, 2020, 3, 4, NULL, NULL, NULL,
     NULL, NULL, '2024-09-01', '2024-09-05',
     199.99, 'USD', NULL, NULL,
     NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
@@ -4697,14 +4697,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 5: Listing ID 1
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1, 1, NULL, 1, 'Can', 330, 'ml',
+    1, 1, NULL, 1, 6, 'Can', 330, 'ml',
     '2025-12-31', '2024-01-01', '2024-09-10', '2024-09-10',
     15.99, 'USD', 16.00, 'USD',
     NULL, 'Grocery Store', '654 Market Street, City Center',
@@ -4715,14 +4715,14 @@ INSERT INTO "myCellarItems" (
 
 -- Item 6: Listing ID 2
 INSERT INTO "myCellarItems" (
-    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID", "drinkFormat", "volumeNumber", "volumeUnit",
     "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
     "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
     "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    2, 1, 2023, 1, 'Bottle', 375, 'ml',
+    2, 1, 2023, 1, 7, 'Bottle', 375, 'ml',
     '2050-01-01', '2030-01-01', '2024-08-20', '2024-08-25',
     275.00, 'USD', 300.00, 'USD',
     NULL, 'Fine Wine Boutique', '987 Vintage Road, Wine District',
