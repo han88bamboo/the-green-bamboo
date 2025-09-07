@@ -450,6 +450,7 @@ def addToCellar():
                         collection_id,
                         variant,
                         current_variant_id,  # Individual bottle ID
+                        group_variant_id,  # Reference to master record's ID
                         purchase_date,
                         delivery_date,
                         purchase_price,
@@ -464,8 +465,7 @@ def addToCellar():
                         data.get('personalNotes', '').strip() or None,
                         False,  # Not archived
                         datetime.now(),
-                        datetime.now(),
-                        group_variant_id  # Reference to master record's ID
+                        datetime.now()
                     )
                     
                     print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
@@ -498,6 +498,7 @@ def addToCellar():
                     collection_id,
                     variant,
                     current_variant_id,  # Individual bottle ID
+                    group_variant_id,  # Reference to master record's ID
                     purchase_date,
                     delivery_date,
                     purchase_price,
@@ -512,8 +513,7 @@ def addToCellar():
                     data.get('personalNotes', '').strip() or None,
                     False,  # Not archived
                     datetime.now(),
-                    datetime.now(),
-                    group_variant_id  # Reference to master record's ID
+                    datetime.now()
                 )
                 
                 print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
