@@ -93,11 +93,33 @@ def getVenues():
                 v."phoneNumber",
                 v."whatsappNumber",
                 vmt."venueMainType" AS "venueMainTypeName",
-                vst."venueSubType" AS "venueSubTypeName"
+                vst."venueSubType" AS "venueSubTypeName",
+                COALESCE(ROUND(AVG(vr.rating), 1), 0) AS "averageRating"
             FROM venues v
             LEFT JOIN "venueMainTypes" vmt ON v."venueMainType" = vmt.id
             LEFT JOIN "venueSubTypes" vst ON v."venueSubType" = vst.id
+            LEFT JOIN "venueReviews" vr ON v.id = vr."venueID"
             {where_clause}
+            GROUP BY 
+                v.id,
+                v."venueName",
+                v."address",
+                v."venueType",
+                v."originLocation",
+                v."venueDesc",
+                v."photo",
+                v."claimStatus",
+                v."yearOpened",
+                v."openForReservations",
+                v."website",
+                v."instagram",
+                v."facebook",
+                v."tiktok",
+                v."email",
+                v."phoneNumber",
+                v."whatsappNumber",
+                vmt."venueMainType",
+                vst."venueSubType"
             ORDER BY v.id DESC
             LIMIT %s
         """

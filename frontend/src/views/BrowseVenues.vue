@@ -218,8 +218,8 @@
                                         @click="sortByCategory('')" style="cursor: pointer;">
                                         Smart Order (Default)
                                         <i v-if="!sortSelection.category"
-                                            class="fas fa-check position-absolute end-0 me-3 text-success"
-                                            style="top: 50%; transform: translateY(-50%);" aria-hidden="true"></i>
+                                            class="fas fa-check position-absolute end-0 me-3 text-success" style="top: 50%; transform: translateY(-50%);" aria-hidden="true">
+                                        </i>
                                     </span>
                                 </li>
 
@@ -234,8 +234,8 @@
                                         @click="sortByCategory(category)" style="cursor: pointer;">
                                         {{ category }}
                                         <i v-if="sortSelection.category === category"
-                                            class="fas fa-check position-absolute end-0 me-3 text-success"
-                                            style="top: 50%; transform: translateY(-50%);" aria-hidden="true"></i>
+                                            class="fas fa-check position-absolute end-0 me-3 text-success" style="top: 50%; transform: translateY(-50%);" aria-hidden="true">
+                                        </i>
                                     </span>
                                 </li>
                             </ul>
@@ -247,7 +247,7 @@
 
                 <!-- Results Header -->
                 <div class="row mt-3">
-                    <div class="col-12">
+                    <div class="col-12" v-if="!venues.loading">
                         <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide"
                             v-if="venues.listing && venues.listing.length > 0">
                             Viewing: {{ venues.listing.length }} {{ effectiveBrowseTerm }} {{ venues.listing.length ===
@@ -280,11 +280,9 @@
                                     <!-- Listing Name -->
                                     <h6 class="fw-bold mb-1 mobile-fs-6">{{ resultListing.venueName }}</h6>
                                     <p class="text-start mb-1 mobile-fs-7">
-                                        <strong>{{ resultListing.originLocation }}</strong>
-                                        <span v-if="resultListing.venueMainTypeName"> • {{
-                                            resultListing.venueMainTypeName }}</span>
-                                        <span v-if="resultListing.venueSubTypeName"> • {{ resultListing.venueSubTypeName
-                                            }}</span>
+                                        <strong>{{ resultListing.originLocation && resultListing.originLocation.trim() !== '' ? resultListing.originLocation : 'N/A' }}</strong>
+                                        <span v-if="resultListing.venueMainTypeName"> • {{ resultListing.venueMainTypeName }}</span>
+                                        <span v-if="resultListing.venueSubTypeName"> • {{ resultListing.venueSubTypeName }}</span>
                                     </p>
                                     <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
                                         {{ resultListing["venueDesc"]?.length > 60
@@ -297,12 +295,10 @@
                                 <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
                                     <div class="d-flex flex-column align-items-center ps-lg-3">
                                         <div class="d-flex align-items-center justify-content-center mb-1">
-                                            <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ?
-                                                resultListing.averageRating : '-'
-                                                }}</span>
+                                            <span class="mobile-fs-7">{{ resultListing.averageRating !== '0' ? resultListing.averageRating : '-'}}</span>
                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                 fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16"
-                                                style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                                style="color: gold;" v-if="resultListing.averageRating !== '0'">
                                                 <path
                                                     d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
                                             </svg>
@@ -355,11 +351,10 @@
                                         <div
                                             class="col-lg-4 col-12 d-flex flex-column align-items-end justify-content-start">
                                             <div class="d-flex align-items-center mb-2">
-                                                <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ?
-                                                    resultListing.averageRating : '-' }}</span>
+                                                <span class="fs-5 me-2">{{ resultListing.averageRating !== '0' ? resultListing.averageRating : '-' }}</span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
                                                     fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16"
-                                                    style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                                    style="color: gold;" v-if="resultListing.averageRating !== '0'">
                                                     <path
                                                         d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
                                                 </svg>
@@ -436,7 +431,7 @@ export default {
 
             // Results
             venues: {
-                loading: false,
+                loading: true,
                 error: null,
                 listing: [], // list of venues 
                 hasNextPage: false, // whether more venues are available
