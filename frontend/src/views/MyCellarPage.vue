@@ -998,16 +998,21 @@
               </div>
               <div class="d-flex align-items-center gap-3">
                 <div class="collection-selector" v-if="selectedGroup?.representative">
-                  <select class="form-select form-select-sm collection-status-select" :value="selectedGroup.representative.collectionId" style="min-width: 220px;">
+                  <select 
+                    class="form-select form-select-sm collection-status-select" 
+                    :value="modalEditing.selectedCollectionId || selectedGroup.representative.collectionId" 
+                    @change="onCollectionChange($event.target.value)"
+                    style="min-width: 220px;"
+                  >
                     <option v-for="collection in collections" :key="collection.id" :value="collection.id">
-                      {{ collection.id === selectedGroup.representative.collectionId ? 'Currently In: ' : 'Move To: ' }}{{ collection.collectionName }}
+                      {{ collection.id === (modalEditing.selectedCollectionId || selectedGroup.representative.collectionId) ? 'Currently In: ' : 'Move To: ' }}{{ collection.collectionName }}
                     </option>
                   </select>
                 </div>
                 <button 
                   type="button" 
                   class="btn-close" 
-                  data-bs-dismiss="modal" 
+                  @click="closeItemDetailsModal"
                   aria-label="Close"
                 ></button>
               </div>
@@ -1111,11 +1116,23 @@
               <div class="row g-3 mb-4">
                 <div class="col-md-3">
                   <label class="form-label">Vintage</label>
-                  <input type="number" class="form-control" :value="selectedGroup.representative.variant" min="1900" max="2030" readonly>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    :value="selectedGroup.representative.variant" 
+                    @input="onMasterFieldChange('variant', $event.target.value)"
+                    min="1900" 
+                    max="2030" 
+                    readonly
+                  >
                 </div>
                 <div class="col-md-3">
                   <label class="form-label">Format</label>
-                  <select class="form-select" :value="selectedGroup.representative.drinkFormat">
+                  <select 
+                    class="form-select" 
+                    :value="selectedGroup.representative.drinkFormat"
+                    @change="onMasterFieldChange('drinkFormat', $event.target.value)"
+                  >
                     <option value="Bottle">Bottle</option>
                     <option value="Can">Can</option>
                     <option value="Sample">Sample</option>
@@ -1124,8 +1141,19 @@
                 <div class="col-md-3">
                   <label class="form-label">Volume</label>
                   <div class="input-group">
-                    <input type="number" class="form-control" :value="selectedGroup.representative.volumeNumber" step="0.1" min="0">
-                    <select class="form-select volume-unit-select">
+                    <input 
+                      type="number" 
+                      class="form-control" 
+                      :value="selectedGroup.representative.volumeNumber" 
+                      @input="onMasterFieldChange('volumeNumber', $event.target.value)"
+                      step="0.1" 
+                      min="0"
+                    >
+                    <select 
+                      class="form-select volume-unit-select"
+                      :value="selectedGroup.representative.volumeUnit"
+                      @change="onMasterFieldChange('volumeUnit', $event.target.value)"
+                    >
                       <option value="ml" selected>ml</option>
                       <option value="oz">oz</option>
                       <option value="l">L</option>
@@ -1135,7 +1163,11 @@
                 <div class="col-md-3">
                   <label class="form-label">Current Market Value</label>
                   <div class="input-group">
-                    <select class="form-select currency-select" :value="selectedGroup.representative.currentValueCurrency">
+                    <select 
+                      class="form-select currency-select" 
+                      :value="selectedGroup.representative.currentValueCurrency"
+                      @change="onMasterFieldChange('currentValueCurrency', $event.target.value)"
+                    >
                       <option value="USD" selected>USD</option>
                       <option value="EUR">EUR</option>
                       <option value="GBP">GBP</option>
@@ -1147,6 +1179,7 @@
                       type="number" 
                       class="form-control" 
                       :value="selectedGroup.representative.currentValueEstimation"
+                      @input="onMasterFieldChange('currentValueEstimation', $event.target.value)"
                       step="0.01" 
                       min="0"
                       placeholder="0.00"
@@ -1163,6 +1196,7 @@
                       type="date" 
                       class="form-control" 
                       :value="selectedGroup.representative.drinkOnwardsDate"
+                      @change="onMasterFieldChange('drinkOnwardsDate', $event.target.value)"
                       ref="modalDrinkOnwardsDateInput"
                     >
                     <span 
@@ -1182,6 +1216,7 @@
                       type="date" 
                       class="form-control" 
                       :value="selectedGroup.representative.drinkByDate"
+                      @change="onMasterFieldChange('drinkByDate', $event.target.value)"
                       ref="modalDrinkByDateInput"
                     >
                     <span 
@@ -1197,16 +1232,13 @@
                 <div class="col-md-4">
                   <label class="form-label">Suggested Food Pairing</label>
                   <div class="input-group">
-                    <select class="form-select" :value="selectedGroup.representative.suggestedFoodPairing">
-                      <option value="">Select pairing</option>
-                      <option 
-                        v-if="selectedGroup.representative.suggestedFoodPairing" 
-                        :value="selectedGroup.representative.suggestedFoodPairing"
-                        selected
-                      >
-                        {{ selectedGroup.representative.suggestedFoodPairing }}
-                      </option>
-                    </select>
+                    <input 
+                      type="text"
+                      class="form-control"
+                      :value="selectedGroup.representative.suggestedFoodPairing"
+                      @input="onMasterFieldChange('suggestedFoodPairing', $event.target.value)"
+                      placeholder="Enter food pairing suggestion"
+                    >
                     <button class="btn btn-outline-secondary" type="button">+</button>
                   </div>
                 </div>
@@ -1234,11 +1266,10 @@
               </div>
               <div class="bottles-list">
                 <div 
-                  v-for="(bottle, index) in selectedGroup.bottles" 
+                  v-for="(bottle, index) in getVisibleBottles(selectedGroup.bottles)" 
                   :key="bottle.cellarItemId"
                   class="bottle-item p-4 mb-3 border rounded"
                   :class="{ 'bottle-consumed': bottle.status === 'Consumed' }"
-
                   style="border-color: #0dcaf0 !important;"
                 >
                   <!-- Bottle Header -->
@@ -1247,6 +1278,7 @@
                       <h6 class="mb-1 text-start">
                         <strong>Bottle #{{ index + 1 }}</strong>
                         <small class="text-muted ms-2">Variant Group ID: {{ bottle.variantGroupID }} | Quantity Variant ID: {{ bottle.quantityVariantID }}</small>
+                        <span v-if="isNewBottle(bottle.cellarItemId)" class="badge bg-success ms-2">New</span>
                       </h6>
                     </div>
                   </div>
@@ -1255,7 +1287,11 @@
                   <div class="row g-3 mb-3">
                     <div class="col-md-2">
                       <label class="form-label small">Status</label>
-                      <select class="form-select form-select-sm" :value="bottle.status">
+                      <select 
+                        class="form-select form-select-sm" 
+                        :value="getBottleFieldValue(bottle.cellarItemId, 'status')"
+                        @change="onBottleFieldChange(bottle.cellarItemId, 'status', $event.target.value)"
+                      >
                         <option value="In Possession">In Possession</option>
                         <option value="On Its Way">On Its Way</option>
                         <option value="Purchased">Purchased</option>
@@ -1266,7 +1302,11 @@
                     </div>
                     <div class="col-md-2">
                       <label class="form-label small">Consumption</label>
-                      <select class="form-select form-select-sm" :value="bottle.consumption">
+                      <select 
+                        class="form-select form-select-sm" 
+                        :value="getBottleFieldValue(bottle.cellarItemId, 'consumption')"
+                        @change="onBottleFieldChange(bottle.cellarItemId, 'consumption', $event.target.value)"
+                      >
                         <option value="Unopened">Unopened</option>
                         <option value="Opened">Opened</option>
                         <option value="Empty">Empty</option>
@@ -1277,7 +1317,8 @@
                       <input 
                         type="text" 
                         class="form-control form-control-sm" 
-                        :value="bottle.currentLocation" 
+                        :value="getBottleFieldValue(bottle.cellarItemId, 'currentLocation')" 
+                        @input="onBottleFieldChange(bottle.cellarItemId, 'currentLocation', $event.target.value)"
                         placeholder="Location"
                       >
                     </div>
@@ -1286,7 +1327,8 @@
                       <input 
                         type="text" 
                         class="form-control form-control-sm" 
-                        :value="bottle.subLocation" 
+                        :value="getBottleFieldValue(bottle.cellarItemId, 'subLocation')" 
+                        @input="onBottleFieldChange(bottle.cellarItemId, 'subLocation', $event.target.value)"
                         placeholder="Sub-location"
                       >
                     </div>
@@ -1295,7 +1337,8 @@
                       <textarea 
                         class="form-control form-control-sm" 
                         rows="2" 
-                        :value="bottle.noteToSelf"
+                        :value="getBottleFieldValue(bottle.cellarItemId, 'noteToSelf')"
+                        @input="onBottleFieldChange(bottle.cellarItemId, 'noteToSelf', $event.target.value)"
                         placeholder="Add notes for this bottle..."
                       ></textarea>
                     </div>
@@ -1309,7 +1352,8 @@
                         <input 
                           type="text" 
                           class="form-control" 
-                          :value="bottle.purchasePlaceName"
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'purchasePlaceName')"
+                          @input="onBottleFieldChange(bottle.cellarItemId, 'purchasePlaceName', $event.target.value)"
                           placeholder="Enter location"
                         >
                         <span class="input-group-text" title="Google Maps integration coming soon">
@@ -1323,7 +1367,8 @@
                         <input 
                           type="date" 
                           class="form-control" 
-                          :value="bottle.purchaseDate"
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'purchaseDate')"
+                          @change="onBottleFieldChange(bottle.cellarItemId, 'purchaseDate', $event.target.value)"
                           :ref="`bottlePurchaseDate${index}`"
                         >
                         <span 
@@ -1342,7 +1387,8 @@
                         <input 
                           type="date" 
                           class="form-control" 
-                          :value="bottle.deliveryDate"
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'deliveryDate')"
+                          @change="onBottleFieldChange(bottle.cellarItemId, 'deliveryDate', $event.target.value)"
                           :ref="`bottleDeliveryDate${index}`"
                         >
                         <span 
@@ -1358,7 +1404,11 @@
                     <div class="col-md-3">
                       <label class="form-label small">Price of Purchase</label>
                       <div class="input-group input-group-sm">
-                        <select class="form-select currency-select" :value="bottle.purchaseCurrency">
+                        <select 
+                          class="form-select currency-select" 
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'purchaseCurrency')"
+                          @change="onBottleFieldChange(bottle.cellarItemId, 'purchaseCurrency', $event.target.value)"
+                        >
                           <option value="USD" selected>USD</option>
                           <option value="EUR">EUR</option>
                           <option value="GBP">GBP</option>
@@ -1369,7 +1419,8 @@
                         <input 
                           type="number" 
                           class="form-control" 
-                          :value="bottle.purchasePrice"
+                          :value="getBottleFieldValue(bottle.cellarItemId, 'purchasePrice')"
+                          @input="onBottleFieldChange(bottle.cellarItemId, 'purchasePrice', $event.target.value)"
                           step="0.01" 
                           min="0"
                           placeholder="0.00"
@@ -1424,8 +1475,8 @@
 
               <!-- Right side: Close and Save -->
               <div class="close-save-buttons">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" @click="saveGroupChanges">
+                <button type="button" class="btn btn-secondary" @click="closeItemDetailsModal">Cancel</button>
+                <button type="button" class="btn btn-primary" @click="saveModalChanges" :disabled="!modalEditing.hasChanges">
                   <i class="bi bi-check-lg"></i> Save Changes
                 </button>
               </div>
@@ -1471,6 +1522,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
 // import { useToast } from "vue-toastification";
 
@@ -1526,6 +1578,17 @@ export default {
       
       // Search debouncing
       searchTimeout: null,
+
+      // Modal editing states
+      modalEditing: {
+        hasChanges: false,
+        masterData: {}, // Stores original master record data for comparison
+        bottleChanges: {}, // Stores changes for individual bottles { bottleId: { field: newValue } }
+        archivedBottles: new Set(), // Track bottles marked for archiving
+        newBottles: [], // Track new bottles added to the group
+        collectionChange: null, // Track collection changes
+        pendingCollectionId: null // Track collection dropdown selection
+      },
 
       // Add drink to cellar form
       addDrinkForm: {
@@ -1974,7 +2037,94 @@ export default {
     
     // Modal management  
     setSelectedGroup(group) {
-      this.selectedGroup = group
+      this.selectedGroup = group;
+      this.modalEditing = {
+        hasChanges: false,
+        masterData: {},
+        bottleChanges: {},
+        archivedBottles: [],
+        newBottles: [],
+        originalCollectionId: group.representative?.collectionId || group.collectionId,
+        selectedCollectionId: group.representative?.collectionId || group.collectionId
+      };
+    },
+
+    closeItemDetailsModal() {
+      if (this.modalEditing.hasChanges) {
+        if (confirm('You have unsaved changes. Are you sure you want to close without saving?')) {
+          this.selectedGroup = null;
+          this.resetModalState();
+        }
+      } else {
+        this.selectedGroup = null;
+        this.resetModalState();
+      }
+    },
+
+    resetModalState() {
+      this.modalEditing = {
+        hasChanges: false,
+        masterData: {},
+        bottleChanges: {},
+        archivedBottles: [],
+        newBottles: [],
+        originalCollectionId: null,
+        selectedCollectionId: null
+      };
+    },
+
+    // Collection change handler
+    onCollectionChange(newCollectionId) {
+      this.modalEditing.selectedCollectionId = newCollectionId;
+      this.modalEditing.hasChanges = true;
+    },
+
+    // Master record field change handlers
+    onMasterFieldChange(field, value) {
+      this.modalEditing.masterData[field] = value;
+      this.modalEditing.hasChanges = true;
+    },
+
+    // Individual bottle field change handlers
+    onBottleFieldChange(cellarItemId, field, value) {
+      if (!this.modalEditing.bottleChanges[cellarItemId]) {
+        this.modalEditing.bottleChanges[cellarItemId] = {};
+      }
+      this.modalEditing.bottleChanges[cellarItemId][field] = value;
+      this.modalEditing.hasChanges = true;
+    },
+
+    // Get current value for bottle field (with change tracking)
+    getBottleFieldValue(cellarItemId, field) {
+      if (this.modalEditing.bottleChanges[cellarItemId] && 
+          Object.prototype.hasOwnProperty.call(this.modalEditing.bottleChanges[cellarItemId], field)) {
+        return this.modalEditing.bottleChanges[cellarItemId][field];
+      }
+      
+      const bottle = this.selectedGroup.bottles.find(b => b.cellarItemId === cellarItemId);
+      return bottle ? bottle[field] : '';
+    },
+
+    // Get current value for master field (with change tracking)
+    getMasterFieldValue(field) {
+      if (Object.prototype.hasOwnProperty.call(this.modalEditing.masterData, field)) {
+        return this.modalEditing.masterData[field];
+      }
+      
+      const masterBottle = this.selectedGroup.bottles.find(b => b.quantityVariantID === 1);
+      return masterBottle ? masterBottle[field] : '';
+    },
+
+    // Check if bottle is new
+    isNewBottle(cellarItemId) {
+      return this.modalEditing.newBottles.some(nb => nb.tempId === cellarItemId);
+    },
+
+    // Filter visible bottles (exclude archived ones)
+    getVisibleBottles(bottles) {
+      return bottles.filter(bottle => 
+        !this.modalEditing.archivedBottles.includes(bottle.cellarItemId)
+      );
     },
 
     // Get status breakdown for a group
@@ -2031,45 +2181,77 @@ export default {
     },
 
     addNewBottle() {
-      if (!this.selectedGroup) return
+      if (!this.selectedGroup) return;
       
-      console.log('Adding new bottle to group:', this.selectedGroup)
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const maxQuantityVariantID = Math.max(...this.selectedGroup.bottles.map(b => b.quantityVariantID));
       
-      // Create a new bottle object with default values
       const newBottle = {
-        // Generate a temporary ID (in real implementation, this would come from backend)
-        cellarItemId: `temp_${Date.now()}`,
-        quantityVariantID: `temp_variant_${Date.now()}`,
-        variantGroupID: this.selectedGroup.variantGroupID, // Inherit the group's variantGroupID
-        listingId: this.selectedGroup.listingId,
-        variant: this.selectedGroup.variant,
-        
-        // Default status values
+        cellarItemId: tempId,
+        variantGroupID: this.selectedGroup.variantGroupID,
+        quantityVariantID: maxQuantityVariantID + 1,
         status: 'In Possession',
         consumption: 'Unopened',
-        currentLocation: 'At Home',
+        currentLocation: '',
         subLocation: '',
         noteToSelf: '',
-        
-        // Copy shared properties from representative bottle
-        drinkFormat: this.selectedGroup.representative.drinkFormat,
-        volumeNumber: this.selectedGroup.representative.volumeNumber,
-        
-        // Default procurement details
-        purchaseDate: null,
-        deliveryDate: null,
         purchasePlaceName: '',
-        purchasePrice: null,
-        purchaseCurrency: 'USD'
+        purchaseDate: '',
+        deliveryDate: '',
+        purchaseCurrency: 'USD',
+        purchasePrice: ''
+      };
+
+      this.selectedGroup.bottles.push(newBottle);
+      this.modalEditing.newBottles.push({ tempId, bottle: newBottle });
+      this.modalEditing.hasChanges = true;
+    },
+
+    // Archive bottle functionality
+    archiveBottle(cellarItemId) {
+      if (confirm('Are you sure you want to archive this bottle? This action cannot be undone.')) {
+        this.modalEditing.archivedBottles.push(cellarItemId);
+        this.modalEditing.hasChanges = true;
       }
-      
-      // Add to the group's bottles array
-      this.selectedGroup.bottles.push(newBottle)
-      
-      // Update bottle count
-      this.selectedGroup.bottleCount = this.selectedGroup.bottles.length
-      
-      // TODO: In real implementation, this would make an API call to create the bottle in the backend
+    },
+
+    // Save all changes to backend
+    async saveModalChanges() {
+      try {
+        this.loading = true;
+        
+        const payload = {
+          variantGroupID: this.selectedGroup.variantGroupID,
+          changes: {
+            collectionChange: {
+              from: this.modalEditing.originalCollectionId,
+              to: this.modalEditing.selectedCollectionId
+            },
+            masterData: this.modalEditing.masterData,
+            bottleChanges: this.modalEditing.bottleChanges,
+            archivedBottles: this.modalEditing.archivedBottles,
+            newBottles: this.modalEditing.newBottles.map(nb => nb.bottle)
+          }
+        };
+
+        const response = await axios.post('/api/editCellar', payload);
+        
+        if (response.data.success) {
+          // Reload cellar data to reflect changes
+          await this.loadCellarData();
+          this.selectedGroup = null;
+          this.resetModalState();
+          // Show success message
+          alert('Changes saved successfully!');
+        } else {
+          alert('Error saving changes: ' + (response.data.message || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error saving changes:', error);
+        alert('Error saving changes. Please try again.');
+      } finally {
+        this.loading = false;
+      }
     },
 
     updateBottleStatus(bottle, newStatus) {
@@ -2678,9 +2860,10 @@ export default {
           this.addDrinkForm.selectedCollectionId = this.collections[0].id
         }
       }
-    }
+    },
   }
 }
+
 </script>
 
 <style scoped>
