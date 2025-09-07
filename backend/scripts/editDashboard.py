@@ -263,17 +263,14 @@ def addLeaderBoard():
     
     Request body should include:
     - userID: User ID
-    - selectedGrails: Array of drink names for Grails section
-    - selectedUpAndComing: Array of drink names for Up & Coming section
-    - selectedGOATs: Array of drink names for GOATs section
-    - selectedCategory: Category selected during the update
-    - selectedDrinkIDs: Array of drink IDs corresponding to the selected drinks pending update
+    - grails: Array of drink IDs for Grails section
+    - upAndComing: Array of drink IDs for Up & Coming section
+    - goats: Array of drink IDs for GOATs section
     
     Returns:
     - 201: User's selections updated successfully
     - 400: Missing user ID
     - 404: User not found
-    - 410: Error updating Grails, Up & Coming, or GOATs
     - 500: Server error
     """
     conn = g.db
@@ -289,17 +286,91 @@ def addLeaderBoard():
         if not user_id:
             return jsonify({"code": 400, "message": "User ID must be logged in."}), 400
 
-        # dynamically generates SQL and value pair based on the payload
-        sql, values = generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids)
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Check if user exists
+            cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
+            user = cursor.fetchone()
+            
+            if not user:
+                return jsonify({"code": 404, "message": "User not found"}), 404
 
-        with conn.cursor() as cursor:
+            # Get current user selections to know what to remove from legacy tables
+            current_grails = user.get('grails', []) if user.get('grails') else []
+            current_up_and_coming = user.get('upAndComing', []) if user.get('upAndComing') else []
+            current_goats = user.get('goats', []) if user.get('goats') else []
+
+            # Step 1: Remove old entries from legacy tables
+            for drink_name in current_grails:
+                remove_listing_from_table(cursor, "grails", drink_name)
+            
+            for drink_name in current_up_and_coming:
+                remove_listing_from_table(cursor, "upAndComing", drink_name)
+            
+            for drink_name in current_goats:
+                remove_listing_from_table(cursor, "goats", drink_name)
+
+            # Step 2: Add new entries to legacy tables
+            # Get listing details for new selections
+            all_new_ids = grails_ids + up_and_coming_ids + goats_ids
+            if all_new_ids:
+                cursor.execute('''
+                    SELECT "id", "listingName", "drinkType", "typeCategory"
+                    FROM "listings"
+                    WHERE "id" IN %s
+                ''', (tuple(all_new_ids),))
+                listing_details = {row['id']: row for row in cursor.fetchall()}
+
+                # Add grails to legacy table
+                for listing_id in grails_ids:
+                    if listing_id in listing_details:
+                        drink = listing_details[listing_id]
+                        add_listing_to_table(cursor, "grails", drink['id'], 
+                                            drink['listingName'], drink['drinkType'], 
+                                            drink['typeCategory'])
+
+                # Add up and coming to legacy table
+                for listing_id in up_and_coming_ids:
+                    if listing_id in listing_details:
+                        drink = listing_details[listing_id]
+                        add_listing_to_table(cursor, "upAndComing", drink['id'], 
+                                            drink['listingName'], drink['drinkType'], 
+                                            drink['typeCategory'])
+
+                # Add goats to legacy table
+                for listing_id in goats_ids:
+                    if listing_id in listing_details:
+                        drink = listing_details[listing_id]
+                        add_listing_to_table(cursor, "goats", drink['id'], 
+                                            drink['listingName'], drink['drinkType'], 
+                                            drink['typeCategory'])
+
+            # Step 3: Update userLeaderboard table
             # Clear existing entries for this user
             cursor.execute('DELETE FROM "userLeaderboard" WHERE user_id = %s', (user_id,))
-            # Insert latest entry
-            cursor.execute(sql, values)
-            # Get number of rows affected
-            rows_affected = cursor.rowcount
-            # commit the transaction 
+            
+            # Generate and insert new leaderboard entries
+            sql, values = generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids)
+            if sql and values:
+                cursor.execute(sql, values)
+                rows_affected = cursor.rowcount
+            else:
+                rows_affected = 0
+
+            # Step 4: Update user table with listing names (for backward compatibility)
+            # Convert IDs back to names for the users table
+            grails_names = [listing_details[lid]['listingName'] for lid in grails_ids if lid in listing_details]
+            up_and_coming_names = [listing_details[lid]['listingName'] for lid in up_and_coming_ids if lid in listing_details]
+            goats_names = [listing_details[lid]['listingName'] for lid in goats_ids if lid in listing_details]
+
+            cursor.execute('''
+                UPDATE "users" 
+                SET "grails" = %s, 
+                    "upAndComing" = %s, 
+                    "goats" = %s
+                WHERE "id" = %s
+            ''', (grails_names, up_and_coming_names, goats_names, user_id))
+
+            # Commit all changes
             conn.commit()
 
             return jsonify({
@@ -309,8 +380,9 @@ def addLeaderBoard():
             }), 201
 
     except Exception as e:
-        print(str(e))
-        return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": e}), 500
+        conn.rollback()
+        print(f"Error in addLeaderBoard: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": str(e)}), 500
 
 # [POST] Update user's Grails, Up & Coming, and GOATs selections
 @blueprint.route("/editTop3", methods=['POST'])

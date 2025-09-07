@@ -314,7 +314,7 @@
                         <div v-if="editProfile" style="position: relative; text-align: center;">
                             <!-- image -->
                             <img :src="selectedImage || (targetVenueOriginalPhoto || defaultProfilePhoto)" alt=""
-                                class="producer-bottle-listing-page-image">
+                                class="mobile-mt-4 producer-bottle-listing-page-image">
                             <!-- change option -->
                             <label for="fileSelectPFP" class="btn primary-light-dropdown"
                                 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose
@@ -333,7 +333,7 @@
                         <!-- [else] not editing TZH removed style="width: 200px; height: 200px; z-index: 1;" -->
                         <div v-else>
                             <img :src="(targetVenue['photo'] || defaultProfilePhoto)" alt=""
-                                class="producer-bottle-listing-page-image">
+                                class="mobile-mt-4 producer-bottle-listing-page-image">
                         </div>
 
                     </div>
@@ -346,7 +346,7 @@
 
 
                             <!-- Country -->
-                            <div class="col-7 pe-0 ps-0">
+                            <div class="col-12 col-lg-7 pe-0 ps-0">
 
                                 <!-- [if] editing profile -->
                                 <div v-if="editProfile">
@@ -357,10 +357,10 @@
 
                                 <!-- [else] not editing -->
                                 <div v-else>
-                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}
+                                    <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i><span v-if="targetVenue['venueMainType']">{{ targetVenue["venueMainType"] }}</span><span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">, </span><span v-if="targetVenue['venueSubType']">{{ targetVenue["venueSubType"] }}</span></i>
                                     </h5>
-                                    <h6 class="text-body-secondary mobile-view-show mb-1">{{
-                                        targetVenue['originLocation'] }}</h6>
+                                    <p class="text-body-secondary mobile-view-show mb-1 fs-7">{{
+                                        targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i><span v-if="targetVenue['venueMainType']">{{ targetVenue["venueMainType"] }}</span><span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">, </span><span v-if="targetVenue['venueSubType']">{{ targetVenue["venueSubType"] }}</span></i></p>
                                 </div>
                             </div>
 
@@ -546,22 +546,34 @@
                             <div class="col-12 pe-lg-0 ps-0">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
-                                    <label for="venueTypeInput"> Venue Type </label>
-                                    <input type="text" class="form-control mb-3" id="venueTypeInput"
-                                        aria-describedby="venueType" v-model="editVenueType">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <label for="venueSubTypeSelect">Venue Type</label>
+                                            <select class="form-control mb-3" id="venueSubTypeSelect" v-model="editVenueSubType">
+                                                <option value="">Select</option>
+                                                <option v-for="subType in venueSubTypes" :key="subType.id" :value="subType.id">
+                                                    {{ subType.venueSubType }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="col-6">
+                                            <label for="venueMainTypeSelect">Venue Sub-Type</label>
+                                            <select class="form-control mb-3" id="venueMainTypeSelect" v-model="editVenueMainType">
+                                                <option value="">Select</option>
+                                                <option v-for="mainType in venueMainTypes" :key="mainType.id" :value="mainType.id">
+                                                    {{ mainType.venueMainType }}
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <!-- [else] not editing -->
-                                <div v-else class="ps-0 pe-0">
-                                    <p class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                        <i>{{ targetVenue["venueType"] || "" }}</i>
-                                    </p>
-                                </div>
+
                             </div>
                         </div>
 
                         <!-- ------- END Venue Type / START Description   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                         <!-- Description -->
-                        <div class="row scrollable">
+                        <div class="row" >
                             <div class="col-12 pe-lg-0 ps-0">
                                 <!-- [if] editing -->
                                 <div v-if="editProfile">
@@ -569,26 +581,97 @@
                                     <textarea type="text" class="form-control mb-3" id="venueDescInput"
                                         aria-describedby="venueDesc" v-model="editVenueDesc"></textarea>
                                 </div>
-                                <!-- [else] not editing tzh removed classes text-body-secondary fs m-0-->
-                                <div v-else class="ps-0 pe-0 ">
-                                    <div v-if="targetVenue.venueDesc.length > 320">
-                                        <p v-if="!showFullDescription"
-                                            class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                            {{ targetVenue["venueDesc"].slice(0, 320) + (targetVenue["venueDesc"].length
-                                            > 320 ? '...' : '')}}
-                                            <a @click="showFullDescription = true" style="font-weight: bold;">(Read
-                                                More)</a>
-                                        </p>
-                                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                            {{ targetVenue["venueDesc"] }}
-                                            <a @click="showFullDescription = false" style="font-weight: bold;">(Read
-                                                Less)</a>
-                                        </p>
+                                
+
+                        <p v-if="!editProfile" class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0 ">
+                            <span v-if="targetVenue.yearOpened">
+                                <strong class="mobile-view-hide">Year Opened: </strong><strong class="mobile-view-show">Est: </strong>{{ targetVenue.yearOpened }}
+                            </span>
+                            <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2">
+                                | </span>
+                            <span v-if="targetVenue.openForReservations">
+                                <strong class="mobile-view-hide">Open for Reservations: </strong><strong class="mobile-view-show">Reservations: </strong>{{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
+                            </span>
+                            <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.website">
+                                <strong class="mobile-view-hide">Website: </strong> 
+                                <a :href="targetVenue.website" target="_blank">
+                                    {{ formatWebsiteDisplay(targetVenue.website) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.instagram">
+                                <i class="bi bi-instagram"></i><span>: </span>
+                                <a :href="targetVenue.instagram" target="_blank">
+                                    {{ formatInstagramHandle(targetVenue.instagram) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.facebook">
+                                <i class="bi bi-facebook"></i><span>: </span>
+                                <a :href="targetVenue.facebook" target="_blank">
+                                    {{ formatFacebookHandle(targetVenue.facebook) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.tiktok">
+                                <i class="bi bi-tiktok"></i><span>: </span>
+                                <a :href="targetVenue.tiktok" target="_blank">
+                                    {{ formatTikTokHandle(targetVenue.tiktok) }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.email">
+                                <i class="bi bi-envelope-fill"></i><span>: </span>
+                                <a :href="`mailto:${targetVenue.email}`">
+                                    {{ targetVenue.email }}
+                                </a>
+                            </span>
+                            <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.phoneNumber">
+                                <i class="bi bi-telephone-fill"></i><span>: </span>{{ targetVenue.phoneNumber }}
+                            </span>
+                            <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber" class="px-lg-2"> | </span>
+                            <span v-if="targetVenue.whatsappNumber">
+                                <i class="bi bi-whatsapp"></i><span>: </span>
+                                <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
+                                    {{ targetVenue.whatsappNumber }}
+                                </a>
+                            </span>
+                        </p>
+
+                        <!-- Desktop Only Rating and Follow Section -->
+                        <div class="row mt-3 d-none d-lg-block">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <!-- Average Rating Display -->
+                                    <div class="d-flex align-items-center">
+                                        <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 me-2"
+                                            style="font-weight: bold; color: black;">
+                                            {{ getAverageVenueRatings() }}
+                                            <span style="color: #f0b358">★</span>
+                                            ({{ filteredVenueReviews.length }} {{ filteredVenueReviews.length === 1 ? 'Review' : 'Reviews' }})
+                                        </h4>
                                     </div>
-                                    <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2">
-                                        {{ targetVenue["venueDesc"] }}
-                                    </p>
+                                    
+                                    <!-- Follow Button -->
+                                    <div class="d-flex gap-2">
+                                        <button v-if="viewerType === 'user' && !userFollowing"
+                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            @click="editFollow('follow')" style="font-weight: bold;">
+                                            + Follow Venue
+                                        </button>
+                                        <button v-else-if="viewerType === 'user' && userFollowing"
+                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            @click="editFollow('unfollow')"
+                                            style="font-weight: bold; background-color:rgb(249, 115, 106);">
+                                            Following
+                                        </button>
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+
                             </div>
                         </div>
 
@@ -667,10 +750,15 @@
                             </div>
                             
                             <!-- Current PDF Menu -->
-                            <div v-if="targetVenue.pdfMenuUrl" class="mb-3">
-                                <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm ms-2">
+                            <div v-if="hasPdfMenu" class="mb-3">
+                                <button 
+                                    class="btn btn-outline-primary btn-sm ms-2"
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                >
                                     View existing dining menu.
-                                </a>
+                                </button>
                             </div>
                             
                             <button 
@@ -679,7 +767,7 @@
                                 @click="submitPDFMenu"
                                 :disabled="!pdfMenuBase64"
                             >
-                                Upload PDF Menu
+                                Click to Upload PDF Menu (Make sure to Save profile edits first!)
                             </button>
                         </div>
 
@@ -1057,71 +1145,52 @@
 
                     </div>
                 </div>
-
-                <!-- View Mode: Venue Info + Buttons -->
-                <div v-else class="row mt-4 mobile-mt-1 text-start">
-                    <!-- Venue Info -->
-                    <div class="col-7 mobile-col-12 mobile-mb-2">
-                        <p class="text-body-secondary mobile-rating-smaller-text-2 fs-6 mb-0">
-                            <span v-if="targetVenue.yearOpened">
-                                <strong>Year Opened:&nbsp;</strong> {{ targetVenue.yearOpened }}
-                            </span>
-                            <span v-if="targetVenue.yearOpened && (targetVenue.openForReservations || targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)">
-                                | </span>
-                            <span v-if="targetVenue.openForReservations">
-                                <strong>Open for Reservations:&nbsp;</strong> {{ targetVenue.openForReservations === true ? 'Yes' : 'No' }}
-                            </span>
-                            <span v-if="targetVenue.openForReservations && (targetVenue.website || targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.website">
-                                <strong>Website:&nbsp;</strong> 
-                                <a :href="targetVenue.website" target="_blank">
-                                    {{ targetVenue.website }}
-                                </a>
-                            </span>
-                            <span v-if="targetVenue.website && (targetVenue.instagram || targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.instagram">
-                                <strong>Instagram:&nbsp;</strong> 
-                                <a :href="targetVenue.instagram" target="_blank">
-                                    {{ formatInstagramHandle(targetVenue.instagram) }}
-                                </a>
-                            </span>
-                            <span v-if="targetVenue.instagram && (targetVenue.facebook || targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.facebook">
-                                <strong>Facebook:&nbsp;</strong> 
-                                <a :href="targetVenue.facebook" target="_blank">
-                                    {{ formatFacebookHandle(targetVenue.facebook) }}
-                                </a>
-                            </span>
-                            <span v-if="targetVenue.facebook && (targetVenue.tiktok || targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.tiktok">
-                                <strong>TikTok:&nbsp;</strong> 
-                                <a :href="targetVenue.tiktok" target="_blank">
-                                    {{ formatTikTokHandle(targetVenue.tiktok) }}
-                                </a>
-                            </span>
-                            <span v-if="targetVenue.tiktok && (targetVenue.email || targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.email">
-                                <strong>Email:&nbsp;</strong> 
-                                <a :href="`mailto:${targetVenue.email}`">
-                                    {{ targetVenue.email }}
-                                </a>
-                            </span>
-                            <span v-if="targetVenue.email && (targetVenue.phoneNumber || targetVenue.whatsappNumber)"> | </span>
-                            <span v-if="targetVenue.phoneNumber">
-                                <strong>Phone:&nbsp;</strong>{{ targetVenue.phoneNumber }}
-                            </span>
-                            <span v-if="targetVenue.phoneNumber && targetVenue.whatsappNumber"> | </span>
-                            <span v-if="targetVenue.whatsappNumber">
-                                <strong>WhatsApp:&nbsp;</strong> 
-                                <a :href="`https://wa.me/${targetVenue.whatsappNumber.replace(/[^0-9]/g, '')}`" target="_blank">
-                                    {{ targetVenue.whatsappNumber }}
-                                </a>
-                            </span>
+                <div v-else class="row mt-4 mobile-mt-1 text-start ">
+                    <div class="col-12">
+                        <div v-if="targetVenue.venueDesc.length > 320">
+                            <p v-if="!showFullDescription"
+                                class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                                style="white-space: pre-wrap;">
+                                {{ targetVenue["venueDesc"].slice(0, 320) + (targetVenue["venueDesc"].length
+                                > 320 ? '...' : '')}}
+                                <a @click="showFullDescription = true" style="font-weight: bold;">(Read
+                                    More)</a>
+                            </p>
+                            <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                                style="white-space: pre-wrap;">
+                                {{ targetVenue["venueDesc"] }}
+                                <a @click="showFullDescription = false" style="font-weight: bold;">(Read
+                                    Less)</a>
+                            </p>
+                        </div>
+                        <p v-else class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
+                            style="white-space: pre-wrap;">
+                            {{ targetVenue["venueDesc"] }}
                         </p>
+                    </div>
+                </div>
+                <!-- View Mode: Venue Info + Buttons -->
+                <div v-if="!editProfile" class="row text-start">
+                    <!-- Venue Info -->
+                    <div class="col-9 mobile-col-12 mobile-mb-2">
+                        <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
+                        <div v-if="hasAmenities" class="mt-3 d-lg-none">
+                            <button 
+                                class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#amenitiesCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="amenitiesCollapse"
+                            >
+                                <span class="fw-bold">Features & Amenities</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        </div>
 
                         <!-- Amenities Section -->
-                        <div v-if="hasAmenities" class="mt-3">
-                            <h6 class="fw-bold mb-2">Amenities & Features</h6>
+                        <div v-if="hasAmenities" class="mt-3 collapse d-lg-block" id="amenitiesCollapse">
+                            <h6 class="fw-bold mb-2 d-none d-lg-block">Features & Amenities</h6>
                             <div class="d-flex flex-wrap gap-1">
                                 <!-- Payment Methods -->
                                 <span v-if="targetVenue.amenities?.paymentCash" class="badge bg-primary me-1 mb-1">
@@ -1364,10 +1433,10 @@
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
-                    <div class="col-5 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
+                    <div class="col-12 col-lg-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
-                        <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" class="d-flex justify-content-end w-100 mobile-justify-content-start">
+                        <div v-if="hasPdfMenu" class="d-none d-lg-flex justify-content-end w-100 mobile-justify-content-start">
                             <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
@@ -1381,7 +1450,7 @@
                         <div class="d-flex gap-2">
                             <!-- Follow Button -->
                             <button v-if="viewerType === 'user' && !userFollowing"
-                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
+                                class="d-lg-none btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
                                 @click="editFollow('follow')" style="font-weight: bold;">
                                 + Follow
                             </button>
@@ -1411,11 +1480,13 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-
-
-
-
-
+                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                    style="font-weight: bold;">
+                                Dining Menu
+                            </button>
                         </div>
                     </div>
 
@@ -3661,7 +3732,7 @@
 
     <!-- Dining Menu Modal -->
     <div class="modal fade" id="diningMenuModal" tabindex="-1" aria-labelledby="diningMenuModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-xl m-0">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="diningMenuModalLabel">
@@ -3670,61 +3741,94 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <!-- PDF Viewer Container with Navigation -->
+                    <!-- Image Viewer Container with Navigation -->
                     <div class="d-flex align-items-center">
                         <!-- Left Navigation Button -->
                         <button 
-                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="previousPage" 
                             :disabled="currentPdfPage <= 1"
-                            class="btn btn-primary me-2"
+                            class="btn btn-primary "
                             style="min-width: 50px; height: 50px;">
                             ←
                         </button>
                         
-                        <!-- PDF Container -->
-                        <div class="pdf-container flex-grow-1 position-relative">
-                            <iframe 
-                                v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
-                                :src="targetVenue.pdfMenuUrl + '#toolbar=0&navpanes=0&scrollbar=1&page=' + currentPdfPage + '&view=FitV&zoom=page-width'"
-                                width="100%" 
-                                height="650px"
-                                @error="handlePdfError">
-                            </iframe>
+                        <!-- Menu Image Container -->
+                        <div class="m-0 pdf-container flex-grow-1 position-relative">
+                            <div v-if="hasPdfMenu" class="text-center">
+                                <img 
+                                    :src="pdfMenuUrls[currentPdfPage - 1]"
+                                    :alt="`Menu Page ${currentPdfPage}`"
+                                    class="img-fluid"
+                                    style="max-height: 650px; width: auto;"
+                                    @error="handlePdfError">
+                            </div>
                             
                             <!-- Page Counter -->
-                            <div v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== '' && showPageCounter" 
+                            <div v-if="hasPdfMenu && pdfMenuUrls.length > 1 && showPageCounter" 
                                  class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 m-2 rounded"
                                  style="font-size: 12px; z-index: 10;">
-                                <span v-if="totalPdfPages">Page {{ currentPdfPage }} of {{ totalPdfPages }}</span>
-                                <span v-else-if="isPdfLoading">Loading...</span>
-                                <span v-else>Page {{ currentPdfPage }}</span>
+                                <span>Page {{ currentPdfPage }} of {{ pdfMenuUrls.length }}</span>
                             </div>
                         </div>
                         
                         <!-- Right Navigation Button -->
                         <button 
-                            v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''"
+                            v-if="hasPdfMenu && pdfMenuUrls.length > 1"
                             @click="nextPage" 
-                            :disabled="totalPdfPages !== null && currentPdfPage >= totalPdfPages"
-                            class="btn btn-primary ms-2"
+                            :disabled="currentPdfPage >= pdfMenuUrls.length"
+                            class="btn btn-primary "
                             style="min-width: 50px; height: 50px;">
                             →
                         </button>
                     </div>
                     
-                    <div v-if="!targetVenue.pdfMenuUrl || targetVenue.pdfMenuUrl.trim() === ''" class="text-center text-muted p-5">
+                    <!-- Carousel Indicators (White Dots) -->
+                    <div v-if="hasPdfMenu && pdfMenuUrls.length > 1" class="carousel-indicators-container d-flex justify-content-center py-3">
+                        <button
+                            v-for="(url, index) in pdfMenuUrls"
+                            :key="index"
+                            @click="goToPage(index + 1)"
+                            :class="['carousel-indicator-dot p-0', { 'active': currentPdfPage === index + 1 }]"
+                            :aria-label="`Go to page ${index + 1}`"
+                        ></button>
+                    </div>
+                    
+                    <!-- Thumbnail Strip -->
+                    <div v-if="hasPdfMenu && pdfMenuUrls.length > 1" class="thumbnail-strip-container px-3 pb-3">
+                        <div class="thumbnail-strip d-flex gap-2 overflow-auto">
+                            <div
+                                v-for="(url, index) in pdfMenuUrls"
+                                :key="index"
+                                @click="goToPage(index + 1)"
+                                :class="['thumbnail-item', { 'active': currentPdfPage === index + 1 }]"
+                                style="cursor: pointer; flex-shrink: 0;"
+                            >
+                                <img 
+                                    :src="url"
+                                    :alt="`Menu Page ${index + 1} Thumbnail`"
+                                    class="thumbnail-image"
+                                    loading="lazy"
+                                >
+                                <div class="thumbnail-overlay">
+                                    <span class="thumbnail-page-number">{{ index + 1 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div v-if="!hasPdfMenu" class="text-center text-muted p-5">
                         <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
                         <p class="fs-5">Menu not available at the moment.</p>
                         <p class="text-secondary">Please check back later or contact the venue directly.</p>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a v-if="targetVenue.pdfMenuUrl && targetVenue.pdfMenuUrl.trim() !== ''" 
-                       :href="targetVenue.pdfMenuUrl" 
+                    <a v-if="hasPdfMenu && pdfMenuUrls.length > 0" 
+                       :href="pdfMenuUrls[currentPdfPage - 1]" 
                        target="_blank" 
                        class="btn btn-primary me-auto mobile-view-show">
-                        View Full Menu
+                        View Full Size
                     </a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Close
@@ -4025,6 +4129,8 @@ export default {
 
             // Data
             servingTypes: [],
+            venueMainTypes: [],
+            venueSubTypes: [],
             loadedListings: [],
             loadedProducers: [],
             mostPopular: [],
@@ -4064,7 +4170,8 @@ export default {
 
             // Editable fields
             editVenueName: '',
-            editVenueType: '',
+            editVenueMainType: '',
+            editVenueSubType: '',
             editVenueDesc: '',
             editCountry: '',
             editYearOpened: null,
@@ -4357,6 +4464,72 @@ export default {
             return Object.values(this.targetVenue.amenities).some(value => value === true);
         },
         
+        // Computed property to check if PDF menu exists and has valid content
+        hasPdfMenu() {
+            console.log('🔍 hasPdfMenu computed: checking targetVenue.pdfMenuUrl:', this.targetVenue?.pdfMenuUrl);
+            
+            if (!this.targetVenue || !this.targetVenue.pdfMenuUrl) {
+                console.log('🔍 hasPdfMenu computed: No targetVenue or pdfMenuUrl, returning false');
+                return false;
+            }
+            
+            try {
+                // Check if it's a JSON string containing an array
+                if (typeof this.targetVenue.pdfMenuUrl === 'string' && this.targetVenue.pdfMenuUrl.trim() !== '') {
+                    // Try to parse as JSON array
+                    const menuUrls = JSON.parse(this.targetVenue.pdfMenuUrl);
+                    const result = Array.isArray(menuUrls) && menuUrls.length > 0;
+                    console.log('🔍 hasPdfMenu computed: Parsed JSON array, result:', result, 'menuUrls:', menuUrls);
+                    return result;
+                }
+                // Check if it's already an array
+                else if (Array.isArray(this.targetVenue.pdfMenuUrl)) {
+                    const result = this.targetVenue.pdfMenuUrl.length > 0;
+                    console.log('🔍 hasPdfMenu computed: Already array, result:', result, 'array:', this.targetVenue.pdfMenuUrl);
+                    return result;
+                }
+                console.log('🔍 hasPdfMenu computed: Not string or array, returning false');
+                return false;
+            } catch (error) {
+                // If JSON parsing fails, treat as legacy single URL string
+                const result = typeof this.targetVenue.pdfMenuUrl === 'string' && this.targetVenue.pdfMenuUrl.trim() !== '';
+                console.log('🔍 hasPdfMenu computed: JSON parse failed, treating as legacy string, result:', result, 'error:', error);
+                return result;
+            }
+        },
+        
+        // Computed property to get parsed PDF menu URLs
+        pdfMenuUrls() {
+            console.log('🔍 pdfMenuUrls computed: hasPdfMenu:', this.hasPdfMenu);
+            
+            if (!this.hasPdfMenu) {
+                console.log('🔍 pdfMenuUrls computed: No PDF menu, returning empty array');
+                return [];
+            }
+            
+            try {
+                // Parse JSON string to array
+                if (typeof this.targetVenue.pdfMenuUrl === 'string') {
+                    const menuUrls = JSON.parse(this.targetVenue.pdfMenuUrl);
+                    const result = Array.isArray(menuUrls) ? menuUrls : [this.targetVenue.pdfMenuUrl];
+                    console.log('🔍 pdfMenuUrls computed: Parsed from string, result:', result);
+                    return result;
+                }
+                // Already an array
+                else if (Array.isArray(this.targetVenue.pdfMenuUrl)) {
+                    console.log('🔍 pdfMenuUrls computed: Already array:', this.targetVenue.pdfMenuUrl);
+                    return this.targetVenue.pdfMenuUrl;
+                }
+                console.log('🔍 pdfMenuUrls computed: Unexpected type, returning empty array');
+                return [];
+            } catch (error) {
+                // Fallback for legacy single URL format
+                const result = [this.targetVenue.pdfMenuUrl];
+                console.log('🔍 pdfMenuUrls computed: Parse error, fallback to legacy format:', result, 'error:', error);
+                return result;
+            }
+        },
+        
         // Computed property to show if the page is ready to display
         isPageReady() {
             return this.venueDataLoaded && this.venueExists === true;
@@ -4413,6 +4586,11 @@ export default {
             this.venueExists = false;
         }
 
+        // Load venue type options for dropdowns
+        console.log('🔄 VenueProfile: Loading venue type data...');
+        this.loadVenueMainTypes();
+        this.loadVenueSubTypes();
+
         var userID = localStorage.getItem('88B_accID')
         if (userID != null) {
             this.user_id = userID;
@@ -4458,6 +4636,32 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     methods: {
+        // Load venue type data for dropdowns
+        async loadVenueMainTypes() {
+            try {
+                console.log('🔄 Loading venue main types from:', `${process.env.VUE_APP_API_URL}/getData/getVenueMainTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMainTypes`);
+                console.log('✅ Venue main types response:', response.data);
+                this.venueMainTypes = response.data;
+                console.log('✅ Venue main types loaded, count:', this.venueMainTypes.length);
+            } catch (error) {
+                console.error('❌ Error loading venue main types:', error);
+                console.error('❌ Error response:', error.response);
+            }
+        },
+        async loadVenueSubTypes() {
+            try {
+                console.log('🔄 Loading venue sub types from:', `${process.env.VUE_APP_API_URL}/getData/getVenueSubTypes`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueSubTypes`);
+                console.log('✅ Venue sub types response:', response.data);
+                this.venueSubTypes = response.data;
+                console.log('✅ Venue sub types loaded, count:', this.venueSubTypes.length);
+            } catch (error) {
+                console.error('❌ Error loading venue sub types:', error);
+                console.error('❌ Error response:', error.response);
+            }
+        },
+        
         // Helper methods for social media formatting
         formatInstagramHandle(url) {
             if (!url) return '';
@@ -4473,6 +4677,10 @@ export default {
             if (!url) return '';
             const match = url.match(/tiktok\.com\/@([^/?]+)/);
             return match ? `@${match[1]}` : url;
+        },
+        formatWebsiteDisplay(url) {
+            if (!url) return '';
+            return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
         },
 
         // Setup auto-resize functionality for textareas
@@ -4601,12 +4809,27 @@ export default {
                     console.log('✅ getVenueData: Valid venue data found:', response.data);
 
                     this.targetVenue = response.data;
+                    
+                    // Debug PDF menu URL
+                    console.log('🍽️ getVenueData: PDF Menu URL from API:', this.targetVenue.pdfMenuUrl);
+                    console.log('🍽️ getVenueData: PDF Menu URL type:', typeof this.targetVenue.pdfMenuUrl);
+                    if (this.targetVenue.pdfMenuUrl) {
+                        try {
+                            const parsed = JSON.parse(this.targetVenue.pdfMenuUrl);
+                            console.log('🍽️ getVenueData: Parsed PDF Menu URLs:', parsed);
+                            console.log('🍽️ getVenueData: Is parsed an array?', Array.isArray(parsed));
+                            console.log('🍽️ getVenueData: Parsed array length:', Array.isArray(parsed) ? parsed.length : 'Not array');
+                        } catch (e) {
+                            console.log('🍽️ getVenueData: PDF Menu URL is not JSON, treating as legacy string:', this.targetVenue.pdfMenuUrl);
+                        }
+                    }
 
                     // Set editable data
                     this.editProfilePhoto = this.targetVenue["photo"];
                     this.targetVenueOriginalPhoto = this.targetVenue["photo"];
                     this.editVenueName = this.targetVenue["venueName"];
-                    this.editVenueType = this.targetVenue['venueType'];
+                    this.editVenueMainType = this.targetVenue["venueMainTypeId"];
+                    this.editVenueSubType = this.targetVenue["venueSubTypeId"];
                     this.editVenueDesc = this.targetVenue["venueDesc"];
                     this.editCountry = this.targetVenue["originLocation"];
                     this.editYearOpened = this.targetVenue["yearOpened"];
@@ -5662,7 +5885,8 @@ export default {
         exitProfileEdit() {
             // Reset all edit fields to their original values
             this.editVenueName = this.targetVenue.venueName || '';
-            this.editVenueType = this.targetVenue.venueType || '';
+            this.editVenueMainType = this.targetVenue.venueMainTypeId || '';
+            this.editVenueSubType = this.targetVenue.venueSubTypeId || '';
             this.editVenueDesc = this.targetVenue.venueDesc || '';
             this.editCountry = this.targetVenue.originLocation || '';
             this.editYearOpened = this.targetVenue.yearOpened || '';
@@ -5700,7 +5924,8 @@ export default {
             console.log("image64 type:", typeof this.editProfilePhoto);
             console.log("image64 length:", this.editProfilePhoto ? this.editProfilePhoto.length : 0);
             console.log("venueName:", this.editVenueName);
-            console.log("venueType:", this.editVenueType);
+            console.log("venueMainType:", this.editVenueMainType);
+            console.log("venueSubType:", this.editVenueSubType);
             console.log("venueDesc:", this.editVenueDesc);
             console.log("originLocation:", this.editCountry);
             console.log("yearOpened:", this.editYearOpened);
@@ -5721,7 +5946,8 @@ export default {
             const payload = {
                 venueID: this.targetVenue['id'],
                 venueName: this.editVenueName,
-                venueType: this.editVenueType,
+                venueMainType: this.editVenueMainType,
+                venueSubType: this.editVenueSubType,
                 venueDesc: this.editVenueDesc,
                 originLocation: this.editCountry,
                 yearOpened: this.editYearOpened,
@@ -7298,17 +7524,16 @@ Thank you!`
             }
         },
 
-        // Handle PDF loading errors
+        // Handle menu image loading errors
         handlePdfError() {
-            console.warn('PDF failed to load');
+            console.warn('Menu image failed to load');
             // Could add error state handling here if needed
         },
 
-        // PDF Navigation methods
+        // Menu Navigation methods (updated for image array)
         nextPage() {
-            if (this.totalPdfPages === null || this.currentPdfPage < this.totalPdfPages) {
+            if (this.hasPdfMenu && this.currentPdfPage < this.pdfMenuUrls.length) {
                 this.currentPdfPage++;
-                this.forceIframeReload();
                 this.showPageCounterTemporarily();
             }
         },
@@ -7316,7 +7541,14 @@ Thank you!`
         previousPage() {
             if (this.currentPdfPage > 1) {
                 this.currentPdfPage--;
-                this.forceIframeReload();
+                this.showPageCounterTemporarily();
+            }
+        },
+
+        // Go to specific page (for carousel indicators and thumbnails)
+        goToPage(pageNumber) {
+            if (this.hasPdfMenu && pageNumber >= 1 && pageNumber <= this.pdfMenuUrls.length) {
+                this.currentPdfPage = pageNumber;
                 this.showPageCounterTemporarily();
             }
         },
@@ -7410,16 +7642,14 @@ Thank you!`
             });
         },
 
-        // Reset PDF navigation and analyze PDF when modal opens
+        // Reset menu navigation when modal opens
         async resetPdfNavigation() {
             this.currentPdfPage = 1;
             this.totalPdfPages = null;
             this.isPdfLoading = false;
             
-            // Analyze PDF to get page count
-            if (this.targetVenue.pdfMenuUrl) {
-                await this.getPdfPageCount(this.targetVenue.pdfMenuUrl);
-            }
+            // No need to analyze PDF since we're now using image arrays
+            // The page count is automatically available from the pdfMenuUrls array length
         }
     },
     watch: {
@@ -7542,8 +7772,12 @@ Thank you!`
 </script>
 
 <style>
-
-
+@media (min-width: 992px){
+.letter-spacing-desktop{    
+letter-spacing: 1px;
+        word-spacing: 2px;
+}
+}
 
 @media (max-width: 991px) {
 .mobile-justify-content-start {
@@ -7851,5 +8085,155 @@ Thank you!`
         border: 1px solid rgba(0, 0, 0, 0.2);
         height: 85vh;
     }
+}
+
+/* Carousel Indicators (White Dots) */
+.carousel-indicators-container {
+    background-color: #6c757d;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.carousel-indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.carousel-indicator-dot:hover {
+    background-color: rgba(255, 255, 255, 0.6);
+    border-color: rgba(255, 255, 255, 1);
+    transform: scale(1.1);
+}
+
+.carousel-indicator-dot.active {
+    background-color: rgba(255, 255, 255, 1);
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Thumbnail Strip */
+.thumbnail-strip-container {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.thumbnail-strip {
+    max-height: 120px;
+    padding: 10px 0;
+}
+
+.thumbnail-strip::-webkit-scrollbar {
+    height: 6px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-thumb {
+    background: rgba(0, 123, 255, 0.5);
+    border-radius: 3px;
+}
+
+.thumbnail-strip::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 123, 255, 0.7);
+}
+
+.thumbnail-item {
+    position: relative;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    width: 80px;
+    height: 100px;
+    background-color: #f8f9fa;
+}
+
+.thumbnail-item:hover {
+    border-color: rgba(0, 123, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.thumbnail-item.active {
+    border-color: #007bff;
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+}
+
+.thumbnail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.thumbnail-item:hover .thumbnail-image {
+    transform: scale(1.05);
+}
+
+.thumbnail-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+    padding: 8px 4px 4px 4px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.thumbnail-page-number {
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Mobile responsiveness for thumbnails */
+@media (max-width: 767px) {
+    .thumbnail-item {
+        width: 60px;
+        height: 75px;
+    }
+    
+    .carousel-indicator-dot {
+        width: 10px;
+        height: 10px;
+        margin: 0 4px;
+    }
+    
+    .thumbnail-strip {
+        max-height: 95px;
+        padding: 8px 0;
+    }
+    
+    .thumbnail-page-number {
+        font-size: 8px;
+    }
+}
+
+/* Animation for smooth page transitions */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pdf-container img {
+    animation: fadeIn 0.3s ease-out;
 }
 </style>

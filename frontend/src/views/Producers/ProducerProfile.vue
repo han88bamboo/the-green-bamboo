@@ -789,7 +789,7 @@
           <div class="col-12 d-flex justify-content-start mobile-pe-0" id="catalogue">
             <!-- toggle latest updates-->
             <button
-              v-if="showListings == false && showTours == false"
+              v-if="showListings == false && showTours == false && showBrandUpdates == false"
               class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
               v-on:click="showAllReviews()"
             >
@@ -802,6 +802,23 @@
             >
               Brand Overview
             </button>
+
+            <!-- toggle brand updates view-->
+            <button
+              v-if="showBrandUpdates == true"
+              class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+              v-on:click="showBrandUpdatesSection()"
+            >
+              Brand Updates
+            </button>
+            <button
+              v-else
+              class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+              v-on:click="showBrandUpdatesSection()"
+            >
+              Brand Updates
+            </button>
+
             <!-- toggle expressions view-->
             <button
               v-if="showListings == true && showTours == false"
@@ -1189,10 +1206,380 @@
           </div>
         </div>
         <!-- main page (hide all listings) -->
-        <div
-          v-if="showListings == false && showTours == false"
-          class="padding-for-latestupdatesNmostpopularcontainer-large-screen"
-        >
+        <div v-if="showListings == false && showTours == false && showBrandUpdates == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
+          <!-- VIEW Q&A FOR MOBILE -->
+          <div class="row mobile-view-show ps-2 pe-2">
+            <!-- Toggle Button active-toggle-producer-QnA-->
+            <button
+              v-if="showQnA"
+              type="button"
+              class="active-toggle-producer-QnA tertiary-text pt-2 pb-2"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseQnA"
+              aria-expanded="false"
+              aria-controls="collapseQnA"
+              style="font-weight: bold"
+              @click="checkToShowQnA()"
+            >
+              Q&As for {{ specified_producer["producerName"] }} ↑
+            </button>
+            <button
+              v-else
+              type="button"
+              class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border"
+              data-bs-toggle="collapse"
+              data-bs-target="#collapseQnA"
+              aria-expanded="false"
+              aria-controls="collapseQnA"
+              style="font-weight: bold"
+              @click="checkToShowQnA()"
+            >
+              Q&As for {{ specified_producer["producerName"] }} ↓
+            </button>
+            <!-- show Q&A when button is clicked MOBILE VIEW  -->
+            <div class="collapse pe-0 ps-0" id="collapseQnA">
+              <!-- q&a -->
+              <br />
+              <div class="col-xl-12 col-lg-4 col-md-6 col-12">
+                <div class="square primary-square-green rounded p-3 mb-3">
+                  <!--tzh added -green-->
+                  <!-- header text -->
+                  <div class="square-inline text-start">
+                    <!-- [if] user type producer -->
+                    <div v-if="correctProducer" class="mr-auto ms-1">
+                      <h5 style="font-weight: bold">Q&A for You!</h5>
+                      <div v-if="claimStatus">
+                        <router-link
+                          :to="{
+                            path: '/Producers/ProducersQA/' + producer_id,
+                          }"
+                          class="default-text-no-background"
+                        >
+                          <p
+                            class="reverse-text no-margin text-decoration-underline text-start pb-2"
+                          >
+                            View All
+                          </p>
+                        </router-link>
+                      </div>
+                    </div>
+                    <!-- [else] user type is NOT producer -->
+                    <h5 v-else class="mr-auto ms-1"  style="font-weight: bold">
+                      Q&As for {{ specified_producer["producerName"] }}
+                    </h5>
+                  </div>
+
+                  <!-- [if] account is claimed MOBILE VIEW -->
+                  <div v-if="claimStatus">
+                    <!-- show buttons for answered & unanswered questions -->
+                    <div v-if="correctProducer" class="row text-center px-2">
+                      
+                      <div class="col-6 d-grid gap-0 no-padding">
+                        <button
+                          type="button"
+                          class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
+                        >
+                          <a
+                            class="reverse-clickable-text"
+                            v-on:click="showAnswered()"
+                          >
+                            Answered
+                          </a>
+                        </button>
+                      </div>
+                      <div class="col-6 d-grid gap-0 no-padding">
+                        <button
+                          type="button"
+                          class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
+                          style="background-color:#1c9e88"
+                        >
+                          <a
+                            class="reverse-clickable-text"
+                            v-on:click="showUnanswered()"
+                          >
+                            Unanswered
+                          </a>
+                        </button>
+                      </div>
+                      
+                    </div>
+                    <!-- body -->
+                    <div class="text-start pt-2">
+                      <!-- responses to q&a -->
+                      <div id="carouselMobileQnA" class="carousel slide">
+                        <div class="carousel-inner px-1">
+                          <!-- [if] user type is producer -->
+                          <div v-if="correctProducer">
+                            <!-- show answered questions -->
+                            <div v-if="answerStatus">
+                              <div
+                                class="carousel-item"
+                                v-for="(qa, index) in answeredQuestions"
+                                v-bind:key="qa.id"
+                                v-bind:class="{ active: index === 0 }"
+                              >
+                                <p class="mb-2">
+                                  <b> Q: {{ qa["question"] }} </b>
+                                </p>
+                                <!-- [if] not editing -->
+                                <button
+                                  v-if="
+                                    correctProducer &&
+                                    (editingQA == false || editingQAID != qa.id)
+                                  "
+                                  type="button"
+                                  class="btn btn-warning rounded-0 me-1"
+                                  v-on:click="editQA(qa)"
+                                >
+                                  Edit answer
+                                </button>
+                                <!-- [else] if editing -->
+                                <button
+                                  v-if="correctProducer && editingQAID == qa.id"
+                                  type="button"
+                                  class="btn btn-success rounded-0 me-1"
+                                  v-on:click="saveQAEdit(qa)"
+                                >
+                                  Save
+                                </button>
+                                <!-- [else] if editing -->
+                                <button
+                                  v-if="correctProducer && editingQAID == qa.id"
+                                  type="button"
+                                  class="btn btn-warning rounded-0 me-1"
+                                  v-on:click="cancelQAEdit(qa)"
+                                >
+                                  Cancel
+                                </button>
+                                <!-- delete -->
+                                <button
+                                  type="button"
+                                  class="btn btn-danger rounded-0"
+                                  v-on:click="deleteQAEdit(qa)"
+                                >
+                                  Delete
+                                </button>
+                                <!-- spacer -->
+                                <div class="mt-2"></div>
+                                <p
+                                  v-if="
+                                    editingQA == false || editingQAID != qa.id
+                                  "
+                                >
+                                  A: {{ qa["answer"] }}
+                                </p>
+                                <textarea
+                                  v-else-if="editingQAID == qa.id"
+                                  class="search-bar form-control rounded fst-italic question-box flex-grow-1"
+                                  type="text"
+                                  placeholder="Edit answer."
+                                  v-model="edit_answer[qa.id]"
+                                ></textarea>
+                              </div>
+                            </div>
+
+                            <!-- show unanswered questions -->
+                            <div v-else>
+                              <div
+                                class="carousel-item"
+                                v-for="(qa, index) in unansweredQuestions"
+                                v-bind:key="qa.id"
+                                v-bind:class="{ active: index === 0 }"
+                              >
+                                <p class="mb-2">
+                                  <b> Q: {{ qa["question"] }} </b>
+                                </p>
+                                <div class="input-group centered">
+                                  <div class="input-group centered pt-2">
+                                    <textarea
+                                      class="search-bar form-control rounded fst-italic question-box"
+                                      type="text"
+                                      placeholder="Respond to your fans latest questions."
+                                      v-model="answer"
+                                    ></textarea>
+                                    <div
+                                      v-on:click="sendAnswer(qa)"
+                                      class="send-icon ps-1"
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="25"
+                                        height="25"
+                                        fill="currentColor"
+                                        class="bi bi-send"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path
+                                          d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
+                                        />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <!-- [else] user type is NOT producer -->
+                          <div v-else>
+                            <div
+                              class="carousel-item"
+                              v-for="(qa, index) in answeredQuestions"
+                              v-bind:key="qa.id"
+                              v-bind:class="{ active: index === 0 }"
+                            >
+                              <div>
+                                <p class="mb-2">
+                                  <b> Q: {{ qa["question"] }} </b>
+                                </p>
+                                <p class="mb-2">A: {{ qa["answer"] }}</p>
+                              </div>
+                              <div class="input-group centered pt-2">
+                                <textarea
+                                  class="search-bar form-control rounded fst-italic question-box"
+                                  type="text"
+                                  placeholder="Ask your question!"
+                                  v-model="question"
+                                ></textarea>
+                                <div
+                                  v-on:click="sendQuestion"
+                                  class="send-icon ps-1"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="25"
+                                    height="25"
+                                    fill="currentColor"
+                                    class="bi bi-send"
+                                    viewBox="0 0 16 16"
+                                  >
+                                    <path
+                                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                            <div
+                              v-if="answeredQuestions.length === 0"
+                              class="input-group centered pt-2"
+                            >
+                              <textarea
+                                class="search-bar form-control rounded fst-italic question-box"
+                                type="text"
+                                placeholder="Ask a question!"
+                                v-model="question"
+                              ></textarea>
+                              <div
+                                v-on:click="sendQuestion"
+                                class="send-icon ps-1"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="25"
+                                  height="25"
+                                  fill="currentColor"
+                                  class="bi bi-send"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path
+                                    d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
+                                  />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="d-flex justify-content-center gap-3">
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="next"
+                            widt
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
+                            </svg>
+                          </button>
+                          <button
+                            class="btn btn-sm"
+                            type="button"
+                            data-bs-target="#carouselMobileQnA"
+                            data-bs-slide="prev"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                              <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- [else] account is not claimed MOBILE VIEW -->
+                  <div v-else>
+                    <div
+                      class="row text-center mx-1 py-2 default-text-no-background"
+                      style="background-color: #ddc8a9"
+                    >
+                      <p class="fw-bold fs-4 mobile-fs-6 mb-1" style="padding: 10px;">
+                        Do you own this business?
+                      </p>
+                      <p>
+                        Sign up for a producer account to answer latest questions from your fans!
+                      </p>
+                      <!-- spacer -->
+                      <div class="col-1"></div>
+                      <!-- button -->
+                      <button
+                        type="submit"
+                        class="btn col-10 secondary-btn mb-3"
+                        style="font-weight:bold"
+                        @click="claimProducerAccount"
+                      >
+                        Claim This Business
+                      </button>
+                      <!-- spacer -->
+                      <div class="col-1"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <hr />
+          </div>
+          
+            <!-- most popular (highest ratings) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostPopular"
+              displayName="Most Popular"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
+
+            <!-- most discussed (most number of reviews) -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="mostDiscussed"
+              displayName="Most Discussed"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
+
+            <!-- recently added -->
+            <ListingRowDisplayProducerProfile
+              :listingArr="recentlyAdded"
+              displayName="Recently Added"
+              :user="user"
+              :listing="listing"
+              @icon-clicked="handleIconClick"
+            />
+          <br>
+        </div>
+
+        <div v-else-if="showBrandUpdates == true" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
           <!-- [if] account is claimed -->
           <div v-if="claimStatus" style="color: black">
             <!-- latest updates -->
@@ -1617,378 +2004,148 @@
 
           <hr />
 
-          <!-- VIEW Q&A FOR MOBILE -->
-          <div class="row mobile-view-show ps-2 pe-2">
-            <!-- Toggle Button active-toggle-producer-QnA-->
-            <button
-              v-if="showQnA"
-              type="button"
-              class="active-toggle-producer-QnA tertiary-text pt-2 pb-2"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseQnA"
-              aria-expanded="false"
-              aria-controls="collapseQnA"
-              style="font-weight: bold"
-              @click="checkToShowQnA()"
-            >
-              Q&As for {{ specified_producer["producerName"] }} ↑
-            </button>
-            <button
-              v-else
-              type="button"
-              class="primary-btn-less-round-green tertiary-text pt-2 pb-2 border"
-              data-bs-toggle="collapse"
-              data-bs-target="#collapseQnA"
-              aria-expanded="false"
-              aria-controls="collapseQnA"
-              style="font-weight: bold"
-              @click="checkToShowQnA()"
-            >
-              Q&As for {{ specified_producer["producerName"] }} ↓
-            </button>
-            <!-- show Q&A when button is clicked MOBILE VIEW  -->
-            <div class="collapse pe-0 ps-0" id="collapseQnA">
-              <!-- q&a -->
-              <br />
-              <div class="col-xl-12 col-lg-4 col-md-6 col-12">
-                <div class="square primary-square-green rounded p-3 mb-3">
-                  <!--tzh added -green-->
-                  <!-- header text -->
-                  <div class="square-inline text-start">
-                    <!-- [if] user type producer -->
-                    <div v-if="correctProducer" class="mr-auto ms-1">
-                      <h5 style="font-weight: bold">Q&A for You!</h5>
-                      <div v-if="claimStatus">
-                        <router-link
-                          :to="{
-                            path: '/Producers/ProducersQA/' + producer_id,
-                          }"
-                          class="default-text-no-background"
-                        >
-                          <p
-                            class="reverse-text no-margin text-decoration-underline text-start pb-2"
-                          >
-                            View All
-                          </p>
-                        </router-link>
-                      </div>
-                    </div>
-                    <!-- [else] user type is NOT producer -->
-                    <h5 v-else class="mr-auto ms-1"  style="font-weight: bold">
-                      Q&As for {{ specified_producer["producerName"] }}
-                    </h5>
-                  </div>
+          <!-- Text Sections -->
+          <div v-if="selfView || textSections.length > 0" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
+              <button 
+                v-if="selfView" 
+                @click="editingTextSections = !editingTextSections"
+                class="btn btn-primary"
+              >
+                {{ editingTextSections ? 'Done Editing' : 'Edit Sections' }}
+              </button>
+            </div>
 
-                  <!-- [if] account is claimed MOBILE VIEW -->
-                  <div v-if="claimStatus">
-                    <!-- show buttons for answered & unanswered questions -->
-                    <div v-if="correctProducer" class="row text-center px-2">
-                      
-                      <div class="col-6 d-grid gap-0 no-padding">
-                        <button
-                          type="button"
-                          class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
-                          style="background-color:#1c9e88"
-                        >
-                          <a
-                            class="reverse-clickable-text"
-                            v-on:click="showAnswered()"
-                          >
-                            Answered
-                          </a>
-                        </button>
-                      </div>
-                      <div class="col-6 d-grid gap-0 no-padding">
-                        <button
-                          type="button"
-                          class="btn tertiary-btn-blue-not-round rounded-0 reverse-clickable-text"
-                          style="background-color:#1c9e88"
-                        >
-                          <a
-                            class="reverse-clickable-text"
-                            v-on:click="showUnanswered()"
-                          >
-                            Unanswered
-                          </a>
-                        </button>
-                      </div>
-                      
-                    </div>
-                    <!-- body -->
-                    <div class="text-start pt-2">
-                      <!-- responses to q&a -->
-                      <div id="carouselMobileQnA" class="carousel slide">
-                        <div class="carousel-inner px-1">
-                          <!-- [if] user type is producer -->
-                          <div v-if="correctProducer">
-                            <!-- show answered questions -->
-                            <div v-if="answerStatus">
-                              <div
-                                class="carousel-item"
-                                v-for="(qa, index) in answeredQuestions"
-                                v-bind:key="qa.id"
-                                v-bind:class="{ active: index === 0 }"
-                              >
-                                <p class="mb-2">
-                                  <b> Q: {{ qa["question"] }} </b>
-                                </p>
-                                <!-- [if] not editing -->
-                                <button
-                                  v-if="
-                                    correctProducer &&
-                                    (editingQA == false || editingQAID != qa.id)
-                                  "
-                                  type="button"
-                                  class="btn btn-warning rounded-0 me-1"
-                                  v-on:click="editQA(qa)"
-                                >
-                                  Edit answer
-                                </button>
-                                <!-- [else] if editing -->
-                                <button
-                                  v-if="correctProducer && editingQAID == qa.id"
-                                  type="button"
-                                  class="btn btn-success rounded-0 me-1"
-                                  v-on:click="saveQAEdit(qa)"
-                                >
-                                  Save
-                                </button>
-                                <!-- [else] if editing -->
-                                <button
-                                  v-if="correctProducer && editingQAID == qa.id"
-                                  type="button"
-                                  class="btn btn-warning rounded-0 me-1"
-                                  v-on:click="cancelQAEdit(qa)"
-                                >
-                                  Cancel
-                                </button>
-                                <!-- delete -->
-                                <button
-                                  type="button"
-                                  class="btn btn-danger rounded-0"
-                                  v-on:click="deleteQAEdit(qa)"
-                                >
-                                  Delete
-                                </button>
-                                <!-- spacer -->
-                                <div class="mt-2"></div>
-                                <p
-                                  v-if="
-                                    editingQA == false || editingQAID != qa.id
-                                  "
-                                >
-                                  A: {{ qa["answer"] }}
-                                </p>
-                                <textarea
-                                  v-else-if="editingQAID == qa.id"
-                                  class="search-bar form-control rounded fst-italic question-box flex-grow-1"
-                                  type="text"
-                                  placeholder="Edit answer."
-                                  v-model="edit_answer[qa.id]"
-                                ></textarea>
-                              </div>
-                            </div>
+            <!-- Display Mode -->
+            <div v-if="!editingTextSections">
+              <div 
+                v-for="section in textSections" 
+                :key="section.id"
+                class="row mb-2"
+              >
+                <!-- Section Header Button -->
+                <div class="col-12 d-grid mobile-px-0">
+                  <button 
+                    type="button" 
+                    class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+                    data-bs-toggle="collapse" 
+                    :data-bs-target="'#collapseTextSection' + section.id"
+                    aria-expanded="true" 
+                    :aria-controls="'collapseTextSection' + section.id"
+                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+                  >
+                    {{ section.sectionTitle }} ↓
+                  </button>
+                </div>
 
-                            <!-- show unanswered questions -->
-                            <div v-else>
-                              <div
-                                class="carousel-item"
-                                v-for="(qa, index) in unansweredQuestions"
-                                v-bind:key="qa.id"
-                                v-bind:class="{ active: index === 0 }"
-                              >
-                                <p class="mb-2">
-                                  <b> Q: {{ qa["question"] }} </b>
-                                </p>
-                                <div class="input-group centered">
-                                  <div class="input-group centered pt-2">
-                                    <textarea
-                                      class="search-bar form-control rounded fst-italic question-box"
-                                      type="text"
-                                      placeholder="Respond to your fans latest questions."
-                                      v-model="answer"
-                                    ></textarea>
-                                    <div
-                                      v-on:click="sendAnswer(qa)"
-                                      class="send-icon ps-1"
-                                    >
-                                      <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="25"
-                                        height="25"
-                                        fill="currentColor"
-                                        class="bi bi-send"
-                                        viewBox="0 0 16 16"
-                                      >
-                                        <path
-                                          d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
-                                        />
-                                      </svg>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <!-- [else] user type is NOT producer -->
-                          <div v-else>
-                            <div
-                              class="carousel-item"
-                              v-for="(qa, index) in answeredQuestions"
-                              v-bind:key="qa.id"
-                              v-bind:class="{ active: index === 0 }"
-                            >
-                              <div>
-                                <p class="mb-2">
-                                  <b> Q: {{ qa["question"] }} </b>
-                                </p>
-                                <p class="mb-2">A: {{ qa["answer"] }}</p>
-                              </div>
-                              <div class="input-group centered pt-2">
-                                <textarea
-                                  class="search-bar form-control rounded fst-italic question-box"
-                                  type="text"
-                                  placeholder="Ask your question!"
-                                  v-model="question"
-                                ></textarea>
-                                <div
-                                  v-on:click="sendQuestion"
-                                  class="send-icon ps-1"
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="25"
-                                    height="25"
-                                    fill="currentColor"
-                                    class="bi bi-send"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path
-                                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
-                                    />
-                                  </svg>
-                                </div>
-                              </div>
-                            </div>
-                            <div
-                              v-if="answeredQuestions.length === 0"
-                              class="input-group centered pt-2"
-                            >
-                              <textarea
-                                class="search-bar form-control rounded fst-italic question-box"
-                                type="text"
-                                placeholder="Ask a question!"
-                                v-model="question"
-                              ></textarea>
-                              <div
-                                v-on:click="sendQuestion"
-                                class="send-icon ps-1"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  width="25"
-                                  height="25"
-                                  fill="currentColor"
-                                  class="bi bi-send"
-                                  viewBox="0 0 16 16"
-                                >
-                                  <path
-                                    d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576zm6.787-8.201L1.591 6.602l4.339 2.76z"
-                                  />
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="d-flex justify-content-center gap-3">
-                          <button
-                            class="btn btn-sm"
-                            type="button"
-                            data-bs-target="#carouselMobileQnA"
-                            data-bs-slide="next"
-                            widt
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-right" viewBox="0 0 16 16">
-                              <path fill-rule="evenodd" d="M10.146 4.646a.5.5 0 0 1 .708.708L7.707 8l3.147 2.646a.5.5 0 0 1-.708.708l-3.5-3a.5.5 0 0 1 0-.708l3.5-3z"/>
-                            </svg>
-                          </button>
-                          <button
-                            class="btn btn-sm"
-                            type="button"
-                            data-bs-target="#carouselMobileQnA"
-                            data-bs-slide="prev"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="white" class="bi bi-arrow-left" viewBox="0 0 16 16">
-                              <path fill-rule="evenodd" d="M5.854 4.646a.5.5 0 0 0-.708.708L8.293 8l-3.147 2.646a.5.5 0 0 0 .708.708l3.5-3a.5.5 0 0 0 0-.708l-3.5-3z"/>
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- [else] account is not claimed MOBILE VIEW -->
-                  <div v-else>
-                    <div
-                      class="row text-center mx-1 py-2 default-text-no-background"
-                      style="background-color: #ddc8a9"
-                    >
-                      <p class="fw-bold fs-4 mobile-fs-6 mb-1" style="padding: 10px;">
-                        Do you own this business?
-                      </p>
-                      <p>
-                        Sign up for a producer account to answer latest questions from your fans!
-                      </p>
-                      <!-- spacer -->
-                      <div class="col-1"></div>
-                      <!-- button -->
-                      <button
-                        type="submit"
-                        class="btn col-10 secondary-btn mb-3"
-                        style="font-weight:bold"
-                        @click="claimProducerAccount"
-                      >
-                        Claim This Business
-                      </button>
-                      <!-- spacer -->
-                      <div class="col-1"></div>
+                <!-- Section Content (Collapsible) -->
+                <div class="collapse show" :id="'collapseTextSection' + section.id">
+                  <div class="container text-start">
+                    <div class="col-12 my-3">
+                      <div class="text-start text-section-content" v-html="section.richTextContent"></div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <hr />
+
+            <!-- Edit Mode -->
+            <div v-if="editingTextSections && selfView">
+              <draggable 
+                v-model="textSections" 
+                group="textSections"
+                @change="reorderSections"
+                :disabled="false"
+                handle=".drag-handle"
+                animation="150"
+                class="mb-3"
+              >
+                <template #item="{ element: section }">
+                  <div class="row mb-4 drag-handle border rounded p-3" :data-section-order="section.sectionOrder">
+                    
+                    <!-- Section Header with Edit/Delete buttons -->
+                    <div class="col-12 mb-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">{{ section.sectionTitle || 'New Section' }}</h5>
+                        <div>
+                          <button 
+                            v-if="editingSectionId !== section.id"
+                            @click="startEditingSection(section)"
+                            class="btn btn-warning btn-sm me-2"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            v-if="editingSectionId === section.id"
+                            @click="saveSection(section)"
+                            class="btn btn-success btn-sm me-2"
+                            :disabled="!section.tempTitle || !section.tempTitle.trim()"
+                          >
+                            Save
+                          </button>
+                          <button 
+                            v-if="editingSectionId === section.id"
+                            @click="cancelEditingSection(section)"
+                            class="btn btn-secondary btn-sm me-2"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            @click="deleteSection(section.id)"
+                            class="btn btn-danger btn-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Inline Editor when editing this section -->
+                    <div v-if="editingSectionId === section.id" class="col-12">
+                      <!-- Title Input -->
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Section Title</label>
+                        <input 
+                          v-model="section.tempTitle" 
+                          type="text" 
+                          class="form-control" 
+                          placeholder="Enter section title"
+                          @input="onTitleChange(section)"
+                        >
+                      </div>
+                      
+                      <!-- Rich Text Editor -->
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Content</label>
+                        <InlineRichTextEditor
+                          :ref="'editor-' + section.id"
+                          :initial-content="section.tempContent"
+                          @content-changed="content => onContentChange(section, content)"
+                          :section-id="section.id"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Preview when not editing -->
+                    <div v-else class="col-12">
+                      <div class="p-3 border rounded bg-light">
+                        <div class="text-section-preview text-start" v-html="section.richTextContent"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </template>
+              </draggable>
+
+              <button 
+                @click="addNewSection"
+                class="btn btn-success mb-3"
+              >
+                Add New Section
+              </button>
+            </div>
           </div>
-          
-          
-          
-            <!-- most popular (highest ratings) -->
-            <ListingRowDisplayProducerProfile
-              :listingArr="mostPopular"
-              displayName="Most Popular"
-              :user="user"
-              :listing="listing"
-              @icon-clicked="handleIconClick"
-            />
-
-            <!-- most discussed (most number of reviews) -->
-            <ListingRowDisplayProducerProfile
-              :listingArr="mostDiscussed"
-              displayName="Most Discussed"
-              :user="user"
-              :listing="listing"
-              @icon-clicked="handleIconClick"
-            />
-
-            <!-- recently added -->
-            <ListingRowDisplayProducerProfile
-              :listingArr="recentlyAdded"
-              displayName="Recently Added"
-              :user="user"
-              :listing="listing"
-              @icon-clicked="handleIconClick"
-            />
-          <br>
         </div>
         <!-- end of main page (hide all listings) -->
 
@@ -3802,6 +3959,8 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
+import InlineRichTextEditor from '@/components/InlineRichTextEditor.vue';
+import draggable from 'vuedraggable';
 
 export default {
   components: {
@@ -3811,7 +3970,9 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     LoadingWithFunFact,
-    BadgePopup
+    BadgePopup,
+    InlineRichTextEditor,
+    draggable
   },
   setup() {
     // Create reactive references for meta data
@@ -4293,6 +4454,12 @@ export default {
 
       earnedBadges: [],
       showBadgePopup: false,
+      showBrandUpdates: false,
+
+      textSections: [],
+      editingTextSections: false,
+      editingSectionId: null,
+      showModalBackdrop: false,
     
     };
   }, 
@@ -4738,6 +4905,9 @@ export default {
           );
         });
       }
+
+      // Load text sections
+      await this.loadTextSections();
     },
 
     // // get all drinks that a producer has
@@ -5227,6 +5397,7 @@ export default {
     showAllListings() {
       this.showListings = true;
       this.showTours = false;
+      this.showBrandUpdates = false;
       this.filteredListings = this.allDrinks; // initially set filtered drinks to all drinks
       this.lazyListings = this.filteredListings.slice(0, 10);
     },
@@ -5235,12 +5406,20 @@ export default {
     showAllReviews() {
       this.showListings = false;
       this.showTours = false;
+      this.showBrandUpdates = false;
+    },
+
+    showBrandUpdatesSection() {
+      this.showListings = false;
+      this.showTours = false;
+      this.showBrandUpdates = true;
     },
 
     // show all tours and experiences that a producer has
     showAllTours() {
       this.showTours = true;
       this.showListings = false;
+      this.showBrandUpdates = false;
     },
 
     getFilteredReviewsWithImages() {
@@ -6621,6 +6800,267 @@ Thank you!`
     // Reload the page when user closes the popup
     window.location.reload();
   },
+
+  // Load text sections
+  async loadTextSections() {
+    try {
+      const response = await this.$axios.get(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/getTextSections/${this.producer_id}`
+      );
+      
+      if (response.data.code === 200) {
+        this.textSections = (response.data.data || [])
+          .sort((a, b) => a.sectionOrder - b.sectionOrder)
+          .map(section => {
+            const { ...cleanSection } = section;
+            return cleanSection;
+          });
+      }
+    } catch (error) {
+      console.error('Error loading text sections:', error);
+      this.textSections = [];
+    }
+  },
+
+  startEditingSection(section) {
+    section.tempTitle = section.sectionTitle;
+    section.tempContent = section.richTextContent;
+    this.editingSectionId = section.id;
+    
+    this.$nextTick(() => {
+      const editorRef = this.$refs['editor-' + section.id];
+      if (editorRef && editorRef[0]) {
+        editorRef[0].focus();
+      }
+    });
+  },
+
+  cancelEditingSection(section) {
+    // Reset temporary values
+    delete section.tempTitle;
+    delete section.tempContent;
+    this.editingSectionId = null;
+  },
+
+  onContentChange(section, content) {
+    section.tempContent = content;
+  },
+
+  // Add new section
+  addNewSection() {
+    const newSection = {
+      id: Date.now(), // Temporary ID (number type indicates it's new)
+      sectionTitle: '',
+      richTextContent: '',
+      sectionOrder: this.textSections.length,
+      tempTitle: '',
+      tempContent: '',
+      isNew: true
+    };
+    
+    this.textSections.push(newSection);
+    this.editingSectionId = newSection.id;
+    
+    this.$nextTick(() => {
+      const titleInputs = document.querySelectorAll('input[placeholder="Enter section title"]');
+      const lastInput = titleInputs[titleInputs.length - 1];
+      if (lastInput) {
+        lastInput.focus();
+      }
+    });
+  },
+
+  async saveNewSection(section) {
+    if (!section.tempTitle || !section.tempTitle.trim()) {
+      alert('Please enter a section title');
+      return;
+    }
+
+    try {
+      const response = await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/addTextSection`,
+        {
+          producerId: this.producer_id,
+          sectionTitle: section.tempTitle,
+          richTextContent: section.tempContent || '',
+          sectionOrder: section.sectionOrder
+        }
+      );
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        this.editingSectionId = null;
+        await this.loadTextSections();
+      } else {
+        alert('Error saving section');
+      }
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Error saving section');
+    }
+  },
+
+  // Edit existing section
+  editSection(section) {
+    this.editingSectionId = section.id;
+    this.editingSectionTitle = section.sectionTitle;
+    this.editingSectionContent = section.richTextContent;
+    this.showModal();
+
+    // Add small delay to ensure modal is fully rendered before updating content
+    setTimeout(() => {
+      this.$nextTick(() => {
+        if (this.$refs.richTextEditor) {
+          this.$refs.richTextEditor.updateContent(section.sectionTitle, section.richTextContent);
+        }
+      });
+    }, 100); // 100ms delay should be sufficient for modal to render
+  },
+
+  // Save section (add or update)
+  async saveSection(section = null) {
+    if (!section) return;
+    
+    if (!section.tempTitle || !section.tempTitle.trim()) {
+      alert('Please enter a section title');
+      return;
+    }
+
+    try {
+      let response;
+      
+      // Check if this is a new section by looking for the isNew flag
+      // Don't rely on ID type since backend returns string IDs
+      if (section.isNew) {
+        // New section - use add endpoint
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/addTextSection`,
+          {
+            producerId: this.producer_id,
+            sectionTitle: section.tempTitle,
+            richTextContent: section.tempContent || '',
+            sectionOrder: this.textSections.length - 1
+          }
+        );
+      } else {
+        // Existing section - use update endpoint
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/updateTextSection`,
+          {
+            sectionId: section.id,
+            producerId: this.producer_id,
+            sectionTitle: section.tempTitle,
+            richTextContent: section.tempContent || '',
+            sectionOrder: section.sectionOrder
+          }
+        );
+      }
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        // Clear editing state
+        this.editingSectionId = null;
+        
+        // Reload all sections from backend to get the latest data
+        await this.loadTextSections();
+      } else {
+        alert('Error saving section');
+      }
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Error saving section');
+    }
+  },
+
+  onTitleChange() {
+    // No special handling needed here since we use v-model on tempTitle
+  },
+
+  // Delete section
+  async deleteSection(sectionId) {
+    if (!confirm('Are you sure you want to delete this section?')) {
+      return;
+    }
+
+    // If it's a new section (not saved to backend yet)
+    const sectionIndex = this.textSections.findIndex(s => s.id === sectionId);
+    if (sectionIndex !== -1 && this.textSections[sectionIndex].isNew) {
+      this.textSections.splice(sectionIndex, 1);
+      this.editingSectionId = null;
+      return;
+    }
+
+    try {
+      const response = await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/deleteTextSection`,
+        {
+          sectionId: sectionId,
+          producerId: this.producer_id
+        }
+      );
+
+      if (response.data.code === 200) {
+        await this.loadTextSections();
+        if (this.editingSectionId === sectionId) {
+          this.editingSectionId = null;
+        }
+      } else {
+        alert('Error deleting section');
+      }
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      alert('Error deleting section');
+    }
+  },
+
+  showModal() {
+    this.showModalBackdrop = true;
+    this.$nextTick(() => {
+      const modalEl = document.getElementById('textSectionModal');
+      if (modalEl) {
+        modalEl.classList.add('show', 'd-block');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+      }
+    });
+  },
+
+  closeModal() {
+    this.showModalBackdrop = false;
+    const modalEl = document.getElementById('textSectionModal');
+    if (modalEl) {
+      modalEl.classList.remove('show', 'd-block');
+      modalEl.style.display = 'none';
+      document.body.classList.remove('modal-open');
+    }
+
+    if (this.$refs.richTextEditor) {
+      this.$refs.richTextEditor.clearContent();
+    }
+    
+    // Reset form
+    this.editingSectionId = null;
+    this.editingSectionTitle = '';
+    this.editingSectionContent = '';
+  },
+
+  // Reorder sections
+  async reorderSections() {
+    const sectionsWithOrder = this.textSections.map((section, index) => ({
+      id: section.id,
+      sectionOrder: index
+    }));
+
+    try {
+      await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/reorderTextSections`,
+        {
+          producerId: this.producer_id,
+          sections: sectionsWithOrder
+        }
+      );
+    } catch (error) {
+      console.error('Error reordering sections:', error);
+    }
+  }
   },
   watch:{
      '$route.params.producerID': function(newId, oldId) {
@@ -6690,5 +7130,250 @@ Thank you!`
 
 .welcome-toggle .bi-chevron-down {
   transition: transform 0.3s ease;
+}
+
+.text-section-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.text-section-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.text-section-preview {
+  max-height: 200px;
+  overflow: hidden;
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, #f8f9fa);
+  pointer-events: none;
+}
+
+.drag-handle {
+  cursor: move;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+}
+
+.drag-handle:hover {
+  border-color: #007bff;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 123, 255, 0.075);
+  transform: translateY(-1px);
+}
+
+.drag-handle.editing {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drag-handle:last-child {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.text-sections-container .drag-handle + .drag-handle {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .section-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;
+  }
+  
+  .section-actions .btn {
+    width: 100%;
+    font-size: 0.875rem;
+  }
+  
+  .drag-handle h5 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.drag-handle:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.section-saving {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.section-saving::after {
+  content: 'Saving...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.drag-handle,
+.text-section-content,
+.text-section-preview {
+  transition: all 0.2s ease;
+}
+
+@keyframes highlightNew {
+  0% { background-color: #fff3cd; }
+  100% { background-color: #ffffff; }
+}
+
+.drag-handle.new-section {
+  animation: highlightNew 2s ease-out;
+}
+
+.section-error {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da;
+}
+
+.section-error .form-control {
+  border-color: #dc3545;
+}
+
+.section-success {
+  border-color: #28a745 !important;
+  animation: highlightSuccess 1s ease-out;
+}
+
+@keyframes highlightSuccess {
+  0% { background-color: #d4edda; }
+  100% { background-color: #ffffff; }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  z-index: 1050;
+}
+
+#textSectionModal .modal-dialog {
+  max-width: 800px;
+}
+
+#textSectionModal .modal-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#textSectionModal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#textSectionModal .modal-footer {
+  flex-shrink: 0;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+}
+
+/* Ensure Quill editor doesn't interfere with modal layout */
+#textSectionModal .ql-container {
+  position: relative;
+  z-index: 1;
+}
+
+#textSectionModal .ql-tooltip {
+  z-index: 1060;
+}
+
+.text-section-content img,
+.text-section-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Ensure text content doesn't overflow */
+.text-section-content,
+.text-section-preview {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Additional container constraints */
+.text-section-content,
+.text-section-preview {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Preview height constraint */
+.text-section-preview {
+  max-height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, #f8f9fa);
+  pointer-events: none;
 }
 </style>

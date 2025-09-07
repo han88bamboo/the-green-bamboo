@@ -45,7 +45,6 @@ def getMenuSections(venue_id: int):
     except Exception as e:
         import traceback
         traceback.print_exc()
-        conn.rollback()
         return jsonify({
             "code": 500,
             "message": "An error occurred when getting the venue's menu."

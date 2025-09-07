@@ -64,9 +64,10 @@ const routes = [
     component: () => import(/* webpackChunkName: "main" */ "@/views/SuccessfulOnboarding.vue"),
   },
   {
-    path: "/my-cellar",
+    path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
     name: "myCellar",
-    component: () => import(/* webpackChunkName: "main" */ "@/views/MyCellar.vue"),
+    component: () => import('@/views/MyCellarPage.vue'),
+    props: true
   },
 ];
 

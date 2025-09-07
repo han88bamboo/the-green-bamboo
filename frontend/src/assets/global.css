@@ -2553,3 +2553,67 @@ nav a.router-link-exact-active.dropdown-item {
     font-size: 0.875rem !important; /* 14px */
   }
 }
+
+/* Quill alignment styles for display areas */
+.text-section-content .ql-align-center,
+.text-section-preview .ql-align-center {
+  text-align: center;
+}
+
+.text-section-content .ql-align-right,
+.text-section-preview .ql-align-right {
+  text-align: right;
+}
+
+.text-section-content .ql-align-left,
+.text-section-preview .ql-align-left {
+  text-align: left;
+}
+
+.text-section-content .ql-align-justify,
+.text-section-preview .ql-align-justify {
+  text-align: justify;
+}
+
+/* Also apply to any other areas where Quill content is displayed */
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-right {
+  text-align: right;
+}
+
+.ql-align-left {
+  text-align: left;
+}
+
+.ql-align-justify {
+  text-align: justify;
+}
+
+/* Ensure paragraph elements respect alignment */
+.text-section-content p,
+.text-section-preview p {
+  margin-bottom: 1em;
+}
+
+.text-section-content p.ql-align-center,
+.text-section-preview p.ql-align-center {
+  text-align: center;
+}
+
+.text-section-content p.ql-align-right,
+.text-section-preview p.ql-align-right {
+  text-align: right;
+}
+
+.text-section-content p.ql-align-left,
+.text-section-preview p.ql-align-left {
+  text-align: left;
+}
+
+.text-section-content p.ql-align-justify,
+.text-section-preview p.ql-align-justify {
+  text-align: justify;
+}

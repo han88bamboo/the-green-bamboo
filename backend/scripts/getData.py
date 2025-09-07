@@ -1,4 +1,13 @@
 # Port: 5000
+# 
+# URL NAMING CONVENTION:
+# This file (getData.py) uses MIXED naming patterns:
+# - MOST routes use camelCase: /getCellarData, /getUsers, /createAccount (majority pattern)
+# - SOME routes use kebab-case: /bottle-listings, /producer-listings (legacy exceptions)
+# The Flask blueprint is registered with prefix "/getData/" (matching filename)
+# 
+# For consistency, new routes should follow the MAJORITY camelCase pattern.
+#
 # Routes: 
 #           [Account Requests]
 #           /getAccountRequests (GET), 
@@ -56,6 +65,7 @@
 #           [Others]
 #           /getDrinkTypes (GET), /getTypeCategories (GET), /getModRequests (GET),
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
+#           /getVenueMainTypes (GET), /getVenueSubTypes (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
@@ -84,6 +94,7 @@ from decimal import Decimal
 from datetime import datetime, timezone, date, timedelta
 from scripts import pointsHelperFunc
 from scripts import pointsHelperFunc
+from scripts.currencyService import currency_converter
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -4720,8 +4731,19 @@ def getVenue(id):
                 v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
-                v.email, v."phoneNumber", v."whatsappNumber", v."pdfMenuUrl",
-                v.username, v."venueType", v."stripeCustomerId", v.pin,
+                v.email, v."phoneNumber", v."whatsappNumber", 
+                CASE 
+                    WHEN v."pdfMenuUrl" IS NULL THEN NULL
+                    WHEN v."pdfMenuUrl" = '' THEN NULL
+                    ELSE v."pdfMenuUrl"::json
+                END AS "pdfMenuUrl",
+                v.username, v."stripeCustomerId", v.pin,
+                -- Get venue main type details
+                v."venueMainType" AS "venueMainTypeId",
+                vmt."venueMainType" AS "venueMainType",
+                -- Get venue sub type details  
+                v."venueSubType" AS "venueSubTypeId",
+                vst."venueSubType" AS "venueSubType",
                 -- Build amenities JSON
                 COALESCE((
                     SELECT row_to_json(va)
@@ -4788,8 +4810,10 @@ def getVenue(id):
                     WHERE u."venueId" = v.id
                 ), '[]') AS updates
             FROM venues v
+            LEFT JOIN "venueMainTypes" vmt ON v."venueMainType" = vmt.id
+            LEFT JOIN "venueSubTypes" vst ON v."venueSubType" = vst.id
             WHERE v.id = %s
-            GROUP BY v.id
+            GROUP BY v.id, vmt."venueMainType", vst."venueSubType"
         """
 
         cur.execute(query, (id,))
@@ -5472,6 +5496,36 @@ def getObservationTags():
     return jsonify(observation_tags_data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] venueMainTypes
+@blueprint.route("/getVenueMainTypes")
+def getVenueMainTypes():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venueMainTypes" ORDER BY "venueMainType"')
+        venue_main_types_data = cursor.fetchall()
+
+    if not venue_main_types_data:
+        return jsonify([])
+
+    return jsonify(venue_main_types_data)
+
+# -----------------------------------------------------------------------------------------
+# [GET] venueSubTypes  
+@blueprint.route("/getVenueSubTypes")
+def getVenueSubTypes():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "venueSubTypes" ORDER BY "venueSubType"')
+        venue_sub_types_data = cursor.fetchall()
+
+    if not venue_sub_types_data:
+        return jsonify([])
+
+    return jsonify(venue_sub_types_data)
+
+# -----------------------------------------------------------------------------------------
 # [GET] colours
 @blueprint.route("/getColours")
 def getColours():
@@ -5610,6 +5664,617 @@ def getProducersProfileViewsByProducer(id):
     finally:
         cur.close()
 
+
+# -----------------------------------------------------------------------------------------
+# Helper function for currency conversion in cellar endpoints
+def convert_price_to_usd(amount, currency):
+    """
+    Convert price to USD only if currency is not USD.
+    Returns the amount in USD or None if conversion fails.
+    """
+    if amount is None:
+        return None
+    
+    # If already USD, return as-is (no conversion needed)
+    if currency == 'USD' or currency is None:
+        return float(amount)
+    
+    # Convert non-USD currencies to USD
+    try:
+        return currency_converter.convert_to_usd(amount, currency)
+    except Exception as e:
+        print(f"Currency conversion failed for {amount} {currency}: {e}")
+        # Fallback: treat as USD
+        return float(amount)
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get cellar data for a specific account (user, producer, or venue)
+# Parameters: ownerType (string: 'user', 'producer', 'venue'), ownerID (int)
+# Query Parameters: collectionId (optional), status (optional), drinkType (optional), 
+#                   includeConsumed (default: false), includeArchived (default: false), sortBy (default: addedDate)
+# 
+# NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
+# (drinkFormat, volumeNumber, volumeUnit, drinkByDate, drinkOnwardsDate, currentValueEstimation, 
+# currentValueCurrency, suggestedFoodPairing) and quantityVariantID > 1 holds individual
+# bottle details. Each record represents one physical bottle with its own consumption status.
+# Archived items are excluded by default unless includeArchived=true is specified.
+@blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCellarData(ownerType, ownerID):
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Get query parameters
+        collection_id = request.args.get('collectionId')
+        status_filter = request.args.get('status')
+        drink_type = request.args.get('drinkType')
+        include_consumed = request.args.get('includeConsumed', 'false').lower() == 'true'
+        include_archived = request.args.get('includeArchived', 'false').lower() == 'true'
+        sort_by = request.args.get('sortBy', 'addedDate')
+        
+        # Validate sort_by parameter
+        valid_sort_fields = ['addedDate', 'listingName', 'quantityVariantID', 'drinkByDate', 'purchaseDate']
+        if sort_by not in valid_sort_fields:
+            sort_by = 'addedDate'
+        
+        # Build dynamic WHERE clause
+        where_conditions = ['cc."ownerID" = %s', 'cc."ownerType" = %s']
+        params = [ownerID, ownerType]
+        
+        # By default, exclude archived items unless specifically requested
+        if not include_archived:
+            where_conditions.append('ci."archiveStatus" = %s')
+            params.append(False)
+        
+        if collection_id:
+            where_conditions.append('cc."id" = %s')
+            params.append(collection_id)
+        
+        if not include_consumed:
+            where_conditions.append('ci."status" != %s')
+            params.append('Consumed')
+        
+        if status_filter:
+            where_conditions.append('ci."status" = %s')
+            params.append(status_filter)
+        
+        if drink_type:
+            where_conditions.append('l."drinkType" = %s')
+            params.append(drink_type)
+        
+        where_clause = ' AND '.join(where_conditions)
+        
+        # Main query to get cellar items with all related data
+        # Updated to join with master records for shared properties
+        items_query = f"""
+            SELECT 
+                -- Individual Bottle Details
+                ci."id" as "cellarItemId",
+                ci."quantityVariantID",
+                ci."status",
+                ci."consumption",
+                ci."currentLocation",
+                ci."subLocation",
+                ci."purchasePrice",
+                ci."purchaseCurrency",
+                ci."purchaseDate",
+                ci."deliveryDate",
+                ci."noteToSelf",
+                ci."variant",
+                ci."addedDate",
+                ci."updatedDate",
+                ci."archiveStatus",
+                
+                -- Shared Properties from Master Record
+                master."drinkFormat",
+                master."volumeNumber",
+                master."volumeUnit",
+                master."drinkByDate",
+                master."drinkOnwardsDate",
+                master."currentValueEstimation",
+                master."currentValueCurrency",
+                master."suggestedFoodPairing",
+                
+                -- Collection Info
+                cc."collectionName",
+                cc."id" as "collectionId",
+                cc."isDefault",
+                cc."isPublic",
+                
+                -- Listing Details
+                l."id" as "listingId",
+                l."listingName",
+                l."drinkType",
+                l."typeCategory",
+                l."drinkStyle",
+                l."originCountry",
+                l."abv",
+                l."age",
+                l."photo" as "drinkPhoto",
+                l."officialDesc",
+                
+                -- Producer Info
+                p."producerName",
+                
+                -- Bottler Info (if different from producer)
+                bp."producerName" as "bottlerName",
+                
+                -- Purchase Venue Info
+                pv."venueName" as "purchaseVenueName",
+                ci."purchasePlaceName",
+                ci."purchaseAddress",
+                
+                -- Average Rating
+                COALESCE(AVG(r."rating"), 0) as averageRating,
+                COUNT(r."id") as reviewCount
+                
+            FROM "myCellarItems" ci
+            -- Join with master record for shared properties
+            -- Join with master record for shared properties
+            LEFT JOIN "myCellarItems" master ON (
+                master."listingID" = ci."listingID" 
+                AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
+                AND master."quantityVariantID" = 1
+            )
+            LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            LEFT JOIN "listings" l ON ci."listingID" = l."id"
+            LEFT JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN "producers" bp ON l."bottlerID" = bp."id"
+            LEFT JOIN "venues" pv ON ci."purchaseVenueID" = pv."id"
+            LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE {where_clause}
+            GROUP BY ci."id", master."id", cc."id", l."id", p."id", bp."id", pv."id"
+            ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
+        """
+        
+        cur.execute(items_query, params)
+        items = cur.fetchall()
+        
+        # Get collections summary for this owner
+        collections_query = """
+            SELECT 
+                cc."id",
+                cc."collectionName",
+                cc."isDefault",
+                cc."isPublic",
+                cc."createdDate",
+                cc."updatedDate",
+                COUNT(ci."id") as itemCount,
+                COUNT(ci."id") as totalBottles,
+                SUM(CASE WHEN ci."status" = 'Consumed' THEN 1 ELSE 0 END) as consumedBottles,
+                SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
+                SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
+            FROM "myCellarCollections" cc
+            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
+            WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+            GROUP BY cc."id"
+            ORDER BY cc."isDefault" DESC, cc."collectionName"
+        """
+        
+        cur.execute(collections_query, [ownerID, ownerType])
+        collections = cur.fetchall()
+        
+        # Calculate summary statistics
+        total_items = len(items)
+        total_bottles = len(items)  # Now each item represents one bottle/item
+        total_collections = len(collections)
+        
+        # Status breakdown
+        status_summary = {}
+        for item in items:
+            status = item['status']
+            if status not in status_summary:
+                status_summary[status] = {'count': 0, 'bottles': 0}
+            status_summary[status]['count'] += 1
+            status_summary[status]['bottles'] += 1  # Each item is one bottle now
+        
+        # Drink type breakdown
+        drink_type_summary = {}
+        for item in items:
+            dt = item['drinkType'] or 'Unknown'
+            if dt not in drink_type_summary:
+                drink_type_summary[dt] = {'count': 0, 'bottles': 0}
+            drink_type_summary[dt]['count'] += 1
+            drink_type_summary[dt]['bottles'] += 1  # Each item is one bottle now
+        
+        # Financial summary with currency conversion
+        total_purchase_value = 0
+        total_current_value = 0
+        
+        for item in items:
+            # Convert purchase price to USD
+            if item.get('purchasePrice'):
+                purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item.get('purchaseCurrency'))
+                if purchase_price_usd:
+                    total_purchase_value += purchase_price_usd
+            
+            # Convert current value to USD  
+            if item.get('currentValueEstimation'):
+                current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item.get('currentValueCurrency'))
+                if current_value_usd:
+                    total_current_value += current_value_usd
+        
+        # Convert Decimal objects to float for JSON serialization
+        for item in items:
+            if item.get('purchasePrice'):
+                item['purchasePrice'] = float(item['purchasePrice'])
+            if item.get('currentValueEstimation'):
+                item['currentValueEstimation'] = float(item['currentValueEstimation'])
+            if item.get('averageRating') is not None:
+                item['averageRating'] = float(item['averageRating'])
+            if item.get('abv'):
+                item['abv'] = float(item['abv'])
+        
+        for collection in collections:
+            if collection.get('totalPurchaseValue'):
+                collection['totalPurchaseValue'] = float(collection['totalPurchaseValue'])
+            if collection.get('totalCurrentValue'):
+                collection['totalCurrentValue'] = float(collection['totalCurrentValue'])
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "items": items,
+                "collections": collections,
+                "summary": {
+                    "totalItems": total_items,
+                    "totalBottles": total_bottles,
+                    "totalCollections": total_collections,
+                    "statusBreakdown": status_summary,
+                    "drinkTypeBreakdown": drink_type_summary,
+                    "financialSummary": {
+                        "totalPurchaseValue": float(total_purchase_value) if total_purchase_value else 0,
+                        "totalCurrentValue": float(total_current_value) if total_current_value else 0,
+                        "estimatedGainLoss": float(total_current_value - total_purchase_value) if total_current_value and total_purchase_value else 0,
+                        "displayCurrency": "USD",
+                        "currencyNote": "All values converted to USD using current exchange rates"
+                    }
+                },
+                "metadata": {
+                    "ownerType": ownerType,
+                    "ownerID": ownerID,
+                    "filters": {
+                        "collectionId": collection_id,
+                        "status": status_filter,
+                        "drinkType": drink_type,
+                        "includeConsumed": include_consumed,
+                        "includeArchived": include_archived,
+                        "sortBy": sort_by
+                    }
+                }
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error in getCellarData: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving cellar data: {str(e)}"
+        }), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get cellar dashboard data with analytics and historical trends
+@blueprint.route("/getCellarDashboard/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCellarDashboard(ownerType, ownerID):
+    """
+    Comprehensive cellar dashboard endpoint that provides:
+    1. Total items count across all collections (each item = 1 physical bottle)
+    2. Total purchase cost with completeness warnings
+    3. Total current value with completeness warnings
+    4. Breakdown by various categories (country, type, format, etc.)
+    5. Historical data for plotting graphs over time
+    
+    NOTE: Updated for master-detail pattern where quantityVariantID = 1 holds shared properties
+    (drinkFormat, currentValueEstimation, etc.) and each record represents one physical item
+    with individual consumption tracking (Unopened/Opened/Empty per item).
+    
+    Archived items are excluded from all calculations and breakdowns.
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Main query to get all cellar items with related data
+        # Updated to join with master records for shared properties
+        cellar_query = """
+        SELECT 
+            -- Individual Bottle Details
+            ci."id",
+            ci."quantityVariantID",
+            ci."purchasePrice",
+            ci."purchaseCurrency",
+            ci."status",
+            ci."consumption",
+            ci."currentLocation",
+            ci."subLocation",
+            ci."addedDate",
+            ci."updatedDate",
+            ci."variant",
+            ci."listingID",
+            ci."archiveStatus",
+            
+            -- Shared Properties from Master Record
+            master."drinkFormat",
+            master."currentValueEstimation",
+            master."currentValueCurrency",
+            
+            -- Collection and Listing Data
+            cc."collectionName",
+            cc."id" as "collectionID",
+            l."listingName",
+            l."originCountry",
+            l."drinkType",
+            l."typeCategory",
+            l."abv",
+            l."producerID",
+            p."producerName"
+        FROM "myCellarItems" ci
+        -- Join with master record for shared properties
+        LEFT JOIN "myCellarItems" master ON (
+            master."listingID" = ci."listingID" 
+            AND (master."variant" = ci."variant" OR (master."variant" IS NULL AND ci."variant" IS NULL))
+            AND master."quantityVariantID" = 1
+        )
+        LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+        LEFT JOIN "listings" l ON ci."listingID" = l."id"
+        LEFT JOIN "producers" p ON l."producerID" = p."id"
+        WHERE cc."ownerID" = %s AND cc."ownerType" = %s AND ci."archiveStatus" = FALSE
+        ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
+        """
+        
+        cur.execute(cellar_query, (ownerID, ownerType))
+        items = cur.fetchall()
+        
+        print(f"DEBUG: Found {len(items)} cellar items for {ownerType} {ownerID}")
+        
+        if not items:
+            return jsonify({
+                "code": 404,
+                "message": "No cellar items found for this owner."
+            }), 404
+        
+        # Initialize counters and totals
+        total_items = 0
+        total_purchase_cost_usd = 0
+        total_current_value_usd = 0
+        items_without_purchase_price = 0
+        items_without_current_value = 0
+        
+        # Breakdown dictionaries
+        breakdown_by_country = {}
+        breakdown_by_drink_type = {}
+        breakdown_by_category = {}
+        breakdown_by_format = {}
+        breakdown_by_consumption = {}
+        breakdown_by_location = {}
+        breakdown_by_sub_location = {}
+        breakdown_by_collection = {}
+        breakdown_by_listing_variant = {}  # Track unique listing+variant combinations
+        
+        # Process each item
+        for item in items:
+            # Each item represents one physical bottle/item
+            quantity = 1  # Each record = 1 bottle in new schema
+            total_items += quantity
+            
+            # Get financial data - purchase price is per bottle, current value from master
+            purchase_price = item.get('purchasePrice')
+            purchase_currency = item.get('purchaseCurrency') or 'USD'
+            current_value = item.get('currentValueEstimation')  # From master record
+            current_value_currency = item.get('currentValueCurrency') or 'USD'  # From master record
+            
+            # Convert to USD using currency service (only for non-USD currencies)
+            if purchase_price is not None:
+                purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
+                if purchase_price_usd is not None:
+                    total_purchase_cost_usd += purchase_price_usd * quantity
+                else:
+                    items_without_purchase_price += quantity
+            else:
+                items_without_purchase_price += quantity
+                
+            if current_value is not None:
+                current_value_usd = convert_price_to_usd(current_value, current_value_currency)
+                if current_value_usd is not None:
+                    total_current_value_usd += current_value_usd * quantity
+                else:
+                    items_without_current_value += quantity
+            else:
+                items_without_current_value += quantity
+            
+            # Extract breakdown data
+            country = item.get('originCountry') or 'Unknown'
+            drink_type = item.get('drinkType') or 'Unknown'
+            category = item.get('typeCategory') or 'Unknown'
+            drink_format = item.get('drinkFormat') or 'Bottle'  # From master record
+            consumption = item.get('consumption') or 'Unknown'
+            location = item.get('currentLocation') or 'Unknown'
+            sub_location = item.get('subLocation') or 'Not Specified'
+            collection = item.get('collectionName') or 'Default'
+            
+            # Create unique listing+variant identifier for tracking
+            listing_id = item.get('listingID')
+            variant = item.get('variant') or 'No Variant'
+            listing_name = item.get('listingName') or 'Unknown Listing'
+            listing_variant_key = f"{listing_name} - Variant: {variant}" if variant != 'No Variant' else listing_name
+            
+            # Helper function to update breakdown with currency conversion
+            def update_breakdown(breakdown_dict, key, purchase_price, current_value, purchase_currency, current_value_currency):
+                """Updated to work with individual items (quantity always = 1)"""
+                if key not in breakdown_dict:
+                    breakdown_dict[key] = {
+                        'count': 0,
+                        'totalPurchaseCost': 0,
+                        'totalCurrentValue': 0,
+                        'itemsWithoutPurchasePrice': 0,
+                        'itemsWithoutCurrentValue': 0
+                    }
+                
+                breakdown_dict[key]['count'] += 1  # Each item counts as 1
+                
+                if purchase_price is not None:
+                    purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
+                    if purchase_price_usd is not None:
+                        breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd  # No quantity multiplication
+                    else:
+                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                else:
+                    breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                    
+                if current_value is not None:
+                    current_value_usd = convert_price_to_usd(current_value, current_value_currency)
+                    if current_value_usd is not None:
+                        breakdown_dict[key]['totalCurrentValue'] += current_value_usd  # No quantity multiplication
+                    else:
+                        breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
+                else:
+                    breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
+            
+            # Update all breakdowns
+            update_breakdown(breakdown_by_country, country, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_drink_type, drink_type, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_category, category, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_format, drink_format, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_consumption, consumption, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_location, location, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_sub_location, sub_location, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_collection, collection, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_listing_variant, listing_variant_key, purchase_price, current_value, purchase_currency, current_value_currency)
+        
+        # Generate qualifiers for financial data
+        purchase_cost_qualifier = None
+        if items_without_purchase_price > 0:
+            purchase_cost_qualifier = f"This is an estimate only - you have not entered the purchase price of {items_without_purchase_price} bottles in your cellar"
+        
+        current_value_qualifier = None
+        if items_without_current_value > 0:
+            current_value_qualifier = f"This is an estimate only - you have not entered the current market value of {items_without_current_value} bottles in your cellar"
+        
+        # Get historical data for graphs
+        historical_query = """
+        SELECT 
+            DATE_TRUNC('month', cl."changeDate") as month,
+            cl."changeType",
+            cl."quantityDelta",
+            cl."newValue",
+            cl."fieldName"
+        FROM "myCellarItemsChangelog" cl
+        JOIN "myCellarItems" ci ON cl."cellarItemID" = ci.id
+        JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
+        WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+        AND ci."archiveStatus" = FALSE
+        AND cl."changeDate" >= NOW() - INTERVAL '12 months'
+        ORDER BY cl."changeDate" ASC
+        """
+        
+        cur.execute(historical_query, (ownerID, ownerType))
+        changelog_items = cur.fetchall()
+        
+        # Process historical data
+        monthly_data = {}
+        
+        for log_item in changelog_items:
+            month = log_item.get('month').strftime('%Y-%m') if log_item.get('month') else None
+            change_type = log_item.get('changeType')
+            quantity_delta = log_item.get('quantityDelta') or 0
+            new_value = log_item.get('newValue')
+            field_name = log_item.get('fieldName')
+            
+            if month not in monthly_data:
+                monthly_data[month] = {
+                    'totalItems': 0,
+                    'itemsAdded': 0,
+                    'itemsRemoved': 0,
+                    'valueChanges': 0
+                }
+            
+            if change_type == 'CREATED':
+                monthly_data[month]['itemsAdded'] += 1
+                monthly_data[month]['totalItems'] += 1
+            elif change_type == 'DELETED':
+                monthly_data[month]['itemsRemoved'] += 1
+                monthly_data[month]['totalItems'] -= 1
+            elif change_type == 'STATUS_CHANGED' and new_value == 'Consumed':
+                # Don't count as removed from cellar, just status change
+                pass
+            elif change_type == 'FINANCIAL_UPDATED' and field_name == 'currentValueEstimation':
+                try:
+                    value = float(new_value) if new_value else 0
+                    monthly_data[month]['valueChanges'] += value
+                except (ValueError, TypeError):
+                    pass
+        
+        # Convert monthly data to list for frontend consumption
+        historical_timeline = []
+        for month, data in sorted(monthly_data.items()):
+            historical_timeline.append({
+                'month': month,
+                'totalItems': data['totalItems'],
+                'itemsAdded': data['itemsAdded'],
+                'itemsRemoved': data['itemsRemoved'],
+                'valueChanges': round(data['valueChanges'], 2)
+            })
+        
+        # Prepare final response
+        dashboard_data = {
+            'summary': {
+                'totalItems': total_items,
+                'totalPurchaseCost': round(total_purchase_cost_usd, 2),
+                'totalCurrentValue': round(total_current_value_usd, 2),
+                'itemsWithoutPurchasePrice': items_without_purchase_price,
+                'itemsWithoutCurrentValue': items_without_current_value,
+                'purchaseCostQualifier': purchase_cost_qualifier,
+                'currentValueQualifier': current_value_qualifier,
+                'displayCurrency': 'USD',
+                'currencyNote': 'All values converted to USD using current exchange rates'
+            },
+            'breakdowns': {
+                'byCountry': breakdown_by_country,
+                'byDrinkType': breakdown_by_drink_type,
+                'byCategory': breakdown_by_category,
+                'byFormat': breakdown_by_format,
+                'byConsumption': breakdown_by_consumption,
+                'byLocation': breakdown_by_location,
+                'bySubLocation': breakdown_by_sub_location,
+                'byCollection': breakdown_by_collection,
+                'byListingVariant': breakdown_by_listing_variant
+            },
+            'historicalData': {
+                'timeline': historical_timeline,
+                'dataPoints': len(historical_timeline)
+            }
+        }
+        
+        return jsonify({
+            "code": 200,
+            "data": dashboard_data,
+            "message": f"Successfully retrieved cellar dashboard data for {ownerType} {ownerID}."
+        })
+        
+    except Exception as e:
+        print(f"Error in getCellarDashboard: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving cellar dashboard data: {str(e)}"
+        }), 500
+    finally:
+        if 'cur' in locals():
+            cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get best rated expressions for a producer
@@ -7800,113 +8465,248 @@ def getListingsName():
 # [GET] Get User Notifications
 # Purpose: Fetch notifications for a user based on their account type
 # Output: Notification items for the logged-in user
+# @blueprint.route('/getNotifications/<acc_type>/<acc_id>', methods=['GET'])
+# def getNotifications(acc_type, acc_id):
+#     conn = g.db
+#     # use RealDictCursor so that fetchall() returns a list of dicts
+#     cur = conn.cursor(cursor_factory=RealDictCursor)
+#     try:
+#         acc_id = int(acc_id)
+
+#         # 1) Decide which notiTabs to include based on acc_type
+#         if acc_type == 'user':
+#             tabs = ['forYou', 'venues & producers', 'news']
+#         else:  # acc_type == 'venue' or 'producer'
+#             tabs = ['forYou', 'news']
+
+#         # 2) Fetch only notifications for this userId AND the desired notiTabs
+#         cur.execute(
+#             'SELECT * '
+#             'FROM "notifications" '
+#             'WHERE "userId" = %s '
+#             '  AND "notiTabs" = ANY(%s)',
+#             (acc_id, tabs)
+#         )
+#         rows = cur.fetchall()  # each row is a dict because of RealDictCursor
+
+#         # 3) Split into two lists based on notiTabs
+#         for_you_notifications = []
+#         venues_notifications = []
+#         news_notifications = []
+        
+#         for notif in rows:
+#             tab = notif.get('notiTabs')
+#             # Copy createdAt into a uniform 'time' field for sorting
+#             notif['time'] = notif.get('createdAt')
+
+#             if tab == 'forYou':
+#                 for_you_notifications.append(notif)
+#             elif tab == 'venues & producers':
+#                 venues_notifications.append(notif)
+#             elif tab == 'news':
+#                 news_notifications.append(notif)
+
+#         # 4) Helper to normalize any kind of datetime-like value
+#         def normalize_datetime(time_value):
+#             if time_value is None:
+#                 return None
+
+#             # if it's already a string, try to parse as ISO8601 Zulu
+#             if isinstance(time_value, str):
+#                 try:
+#                     return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ') \
+#                                    .replace(tzinfo=timezone.utc)
+#                 except ValueError:
+#                     try:
+#                         return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ') \
+#                                        .replace(tzinfo=timezone.utc)
+#                     except ValueError:
+#                         return datetime.now(timezone.utc)
+
+#             # if it's a date (but not a datetime), convert to datetime at midnight UTC
+#             if isinstance(time_value, date) and not isinstance(time_value, datetime):
+#                 return datetime.combine(time_value, datetime.min.time()) \
+#                                .replace(tzinfo=timezone.utc)
+
+#             # if it's already a datetime
+#             if isinstance(time_value, datetime):
+#                 if time_value.tzinfo is None:
+#                     return time_value.replace(tzinfo=timezone.utc)
+#                 return time_value
+
+#             # fallback
+#             return datetime.now(timezone.utc)
+
+#         # 5) Key function for sorting (most recent first)
+#         def get_sort_key(notification):
+#             t = notification.get('time')
+#             if t is not None:
+#                 return normalize_datetime(t)
+#             return datetime.now(timezone.utc)
+
+#         # 6) Normalize and sort each list
+#         for notif in for_you_notifications:
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for notif in venues_notifications:
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for notif in news_notifications: 
+#             if notif['time'] is not None:
+#                 notif['time'] = normalize_datetime(notif['time'])
+
+#         for_you_notifications.sort(key=get_sort_key, reverse=True)
+#         venues_notifications.sort(key=get_sort_key, reverse=True)
+#         news_notifications.sort(key=get_sort_key, reverse=True)
+
+#         # 7) Return JSON with limits (10 for "forYou", 20 for "venues")
+#         return jsonify({
+#             'forYou': for_you_notifications[:10],
+#             'venues': venues_notifications[:20],
+#             'news': news_notifications
+#         }), 200
+
+#     except Exception as e:
+#         print(str(e))
+#         return jsonify({
+#             'code': 500,
+#             'message': 'An error occurred fetching notifications.'
+#         }), 500
+
+#     finally:
+#         cur.close()
+def _fetch_notifications_by_tab(cursor, user_id, tab_name, limit):
+    """
+    Helper function to fetch notifications for a specific tab with database-level limiting
+    
+    Args:
+        cursor: Database cursor
+        user_id: User ID to fetch notifications for
+        tab_name: Notification tab name
+        limit: Maximum number of notifications to return
+    
+    Returns:
+        List of notification dictionaries, sorted by creation time (newest first)
+    """
+    try:
+        # print(f"DEBUG: Executing query for user_id={user_id}, tab_name='{tab_name}', limit={limit}")
+        
+        cursor.execute(
+            '''
+            SELECT 
+                *
+            FROM "notifications" 
+            WHERE "userId" = %s 
+              AND "notiTabs" = %s
+            ORDER BY "createdAt" DESC 
+            LIMIT %s
+            ''',
+            (user_id, tab_name, limit)
+        )
+        
+        rows = cursor.fetchall()
+        # print(f"DEBUG: Query executed successfully, returned {len(rows)} rows")
+        return rows
+        
+    except Exception as e:
+        # print(f"DEBUG: Database error in _fetch_notifications_by_tab: {str(e)}")
+        # print(f"DEBUG: Query parameters - user_id: {user_id}, tab_name: '{tab_name}', limit: {limit}")
+        raise e
+
+# [GET] Get User Notifications
+# Purpose: Fetch notifications for a user based on their account type
+# Output: Notification items for the logged-in user
 @blueprint.route('/getNotifications/<acc_type>/<acc_id>', methods=['GET'])
 def getNotifications(acc_type, acc_id):
+    """
+    Debug version with detailed error logging to identify the 500 error
+    """
     conn = g.db
-    # use RealDictCursor so that fetchall() returns a list of dicts
     cur = conn.cursor(cursor_factory=RealDictCursor)
+    
     try:
-        acc_id = int(acc_id)
-
-        # 1) Decide which notiTabs to include based on acc_type
-        if acc_type == 'user':
-            tabs = ['forYou', 'venues & producers', 'news']
-        else:  # acc_type == 'venue' or 'producer'
-            tabs = ['forYou', 'news']
-
-        # 2) Fetch only notifications for this userId AND the desired notiTabs
-        cur.execute(
-            'SELECT * '
-            'FROM "notifications" '
-            'WHERE "userId" = %s '
-            '  AND "notiTabs" = ANY(%s)',
-            (acc_id, tabs)
-        )
-        rows = cur.fetchall()  # each row is a dict because of RealDictCursor
-
-        # 3) Split into two lists based on notiTabs
-        for_you_notifications = []
-        venues_notifications = []
-        news_notifications = []
+        # print(f"DEBUG: Received acc_type={acc_type}, acc_id={acc_id}")
         
-        for notif in rows:
-            tab = notif.get('notiTabs')
-            # Copy createdAt into a uniform 'time' field for sorting
-            notif['time'] = notif.get('createdAt')
+        # Validate and convert acc_id
+        try:
+            acc_id = int(acc_id)
+            print(f"DEBUG: Converted acc_id to int: {acc_id}")
+        except ValueError as ve:
+            print(f"DEBUG: ValueError converting acc_id: {ve}")
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid account ID format'
+            }), 400
+        
+        # Validate account type
+        if acc_type not in ['user', 'venue', 'producer']:
+            print(f"DEBUG: Invalid account type: {acc_type}")
+            return jsonify({
+                'code': 400,
+                'message': 'Invalid account type'
+            }), 400
 
-            if tab == 'forYou':
-                for_you_notifications.append(notif)
-            elif tab == 'venues & producers':
-                venues_notifications.append(notif)
-            elif tab == 'news':
-                news_notifications.append(notif)
+        print(f"DEBUG: Account type validation passed")
 
-        # 4) Helper to normalize any kind of datetime-like value
-        def normalize_datetime(time_value):
-            if time_value is None:
-                return None
+        # Determine tabs based on account type
+        if acc_type == 'user':
+            tab_queries = [
+                ('forYou', 'forYou', 10),
+                ('venues', 'venues & producers', 20),
+                ('news', 'news', 50)
+            ]
+        else:  # venue or producer
+            tab_queries = [
+                ('forYou', 'forYou', 10),
+                ('news', 'news', 50)
+            ]
 
-            # if it's already a string, try to parse as ISO8601 Zulu
-            if isinstance(time_value, str):
-                try:
-                    return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%S.%fZ') \
-                                   .replace(tzinfo=timezone.utc)
-                except ValueError:
-                    try:
-                        return datetime.strptime(time_value, '%Y-%m-%dT%H:%M:%SZ') \
-                                       .replace(tzinfo=timezone.utc)
-                    except ValueError:
-                        return datetime.now(timezone.utc)
+        # print(f"DEBUG: Tab queries determined: {tab_queries}")
 
-            # if it's a date (but not a datetime), convert to datetime at midnight UTC
-            if isinstance(time_value, date) and not isinstance(time_value, datetime):
-                return datetime.combine(time_value, datetime.min.time()) \
-                               .replace(tzinfo=timezone.utc)
+        result = {
+            'forYou': [],
+            'venues': [],
+            'news': []
+        }
 
-            # if it's already a datetime
-            if isinstance(time_value, datetime):
-                if time_value.tzinfo is None:
-                    return time_value.replace(tzinfo=timezone.utc)
-                return time_value
+        # Fetch each tab separately with optimized queries
+        for result_key, db_tab_name, limit in tab_queries:
+            print(f"DEBUG: Fetching {result_key} with tab_name='{db_tab_name}', limit={limit}")
+            
+            try:
+                notifications = _fetch_notifications_by_tab(cur, acc_id, db_tab_name, limit)
+                # print(f"DEBUG: Fetched {len(notifications)} notifications for {result_key}")
+                
+                # Add time field for consistency with original code
+                for notif in notifications:
+                    notif['time'] = notif.get('createdAt')
+                
+                result[result_key] = notifications
+                
+            except Exception as tab_error:
+                print(f"DEBUG: Error fetching {result_key}: {tab_error}")
+                # Continue with empty list for this tab
+                result[result_key] = []
 
-            # fallback
-            return datetime.now(timezone.utc)
-
-        # 5) Key function for sorting (most recent first)
-        def get_sort_key(notification):
-            t = notification.get('time')
-            if t is not None:
-                return normalize_datetime(t)
-            return datetime.now(timezone.utc)
-
-        # 6) Normalize and sort each list
-        for notif in for_you_notifications:
-            if notif['time'] is not None:
-                notif['time'] = normalize_datetime(notif['time'])
-
-        for notif in venues_notifications:
-            if notif['time'] is not None:
-                notif['time'] = normalize_datetime(notif['time'])
-
-        for_you_notifications.sort(key=get_sort_key, reverse=True)
-        venues_notifications.sort(key=get_sort_key, reverse=True)
-
-        # 7) Return JSON with limits (10 for "forYou", 20 for "venues")
-        return jsonify({
-            'forYou': for_you_notifications[:10],
-            'venues': venues_notifications[:20],
-            'news': news_notifications
-        }), 200
+        # print(f"DEBUG: Final result keys: {list(result.keys())}")
+        # print(f"DEBUG: Result counts - forYou: {len(result['forYou'])}, venues: {len(result['venues'])}, news: {len(result['news'])}")
+        
+        return jsonify(result), 200
 
     except Exception as e:
-        print(str(e))
+        print(f"DEBUG: Unexpected error in getNotifications_v2: {str(e)}")
+        print(f"DEBUG: Error type: {type(e).__name__}")
+        import traceback
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         return jsonify({
             'code': 500,
-            'message': 'An error occurred fetching notifications.'
+            'message': f'An error occurred fetching notifications: {str(e)}'
         }), 500
-
     finally:
-        cur.close()
+        if cur:
+            cur.close()
 
 
 # ------------------------------------------------------------------------------------------

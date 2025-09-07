@@ -69,6 +69,9 @@ DROP TABLE IF EXISTS "venueReviews" CASCADE;
 DROP TABLE IF EXISTS "venueReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "userNotificationsRead" CASCADE;
 DROP TABLE IF EXISTS "systemSettings" CASCADE;
+DROP TABLE IF EXISTS "myCellarItemsChangelog" CASCADE;
+DROP TABLE IF EXISTS "myCellarItems" CASCADE;
+DROP TABLE IF EXISTS "myCellarCollections" CASCADE;
 
 -- to enable trigram index for fuzzy search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
@@ -198,6 +201,18 @@ CREATE TABLE "observationTags" (
     "observationTag" VARCHAR(255)
 );
 
+-- ========= "venueMainTypes" =========
+CREATE TABLE "venueMainTypes" (
+    "id" SERIAL PRIMARY KEY,
+    "venueMainType" VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- ========= "venueSubTypes" =========
+CREATE TABLE "venueSubTypes" (
+    "id" SERIAL PRIMARY KEY,
+    "venueSubType" VARCHAR(255) NOT NULL UNIQUE
+);
+
 -- ========= "producers" =========
 CREATE TABLE "producers" (
     "id" SERIAL PRIMARY KEY,
@@ -226,6 +241,16 @@ CREATE TABLE "producers" (
 
 -- Create a GIN index on listingName for trigram fuzzy search
 CREATE INDEX idx_producers_name_trgm ON "producers" USING gin ("producerName" gin_trgm_ops);
+
+CREATE TABLE "producerTextSections" (
+    "id" SERIAL PRIMARY KEY,
+    "producerId" INTEGER REFERENCES "producers"("id") ON DELETE CASCADE,
+    "sectionTitle" VARCHAR(255),
+    "richTextContent" TEXT,
+    "sectionOrder" INTEGER DEFAULT 0,
+    "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
 -- ========= "venues" =========
@@ -259,7 +284,9 @@ CREATE TABLE "venues" (
     "email" TEXT,
     "phoneNumber" TEXT,
     "whatsappNumber" TEXT,
-    "pdfMenuUrl" TEXT DEFAULT NULL
+    "pdfMenuUrl" TEXT DEFAULT NULL,
+    "venueMainType" INTEGER REFERENCES "venueMainTypes"("id") ON DELETE SET NULL,
+    "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL
 );
 
 -- ========= "venueAmenities" =========
@@ -581,7 +608,7 @@ CREATE TABLE "reviews" (
     "aroma" VARCHAR(750),
     "location" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- [!] references "venues" FK
     "taste" VARCHAR(750),
-    "observationTag" TEXT[], -- Contains "observationTags"("id")s
+    "observationTag" TEXT[], -- Contains "observationTags" text
     "address" VARCHAR(255),
     "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
@@ -1035,6 +1062,315 @@ CREATE TABLE "systemSettings" (
     "settingDescription" TEXT,
     "lastUpdated" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ========= "myCellarCollections" =========
+CREATE TABLE "myCellarCollections" (
+    "id" SERIAL PRIMARY KEY,
+    "ownerID" INTEGER NOT NULL, -- Account ID (user, producer, or venue)
+    "ownerType" VARCHAR(50) NOT NULL, -- 'user', 'producer', 'venue'
+    "collectionName" VARCHAR(255) NOT NULL,
+    "isDefault" BOOLEAN DEFAULT FALSE, -- True for the default collection
+    "isPublic" BOOLEAN DEFAULT FALSE, -- True if publicly viewable
+    "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE ("ownerID", "ownerType", "collectionName"), -- Prevent duplicate collection names per owner
+    UNIQUE ("ownerID", "ownerType", "isDefault") DEFERRABLE INITIALLY DEFERRED -- Only one default collection per owner
+);
+
+-- Create index for faster lookups
+CREATE INDEX idx_cellar_collections_owner ON "myCellarCollections" ("ownerID", "ownerType");
+
+-- ========= "myCellarItems" =========
+CREATE TABLE "myCellarItems" (
+    "id" SERIAL PRIMARY KEY,
+    "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- Reference to the drink listing
+    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE SET NULL, -- Collection this item belongs to
+    "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
+    
+    -- Inventory Details
+    "quantityVariantID" INTEGER DEFAULT 1, -- 1 = master record, >1 = individual bottles
+    
+    -- SHARED PROPERTIES (only stored in quantityVariantID = 1, NULL for others)
+    "drinkFormat" VARCHAR(50) DEFAULT NULL, -- 'Bottle', 'Can', 'Sample', etc. [MASTER ONLY]
+    "volumeNumber" DECIMAL(10,2) DEFAULT NULL, -- Volume number [MASTER ONLY]
+    "volumeUnit" VARCHAR(10) DEFAULT NULL,
+    "drinkByDate" DATE DEFAULT NULL, -- Latest recommended consumption date [MASTER ONLY]
+    "drinkOnwardsDate" DATE DEFAULT NULL, -- Earliest recommended consumption date [MASTER ONLY]
+    "currentValueEstimation" DECIMAL(10,2) DEFAULT NULL, -- Current market value [MASTER ONLY]
+    "currentValueCurrency" VARCHAR(3) DEFAULT NULL, -- ISO currency code [MASTER ONLY]
+    "suggestedFoodPairing" TEXT DEFAULT NULL, -- User-defined food pairing suggestions [MASTER ONLY]
+    
+    -- INDIVIDUAL BOTTLE PROPERTIES (stored for each bottle including master)
+    "purchaseDate" DATE DEFAULT NULL,
+    "deliveryDate" DATE DEFAULT NULL,
+    "purchasePrice" DECIMAL(10,2) DEFAULT NULL,
+    "purchaseCurrency" VARCHAR(3) DEFAULT 'USD', -- ISO currency code
+    "purchaseVenueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL, -- If purchased from a known venue
+    "purchasePlaceName" VARCHAR(255) DEFAULT NULL, -- Name of place purchased (for non-venue locations)
+    "purchaseAddress" VARCHAR(255) DEFAULT NULL, -- Address from Google Maps API (similar to reviews.address)
+    "status" VARCHAR(50) DEFAULT 'In Possession', -- 'In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed'
+    "consumption" VARCHAR(50) DEFAULT 'Unopened', -- 'Opened', 'Unopened', 'Empty'
+    "currentLocation" VARCHAR(255) DEFAULT 'At Home', -- 'At Home', 'At Friend''s Home', 'At Restaurant', or custom
+    "subLocation" VARCHAR(255) DEFAULT NULL, -- 'In my attic', 'Wine fridge', etc. - custom location details
+    "noteToSelf" TEXT DEFAULT NULL, -- Personal notes about this specific bottle
+    "archiveStatus" BOOLEAN DEFAULT FALSE, -- True if bottle is archived (soft delete), False if active
+    
+    -- Metadata
+    "addedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    CONSTRAINT check_status CHECK ("status" IN ('In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed')),
+    CONSTRAINT check_consumption CHECK ("consumption" IN ('Opened', 'Unopened', 'Empty')),
+    CONSTRAINT check_quantity_variant_positive CHECK ("quantityVariantID" >= 1),
+    CONSTRAINT check_volume_positive CHECK ("volumeNumber" IS NULL OR "volumeNumber" > 0),
+    CONSTRAINT check_price_positive CHECK ("purchasePrice" IS NULL OR "purchasePrice" >= 0),
+    CONSTRAINT check_value_positive CHECK ("currentValueEstimation" IS NULL OR "currentValueEstimation" >= 0),
+    
+    -- Master-Detail Pattern Constraints
+    -- Only quantityVariantID = 1 can have shared properties
+    
+    CONSTRAINT check_master_shared_properties CHECK (
+    ("quantityVariantID" = 1) OR 
+    ("quantityVariantID" > 1 AND "drinkFormat" IS NULL AND "volumeNumber" IS NULL AND "volumeUnit" IS NULL AND
+     "drinkByDate" IS NULL AND "drinkOnwardsDate" IS NULL AND 
+     "currentValueEstimation" IS NULL AND "currentValueCurrency" IS NULL AND 
+     "suggestedFoodPairing" IS NULL)
+    ),
+    
+    -- Ensure unique master record per listing+variant+format+volume combination
+    UNIQUE ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit", "quantityVariantID") DEFERRABLE INITIALLY DEFERRED
+);
+
+-- Create indexes for performance
+CREATE INDEX idx_cellar_listing ON "myCellarItems" ("listingID");
+CREATE INDEX idx_cellar_collection ON "myCellarItems" ("collectionID");
+CREATE INDEX idx_cellar_status ON "myCellarItems" ("status");
+CREATE INDEX idx_cellar_dates ON "myCellarItems" ("drinkByDate", "drinkOnwardsDate");
+CREATE INDEX idx_cellar_archive_status ON "myCellarItems" ("archiveStatus");
+
+-- Master-Detail Pattern Indexes
+CREATE INDEX idx_cellar_master_lookup ON "myCellarItems" ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit", "quantityVariantID");
+CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant", "drinkFormat", "volumeNumber", "volumeUnit") WHERE "quantityVariantID" = 1;
+
+-- ========= "myCellarItemsChangelog" =========
+CREATE TABLE "myCellarItemsChangelog" (
+    "id" SERIAL PRIMARY KEY,
+    "cellarItemID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE CASCADE, -- Reference to the cellar item
+    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'ARCHIVE_CHANGED', 'DELETED'
+    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityVariantID', 'status', 'consumption')
+    "oldValue" TEXT, -- Previous value (JSON string for complex data)
+    "newValue" TEXT, -- New value (JSON string for complex data)
+    "changeDescription" TEXT, -- Human-readable description of the change
+    "quantityDelta" INTEGER DEFAULT NULL, -- For quantity changes: +5, -2, etc.
+    "triggeredBy" VARCHAR(50) DEFAULT 'USER', -- 'USER', 'SYSTEM', 'IMPORT', 'API'
+    "changeDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create indexes for changelog performance
+CREATE INDEX idx_changelog_cellar_item ON "myCellarItemsChangelog" ("cellarItemID");
+CREATE INDEX idx_changelog_change_type ON "myCellarItemsChangelog" ("changeType");
+CREATE INDEX idx_changelog_date ON "myCellarItemsChangelog" ("changeDate");
+CREATE INDEX idx_changelog_field ON "myCellarItemsChangelog" ("fieldName");
+
+-- Composite index for common queries (item history by date)
+CREATE INDEX idx_changelog_item_date ON "myCellarItemsChangelog" ("cellarItemID", "changeDate" DESC);
+
+-- ========= OPTIONAL: Auto-update timestamps (can be handled in backend instead) =========
+-- Uncomment these if you want automatic updatedDate handling at database level
+
+-- CREATE OR REPLACE FUNCTION update_cellar_updated_date()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW."updatedDate" = CURRENT_TIMESTAMP;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
+
+-- CREATE TRIGGER trigger_update_cellar_updated_date
+--     BEFORE UPDATE ON "myCellarItems"
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_cellar_updated_date();
+
+-- CREATE OR REPLACE FUNCTION update_cellar_collections_updated_date()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     NEW."updatedDate" = CURRENT_TIMESTAMP;
+--     RETURN NEW;
+-- END;
+-- $$ language 'plpgsql';
+
+-- CREATE TRIGGER trigger_update_cellar_collections_updated_date
+--     BEFORE UPDATE ON "myCellarCollections"
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_cellar_collections_updated_date();
+
+-- ========= CHANGELOG TRIGGERS FOR myCellarItems (RECOMMENDED) =========
+-- This provides bulletproof audit trail regardless of how data is modified
+
+-- Function to log cellar item changes
+CREATE OR REPLACE FUNCTION log_cellar_item_changes()
+RETURNS TRIGGER AS $$
+DECLARE
+    change_desc TEXT;
+BEGIN
+    -- Handle INSERT (new item created)
+    IF TG_OP = 'INSERT' THEN
+        INSERT INTO "myCellarItemsChangelog" (
+            "cellarItemID", "changeType", "changeDescription", 
+            "newValue", "quantityDelta", "changeDate"
+        ) VALUES (
+            NEW."id", 'CREATED', 
+            'New cellar item added: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = NEW."listingID"), 'Unknown item'),
+            json_build_object(
+                'quantityVariantID', NEW."quantityVariantID",
+                'drinkFormat', NEW."drinkFormat",
+                'status', NEW."status",
+                'consumption', NEW."consumption",
+                'currentLocation', NEW."currentLocation"
+            )::text,
+            1, -- Each record represents one bottle
+            CURRENT_TIMESTAMP
+        );
+        RETURN NEW;
+    END IF;
+
+    -- Handle UPDATE (item modified)
+    IF TG_OP = 'UPDATE' THEN
+        -- Status changed
+        IF OLD."status" != NEW."status" THEN
+            change_desc := 'Status changed from "' || OLD."status" || '" to "' || NEW."status" || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'STATUS_CHANGED', 'status', 
+                OLD."status", NEW."status", change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Consumption status changed
+        IF OLD."consumption" != NEW."consumption" THEN
+            change_desc := 'Consumption status changed from "' || OLD."consumption" || '" to "' || NEW."consumption" || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'CONSUMPTION_CHANGED', 'consumption', 
+                OLD."consumption", NEW."consumption", change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Location changed
+        IF OLD."currentLocation" IS DISTINCT FROM NEW."currentLocation" OR 
+           OLD."subLocation" IS DISTINCT FROM NEW."subLocation" THEN
+            change_desc := 'Location changed from "' || COALESCE(OLD."currentLocation", '') || 
+                          CASE WHEN OLD."subLocation" IS NOT NULL THEN ' (' || OLD."subLocation" || ')' ELSE '' END ||
+                          '" to "' || COALESCE(NEW."currentLocation", '') ||
+                          CASE WHEN NEW."subLocation" IS NOT NULL THEN ' (' || NEW."subLocation" || ')' ELSE '' END || '"';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'LOCATION_CHANGED', 'currentLocation', 
+                json_build_object('currentLocation', OLD."currentLocation", 'subLocation', OLD."subLocation")::text,
+                json_build_object('currentLocation', NEW."currentLocation", 'subLocation', NEW."subLocation")::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Notes updated
+        IF OLD."noteToSelf" IS DISTINCT FROM NEW."noteToSelf" OR
+           OLD."suggestedFoodPairing" IS DISTINCT FROM NEW."suggestedFoodPairing" THEN
+            change_desc := 'Notes or food pairing updated';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'NOTES_UPDATED', 'notes', 
+                json_build_object('noteToSelf', OLD."noteToSelf", 'suggestedFoodPairing', OLD."suggestedFoodPairing")::text,
+                json_build_object('noteToSelf', NEW."noteToSelf", 'suggestedFoodPairing', NEW."suggestedFoodPairing")::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Archive status changed
+        IF OLD."archiveStatus" != NEW."archiveStatus" THEN
+            change_desc := CASE 
+                WHEN NEW."archiveStatus" = TRUE THEN 'Bottle archived'
+                ELSE 'Bottle restored from archive'
+            END;
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'ARCHIVE_CHANGED', 'archiveStatus', 
+                OLD."archiveStatus"::text, NEW."archiveStatus"::text, change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        -- Financial information updated
+        IF OLD."purchasePrice" IS DISTINCT FROM NEW."purchasePrice" OR
+           OLD."currentValueEstimation" IS DISTINCT FROM NEW."currentValueEstimation" OR
+           OLD."purchaseCurrency" IS DISTINCT FROM NEW."purchaseCurrency" OR
+           OLD."currentValueCurrency" IS DISTINCT FROM NEW."currentValueCurrency" THEN
+            change_desc := 'Financial information updated';
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'FINANCIAL_UPDATED', 'financial', 
+                json_build_object(
+                    'purchasePrice', OLD."purchasePrice", 
+                    'purchaseCurrency', OLD."purchaseCurrency",
+                    'currentValueEstimation', OLD."currentValueEstimation",
+                    'currentValueCurrency', OLD."currentValueCurrency"
+                )::text,
+                json_build_object(
+                    'purchasePrice', NEW."purchasePrice", 
+                    'purchaseCurrency', NEW."purchaseCurrency",
+                    'currentValueEstimation', NEW."currentValueEstimation",
+                    'currentValueCurrency', NEW."currentValueCurrency"
+                )::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
+        RETURN NEW;
+    END IF;
+
+    -- Handle DELETE (item removed)
+    IF TG_OP = 'DELETE' THEN
+        INSERT INTO "myCellarItemsChangelog" (
+            "cellarItemID", "changeType", "changeDescription", 
+            "oldValue", "changeDate"
+        ) VALUES (
+            OLD."id", 'DELETED', 
+            'Cellar item removed: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = OLD."listingID"), 'Unknown item'),
+            json_build_object(
+                'quantityVariantID', OLD."quantityVariantID",
+                'status', OLD."status",
+                'consumption', OLD."consumption"
+            )::text,
+            CURRENT_TIMESTAMP
+        );
+        RETURN OLD;
+    END IF;
+
+    RETURN NULL;
+END;
+$$ language 'plpgsql';
+
+-- Create the trigger
+CREATE TRIGGER trigger_log_cellar_item_changes
+    AFTER INSERT OR UPDATE OR DELETE ON "myCellarItems"
+    FOR EACH ROW
+    EXECUTE FUNCTION log_cellar_item_changes();
 
 -- NEWLY ADDED TABLES for Explore Page - BY CP --
 

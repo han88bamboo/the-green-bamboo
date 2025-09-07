@@ -705,6 +705,179 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Daily Drinker'),
 ('Netflix & Chill 🍆');
 
+-- Insert venue main types into the venueMainTypes table
+INSERT INTO "venueMainTypes" ("venueMainType") VALUES
+('African'),
+('American'),
+('Asian'),
+('Australian'),
+('BBQ'),
+('Belgian'),
+('Brazilian'),
+('Breakfast & Brunch'),
+('British'),
+('Burgers'),
+('Cajun / Creole'),
+('Caribbean'),
+('Central Asian'),
+('Central European'),
+('Chinese'),
+('Contemporary'),
+('Eastern European'),
+('Filipino'),
+('French'),
+('Fusion'),
+('German'),
+('Greek'),
+('Hong Kong'),
+('Hot Pot'),
+('Indian'),
+('Indonesian'),
+('Irish'),
+('Italian'),
+('Japanese'),
+('Kebab'),
+('Korean'),
+('Latin American'),
+('Malaysian'),
+('Mediterranean'),
+('Mexican'),
+('Middle Eastern'),
+('Modern European'),
+('Peruvian'),
+('Pizza'),
+('Portuguese'),
+('Ramen'),
+('Russian'),
+('Salad'),
+('Sandwiches / Deli'),
+('Scandinavian'),
+('Seafood'),
+('South American'),
+('Southeast Asian'),
+('Southern'),
+('Soup'),
+('Specialty Food'),
+('Spanish'),
+('Steakhouse'),
+('Sushi'),
+('Tapas / Small Plates'),
+('Taiwanese'),
+('Tex-Mex'),
+('Thai'),
+('Turkish'),
+('Vegan'),
+('Vegetarian'),
+('Vietnamese');
+
+-- Insert venue sub-types into the venueSubTypes table
+INSERT INTO "venueSubTypes" ("venueSubType") VALUES
+('Ale House'),
+('Baijiu Bar'),
+('Bakery'),
+('Bar'),
+('Bar & Food'),
+('Beer Garden'),
+('Beer, Wine & Spirits'),
+('Bottle Shop'),
+('Brandy/Cognac Bar'),
+('Brasserie'),
+('Brewery'),
+('Brewpub'),
+('Buffet'),
+('Butcher'),
+('Buyer'),
+('Cafe'),
+('Cafeteria'),
+('Caterer'),
+('Casual'),
+('Champagne Bar'),
+('Cheese Shop'),
+('Cider Bar'),
+('Cocktail Bar'),
+('Coffee & Tea'),
+('Coffee Chain'),
+('Coffee House'),
+('Comedy Club'),
+('Convenience Store'),
+('Deli'),
+('Dessert'),
+('Diner'),
+('Disco'),
+('Distillery'),
+('Distributor'),
+('Dive Bar'),
+('Events'),
+('Exhibitor'),
+('Fan Club'),
+('Fast Casual'),
+('Fast Food'),
+('Festival'),
+('Fine Dining'),
+('Food Chain'),
+('Food Court'),
+('Food Delivery Business'),
+('Food Market'),
+('Food Stand'),
+('Food Truck'),
+('Gastropub'),
+('Gin Bar'),
+('Grab & Go'),
+('Grocery'),
+('Hobby Club'),
+('Home Based'),
+('Home Party'),
+('Hotel'),
+('Importer'),
+('Izakaya'),
+('Jazz Club'),
+('Karaoke'),
+('Lounge'),
+('Market'),
+('Microbrewery'),
+('Music Club'),
+('Music Event'),
+('Music Festival'),
+('Night Club'),
+('On Trade'),
+('Oyster Bar'),
+('Pantry'),
+('Party'),
+('Pastry Shop'),
+('Performance'),
+('Personal Chef'),
+('Pizzeria'),
+('Pop-Up'),
+('Producer'),
+('Pub'),
+('Quick Bites'),
+('Restaurant'),
+('Rum Bar'),
+('Sake Bar'),
+('Sandwich Shop'),
+('School Club'),
+('Shochu Bar'),
+('Smokehouse'),
+('Sommelier Service'),
+('Speakeasy'),
+('Spirits Bars'),
+('Sports Bar'),
+('Steakhouse'),
+('Supper Club'),
+('Taproom'),
+('Tequila & Mezcal Bar'),
+('Themed Cafe'),
+('Theater'),
+('Tiki Bar'),
+('Tasting Room'),
+('Trade Partner'),
+('Trade Professional'),
+('Trade Show'),
+('Travel'),
+('Vineyard'),
+('Whisky Bar'),
+('Wine Bar'),
+('Winery');
 
 INSERT INTO "users" ("username","displayName","choiceDrinks","modType","photo","hashedPassword","joinDate","firstName","lastName","email","isAdmin","birthday","pin", "choiceFlavours", "preferences","categoryExpert") VALUES
 	 ('admin','admin','{}','{}','','-1522920846','2024-10-28 18:45:31.403','admin','admin','admin@drink-x.com',false,'2000-01-01 00:00:00','175029,2024-10-28 18:46:29', '{}', '{}',NULL),
@@ -2801,7 +2974,9 @@ INSERT INTO "venues" (
     "publicHolidays", 
     "stripeCustomerId", 
     "pin",
-    "pdfMenuUrl"
+    "pdfMenuUrl",
+    "venueMainType",
+    "venueSubType"
 ) VALUES (
     11,
     'Orh Gao Taproom Craft Beer Bar', 
@@ -2818,7 +2993,9 @@ INSERT INTO "venues" (
     'Not open on Christmas', 
     NULL, 
     NULL,
-    'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/29bbeff8-4f21-4140-9d24-8f0cedd2c029.pdf'
+    '["https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_001.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_002.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_003.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_004.png"]',
+    1,
+    2
 ), 
 (   
     10,
@@ -2836,7 +3013,9 @@ INSERT INTO "venues" (
     'Not open on Christmas', 
     NULL, 
     NULL,
-    NULL
+    NULL,
+    3,
+    4
 ),
 (
     24,
@@ -2854,7 +3033,9 @@ INSERT INTO "venues" (
     'Closed on Lunar New Year',
     NULL,
     NULL,
-    NULL
+    NULL,
+    5,
+    6
 ),
 (
     1,
@@ -2872,7 +3053,9 @@ INSERT INTO "venues" (
     'Closed on Lunar New Year',
     NULL,
     NULL,
-    NULL
+    NULL,
+    7,
+    8
 );
 
 INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -2935,6 +3118,24 @@ INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NU
 INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
 INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
 
+
+UPDATE venues 
+SET 
+   "venueName" = 'Orh Gao Taproom Craft Beer Bar',
+    "venueType" = 'Craft Beer Taproom',
+    "venueDesc" = 'Nobody does sake like we do. Every sake is tasted by us first. Menu tasting notes are written by us because you deserve to know your sakes better. In addition, a specially curated highball list for your drinking pleasure. We make proper strength highballs ranging from refreshing to smoky and peaty whiskies. Traditional craft, modern perspectives. 15 Rotating Craft Sake List. New sakes every week. Resident Sake Sommelier approved. Sakes by glass, micro-flights & curated sake journeys. Bodaimoto, Muroka Nama Genshu, Spontaneous Fermentation, Aged Sake, Ancient & Modern Sake lovers unite.',
+    "originLocation" = 'Singapore',
+    "yearOpened" = 2000,
+     "openForReservations" = NULL,
+  "website" = 'https://therumcartel.com/',
+      "instagram" = 'https://www.instagram.com/yeastside.sg/',
+      "facebook" = 'https://www.facebook.com/yeastside.sg/',
+  "tiktok" = NULL,
+   "email" = 'tzhehan@gmail.com',
+  "phoneNumber" = '97897103',
+   "whatsappNumber" = NULL,
+   "photo" = 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/b4e600aa-fac1-4aeb-b6b4-3f6eb6d740b2.jpg'
+    WHERE id = 11;
 
 INSERT INTO "usersFollowLists" (
     "userId", "users", "producers", "venues")
@@ -4366,3 +4567,166 @@ VALUES
 (1, 'user', 9, 2,   'Yes, I agree with that improvement!'),              -- reply to id 2
 (3, 'user', 10, 3,  'Looking forward to the shows here!');               -- reply to id 3
 
+
+
+
+
+INSERT INTO "myCellarCollections" (
+    "ownerID", "ownerType", "collectionName", "isDefault", "isPublic", 
+    "createdDate", "updatedDate"
+) VALUES (
+    3, 'user', 'General Collection', TRUE, FALSE, 
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+INSERT INTO "myCellarCollections" (
+    "ownerID", "ownerType", "collectionName", "isDefault", "isPublic", 
+    "createdDate", "updatedDate"
+) VALUES (
+    3, 'user', 'Test Beer Collection', FALSE, FALSE, 
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 1: Listing ID 1179024
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1179024, 2, 2022, 1, 'Bottle', 750, 'ml',
+    '2030-12-31', '2025-01-01', '2024-08-15', '2024-08-20',
+    89.99, 'USD', 95.00, 'USD',
+    NULL, 'Local Wine Shop', '123 Main Street, City, State',
+    'In Possession', 'Unopened', 'At Home', 'Wine cellar',
+    'Pairs well with grilled steak and aged cheese', 'Excellent vintage, save for special occasion',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 2: Listing ID 1040419
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1040419, 1, NULL, 1, 'Bottle', 500, 'ml',
+    '2035-06-30', '2026-01-01', '2024-07-10', '2024-07-12',
+    125.50, 'USD', 140.00, 'USD',
+    NULL, 'Premium Spirits Store', '456 Oak Avenue, Downtown',
+    'In Possession', 'Unopened', 'At Home', 'Liquor cabinet',
+    'Perfect with dark chocolate desserts', 'Limited edition bottle, handle with care',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 3: Listing ID 1037431
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1037431, 2, 2021, 1, 'Bottle', 750, 'ml',
+    '2028-03-15', '2025-06-01', '2024-06-25', '2024-06-28',
+    67.75, 'USD', 72.00, 'USD',
+    NULL, 'Neighborhood Liquor Store', '789 Pine Street, Suburb',
+    'In Possession', 'Unopened', 'At Home', 'Kitchen pantry',
+    'Great with seafood and light appetizers', 'Good everyday drinking wine',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 4a: Listing ID 1177334 (MASTER RECORD - contains shared properties)
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
+) VALUES (
+    1177334, 1, 2020, 1, 'Bottle', 700, 'ml',
+    '2040-12-31', '2025-01-01', '2024-09-01', '2024-09-05',
+    199.99, 'USD', 220.00, 'USD',
+    NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
+    'In Possession', 'Unopened', 'At Home', 'Study room bar',
+    'Excellent neat or with a single ice cube', 'Anniversary gift, very special bottle - 4a',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE
+);
+
+-- Item 4b: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1177334, 1, 2020, 2, NULL, NULL, NULL,
+    NULL, NULL, '2024-09-01', '2024-09-05',
+    199.99, 'USD', NULL, NULL,
+    NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
+    'In Possession', 'Unopened', 'At Home', 'Study room bar',
+    NULL, 'Second bottle from same purchase - 4b',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 4c: Listing ID 1177334 (INDIVIDUAL BOTTLE - shared properties are NULL)
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate", "archiveStatus"
+) VALUES (
+    1177334, 1, 2020, 3, NULL, NULL, NULL,
+    NULL, NULL, '2024-09-01', '2024-09-05',
+    199.99, 'USD', NULL, NULL,
+    NULL, 'Exclusive Whisky House', '321 Bourbon Lane, Uptown',
+    'In Possession', 'Unopened', 'At Home', 'Study room bar',
+    NULL, 'Third bottle from same purchase - 4c',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, FALSE
+);
+
+-- Item 5: Listing ID 1
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    1, 1, NULL, 1, 'Can', 330, 'ml',
+    '2025-12-31', '2024-01-01', '2024-09-10', '2024-09-10',
+    15.99, 'USD', 16.00, 'USD',
+    NULL, 'Grocery Store', '654 Market Street, City Center',
+    'In Possession', 'Unopened', 'At Home', 'Refrigerator',
+    'Perfect with pizza and casual meals', 'Stock beer for parties',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
+
+-- Item 6: Listing ID 2
+INSERT INTO "myCellarItems" (
+    "listingID", "collectionID", "variant", "quantityVariantID", "drinkFormat", "volumeNumber", "volumeUnit",
+    "drinkByDate", "drinkOnwardsDate", "purchaseDate", "deliveryDate",
+    "purchasePrice", "purchaseCurrency", "currentValueEstimation", "currentValueCurrency",
+    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+    "status", "consumption", "currentLocation", "subLocation",
+    "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
+) VALUES (
+    2, 1, 2023, 1, 'Bottle', 375, 'ml',
+    '2050-01-01', '2030-01-01', '2024-08-20', '2024-08-25',
+    275.00, 'USD', 300.00, 'USD',
+    NULL, 'Fine Wine Boutique', '987 Vintage Road, Wine District',
+    'In Possession', 'Unopened', 'At Home', 'Temperature-controlled cellar',
+    'Pairs beautifully with foie gras and desserts', 'Investment grade bottle, hold for 5+ years',
+    CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+);
