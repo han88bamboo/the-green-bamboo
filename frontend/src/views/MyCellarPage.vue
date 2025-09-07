@@ -786,18 +786,17 @@
                           <div class="purchase-location-container" style="position: relative;">
                             <!-- Google Maps Autocomplete Input -->
                             <div class="input-group">
-                              <div class="location-input-wrapper" style="position: relative; width: 100%;">
-                                <GMapAutocomplete 
-                                  placeholder="e.g., Wine shop, Online store, or enter manually"
-                                  @place_changed="setPurchasePlaceFromAutocomplete"
-                                  @input="onPurchaseLocationInput"
-                                  class="form-control input-with-icon" 
-                                  ref="purchaseLocationInput"
-                                  :value="addDrinkForm.purchaseLocationInputValue"
-                                  :options="{ types: ['establishment'] }"
-                                >
-                                </GMapAutocomplete>
-                              </div>
+                              <GMapAutocomplete 
+                                placeholder="e.g., Wine shop, Online store, or enter manually"
+                                @place_changed="setPurchasePlaceFromAutocomplete" 
+                                @input="onPurchaseLocationInput"
+                                @focus="onPurchaseLocationFocus" 
+                                @blur="onPurchaseLocationBlur"
+                                class="form-control input-with-icon" 
+                                ref="purchaseLocationInput" 
+                                :value="addDrinkForm.purchaseLocationInputValue"
+                                :options="{ types: ['establishment'] }"
+                              />
                               <span class="input-group-text" :title="addDrinkForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
                                 <i class="bi bi-geo-alt" :class="{ 'text-success': addDrinkForm.selectedPurchasePlace }"></i>
                               </span>
@@ -1707,12 +1706,6 @@ export default {
     }
   },
   async mounted() {
-    // Debug Google Maps API availability
-    console.log('TZHFrontendLog: Google Maps API key:', process.env.VUE_APP_GOOGLE_MAPS_API_KEY ? 'Available' : 'Missing');
-    console.log('TZHFrontendLog: Google object available:', typeof window.google !== 'undefined');
-    console.log('TZHFrontendLog: Google Maps available:', typeof window.google?.maps !== 'undefined');
-    console.log('TZHFrontendLog: Google Places available:', typeof window.google?.maps?.places !== 'undefined');
-    
     await this.loadCellarData()
   },
   beforeUnmount() {
@@ -2227,12 +2220,6 @@ export default {
         this.addDrinkForm.purchasePlaceName = this.addDrinkForm.purchaseLocationInputValue.trim();
         console.log('TZHFrontendLog: Manual purchase location entry captured:', this.addDrinkForm.purchasePlaceName);
       }
-    },
-
-    // Handle keydown on purchase location input
-    onPurchaseLocationKeydown(event) {
-      // Could be used for handling special keys like Enter, Escape, etc.
-      console.log('TZHFrontendLog: Purchase location keydown:', event.key);
     },
 
     // Clear selected purchase location
