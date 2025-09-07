@@ -1444,7 +1444,7 @@
                                     <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                     <div class="d-grid">
                                       <router-link
-                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) }"
+                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName) + '/?reviewId=' + content.id }"
                                         class="primary-clickable-text"
                                       >
                                         <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
@@ -2275,8 +2275,8 @@ export default {
       // modRequests: [],
 
       // for user account credentials
-      userID: "",
-      userType: "",
+      userID: 0,
+      userType: "public",
       username: "",
       displayName: "",
       isAdmin: "",
@@ -3347,6 +3347,12 @@ methods: {
 
     // Function to like content
     likeContent(contentId, contentType) {
+
+      if (!this.userID || this.userID === 0 || !this.userType || this.userType === "public") {
+        // Route to login page
+        this.$router.push('/login');
+        return;
+      }
       try {
         this.$axios.post(`${process.env.VUE_APP_API_URL}/randomContent/likeContent`, {
           userId: this.userID,
@@ -3393,6 +3399,13 @@ methods: {
 
     // Function to unlike content
     unlikeContent(contentId, contentType) {
+
+      if (!this.userID || this.userID === 0 || !this.userType || this.userType === "public") {
+        // Route to login page
+        this.$router.push('/login');
+        return;
+      }
+
       try {
         this.$axios.post(`${process.env.VUE_APP_API_URL}/randomContent/unlikeContent`, {
           userId: this.userID,
@@ -3448,8 +3461,9 @@ methods: {
     getContentLink(content) {
       switch (content.contentType) {
         case 'Listing':
-        case 'Review':
           return `/listing/view/${content.id}/${this.slugify(content.listingName)}`;
+        case 'Review':
+          return `/listing/view/${content.reviewTarget}/${this.slugify(content.listingName)} + /?reviewId=${content.id}`;
         case 'pReview':
         case 'pUpdate':
           return `/profile/producer/${content.producerId}/${this.slugify(content.producerName)}`;
@@ -3468,9 +3482,9 @@ methods: {
 
     // Function to add comment 
     async addComment(contentId, contentType, topComments) {
-      if (!this.userID || !this.userType) {
+      if (!this.userID || this.userID === 0 || !this.userType || this.userType === "public") {
         // Route to login page
-        this.$router.push({ name: 'Login' });
+        this.$router.push('/login');
         return;
       }
 
@@ -3606,8 +3620,6 @@ methods: {
       try {
 
         let endpoint = this.getContentLink(content);
-        console.log("Endpoint to copy:", endpoint);
-        
         if (endpoint) {
           // Add the hostname 
           const currentUrl = window.location.origin;
