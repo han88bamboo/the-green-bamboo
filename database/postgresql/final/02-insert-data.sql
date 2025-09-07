@@ -3109,9 +3109,9 @@ INSERT INTO "listings" (
     ('Grey Goose Vodka', 18, 'Grey Goose', 'France', 'Vodka', 40, 'A premium French vodka made from high-quality wheat.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
-    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
-    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
-    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2024-02-02', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
+    ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2025-08-28', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
+    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2025-08-28', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
+    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2025-08-28', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
 
 INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, it’s the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and you’ll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-');
 INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles');
@@ -3238,9 +3238,9 @@ INSERT INTO "reviews" (
 (2, 18, 4, 'gooooooood goooooooodgooooooood', 'Listing', '2025-01-08 04:52:10.957', 'English', '', false, false, '{2}', '{3, 66}', '', '', '', null, '', '{Beginner Friendly, Good for Gifts}', ''),
 (3, 12, 5, 'An absolute masterpiece. Smooth and well-balanced.', 'Listing', '2025-01-15 12:34:56.789', 'English', 'Rich, lingering with subtle spice', true, true, '{}', '{4, 56}', '', '', '', null, '', '{Cool Packaging}', ''),
 (4, 5, 3, 'It was okay, but I expected more depth.', 'Listing', '2025-01-14 09:18:32.112', 'English', 'Short, slightly bitter', false, false, '{}', '{3, 87}', '', '', '', null, '', '{What Just Hit Me, OverHyped!}', ''),
-(1, 14, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-01-12 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{4, 56}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
-(2, 3, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-01-10 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{2, 25, 28}', '', '', '', null, '', '{Acquired Taste}', ''),
-(3, 10, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-01-09 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{4, 6}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', '');
+(1, 14, 4, 'Really enjoyable with friends. Would buy again!', 'Listing', '2025-08-21 20:45:22.674', 'English', 'Mellow and warm', true, true, '{}', '{4, 56}', '', '', '', null, '', '{Social Drink, OverHyped!}', ''),
+(2, 3, 2, 'Not to my taste, too strong on the finish.', 'Listing', '2025-08-21 16:50:10.389', 'English', 'Harsh and overpowering', false, false, '{}', '{2, 25, 28}', '', '', '', null, '', '{Acquired Taste}', ''),
+(3, 10, 5, 'Absolutely delightful! A must-try.', 'Listing', '2025-08-23 11:30:45.876', 'English', 'Long, smooth caramel notes', true, true, '{}', '{4, 6}', '', '', '', null, '', '{Daily Drinker, Recommended for Enthusiasts, More Complex Than Inception}', '');
 
 INSERT INTO "reviewsUserVotes" ("upvotes", "downvotes", "reviewId") VALUES
 (
@@ -4345,16 +4345,229 @@ VALUES
 (5, 'user', 'venues & producers', 'newEvent', NULL, '/event/6/Ladies Night - Margaritas Galore', 'Ladies Night - Margaritas Galore happening soon!', '2025-05-02 18:45:31');
 
 
--- [NEW!] "latestUserFollowers" - ADDED BY CP
+-- [NEW!] "producerUpdates" - ADDED BY CP
+INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES
+-- Hennessy (id=1)
+('2025-08-16 14:05:00', 'Celebrating summer evenings with a glass of Hennessy VSOP.', NULL, 1),
+('2025-08-17 18:22:00', 'Our cellar masters continue the tradition of excellence in every blend.', NULL, 1),
+('2025-08-18 12:40:00', 'Pairing Hennessy XO with fine dining for the perfect evening.', NULL, 1),
+('2025-08-19 20:15:00', 'Crafting timeless cognac since 1765. Raise a glass with us today.', NULL, 1),
+('2025-08-22 16:00:00', 'Golden hues, rich aromas—this is the Hennessy experience.', NULL, 1),
+('2025-08-24 19:45:00', 'Cheers to unforgettable August nights with Hennessy.', NULL, 1),
+
+-- Johnnie Walker (id=2)
+('2025-08-16 10:10:00', 'Keep walking towards bold flavors—Johnnie Walker Black Label.', NULL, 2),
+('2025-08-17 21:30:00', 'Exploring smoky richness with Johnnie Walker Double Black.', NULL, 2),
+('2025-08-18 17:55:00', 'From Scotland with pride. Every sip tells a story.', NULL, 2),
+('2025-08-19 11:25:00', 'Raise your glass to progress. Here’s to moving forward.', NULL, 2),
+('2025-08-21 20:05:00', 'Our Gold Label Reserve shines in every celebration.', NULL, 2),
+('2025-08-23 15:50:00', 'Sharing unforgettable moments with friends and Johnnie Walker.', NULL, 2),
+('2025-08-24 18:10:00', 'The journey continues—cheers to the next adventure.', NULL, 2),
+
+-- Don Julio (id=3)
+('2025-08-16 19:00:00', 'Crafted in the Highlands of Jalisco—Don Julio Blanco.', NULL, 3),
+('2025-08-17 13:45:00', 'Refreshing cocktails start with Don Julio Reposado.', NULL, 3),
+('2025-08-18 20:35:00', 'A toast to tradition: 100% Blue Weber agave.', NULL, 3),
+('2025-08-20 22:15:00', 'Golden hour calls for Don Julio Añejo.', NULL, 3),
+('2025-08-21 12:20:00', 'Perfect for gatherings: Don Julio 1942.', NULL, 3),
+('2025-08-23 17:05:00', 'Celebrating summer fiestas the Don Julio way.', NULL, 3),
+('2025-08-24 21:40:00', 'Raise your glass—moments are better with Don Julio.', NULL, 3);
+
+-- [NEW!] "venuesUpdate" - ADDED BY CP
+INSERT INTO "venuesUpdates" ("date", "text", "photo", "venueId") VALUES
+-- venueId = 11
+('2025-08-16 14:20:00', 'Live jazz set tonight—doors open at 8 PM.', NULL, 11),
+('2025-08-17 19:00:00', 'Happy hour specials running all evening long.', NULL, 11),
+('2025-08-19 21:15:00', 'Thanks to everyone who joined us for open mic night!', NULL, 11),
+('2025-08-21 17:45:00', 'Craft cocktails and summer vibes—join us on the terrace.', NULL, 11),
+('2025-08-24 20:10:00', 'Closing the week with a DJ set and dancing.', NULL, 11),
+
+-- venueId = 10
+('2025-08-16 18:30:00', 'Tonight’s tasting menu highlights seasonal flavors.', NULL, 10),
+('2025-08-18 12:15:00', 'Lunch crowd favorites are back on the menu.', NULL, 10),
+('2025-08-20 19:50:00', 'Wine pairing dinner reservations filling fast.', NULL, 10),
+('2025-08-22 13:25:00', 'Weekend brunch is served—book your table.', NULL, 10),
+('2025-08-23 21:00:00', 'An unforgettable evening with live piano.', NULL, 10),
+
+-- venueId = 24
+('2025-08-16 20:05:00', 'Kicking off Saturday night with a rooftop party.', NULL, 24),
+('2025-08-17 22:40:00', 'Packed dance floor and great energy tonight!', NULL, 24),
+('2025-08-19 18:35:00', 'Midweek specials on cocktails and bites.', NULL, 24),
+('2025-08-21 23:15:00', 'Guest DJ spinning all night—don’t miss it.', NULL, 24),
+('2025-08-23 19:55:00', 'Sunset sessions on the rooftop start now.', NULL, 24),
+
+-- venueId = 1
+('2025-08-17 16:00:00', 'Family-friendly afternoon with live acoustic music.', NULL, 1),
+('2025-08-18 20:45:00', 'Karaoke night returns—bring your best performance!', NULL, 1),
+('2025-08-20 14:30:00', 'Hosting a local food truck festival in our courtyard.', NULL, 1),
+('2025-08-22 18:20:00', 'Friday night trivia—teams welcome.', NULL, 1),
+('2025-08-24 15:40:00', 'Wrapping up the weekend with a community barbecue.', NULL, 1);
+
+
+-- Insert default settings
+INSERT INTO "systemSettings" ("settingName", "settingValue", "settingDescription")
+VALUES ('autoListingApproval', 'false', 'When set to true, new listing requests are automatically approved and created');
+
+
+-- "latestUserFollowers"
 INSERT INTO "latestUserFollowers"(
     "userId", "followingId", "followDate")
 VALUES
     (5, 1, '2025-07-11 18:45:31.403');
 
 
--- Insert default settings
-INSERT INTO "systemSettings" ("settingName", "settingValue", "settingDescription")
-VALUES ('autoListingApproval', 'false', 'When set to true, new listing requests are automatically approved and created');
+-- NEWLY ADDED randomContent data - ADDED BY CP
+-- Insert listingsLikes
+INSERT INTO "listingsLikes" ("userId", "userType", "listingId")
+VALUES
+    (1, 'user', 1),
+    (2, 'user', 2),
+    (3, 'user', 3),
+    (4, 'user', 4),
+    (5, 'user', 5),
+    (1, 'producer', 6),
+    (11, 'venue', 7),
+    (10, 'venue', 8),
+    (1, 'user', 9),
+    (2, 'user', 10),
+    (3, 'user', 11),
+    (4, 'user', 12),
+    (5, 'user', 13),
+    (1, 'producer', 14),
+    (11, 'venue', 15),
+    (10, 'venue', 16),
+    (1, 'user', 17),
+    (2, 'user', 18),
+    (3, 'user', 19),
+    (4, 'user', 20),
+    (5, 'user', 41),
+    (1, 'producer', 22),
+    (11, 'venue', 23),
+    (10, 'venue', 24),
+    (1, 'user', 25),
+    (2, 'user', 26),
+    (3, 'user', 27),
+    (4, 'user', 28),
+    (5, 'user', 40),
+    (1, 'producer', 30),
+    (11, 'venue', 31),
+    (20, 'venue', 32),
+    (1, 'user', 33),
+    (2, 'user', 34),
+    (3, 'user', 35),
+    (4, 'user', 36),
+    (5, 'user', 39),
+    (1, 'producer', 38),
+    (11, 'venue', 39),
+    (20, 'venue', 40),
+    (1, 'user', 41);
+
+-- -- Insert 88BContentLikes
+-- INSERT INTO "88BContentLikes" ("userId", "userType", "contentId")
+-- VALUES
+--     (1, 'user', 1),
+--     (2, 'user', 2),
+--     (3, 'user', 3),
+--     (4, 'user', 4),
+--     (5, 'user', 5),
+--     (1, 'producer', 6),
+--     (11, 'venue', 7),
+--     (19, 'venue', 8),
+--     (1, 'user', 9),
+--     (2, 'user', 10),
+--     (3, 'user', 11),
+--     (4, 'user', 12),
+--     (5, 'user', 13),
+--     (1, 'producer', 14),
+--     (11, 'venue', 15),
+--     (19, 'venue', 16),
+--     (1, 'user', 17),
+--     (2, 'user', 18),
+--     (3, 'user', 19),
+--     (4, 'user', 20),
+--     (5, 'user', 21),
+--     (1, 'producer', 22),
+--     (11, 'venue', 23),
+--     (19, 'venue', 24),
+--     (1, 'user', 25),
+--     (2, 'user', 26),
+--     (3, 'user', 27),
+--     (4, 'user', 28),
+--     (5, 'user', 29),
+--     (1, 'producer', 30),
+--     (11, 'venue', 31),
+--     (19, 'venue', 32),
+--     (1, 'user', 33),
+--     (2, 'user', 34),
+--     (3, 'user', 35),
+--     (4, 'user', 36),
+--     (5, 'user', 37),
+--     (1, 'producer', 38),
+--     (11, 'venue', 39),
+--     (19, 'venue', 40),
+--     (1, 'user', 41);
+
+
+-- ========= Dummy Data for listingsComments =========
+INSERT INTO "listingsComments" ("userId", "userType", "listingId", "parentId", "comment")
+VALUES
+(1, 'user', 39, NULL, '[Test] This listing looks very interesting.'),                -- id 1
+(3, 'producer', 39, NULL, '[Test] We are preparing great content for this listing.'),-- id 2
+(11, 'venue', 40, NULL, '[Test] Happy to host events under this listing.'),           -- id 3
+(1, 'producer', 40, NULL, '[Test] We will add more details soon.'),                  -- id 4
+(3, 'user', 41, NULL, '[Test] I am excited about this listing opportunity.'),        -- id 5
+(5, 'producer', 41, NULL, '[Test] Production team is finalizing things.'),           -- id 6
+(11, 'venue', 39, 2,   '[Test] Great, thanks for sharing your plans!'),               -- reply to id 2
+(3, 'user', 40, 3,   '[Test] That’s awesome news, can’t wait!'),                     -- reply to id 3
+(11, 'venue', 41, 5,   '[Test] Thanks for your support, see you soon!'),              -- reply to id 5
+(1, 'user', 41, NULL, '[Test] Looking forward to updates on this listing.');         -- id 10
+
+
+-- ========= Dummy Data for listingReviewsComments =========
+INSERT INTO "listingReviewsComments" ("userId", "userType", "reviewId", "parentId", "comment")
+VALUES
+(11, 'venue', 1, NULL, '[Test] Thank you for your review, we appreciate it!'),        -- id 1
+(5, 'user', 2, NULL, '[Test] I completely agree with this review.'),                 -- id 2
+(1, 'producer', 3, NULL, '[Test] This feedback will help us improve.'),              -- id 3
+(3, 'user', 4, NULL, '[Test] I had a similar experience, very positive.'),           -- id 4
+(5, 'producer', 5, NULL, '[Test] Great to hear such positive feedback.'),            -- id 5
+(11, 'venue', 6, NULL, '[Test] We will work on the mentioned issues.'),               -- id 6
+(3, 'producer', 7, 1,   '[Test] Glad the venue improvements were noticed!'),         -- reply to id 1
+(10, 'venue', 8, NULL, '[Test] We are grateful for such detailed feedback.'),         -- id 8
+(1, 'user', 9, 2,   '[Test] Yes! I felt the same way during my visit.'),             -- reply to id 2
+(3, 'user', 10, 3,  '[Test] Thanks for taking producer feedback seriously.');        -- reply to id 3
+
+
+-- ========= Dummy Data for producerUpdateComments with nested replies =========
+INSERT INTO "producerUpdateComments" ("userId", "userType", "producerUpdateId", "parentId", "comment")
+VALUES
+(1, 'user', 1, NULL, 'Excited about this update!'),                     -- id 1
+(3, 'producer', 2, NULL, '[Test] Sharing some production insights.'),           -- id 2
+(11, 'venue', 3, NULL, '[Test] Thanks for involving the venue team.'),           -- id 3
+(1, 'producer', 4, NULL, '[Test] We are preparing new content soon.'),          -- id 4
+(11, 'venue', 5, NULL, '[Test] Venue team looks forward to hosting.'),           -- id 5
+(5, 'user', 6, NULL, '[Test] This is very exciting to hear.'),                  -- id 6
+(11, 'venue', 7, NULL, '[Test] We have facilities ready for the event.'),        -- id 7
+(3, 'user', 8, 2,   '[Test] That’s great insight, thanks!'),                    -- reply to id 2
+(5, 'producer', 9, 3,   '[Test] We really appreciate venue support!'),          -- reply to id 3
+(1, 'user', 10, 6,  '[Test] I agree, this is awesome news!');                   -- reply to id 6
+
+
+-- ========= Dummy Data for venueUpdateComments with nested replies =========
+INSERT INTO "venueUpdateComments" ("userId", "userType", "venueUpdateId", "parentId", "comment")
+VALUES
+(11, 'venue', 1, NULL, '[Test] Venue upgrades are complete!'),                   -- id 1
+(5, 'user', 2, NULL, '[Test] Happy to see the improvements.'),                  -- id 2
+(1, 'producer', 3, NULL, '[Test] This is great for upcoming shows.'),           -- id 3
+(3, 'user', 4, NULL, '[Test] Love the new seating arrangement.'),               -- id 4
+(5, 'producer', 5, NULL, '[Test] Great collaboration with the venue.'),         -- id 5
+(11, 'venue', 6, NULL, '[Test] We expanded the backstage area.'),                -- id 6
+(3, 'producer', 7, 1,   '[Test] These upgrades will help productions a lot.'),  -- reply to id 1
+(11, 'venue', 8, NULL, '[Test] Excited to welcome audiences soon.'),             -- id 8
+(1, 'user', 9, 2,   '[Test] Yes, I agree with that improvement!'),              -- reply to id 2
+(3, 'user', 10, 3,  '[Test] Looking forward to the shows here!');               -- reply to id 3
+
+
 
 
 

@@ -1829,6 +1829,7 @@
                     Detailed Review >
                   </a>
 
+                  <!-- Share Button -->
                   <button @click="shareReview(review)"
                     class="btn btn-link p-0 text-decoration-underline text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
@@ -1839,6 +1840,36 @@
                     </svg>
                     Share
                   </button>
+                  
+                  
+                  <!-- Add Comment Button - Added By CP -->
+                  <button @click="addCommentMode=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">Add Comment</span>
+                  </button>
+
+                  <!-- View Comments for Review Button - Added by CP -->
+                  <button v-if="review.commentsCount > 0" @click="showModal=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">View Comments</span>
+                  </button>
+
+                  <!-- Comments Modal for each review - Added by CP -->
+                  <CommentsModal v-if="showModal" 
+                    :userID="userID" :userType="userType"
+                    :contentId="review.id" :contentType="'Review'"
+                    @close="showModal = false" 
+                  />
 
                   <div class="dropdown text-end">
                     <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
@@ -2270,6 +2301,63 @@ tag, index
                 </div>
               </div>
             </div>
+
+
+            <!-- Add Comment Input - Added by CP -->
+            <div v-if="addCommentMode" class="row w-100 py-3">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                  placeholder="Write a comment..."
+                  aria-label="Write a comment..."
+                  :aria-describedby="'button-addon2-' + review.id"
+                  v-model="newReviewComment"  
+                />
+
+                <!-- Comment Button (Desktop) -->
+                <button
+                  class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'Review')"
+                >
+                  Comment
+                </button>
+
+                <!-- Comment Button (Mobile) -->
+                <button
+                  class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'Review')"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-send" viewBox="0 0 16 16">
+                    <path
+                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                        14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                        7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                        0 0 1 .54.11ZM6.636 10.07l2.761 
+                        4.338L14.13 2.576zm6.787-8.201L1.591 
+                        6.602l4.339 2.76z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Cancel Button -->
+                <button
+                  class="btn btn-outline-secondary rounded ms-2"
+                  type="button"
+                  @click="newReviewComment = '', addCommentMode = false"
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </div>
+
+            
             <hr class="mt-4 mb-2" />
           </div>
 
@@ -2279,7 +2367,97 @@ tag, index
           </div>
         </div>
         <!-- end of producer information -->
+
+
+        <!-- comments start (By CP)-->
+        <div class="text-start mt-4">
+          <h1>Comments</h1>
+
+          <!--Add Comment Section -->
+          <div class="row w-100 py-3">
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                placeholder="Write a comment..."
+                aria-label="Write a comment..."
+                :aria-describedby="'button-addon2-' + listing_id"
+                v-model="newComment"  
+              />
+              <button
+                class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                type="button"
+                :id="'button-addon2-' + listing_id"
+                @click="addComment(listing_id, 'Listing')"
+              >
+                Comment
+              </button>
+              <button
+                class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                type="button"
+                :id="'button-addon2-' + listing_id"
+                @click="addComment(listing_id, 'Listing')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                  class="bi bi-send" viewBox="0 0 16 16">
+                  <path
+                    d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                      14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                      7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                      0 0 1 .54.11ZM6.636 10.07l2.761 
+                      4.338L14.13 2.576zm6.787-8.201L1.591 
+                      6.602l4.339 2.76z"
+                  />
+                </svg>
+              </button> 
+            </div>
+          </div>
+
+          <!-- Comments List -->
+          <div v-for="comment in comments" :key="comment.id" class="row mb-3">
+
+            <CommentBox 
+              :comment="comment" :userID="userID" :userType="userType" 
+              :contentId="listing_id" contentType="Listing" 
+              @set-delete-comment="openDeleteModal" 
+              @comment-replied="handleReply"/>
+          </div>
+
+          <!-- Load More Comments Button -->
+          <div class="d-flex justify-content-center mb-3" v-if="hasMoreComments">
+            <button class="btn primary-btn btn-lg" @click="loadMoreComments">Load More Comments</button>
+          </div>
+
+          <!-- No More Comments Message -->
+          <div class="text-center" v-if="!hasMoreComments">
+            <p>No more comments to load.</p>
+          </div>
+
+          <!-- Delete Comment Modal-->
+          <div v-if="showDeleteModal" class="modal fade show" tabindex="-1" style="display:block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirm Deletion</h5>
+                  <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
+                  <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <!-- comments end -->
       </div>
+
+
       <!-- where to buy & where to try & 88 bamboo's review -->
       <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
 
@@ -2460,6 +2638,9 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
 import BadgePopup from '@/components/BadgePopup.vue';
+import CommentBox from '@/components/CommentBox.vue';
+import CommentsModal from '@/components/CommentsModal.vue';
+import { useToast } from "vue-toastification";
 
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
@@ -2472,7 +2653,9 @@ export default {
     BookmarkModal,
     LoadingWithFunFact,
     VintageList,
-    BadgePopup
+    BadgePopup,
+    CommentBox,
+    CommentsModal
   },
   setup() {
     // Create reactive references for meta data
@@ -2936,7 +3119,23 @@ export default {
 
       showImageModal: false,
       enlargedImageSrc: '',
-      enlargedImageAlt: ''
+      enlargedImageAlt: '',
+
+      // Comments - Added by CP
+      comments: [],
+      lastCommentID: 0,
+      userLikedListing: false,
+      hasMoreComments: true,
+      newComment: "",
+      deleteCommentItems: {
+          commentId: null,
+          contentType: null
+      },
+      showDeleteModal: false,
+
+      showModal: false,
+      addCommentMode: false,
+      newReviewComment: "", 
     };
   },
   mounted() {
@@ -3513,6 +3712,10 @@ export default {
         console.error(error);
         // this.dataLoaded = null;
       }
+
+      // comments
+      this.loadComments(); 
+
 
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
@@ -5385,7 +5588,184 @@ export default {
       
       // Restore body scrolling
       document.body.style.overflow = '';
-    }
+    },
+
+    // Retrieve comments for the listing (initial load)
+    async loadComments() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/randomContent/getListingComments/${this.userID}/${this.userType}/` + this.listing_id
+        );
+        this.comments = response.data.comments;
+        this.lastCommentID = response.data.lastCommentId;
+        this.userLikedListing = response.data.userLiked;
+        this.hasMoreComments = response.data.comments.length == 30; // 30 is from the backend limit hardcode
+        
+      } catch (error) {
+        console.error("Error loading comments:", error);
+      }
+    },
+
+    // Function to load more comments (pagination)
+    async loadMoreComments() {
+      if (!this.hasMoreComments) return;
+
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/randomContent/getMoreListingComments/${this.listing_id}/${this.lastCommentID}`
+        );
+
+        // Append new comments to the existing array
+        this.comments = this.comments.concat(response.data.comments);
+        this.lastCommentID = response.data.lastCommentId;
+        this.hasMoreComments = response.data.comments.length == 30; // 30 is from the backend limit hardcode
+
+      } catch (error) {
+        console.error("Error loading more comments:", error);
+      }
+    },
+
+    // Function to add comment
+    async addComment(contentId, contentType) {
+        if (!this.userID || !this.userType) {
+            // Route to login page
+            this.$router.push({ name: 'Login' });
+            return;
+        }
+
+        // Use the correct comment 
+        let comment = "";
+        if (this.newComment.trim() == "") {
+          comment = this.newReviewComment.trim();
+        } else {
+          comment = this.newComment.trim();
+        }
+
+        if (comment == "") {
+            const toast = useToast();
+            toast.error("Comment cannot be empty.");
+            return;
+        }
+
+        try {
+            const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+            {
+                userId: this.userID,
+                userType: this.userType,
+                contentId: contentId,
+                contentType: contentType,
+                comment: comment
+            }
+            );
+
+            // Clear the input field for listing comments
+            if (response.status === 201 && contentType == 'Listing') {
+                // Add the new comment to the top of the comments array
+                this.comments.unshift(response.data.comment);
+                this.newComment = "";
+                const toast = useToast();
+                toast.success("Comment added successfully.");
+            }
+
+            // Clear the input field for review comments
+            if (response.status === 201 && contentType == 'Review') {
+                // Add 1 to commentsCount in the review
+                const review = this.reviews.find(r => r.id === contentId);
+                if (review) {
+                    review.commentsCount = (review.commentsCount || 0) + 1;
+                }
+                this.newReviewComment = "";
+                this.addCommentMode = false;
+                const toast = useToast();
+                toast.success("Reply added successfully.");
+            }
+            
+
+        } catch (error) {
+            console.error("Error adding comment:", error);
+            const toast = useToast();
+            toast.error("Failed to add comment. Please try again later.");
+        }
+    },
+
+    openDeleteModal(payload) {
+      this.deleteCommentItems = payload;
+      this.showDeleteModal = true; // now the modal renders
+    },
+    
+    // Recursive helper to remove a comment or reply by ID
+    removeCommentById(commentId, commentsArray) {
+      for (let i = 0; i < commentsArray.length; i++) {
+        const comment = commentsArray[i];
+
+        // If this is the comment we want to remove
+        if (comment.id === commentId) {
+          commentsArray.splice(i, 1); // reactive removal
+          return true; // stop searching
+        }
+
+        // If it has replies, search recursively
+        if (comment.replies?.length) {
+          const removed = this.removeCommentById(commentId, comment.replies);
+          if (removed) return true;
+        }
+      }
+      return false; // comment not found
+    },
+
+    // Function to delete comment 
+    async deleteComment() {
+
+        try {
+            const response = await this.$axios.delete(
+            `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
+            {
+                data: {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: this.deleteCommentItems.contentType,
+                    commentId: this.deleteCommentItems.commentId
+                }
+            }
+            );
+
+            // Show message
+            if (response.status === 200) {
+                const toast = useToast();
+                toast.success("Comment deleted successfully.");
+
+                // Remove the comment or reply from the comments array
+                this.removeCommentById(this.deleteCommentItems.commentId, this.comments);
+
+                // Reset deleteCommentItems
+                this.deleteCommentItems = {
+                    commentId: null,
+                    contentType: null
+                };
+
+                // Close the modal
+                this.showDeleteModal = false;
+
+            }
+
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            const toast = useToast();
+            toast.error("Failed to delete comment. Please try again later.");
+        }
+    },
+
+    // Function to add reply to a comment
+    handleReply({ parentId, reply }) {
+      // Find the parent comment
+      const parent = this.comments.find(c => c.id == parentId);
+      if (parent) {
+        parent.replies.unshift(reply);
+      }
+    },
+
+    
 
   },
 };

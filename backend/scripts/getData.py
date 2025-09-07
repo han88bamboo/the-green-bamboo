@@ -79,7 +79,8 @@
 
 import os
 import json
-import random # ADDED BY SMU GROUP 3
+import random
+
 import feedparser
 import re
 import requests
@@ -480,37 +481,6 @@ def getListingsByIDs():
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
-# -----------------------------------------------------------------------------------------
-# [GET] Get Listings from db where id> last item in list [discovery tab]
-@blueprint.route("/getNext30/<id>")
-def getNext30(id):
-    conn = g.db
-    id = int(id)
-    with conn.cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
-        listings_data = cursor.fetchall()
-
-        if listings_data:
-                # Loop through the listings to get the average rating for each listing and producer name
-                for listing in listings_data:
-                    # Get the average rating for the listing
-                    cursor.execute("""
-                        SELECT AVG("rating") AS "averageRating"
-                        FROM "reviews"
-                        WHERE "reviewTarget" = %s
-                    """, (listing['id'],))
-
-                    avg_rating = cursor.fetchone()['averageRating']
-
-                    if avg_rating is not None:
-                        listing['rating'] = round(avg_rating, 1)
-                    else:
-                        listing['rating'] = '-'
-    
-    if not listings_data:
-        return jsonify([])
-
-    return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in discovery tab [discover tab]
@@ -3205,6 +3175,15 @@ def getReviewByTarget(id, last_review_id):
             del review["upvotes"]
             del review["downvotes"]
 
+            # Get comments count for each review 
+            cursor.execute("""
+                SELECT COUNT(*) AS "commentsCount"
+                FROM "listingReviewsComments"
+                WHERE "reviewId" = %s
+            """, (review["id"],))
+            comments_count = cursor.fetchone()
+            review["commentsCount"] = comments_count["commentsCount"] if comments_count else 0
+
         return jsonify(reviews_data)
 
     except Exception as e:
@@ -3502,6 +3481,15 @@ def getVenueReviewsByVenueId(id, lastReviewID):
             del review["upvotes"]
             del review["downvotes"]
 
+            # Get comments count for each review
+            cursor.execute("""
+                SELECT COUNT(*) AS "commentsCount"
+                FROM "venueReviewsComments"
+                WHERE "reviewId" = %s
+            """, (review["id"],))
+            comments_count = cursor.fetchone()
+            review["commentsCount"] = comments_count["commentsCount"] if comments_count else 0
+
         return jsonify(reviews_data)
 
 @blueprint.route("/getBottleReviewsByVenueId/<id>", methods=['GET'])
@@ -3561,6 +3549,15 @@ def getProducerReviewsByProducerId(id):
             }
             del review["upvotes"]
             del review["downvotes"]
+
+            # Get comments count for each review 
+            cursor.execute("""
+                SELECT COUNT(*) AS "commentsCount"
+                FROM "producerReviewsComments"
+                WHERE "reviewId" = %s
+            """, (review["id"],))
+            comments_count = cursor.fetchone()
+            review["commentsCount"] = comments_count["commentsCount"] if comments_count else 0
 
         return jsonify(reviews_data)
 
@@ -7809,62 +7806,6 @@ def getListingsName():
 
     return jsonify(listing_names)
 
-# -----------------------------------------------------------------------------------------
-# [GET] Get Listings from a randomly selected date -- ADDED BY SMU GROUP 3 - logic for randomisation
-@blueprint.route("/getRandomListings")
-def getRandomListings():
-    conn = g.db
-
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-        # Fetch distinct dates by converting timestamps to dates
-        cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings"')
-        date_results = cursor.fetchall()
-
-        if not date_results:
-            return jsonify({"error": "No dates found in listings"}), 400
-
-
-        try:
-            # Extract 'addedDate' values properly from RealDictRow
-            date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
-            
-           
-
-            if not date_list:
-                return jsonify({"error": "Date extraction failed (empty list)"}), 400
-
-            random_date = random.choice(date_list)  # Select a random date
-        except Exception as e:
-            return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
-
-        # Fetch listings from the selected random date
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s ORDER BY RANDOM() LIMIT 30', (random_date,))
-        listings_data = cursor.fetchall()
-
-        # Loop through the listings and get the producer name
-        for listing in listings_data:
-            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
-            producer_data = cursor.fetchone()
-            if producer_data:
-                listing['producerName'] = producer_data['producerName']
-            else:
-                listing['producerName'] = None
-
-            # Get rating for the listing
-            cursor.execute("""
-                SELECT AVG("rating") AS "averageRating"
-                FROM "reviews"
-                WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
-            """, (listing['id'],))
-
-            rating_data = cursor.fetchone()
-            listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
-
-
-    if not listings_data:
-        return jsonify({"error": "No listings found for selected date"}), 400
-
-    return jsonify(listings_data)
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get User Notifications
@@ -9456,3 +9397,4 @@ def getWhatsOnMenu(venue_id):
             "code": 500,
             "message": "An error occurred retrieving the menu items."
         }), 500
+    
