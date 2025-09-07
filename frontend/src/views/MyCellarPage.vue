@@ -2055,6 +2055,19 @@ export default {
       this.modalEditing.hasChanges = true;
     },
 
+    // Reset modal editing state
+    resetModalState() {
+      this.modalEditing = {
+        hasChanges: false,
+        masterData: {},
+        bottleChanges: {},
+        archivedBottles: [],
+        newBottles: [],
+        originalCollectionId: null,
+        selectedCollectionId: null
+      };
+    },
+
     // Master record field change handlers
     onMasterFieldChange(field, value) {
       this.modalEditing.masterData[field] = value;
@@ -2250,9 +2263,6 @@ export default {
         const response = await axios.post(fullUrl, payload);
         
         console.log('SaveModalChanges response:', response);
-        console.log('Response data:', response.data);
-        console.log('Response data success:', response.data.success);
-        console.log('Response data success type:', typeof response.data.success);
         
         if (response.data.success) {
           // Reload cellar data to reflect changes
