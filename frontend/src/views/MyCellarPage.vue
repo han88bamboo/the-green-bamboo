@@ -970,6 +970,73 @@
                 </div>
               </div>
             </div>
+
+            <!-- Cellar Change Log Section -->
+            <div class="cellar-change-log mt-4">
+              <div class="card h-100">
+                <div class="card-header">
+                  <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Cellar Change Log
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <!-- Loading State -->
+                  <div v-if="loadingChangelog" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm me-2"></div>
+                    Loading changelog...
+                  </div>
+                  
+                  <!-- Error State -->
+                  <div v-else-if="changelogError" class="alert alert-danger small">
+                    {{ changelogError }}
+                  </div>
+                  
+                  <!-- Empty State -->
+                  <div v-else-if="safeChangelog.length === 0" class="text-center py-4 text-muted">
+                    <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
+                    <p class="small mb-0">No recent changes to your cellar</p>
+                  </div>
+                  
+                  <!-- Changelog Entries -->
+                  <div v-else-if="safeChangelog.length > 0" class="changelog-entries">
+                    <div 
+                      v-for="entry in safeChangelog" 
+                      :key="entry.id || `entry-${Date.now()}-${Math.random()}`"
+                      class="changelog-entry mb-3 p-3 border rounded"
+                    >
+                      <!-- Human-readable change description -->
+                      <div class="change-description mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <span class="text-start" v-html="formatChangelogEntry(entry)"></span>
+                          <span class="badge ms-2" :class="getChangeTypeBadgeClass(entry?.changeType)">
+                            {{ formatChangeType(entry?.changeType) }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div v-if="hasMoreChangelog" class="text-center mt-3">
+                      <button 
+                        class="btn btn-outline-secondary btn-sm"
+                        @click="loadMoreChangelog"
+                        :disabled="loadingMoreChangelog"
+                      >
+                        <span v-if="loadingMoreChangelog" class="spinner-border spinner-border-sm me-1"></span>
+                        {{ loadingMoreChangelog ? 'Loading...' : 'Load More' }}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Fallback Empty State -->
+                  <div v-else class="text-center py-4 text-muted">
+                    <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
+                    <p class="small mb-0">No recent changes to your cellar</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1890,6 +1957,15 @@ export default {
       showPersonalNotesSuggestions: false,
       activePersonalNotesInput: null,
       
+      // Cellar changelog
+      changelog: [],
+      loadingChangelog: false,
+      changelogError: null,
+      loadingMoreChangelog: false,
+      hasMoreChangelog: true,
+      changelogLimit: 10,
+      changelogOffset: 0,
+      
       // Debug tracking
       lastCanAddToCellarState: null
     }
@@ -2101,6 +2177,26 @@ export default {
     defaultVolumeUnit() {
       // All drink types use 'ml' as default
       return 'ml';
+    },
+
+    // Safe changelog array to prevent null reference errors
+    safeChangelog() {
+      return Array.isArray(this.changelog) ? this.changelog : [];
+    }
+  },
+  created() {
+    // Ensure data properties are properly initialized
+    if (!Array.isArray(this.changelog)) {
+      this.changelog = [];
+    }
+    
+    // Defensive initialization of other critical properties
+    if (!this.ownerType || !this.id) {
+      console.warn('Component created without required props:', {
+        ownerType: this.ownerType,
+        id: this.id,
+        username: this.username
+      });
     }
   },
   watch: {
@@ -2155,7 +2251,30 @@ export default {
     }
   },
   async mounted() {
-    await this.loadCellarData();
+    try {
+      // Ensure component is fully initialized
+      await this.$nextTick();
+      
+      // Validate required props
+      if (!this.ownerType || !this.id) {
+        console.error('Missing required props:', { ownerType: this.ownerType, id: this.id });
+        return;
+      }
+      
+      await this.loadCellarData();
+      
+      // Load changelog after cellar data is loaded, with additional safety
+      try {
+        await this.loadChangelogData();
+      } catch (changelogError) {
+        console.error('Error loading changelog specifically:', changelogError);
+        // Don't fail the entire component if changelog fails
+        this.changelog = [];
+        this.changelogError = 'Failed to load changelog';
+      }
+    } catch (error) {
+      console.error('Error in mounted hook:', error);
+    }
     
     // Add event listener for modal close to reset form
     const addCollectionModal = document.getElementById('addCollectionModal');
@@ -3660,6 +3779,182 @@ export default {
         }
       };
     },
+
+    // Cellar changelog methods
+    async loadChangelogData() {
+      if (this.loadingChangelog) return; // Prevent multiple simultaneous requests
+      
+      this.loadingChangelog = true;
+      this.changelogError = null;
+      
+      try {
+        // Check if we have the required data to make the request
+        if (!this.ownerType || !this.id) {
+          throw new Error('Missing owner information');
+        }
+        
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const response = await this.$axios.get(
+          `${baseUrl}/getData/getCellarItemsChangelog/${this.ownerType}/${this.id}?limit=${this.changelogLimit}`
+        );
+        
+        if (response.data.code === 200) {
+          this.changelog = Array.isArray(response.data.data.changelog) ? response.data.data.changelog : [];
+          this.hasMoreChangelog = this.changelog.length >= this.changelogLimit;
+          this.changelogOffset = this.changelog.length;
+        } else {
+          throw new Error(response.data.message || 'Failed to load changelog');
+        }
+      } catch (error) {
+        console.error('Error loading changelog:', error);
+        this.changelogError = error.message || 'Failed to load changelog data';
+        this.changelog = []; // Reset to empty array on error
+      } finally {
+        this.loadingChangelog = false;
+      }
+    },
+
+    async loadMoreChangelog() {
+      if (this.loadingMoreChangelog || !this.hasMoreChangelog) return;
+      
+      this.loadingMoreChangelog = true;
+      
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        // Note: You would need to modify the backend endpoint to support offset/pagination
+        // For now, we'll just increase the limit
+        const newLimit = this.changelogOffset + this.changelogLimit;
+        const response = await this.$axios.get(
+          `${baseUrl}/getData/getCellarItemsChangelog/${this.ownerType}/${this.id}?limit=${newLimit}`
+        );
+        
+        if (response.data.code === 200) {
+          const newChangelog = response.data.data.changelog || [];
+          this.changelog = newChangelog;
+          this.hasMoreChangelog = newChangelog.length >= newLimit;
+          this.changelogOffset = newChangelog.length;
+        }
+      } catch (error) {
+        console.error('Error loading more changelog:', error);
+      } finally {
+        this.loadingMoreChangelog = false;
+      }
+    },
+
+    formatChangelogEntry(entry) {
+      if (!entry) return 'Unknown change';
+      
+      const date = this.formatChangelogDate(entry.changeDate);
+      const drinkName = entry.listingName || 'Unknown Drink';
+      const producerName = entry.producerName ? ` by ${entry.producerName}` : '';
+      
+      switch (entry.changeType) {
+        case 'CREATED': {
+          const quantity = entry.quantityDelta || 1;
+          return `<strong>${date}:</strong> Added ${quantity} bottle${quantity !== 1 ? 's' : ''} of ${drinkName}${producerName}`;
+        }
+          
+        case 'QUANTITY_UPDATED': {
+          if (entry.quantityDelta) {
+            const change = entry.quantityDelta > 0 ? `Added ${entry.quantityDelta}` : `Removed ${Math.abs(entry.quantityDelta)}`;
+            return `<strong>${date}:</strong> ${change} bottle${Math.abs(entry.quantityDelta) !== 1 ? 's' : ''} of ${drinkName}${producerName}`;
+          }
+          return `<strong>${date}:</strong> Updated quantity of ${drinkName}${producerName}`;
+        }
+          
+        case 'STATUS_CHANGED': {
+          const newStatus = entry.newValue || 'Unknown';
+          if (newStatus === 'Consumed') {
+            return `<strong>${date}:</strong> Consumed ${drinkName}${producerName}`;
+          }
+          return `<strong>${date}:</strong> Changed status of ${drinkName}${producerName} to ${newStatus}`;
+        }
+          
+        case 'CONSUMPTION_CHANGED': {
+          const consumption = entry.newValue || 'Unknown';
+          return `<strong>${date}:</strong> Marked ${drinkName}${producerName} as ${consumption.toLowerCase()}`;
+        }
+          
+        case 'LOCATION_CHANGED': {
+          const location = entry.newValue || 'New location';
+          return `<strong>${date}:</strong> Moved ${drinkName}${producerName} to ${location}`;
+        }
+          
+        case 'NOTES_UPDATED':
+          return `<strong>${date}:</strong> Updated notes for ${drinkName}${producerName}`;
+          
+        case 'FINANCIAL_UPDATED':
+          return `<strong>${date}:</strong> Updated pricing for ${drinkName}${producerName}`;
+          
+        case 'ARCHIVE_CHANGED': {
+          const archived = entry.newValue === 'true';
+          return `<strong>${date}:</strong> ${archived ? 'Archived' : 'Restored'} ${drinkName}${producerName}`;
+        }
+          
+        case 'DELETED':
+          return `<strong>${date}:</strong> Removed ${drinkName}${producerName} from cellar`;
+          
+        default:
+          return `<strong>${date}:</strong> Updated ${drinkName}${producerName}`;
+      }
+    },
+
+    formatChangelogDate(dateString) {
+      if (!dateString) return '';
+      
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        return 'Today';
+      } else if (diffDays === 2) {
+        return 'Yesterday';
+      } else if (diffDays <= 7) {
+        return `${diffDays - 1} days ago`;
+      } else {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    },
+
+    formatChangeType(changeType) {
+      if (!changeType) return 'Unknown';
+      
+      const typeMap = {
+        'CREATED': 'Added',
+        'QUANTITY_UPDATED': 'Quantity',
+        'STATUS_CHANGED': 'Status',
+        'CONSUMPTION_CHANGED': 'Consumption',
+        'LOCATION_CHANGED': 'Location',
+        'NOTES_UPDATED': 'Notes',
+        'FINANCIAL_UPDATED': 'Financial',
+        'ARCHIVE_CHANGED': 'Archive',
+        'DELETED': 'Deleted'
+      };
+      return typeMap[changeType] || changeType;
+    },
+
+    getChangeTypeBadgeClass(changeType) {
+      if (!changeType) return 'bg-secondary';
+      
+      const classMap = {
+        'CREATED': 'bg-success',
+        'QUANTITY_UPDATED': 'bg-info',
+        'STATUS_CHANGED': 'bg-warning text-dark',
+        'CONSUMPTION_CHANGED': 'bg-primary',
+        'LOCATION_CHANGED': 'bg-secondary',
+        'NOTES_UPDATED': 'bg-info',
+        'FINANCIAL_UPDATED': 'bg-dark',
+        'ARCHIVE_CHANGED': 'bg-secondary',
+        'DELETED': 'bg-danger'
+      };
+      return classMap[changeType] || 'bg-secondary';
+    },
   }
 }
 
@@ -4715,5 +5010,100 @@ export default {
 :global(.pac-matched) {
   font-weight: 700;
   color: #0d6efd;
+}
+
+/* Cellar Change Log Styles */
+.cellar-change-log .card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border: 1px solid #e0e0e0;
+}
+
+.cellar-change-log .card-header {
+  background: linear-gradient(45deg, #f8f9fa, #ffffff);
+  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem 1.25rem;
+}
+
+.cellar-change-log .card-title {
+  color: #495057;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.cellar-change-log .card-title i {
+  color: #6c757d;
+}
+
+.changelog-entries {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.changelog-entry {
+  background-color: #fafbfc;
+  border: 1px solid #e9ecef !important;
+  transition: all 0.2s ease;
+}
+
+.changelog-entry:hover {
+  background-color: #f1f3f4;
+  border-color: #d1ecf1 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.changelog-entry .change-description {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #495057;
+}
+
+.changelog-entry .change-details {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.changelog-entry .change-date {
+  font-size: 0.75rem;
+  color: #868e96;
+  font-weight: 500;
+}
+
+.changelog-entry .change-type-badge .badge {
+  font-size: 0.65rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+/* Responsive adjustments for changelog */
+@media (max-width: 768px) {
+  .changelog-entries {
+    max-height: 300px;
+  }
+  
+  .changelog-entry {
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .changelog-entry .change-description {
+    font-size: 0.85rem;
+  }
+  
+  .changelog-entry .change-details {
+    font-size: 0.75rem;
+  }
+  
+  .changelog-entry .d-flex {
+    flex-direction: column;
+    align-items: start !important;
+  }
+  
+  .changelog-entry .text-end {
+    text-align: start !important;
+    margin-top: 0.5rem;
+  }
 }
 </style>
