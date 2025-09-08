@@ -301,14 +301,6 @@
                         >
                           Adjust
                         </button>
-                        <button 
-                          class="btn btn-sm btn-outline-info"
-                          @click.stop="moveGroup(group)"
-                          title="Coming soon"
-                          disabled
-                        >
-                          Move
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -1456,18 +1448,18 @@
                     <i class="bi bi-three-dots"></i> Group Actions
                   </button>
                   <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" @click="consumeBottle('one')">
-                      <i class="bi bi-cup"></i> Consume One Bottle
+                    <li><a class="dropdown-item" href="#" @click="markAllBottlesInPossession()">
+                      <i class="bi bi-house-check"></i> All In Possession
                     </a></li>
-                    <li><a class="dropdown-item" href="#" @click="moveGroup">
-                      <i class="bi bi-arrow-left-right"></i> Move Group
+                    <li><a class="dropdown-item" href="#" @click="consumeBottle()">
+                      <i class="bi bi-cup-straw"></i> All Consumed
                     </a></li>
-                    <li><a class="dropdown-item" href="#" @click="duplicateGroup">
-                      <i class="bi bi-files"></i> Duplicate Group
+                    <li><a class="dropdown-item" href="#" @click="markAllBottlesEmpty()">
+                      <i class="bi bi-droplet"></i> All Empty
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="#" @click="archiveGroup">
-                      <i class="bi bi-archive"></i> Archive All Bottles
+                      <i class="bi bi-archive"></i> Archive All
                     </a></li>
                   </ul>
                 </div>
@@ -2268,19 +2260,61 @@ export default {
     },
 
     // Group actions
-    consumeBottle(type = 'one') {
-      console.log('Consume bottle from group:', this.selectedGroup, 'type:', type)
-      // TODO: Implement consume functionality for individual bottles
+    consumeBottle() {
+      if (!this.selectedGroup || !this.selectedGroup.bottles) {
+        console.error('No group selected or no bottles in group');
+        return;
+      }
+
+      const bottleCount = this.selectedGroup.bottles.length;
+      const confirmMessage = `Are you sure you want to mark all ${bottleCount} bottle${bottleCount !== 1 ? 's' : ''} as consumed? This action will change their status to "Consumed".`;
+      
+      if (confirm(confirmMessage)) {
+        // Mark all bottles in the group as consumed
+        this.selectedGroup.bottles.forEach(bottle => {
+          this.onBottleFieldChange(bottle.cellarItemId, 'status', 'Consumed');
+        });
+        
+        console.log(`Marked ${bottleCount} bottles as consumed in group:`, this.selectedGroup);
+      }
     },
 
-    moveGroup() {
-      console.log('Move group:', this.selectedGroup)
-      // TODO: Implement move functionality for entire group
+    markAllBottlesInPossession() {
+      if (!this.selectedGroup || !this.selectedGroup.bottles) {
+        console.error('No group selected or no bottles in group');
+        return;
+      }
+
+      const bottleCount = this.selectedGroup.bottles.length;
+      const confirmMessage = `Are you sure you want to mark all ${bottleCount} bottle${bottleCount !== 1 ? 's' : ''} as "In Possession"? This action will change their status to "In Possession".`;
+      
+      if (confirm(confirmMessage)) {
+        // Mark all bottles in the group as in possession
+        this.selectedGroup.bottles.forEach(bottle => {
+          this.onBottleFieldChange(bottle.cellarItemId, 'status', 'In Possession');
+        });
+        
+        console.log(`Marked ${bottleCount} bottles as in possession in group:`, this.selectedGroup);
+      }
     },
 
-    duplicateGroup() {
-      console.log('Duplicate group:', this.selectedGroup)
-      // TODO: Implement duplicate functionality for entire group
+    markAllBottlesEmpty() {
+      if (!this.selectedGroup || !this.selectedGroup.bottles) {
+        console.error('No group selected or no bottles in group');
+        return;
+      }
+
+      const bottleCount = this.selectedGroup.bottles.length;
+      const confirmMessage = `Are you sure you want to mark all ${bottleCount} bottle${bottleCount !== 1 ? 's' : ''} as empty? This action will change their consumption status to "Empty".`;
+      
+      if (confirm(confirmMessage)) {
+        // Mark all bottles in the group as empty
+        this.selectedGroup.bottles.forEach(bottle => {
+          this.onBottleFieldChange(bottle.cellarItemId, 'consumption', 'Empty');
+        });
+        
+        console.log(`Marked ${bottleCount} bottles as empty in group:`, this.selectedGroup);
+      }
     },
 
     archiveGroup() {
