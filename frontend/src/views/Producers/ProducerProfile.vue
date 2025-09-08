@@ -2999,7 +2999,7 @@
                 style="cursor: pointer"
               >
                 <img
-                  :src="review['photos'][0] || defaultPhoto"
+                  :src="review.photos?.[0] || defaultPhoto"
                   alt=""
                   class="review-image"
                   style="width: 125px; height: 125px"
@@ -3016,7 +3016,7 @@
                     style="cursor: pointer"
                 >
                     <img
-                    :src="review['photos'][0] || defaultPhoto"
+                    :src="review.photos?.[0]|| defaultPhoto"
                     alt=""
                     class="review-image"
                     style="width: 200%; height: 200%"
@@ -3095,7 +3095,7 @@
                 <div class="modal-content">
                   <div class="modal-body p-4">
                     <img
-                      :src="review['photos'][0] || defaultPhoto"
+                      :src="review.photos?.[0] || defaultPhoto"
                       alt=""
                       style="width: 100%; height: auto"
                     />
@@ -4675,6 +4675,7 @@ export default {
         console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
         console.log("DEBUG: Producer reviews data:", response.data);
         this.filteredTourReviews = response.data || [];
+
         this.detailedReview = this.filteredTourReviews[0] || null;
       } catch (error) {
         console.error("ERROR FETCHING REVIEWS: Failed to load producer reviews");

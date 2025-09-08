@@ -302,6 +302,12 @@ def get_commenter_info(user_id, user_type):
 def getRandomListings(user_id, user_type):
     conn = g.db
 
+    if user_id == "null":
+        user_id = None
+    if user_type == "null":
+        user_type = None
+
+
     try:
 
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -508,8 +514,13 @@ def getRandomListings(user_id, user_type):
         if not listings_data:
             return jsonify({"error": "No listings found for selected date"}), 400
         
+        listings_likes = []
+        reviews_likes = []
+        producers_updates_likes = []
+        venues_updates_likes = []
+        
         # Get current user's likes for the content
-        if user_id and user_type:
+        if user_id not in (None, '') and user_type not in (None, ''):
             listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
             reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in reviews])
             producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
@@ -877,9 +888,15 @@ def getNext30():
         if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) == 0:
             return jsonify([])
         
+        listings_likes = []
+        reviews_likes = []
+        producers_updates_likes = []
+        venues_updates_likes = []
+        producer_reviews_likes = []
+        venue_reviews_likes = []
 
         # Get current user's likes for the content
-        if user_id and user_type:
+        if user_id not in (None, '', 0) and user_type not in (None, '', 'public'):
             listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
             reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in recent_reviews])
             producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
