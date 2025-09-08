@@ -787,6 +787,8 @@
                             type="text" 
                             class="form-control"
                             v-model="addDrinkForm.currentLocation"
+                            @focus="onCurrentLocationFocus"
+                            @blur="onCurrentLocationBlur"
                             placeholder="e.g., Wine fridge, Cellar rack 3"
                           />
                         </div>
@@ -1315,6 +1317,8 @@
                         class="form-control form-control-sm" 
                         :value="getBottleFieldValue(bottle.cellarItemId, 'currentLocation')" 
                         @input="onBottleFieldChange(bottle.cellarItemId, 'currentLocation', $event.target.value)"
+                        @focus="onCurrentLocationFocus"
+                        @blur="onCurrentLocationBlur"
                         placeholder="Location"
                       >
                     </div>
@@ -1602,15 +1606,46 @@
       
       <!-- Suggestions list -->
       <div v-else>
-        <div class="p-2 border-bottom bg-light">
-          <small class="text-muted fw-bold">Your Previous Food Pairings</small>
-        </div>
         <div 
           v-for="(suggestion, index) in foodPairingSuggestions" 
           :key="index"
           class="food-pairing-suggestion-item p-2 cursor-pointer"
           style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
           @click="selectFoodPairingSuggestion(suggestion)"
+          @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+          @mouseleave="$event.target.style.backgroundColor = 'white'"
+        >
+          {{ suggestion }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Location Suggestions Dropdown -->
+    <div 
+      id="currentLocationDropdown"
+      v-if="showCurrentLocationSuggestions && (currentLocationSuggestions.length > 0 || loadingCurrentLocations)"
+      class="current-location-dropdown"
+      style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+    >
+      <!-- Loading state -->
+      <div v-if="loadingCurrentLocations" class="p-3 text-center text-muted">
+        <div class="spinner-border spinner-border-sm me-2"></div>
+        Loading suggestions...
+      </div>
+      
+      <!-- No suggestions -->
+      <div v-else-if="currentLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+        No previous storage locations found
+      </div>
+      
+      <!-- Suggestions list -->
+      <div v-else>
+        <div 
+          v-for="(suggestion, index) in currentLocationSuggestions" 
+          :key="index"
+          class="current-location-suggestion-item p-2 cursor-pointer"
+          style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+          @click="selectCurrentLocationSuggestion(suggestion)"
           @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
           @mouseleave="$event.target.style.backgroundColor = 'white'"
         >
@@ -1761,6 +1796,12 @@ export default {
       loadingFoodPairings: false,
       showFoodPairingSuggestions: false,
       activeFoodPairingInput: null,
+      
+      // Current location suggestions
+      currentLocationSuggestions: [],
+      loadingCurrentLocations: false,
+      showCurrentLocationSuggestions: false,
+      activeCurrentLocationInput: null,
       
       // Debug tracking
       lastCanAddToCellarState: null
@@ -2061,6 +2102,10 @@ export default {
     // Hide food pairing suggestions
     this.showFoodPairingSuggestions = false
     this.activeFoodPairingInput = null
+    
+    // Hide current location suggestions
+    this.showCurrentLocationSuggestions = false
+    this.activeCurrentLocationInput = null
   },
   methods: {
     // Data loading
@@ -2222,6 +2267,90 @@ export default {
     
     positionFoodPairingDropdown(inputElement) {
       const dropdown = document.getElementById('foodPairingDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+    
+    // Current location suggestions
+    async loadCurrentLocationSuggestions() {
+      if (this.loadingCurrentLocations || this.currentLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingCurrentLocations = true
+      
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const response = await this.$axios.get(`${baseUrl}/getData/getCurrentLocations/${this.ownerType}/${this.id}`)
+        
+        if (response.data && response.data.data && response.data.data.currentLocations) {
+          this.currentLocationSuggestions = response.data.data.currentLocations
+          console.log('Loaded current location suggestions:', this.currentLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading current location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingCurrentLocations = false
+      }
+    },
+    
+    onCurrentLocationFocus(event) {
+      // Load suggestions when user clicks into any current location field
+      this.loadCurrentLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeCurrentLocationInput = event.target
+      this.showCurrentLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionCurrentLocationDropdown(event.target)
+      })
+    },
+    
+    onCurrentLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showCurrentLocationSuggestions = false
+        this.activeCurrentLocationInput = null
+      }, 200)
+    },
+    
+    selectCurrentLocationSuggestion(suggestion) {
+      if (this.activeCurrentLocationInput) {
+        // Determine which form field to update based on the input element
+        if (this.activeCurrentLocationInput.closest('.modal')) {
+          // Modal form - find the specific bottle or determine if it's master field
+          const bottleContainer = this.activeCurrentLocationInput.closest('.bottle-card')
+          if (bottleContainer) {
+            // Individual bottle field
+            const cellarItemId = bottleContainer.dataset.bottleId
+            this.onBottleFieldChange(parseInt(cellarItemId), 'currentLocation', suggestion)
+          } else {
+            // Master field (if applicable)
+            this.onMasterFieldChange('currentLocation', suggestion)
+          }
+        } else {
+          // Add drink form
+          this.addDrinkForm.currentLocation = suggestion
+        }
+      }
+      
+      this.showCurrentLocationSuggestions = false
+      this.activeCurrentLocationInput = null
+    },
+    
+    positionCurrentLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('currentLocationDropdown')
       if (!dropdown || !inputElement) return
       
       const inputRect = inputElement.getBoundingClientRect()
