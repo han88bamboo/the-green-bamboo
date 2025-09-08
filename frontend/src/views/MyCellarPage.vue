@@ -920,6 +920,8 @@
                           <textarea 
                             class="form-control"
                             v-model="addDrinkForm.personalNotes"
+                            @focus="onPersonalNotesFocus"
+                            @blur="onPersonalNotesBlur"
                             rows="3"
                             placeholder="Add your personal notes about these bottles..."
                           ></textarea>
@@ -1343,6 +1345,8 @@
                         rows="2" 
                         :value="getBottleFieldValue(bottle.cellarItemId, 'noteToSelf')"
                         @input="onBottleFieldChange(bottle.cellarItemId, 'noteToSelf', $event.target.value)"
+                        @focus="onPersonalNotesFocus"
+                        @blur="onPersonalNotesBlur"
                         placeholder="Add notes for this bottle..."
                       ></textarea>
                     </div>
@@ -1692,6 +1696,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Personal Notes Suggestions Dropdown -->
+    <div 
+      id="personalNotesDropdown"
+      v-if="showPersonalNotesSuggestions && (personalNotesSuggestions.length > 0 || loadingPersonalNotes)"
+      class="personal-notes-dropdown"
+      style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+    >
+      <!-- Loading state -->
+      <div v-if="loadingPersonalNotes" class="p-3 text-center text-muted">
+        <div class="spinner-border spinner-border-sm me-2"></div>
+        Loading suggestions...
+      </div>
+      
+      <!-- No suggestions -->
+      <div v-else-if="personalNotesSuggestions.length === 0" class="p-3 text-center text-muted">
+        No previous personal notes found
+      </div>
+      
+      <!-- Suggestions list -->
+      <div v-else>
+        <div class="p-2 border-bottom bg-light">
+          <small class="text-muted fw-bold">Your Previous Personal Notes</small>
+        </div>
+        <div 
+          v-for="(suggestion, index) in personalNotesSuggestions" 
+          :key="index"
+          class="personal-notes-suggestion-item p-2 cursor-pointer"
+          style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+          @click="selectPersonalNotesSuggestion(suggestion)"
+          @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+          @mouseleave="$event.target.style.backgroundColor = 'white'"
+        >
+          {{ suggestion }}
+        </div>
+      </div>
+    </div>
   </main>
 
 </template>
@@ -1847,6 +1888,12 @@ export default {
       loadingSubLocations: false,
       showSubLocationSuggestions: false,
       activeSubLocationInput: null,
+      
+      // Personal notes suggestions
+      personalNotesSuggestions: [],
+      loadingPersonalNotes: false,
+      showPersonalNotesSuggestions: false,
+      activePersonalNotesInput: null,
       
       // Debug tracking
       lastCanAddToCellarState: null
@@ -2155,6 +2202,10 @@ export default {
     // Hide sub location suggestions
     this.showSubLocationSuggestions = false
     this.activeSubLocationInput = null
+    
+    // Hide personal notes suggestions
+    this.showPersonalNotesSuggestions = false
+    this.activePersonalNotesInput = null
   },
   methods: {
     // Data loading
@@ -2484,6 +2535,90 @@ export default {
     
     positionSubLocationDropdown(inputElement) {
       const dropdown = document.getElementById('subLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+    
+    // Personal notes suggestions
+    async loadPersonalNotesSuggestions() {
+      if (this.loadingPersonalNotes || this.personalNotesSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingPersonalNotes = true
+      
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const response = await this.$axios.get(`${baseUrl}/getData/getNoteToSelf/${this.ownerType}/${this.id}`)
+        
+        if (response.data && response.data.data && response.data.data.noteToSelf) {
+          this.personalNotesSuggestions = response.data.data.noteToSelf
+          console.log('Loaded personal notes suggestions:', this.personalNotesSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading personal notes suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingPersonalNotes = false
+      }
+    },
+    
+    onPersonalNotesFocus(event) {
+      // Load suggestions when user clicks into any personal notes field
+      this.loadPersonalNotesSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activePersonalNotesInput = event.target
+      this.showPersonalNotesSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionPersonalNotesDropdown(event.target)
+      })
+    },
+    
+    onPersonalNotesBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showPersonalNotesSuggestions = false
+        this.activePersonalNotesInput = null
+      }, 200)
+    },
+    
+    selectPersonalNotesSuggestion(suggestion) {
+      if (this.activePersonalNotesInput) {
+        // Determine which form field to update based on the input element
+        if (this.activePersonalNotesInput.closest('.modal')) {
+          // Modal form - find the specific bottle or determine if it's master field
+          const bottleContainer = this.activePersonalNotesInput.closest('.bottle-card')
+          if (bottleContainer) {
+            // Individual bottle field
+            const cellarItemId = bottleContainer.dataset.bottleId
+            this.onBottleFieldChange(parseInt(cellarItemId), 'noteToSelf', suggestion)
+          } else {
+            // Master field (if applicable)
+            this.onMasterFieldChange('noteToSelf', suggestion)
+          }
+        } else {
+          // Add drink form
+          this.addDrinkForm.personalNotes = suggestion
+        }
+      }
+      
+      this.showPersonalNotesSuggestions = false
+      this.activePersonalNotesInput = null
+    },
+    
+    positionPersonalNotesDropdown(inputElement) {
+      const dropdown = document.getElementById('personalNotesDropdown')
       if (!dropdown || !inputElement) return
       
       const inputRect = inputElement.getBoundingClientRect()
