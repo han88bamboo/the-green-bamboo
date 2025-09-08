@@ -798,6 +798,8 @@
                             type="text" 
                             class="form-control"
                             v-model="addDrinkForm.subLocation"
+                            @focus="onSubLocationFocus"
+                            @blur="onSubLocationBlur"
                             placeholder="e.g., Minibar, Kitchen cabinet"
                           />
                         </div>
@@ -1329,6 +1331,8 @@
                         class="form-control form-control-sm" 
                         :value="getBottleFieldValue(bottle.cellarItemId, 'subLocation')" 
                         @input="onBottleFieldChange(bottle.cellarItemId, 'subLocation', $event.target.value)"
+                        @focus="onSubLocationFocus"
+                        @blur="onSubLocationBlur"
                         placeholder="Sub-location"
                       >
                     </div>
@@ -1653,6 +1657,41 @@
         </div>
       </div>
     </div>
+
+    <!-- Sub Location Suggestions Dropdown -->
+    <div 
+      id="subLocationDropdown"
+      v-if="showSubLocationSuggestions && (subLocationSuggestions.length > 0 || loadingSubLocations)"
+      class="sub-location-dropdown"
+      style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+    >
+      <!-- Loading state -->
+      <div v-if="loadingSubLocations" class="p-3 text-center text-muted">
+        <div class="spinner-border spinner-border-sm me-2"></div>
+        Loading suggestions...
+      </div>
+      
+      <!-- No suggestions -->
+      <div v-else-if="subLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+        No previous sub locations found
+      </div>
+      
+      <!-- Suggestions list -->
+      <div v-else>
+
+        <div 
+          v-for="(suggestion, index) in subLocationSuggestions" 
+          :key="index"
+          class="sub-location-suggestion-item p-2 cursor-pointer"
+          style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+          @click="selectSubLocationSuggestion(suggestion)"
+          @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+          @mouseleave="$event.target.style.backgroundColor = 'white'"
+        >
+          {{ suggestion }}
+        </div>
+      </div>
+    </div>
   </main>
 
 </template>
@@ -1802,6 +1841,12 @@ export default {
       loadingCurrentLocations: false,
       showCurrentLocationSuggestions: false,
       activeCurrentLocationInput: null,
+      
+      // Sub location suggestions
+      subLocationSuggestions: [],
+      loadingSubLocations: false,
+      showSubLocationSuggestions: false,
+      activeSubLocationInput: null,
       
       // Debug tracking
       lastCanAddToCellarState: null
@@ -2106,6 +2151,10 @@ export default {
     // Hide current location suggestions
     this.showCurrentLocationSuggestions = false
     this.activeCurrentLocationInput = null
+    
+    // Hide sub location suggestions
+    this.showSubLocationSuggestions = false
+    this.activeSubLocationInput = null
   },
   methods: {
     // Data loading
@@ -2351,6 +2400,90 @@ export default {
     
     positionCurrentLocationDropdown(inputElement) {
       const dropdown = document.getElementById('currentLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+    
+    // Sub location suggestions
+    async loadSubLocationSuggestions() {
+      if (this.loadingSubLocations || this.subLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingSubLocations = true
+      
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const response = await this.$axios.get(`${baseUrl}/getData/getSubLocations/${this.ownerType}/${this.id}`)
+        
+        if (response.data && response.data.data && response.data.data.subLocations) {
+          this.subLocationSuggestions = response.data.data.subLocations
+          console.log('Loaded sub location suggestions:', this.subLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading sub location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingSubLocations = false
+      }
+    },
+    
+    onSubLocationFocus(event) {
+      // Load suggestions when user clicks into any sub location field
+      this.loadSubLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeSubLocationInput = event.target
+      this.showSubLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionSubLocationDropdown(event.target)
+      })
+    },
+    
+    onSubLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showSubLocationSuggestions = false
+        this.activeSubLocationInput = null
+      }, 200)
+    },
+    
+    selectSubLocationSuggestion(suggestion) {
+      if (this.activeSubLocationInput) {
+        // Determine which form field to update based on the input element
+        if (this.activeSubLocationInput.closest('.modal')) {
+          // Modal form - find the specific bottle or determine if it's master field
+          const bottleContainer = this.activeSubLocationInput.closest('.bottle-card')
+          if (bottleContainer) {
+            // Individual bottle field
+            const cellarItemId = bottleContainer.dataset.bottleId
+            this.onBottleFieldChange(parseInt(cellarItemId), 'subLocation', suggestion)
+          } else {
+            // Master field (if applicable)
+            this.onMasterFieldChange('subLocation', suggestion)
+          }
+        } else {
+          // Add drink form
+          this.addDrinkForm.subLocation = suggestion
+        }
+      }
+      
+      this.showSubLocationSuggestions = false
+      this.activeSubLocationInput = null
+    },
+    
+    positionSubLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('subLocationDropdown')
       if (!dropdown || !inputElement) return
       
       const inputRect = inputElement.getBoundingClientRect()
