@@ -15,10 +15,10 @@
 
     <!-- Main Content Grid -->
     <section class="main-content py-4">
-      <div class="container">
+      <div class="container-fluid">
         <div class="row">
-          <!-- Left Column - Collections & Items (8/12 columns) -->
-          <div class="col-12 col-lg-8">
+          <!-- Left Column - Collections & Items (responsive width) -->
+          <div :class="rightSidebarExpanded ? 'col-12 col-lg-8' : 'col-12'">
             <!-- Tab Navigation -->
             <div class="tabs-container">
               <nav class="tabs-nav p-0">
@@ -266,7 +266,10 @@
                 <div 
                   v-for="group in paginatedItems" 
                   :key="`${group.listingId}_${group.variant || 'no-variant'}`"
-                  class="col-12 col-md-6 col-lg-4 mb-4"
+                  :class="[
+                    'col-12 mb-4',
+                    rightSidebarExpanded ? 'col-md-6 col-lg-4' : 'col-md-4 col-lg-3'
+                  ]"
                 >
                   <div 
                     class="card cellar-item-card h-100"
@@ -591,7 +594,11 @@
           </div>
 
           <!-- Right Column - Add Drink to Cellar (4/12 columns) -->
-          <div class="col-12 col-lg-4 mt-4 mt-lg-0">
+          <div 
+            class="col-12 col-lg-4 mt-4 mt-lg-0 right-sidebar-column" 
+            :class="{ 'expanded': rightSidebarExpanded }"
+          >
+            <div class="right-sidebar-content">
             <div class="add-drink-to-cellar">
               <div class="card h-100">
                 <div class="card-header">
@@ -1281,6 +1288,15 @@
                 </div>
               </div>
             </div>
+            </div> <!-- End right-sidebar-content -->
+          </div>
+        </div>
+        
+        <!-- Collapsible Tab Button -->
+        <div class="right-sidebar-tab" @click="toggleRightSidebar">
+          <div class="tab-content">
+            <i :class="rightSidebarExpanded ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+            <span class="tab-text">{{ rightSidebarExpanded ? 'Close' : 'Add & History' }}</span>
           </div>
         </div>
       </div>
@@ -2117,6 +2133,9 @@ export default {
       // View mode for grid/list toggle
       viewMode: 'grid',
 
+      // Right sidebar state
+      rightSidebarExpanded: false,
+
       // Modal editing states
       modalEditing: {
         hasChanges: false,
@@ -2499,6 +2518,18 @@ export default {
   },
   async mounted() {
     try {
+      // Set initial sidebar state based on screen size
+      this.rightSidebarExpanded = window.innerWidth < 992;
+      
+      // Add resize listener for responsive behavior
+      this.handleResize = () => {
+        const isMobile = window.innerWidth < 992;
+        if (isMobile && !this.rightSidebarExpanded) {
+          this.rightSidebarExpanded = true;
+        }
+      };
+      window.addEventListener('resize', this.handleResize);
+      
       // Ensure component is fully initialized
       await this.$nextTick();
       
@@ -2532,6 +2563,11 @@ export default {
     }
   },
   beforeUnmount() {
+    // Remove resize listener
+    if (this.handleResize) {
+      window.removeEventListener('resize', this.handleResize);
+    }
+    
     // Cancel any pending search timeout
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout)
@@ -2569,6 +2605,11 @@ export default {
     this.activePersonalNotesInput = null
   },
   methods: {
+    // Right sidebar toggle
+    toggleRightSidebar() {
+      this.rightSidebarExpanded = !this.rightSidebarExpanded;
+    },
+
     // Data loading
     async loadCellarData() {
       this.loading = true
@@ -4390,6 +4431,39 @@ export default {
   outline-offset: 2px;
 }
 
+/* Responsive adjustments for grid items when sidebar is collapsed */
+@media (min-width: 768px) {
+  /* For medium screens (tablets) when sidebar is collapsed, optimize for 3-column layout */
+  .col-md-4 .cellar-item-card {
+    min-height: 360px;
+  }
+  
+  .col-md-4 .card-title {
+    font-size: 0.97rem;
+    line-height: 1.3;
+  }
+  
+  .col-md-4 .card-text {
+    font-size: 0.87rem;
+  }
+}
+
+@media (min-width: 992px) {
+  /* When sidebar is collapsed, we have more items per row, so ensure consistent spacing */
+  .col-lg-3 .cellar-item-card {
+    min-height: 350px; /* Slightly reduce min-height for 4-column layout */
+  }
+  
+  .col-lg-3 .card-title {
+    font-size: 0.95rem; /* Slightly smaller title for more compact layout */
+    line-height: 1.3;
+  }
+  
+  .col-lg-3 .card-text {
+    font-size: 0.85rem; /* Slightly smaller text for more compact layout */
+  }
+}
+
 .card-img-container {
   position: relative;
   height: 200px;
@@ -5569,6 +5643,136 @@ export default {
   .changelog-entry .text-end {
     text-align: start !important;
     margin-top: 0.5rem;
+  }
+}
+
+/* Collapsible Right Sidebar */
+.right-sidebar-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 20px 10px;
+  border-radius: 12px 0 0 12px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: -3px 0 15px rgba(0, 123, 255, 0.3);
+  transition: all 0.3s ease;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  border: none;
+  outline: none;
+}
+
+.right-sidebar-tab:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+  transform: translateY(-50%) translateX(-8px);
+  box-shadow: -5px 0 20px rgba(0, 123, 255, 0.4);
+}
+
+.right-sidebar-tab .tab-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.right-sidebar-tab .tab-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.right-sidebar-tab i {
+  font-size: 1.4rem;
+  opacity: 0.9;
+}
+
+.right-sidebar-column {
+  transition: all 0.3s ease;
+}
+
+.right-sidebar-content {
+  padding: 1rem;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 991.98px) {
+  .right-sidebar-tab {
+    position: relative;
+    top: auto;
+    right: auto;
+    transform: none;
+    width: 100%;
+    border-radius: 8px;
+    margin: 1rem 0;
+    min-height: 50px;
+  }
+  
+  .right-sidebar-tab .tab-content {
+    flex-direction: row;
+  }
+  
+  .right-sidebar-tab .tab-text {
+    writing-mode: initial;
+    text-orientation: initial;
+  }
+  
+  .right-sidebar-column {
+    position: static !important;
+    transform: none !important;
+    right: auto !important;
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding-top: 0 !important;
+  }
+  
+  /* On mobile, show the sidebar normally when expanded */
+  .right-sidebar-column:not(.expanded) .right-sidebar-content {
+    display: none;
+  }
+}
+
+/* On large screens, make the sidebar slide in */
+@media (min-width: 992px) {
+  .main-content {
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  .right-sidebar-column {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Hide off-screen by default */
+    width: 400px;
+    height: 100vh;
+    background: white;
+    z-index: 999;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    padding-top: 120px; /* Account for navbar */
+  }
+  
+  .right-sidebar-column.expanded {
+    right: 0; /* Slide in when expanded */
+  }
+  
+  .right-sidebar-column:not(.expanded) .right-sidebar-content {
+    display: none;
+  }
+  
+  /* Adjust left column when sidebar is expanded */
+  .col-12.col-lg-8 {
+    transition: all 0.3s ease;
   }
 }
 </style>
