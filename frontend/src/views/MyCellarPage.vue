@@ -1038,7 +1038,7 @@
                 <div class="drink-info-summary">
                   <h6 class="section-header mb-3">Summary of Drink Information</h6>
                   
-                  <!-- Row 1: Producer | Bottler | Vintage -->
+                  <!-- Row 1: Producer | Bottler | Vintage | Country | Type | Category | Style -->
                   <div class="info-row mb-2">
                     <span class="info-text">
                       <strong>Producer:</strong> <span class="text-muted">{{ selectedGroup.representative.producerName || 'N/A' }}</span>
@@ -1048,23 +1048,18 @@
                       <span v-if="selectedGroup.representative.variant">
                         <strong>Vintage:</strong> <span class="text-muted">{{ selectedGroup.representative.variant }}</span>
                       </span>
-                    </span>
-                  </div>
-                  
-                  <!-- Row 2: Country / Type / Category / Style -->
-                  <div class="info-row mb-2">
-                    <span class="info-text text-muted">
-                      <template v-if="selectedGroup.representative.originCountry">{{ selectedGroup.representative.originCountry }}</template>
-                      <template v-if="selectedGroup.representative.originCountry && selectedGroup.representative.drinkType"> | </template>
-                      <template v-if="selectedGroup.representative.drinkType">{{ selectedGroup.representative.drinkType }}</template>
-                      <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"> | </template>
-                      <template v-if="selectedGroup.representative.typeCategory">{{ selectedGroup.representative.typeCategory }}</template>
-                      <template v-if="selectedGroup.representative.typeCategory && selectedGroup.representative.drinkStyle"> | </template>
-                      <template v-if="selectedGroup.representative.drinkStyle">{{ selectedGroup.representative.drinkStyle }}</template>
+                      <template v-if="(selectedGroup.representative.variant || selectedGroup.representative.bottlerName || selectedGroup.representative.producerName) && selectedGroup.representative.originCountry"><span class="mx-2">|</span></template>
+                      <template v-if="selectedGroup.representative.originCountry"><span class="text-muted">{{ selectedGroup.representative.originCountry }}</span></template>
+                      <template v-if="selectedGroup.representative.originCountry && selectedGroup.representative.drinkType"><span class="mx-2">|</span></template>
+                      <template v-if="selectedGroup.representative.drinkType"><span class="text-muted">{{ selectedGroup.representative.drinkType }}</span></template>
+                      <template v-if="selectedGroup.representative.drinkType && selectedGroup.representative.typeCategory"><span class="mx-2">|</span></template>
+                      <template v-if="selectedGroup.representative.typeCategory"><span class="text-muted">{{ selectedGroup.representative.typeCategory }}</span></template>
+                      <template v-if="selectedGroup.representative.typeCategory && selectedGroup.representative.drinkStyle"><span class="mx-2">|</span></template>
+                      <template v-if="selectedGroup.representative.drinkStyle"><span class="text-muted">{{ selectedGroup.representative.drinkStyle }}</span></template>
                     </span>
                   </div>
 
-                  <!-- Row 3: Drinking Window -->
+                  <!-- Row 2: Drinking Window -->
                   <div class="info-row mb-2" v-if="selectedGroup.representative.drinkOnwardsDate || selectedGroup.representative.drinkByDate">
                     <span class="info-text text-muted">
                       <strong>Drinking Window:&nbsp;</strong>
@@ -1074,21 +1069,21 @@
                     </span>
                   </div>
 
-                  <!-- Row 4: Market Value -->
+                  <!-- Row 3: Market Value -->
                   <div class="info-row mb-2" v-if="selectedGroup.representative.currentValueEstimation">
                     <span class="info-text text-muted">
                       <strong>Market Value:</strong> <span class="editable-value">{{ selectedGroup.representative.currentValueCurrency || 'USD' }} {{ selectedGroup.representative.currentValueEstimation }}</span>
                     </span>
                   </div>
 
-                  <!-- Row 5: Food Pairing -->
+                  <!-- Row 4: Food Pairing -->
                   <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
                     <span class="info-text text-muted">
                       <strong>Suggested Pairing:</strong> <span class="editable-value">{{ selectedGroup.representative.suggestedFoodPairing }}</span>
                     </span>
                   </div>
 
-                  <!-- Row 6: Quantity Owned -->
+                  <!-- Row 5: Quantity Owned -->
                   <div class="info-row mb-3">
                     <span class="info-text">
                       <strong>Quantity Owned:</strong> <span class="editable-value">{{ selectedGroup.bottleCount }}</span>
