@@ -151,6 +151,67 @@
                 </div>
               </div>
 
+              <!-- View Toggle -->
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <!-- Mobile: Compact layout -->
+                <div class="d-md-none w-100">
+                  <div class="btn-group w-100" role="group" aria-label="View toggle">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'grid' }"
+                      @click="viewMode = 'grid'"
+                      title="Grid View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                      </svg>
+                      <span class="ms-1">Grid</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'list' }"
+                      @click="viewMode = 'list'"
+                      title="List View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                      </svg>
+                      <span class="ms-1">List</span>
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Desktop: Right-aligned compact layout -->
+                <div class="d-none d-md-flex ms-auto">
+                  <div class="btn-group" role="group" aria-label="View toggle">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'grid' }"
+                      @click="viewMode = 'grid'"
+                      title="Grid View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'list' }"
+                      @click="viewMode = 'list'"
+                      title="List View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Items Grid -->
               <div class="items-grid">
               <!-- Loading Skeletons -->
@@ -196,8 +257,8 @@
                 </button>
               </div>
 
-              <!-- Items Cards -->
-              <div v-else class="row">
+              <!-- Items Cards (Grid View) -->
+              <div v-if="viewMode === 'grid'" class="row">
                 <div 
                   v-for="group in paginatedItems" 
                   :key="`${group.listingId}_${group.variant || 'no-variant'}`"
@@ -301,6 +362,105 @@
                         >
                           Adjust
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Items Cards (List View) -->
+              <div v-else-if="viewMode === 'list'">
+                <div 
+                  v-for="group in paginatedItems" 
+                  :key="`${group.listingId}_${group.variant || 'no-variant'}_list`"
+                  class="mb-3"
+                >
+                  <div 
+                    class="card cellar-item-list-card"
+                    role="button"
+                    tabindex="0"
+                    data-bs-toggle="modal"
+                    data-bs-target="#itemDetailsModal"
+                    @click="setSelectedGroup(group)"
+                    @keyup.enter="setSelectedGroup(group)"
+                  >
+                    <div class="row g-0">
+                      <!-- Image Column (Left) -->
+                      <div class="col-4 col-md-3 col-lg-2">
+                        <div class="list-img-container">
+                          <img 
+                            :src="getItemImageUrl(group.representative)"
+                            :alt="group.representative.listingName"
+                            class="list-img"
+                            @error="onImageError"
+                          >
+                          <!-- Combined Quantity and Volume Badge (same as grid view) -->
+                          <div class="quantity-volume-badge">
+                            {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Content Column (Right) -->
+                      <div class="col-8 col-md-9 col-lg-10">
+                        <div class="card-body py-3">
+                          <div class="row">
+                            <!-- Main Info -->
+                            <div class="col-12 col-lg-8">
+                              <!-- Primary Line -->
+                              <h6 class="card-title mb-1" :title="group.representative.listingName">
+                                {{ group.representative.listingName }}
+                                <span v-if="group.representative.variant" class="text-muted ms-1">
+                                  ({{ group.representative.variant }})
+                                </span>
+                              </h6>
+                              
+                              <!-- Secondary Line -->
+                              <p class="text-muted mb-1 small">
+                                {{ group.representative.drinkType }}
+                                <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
+                                <span v-if="group.representative.producerName"> | {{ group.representative.producerName }}</span>
+                              </p>
+
+                              <!-- Notes (truncated) -->
+                              <p 
+                                class="text-muted small mb-2" 
+                                v-if="group.representative.noteToSelf"
+                                :title="group.representative.noteToSelf"
+                              >
+                                {{ truncateText(group.representative.noteToSelf, 100) }}
+                              </p>
+                            </div>
+
+                            <!-- Side Info -->
+                            <div class="col-12 col-lg-4">
+                              <!-- Status Breakdown -->
+                              <div class="status-breakdown mb-2 justify-content-center">
+                                <span 
+                                  v-for="(count, status) in getGroupStatusBreakdown(group.bottles)"
+                                  :key="status"
+                                  class="status-badge badge me-1 small"
+                                  :class="getStatusBadgeClass(status)"
+                                  :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
+                                >
+                                  {{ count }}x {{ status }}
+                                </span>
+                              </div>
+
+                              <!-- Drink Dates -->
+                              <div class="drink-dates" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
+                                <small class="text-muted">
+                                  <div v-if="group.representative.drinkOnwardsDate">
+                                    <strong>Drink from:</strong> {{ formatDate(group.representative.drinkOnwardsDate) }}
+                                  </div>
+                                  <div v-if="group.representative.drinkByDate">
+                                    <strong>Drink by:</strong> {{ formatDate(group.representative.drinkByDate) }}
+                                  </div>
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -977,7 +1137,7 @@
                 <div class="card-header">
                   <h5 class="card-title mb-0">
                     <i class="bi bi-clock-history me-2"></i>
-                    Cellar Change Log
+                    Cellar History
                   </h5>
                 </div>
                 <div class="card-body">
@@ -1869,6 +2029,9 @@ export default {
       
       // Search debouncing
       searchTimeout: null,
+
+      // View mode for grid/list toggle
+      viewMode: 'grid',
 
       // Modal editing states
       modalEditing: {
@@ -3119,6 +3282,12 @@ export default {
         default: return 'th'
       }
     },
+
+    truncateText(text, maxLength) {
+      if (!text) return ''
+      if (text.length <= maxLength) return text
+      return text.substring(0, maxLength).trim() + '...'
+    },
     
     getStatusBadgeClass(status) {
       const statusClasses = {
@@ -4240,6 +4409,97 @@ export default {
 .cellar-item-card:hover .hover-actions {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* List View Styles */
+.cellar-item-list-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.cellar-item-list-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-color: #c0c0c0;
+}
+
+.cellar-item-list-card:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.list-img-container {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+  border-radius: 0.5rem 0 0 0.5rem;
+  background-color: #f8f9fa;
+}
+
+.list-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cellar-item-list-card .card-body {
+  padding: 1rem;
+}
+
+.cellar-item-list-card .card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+.cellar-item-list-card .status-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+@media (max-width: 991.98px) {
+  .list-img-container {
+    height: 100px;
+  }
+  
+  .cellar-item-list-card .card-body {
+    padding: 0.75rem;
+  }
+  
+  .cellar-item-list-card .card-title {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .list-img-container {
+    height: 80px;
+  }
+  
+  .cellar-item-list-card .card-body {
+    padding: 0.5rem;
+  }
+}
+
+/* View Toggle Button Styles */
+.btn-group .btn.active {
+  background-color: #f0b358;
+  border-color: #f0b358;
+  color: #000;
+}
+
+.btn-outline-secondary {
+  color: #223957;
+  border-color: #223957;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f0b358;
+  border-color: #f0b358;
+  color: #000;
 }
 
 /* Loading Skeletons */
