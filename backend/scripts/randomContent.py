@@ -66,6 +66,23 @@ def get_top_comments(content_id, content_type):
                 reply_count = cursor.fetchone()
                 comment['replyCount'] = reply_count['count'] if reply_count else 0
 
+                # Get the latest 2 reply comments
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" DESC
+                    LIMIT 2
+                """, (comment['id'],))
+                replies = cursor.fetchall()
+
+                if replies:
+                    for reply in replies:
+                        # Get the username or producerName or venueName
+                        replier_info = get_commenter_info(reply['userId'], reply['userType'])
+                        reply['username'] = replier_info['username']
+                        reply['userPhoto'] = replier_info['photo']
+                    comment['replies'] = replies
+
         return comments
 
 
@@ -384,7 +401,7 @@ def getRandomListings(user_id, user_type):
 
             # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to two week ago)
             # Set random limit
-            limit = random.randint(3, 8)
+            limit = random.randint(5, 8)
             if len(listings_data) < num_records:
                 cursor.execute("""
                     SELECT * FROM "reviews"
