@@ -71,6 +71,7 @@
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
 #           /bottle-listings (GET), /producer-listings (GET), /venue-listings (GET), /user-listings (GET),
 #           /getFoodPairings/<ownerType>/<ownerID> (GET), /getCurrentLocations/<ownerType>/<ownerID> (GET), /getSubLocations/<ownerType>/<ownerID> (GET), /getNoteToSelf/<ownerType>/<ownerID> (GET),
+#           /getCellarItemsChangelog/<ownerType>/<ownerID> (GET),
 # -----------------------------------------------------------------------------------------
 
 # pip install Flask
@@ -9706,3 +9707,125 @@ def getNoteToSelf(ownerType, ownerID):
             "message": "An error occurred retrieving note to self values."
         }), 500
     
+
+# [GET] Get changelog data for a specific user's cellar items
+@blueprint.route("/getCellarItemsChangelog/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCellarItemsChangelog(ownerType, ownerID):
+    """
+    Fetch changelog data from myCellarItemsChangelog table for a specific user's cellar items.
+    
+    Args:
+        ownerType (str): Type of owner ('user', 'producer', 'venue')
+        ownerID (int): ID of the owner
+    
+    Optional query parameters:
+    - changeType: Filter by change type (CREATED, QUANTITY_UPDATED, etc.)
+    - limit: Limit number of results (default: no limit)
+    
+    Returns:
+        JSON response with changelog entries for the user's cellar items
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Get optional query parameters
+        change_type = request.args.get('changeType')
+        limit = request.args.get('limit', type=int)
+        
+        # Build query to get changelog for user's cellar items
+        query = """
+            SELECT 
+                cl."id",
+                cl."cellarItemID",
+                cl."changeType",
+                cl."fieldName",
+                cl."oldValue",
+                cl."newValue",
+                cl."changeDescription",
+                cl."quantityDelta",
+                cl."triggeredBy",
+                cl."changeDate",
+                ci."status",
+                ci."consumption",
+                l."listingName",
+                p."producerName"
+            FROM "myCellarItemsChangelog" cl
+            JOIN "myCellarItems" ci ON cl."cellarItemID" = ci."id"
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            LEFT JOIN "listings" l ON ci."listingID" = l."id"
+            LEFT JOIN "producers" p ON l."producerID" = p."id"
+            WHERE cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+        """
+        
+        # Build WHERE conditions
+        params = [ownerID, ownerType]
+        
+        if change_type:
+            query += ' AND cl."changeType" = %s'
+            params.append(change_type)
+        
+        # Add ORDER BY
+        query += ' ORDER BY cl."changeDate" DESC'
+        
+        # Add LIMIT if specified
+        if limit:
+            query += ' LIMIT %s'
+            params.append(limit)
+        
+        cur.execute(query, params)
+        results = cur.fetchall()
+        
+        # Convert results to list of dictionaries
+        changelog_data = []
+        for row in results:
+            changelog_entry = {
+                "id": row['id'],
+                "cellarItemID": row['cellarItemID'],
+                "changeType": row['changeType'],
+                "fieldName": row['fieldName'],
+                "oldValue": row['oldValue'],
+                "newValue": row['newValue'],
+                "changeDescription": row['changeDescription'],
+                "quantityDelta": row['quantityDelta'],
+                "triggeredBy": row['triggeredBy'],
+                "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
+                "currentStatus": row['status'],
+                "currentConsumption": row['consumption'],
+                "listingName": row['listingName'],
+                "producerName": row['producerName']
+            }
+            changelog_data.append(changelog_entry)
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "changelog": changelog_data,
+                "count": len(changelog_data),
+                "ownerInfo": {
+                    "ownerType": ownerType,
+                    "ownerID": ownerID
+                },
+                "filters": {
+                    "changeType": change_type,
+                    "limit": limit
+                }
+            },
+            "message": f"Successfully retrieved {len(changelog_data)} changelog entries for {ownerType} {ownerID}."
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in getCellarItemsChangelog: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": f"Error retrieving changelog data: {str(e)}"
+        }), 500
