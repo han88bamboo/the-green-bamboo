@@ -111,7 +111,7 @@
                         v-model="filters.drinkNow"
                       >
                       <label 
-                        class="form-check-label" 
+                        class="form-check-label text-start" 
                         for="drinkNowFilter"
                         title="Show only bottles drinkable now (no drinking window specified, or current date is within the drinking window)"
                       >
@@ -5774,5 +5774,20 @@ export default {
   .col-12.col-lg-8 {
     transition: all 0.3s ease;
   }
+}
+
+/* Fix checkbox label alignment */
+.form-check {
+  text-align: left !important;
+}
+
+.form-check-label {
+  text-align: left !important;
+}
+
+/* Specifically target the drink-now filter */
+#drinkNowFilter + .form-check-label {
+  text-align: left !important;
+  margin-left: 0.25rem;
 }
 </style>
