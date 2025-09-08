@@ -730,6 +730,7 @@
                               type="text" 
                               class="form-control"
                               v-model="addDrinkForm.suggestedFoodPairing"
+                              @focus="onFoodPairingFocus"
                               placeholder="e.g., Grilled salmon, Dark chocolate"
                             />
                             <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
@@ -1229,6 +1230,7 @@
                       class="form-control"
                       :value="getMasterFieldValue('suggestedFoodPairing')"
                       @input="onMasterFieldChange('suggestedFoodPairing', $event.target.value)"
+                      @focus="onFoodPairingFocus"
                       placeholder="Enter food pairing suggestion"
                     >
                     <button class="btn btn-outline-secondary" type="button">+</button>
@@ -1715,6 +1717,10 @@ export default {
       // Add to cellar state
       addingToCellar: false,
       
+      // Food pairing suggestions
+      foodPairingSuggestions: [],
+      loadingFoodPairings: false,
+      
       // Debug tracking
       lastCanAddToCellarState: null
     }
@@ -2010,6 +2016,12 @@ export default {
     if (addCollectionModal) {
       addCollectionModal.removeEventListener('hidden.bs.modal', this.resetNewCollectionForm);
     }
+    
+    // Clean up food pairing datalist
+    const foodPairingDatalist = document.getElementById('foodPairingOptions')
+    if (foodPairingDatalist) {
+      foodPairingDatalist.remove()
+    }
   },
   methods: {
     // Data loading
@@ -2105,6 +2117,63 @@ export default {
         drinkNow: false
       }
       this.currentPage = 1
+    },
+    
+    // Food pairing suggestions
+    async loadFoodPairingSuggestions() {
+      if (this.loadingFoodPairings || this.foodPairingSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingFoodPairings = true
+      
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const response = await this.$axios.get(`${baseUrl}/getData/getFoodPairings/${this.ownerType}/${this.id}`)
+        
+        if (response.data && response.data.data && response.data.data.foodPairings) {
+          this.foodPairingSuggestions = response.data.data.foodPairings
+          console.log('Loaded food pairing suggestions:', this.foodPairingSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading food pairing suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingFoodPairings = false
+      }
+    },
+    
+    onFoodPairingFocus(event) {
+      // Load suggestions when user clicks into any food pairing field
+      this.loadFoodPairingSuggestions()
+      
+      // Show suggestions as datalist options if available
+      if (this.foodPairingSuggestions.length > 0) {
+        this.updateFoodPairingDatalist(event.target)
+      }
+    },
+    
+    updateFoodPairingDatalist(inputElement) {
+      // Remove existing datalist if any
+      const existingDatalist = document.getElementById('foodPairingOptions')
+      if (existingDatalist) {
+        existingDatalist.remove()
+      }
+      
+      // Create new datalist
+      const datalist = document.createElement('datalist')
+      datalist.id = 'foodPairingOptions'
+      
+      // Add options from suggestions
+      this.foodPairingSuggestions.forEach(suggestion => {
+        const option = document.createElement('option')
+        option.value = suggestion
+        datalist.appendChild(option)
+      })
+      
+      // Add datalist to document and associate with input
+      document.body.appendChild(datalist)
+      inputElement.setAttribute('list', 'foodPairingOptions')
     },
     
     // Pagination
