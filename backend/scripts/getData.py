@@ -70,6 +70,7 @@
 #           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
 #           /bottle-listings (GET), /producer-listings (GET), /venue-listings (GET), /user-listings (GET),
+#           /getFoodPairings/<ownerType>/<ownerID> (GET), /getCurrentLocations/<ownerType>/<ownerID> (GET), /getSubLocations/<ownerType>/<ownerID> (GET), /getNoteToSelf/<ownerType>/<ownerID> (GET),
 # -----------------------------------------------------------------------------------------
 
 # pip install Flask
@@ -9463,5 +9464,245 @@ def getWhatsOnMenu(venue_id):
         return jsonify({
             "code": 500,
             "message": "An error occurred retrieving the menu items."
+        }), 500
+
+
+@blueprint.route("/getFoodPairings/<ownerType>/<int:ownerID>", methods=['GET'])
+def getFoodPairings(ownerType, ownerID):
+    """
+    Get all unique suggestedFoodPairing values from a specific user's myCellarItems table.
+    
+    Args:
+        ownerType (str): Type of owner ('user', 'producer', 'venue')
+        ownerID (int): ID of the owner
+    
+    Returns:
+        JSON response with list of unique food pairing suggestions
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Query to get all unique suggestedFoodPairing values for the user
+        query = """
+            SELECT DISTINCT ci."suggestedFoodPairing"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+            AND ci."suggestedFoodPairing" IS NOT NULL 
+            AND ci."suggestedFoodPairing" != ''
+            AND ci."archiveStatus" = FALSE
+            ORDER BY ci."suggestedFoodPairing" ASC;
+        """
+        
+        cur.execute(query, (ownerID, ownerType))
+        results = cur.fetchall()
+        
+        # Extract the food pairing values into a simple list
+        food_pairings = [row['suggestedFoodPairing'] for row in results]
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "foodPairings": food_pairings,
+                "count": len(food_pairings)
+            },
+            "message": f"Successfully retrieved {len(food_pairings)} unique food pairing suggestions."
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in getFoodPairings: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving food pairings."
+        }), 500
+
+
+@blueprint.route("/getCurrentLocations/<ownerType>/<int:ownerID>", methods=['GET'])
+def getCurrentLocations(ownerType, ownerID):
+    """
+    Get all unique currentLocation values from a specific user's myCellarItems table.
+    
+    Args:
+        ownerType (str): Type of owner ('user', 'producer', 'venue')
+        ownerID (int): ID of the owner
+    
+    Returns:
+        JSON response with list of unique current location values
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Query to get all unique currentLocation values for the user
+        query = """
+            SELECT DISTINCT ci."currentLocation"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+            AND ci."currentLocation" IS NOT NULL 
+            AND ci."currentLocation" != ''
+            AND ci."archiveStatus" = FALSE
+            ORDER BY ci."currentLocation" ASC;
+        """
+        
+        cur.execute(query, (ownerID, ownerType))
+        results = cur.fetchall()
+        
+        # Extract the current location values into a simple list
+        current_locations = [row['currentLocation'] for row in results]
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "currentLocations": current_locations,
+                "count": len(current_locations)
+            },
+            "message": f"Successfully retrieved {len(current_locations)} unique current location values."
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in getCurrentLocations: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving current locations."
+        }), 500
+
+
+@blueprint.route("/getSubLocations/<ownerType>/<int:ownerID>", methods=['GET'])
+def getSubLocations(ownerType, ownerID):
+    """
+    Get all unique subLocation values from a specific user's myCellarItems table.
+    
+    Args:
+        ownerType (str): Type of owner ('user', 'producer', 'venue')
+        ownerID (int): ID of the owner
+    
+    Returns:
+        JSON response with list of unique sub location values
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Query to get all unique subLocation values for the user
+        query = """
+            SELECT DISTINCT ci."subLocation"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+            AND ci."subLocation" IS NOT NULL 
+            AND ci."subLocation" != ''
+            AND ci."archiveStatus" = FALSE
+            ORDER BY ci."subLocation" ASC;
+        """
+        
+        cur.execute(query, (ownerID, ownerType))
+        results = cur.fetchall()
+        
+        # Extract the sub location values into a simple list
+        sub_locations = [row['subLocation'] for row in results]
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "subLocations": sub_locations,
+                "count": len(sub_locations)
+            },
+            "message": f"Successfully retrieved {len(sub_locations)} unique sub location values."
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in getSubLocations: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving sub locations."
+        }), 500
+
+
+@blueprint.route("/getNoteToSelf/<ownerType>/<int:ownerID>", methods=['GET'])
+def getNoteToSelf(ownerType, ownerID):
+    """
+    Get all unique noteToSelf values from a specific user's myCellarItems table.
+    
+    Args:
+        ownerType (str): Type of owner ('user', 'producer', 'venue')
+        ownerID (int): ID of the owner
+    
+    Returns:
+        JSON response with list of unique note to self values
+    """
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate ownerType
+        if ownerType not in ['user', 'producer', 'venue']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+            }), 400
+        
+        # Query to get all unique noteToSelf values for the user
+        query = """
+            SELECT DISTINCT ci."noteToSelf"
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE cc."ownerID" = %s 
+            AND cc."ownerType" = %s
+            AND ci."noteToSelf" IS NOT NULL 
+            AND ci."noteToSelf" != ''
+            AND ci."archiveStatus" = FALSE
+            ORDER BY ci."noteToSelf" ASC;
+        """
+        
+        cur.execute(query, (ownerID, ownerType))
+        results = cur.fetchall()
+        
+        # Extract the note to self values into a simple list
+        note_to_self = [row['noteToSelf'] for row in results]
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "noteToSelf": note_to_self,
+                "count": len(note_to_self)
+            },
+            "message": f"Successfully retrieved {len(note_to_self)} unique note to self values."
+        }), 200
+        
+    except Exception as e:
+        print(f"Error in getNoteToSelf: {str(e)}")
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving note to self values."
         }), 500
     
