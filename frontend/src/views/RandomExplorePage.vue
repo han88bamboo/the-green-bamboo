@@ -1833,8 +1833,7 @@
                                                         class="bi bi-trash-fill"
                                                         viewBox="0 0 16 16"
                                                         style="cursor:pointer"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#deleteReply"
+                                                        data-bs-toggle="modal" data-bs-target="#deleteComment"
                                                         @click="deleteReplyItems = { replyId: reply.id, contentType: content.contentType }; repliesToUpdate = comment.replies"
                                                       >
                                                         <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
@@ -2543,6 +2542,13 @@ export default {
         contentType: null
       },
       topCommentsToUpdate: [],
+
+      // For reply deletion
+      deleteReplyItems: {
+        replyId: null,
+        contentType: null
+      },
+      repliesToUpdate: [],
 
       // Share variables
       openShareModal: false,
@@ -3743,31 +3749,62 @@ methods: {
     // Function to delete comment 
     async deleteComment() {
       try {
+
+        // Check if we are deleting a comment or a reply
+        let deleteItems = {contentType:"", commentId: null};
+        let deleteType = ""
+
+        if (this.deleteCommentItems.commentId) {
+          deleteItems["commentId"] = this.deleteCommentItems.commentId;
+          deleteItems["contentType"] = this.deleteCommentItems.contentType;
+          deleteType = "comment";
+        } else {
+          deleteItems["commentId"] = this.deleteReplyItems.replyId;
+          deleteItems["contentType"] = this.deleteReplyItems.contentType;
+          deleteType = "reply";
+        }
+
         const response = await this.$axios.delete(
           `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
           {
             data: {
               userId: this.userID,
               userType: this.userType,
-              contentType: this.deleteCommentItems.contentType,
-              commentId: this.deleteCommentItems.commentId
+              contentType: deleteItems.contentType,
+              commentId: deleteItems.commentId
             }
           }
         );
 
         if (response.status === 200) {
-          // Remove the comment from the UI using comment.id
-          const index = this.topCommentsToUpdate.findIndex(c => c.id === this.deleteCommentItems.commentId);
-          if (index !== -1) {
-            this.topCommentsToUpdate.splice(index, 1);
+
+          if (deleteType === "comment") {
+            // Remove the comment from the UI using comment.id
+            const index = this.topCommentsToUpdate.findIndex(c => c.id === this.deleteCommentItems.commentId);
+            if (index !== -1) {
+              this.topCommentsToUpdate.splice(index, 1);
+            }
+
+            // Reset deleteCommentItems
+            this.deleteCommentItems = {
+              commentId: null,
+              contentType: null
+            };
+          } else {
+            // Remove the reply from the UI using reply.id
+            const index = this.repliesToUpdate.find(c => c.id === this.deleteReplyItems.replyId);
+            if (index !== -1) {
+              this.repliesToUpdate.splice(index, 1);
+            }
+
+            // Reset deleteReplyItems
+            this.deleteReplyItems = {
+              commentId: null,
+              parentId: null,
+              contentType: null
+            };
           }
-
-
-          // Reset deleteCommentItems
-          this.deleteCommentItems = {
-            commentId: null,
-            contentType: null
-          };
+          
 
           // Show message
           const toast = useToast();
