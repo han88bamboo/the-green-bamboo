@@ -184,7 +184,7 @@
                 </div>
                 
                 <!-- Desktop: Right-aligned compact layout -->
-                <div class="d-none d-md-flex ms-auto">
+                <div class="d-none d-md-flex ms-auto me-3">
                   <div class="btn-group" role="group" aria-label="View toggle">
                     <button
                       type="button"
