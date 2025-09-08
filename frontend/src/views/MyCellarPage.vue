@@ -166,6 +166,17 @@
                         <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
                       </svg>
                     </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'compact' }"
+                      @click="viewMode = 'compact'"
+                      title="Compact List View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                      </svg>
+                    </button>
                   </div>
                 </div>
                 
@@ -192,6 +203,17 @@
                     >
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                         <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                      </svg>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      :class="{ active: viewMode === 'compact' }"
+                      @click="viewMode = 'compact'"
+                      title="Compact List View"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
                       </svg>
                     </button>
                   </div>
@@ -448,6 +470,83 @@
                                 </small>
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Items Cards (Compact List View - No Photos) -->
+              <div v-else-if="viewMode === 'compact'">
+                <div 
+                  v-for="group in paginatedItems" 
+                  :key="`${group.listingId}_${group.variant || 'no-variant'}_compact`"
+                  class="mb-2"
+                >
+                  <div 
+                    class="card cellar-item-compact-card"
+                    role="button"
+                    tabindex="0"
+                    data-bs-toggle="modal"
+                    data-bs-target="#itemDetailsModal"
+                    @click="setSelectedGroup(group)"
+                    @keyup.enter="setSelectedGroup(group)"
+                  >
+                    <div class="card-body py-2 px-3">
+                      <div class="row align-items-center">
+                        <!-- Main Info -->
+                        <div class="col-12 col-lg-4">
+                          <!-- Primary Line -->
+                          <h6 class="card-title mb-1 small" :title="group.representative.listingName">
+                            {{ group.representative.listingName }}
+                            <span v-if="group.representative.variant" class="text-muted ms-1">
+                              ({{ group.representative.variant }})
+                            </span>
+                          </h6>
+                          
+                          <!-- Secondary Line -->
+                          <p class="text-muted mb-0 small">
+                            <span v-if="group.representative.producerName">{{ group.representative.producerName }}</span>
+                            <span v-if="group.representative.drinkType"> | {{ group.representative.drinkType }}</span>
+                            <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
+                          </p>
+                        </div>
+
+                        <!-- Quantity & Status Info -->
+                        <div class="col-12 col-lg-5">
+                          <!-- Combined Badges in One Row -->
+                          <div class="d-flex flex-wrap align-items-center gap-1">
+                            <!-- Combined Quantity and Volume Badge -->
+                            <span class="quantity-volume-badge-inline small">
+                              {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
+                            </span>
+
+                            <!-- Status Breakdown -->
+                            <span 
+                              v-for="(count, status) in getGroupStatusBreakdown(group.bottles)"
+                              :key="status"
+                              class="status-badge badge small"
+                              :class="getStatusBadgeClass(status)"
+                              :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
+                            >
+                              {{ count }}x {{ status }}
+                            </span>
+                          </div>
+                        </div>
+
+                        <!-- Drink Dates -->
+                        <div class="col-12 col-lg-3">
+                          <div class="drink-dates" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
+                            <small class="text-muted">
+                              <div v-if="group.representative.drinkOnwardsDate">
+                                <strong>From:</strong> {{ formatDate(group.representative.drinkOnwardsDate) }}
+                              </div>
+                              <div v-if="group.representative.drinkByDate">
+                                <strong>By:</strong> {{ formatDate(group.representative.drinkByDate) }}
+                              </div>
+                            </small>
                           </div>
                         </div>
                       </div>
@@ -5373,6 +5472,78 @@ export default {
   font-size: 0.65rem;
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
+}
+
+/* Compact List View Styles */
+.cellar-item-compact-card {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background-color: #ffffff;
+}
+
+.cellar-item-compact-card:hover {
+  border-color: rgba(13, 202, 240, 0.5);
+  box-shadow: 0 4px 8px rgba(13, 202, 240, 0.15);
+  transform: translateY(-1px);
+}
+
+.cellar-item-compact-card .card-body {
+  padding: 0.75rem 1rem;
+}
+
+.cellar-item-compact-card .card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+.cellar-item-compact-card .text-muted {
+  font-size: 0.8rem;
+  color: #6c757d !important;
+}
+
+/* Badge row styling for compact view */
+.cellar-item-compact-card .d-flex.gap-1 {
+  gap: 0.375rem !important;
+}
+
+.cellar-item-compact-card .d-flex.gap-1 .badge {
+  margin-right: 0 !important;
+}
+
+/* Responsive adjustments for compact view */
+@media (max-width: 992px) {
+  .cellar-item-compact-card .row > div {
+    margin-bottom: 0.5rem;
+  }
+  
+  .cellar-item-compact-card .card-title {
+    font-size: 0.85rem;
+  }
+  
+  .cellar-item-compact-card .text-muted {
+    font-size: 0.75rem;
+  }
+  
+  .cellar-item-compact-card .quantity-volume-badge-inline {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .cellar-item-compact-card .status-badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.3rem;
+  }
+
+  /* Stack badges vertically on mobile if needed */
+  .cellar-item-compact-card .d-flex.gap-1 {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 
 /* Responsive adjustments for changelog */
