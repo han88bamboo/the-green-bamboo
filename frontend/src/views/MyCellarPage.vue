@@ -70,24 +70,8 @@
               <!-- Filters Row -->
               <div class="filters-container">
                 <div class="row g-3">
-                  <!-- Search Input -->
-                  <div class="col-12 col-md-4">
-                    <div class="input-group">
-                      <span class="input-group-text">
-                        <i class="bi bi-search"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Search by name or producer..."
-                        v-model="searchQuery"
-                        @input="debouncedSearch"
-                      >
-                    </div>
-                  </div>
-
                   <!-- Vintage Filter -->
-                  <div class="col-6 col-md-2">
+                  <div class="col-6 col-md-3">
                     <select class="form-select" v-model="filters.vintage">
                       <option value="">Any Vintage</option>
                       <option v-for="year in vintageOptions" :key="year" :value="year">
@@ -97,7 +81,7 @@
                   </div>
 
                   <!-- Drink Type Filter -->
-                  <div class="col-6 col-md-2">
+                  <div class="col-6 col-md-3">
                     <select class="form-select" v-model="filters.drinkType">
                       <option value="">Any Type</option>
                       <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
@@ -106,21 +90,8 @@
                     </select>
                   </div>
 
-                  <!-- Size Filter (Commented Out) -->
-                  <!-- 
-                  <div class="col-6 col-md-2">
-                    <select class="form-select" v-model="filters.size">
-                      <option value="">Any Size</option>
-                      <option value="187">187ml</option>
-                      <option value="375">375ml</option>
-                      <option value="750">750ml</option>
-                      <option value="1500">1.5L</option>
-                    </select>
-                  </div>
-                  -->
-
                   <!-- Status Filter -->
-                  <div class="col-6 col-md-2">
+                  <div class="col-6 col-md-3">
                     <select class="form-select" v-model="filters.status">
                       <option value="">Any Status</option>
                       <option value="In Possession">In Cellar</option>
@@ -131,7 +102,7 @@
                   </div>
 
                   <!-- Drink Now Checkbox -->
-                  <div class="col-6 col-md-2">
+                  <div class="col-6 col-md-3">
                     <div class="form-check">
                       <input
                         class="form-check-input"
@@ -144,18 +115,35 @@
                         for="drinkNowFilter"
                         title="Show only bottles drinkable now (no drinking window specified, or current date is within the drinking window)"
                       >
-                        Only drink-now
+                        Only show drink-now
                       </label>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- View Toggle -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
+              <!-- Search and View Toggle Row -->
+              <div class="d-flex justify-content-between align-items-center mb-3 mx-3">
+                <!-- Search Input -->
+                <div class="flex-grow-1 me-3">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bi bi-search"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Search by name or producer..."
+                      v-model="searchQuery"
+                      @input="debouncedSearch"
+                    >
+                  </div>
+                </div>
+
+                <!-- View Toggle -->
                 <!-- Mobile: Compact layout -->
-                <div class="d-md-none w-100">
-                  <div class="btn-group w-100" role="group" aria-label="View toggle">
+                <div class="d-md-none">
+                  <div class="btn-group" role="group" aria-label="View toggle">
                     <button
                       type="button"
                       class="btn btn-outline-secondary"
@@ -166,7 +154,6 @@
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
                       </svg>
-                      <span class="ms-1">Grid</span>
                     </button>
                     <button
                       type="button"
@@ -178,13 +165,12 @@
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                         <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
                       </svg>
-                      <span class="ms-1">List</span>
                     </button>
                   </div>
                 </div>
                 
                 <!-- Desktop: Right-aligned compact layout -->
-                <div class="d-none d-md-flex ms-auto me-3">
+                <div class="d-none d-md-flex">
                   <div class="btn-group" role="group" aria-label="View toggle">
                     <button
                       type="button"
