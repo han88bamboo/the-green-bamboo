@@ -3887,15 +3887,18 @@ export default {
         }
           
         case 'CONSUMPTION_CHANGED': {
+          const quantity = entry.entryCount || 1;
+          const bottleText = quantity === 1 ? 'bottle' : 'bottles';
+          
           // Check for consumption transition in the aggregated format first
           if (entry.transitions && entry.transitions.consumption) {
             const consumptionTransition = entry.transitions.consumption;
-            return `<strong>${date}:</strong> Updated consumption of ${drinkName}${producerName}: ${consumptionTransition}`;
+            return `<strong>${date}:</strong> Updated consumption of ${quantity} ${bottleText} of ${drinkName}${producerName}: ${consumptionTransition}`;
           }
           
           // Fallback to newValue for detailed format
           const consumption = entry.newValue || 'Unknown';
-          return `<strong>${date}:</strong> Marked ${drinkName}${producerName} as ${consumption.toLowerCase()}`;
+          return `<strong>${date}:</strong> Marked ${quantity} ${bottleText} of ${drinkName}${producerName} as ${consumption.toLowerCase()}`;
         }
           
         case 'LOCATION_CHANGED': {
