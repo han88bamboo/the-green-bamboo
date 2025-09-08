@@ -9740,23 +9740,17 @@ def getCellarItemsChangelog(ownerType, ownerID):
         change_type = request.args.get('changeType')
         limit = request.args.get('limit', type=int)
         
-        # Build query to get changelog for user's cellar items
+        # Build query to get aggregated changelog for user's cellar items
         query = """
             SELECT 
-                cl."id",
-                cl."cellarItemID",
+                MIN(cl."id") as "id",
                 cl."changeType",
-                cl."fieldName",
-                cl."oldValue",
-                cl."newValue",
-                cl."changeDescription",
-                cl."quantityDelta",
-                cl."triggeredBy",
-                cl."changeDate",
-                ci."status",
-                ci."consumption",
+                SUM(cl."quantityDelta") as "quantityDelta",
+                DATE(cl."changeDate") as "changeDate",
                 l."listingName",
-                p."producerName"
+                p."producerName",
+                l."id" as "listingID",
+                COUNT(*) as "entryCount"
             FROM "myCellarItemsChangelog" cl
             JOIN "myCellarItems" ci ON cl."cellarItemID" = ci."id"
             JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
@@ -9773,8 +9767,16 @@ def getCellarItemsChangelog(ownerType, ownerID):
             query += ' AND cl."changeType" = %s'
             params.append(change_type)
         
-        # Add ORDER BY
-        query += ' ORDER BY cl."changeDate" DESC'
+        # Group by date, listing, and change type to aggregate quantities
+        query += """
+            GROUP BY 
+                DATE(cl."changeDate"),
+                l."id",
+                l."listingName",
+                p."producerName", 
+                cl."changeType"
+            ORDER BY DATE(cl."changeDate") DESC, MIN(cl."id") DESC
+        """
         
         # Add LIMIT if specified
         if limit:
@@ -9789,19 +9791,13 @@ def getCellarItemsChangelog(ownerType, ownerID):
         for row in results:
             changelog_entry = {
                 "id": row['id'],
-                "cellarItemID": row['cellarItemID'],
+                "listingID": row['listingID'],
                 "changeType": row['changeType'],
-                "fieldName": row['fieldName'],
-                "oldValue": row['oldValue'],
-                "newValue": row['newValue'],
-                "changeDescription": row['changeDescription'],
-                "quantityDelta": row['quantityDelta'],
-                "triggeredBy": row['triggeredBy'],
+                "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
                 "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
-                "currentStatus": row['status'],
-                "currentConsumption": row['consumption'],
                 "listingName": row['listingName'],
-                "producerName": row['producerName']
+                "producerName": row['producerName'],
+                "entryCount": row['entryCount']  # Number of individual entries that were aggregated
             }
             changelog_data.append(changelog_entry)
         

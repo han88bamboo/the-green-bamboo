@@ -2384,6 +2384,9 @@ export default {
         params.append('collectionId', this.activeTab)
       }
       
+      // Include consumed items so they don't disappear after status changes
+      params.append('includeConsumed', 'true')
+      
       const response = await this.$axios.get(`${baseUrl}/getData/getCellarData/${this.ownerType}/${this.id}?${params}`)
       return response.data
     },
