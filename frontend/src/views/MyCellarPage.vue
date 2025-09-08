@@ -731,6 +731,7 @@
                               class="form-control"
                               v-model="addDrinkForm.suggestedFoodPairing"
                               @focus="onFoodPairingFocus"
+                              @blur="onFoodPairingBlur"
                               placeholder="e.g., Grilled salmon, Dark chocolate"
                             />
                             <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
@@ -1231,6 +1232,7 @@
                       :value="getMasterFieldValue('suggestedFoodPairing')"
                       @input="onMasterFieldChange('suggestedFoodPairing', $event.target.value)"
                       @focus="onFoodPairingFocus"
+                      @blur="onFoodPairingBlur"
                       placeholder="Enter food pairing suggestion"
                     >
                     <button class="btn btn-outline-secondary" type="button">+</button>
@@ -1579,6 +1581,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Food Pairing Suggestions Dropdown -->
+    <div 
+      id="foodPairingDropdown"
+      v-if="showFoodPairingSuggestions && (foodPairingSuggestions.length > 0 || loadingFoodPairings)"
+      class="food-pairing-dropdown"
+      style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+    >
+      <!-- Loading state -->
+      <div v-if="loadingFoodPairings" class="p-3 text-center text-muted">
+        <div class="spinner-border spinner-border-sm me-2"></div>
+        Loading suggestions...
+      </div>
+      
+      <!-- No suggestions -->
+      <div v-else-if="foodPairingSuggestions.length === 0" class="p-3 text-center text-muted">
+        No previous food pairings found
+      </div>
+      
+      <!-- Suggestions list -->
+      <div v-else>
+        <div class="p-2 border-bottom bg-light">
+          <small class="text-muted fw-bold">Your Previous Food Pairings</small>
+        </div>
+        <div 
+          v-for="(suggestion, index) in foodPairingSuggestions" 
+          :key="index"
+          class="food-pairing-suggestion-item p-2 cursor-pointer"
+          style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+          @click="selectFoodPairingSuggestion(suggestion)"
+          @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+          @mouseleave="$event.target.style.backgroundColor = 'white'"
+        >
+          {{ suggestion }}
+        </div>
+      </div>
+    </div>
   </main>
 
 </template>
@@ -1720,6 +1759,8 @@ export default {
       // Food pairing suggestions
       foodPairingSuggestions: [],
       loadingFoodPairings: false,
+      showFoodPairingSuggestions: false,
+      activeFoodPairingInput: null,
       
       // Debug tracking
       lastCanAddToCellarState: null
@@ -2017,11 +2058,9 @@ export default {
       addCollectionModal.removeEventListener('hidden.bs.modal', this.resetNewCollectionForm);
     }
     
-    // Clean up food pairing datalist
-    const foodPairingDatalist = document.getElementById('foodPairingOptions')
-    if (foodPairingDatalist) {
-      foodPairingDatalist.remove()
-    }
+    // Hide food pairing suggestions
+    this.showFoodPairingSuggestions = false
+    this.activeFoodPairingInput = null
   },
   methods: {
     // Data loading
@@ -2147,33 +2186,52 @@ export default {
       // Load suggestions when user clicks into any food pairing field
       this.loadFoodPairingSuggestions()
       
-      // Show suggestions as datalist options if available
-      if (this.foodPairingSuggestions.length > 0) {
-        this.updateFoodPairingDatalist(event.target)
-      }
+      // Set the active input and show suggestions
+      this.activeFoodPairingInput = event.target
+      this.showFoodPairingSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionFoodPairingDropdown(event.target)
+      })
     },
     
-    updateFoodPairingDatalist(inputElement) {
-      // Remove existing datalist if any
-      const existingDatalist = document.getElementById('foodPairingOptions')
-      if (existingDatalist) {
-        existingDatalist.remove()
+    onFoodPairingBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showFoodPairingSuggestions = false
+        this.activeFoodPairingInput = null
+      }, 200)
+    },
+    
+    selectFoodPairingSuggestion(suggestion) {
+      if (this.activeFoodPairingInput) {
+        // Determine which form field to update based on the input element
+        if (this.activeFoodPairingInput.closest('.modal')) {
+          // Modal form - trigger master field change
+          this.onMasterFieldChange('suggestedFoodPairing', suggestion)
+        } else {
+          // Add drink form
+          this.addDrinkForm.suggestedFoodPairing = suggestion
+        }
       }
       
-      // Create new datalist
-      const datalist = document.createElement('datalist')
-      datalist.id = 'foodPairingOptions'
+      this.showFoodPairingSuggestions = false
+      this.activeFoodPairingInput = null
+    },
+    
+    positionFoodPairingDropdown(inputElement) {
+      const dropdown = document.getElementById('foodPairingDropdown')
+      if (!dropdown || !inputElement) return
       
-      // Add options from suggestions
-      this.foodPairingSuggestions.forEach(suggestion => {
-        const option = document.createElement('option')
-        option.value = suggestion
-        datalist.appendChild(option)
-      })
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
       
-      // Add datalist to document and associate with input
-      document.body.appendChild(datalist)
-      inputElement.setAttribute('list', 'foodPairingOptions')
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
     },
     
     // Pagination
