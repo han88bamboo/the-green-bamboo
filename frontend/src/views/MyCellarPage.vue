@@ -3910,8 +3910,19 @@ export default {
           return `<strong>${date}:</strong> Updated pricing for ${drinkName}${producerName}`;
           
         case 'ARCHIVE_CHANGED': {
+          const quantity = entry.entryCount || 1;
+          const bottleText = quantity === 1 ? 'bottle' : 'bottles';
+          
+          // Check changeDescription to determine if it was archived or restored
+          if (entry.changeDescription && entry.changeDescription.includes('archived')) {
+            return `<strong>${date}:</strong> Archived ${quantity} ${bottleText} of ${drinkName}${producerName}`;
+          } else if (entry.changeDescription && entry.changeDescription.includes('restored')) {
+            return `<strong>${date}:</strong> Restored ${quantity} ${bottleText} of ${drinkName}${producerName}`;
+          }
+          
+          // Fallback to newValue for detailed format
           const archived = entry.newValue === 'true';
-          return `<strong>${date}:</strong> ${archived ? 'Archived' : 'Restored'} ${drinkName}${producerName}`;
+          return `<strong>${date}:</strong> ${archived ? 'Archived' : 'Restored'} ${quantity} ${bottleText} of ${drinkName}${producerName}`;
         }
           
         case 'DELETED':
