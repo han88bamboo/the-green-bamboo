@@ -4704,7 +4704,7 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    1, 1, NULL, 1, 6, 'Can', 330, 'ml',
+    1, 1, NULL, 1, 7, 'Can', 330, 'ml',
     '2025-12-31', '2024-01-01', '2024-09-10', '2024-09-10',
     15.99, 'USD', 16.00, 'USD',
     NULL, 'Grocery Store', '654 Market Street, City Center',
@@ -4722,7 +4722,7 @@ INSERT INTO "myCellarItems" (
     "status", "consumption", "currentLocation", "subLocation",
     "suggestedFoodPairing", "noteToSelf", "addedDate", "updatedDate"
 ) VALUES (
-    2, 1, 2023, 1, 7, 'Bottle', 375, 'ml',
+    2, 1, 2023, 1, 8, 'Bottle', 375, 'ml',
     '2050-01-01', '2030-01-01', '2024-08-20', '2024-08-25',
     275.00, 'USD', 300.00, 'USD',
     NULL, 'Fine Wine Boutique', '987 Vintage Road, Wine District',

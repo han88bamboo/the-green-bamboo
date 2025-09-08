@@ -3053,6 +3053,11 @@ export default {
     
     // Modal management  
     setSelectedGroup(group) {
+      console.log('TZHFrontendLog: setSelectedGroup - received group:', group);
+      console.log('TZHFrontendLog: setSelectedGroup - group.variantGroupID:', group.variantGroupID);
+      console.log('TZHFrontendLog: setSelectedGroup - group.representative:', group.representative);
+      console.log('TZHFrontendLog: setSelectedGroup - group.bottles:', group.bottles);
+      
       this.selectedGroup = group;
       this.modalEditing = {
         hasChanges: false,
@@ -3282,12 +3287,17 @@ export default {
     addNewBottle() {
       if (!this.selectedGroup) return;
       
+      console.log('TZHFrontendLog: addNewBottle - selectedGroup:', this.selectedGroup);
+      console.log('TZHFrontendLog: addNewBottle - selectedGroup.variantGroupID:', this.selectedGroup.variantGroupID);
+      console.log('TZHFrontendLog: addNewBottle - selectedGroup.representative.variantGroupID:', this.selectedGroup.representative?.variantGroupID);
+      console.log('TZHFrontendLog: addNewBottle - selectedGroup.bottles[0].variantGroupID:', this.selectedGroup.bottles[0]?.variantGroupID);
+      
       const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const maxQuantityVariantID = Math.max(...this.selectedGroup.bottles.map(b => b.quantityVariantID));
       
       const newBottle = {
         cellarItemId: tempId,
-        variantGroupID: this.selectedGroup.variantGroupID,
+        variantGroupID: this.selectedGroup.variantGroupID || this.selectedGroup.bottles[0]?.variantGroupID,
         quantityVariantID: maxQuantityVariantID + 1,
         status: 'In Possession',
         consumption: 'Unopened',
