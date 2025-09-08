@@ -5761,8 +5761,8 @@ export default {
   .right-sidebar-column {
     position: fixed;
     top: 0;
-    right: -400px; /* Hide off-screen by default */
-    width: 400px;
+    right: -500px; /* Hide off-screen by default - matches width */
+    width: 500px;
     height: 100vh;
     background: white;
     z-index: 999;
