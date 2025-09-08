@@ -809,7 +809,7 @@
                       <div class="row g-3 mb-3">
                         <div class="col-md-12">
                           <label class="form-label text-start">Place of Purchase</label>
-                          <div class="purchase-location-container">
+                          <div class="purchase-location-container" style="position: relative;">
                             <!-- Google Maps Autocomplete Input -->
                             <div class="input-group">
                               <GMapAutocomplete 
@@ -4666,7 +4666,6 @@ export default {
   }
 }
 
-/* Purchase Location Alert Styles */
 .purchase-location-container .input-group-text .bi-geo-alt.text-success {
   color: #198754 !important;
 }
@@ -4680,5 +4679,41 @@ export default {
 .purchase-location-container .alert .btn-sm {
   padding: 0.125rem 0.25rem;
   font-size: 0.75rem;
+}
+
+/* Google Maps autocomplete dropdown positioning with Y-axis translation */
+:global(.pac-container) {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  z-index: 1051 !important;
+  transform: translateY(-920px) !important; /* Move dropdown upwards */
+  position: relative !important;
+}
+
+:global(.pac-item) {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+:global(.pac-item:hover) {
+  background-color: #f8f9fa;
+}
+
+:global(.pac-item:last-child) {
+  border-bottom: none;
+}
+
+:global(.pac-item-query) {
+  font-weight: 600;
+  color: #212529;
+}
+
+:global(.pac-matched) {
+  font-weight: 700;
+  color: #0d6efd;
 }
 </style>
