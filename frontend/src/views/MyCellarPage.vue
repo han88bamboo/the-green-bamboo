@@ -3202,9 +3202,8 @@ export default {
 }
 
 .folder-tab.active {
-  background-color: #fff;
-  color: #212529;
-  border-color: #dee2e6;
+
+  font-weight: 700;
   z-index: 2;
   position: relative;
 }
