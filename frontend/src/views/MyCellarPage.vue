@@ -3866,6 +3866,19 @@ export default {
         }
           
         case 'STATUS_CHANGED': {
+          // Check for status transition in the aggregated format first
+          if (entry.transitions && entry.transitions.status) {
+            const statusTransition = entry.transitions.status;
+            const quantity = entry.entryCount || 1;
+            const bottleText = quantity === 1 ? 'bottle' : 'bottles';
+            
+            if (statusTransition.includes('→ Consumed')) {
+              return `<strong>${date}:</strong> Consumed ${quantity} ${bottleText} of ${drinkName}${producerName}`;
+            }
+            return `<strong>${date}:</strong> Changed status of ${quantity} ${bottleText} of ${drinkName}${producerName}: ${statusTransition}`;
+          }
+          
+          // Fallback to newValue for detailed format
           const newStatus = entry.newValue || 'Unknown';
           if (newStatus === 'Consumed') {
             return `<strong>${date}:</strong> Consumed ${drinkName}${producerName}`;
@@ -3874,6 +3887,13 @@ export default {
         }
           
         case 'CONSUMPTION_CHANGED': {
+          // Check for consumption transition in the aggregated format first
+          if (entry.transitions && entry.transitions.consumption) {
+            const consumptionTransition = entry.transitions.consumption;
+            return `<strong>${date}:</strong> Updated consumption of ${drinkName}${producerName}: ${consumptionTransition}`;
+          }
+          
+          // Fallback to newValue for detailed format
           const consumption = entry.newValue || 'Unknown';
           return `<strong>${date}:</strong> Marked ${drinkName}${producerName} as ${consumption.toLowerCase()}`;
         }

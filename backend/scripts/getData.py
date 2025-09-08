@@ -9719,8 +9719,10 @@ def getCellarItemsChangelog(ownerType, ownerID):
         ownerID (int): ID of the owner
     
     Optional query parameters:
-    - changeType: Filter by change type (CREATED, QUANTITY_UPDATED, etc.)
-    - limit: Limit number of results (default: no limit)
+    - changeType: Filter by change type (CREATED, STATUS_CHANGED, CONSUMPTION_CHANGED, etc.)
+    - limit: Limit number of results (default: 50)
+    - offset: Skip number of results for pagination (default: 0)
+    - detailed: Return detailed entries instead of aggregated (default: false)
     
     Returns:
         JSON response with changelog entries for the user's cellar items
@@ -9738,19 +9740,12 @@ def getCellarItemsChangelog(ownerType, ownerID):
         
         # Get optional query parameters
         change_type = request.args.get('changeType')
-        limit = request.args.get('limit', type=int)
+        limit = request.args.get('limit', default=50, type=int)
+        offset = request.args.get('offset', default=0, type=int)
+        detailed = request.args.get('detailed', 'false').lower() == 'true'
         
-        # Build query to get aggregated changelog for user's cellar items
-        query = """
-            SELECT 
-                MIN(cl."id") as "id",
-                cl."changeType",
-                SUM(cl."quantityDelta") as "quantityDelta",
-                DATE(cl."changeDate") as "changeDate",
-                l."listingName",
-                p."producerName",
-                l."id" as "listingID",
-                COUNT(*) as "entryCount"
+        # Build base query parts
+        base_from = """
             FROM "myCellarItemsChangelog" cl
             JOIN "myCellarItems" ci ON cl."cellarItemID" = ci."id"
             JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
@@ -9764,24 +9759,83 @@ def getCellarItemsChangelog(ownerType, ownerID):
         params = [ownerID, ownerType]
         
         if change_type:
-            query += ' AND cl."changeType" = %s'
+            base_from += ' AND cl."changeType" = %s'
             params.append(change_type)
         
-        # Group by date, listing, and change type to aggregate quantities
-        query += """
-            GROUP BY 
-                DATE(cl."changeDate"),
-                l."id",
-                l."listingName",
-                p."producerName", 
-                cl."changeType"
-            ORDER BY DATE(cl."changeDate") DESC, MIN(cl."id") DESC
-        """
+        if detailed:
+            # Detailed view: Return individual entries with full information
+            query = """
+                SELECT 
+                    cl."id",
+                    cl."changeType",
+                    cl."fieldName",
+                    cl."oldValue",
+                    cl."newValue",
+                    cl."changeDescription",
+                    cl."quantityDelta",
+                    cl."triggeredBy",
+                    cl."changeDate",
+                    l."listingName",
+                    l."id" as "listingID",
+                    p."producerName",
+                    p."id" as "producerID",
+                    ci."variant",
+                    ci."drinkFormat",
+                    ci."volumeNumber",
+                    ci."volumeUnit",
+                    ci."quantityVariantID",
+                    ci."variantGroupID"
+            """ + base_from + """
+                ORDER BY cl."changeDate" DESC, cl."id" DESC
+                LIMIT %s OFFSET %s
+            """
+        else:
+            # Aggregated view: Group similar changes by date and listing
+            query = """
+                SELECT 
+                    MIN(cl."id") as "id",
+                    cl."changeType",
+                    cl."fieldName",
+                    STRING_AGG(DISTINCT cl."changeDescription", '; ') as "changeDescription",
+                    SUM(cl."quantityDelta") as "quantityDelta",
+                    DATE(cl."changeDate") as "changeDate",
+                    l."listingName",
+                    l."id" as "listingID",
+                    p."producerName", 
+                    p."id" as "producerID",
+                    ci."variant",
+                    COUNT(DISTINCT cl."id") as "entryCount",
+                    -- Aggregate status/consumption information
+                    STRING_AGG(DISTINCT 
+                        CASE WHEN cl."fieldName" = 'status' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
+                        '; '
+                    ) as "statusTransitions",
+                    STRING_AGG(DISTINCT 
+                        CASE WHEN cl."fieldName" = 'consumption' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
+                        '; '
+                    ) as "consumptionTransitions",
+                    -- Count specific change types for this group
+                    COUNT(CASE WHEN cl."changeType" = 'STATUS_CHANGED' THEN 1 END) as "statusChangeCount",
+                    COUNT(CASE WHEN cl."changeType" = 'CONSUMPTION_CHANGED' THEN 1 END) as "consumptionChangeCount",
+                    COUNT(CASE WHEN cl."changeType" = 'LOCATION_CHANGED' THEN 1 END) as "locationChangeCount",
+                    COUNT(CASE WHEN cl."changeType" = 'NOTES_UPDATED' THEN 1 END) as "notesUpdateCount",
+                    COUNT(CASE WHEN cl."changeType" = 'FINANCIAL_UPDATED' THEN 1 END) as "financialUpdateCount",
+                    COUNT(CASE WHEN cl."changeType" = 'PURCHASE_UPDATED' THEN 1 END) as "purchaseUpdateCount"
+            """ + base_from + """
+                GROUP BY 
+                    DATE(cl."changeDate"),
+                    l."id",
+                    l."listingName",
+                    p."id",
+                    p."producerName", 
+                    ci."variant",
+                    cl."changeType",
+                    cl."fieldName"
+                ORDER BY DATE(cl."changeDate") DESC, MIN(cl."id") DESC
+                LIMIT %s OFFSET %s
+            """
         
-        # Add LIMIT if specified
-        if limit:
-            query += ' LIMIT %s'
-            params.append(limit)
+        params.extend([limit, offset])
         
         cur.execute(query, params)
         results = cur.fetchall()
@@ -9789,30 +9843,96 @@ def getCellarItemsChangelog(ownerType, ownerID):
         # Convert results to list of dictionaries
         changelog_data = []
         for row in results:
-            changelog_entry = {
-                "id": row['id'],
-                "listingID": row['listingID'],
-                "changeType": row['changeType'],
-                "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
-                "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
-                "listingName": row['listingName'],
-                "producerName": row['producerName'],
-                "entryCount": row['entryCount']  # Number of individual entries that were aggregated
-            }
+            if detailed:
+                # Detailed entry format
+                changelog_entry = {
+                    "id": row['id'],
+                    "listingID": row['listingID'],
+                    "listingName": row['listingName'],
+                    "producerID": row['producerID'],
+                    "producerName": row['producerName'],
+                    "variant": row['variant'],
+                    "drinkFormat": row['drinkFormat'],
+                    "volumeInfo": {
+                        "volumeNumber": float(row['volumeNumber']) if row['volumeNumber'] else None,
+                        "volumeUnit": row['volumeUnit']
+                    },
+                    "changeType": row['changeType'],
+                    "fieldName": row['fieldName'],
+                    "oldValue": row['oldValue'],
+                    "newValue": row['newValue'],
+                    "changeDescription": row['changeDescription'],
+                    "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
+                    "triggeredBy": row['triggeredBy'],
+                    "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
+                    "quantityVariantID": row['quantityVariantID'],
+                    "variantGroupID": row['variantGroupID']
+                }
+            else:
+                # Aggregated entry format  
+                changelog_entry = {
+                    "id": row['id'],
+                    "listingID": row['listingID'],
+                    "listingName": row['listingName'],
+                    "producerID": row['producerID'],
+                    "producerName": row['producerName'],
+                    "variant": row['variant'],
+                    "changeType": row['changeType'],
+                    "fieldName": row['fieldName'],
+                    "changeDescription": row['changeDescription'],
+                    "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
+                    "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
+                    "entryCount": row['entryCount'],  # Number of individual entries aggregated
+                    "transitions": {
+                        "status": row['statusTransitions'] if row['statusTransitions'] else None,
+                        "consumption": row['consumptionTransitions'] if row['consumptionTransitions'] else None
+                    },
+                    "changeCounts": {
+                        "statusChanges": row['statusChangeCount'],
+                        "consumptionChanges": row['consumptionChangeCount'], 
+                        "locationChanges": row['locationChangeCount'],
+                        "notesUpdates": row['notesUpdateCount'],
+                        "financialUpdates": row['financialUpdateCount'],
+                        "purchaseUpdates": row['purchaseUpdateCount']
+                    }
+                }
+            
             changelog_data.append(changelog_entry)
+        
+        # Get total count for pagination
+        if detailed:
+            # For detailed view: count individual entries
+            count_query = """
+                SELECT COUNT(cl."id") as total_count
+            """ + base_from
+        else:
+            # For aggregated view: count unique groups
+            count_query = """
+                SELECT COUNT(DISTINCT CONCAT(DATE(cl."changeDate"), '-', l."id", '-', cl."changeType", '-', cl."fieldName")) as total_count
+            """ + base_from
+        
+        count_params = params[:-2]  # Remove limit and offset
+        cur.execute(count_query, count_params)
+        total_count = cur.fetchone()['total_count']
         
         return jsonify({
             "code": 200,
             "data": {
                 "changelog": changelog_data,
                 "count": len(changelog_data),
+                "totalCount": total_count,
+                "pagination": {
+                    "limit": limit,
+                    "offset": offset,
+                    "hasMore": (offset + len(changelog_data)) < total_count
+                },
                 "ownerInfo": {
                     "ownerType": ownerType,
                     "ownerID": ownerID
                 },
                 "filters": {
                     "changeType": change_type,
-                    "limit": limit
+                    "detailed": detailed
                 }
             },
             "message": f"Successfully retrieved {len(changelog_data)} changelog entries for {ownerType} {ownerID}."

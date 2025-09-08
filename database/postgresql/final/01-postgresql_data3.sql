@@ -1162,8 +1162,8 @@ CREATE INDEX idx_cellar_group_lookup ON "myCellarItems" ("listingID", "variant",
 CREATE TABLE "myCellarItemsChangelog" (
     "id" SERIAL PRIMARY KEY,
     "cellarItemID" INTEGER REFERENCES "myCellarItems"("id") ON DELETE CASCADE, -- Reference to the cellar item
-    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'ARCHIVE_CHANGED', 'DELETED'
-    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityVariantID', 'status', 'consumption')
+    "changeType" VARCHAR(50) NOT NULL, -- 'CREATED', 'QUANTITY_UPDATED', 'STATUS_CHANGED', 'CONSUMPTION_CHANGED', 'LOCATION_CHANGED', 'NOTES_UPDATED', 'FINANCIAL_UPDATED', 'PURCHASE_UPDATED', 'ARCHIVE_CHANGED', 'DELETED'
+    "fieldName" VARCHAR(100), -- Specific field that changed (e.g., 'quantityVariantID', 'status', 'consumption', 'purchase_info')
     "oldValue" TEXT, -- Previous value (JSON string for complex data)
     "newValue" TEXT, -- New value (JSON string for complex data)
     "changeDescription" TEXT, -- Human-readable description of the change
@@ -1218,15 +1218,34 @@ CREATE OR REPLACE FUNCTION log_cellar_item_changes()
 RETURNS TRIGGER AS $$
 DECLARE
     change_desc TEXT;
+    listing_name TEXT;
 BEGIN
+    -- Get listing name for better descriptions
+    IF TG_OP = 'DELETE' THEN
+        SELECT "listingName" INTO listing_name FROM "listings" WHERE "id" = OLD."listingID";
+        listing_name := COALESCE(listing_name, 'Unknown item');
+    ELSE
+        SELECT "listingName" INTO listing_name FROM "listings" WHERE "id" = NEW."listingID";
+        listing_name := COALESCE(listing_name, 'Unknown item');
+    END IF;
+
     -- Handle INSERT (new item created)
     IF TG_OP = 'INSERT' THEN
+        -- Determine initial status description
+        change_desc := CASE NEW."status"
+            WHEN 'Wishlisted' THEN 'Added to wishlist: ' || listing_name
+            WHEN 'Purchased' THEN 'Purchased: ' || listing_name
+            WHEN 'In Possession' THEN 'Added to cellar: ' || listing_name
+            WHEN 'On Its Way' THEN 'Added as on its way: ' || listing_name
+            WHEN 'Held Elsewhere' THEN 'Added as held elsewhere: ' || listing_name
+            ELSE 'New cellar item added: ' || listing_name
+        END;
+
         INSERT INTO "myCellarItemsChangelog" (
             "cellarItemID", "changeType", "changeDescription", 
             "newValue", "quantityDelta", "changeDate"
         ) VALUES (
-            NEW."id", 'CREATED', 
-            'New cellar item added: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = NEW."listingID"), 'Unknown item'),
+            NEW."id", 'CREATED', change_desc,
             json_build_object(
                 'quantityVariantID', NEW."quantityVariantID",
                 'drinkFormat', NEW."drinkFormat",
@@ -1242,9 +1261,29 @@ BEGIN
 
     -- Handle UPDATE (item modified)
     IF TG_OP = 'UPDATE' THEN
-        -- Status changed
+        -- Status changed - with detailed descriptions for important transitions
         IF OLD."status" != NEW."status" THEN
-            change_desc := 'Status changed from "' || OLD."status" || '" to "' || NEW."status" || '"';
+            change_desc := CASE 
+                -- Consumption transitions
+                WHEN OLD."status" != 'Consumed' AND NEW."status" = 'Consumed' THEN
+                    'Bottle consumed: ' || listing_name || ' (was ' || OLD."status" || ')'
+                -- Acquisition transitions  
+                WHEN OLD."status" = 'Wishlisted' AND NEW."status" = 'Purchased' THEN
+                    'Wishlist item purchased: ' || listing_name
+                WHEN OLD."status" = 'Wishlisted' AND NEW."status" = 'In Possession' THEN
+                    'Wishlist item acquired: ' || listing_name
+                WHEN OLD."status" = 'Purchased' AND NEW."status" = 'In Possession' THEN
+                    'Purchased item received: ' || listing_name
+                WHEN OLD."status" = 'On Its Way' AND NEW."status" = 'In Possession' THEN
+                    'Item delivered to cellar: ' || listing_name
+                WHEN OLD."status" = 'Held Elsewhere' AND NEW."status" = 'In Possession' THEN
+                    'Item moved to cellar: ' || listing_name
+                -- Reverse consumption (restored from consumed)
+                WHEN OLD."status" = 'Consumed' AND NEW."status" != 'Consumed' THEN
+                    'Bottle status restored from consumed: ' || listing_name || ' (now ' || NEW."status" || ')'
+                -- Generic status change
+                ELSE 'Status changed: ' || listing_name || ' from "' || OLD."status" || '" to "' || NEW."status" || '"'
+            END;
             
             INSERT INTO "myCellarItemsChangelog" (
                 "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
@@ -1255,9 +1294,24 @@ BEGIN
             );
         END IF;
 
-        -- Consumption status changed
+        -- Consumption status changed - with detailed descriptions for important transitions
         IF OLD."consumption" != NEW."consumption" THEN
-            change_desc := 'Consumption status changed from "' || OLD."consumption" || '" to "' || NEW."consumption" || '"';
+            change_desc := CASE 
+                -- Opening bottle
+                WHEN OLD."consumption" = 'Unopened' AND NEW."consumption" = 'Opened' THEN
+                    'Bottle opened: ' || listing_name
+                -- Emptying bottle
+                WHEN OLD."consumption" != 'Empty' AND NEW."consumption" = 'Empty' THEN
+                    'Bottle emptied: ' || listing_name || ' (was ' || OLD."consumption" || ')'
+                -- Restoring from empty
+                WHEN OLD."consumption" = 'Empty' AND NEW."consumption" != 'Empty' THEN
+                    'Bottle consumption status restored: ' || listing_name || ' from Empty to ' || NEW."consumption"
+                -- Closing bottle (opened -> unopened, unusual but possible)
+                WHEN OLD."consumption" = 'Opened' AND NEW."consumption" = 'Unopened' THEN
+                    'Bottle marked as unopened: ' || listing_name || ' (was opened)'
+                -- Generic consumption change
+                ELSE 'Consumption status changed: ' || listing_name || ' from "' || OLD."consumption" || '" to "' || NEW."consumption" || '"'
+            END;
             
             INSERT INTO "myCellarItemsChangelog" (
                 "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
@@ -1271,9 +1325,11 @@ BEGIN
         -- Location changed
         IF OLD."currentLocation" IS DISTINCT FROM NEW."currentLocation" OR 
            OLD."subLocation" IS DISTINCT FROM NEW."subLocation" THEN
-            change_desc := 'Location changed from "' || COALESCE(OLD."currentLocation", '') || 
+            
+            change_desc := 'Location changed: ' || listing_name || ' moved from "' || 
+                          COALESCE(OLD."currentLocation", '(no location)') || 
                           CASE WHEN OLD."subLocation" IS NOT NULL THEN ' (' || OLD."subLocation" || ')' ELSE '' END ||
-                          '" to "' || COALESCE(NEW."currentLocation", '') ||
+                          '" to "' || COALESCE(NEW."currentLocation", '(no location)') ||
                           CASE WHEN NEW."subLocation" IS NOT NULL THEN ' (' || NEW."subLocation" || ')' ELSE '' END || '"';
             
             INSERT INTO "myCellarItemsChangelog" (
@@ -1290,7 +1346,15 @@ BEGIN
         -- Notes updated
         IF OLD."noteToSelf" IS DISTINCT FROM NEW."noteToSelf" OR
            OLD."suggestedFoodPairing" IS DISTINCT FROM NEW."suggestedFoodPairing" THEN
-            change_desc := 'Notes or food pairing updated';
+            
+            change_desc := CASE
+                WHEN OLD."noteToSelf" IS DISTINCT FROM NEW."noteToSelf" AND 
+                     OLD."suggestedFoodPairing" IS DISTINCT FROM NEW."suggestedFoodPairing" THEN
+                    'Notes and food pairing updated: ' || listing_name
+                WHEN OLD."noteToSelf" IS DISTINCT FROM NEW."noteToSelf" THEN
+                    'Personal notes updated: ' || listing_name
+                ELSE 'Food pairing updated: ' || listing_name
+            END;
             
             INSERT INTO "myCellarItemsChangelog" (
                 "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
@@ -1306,8 +1370,8 @@ BEGIN
         -- Archive status changed
         IF OLD."archiveStatus" != NEW."archiveStatus" THEN
             change_desc := CASE 
-                WHEN NEW."archiveStatus" = TRUE THEN 'Bottle archived'
-                ELSE 'Bottle restored from archive'
+                WHEN NEW."archiveStatus" = TRUE THEN 'Bottle archived: ' || listing_name
+                ELSE 'Bottle restored from archive: ' || listing_name
             END;
             
             INSERT INTO "myCellarItemsChangelog" (
@@ -1324,7 +1388,8 @@ BEGIN
            OLD."currentValueEstimation" IS DISTINCT FROM NEW."currentValueEstimation" OR
            OLD."purchaseCurrency" IS DISTINCT FROM NEW."purchaseCurrency" OR
            OLD."currentValueCurrency" IS DISTINCT FROM NEW."currentValueCurrency" THEN
-            change_desc := 'Financial information updated';
+            
+            change_desc := 'Financial information updated: ' || listing_name;
             
             INSERT INTO "myCellarItemsChangelog" (
                 "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
@@ -1347,21 +1412,53 @@ BEGIN
             );
         END IF;
 
+        -- Purchase information updated (dates, location)
+        IF OLD."purchaseDate" IS DISTINCT FROM NEW."purchaseDate" OR
+           OLD."deliveryDate" IS DISTINCT FROM NEW."deliveryDate" OR
+           OLD."purchasePlaceName" IS DISTINCT FROM NEW."purchasePlaceName" OR
+           OLD."purchaseAddress" IS DISTINCT FROM NEW."purchaseAddress" THEN
+            
+            change_desc := 'Purchase information updated: ' || listing_name;
+            
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "fieldName", "oldValue", "newValue",
+                "changeDescription", "changeDate"
+            ) VALUES (
+                NEW."id", 'PURCHASE_UPDATED', 'purchase_info', 
+                json_build_object(
+                    'purchaseDate', OLD."purchaseDate",
+                    'deliveryDate', OLD."deliveryDate",
+                    'purchasePlaceName', OLD."purchasePlaceName",
+                    'purchaseAddress', OLD."purchaseAddress"
+                )::text,
+                json_build_object(
+                    'purchaseDate', NEW."purchaseDate",
+                    'deliveryDate', NEW."deliveryDate",
+                    'purchasePlaceName', NEW."purchasePlaceName",
+                    'purchaseAddress', NEW."purchaseAddress"
+                )::text,
+                change_desc, CURRENT_TIMESTAMP
+            );
+        END IF;
+
         RETURN NEW;
     END IF;
 
     -- Handle DELETE (item removed)
     IF TG_OP = 'DELETE' THEN
+        change_desc := 'Cellar item removed: ' || listing_name || 
+                      ' (was ' || OLD."status" || ', ' || OLD."consumption" || ')';
+        
         INSERT INTO "myCellarItemsChangelog" (
             "cellarItemID", "changeType", "changeDescription", 
             "oldValue", "changeDate"
         ) VALUES (
-            OLD."id", 'DELETED', 
-            'Cellar item removed: ' || COALESCE((SELECT "listingName" FROM "listings" WHERE "id" = OLD."listingID"), 'Unknown item'),
+            OLD."id", 'DELETED', change_desc,
             json_build_object(
                 'quantityVariantID', OLD."quantityVariantID",
                 'status', OLD."status",
-                'consumption', OLD."consumption"
+                'consumption', OLD."consumption",
+                'currentLocation', OLD."currentLocation"
             )::text,
             CURRENT_TIMESTAMP
         );
