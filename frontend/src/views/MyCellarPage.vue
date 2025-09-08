@@ -268,7 +268,7 @@
                   :key="`${group.listingId}_${group.variant || 'no-variant'}`"
                   :class="[
                     'col-12 mb-4',
-                    rightSidebarExpanded ? 'col-md-6 col-lg-4' : 'col-md-4 col-lg-3'
+                    rightSidebarExpanded ? 'col-md-6 col-lg-4' : 'col-md-4 col-lg-custom-5'
                   ]"
                 >
                   <div 
@@ -4432,6 +4432,12 @@ export default {
 }
 
 /* Responsive adjustments for grid items when sidebar is collapsed */
+/* Custom 5-column layout for collapsed sidebar */
+.col-lg-custom-5 {
+  flex: 0 0 auto;
+  width: 20%; /* 100% / 5 = 20% per column */
+}
+
 @media (min-width: 768px) {
   /* For medium screens (tablets) when sidebar is collapsed, optimize for 3-column layout */
   .col-md-4 .cellar-item-card {
@@ -4450,17 +4456,21 @@ export default {
 
 @media (min-width: 992px) {
   /* When sidebar is collapsed, we have more items per row, so ensure consistent spacing */
-  .col-lg-3 .cellar-item-card {
-    min-height: 350px; /* Slightly reduce min-height for 4-column layout */
+  .col-lg-custom-5 .cellar-item-card {
+    min-height: 320px; /* Smaller height for 5-column layout */
   }
   
-  .col-lg-3 .card-title {
-    font-size: 0.95rem; /* Slightly smaller title for more compact layout */
-    line-height: 1.3;
+  .col-lg-custom-5 .card-title {
+    font-size: 0.9rem; /* Smaller title for more compact layout */
+    line-height: 1.2;
   }
   
-  .col-lg-3 .card-text {
-    font-size: 0.85rem; /* Slightly smaller text for more compact layout */
+  .col-lg-custom-5 .card-text {
+    font-size: 0.8rem; /* Smaller text for more compact layout */
+  }
+  
+  .col-lg-custom-5 .card-body {
+    padding: 0.75rem; /* Slightly reduce padding */
   }
 }
 
