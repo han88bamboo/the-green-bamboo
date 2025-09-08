@@ -757,9 +757,9 @@
                             class="form-select"
                             v-model="addDrinkForm.status"
                           >
+                            <option value="Purchased">Purchased</option>
                             <option value="In Possession">In Possession</option>
                             <option value="On Its Way">On Its Way</option>
-                            <option value="Purchased">Purchased</option>
                             <option value="Held Elsewhere">Held Elsewhere</option>
                             <option value="Wishlisted">Wishlisted</option>
                           </select>
@@ -1690,7 +1690,7 @@ export default {
         
         // Individual item properties (applied to each bottle)
         quantity: 1,
-        status: 'In Possession',
+        status: 'Purchased',
         consumption: 'Unopened',
         currentLocation: 'At Home',
         subLocation: '',
