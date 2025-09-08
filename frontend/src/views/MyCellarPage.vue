@@ -380,10 +380,6 @@
                             class="list-img"
                             @error="onImageError"
                           >
-                          <!-- Combined Quantity and Volume Badge (same as grid view) -->
-                          <div class="quantity-volume-badge">
-                            {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
-                          </div>
                         </div>
                       </div>
 
@@ -420,6 +416,13 @@
 
                             <!-- Side Info -->
                             <div class="col-12 col-lg-4">
+                              <!-- Combined Quantity and Volume Badge -->
+                              <div class="mb-2">
+                                <span class="quantity-volume-badge-inline">
+                                  {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
+                                </span>
+                              </div>
+
                               <!-- Status Breakdown -->
                               <div class="status-breakdown mb-2 justify-content-center">
                                 <span 
@@ -4468,6 +4471,18 @@ export default {
   .cellar-item-list-card .card-body {
     padding: 0.5rem;
   }
+}
+
+/* Inline Quantity Volume Badge for List View */
+.quantity-volume-badge-inline {
+  background-color: rgba(13, 202, 240, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  display: inline-block;
 }
 
 /* View Toggle Button Styles */
