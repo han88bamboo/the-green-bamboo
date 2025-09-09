@@ -131,17 +131,25 @@
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
 }
 
+.listing-img-wrap {
+  position: relative;
+  width: 100%;
+  max-height: 75vw;   /* 3:4 relative to width of viewport/parent */
+  overflow: hidden;
+  border-radius: 10px;
+}
+
 .listing-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 10px;
 }
 
 @media (min-width: 768px) {
   .listing-img {
-    width: 200px !important;
-    height: auto !important;
+    width: 200px;      /* fixed width thumbnail on desktop */
+    height: auto;      /* keep ratio */
+    object-fit: cover; /* still crops nicely */
   }
 }
 </style>
@@ -833,16 +841,17 @@
               class="row d-flex justify-content-between ps-lg-4 pe-lg-4 mobile-ps-3 mobile-pe-3 flex-row"
             >
               <!-- discover  tzh changed col-12 to col-4-->
-              <div class="row col-6 mobile-col-8 mobile-ps-4 mobile-pe-0">
-                <div class="col-xl-6 col-lg-6 mobile-col-6 mb-3 mobile-pe-0 mobile-ps-0 pe-1 mobile-pe-1 mobile-mb-1"
+              <div class="row col-12 mobile-ps-4 mobile-pe-0">
+                <div class="col-1"></div>
+                <div class="col-5 mb-3 mobile-pe-0 mobile-ps-0 pe-1 mobile-pe-1 mobile-mb-1"
                 >
                   <div class="d-grid gap-2">
                     <button
-                      class="btn btn-sm mobile-ps-0 text-center"
+                      class="btn btn-md mobile-ps-0 text-center"
                       :class="{
-                        'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0 mobile-pe-0':
+                        'primary-btn-green mobile-convert-to-toggle-button mobile-py-3 ':
                           discovery,
-                        'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0':
+                        'primary-btn-green-outline mobile-convert-to-toggle-button mobile-py-3 ':
                           !discovery,
                       }"
                       v-on:click="changeDiscoveryStatus()"
@@ -857,15 +866,15 @@
                   </div>
                 </div>
                 <!-- following tzh changed col-12 to col-4-->
-                <div class="col-xl-6 col-lg-6 mobile-col-6 col-4 mb-3 Xmobile-view-no-padding ps-1 mobile-ps-1 mobile-pe-0 mobile-mb-1"
+                <div class="col-5 col-4 mb-3 ps-1 mobile-ps-1 mobile-pe-0 mobile-mb-1"
                 >
                   <div class="d-grid gap-2 ">
                     <button
-                      class="btn btn-sm mobile-ps-0 text-center"
+                      class="btn btn-md mobile-ps-0 text-center"
                       :class="{
-                        'primary-btn-green mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0':
+                        'primary-btn-green mobile-convert-to-toggle-button mobile-py-3 ':
                           following,
-                        'primary-btn-green-outline mobile-convert-to-toggle-button mobile-pt-2 mobile-pb-0':
+                        'primary-btn-green-outline mobile-convert-to-toggle-button mobile-py-3 ':
                           !following,
                       }"
                       v-on:click="changeFollowingStatus()"
@@ -878,6 +887,7 @@
                     </button>
                   </div>
                 </div>
+                <div class="col-1"></div>
               </div>
 
               <!-- Disabled filter and sort to prevent page errors due to updated content retrieval - CP -->
@@ -1142,7 +1152,7 @@
                                 <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start px-0">
                                   
                                   <!-- For Listings -->
-                                  <div v-if="content.contentType == 'Listing'">
+                                  <div v-if="content.contentType == 'Listing'" class="listing-img-wrap">
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
@@ -1156,50 +1166,35 @@
                                   </div>
 
                                   <!-- For Review -->
-                                  <div v-else-if="content.contentType == 'Review' " >
+                                  <div v-else-if="content.contentType == 'Review' " class="listing-img-wrap">
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
                                       class="listing-img"
                                     />
-                                    <img
-                                      v-else
-                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                      class="listing-img"
-                                    />
                                   </div>
 
                                   <!-- For pReview or vReview -->
-                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'">
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'" class="listing-img-wrap">
                                     <img
                                       v-if="content['photos'][0]"
                                       :src="content['photos'][0]"
                                       class="listing-img"
                                     />
-                                    <img
-                                      v-else
-                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                      class="listing-img"
-                                    />
                                   </div>
 
                                   <!-- For Update -->
-                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'">
+                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'" class="listing-img-wrap">
                                     <img
                                       v-if="content.photo"
                                       :src="content.photo"
-                                      class="listing-img"
-                                    />
-                                    <img
-                                      v-else
-                                      src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                       class="listing-img"
                                     />
                                   </div>
                                 </div>
 
                                 <!-- Details Section (Center) -->
-                                <div class="col d-flex flex-column justify-content-between px-0 px-md-3">
+                                <div class="col d-flex flex-column justify-content-between px-0 p-md-3">
 
                                   <!-- For Listings -->
                                   <div v-if="content.contentType == 'Listing'">
@@ -1222,7 +1217,7 @@
 
                                     <router-link
                                       :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
-                                      class="default-clickable-text fst-italic"
+                                      class="default-clickable-text"
                                     >
                                       <p class="homepage-bottle-listing-description">
                                         {{
@@ -1253,19 +1248,15 @@
                                             height="30"
                                             style="object-fit: cover;"
                                           />
-                                          <svg
+                                          <img 
                                             v-else
-                                            xmlns="http://www.w3.org/2000/svg"
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                            alt="Default Drink-X User Photo"
+                                            class="rounded-circle"
                                             width="30"
                                             height="30"
-                                            fill="currentColor"
-                                            class="bi bi-person-circle"
-                                            viewBox="0 0 16 16"
                                             style="object-fit: cover;"
-                                          >
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                          </svg>
+                                          />
 
                                           <h5 class="d-none d-md-block mb-0 ms-2">@<b>{{ content.username }}</b></h5>
                                           <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2">@<b>{{ content.username }}</b></h6>
@@ -1292,7 +1283,7 @@
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <p class="default-clickable-text fst-italic">{{ content.reviewDesc }}</p>
+                                        <p class="homepage-bottle-listing-description">"{{ content.reviewDesc }}"</p>
                                       </router-link>
                                     </span>
                                   </div>
@@ -1356,7 +1347,7 @@
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <p class="default-clickable-text fst-italic">{{ content.reviewDesc }}</p>
+                                        <p class="default-clickable-text homepage-bottle-listing-description">"{{ content.reviewDesc }}"</p>
                                       </router-link>
                                     </span>
                                     
@@ -1379,11 +1370,15 @@
                                             height="30"
                                             style="object-fit: cover;"
                                           />
-                                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
-                                              class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                          </svg>
+                                          <img 
+                                            v-else
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337"
+                                            alt="Default Drink-X Venue Photo"
+                                            class="rounded-circle"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
                                           <h5 class="d-none d-md-block mb-0 ms-2"><b>{{ content.venueName }}</b></h5>
                                           <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2"><b>{{ content.venueName }}</b></h6>
                                         </div>
@@ -1403,85 +1398,95 @@
                                             height="30"
                                             style="object-fit: cover;"
                                           />
-                                          <svg v-else xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
-                                              class="bi bi-person-circle" viewBox="0 0 16 16">
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/>
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                          </svg>
+                                          <img 
+                                            v-else
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998"
+                                            alt="Default Drink-X Producer Photo"
+                                            class="rounded-circle"
+                                            width="30"
+                                            height="30"
+                                            style="object-fit: cover;"
+                                          />
                                           <h5 class="d-none d-md-block mb-0 ms-2"><b>{{ content.producerName }}</b></h5>
                                           <h6 class="d-block d-md-none mobile-mt-2 mb-0 ms-2"><b>{{ content.producerName }}</b></h6>
                                         </div>
                                       </router-link>
 
                                       <!-- Update Text -->
-                                      <h6 class="fst-italic mt-2">{{ content.text }}</h6>
+                                      
+                                        
+                                      <h6 class="primary-clickable-text text-decoration-none homepage-bottle-listing-description mt-2" >"{{ content.text }}"</h6>
                                   </div>
                                   
                                 </div>
 
                                 <!-- Rating & Read More (Right) -->
-                                <div class="col-12 col-md-auto text-center text-md-end mt-2 mt-md-0">
+                                <div class="col-12 col-md-auto text-center text-md-end mt-2 mt-md-0 pt-md-3">
 
                                   <!-- Listings -->
-                                  <div v-if="content.contentType == 'Listing'">
-                                      <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
-                                      <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
-                                      <div class="d-grid">
-                                      <router-link
-                                        :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
-                                        class="primary-clickable-text"
-                                      >
-                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                          Read More
-                                        </button>
-                                      </router-link>
-                                    </div>
+                                  <div v-if="content.contentType == 'Listing'" 
+                                      class="d-flex flex-row flex-md-column justify-content-center justify-content-md-start align-items-center gap-2">
+
+                                    <!-- Rating -->
+                                    <h1 class="fw-bold text-warning mb-0">{{ content.rating }} ★</h1>
+
+                                    <!-- Button -->
+                                    <router-link
+                                      :to="{ path: '/listing/view/' + content.id + '/' + slugify(content.listingName) }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
+                                        View Drink
+                                      </button>
+                                    </router-link>
                                   </div>
 
                                   <!-- Reviews -->
-                                  <div v-else-if="content.contentType == 'Review'">
-                                    <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
-                                    <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
-                                    <div class="d-grid">
-                                      <router-link
-                                        :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName),
-                                                query: { reviewId: content.id } }"
-                                        class="primary-clickable-text"
-                                      >
-                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                          Read More
-                                        </button>
-                                      </router-link>
-                                    </div>
-                                  </div>  
+                                  <div v-else-if="content.contentType == 'Review'" 
+                                      class="d-flex flex-row flex-md-column justify-content-center justify-content-md-start align-items-center gap-2">
+
+                                    <!-- Rating -->
+                                    <h1 class="fw-bold text-warning mb-0">{{ content.rating }} ★</h1>
+
+                                    <!-- Button -->
+                                    <router-link
+                                      :to="{ path: '/listing/view/' + content.reviewTarget + '/' + slugify(content.listingName),
+                                              query: { reviewId: content.id } }"
+                                      class="primary-clickable-text"
+                                    >
+                                      <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
+                                        Read Review
+                                      </button>
+                                    </router-link>
+                                  </div>
+
 
                                   <!-- pReview or vReview -->
-                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'">
-                                    <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
-                                    <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
-                                    <div class="d-grid">
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'"
+                                      class="d-flex flex-row flex-md-column justify-content-center justify-content-md-start align-items-center gap-2">
+                                    
+                                      <h1 class="fw-bold text-warning">{{ content.rating }} ★</h1>
+                                    
                                       <router-link
                                         :to="getProfileLink((content.venueID ? content.venueID : content.producerID), (content.venueID ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
                                         class="primary-clickable-text"
                                       >
-                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                          Read More
+                                        <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
+                                          Read Review
                                         </button>
                                       </router-link>
-                                    </div>
+                                    
                                   </div>
 
                                   <!-- Update -->
                                   <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'">
-                                    <h1 class="fw-bold text-warning mobile-view-hide">{{ content.rating }} ★</h1>
-                                    <h4 class="fw-bold text-warning mobile-view-show">{{ content.rating }} ★</h4>
                                     <div class="d-grid">
                                       <router-link
                                         :to="getProfileLink((content.venueId ? content.venueId : content.producerId), (content.venueId ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
                                         class="primary-clickable-text"
                                       >
-                                        <button class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
-                                          Read More
+                                        <button class="btn secondary-btn-border fw-bold btn-sm py-2 px-3">
+                                          View Profile
                                         </button>
                                       </router-link>
                                     </div>
@@ -1502,7 +1507,7 @@
                                       style="cursor: pointer;" @click="unlikeContent(content.id, content.contentType)">
                                         <path d="M6.956 1.745C7.021.81 7.908.087 8.864.325l.261.066c.463.116.874.456 1.012.965.22.816.533 2.511.062 4.51a10 10 0 0 1 .443-.051c.713-.065 1.669-.072 2.516.21.518.173.994.681 1.2 1.273.184.532.16 1.162-.234 1.733q.086.18.138.363c.077.27.113.567.113.856s-.036.586-.113.856c-.039.135-.09.273-.16.404.169.387.107.819-.003 1.148a3.2 3.2 0 0 1-.488.901c.054.152.076.312.076.465 0 .305-.089.625-.253.912C13.1 15.522 12.437 16 11.5 16H8c-.605 0-1.07-.081-1.466-.218a4.8 4.8 0 0 1-.97-.484l-.048-.03c-.504-.307-.999-.609-2.068-.722C2.682 14.464 2 13.846 2 13V9c0-.85.685-1.432 1.357-1.615.849-.232 1.574-.787 2.132-1.41.56-.627.914-1.28 1.039-1.639.199-.575.356-1.539.428-2.59z"/>
                                       </svg>
-                                      <span style="cursor: pointer;" @click="unlikeContent(content.id, content.contentType)">Unlike</span>
+                                      
                                     </span>
 
                                     <!-- Like Button-->
@@ -1512,7 +1517,7 @@
                                           @click="likeContent(content.id, content.contentType)">
                                         <path d="M8.864.046C7.908-.193 7.02.53 6.956 1.466c-.072 1.051-.23 2.016-.428 2.59-.125.36-.479 1.013-1.04 1.639-.557.623-1.282 1.178-2.131 1.41C2.685 7.288 2 7.87 2 8.72v4.001c0 .845.682 1.464 1.448 1.545 1.07.114 1.564.415 2.068.723l.048.03c.272.165.578.348.97.484.397.136.861.217 1.466.217h3.5c.937 0 1.599-.477 1.934-1.064a1.86 1.86 0 0 0 .254-.912c0-.152-.023-.312-.077-.464.201-.263.38-.578.488-.901.11-.33.172-.762.004-1.149.069-.13.12-.269.159-.403.077-.27.113-.568.113-.857 0-.288-.036-.585-.113-.856a2 2 0 0 0-.138-.362 1.9 1.9 0 0 0 .234-1.734c-.206-.592-.682-1.1-1.2-1.272-.847-.282-1.803-.276-2.516-.211a10 10 0 0 0-.443.05 9.4 9.4 0 0 0-.062-4.509A1.38 1.38 0 0 0 9.125.111zM11.5 14.721H8c-.51 0-.863-.069-1.14-.164-.281-.097-.506-.228-.776-.393l-.04-.024c-.555-.339-1.198-.731-2.49-.868-.333-.036-.554-.29-.554-.55V8.72c0-.254.226-.543.62-.65 1.095-.3 1.977-.996 2.614-1.708.635-.71 1.064-1.475 1.238-1.978.243-.7.407-1.768.482-2.85.025-.362.36-.594.667-.518l.262.066c.16.04.258.143.288.255a8.34 8.34 0 0 1-.145 4.725.5.5 0 0 0 .595.644l.003-.001.014-.003.058-.014a9 9 0 0 1 1.036-.157c.663-.06 1.457-.054 2.11.164.175.058.45.3.57.65.107.308.087.67-.266 1.022l-.353.353.353.354c.043.043.105.141.154.315.048.167.075.37.075.581 0 .212-.027.414-.075.582-.05.174-.111.272-.154.315l-.353.353.353.354c.047.047.109.177.005.488a2.2 2.2 0 0 1-.505.805l-.353.353.353.354c.006.005.041.05.041.17a.9.9 0 0 1-.121.416c-.165.288-.503.56-1.066.56z"/>
                                       </svg>
-                                      <span style="cursor: pointer;" @click="likeContent(content.id, content.contentType)">Like</span>
+                                     
                                     </span>
 
                                     <!-- Number of Likes -->
@@ -1520,23 +1525,22 @@
                                   </span>
                                   
 
-                                  <!-- Comment Button -->
+                                  <!-- KAI TEMPORARILY REMOVED Comment Button
                                   <span class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots me-1" viewBox="0 0 16 16">
                                       <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
                                       <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
                                     </svg>
                                     <span style="cursor: pointer;">Comment</span>
-                                  </span>
+                                  </span> --> 
 
                                   <!-- Share Button -->
                                   <span class="d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                      class="bi bi-share me-1" viewBox="0 0 16 16">
-                                      <path
-                                        d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-up" viewBox="0 0 16 16">
+                                      <path fill-rule="evenodd" d="M3.5 6a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1 0-1h2A1.5 1.5 0 0 1 14 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 14.5v-8A1.5 1.5 0 0 1 3.5 5h2a.5.5 0 0 1 0 1z"/>
+                                      <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V10.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"/>
                                     </svg>
-                                    <span style="cursor: pointer;" @click="shareContent(content)">Share</span>
+                                    <span style="cursor: pointer;" @click="shareContent(content)">&nbsp;Share</span>
                                   </span>
 
                                   <!-- Share Modal -->
@@ -1544,42 +1548,26 @@
                                     aria-hidden="true">
                                     <div class="modal-dialog">
                                       <!-- SHARE SUCCESS -->
-                                      <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
+                                      <div class="fw-bold modal-content" v-if="shareSuccess">
                                         <div class="modal-body text-center p-4">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
-                                            class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                            <path
-                                              d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
-                                          </svg>
-                                          <br>
-                                          <span>{{ shareSuccessMessage }}</span>
-                                        </div>
-                                        <div class="modal-footer">
-                                          <button type="button" class="btn btn-secondary" @click="openShareModal = false" data-bs-dismiss="modal">
+                                          <div class="mb-3" style="font-size: 48px;">🧃➡️📋</div>
+                                          <p>{{ shareSuccessMessage }}</p>
+                                          <button type="button" class="fw-bold btn btn-sm btn-secondary" @click="openShareModal = false" data-bs-dismiss="modal">
                                             Close
                                           </button>
                                         </div>
                                       </div>
 
                                       <!-- SHARE ERROR -->
-                                      <div class="text-danger fw-bold fs-5 modal-content" v-if="shareError">
+                                      <div class="text-danger fw-bold modal-content" v-if="shareError">
                                         <div class="modal-body text-center p-4">
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
-                                            class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
-                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                            <path
-                                              d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
-                                          </svg>
-                                          <br>
+                                          <div class="mb-3" style="font-size: 48px;">🫢⚠️📋</div>
                                           <span>{{ shareErrorMessage }}</span>
                                         </div>
-                                        <div class="modal-footer">
-                                          <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal"
+                                          <button type="button" class="fw-bold btn btn-sm btn-secondary" @click="closeShareModal"
                                             data-bs-dismiss="modal">
                                             Close
                                           </button>
-                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -1654,19 +1642,15 @@
                                             height="30"
                                             style="object-fit: cover;"
                                           />
-                                          <svg
+                                          <img
                                             v-else
-                                            xmlns="http://www.w3.org/2000/svg"
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                            alt="Default Profile Photo"
+                                            class="rounded-circle"
                                             width="30"
                                             height="30"
-                                            fill="currentColor"
-                                            class="bi bi-person-circle"
-                                            viewBox="0 0 16 16"
                                             style="object-fit: cover;"
-                                          >
-                                            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-                                            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-                                          </svg>
+                                          />
                                         </router-link>
                                       </div>
                                       
@@ -3634,7 +3618,7 @@ methods: {
         this.openShareModal = true;
       } catch (err) {
         console.error("Failed to copy link:", err);
-        this.shareSuccessMessage = "Failed to copy link";
+        this.shareSuccessMessage = "We couldn’t copy the link. Please give it another go.";
         this.shareSuccess = false;
         this.shareError = true;
         this.openShareModal = true;

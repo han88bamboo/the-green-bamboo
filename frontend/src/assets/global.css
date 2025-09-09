@@ -124,7 +124,7 @@ html {
 .primary-btn-green-outline:hover {
   color: white;
   background-color: #027562; /*TZH added for Discovery and Following buttons on homepage */
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562; /*TZH changed 535C72 to F0B258 */
   font-weight: bold;
 }
@@ -132,7 +132,7 @@ html {
 .primary-btn-green:hover {
   color: white;
   background-color: #026453;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #026453;
   font-weight: bold;
 }
@@ -140,7 +140,7 @@ html {
 .primary-btn-green-outline {
   color: #027562;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
   font-weight: bold;
 }
@@ -148,14 +148,14 @@ html {
 .primary-btn-green-thin-outline {
   color: #027562;
   background-color: white; /*TZH added for Reviews and Drinks List buttons on user profile */
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
 }
 
 .primary-btn-green-thin-outline:hover {
   color: white;
   background-color: #027562;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
 }
 
@@ -1357,7 +1357,7 @@ button.primary-square:hover {
 }
 
 .homepage-bottle-listing-description {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
   margin-top: 0;
@@ -1365,7 +1365,7 @@ button.primary-square:hover {
 }
 
 .homepage-bottle-review-description {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
   margin-top: 0;
@@ -1391,11 +1391,10 @@ button.primary-square:hover {
 /* tzh added below changes for mobile */
 @media (max-width: 991px) {
   .homepage-bottle-listing-description {
-    font-size: 0.8rem;
-    display: none;
+    font-size: 0.9rem;
   } 
   .homepage-bottle-review-description {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 .shadow-effect {
@@ -1553,7 +1552,7 @@ button.primary-square:hover {
     border: none !important; /* Underline for active tab */
     border-radius: 0px !important;
     font-weight: bold !important;
-    border-bottom: 1px outset rgba(0, 0, 0, 0.514) !important;
+    border-bottom: 3px outset rgba(0, 0, 0, 0.514) !important;
     text-align: left;
   }
 }
