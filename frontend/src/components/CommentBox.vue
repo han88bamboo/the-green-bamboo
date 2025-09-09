@@ -1,35 +1,7 @@
 <template>
     <!-- Commenter Photo Section -->
     <div class="col-auto me-3">
-        <router-link
-            :to="{
-            path: getProfileLink(comment.userId, comment.userType, comment.username)
-            }"
-            class="primary-clickable-text"
-        >
-            <img
-            v-if="comment.photo"
-            :src="comment.photo"
-            class="rounded-circle"
-            alt="Profile Photo"
-            width="30"
-            height="30"
-            style="object-fit: cover;"
-            />
-            <svg
-            v-else
-            xmlns="http://www.w3.org/2000/svg"
-            width="30"
-            height="30"
-            fill="currentColor"
-            class="bi bi-person-circle"
-            viewBox="0 0 16 16"
-            style="object-fit: cover;"
-            >
-            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
-            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"/>
-            </svg>
-        </router-link>
+
     </div>
     
     <!-- Comment Box-->
@@ -39,10 +11,36 @@
         <div class="d-flex align-items-start">
             <!-- User name and comment date diff at the top left corner -->
             <span>
+                <!-- User photo -->
+                <router-link
+                :to="{
+                path: getProfileLink(comment.userId, comment.userType, comment.username)
+                }"
+                class="primary-clickable-text"
+            >
+                <img
+                v-if="comment.photo"
+                :src="comment.photo"
+                class="rounded-circle"
+                alt="Profile Photo"
+                width="30"
+                height="30"
+                style="object-fit: cover;"
+                />
+                <img
+                v-else
+                src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                alt="Default Profile Photo"
+                class="rounded-circle"
+                width="30"
+                height="30"
+                style="object-fit: cover;"
+                />
+                </router-link>
                 <!-- User name-->
                 <router-link
                 :to="{ path: getProfileLink(comment.userId, comment.userType, comment.username) }"
-                class="primary-clickable-text"
+                class="ms-2 primary-clickable-text"
                 >
                     <b>@{{ comment.username }}</b>
                 </router-link>
@@ -65,7 +63,7 @@
         </div>
 
         <!-- Row 2: Comment Text-->
-        <div class="row mt-2">
+        <div class="row mt-2 text-start">
             <span>{{ comment.comment }}</span>
 
             <!-- Edit comment input -->
@@ -87,12 +85,12 @@
         <div v-if="!hideReply" class="row mt-3">
 
             <!-- Reply button as word -->
-            <div v-if="!replyMode" class="mt-0 pt-0" style="cursor: pointer; font-size: 0.9em; color: #0d6efd;">
+            <div v-if="!replyMode" class="mt-0 pt-0 text-start" style="cursor: pointer; font-size: 0.9em; color: #0d6efd;">
                 <span @click="replyMode = !replyMode">Reply</span>
             </div>
 
             <!-- Reply Input -->
-            <div v-if="replyMode" class="col">
+            <div v-if="replyMode" class="col ">
                 <input v-model="replyContent" class="form-control" placeholder="Write a reply..." />
                 <div class="d-flex justify-content-end mt-2">
                     <button @click="postReply(comment.id)" class="btn btn-primary">Reply</button>
@@ -102,7 +100,7 @@
         </div>
 
         <!-- Row 4: Reply Section-->
-        <div v-if="comment.replies && comment.replies.length > 0" class="replies-container mt-3">
+        <div v-if="comment.replies && comment.replies.length > 0" class="replies-container mt-3 text-start">
             <div 
                 v-for="reply in comment.replies" 
                 :key="reply.id" 

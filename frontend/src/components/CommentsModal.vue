@@ -9,7 +9,7 @@
 
         <!-- Modal Title and x button -->
         <div class="modal-header">
-          <h5 class="modal-title">Comments for Review</h5>
+          <h4 class="modal-title">Comments on Review</h4>
           <button 
             type="button" 
             class="btn-close" 
