@@ -1678,7 +1678,7 @@
 
                                           <!-- Edit and Delete Button at the top right corner-->
                                           <div v-if="isCommentOwner(comment.userId, comment.userType)" class="ms-auto">
-                                            <i class="bi bi-pencil me-4" style="cursor:pointer" @click="editingCommentId = comment.id"></i>
+                                            <i class="bi bi-pencil me-4" style="cursor:pointer" @click="(editingCommentId = comment.id) && (updatedComment = comment.comment)"></i>
 
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#deleteComment" @click="deleteCommentItems = { commentId: comment.id, contentType: content.contentType }, topCommentsToUpdate=content.topComments">
                                               <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
@@ -1693,16 +1693,158 @@
                                           <!-- Edit comment input -->
                                           <div v-if="editingCommentId === comment.id" class="mt-2">
                                             <input
-                                              v-model="updatedComment"
-                                              @keyup.enter="editComment(comment)"
+                                              v-model="updatedComment "
+                                              @keyup.enter="editComment(comment, content.contentType)"
                                               type="text"
                                               class="form-control"
                                             />
                                             <div class="d-flex justify-content-end mt-2">
                                                 <button @click="editComment(comment, content.contentType)" class="btn btn-primary mt-2">Update</button>
-                                                <button @click="cancelEdit" class="btn btn-secondary mt-2 ms-2">Cancel</button>
+                                                <button @click="editingCommentId = null" class="btn btn-secondary mt-2 ms-2">Cancel</button>
                                             </div>
                                             
+                                          </div>
+                                        </div>
+
+                                        <!-- Row 3: Reply Comment Section -->
+                                        <div class="row mt-3">
+                                          <!-- Reply button -->
+                                          <div
+                                            v-if="!replyMode[comment.id]"
+                                            class="mt-0 pt-0"
+                                            style="cursor: pointer; font-size: 0.9em; color: #0d6efd;"
+                                          >
+                                            <span @click="replyMode[comment.id] = true">Reply</span>
+                                          </div>
+
+                                          <!-- Reply Input -->
+                                          <div v-if="replyMode[comment.id]" class="col">
+                                            <input
+                                              v-model="replyComment"
+                                              class="form-control"
+                                              placeholder="Write a reply..."
+                                            />
+                                            <div class="d-flex justify-content-end mt-2">
+                                              <button
+                                                @click="postReply(content.contentType, content.id, comment.id)"
+                                                class="btn btn-primary"
+                                              >
+                                                Reply
+                                              </button>
+                                              <button
+                                                @click="replyComment = ''; replyMode[comment.id] = false"
+                                                class="btn btn-secondary ms-2"
+                                              >
+                                                Cancel
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <!-- Row 4: Comment Replies -->
+                                        <div class="row mt-2">
+                                          <div class="col-12">
+                                            <div v-for="reply in comment.replies" :key="reply.id" class="pb-2 mb-2">
+                                              <div class="d-flex align-items-start">
+                                                <!-- Profile photo -->
+                                                <router-link
+                                                  :to="{
+                                                    path: getProfileLink(reply.userId, reply.userType, reply.username)
+                                                  }"
+                                                  class="primary-clickable-text me-2"
+                                                >
+                                                  <img
+                                                    v-if="reply.userPhoto"
+                                                    :src="reply.userPhoto"
+                                                    class="rounded-circle"
+                                                    alt="Profile Photo"
+                                                    width="30"
+                                                    height="30"
+                                                    style="object-fit: cover;"
+                                                  />
+                                                  <svg
+                                                    v-else
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="30"
+                                                    height="30"
+                                                    fill="currentColor"
+                                                    class="bi bi-person-circle"
+                                                    viewBox="0 0 16 16"
+                                                    style="object-fit: cover;"
+                                                  >
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+                                                    <path
+                                                      fill-rule="evenodd"
+                                                      d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8
+                                                      m8-7a7 7 0 0 0-5.468 11.37C3.242
+                                                      11.226 4.805 10 8 10s4.757 1.225
+                                                      5.468 2.37A7 7 0 0 0 8 1"
+                                                    />
+                                                  </svg>
+                                                </router-link>
+
+                                                <!-- Right side (username, time, comment) -->
+                                                <div class="flex-grow-1">
+                                                  <!-- Top row: reply username/date left, edit/delete right -->
+                                                  <div class="d-flex justify-content-between align-items-center w-100">
+                                                    <!-- Left: username + time -->
+                                                    <div class="d-flex align-items-center">
+                                                      <router-link
+                                                        :to="{ path: getProfileLink(reply.userId, reply.userType, reply.username) }"
+                                                        class="primary-clickable-text"
+                                                      >
+                                                        <b>@{{ reply.username }}</b>
+                                                      </router-link>
+
+                                                      <span class="text-muted ms-2" style="font-size: 0.8em;">
+                                                        {{ getTimeDifference(reply.createdAt) }}
+                                                      </span>
+                                                    </div>
+
+                                                    <!-- Right: edit + delete -->
+                                                    <div v-if="isCommentOwner(reply.userId, reply.userType)" class="d-flex align-items-center">
+                                                      <i
+                                                        class="bi bi-pencil me-4"
+                                                        style="cursor:pointer"
+                                                        @click="(editingReplyId = reply.id) && (replyUpdatedComment = reply.comment)"
+                                                      ></i>
+
+                                                      <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        width="16"
+                                                        height="16"
+                                                        fill="currentColor"
+                                                        class="bi bi-trash-fill"
+                                                        viewBox="0 0 16 16"
+                                                        style="cursor:pointer"
+                                                        data-bs-toggle="modal" data-bs-target="#deleteComment"
+                                                        @click="deleteReplyItems = { replyId: reply.id, contentType: content.contentType }; repliesToUpdate = comment.replies"
+                                                      >
+                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/>
+                                                      </svg>
+                                                    </div>
+                                                  </div>
+
+                                                  <!-- Comment below -->
+                                                  <p class="mb-0 mt-1">{{ reply.comment }}</p>
+
+                                                  <!-- Edit comment input -->
+                                                  <div v-if="editingReplyId === reply.id" class="mt-2">
+                                                    <input
+                                                      v-model="replyUpdatedComment"
+                                                      @keyup.enter="editComment(reply, content.contentType)"
+                                                      type="text"
+                                                      class="form-control"
+                                                    />
+                                                    <div class="d-flex justify-content-end mt-2">
+                                                        <button @click="editComment(reply, content.contentType)" class="btn btn-primary mt-2">Update</button>
+                                                        <button @click="editingReplyId = null" class="btn btn-secondary mt-2 ms-2">Cancel</button>
+                                                    </div>
+                                                    
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
                                           </div>
                                         </div>
                                       </div>
@@ -2374,12 +2516,23 @@ export default {
       updatedComment: "",
       editingCommentId: null,
 
+      // For reply comment editing
+      editingReplyId: null,
+      replyUpdatedComment: "",
+
       // For comment deletion
       deleteCommentItems: {
         commentId: null,
         contentType: null
       },
       topCommentsToUpdate: [],
+
+      // For reply deletion
+      deleteReplyItems: {
+        replyId: null,
+        contentType: null
+      },
+      repliesToUpdate: [],
 
       // Share variables
       openShareModal: false,
@@ -2388,6 +2541,9 @@ export default {
       shareError: false,
       shareErrorMessage: "",
 
+      // Reply Comments variables - CP
+      replyMode: {},
+      replyComment: "",
 
     };
   },
@@ -3512,15 +3668,24 @@ methods: {
     // Function to edit comment 
     async editComment(comment, contentType) {
 
-      // Check if updatedComment is empty
-      if (!this.updatedComment || this.updatedComment.trim() === "") {
+      let latestComment = "";
+
+      // Check if we are updating comment or reply 
+      if (this.editingCommentId === comment.id) {
+        latestComment = this.updatedComment;
+      } else {
+        latestComment = this.replyUpdatedComment;
+      }
+
+      // Check if latestComment is empty
+      if (!latestComment || latestComment.trim() === "") {
         const toast = useToast();
         toast.error("Comment cannot be empty.");
         return;
       }
 
-      // Check if updatedComment is different from the original comment
-      if (this.updatedComment.trim() === comment.comment.trim()) {
+      // Check if latestComment is different from the original comment
+      if (latestComment.trim() === comment.comment.trim()) {
         const toast = useToast();
         toast.error("Comment is identical to the original.");
         return;
@@ -3534,13 +3699,21 @@ methods: {
             userType: this.userType,
             contentType: contentType,
             commentId: comment.id,
-            newComment: this.updatedComment.trim()
+            newComment: latestComment.trim()
           }
         );
 
         if (response.status === 201) {
-          this.updatedComment = "";
-          this.editingCommentId = null;
+
+          if (this.editingCommentId === comment.id) {
+            // Clear top-level comment state
+            this.updatedComment = "";
+            this.editingCommentId = null;
+          } else {
+            // Clear reply edit state
+            this.replyUpdatedComment = "";
+            this.editingReplyId = null;
+          }
 
           // Update the comment in the UI
           comment.comment = response.data.newComment
@@ -3560,31 +3733,62 @@ methods: {
     // Function to delete comment 
     async deleteComment() {
       try {
+
+        // Check if we are deleting a comment or a reply
+        let deleteItems = {contentType:"", commentId: null};
+        let deleteType = ""
+
+        if (this.deleteCommentItems.commentId) {
+          deleteItems["commentId"] = this.deleteCommentItems.commentId;
+          deleteItems["contentType"] = this.deleteCommentItems.contentType;
+          deleteType = "comment";
+        } else {
+          deleteItems["commentId"] = this.deleteReplyItems.replyId;
+          deleteItems["contentType"] = this.deleteReplyItems.contentType;
+          deleteType = "reply";
+        }
+
         const response = await this.$axios.delete(
           `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
           {
             data: {
               userId: this.userID,
               userType: this.userType,
-              contentType: this.deleteCommentItems.contentType,
-              commentId: this.deleteCommentItems.commentId
+              contentType: deleteItems.contentType,
+              commentId: deleteItems.commentId
             }
           }
         );
 
         if (response.status === 200) {
-          // Remove the comment from the UI using comment.id
-          const index = this.topCommentsToUpdate.findIndex(c => c.id === this.deleteCommentItems.commentId);
-          if (index !== -1) {
-            this.topCommentsToUpdate.splice(index, 1);
+
+          if (deleteType === "comment") {
+            // Remove the comment from the UI using comment.id
+            const index = this.topCommentsToUpdate.findIndex(c => c.id === this.deleteCommentItems.commentId);
+            if (index !== -1) {
+              this.topCommentsToUpdate.splice(index, 1);
+            }
+
+            // Reset deleteCommentItems
+            this.deleteCommentItems = {
+              commentId: null,
+              contentType: null
+            };
+          } else {
+            // Remove the reply from the UI using reply.id
+            const index = this.repliesToUpdate.find(c => c.id === this.deleteReplyItems.replyId);
+            if (index !== -1) {
+              this.repliesToUpdate.splice(index, 1);
+            }
+
+            // Reset deleteReplyItems
+            this.deleteReplyItems = {
+              commentId: null,
+              parentId: null,
+              contentType: null
+            };
           }
-
-
-          // Reset deleteCommentItems
-          this.deleteCommentItems = {
-            commentId: null,
-            contentType: null
-          };
+          
 
           // Show message
           const toast = useToast();
@@ -3623,7 +3827,80 @@ methods: {
         this.shareError = true;
         this.openShareModal = true;
       }
-    }
+    },
+
+
+    // Function to post a reply to a comment
+    async postReply(contentType, contentId, parentId) {
+        // Check if user is logged in
+        if (!this.userID || !this.userType) {
+            // Redirect to login page
+            this.$router.push({ path: "/login" });
+            return;
+        }
+
+        // Check if replyComment is empty
+        if (!this.replyComment || this.replyComment.trim() === "") {
+            const toast = useToast();
+            toast.error("Reply cannot be empty.");
+            return;
+        }
+
+        try {
+            const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+            {
+                userId: this.userID,
+                userType: this.userType,
+                contentType: contentType,
+                contentId: contentId,
+                comment: this.replyComment.trim(),
+                parentId: parentId
+            }
+            );
+
+            if (response.status === 201) {
+                // Clear the reply input
+                this.replyComment = "";
+                this.replyMode[parentId] = false;
+
+                // Show message
+                const toast = useToast();
+                toast.success("Reply posted successfully.");
+
+                // Add the new reply to the topComments array
+                // Find the content in contents array
+                let content = this.contents.find(c => c.id === contentId && c.contentType === contentType);
+                if (content) {
+                  // Find the topComments array for this content
+                  let topComments = content.topComments || [];
+
+                  // Find the parent comment to which the reply is being added
+                  let parentComment = topComments.find(c => c.id === parentId);
+
+                  if (parentComment) {
+                    // Initialize replies array if it doesn't exist
+                    if (!parentComment.replies) {
+                      this.$set(parentComment, 'replies', []);
+                    }
+                    // Add the new reply to the replies array
+                    parentComment.replies.unshift(response.data.comment);
+                  } else {
+                    // If parent comment not found, optionally handle this case
+                    console.warn("Parent comment not found for reply.");
+                  }
+    
+                  // Increment totalComments count
+                  content.totalComments = (content.totalComments || 0) + 1;
+              } 
+            }
+
+        } catch (error) {
+            console.error("Error posting reply:", error);
+            const toast = useToast();
+            toast.error("Failed to post reply. Please try again later.");
+        }
+    },
 
 
   },
