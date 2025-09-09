@@ -1283,7 +1283,14 @@
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <p class="homepage-bottle-listing-description">"{{ content.reviewDesc }}"</p>
+                                        <p class="homepage-bottle-listing-description">"
+                                          {{
+                                            content.reviewDesc.length > 300
+                                              ? content.reviewDesc.slice(0, 300) + '...'
+                                              : content.reviewDesc
+                                          }}
+                                          "
+                                        </p>
                                       </router-link>
                                     </span>
                                   </div>
@@ -1347,7 +1354,15 @@
                                         class="primary-clickable-text text-decoration-none"
                                         style="color: #027562"
                                       >
-                                        <p class="default-clickable-text homepage-bottle-listing-description">"{{ content.reviewDesc }}"</p>
+                                        <p class="default-clickable-text homepage-bottle-listing-description">
+                                          "
+                                          {{
+                                            content.reviewDesc.length > 300
+                                              ? content.reviewDesc.slice(0, 300) + '...'
+                                              : content.reviewDesc
+                                          }}
+                                          "
+                                        </p>
                                       </router-link>
                                     </span>
                                     
