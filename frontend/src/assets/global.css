@@ -2148,6 +2148,7 @@ button.primary-square:hover {
 
 .text-decoration-underline {
   text-decoration-thickness: 2.5px !important; /* Adjust thickness here */
+  text-decoration-skip-ink: none;
   text-underline-offset: 4px; /* Optional: Adjust the space between text and underline */
 }
 

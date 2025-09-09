@@ -1772,6 +1772,7 @@
                 <div class="text-start mb-2">
                   {{ review["reviewDesc"] }}
                 </div>
+                
 
                 <!-- Flavour Tags -->
                 <div class="text-start mb-3">
@@ -1784,7 +1785,7 @@
                     {{ tag }}
                   </span>
                 </div>
-
+                
                 <!-- Voting and Detailed Review -->
                 <div class="text-start mb-3" style="display: flex !important">
                   <div class="div">
@@ -1808,6 +1809,7 @@
                     review.userVotes.upvotes.length -
                     review.userVotes.downvotes.length
                   }}</span>
+                  
                   <div class="">
                     <!-- Downvote -->
                     <svg v-if="!review.userVotes.downvotes.some((vote) => parseInt(vote?.userId) === parseInt(userID))"
@@ -1824,52 +1826,23 @@
                     </svg>
 
                   </div>
+                  &nbsp;&nbsp;
+                  <div class="text-start">
                   <a href="#" class="text-decoration-underline text-secondary me-3" data-bs-toggle="modal"
                     data-bs-target="#detailedReviewModal" @click="updateDetailedReview(review)">
-                    Detailed Review >
+                    View Detailed Review
                   </a>
-
+                </div>
                   <!-- Share Button -->
                   <button @click="shareReview(review)"
-                    class="btn btn-link p-0 text-decoration-underline text-secondary me-3"
+                    class="btn p-0 text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                      class="bi bi-share me-1" viewBox="0 0 16 16">
-                      <path
-                        d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
-                    </svg>
-                    Share
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-up" viewBox="0 0 18 18" stroke-width="2">
+                                      <path fill-rule="evenodd" d="M3.5 6a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1 0-1h2A1.5 1.5 0 0 1 14 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 14.5v-8A1.5 1.5 0 0 1 3.5 5h2a.5.5 0 0 1 0 1z"/>
+                                      <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V10.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"/>
+                    </svg> 
+                    <span class="mobile-view-hide ms-2 text-decoration-underline">Share</span>
                   </button>
-                  
-                  
-                  <!-- Add Comment Button - Added By CP -->
-                  <button @click="addCommentMode=true"
-                    class="p-0 text-secondary me-2"
-                    style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
-                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
-                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                    </svg>
-                    <span class="text-decoration-underline ms-2">Add Comment</span>
-                  </button>
-
-                  <!-- View Comments for Review Button - Added by CP -->
-                  <button v-if="review.commentsCount > 0" @click="showModal=true"
-                    class="p-0 text-secondary me-2"
-                    style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
-                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
-                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-                    </svg>
-                    <span class="text-decoration-underline ms-2">View Comments</span>
-                  </button>
-
-                  <!-- Comments Modal for each review - Added by CP -->
-                  <CommentsModal v-if="showModal" 
-                    :userID="userID" :userType="userType"
-                    :contentId="review.id" :contentType="'Review'"
-                    @close="showModal = false" 
-                  />
 
                   <div class="dropdown text-end">
                     <button class="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown"
@@ -1883,7 +1856,7 @@
                       </svg>
                     </button>
 
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu" >
                       <li
                         v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item" @click="setUpdateID(review)" data-bs-toggle="modal"
@@ -1900,31 +1873,9 @@
                       </li>
                     </ul>
                   </div>
-
-
-                  <!-- kai has commented this out and replaced the buttons with a dropdown-->
-                  <!-- Edit & Delete Buttons
-                    <button
-                      v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
-                      class="btn btn-warning me-1 py-1 mobile-fs-7"
-                      @click="setUpdateID(review)"
-                      data-bs-toggle="modal"
-                      data-bs-target="#reviewModal"
-                      >
-                      Edit
-                      </button>
-                      <button
-                      v-if="review.userID === correctModerator || user.isAdmin"
-                      class="btn btn-danger py-1 mobile-fs-7"
-                      @click="setDeleteID(review)"
-                      data-bs-toggle="modal"
-                      data-bs-target="#deleteReview"
-                      >
-                      Delete
-                      </button>-->
                 </div>
               </div>
-
+              
               <!-- detailed review modal start -->
               <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                 aria-hidden="true" @click="clearReviewFromUrl">
@@ -2145,7 +2096,7 @@
                         </div>
                         <div class="col-9">
                           <span v-for="(
-tag, index
+                              tag, index    
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
                             style="background-color: #f0b358; color: black">{{ tag }}</span>
                           <!--tzh changed grey to #F0B358-->
@@ -2225,16 +2176,10 @@ tag, index
                 aria-hidden="true">
                 <div class="modal-dialog">
                   <!-- SHARE SUCCESS -->
-                  <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
+                  <div class="text-success fw-bold fs-5 modal-content" v-if="shareSuccess">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
-                        class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                        <path
-                          d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05" />
-                      </svg>
-                      <br>
-                      <span>{{ shareSuccessMessage }}</span>
+                      <div class="mb-3" style="font-size: 48px;">🧃➡️📋</div>
+                      <p>{{ shareSuccessMessage }}</p>
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
@@ -2277,8 +2222,6 @@ tag, index
                   style="width: 125px; height: 125px" />
               </div>
             </div>
-
-
             <div class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1"
               aria-labelledby="reviewModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
@@ -2290,7 +2233,7 @@ tag, index
               </div>
             </div>
             <div class="row">
-              <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+              <div class="col-3 xcol-lg-3 text-start mb-3 mobile-view-show">
                 <!-- review photo -->
                 <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
                   review
@@ -2301,60 +2244,91 @@ tag, index
                 </div>
               </div>
             </div>
+            <!-- Comments Section-->
+            <div class="rounded mobile-p-1"  style="background-color:rgb(255, 246, 228)">
+              <div class="my-3" style="display: flex !important;">
+                    <!-- Add Comment Button - Added By CP -->
+                    <button @click="addCommentMode=true"
+                      class="p-0 text-secondary me-2"
+                      style="border: none; background: none; font-size: inherit;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 18 18">
+                        <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                        <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                      </svg>
+                      <span class="text-decoration-underline ms-2">Add Comment</span>
+                    </button>
 
+                    <!-- View Comments for Review Button - Added by CP -->
+                    <button v-if="review.commentsCount > 0" @click="showModal=true"
+                      class="p-0 text-secondary me-2"
+                      style="border: none; background: none; font-size: inherit;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 18 18" stroke-width="2">
+                        <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                        <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                      </svg>
+                      <span class="text-decoration-underline ms-2">View Comments (<b>{{ review.commentsCount }}</b>)</span>
+                    </button>
 
-            <!-- Add Comment Input - Added by CP -->
-            <div v-if="addCommentMode" class="row w-100 py-3">
-              <div class="input-group">
-                <input
-                  type="text"
-                  class="form-control me-2 rounded mobile-rating-smaller-text-2"
-                  placeholder="Write a comment..."
-                  aria-label="Write a comment..."
-                  :aria-describedby="'button-addon2-' + review.id"
-                  v-model="newReviewComment"  
-                />
-
-                <!-- Comment Button (Desktop) -->
-                <button
-                  class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
-                  type="button"
-                  :id="'button-addon2-' + review.id"
-                  @click="addComment(review.id, 'Review')"
-                >
-                  Comment
-                </button>
-
-                <!-- Comment Button (Mobile) -->
-                <button
-                  class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
-                  type="button"
-                  :id="'button-addon2-' + review.id"
-                  @click="addComment(review.id, 'Review')"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                    class="bi bi-send" viewBox="0 0 16 16">
-                    <path
-                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
-                        14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
-                        7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
-                        0 0 1 .54.11ZM6.636 10.07l2.761 
-                        4.338L14.13 2.576zm6.787-8.201L1.591 
-                        6.602l4.339 2.76z"
+                    <!-- Comments Modal for each review - Added by CP -->
+                    <CommentsModal v-if="showModal" 
+                      :userID="userID" :userType="userType"
+                      :contentId="review.id" :contentType="'Review'"
+                      @close="showModal = false" 
                     />
-                  </svg>
-                </button>
-
-                <!-- Cancel Button -->
-                <button
-                  class="btn btn-outline-secondary rounded ms-2"
-                  type="button"
-                  @click="newReviewComment = '', addCommentMode = false"
-                >
-                  Cancel
-                </button>
               </div>
+              <!-- Add Comment Input - Added by CP -->
+              <div v-if="addCommentMode" class="row w-100 py-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                    placeholder="Write a comment..."
+                    aria-label="Write a comment..."
+                    :aria-describedby="'button-addon2-' + review.id"
+                    v-model="newReviewComment"  
+                  />
 
+                  <!-- Comment Button (Desktop) -->
+                  <button
+                    class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                    type="button"
+                    :id="'button-addon2-' + review.id"
+                    @click="addComment(review.id, 'Review')"
+                  >
+                    Comment
+                  </button>
+
+                  <!-- Comment Button (Mobile) -->
+                  <button
+                    class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                    type="button"
+                    :id="'button-addon2-' + review.id"
+                    @click="addComment(review.id, 'Review')"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-send" viewBox="0 0 16 16">
+                      <path
+                        d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                          14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                          7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                          0 0 1 .54.11ZM6.636 10.07l2.761 
+                          4.338L14.13 2.576zm6.787-8.201L1.591 
+                          6.602l4.339 2.76z"
+                      />
+                    </svg>
+                  </button>
+
+                  <!-- Cancel Button -->
+                  <button
+                    class="btn btn-outline-secondary rounded ms-2"
+                    type="button"
+                    @click="newReviewComment = '', addCommentMode = false"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+              </div>
             </div>
 
             
