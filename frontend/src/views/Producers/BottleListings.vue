@@ -2370,8 +2370,27 @@ tag, index
 
 
         <!-- comments start (By CP)-->
-        <div class="text-start mt-4">
-          <h1>Comments</h1>
+        <div class="text-start my-4 ms-1">
+          <h3 class="fw-bold mb-3">Community Discussion 💬</h3>
+
+          <!-- Comments List -->
+          <div v-for="comment in comments" :key="comment.id" class="row mb-3">
+            <CommentBox 
+              :comment="comment" :userID="userID" :userType="userType" 
+              :contentId="listing_id" contentType="Listing" 
+              @set-delete-comment="openDeleteModal" 
+              @comment-replied="handleReply"/>
+          </div>
+
+          <!-- Load More Comments Button -->
+          <div class="d-flex justify-content-center mb-3" v-if="hasMoreComments">
+            <button class="btn primary-btn btn-sm" @click="loadMoreComments">Load More Comments</button>
+          </div>
+
+          <!-- No More Comments Message -->
+          <div class="text-center" v-if="!hasMoreComments">
+            <p>Start a new discussion about this bottle!</p>
+          </div>
 
           <!--Add Comment Section -->
           <div class="row w-100 py-3">
@@ -2411,26 +2430,6 @@ tag, index
                 </svg>
               </button> 
             </div>
-          </div>
-
-          <!-- Comments List -->
-          <div v-for="comment in comments" :key="comment.id" class="row mb-3">
-
-            <CommentBox 
-              :comment="comment" :userID="userID" :userType="userType" 
-              :contentId="listing_id" contentType="Listing" 
-              @set-delete-comment="openDeleteModal" 
-              @comment-replied="handleReply"/>
-          </div>
-
-          <!-- Load More Comments Button -->
-          <div class="d-flex justify-content-center mb-3" v-if="hasMoreComments">
-            <button class="btn primary-btn btn-lg" @click="loadMoreComments">Load More Comments</button>
-          </div>
-
-          <!-- No More Comments Message -->
-          <div class="text-center" v-if="!hasMoreComments">
-            <p>No more comments to load.</p>
           </div>
 
           <!-- Delete Comment Modal-->
