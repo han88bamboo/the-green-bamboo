@@ -62,12 +62,95 @@
                       Add new Collection
                     </button>
                   </li>
+                  <!-- Cellar History Tab -->
+                  <li class="nav-item ms-auto">
+                    <button 
+                      class="nav-link folder-tab"
+                      :class="{ active: activeTab === 'history' }"
+                      @click="setActiveTab('history')"
+                      type="button"
+                    >
+                      <i class="bi bi-clock-history me-2"></i>
+                      Cellar History
+                    </button>
+                  </li>
                 </ul>
               </nav>
             </div>
 
             <!-- Cellar Surface - unified container for filters and items -->
             <section class="cellar-surface">
+              <!-- History Tab Content -->
+              <div v-if="activeTab === 'history'" class="history-tab-content">
+                <div class="cellar-change-log">
+                  <div class="card h-100">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history me-2"></i>
+                        Cellar History
+                      </h5>
+                    </div>
+                    <div class="card-body">
+                      <!-- Loading State -->
+                      <div v-if="loadingChangelog" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm me-2"></div>
+                        Loading changelog...
+                      </div>
+                      
+                      <!-- Error State -->
+                      <div v-else-if="changelogError" class="alert alert-danger small">
+                        {{ changelogError }}
+                      </div>
+                      
+                      <!-- Empty State -->
+                      <div v-else-if="safeChangelog.length === 0" class="text-center py-4 text-muted">
+                        <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
+                        <p class="small mb-0">No recent changes to your cellar</p>
+                      </div>
+                      
+                      <!-- Changelog Entries -->
+                      <div v-else-if="safeChangelog.length > 0" class="changelog-entries">
+                        <div 
+                          v-for="entry in safeChangelog" 
+                          :key="entry.id || `entry-${Date.now()}-${Math.random()}`"
+                          class="changelog-entry mb-3 p-3 border rounded"
+                        >
+                          <!-- Human-readable change description -->
+                          <div class="change-description mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="text-start" v-html="formatChangelogEntry(entry)"></span>
+                              <span class="badge ms-2" :class="getChangeTypeBadgeClass(entry?.changeType)">
+                                {{ formatChangeType(entry?.changeType) }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Load More Button -->
+                        <div v-if="hasMoreChangelog" class="text-center mt-3">
+                          <button 
+                            class="btn btn-outline-secondary btn-sm"
+                            @click="loadMoreChangelog"
+                            :disabled="loadingMoreChangelog"
+                          >
+                            <span v-if="loadingMoreChangelog" class="spinner-border spinner-border-sm me-1"></span>
+                            {{ loadingMoreChangelog ? 'Loading...' : 'Load More' }}
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <!-- Fallback Empty State -->
+                      <div v-else class="text-center py-4 text-muted">
+                        <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
+                        <p class="small mb-0">No recent changes to your cellar</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Collection/Items Tab Content -->
+              <div v-else>
               <!-- Filters Row -->
               <div class="filters-container">
                 <div class="row g-3">
@@ -591,6 +674,7 @@
                 </nav>
               </div>
             </div>
+            </div> <!-- End collection/items tab content (v-else) -->
             </section>
           </div>
 
@@ -1226,7 +1310,7 @@
             </div>
 
             <!-- Cellar Change Log Section -->
-            <div class="cellar-change-log mt-4">
+            <div class="cellar-change-log mt-4" >
               <div class="card h-100">
                 <div class="card-header">
                   <h5 class="card-title mb-0">
@@ -1253,7 +1337,7 @@
                   </div>
                   
                   <!-- Changelog Entries -->
-                  <div v-else-if="safeChangelog.length > 0" class="changelog-entries">
+                  <div v-else-if="safeChangelog.length > 0" class="changelog-entries" style="max-height: 400px;">
                     <div 
                       v-for="entry in safeChangelog" 
                       :key="entry.id || `entry-${Date.now()}-${Math.random()}`"
@@ -1299,7 +1383,7 @@
         <div class="right-sidebar-tab" @click="toggleRightSidebar">
           <div class="tab-content">
             <i :class="rightSidebarExpanded ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-            <span class="tab-text">{{ rightSidebarExpanded ? 'Close' : 'Add & History' }}</span>
+            <span class="tab-text">{{ rightSidebarExpanded ? 'Close' : 'Add Drinks' }}</span>
           </div>
         </div>
       </div>
@@ -4443,6 +4527,7 @@ export default {
   gap: 0.25rem;
   align-items: flex-end;
   padding-left: 1rem;
+  padding-right: 1rem;
   margin-bottom: 0;
 }
 
@@ -5592,6 +5677,9 @@ export default {
   z-index: 1051 !important;
   transform: translateY(-920px) !important; /* Move dropdown upwards */
   position: relative !important;
+  @media (max-width: 768px){
+    transform: translateY(-753px) !important;
+  }
 }
 
 :global(.pac-item) {
@@ -5643,7 +5731,7 @@ export default {
 }
 
 .changelog-entries {
-  max-height: 400px;
+  /* max-height: 400px; */
   overflow-y: auto;
 }
 
