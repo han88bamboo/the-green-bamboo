@@ -1320,10 +1320,7 @@
             <div class="d-flex justify-content-between align-items-center w-100">
               <div>
                 <h5 class="modal-title mb-0" id="itemDetailsModalLabel">
-                  {{ selectedGroup?.representative?.listingName || 'Item Details' }}
-                  <span v-if="selectedGroup?.representative?.variant" class="text-muted">
-                    ({{ selectedGroup.representative.variant }})
-                  </span>
+                  Item Details and Management
                 </h5>
               </div>
               <div class="d-flex align-items-center gap-3">
@@ -1366,7 +1363,12 @@
               <!-- Right Column - Drink Information Summary -->
               <div class="col-md-9">
                 <div class="drink-info-summary">
-                  <h6 class="section-header mb-3">Summary of Drink Information</h6>
+                  <h6 class="section-header mb-3">
+                    {{ selectedGroup?.representative?.listingName || 'Item Details' }}
+                    <span v-if="selectedGroup?.representative?.variant" class="text-muted">
+                      ({{ selectedGroup.representative.variant }})
+                    </span>
+                  </h6>
                   
                   <!-- Row 1: Producer | Bottler | Vintage | Country | Type | Category | Style -->
                   <div class="info-row mb-2">
