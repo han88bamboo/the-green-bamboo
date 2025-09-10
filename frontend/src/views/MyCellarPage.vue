@@ -1405,14 +1405,30 @@
                     </span>
                   </div>
 
-                  <!-- Row 4: Food Pairing -->
+                  <!-- Row 4: Average Purchase Price -->
+                  <div class="info-row mb-2">
+                    <span class="info-text text-muted">
+                      <strong>Average Purchase Price:</strong> 
+                      <span class="editable-value" v-if="getAveragePurchasePrice(selectedGroup).success">
+                        {{ getAveragePurchasePrice(selectedGroup).currency }} {{ getAveragePurchasePrice(selectedGroup).amount }}
+                      </span>
+                      <span class="text-muted" v-else-if="getAveragePurchasePrice(selectedGroup).error">
+                        {{ getAveragePurchasePrice(selectedGroup).error }}
+                      </span>
+                      <span class="text-muted" v-else>
+                        No purchase prices available
+                      </span>
+                    </span>
+                  </div>
+
+                  <!-- Row 5: Food Pairing -->
                   <div class="info-row mb-3" v-if="selectedGroup.representative.suggestedFoodPairing">
                     <span class="info-text text-muted">
                       <strong>Suggested Pairing:</strong> <span class="editable-value">{{ selectedGroup.representative.suggestedFoodPairing }}</span>
                     </span>
                   </div>
 
-                  <!-- Row 5: Quantity Owned -->
+                  <!-- Row 6: Quantity Owned -->
                   <div class="info-row mb-3">
                     <span class="info-text">
                       <strong>Quantity Owned:</strong> <span class="editable-value">{{ selectedGroup.bottleCount }}</span>
@@ -3185,6 +3201,93 @@ export default {
         breakdown[status] = (breakdown[status] || 0) + 1
       })
       return breakdown
+    },
+
+    // Convert currency to USD using fallback rates
+    convertToUSD(amount, fromCurrency) {
+      if (!amount || !fromCurrency) return null;
+      
+      // Fallback exchange rates to USD (approximate rates)
+      const fallbackRates = {
+        'USD': 1.0,
+        'EUR': 1.10,
+        'GBP': 1.25,
+        'JPY': 0.0067,
+        'CAD': 0.74,
+        'AUD': 0.66,
+        'SGD': 0.74,
+        'CHF': 1.12,
+        'CNY': 0.14,
+        'HKD': 0.13,
+        'SEK': 0.096,
+        'NOK': 0.092,
+        'DKK': 0.15
+      };
+
+      const rate = fallbackRates[fromCurrency.toUpperCase()];
+      if (rate === undefined) {
+        console.warn(`Unsupported currency: ${fromCurrency}`);
+        return null;
+      }
+
+      return parseFloat(amount) * rate;
+    },
+
+    // Calculate average purchase price for a group
+    getAveragePurchasePrice(group) {
+      if (!group || !group.bottles) {
+        return { error: 'No group data available' };
+      }
+
+      const bottlesWithPrices = [];
+      let hasNonUSDCurrency = false;
+      let conversionError = false;
+
+      // Collect all bottles with purchase prices
+      for (const bottle of group.bottles) {
+        const price = this.getBottleFieldValue ? 
+          this.getBottleFieldValue(bottle.cellarItemId, 'purchasePrice') : 
+          bottle.purchasePrice;
+        const currency = this.getBottleFieldValue ? 
+          this.getBottleFieldValue(bottle.cellarItemId, 'purchaseCurrency') : 
+          bottle.purchaseCurrency;
+
+        if (price && !isNaN(parseFloat(price)) && parseFloat(price) > 0) {
+          const priceFloat = parseFloat(price);
+          const currencyCode = currency || 'USD';
+
+          if (currencyCode !== 'USD') {
+            hasNonUSDCurrency = true;
+            const usdAmount = this.convertToUSD(priceFloat, currencyCode);
+            if (usdAmount === null) {
+              conversionError = true;
+              continue;
+            }
+            bottlesWithPrices.push(usdAmount);
+          } else {
+            bottlesWithPrices.push(priceFloat);
+          }
+        }
+      }
+
+      // Handle cases
+      if (bottlesWithPrices.length === 0) {
+        return { error: 'No purchase prices available' };
+      }
+
+      if (conversionError) {
+        return { error: 'Currency conversion error' };
+      }
+
+      // Calculate average
+      const sum = bottlesWithPrices.reduce((acc, price) => acc + price, 0);
+      const average = sum / bottlesWithPrices.length;
+
+      return {
+        success: true,
+        amount: average.toFixed(2),
+        currency: hasNonUSDCurrency ? ' USD (equivalent)' : ' USD'
+      };
     },
 
     // Navigate to listing page
