@@ -426,10 +426,10 @@
                           <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                           <span class="ms-2">
                             <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
-                              {{ group.representative.averageRating }} ★
+                              {{ group.representative.averageRating }}&nbsp;★
                             </span>
                             <span style="color: #f0b358; font-weight: normal;" v-else>
-                              - ★
+                              -&nbsp;★
                             </span>
                           </span>
                         </p>
