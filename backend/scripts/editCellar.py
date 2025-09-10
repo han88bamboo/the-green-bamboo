@@ -1,5 +1,5 @@
 # Port: 5002
-# Routes: /addToCellar (POST), /editCellar (POST), /getCollections/<ownerType>/<int:ownerID> (GET)
+# Routes: /addToCellar (POST), /editCellar (POST), /getCollections/<ownerType>/<int:ownerID> (GET), /createCollection (POST), /collections/public-status/<int:collection_id>/ (PUT)
 # Dataclass: myCellarItems, myCellarCollections
 # -----------------------------------------------------------------------------------------
 
@@ -1465,6 +1465,127 @@ def createCollection():
             "code": 409,
             "message": error_msg
         }), 409
+        
+    except psycopg2.Error as e:
+        print(f"TZHBackendLog: Database error occurred: {str(e)}")
+        print(f"TZHBackendLog: Database error type: {type(e).__name__}")
+        print(f"TZHBackendLog: Database error code: {getattr(e, 'pgcode', 'N/A')}")
+        
+        if conn:
+            print("TZHBackendLog: Rolling back transaction due to database error")
+            conn.rollback()
+        
+        print("TZHBackendLog: Returning 500 error response")
+        print("TZHBackendLog: ===========================================")
+        
+        return jsonify({
+            "code": 500,
+            "message": f"Database error: {str(e)}"
+        }), 500
+        
+    except Exception as e:
+        print(f"TZHBackendLog: General exception occurred: {str(e)}")
+        print(f"TZHBackendLog: Exception type: {type(e).__name__}")
+        
+        if conn:
+            print("TZHBackendLog: Rolling back transaction due to general exception")
+            conn.rollback()
+        
+        print("TZHBackendLog: Returning 500 error response")
+        print("TZHBackendLog: ===========================================")
+        
+        return jsonify({
+            "code": 500,
+            "message": f"Internal server error: {str(e)}"
+        }), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Update collection public status
+# - Updates the isPublic field for a specific collection
+# - Validates collection ownership
+# - Supports all owner types: user, producer, venue
+# - Possible return codes: 200 (Updated), 400 (Validation Error), 404 (Not Found), 500 (Server Error)
+@blueprint.route("/collections/public-status/<int:collection_id>/", methods=['PUT'])
+def updateCollectionPublicStatus(collection_id):
+    print("TZHBackendLog: ===========================================")
+    print(f"TZHBackendLog: Starting updateCollectionPublicStatus endpoint for collection {collection_id}")
+    
+    try:
+        conn = g.db
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        print("TZHBackendLog: Database connection established")
+        
+        data = request.get_json()
+        print("TZHBackendLog: Raw request data received:")
+        print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
+        
+        # Validate required fields
+        if 'isPublic' not in data:
+            error_msg = "Missing required field: isPublic"
+            print(f"TZHBackendLog: Validation failed - {error_msg}")
+            return jsonify({
+                "code": 400,
+                "message": error_msg
+            }), 400
+        
+        is_public = bool(data.get('isPublic'))
+        print(f"TZHBackendLog: Setting isPublic to: {is_public}")
+        
+        # First, verify the collection exists and get owner info for validation
+        print(f"TZHBackendLog: Checking if collection {collection_id} exists")
+        cur.execute("""
+            SELECT id, "ownerID", "ownerType", "collectionName", "isPublic"
+            FROM "myCellarCollections" 
+            WHERE id = %s
+        """, (collection_id,))
+        
+        collection = cur.fetchone()
+        if not collection:
+            error_msg = f"Collection with ID {collection_id} not found"
+            print(f"TZHBackendLog: {error_msg}")
+            return jsonify({
+                "code": 404,
+                "message": error_msg
+            }), 404
+        
+        print(f"TZHBackendLog: Found collection: {collection['collectionName']} (Owner: {collection['ownerType']} {collection['ownerID']})")
+        
+        # Update the collection's public status
+        print(f"TZHBackendLog: Updating collection {collection_id} isPublic to {is_public}")
+        cur.execute("""
+            UPDATE "myCellarCollections" 
+            SET "isPublic" = %s, "updatedDate" = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (is_public, collection_id))
+        
+        if cur.rowcount == 0:
+            error_msg = f"Failed to update collection {collection_id}"
+            print(f"TZHBackendLog: {error_msg}")
+            return jsonify({
+                "code": 500,
+                "message": error_msg
+            }), 500
+        
+        conn.commit()
+        print(f"TZHBackendLog: Successfully updated collection {collection_id} public status to {is_public}")
+        
+        # Return success response
+        response_data = {
+            "code": 200,
+            "message": "Collection public status updated successfully",
+            "data": {
+                "collectionId": collection_id,
+                "isPublic": is_public,
+                "collectionName": collection['collectionName']
+            }
+        }
+        
+        print("TZHBackendLog: Returning success response:")
+        print(f"TZHBackendLog: {json.dumps(response_data, indent=2, default=str)}")
+        print("TZHBackendLog: ===========================================")
+        
+        return jsonify(response_data), 200
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error occurred: {str(e)}")

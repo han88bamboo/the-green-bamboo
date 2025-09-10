@@ -154,6 +154,24 @@
               <!-- Filters Row -->
               <div class="filters-container">
                 <div class="row g-3">
+                  <!-- Public/Private Toggle (only show for non-"all" tabs) -->
+                  <div v-if="activeTab !== 'all' && activeTab !== 'history'" class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                    <div class="d-flex align-items-center h-100">
+                      <div class="form-check form-switch">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          id="publicToggle"
+                          v-model="currentCollectionIsPublic"
+                          @change="toggleCollectionPublicStatus"
+                        >
+                        <label class="form-check-label text-start small" for="publicToggle">
+                          {{ currentCollectionIsPublic ? 'Public' : 'Private' }}
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                   <!-- Drink Type Filter -->
                   <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.drinkType">
@@ -2300,6 +2318,7 @@ export default {
       // Tabs and collections
       activeTab: 'all',
       collections: [],
+      currentCollectionIsPublic: false,
       
       // Items and filtering
       allItems: [],
@@ -2806,6 +2825,14 @@ export default {
       
       await this.loadCellarData();
       
+      // Initialize collection public status toggle
+      if (this.activeTab !== 'all' && this.activeTab !== 'history') {
+        const collection = this.collections.find(c => c.id === this.activeTab)
+        if (collection) {
+          this.currentCollectionIsPublic = collection.isPublic || false
+        }
+      }
+      
       // Load changelog after cellar data is loaded, with additional safety
       try {
         await this.loadChangelogData();
@@ -2948,7 +2975,43 @@ export default {
     setActiveTab(tabId) {
       this.activeTab = tabId
       this.currentPage = 1
+      
+      // Update the current collection's public status when switching tabs
+      if (tabId !== 'all' && tabId !== 'history') {
+        const collection = this.collections.find(c => c.id === tabId)
+        if (collection) {
+          this.currentCollectionIsPublic = collection.isPublic || false
+        }
+      }
       // TODO: Fetch filtered data if needed
+    },
+
+    // Collection public status toggle
+    async toggleCollectionPublicStatus() {
+      if (this.activeTab === 'all' || this.activeTab === 'history') {
+        return // No action for these tabs
+      }
+
+      try {
+        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        // TODO: Replace with actual backend endpoint when ready
+        await axios.put(`${baseUrl}/editCellar/collections/public-status/${this.activeTab}/`, {
+          isPublic: this.currentCollectionIsPublic
+        })
+
+        // Update the collection in local state
+        const collection = this.collections.find(c => c.id === this.activeTab)
+        if (collection) {
+          collection.isPublic = this.currentCollectionIsPublic
+        }
+
+        console.log('Collection public status updated:', this.currentCollectionIsPublic)
+      } catch (error) {
+        console.error('Error updating collection public status:', error)
+        // Revert the toggle on error
+        this.currentCollectionIsPublic = !this.currentCollectionIsPublic
+        // TODO: Show error toast notification
+      }
     },
     
     // Filter management
@@ -6458,6 +6521,33 @@ export default {
     flex: 0 0 auto;
     width: 14.2857%; /* 100% / 7 = ~14.29% */
   }
+}
+
+/* Public/Private Toggle Styling */
+.form-check.form-switch {
+  padding-left: 2.5em;
+}
+
+.form-check.form-switch .form-check-input {
+  width: 2em;
+  margin-left: -2.5em;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%2855, 63, 81, 0.75%29'/%3e%3c/svg%3e");
+}
+
+.form-check.form-switch .form-check-input:checked {
+  background-color: #198754;
+  border-color: #198754;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%28255, 255, 255, 1.0%29'/%3e%3c/svg%3e");
+}
+
+.form-check.form-switch .form-check-label {
+  margin-left: 0.5rem;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.form-check.form-switch .form-check-input:checked + .form-check-label {
+  color: #198754;
 }
 
 </style>
