@@ -939,6 +939,7 @@ def editCellar():
                     'subLocation': 'subLocation',
                     'noteToSelf': 'noteToSelf',
                     'purchasePlaceName': 'purchasePlaceName',
+                    'purchaseAddress': 'purchaseAddress',
                     'purchaseDate': 'purchaseDate',
                     'deliveryDate': 'deliveryDate',
                     'purchasePrice': 'purchasePrice',

@@ -3558,6 +3558,29 @@ export default {
       try {
         this.loading = true;
         
+        // Filter out empty/null values from bottle changes
+        const cleanedBottleChanges = {};
+        Object.keys(this.modalEditing.bottleChanges).forEach(bottleId => {
+          const originalFields = this.modalEditing.bottleChanges[bottleId];
+          const cleanedFields = {};
+          
+          Object.keys(originalFields).forEach(fieldName => {
+            const fieldValue = originalFields[fieldName];
+            // Only include non-empty values
+            if (fieldValue !== null && fieldValue !== undefined && fieldValue !== '') {
+              cleanedFields[fieldName] = fieldValue;
+            }
+          });
+          
+          // Only include bottles that have actual changes
+          if (Object.keys(cleanedFields).length > 0) {
+            cleanedBottleChanges[bottleId] = cleanedFields;
+          }
+        });
+        
+        console.log('TZHFrontendLog: Original bottle changes:', JSON.stringify(this.modalEditing.bottleChanges, null, 2));
+        console.log('TZHFrontendLog: Cleaned bottle changes:', JSON.stringify(cleanedBottleChanges, null, 2));
+        
         const payload = {
           variantGroupID: this.selectedGroup.variantGroupID,
           changes: {
@@ -3566,16 +3589,23 @@ export default {
               to: this.modalEditing.selectedCollectionId
             },
             masterData: this.modalEditing.masterData,
-            bottleChanges: this.modalEditing.bottleChanges,
+            bottleChanges: cleanedBottleChanges,
             archivedBottles: this.modalEditing.archivedBottles,
             newBottles: this.modalEditing.newBottles.map(nb => nb.bottle)
           }
         };
+        
+        console.log('TZHFrontendLog: Full payload being sent to backend:', JSON.stringify(payload, null, 2));
 
         const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
         const fullUrl = `${baseUrl}/editCellar/editCellar`;
+        console.log('TZHFrontendLog: Making API call to:', fullUrl);
+        
         const response = await axios.post(fullUrl, payload);
         
+        console.log('TZHFrontendLog: API response received');
+        console.log('TZHFrontendLog: Response status:', response.status);
+        console.log('TZHFrontendLog: Response data:', JSON.stringify(response.data, null, 2));
         console.log('SaveModalChanges response:', response);
         
         if (response.data.success) {
@@ -3599,8 +3629,29 @@ export default {
           alert('Error saving changes: ' + (response.data.message || 'Unknown error'));
         }
       } catch (error) {
+        console.error('TZHFrontendLog: ========== ERROR SAVING CHANGES ==========');
+        console.error('TZHFrontendLog: Error object:', error);
+        console.error('TZHFrontendLog: Error message:', error.message);
+        console.error('TZHFrontendLog: Error response:', error.response);
+        
+        if (error.response) {
+          console.error('TZHFrontendLog: Response status:', error.response.status);
+          console.error('TZHFrontendLog: Response data:', JSON.stringify(error.response.data, null, 2));
+          console.error('TZHFrontendLog: Response headers:', error.response.headers);
+        }
+        
+        console.error('TZHFrontendLog: Request config:', error.config);
+        console.error('TZHFrontendLog: ================================================');
         console.error('Error saving changes:', error);
-        alert('Error saving changes. Please try again.');
+        
+        let errorMessage = 'Error saving changes. Please try again.';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = `Error: ${error.response.data.message}`;
+        } else if (error.message) {
+          errorMessage = `Error: ${error.message}`;
+        }
+        
+        alert(errorMessage);
       } finally {
         this.loading = false;
       }
@@ -4002,31 +4053,63 @@ export default {
     
     // Handle place selection from Google Maps autocomplete for modal
     setModalPurchasePlaceFromAutocomplete(place) {
-      console.log('TZHFrontendLog: setModalPurchasePlaceFromAutocomplete called with place:', place);
+      console.log('TZHFrontendLog: ========================================');
+      console.log('TZHFrontendLog: setModalPurchasePlaceFromAutocomplete called');
+      console.log('TZHFrontendLog: place object:', place);
       
       // Find which bottle this is for by checking which input is focused
-      const bottleId = this.currentModalPurchaseBottleId;
+      let bottleId = this.currentModalPurchaseBottleId;
+      
+      // If we don't have a bottle ID, try to find it from the currently focused element
+      if (!bottleId) {
+        const activeElement = document.activeElement;
+        if (activeElement) {
+          bottleId = this.findBottleIdFromRef(activeElement);
+          console.log('TZHFrontendLog: Found bottle ID from active element:', bottleId);
+        }
+      }
+      
       if (!bottleId) {
         console.error('TZHFrontendLog: Could not determine bottle ID for purchase location');
+        console.log('TZHFrontendLog: currentModalPurchaseBottleId:', this.currentModalPurchaseBottleId);
+        console.log('TZHFrontendLog: document.activeElement:', document.activeElement);
         return;
       }
+      
+      console.log('TZHFrontendLog: Working with bottle ID:', bottleId);
       
       if (place && place.geometry) {
         const selectedPlace = place.name || place.formatted_address;
         const selectedAddress = place.formatted_address;
         
-        // Store Google Maps data in bottle changes (just like other fields)
+        console.log('TZHFrontendLog: Processing place selection for bottle:', bottleId);
+        console.log('TZHFrontendLog: selectedPlace:', selectedPlace);
+        console.log('TZHFrontendLog: selectedAddress:', selectedAddress);
+        
+        // Store Google Maps data in bottle changes using backend-compatible field names
+        console.log('TZHFrontendLog: Before storing - current bottleChanges:', JSON.stringify(this.modalEditing.bottleChanges[bottleId], null, 2));
+        
         this.onBottleFieldChange(bottleId, 'purchasePlaceName', selectedPlace);
-        this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', selectedPlace);
-        this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', selectedAddress);
-        this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', this.checkVenueIfExists(place));
+        this.onBottleFieldChange(bottleId, 'purchaseAddress', selectedAddress);
+        this.onBottleFieldChange(bottleId, 'purchaseVenueId', this.checkVenueIfExists(place));
+        
+        console.log('TZHFrontendLog: After storing - bottleChanges:', JSON.stringify(this.modalEditing.bottleChanges[bottleId], null, 2));
+        console.log('TZHFrontendLog: Check getModalSelectedPurchasePlace:', this.getModalSelectedPurchasePlace(bottleId));
+        console.log('TZHFrontendLog: Check getModalSelectedPurchaseAddress:', this.getModalSelectedPurchaseAddress(bottleId));
         
         console.log('TZHFrontendLog: Modal purchase location selected:', {
           bottleId: bottleId,
           place: selectedPlace,
           address: selectedAddress
         });
+        
+        // Force Vue to update the reactive properties
+        this.$forceUpdate();
+        console.log('TZHFrontendLog: Force update called');
+      } else {
+        console.log('TZHFrontendLog: Place object missing geometry or invalid:', place);
       }
+      console.log('TZHFrontendLog: ========================================');
     },
 
     // Handle input changes for modal purchase location
@@ -4038,13 +4121,13 @@ export default {
       const inputValue = typeof event === 'string' ? event : event.target.value;
       
       // Get current Google Maps selection for this bottle
-      const currentSelected = this.getBottleFieldValue(bottleId, '_gmapSelectedPlace') || '';
+      const currentSelected = this.getBottleFieldValue(bottleId, 'purchasePlaceName') || '';
       
       // If user is typing manually (not from autocomplete), clear the selection
       if (inputValue !== currentSelected) {
-        this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', '');
-        this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', '');
-        this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', null);
+        this.onBottleFieldChange(bottleId, 'purchasePlaceName', '');
+        this.onBottleFieldChange(bottleId, 'purchaseAddress', '');
+        this.onBottleFieldChange(bottleId, 'purchaseVenueId', null);
       }
       
       // Update the bottle field with manual entry
@@ -4059,20 +4142,24 @@ export default {
       this.currentModalPurchaseBottleId = bottleId;
       
       console.log('TZHFrontendLog: Modal purchase location input focused for bottle:', bottleId);
+      console.log('TZHFrontendLog: Input element:', inputElement);
+      console.log('TZHFrontendLog: Found bottle container:', inputElement.closest('[data-bottle-id]'));
     },
 
     // Handle blur on modal purchase location input
     onModalPurchaseLocationBlur() {
-      // Clear the current bottle ID reference
-      this.currentModalPurchaseBottleId = null;
+      // Delay clearing the bottle ID to allow place_changed event to fire
+      setTimeout(() => {
+        this.currentModalPurchaseBottleId = null;
+        console.log('TZHFrontendLog: Cleared currentModalPurchaseBottleId after delay');
+      }, 200);
     },
 
     // Clear selected purchase location for modal
     clearModalSelectedPurchaseLocation(bottleId) {
       this.onBottleFieldChange(bottleId, 'purchasePlaceName', '');
-      this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', '');
-      this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', '');
-      this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', null);
+      this.onBottleFieldChange(bottleId, 'purchaseAddress', '');
+      this.onBottleFieldChange(bottleId, 'purchaseVenueId', null);
       
       console.log('TZHFrontendLog: Modal purchase location cleared for bottle:', bottleId);
     },
@@ -4083,31 +4170,44 @@ export default {
     },
 
     getModalSelectedPurchasePlace(bottleId) {
-      return this.getBottleFieldValue(bottleId, '_gmapSelectedPlace') || '';
+      return this.getBottleFieldValue(bottleId, 'purchasePlaceName') || '';
     },
 
     getModalSelectedPurchaseAddress(bottleId) {
-      return this.getBottleFieldValue(bottleId, '_gmapSelectedAddress') || '';
+      return this.getBottleFieldValue(bottleId, 'purchaseAddress') || '';
     },
 
     // Helper to find bottle ID from input element reference
     findBottleIdFromRef(inputElement) {
+      console.log('TZHFrontendLog: findBottleIdFromRef called with element:', inputElement);
+      
       // Look for the data-bottle-id attribute on the parent bottle container
       const bottleContainer = inputElement.closest('[data-bottle-id]');
       if (bottleContainer) {
-        return bottleContainer.getAttribute('data-bottle-id');
+        const bottleId = bottleContainer.getAttribute('data-bottle-id');
+        console.log('TZHFrontendLog: Found bottle ID from container:', bottleId);
+        return bottleId;
       }
       
       // Fallback: Look through the refs to find which bottle this input belongs to
       for (const [refName, refElement] of Object.entries(this.$refs)) {
-        if (refName.startsWith('modalPurchaseLocationInput_') && refElement === inputElement) {
-          return refName.replace('modalPurchaseLocationInput_', '');
-        }
-        // Handle case where ref is an array
-        if (Array.isArray(refElement) && refElement.includes(inputElement)) {
-          return refName.replace('modalPurchaseLocationInput_', '');
+        if (refName.startsWith('modalPurchaseLocationInput_')) {
+          // Handle case where ref is an array
+          if (Array.isArray(refElement)) {
+            if (refElement.includes(inputElement)) {
+              const bottleId = refName.replace('modalPurchaseLocationInput_', '');
+              console.log('TZHFrontendLog: Found bottle ID from refs array:', bottleId);
+              return bottleId;
+            }
+          } else if (refElement === inputElement) {
+            const bottleId = refName.replace('modalPurchaseLocationInput_', '');
+            console.log('TZHFrontendLog: Found bottle ID from refs:', bottleId);
+            return bottleId;
+          }
         }
       }
+      
+      console.log('TZHFrontendLog: Could not find bottle ID for element');
       return null;
     },
 
