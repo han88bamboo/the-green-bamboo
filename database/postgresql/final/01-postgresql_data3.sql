@@ -1070,7 +1070,7 @@ CREATE TABLE "myCellarCollections" (
     "ownerType" VARCHAR(50) NOT NULL, -- 'user', 'producer', 'venue'
     "collectionName" VARCHAR(255) NOT NULL,
     "isDefault" BOOLEAN DEFAULT FALSE, -- True for the default collection
-    "isPublic" BOOLEAN DEFAULT FALSE, -- True if publicly viewable
+    "isPublic" BOOLEAN DEFAULT TRUE, -- True if publicly viewable
     "createdDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updatedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE ("ownerID", "ownerType", "collectionName") -- Prevent duplicate collection names per owner

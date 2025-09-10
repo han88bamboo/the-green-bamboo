@@ -151,8 +151,21 @@
 
               <!-- Collection/Items Tab Content -->
               <div v-else>
+              <!-- Mobile Filters Toggle Button (only shown on mobile) -->
+              <div class="mobile-filters-toggle d-block d-sm-none mb-3 mt-2">
+                <button 
+                  class="btn btn-outline-secondary btn-sm w-100" 
+                  type="button"
+                  @click="toggleMobileFilters"
+                >
+                  <i class="bi" :class="mobileFiltersCollapsed ? 'bi-funnel' : 'bi-funnel-fill'"></i>
+                  {{ mobileFiltersCollapsed ? 'Show Filters' : 'Hide Filters' }}
+                  <i class="bi ms-2" :class="mobileFiltersCollapsed ? 'bi-chevron-down' : 'bi-chevron-up'"></i>
+                </button>
+              </div>
+              
               <!-- Filters Row -->
-              <div class="filters-container">
+              <div class="filters-container" :class="{ 'mobile-collapsed': mobileFiltersCollapsed }">
                 <div class="row g-3">
                   <!-- Public/Private Toggle (only show for non-"all" tabs) -->
                   <div v-if="activeTab !== 'all' && activeTab !== 'history'" class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
@@ -2321,6 +2334,9 @@ export default {
       collections: [],
       currentCollectionIsPublic: false,
       
+      // Mobile UI states
+      mobileFiltersCollapsed: true, // Start collapsed on mobile
+      
       // Items and filtering
       allItems: [],
       searchQuery: '',
@@ -2901,6 +2917,11 @@ export default {
     // Right sidebar toggle
     toggleRightSidebar() {
       this.rightSidebarExpanded = !this.rightSidebarExpanded;
+    },
+
+    // Mobile filters toggle
+    toggleMobileFilters() {
+      this.mobileFiltersCollapsed = !this.mobileFiltersCollapsed;
     },
 
     // Data loading
@@ -5077,6 +5098,33 @@ export default {
 .filters-container {
   padding: 1rem;
   border-bottom: 1px solid #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+/* Mobile Filters Toggle Button */
+.mobile-filters-toggle {
+  padding: 0 1rem;
+}
+
+.mobile-filters-toggle .btn {
+  border-radius: 8px;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+}
+
+/* Mobile Collapsible Filters */
+@media (max-width: 450px) {
+  .filters-container.mobile-collapsed {
+    max-height: 0;
+    padding: 0 1rem;
+    overflow: hidden;
+    border-bottom: none;
+  }
+  
+  .filters-container:not(.mobile-collapsed) {
+    max-height: 500px; /* Adjust based on your filters height */
+    padding: 1rem;
+  }
 }
 
 /* Items Grid */
