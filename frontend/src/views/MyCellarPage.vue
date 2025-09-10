@@ -432,7 +432,7 @@
                             <span 
                               v-for="(count, status) in getGroupStatusBreakdown(group.bottles)"
                               :key="status"
-                              class="status-badge badge me-1"
+                              class="status-badge badge me-1 mb-2"
                               :class="getStatusBadgeClass(status)"
                               :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
                             >
@@ -661,9 +661,13 @@
                         <!-- Notes (Desktop - inline) -->
                         <div class="col-lg-2 d-none d-lg-block" v-if="group.representative.noteToSelf">
                           <p 
-                            class="card-notes text-muted small border rounded p-1 mb-0" 
+                            class="card-notes text-muted small border rounded p-1 mb-0 position-relative d-inline-block" 
                             :title="group.representative.noteToSelf"
                           >
+                            <!-- Note icon -->
+                            <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
+                              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
+                            </svg>
                             {{ truncateText(group.representative.noteToSelf, 80) }}
                           </p>
                         </div>
@@ -673,9 +677,13 @@
                       <div class="row d-lg-none" v-if="group.representative.noteToSelf">
                         <div class="col-12">
                           <p 
-                            class="card-notes text-muted small mt-2 border rounded p-2 mb-0" 
+                            class="card-notes text-muted small mt-2 border rounded p-2 mb-0 position-relative d-inline-block" 
                             :title="group.representative.noteToSelf"
                           >
+                            <!-- Note icon -->
+                            <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
+                              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A .5.5 0 0 1 2 15.5V2z"/>
+                            </svg>
                             {{ truncateText(group.representative.noteToSelf, 150) }}
                           </p>
                         </div>
