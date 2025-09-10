@@ -1598,6 +1598,7 @@
                   :key="bottle.cellarItemId"
                   class="bottle-item p-4 mb-3 border rounded"
                   :class="{ 'bottle-consumed': bottle.status === 'Consumed' }"
+                  :data-bottle-id="bottle.cellarItemId"
                   style="border-color: #0dcaf0 !important;"
                 >
                   <!-- Bottle Header -->
@@ -3007,7 +3008,7 @@ export default {
         // Determine which form field to update based on the input element
         if (this.activePersonalNotesInput.closest('.modal')) {
           // Modal form - find the specific bottle or determine if it's master field
-          const bottleContainer = this.activePersonalNotesInput.closest('.bottle-card')
+          const bottleContainer = this.activePersonalNotesInput.closest('.bottle-item')
           if (bottleContainer) {
             // Individual bottle field
             const cellarItemId = bottleContainer.dataset.bottleId
