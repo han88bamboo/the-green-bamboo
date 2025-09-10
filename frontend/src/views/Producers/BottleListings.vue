@@ -1063,8 +1063,8 @@
 
                 <!-- row 2: rating -->
                 <div class="row">
-                  <div class="col-12 mb-3">
-                    <div class="row align-items-center text-start">
+                  <div class="col-11 mb-3">
+                    <div class="row align-items-center text-start" >
                       <p class="text-star mb-1 fw-bold my-2">
                       <span class="badge rounded-pill step-index ">2</span>
                         &nbsp;My Rating<span class="text-danger">*</span>
@@ -1073,29 +1073,31 @@
                         <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
                         Stars
                       </label>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">1</label>
-                      </div>
-                      <div class="col">
-                        <div class="slider-container" style="position: relative">
-                          <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
-                            id="customRange" />
-                          <div class="tickmarks">
-                            <span class="tick" style="left: 5%">|</span>
-                            <span class="tick" style="left: 15%">|</span>
-                            <span class="tick" style="left: 25%">|</span>
-                            <span class="tick" style="left: 35%">|</span>
-                            <span class="tick" style="left: 45%">|</span>
-                            <span class="tick" style="left: 55%">|</span>
-                            <span class="tick" style="left: 65%">|</span>
-                            <span class="tick" style="left: 75%">|</span>
-                            <span class="tick" style="left: 85%">|</span>
-                            <span class="tick" style="left: 95%">|</span>
+                      <div class="d-flex align-items-center rounded p-2 mx-3" style="background-color: rgb(255, 246, 228);">
+                        <div class="col-auto">
+                          <label for="customRange" class="ms-2 form-label fw-bold">1</label>
+                        </div>
+                        <div class="col">
+                          <div class="slider-container" style="transform: scale(0.95); transform-origin: center;">
+                            <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
+                              id="customRange"   />
+                            <div class="tickmarks">
+                              <span class="tick" style="left: 5%">|</span>
+                              <span class="tick" style="left: 15%">|</span>
+                              <span class="tick" style="left: 25%">|</span>
+                              <span class="tick" style="left: 35%">|</span>
+                              <span class="tick" style="left: 45%">|</span>
+                              <span class="tick" style="left: 55%">|</span>
+                              <span class="tick" style="left: 65%">|</span>
+                              <span class="tick" style="left: 75%">|</span>
+                              <span class="tick" style="left: 85%">|</span>
+                              <span class="tick" style="left: 95%">|</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">10</label>
+                        <div class="col-auto">
+                          <label for="customRange" class="me-2 form-label fw-bold">10</label>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1130,7 +1132,7 @@
                       <div class="col-12">
                         <p class="text-start mb-0 fw-bold">
                           <span class="badge rounded-pill step-index">3</span>&nbsp;
-                          Review<span class="text-danger">*</span>
+                          Review<span class="text-danger fw-bold">*</span>
                         </p>
 
                       </div>
@@ -1387,7 +1389,13 @@
                 <!-- row 10: flavour tags -->
                 <div class="row">
                   <div class="form-group mb-3 text-start ">
-                    <p class="text-start mb-1 fw-bold my-2"><span class="badge rounded-pill step-index">4</span>&nbsp;Flavour Tags</p>
+                    <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">4</span>
+                      &nbsp;Flavour Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag the flavours you taste:
+                      </span>
+                    </p>
                     <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
                       Selected flavour tags:
                       <div class="row">
@@ -1412,8 +1420,7 @@
                         </div>
                       </div>
                     </div>
-                    Select flavour tags:
-                    <br />
+                    
                     <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags"
                       v-bind:key="family['_id']" :style="{
                         color: 'white',
@@ -1456,7 +1463,13 @@
                 <!-- row 11: observation tags -->
                 <div class="row">
                   <div class="form-group mb-3 text-start">
-                    <p class="text-start mb-1 fw-bold my-2"><span class="badge rounded-pill step-index">5</span>&nbsp;Action Tags</p>
+                     <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">5</span>
+                      &nbsp;Action Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag what's noteworthy about this drink!
+                      </span>
+                    </p>
                     <div v-if="selectedObservations.length > 0" class="form-label pb-2">
                       Selected action tags:
                       <div class="row">
@@ -1473,8 +1486,6 @@
                         </div>
                       </div>
                     </div>
-                    Select action tags:
-                    <br />
                     <!-- Buttons for the first 8 observations -->
                     <button v-for="observation in observationTags.slice(0, 8)"
                       @click="toggleObservationSelection(observation)" v-bind:key="observation"
@@ -2277,7 +2288,7 @@
                     />
               </div>
               <!-- Add Comment Input - Added by CP -->
-              <div v-if="addCommentMode" class="row w-100 py-3">
+              <div v-if="addCommentMode" class="row w-100 pb-3">
                 <div class="input-group">
                   <input
                     type="text"
@@ -6286,6 +6297,10 @@ export default {
 /* Preview image fills the same frame */
 .review-preview-photo{
   width:100%; height:100%; object-fit:cover; display:block;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+  background: #FF3E31;   /* change this to your colour */
 }
 
 </style>
