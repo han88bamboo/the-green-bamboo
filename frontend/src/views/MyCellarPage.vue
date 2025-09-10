@@ -1457,7 +1457,7 @@
             <div class="drink-details-section mb-4">
               <h6 class="section-header text-start">Drink Details</h6>
               <div class="row g-3 mb-4">
-                <div class="col-md-3">
+                <div class="col-md-3" v-if="getMasterFieldValue('variant')">
                   <label class="form-label">Vintage</label>
                   <input 
                     type="number" 
@@ -1469,7 +1469,7 @@
                     readonly
                   >
                 </div>
-                <div class="col-md-3">
+                <div :class="getMasterFieldValue('variant') ? 'col-md-3' : 'col-md-4'">
                   <label class="form-label">Format</label>
                   <select 
                     class="form-select" 
@@ -1483,7 +1483,7 @@
                     <option value="Keg">Keg</option>
                   </select>
                 </div>
-                <div class="col-md-3">
+                <div :class="getMasterFieldValue('variant') ? 'col-md-3' : 'col-md-4'">
                   <label class="form-label">Volume</label>
                   <div class="input-group">
                     <input 
@@ -1505,7 +1505,7 @@
                     </select>
                   </div>
                 </div>
-                <div class="col-md-3">
+                <div :class="getMasterFieldValue('variant') ? 'col-md-3' : 'col-md-4'">
                   <label class="form-label">Current Market Value</label>
                   <div class="input-group">
                     <select 
