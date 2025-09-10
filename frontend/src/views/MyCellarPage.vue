@@ -2,7 +2,7 @@
   <NavBar />
   
   <main>
-    <!-- Page Header -->
+    <!-- Page Header 
     <section class="page-header py-4">
       <div class="container">
         <div class="row">
@@ -11,7 +11,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </section>-->
 
     <!-- Main Content Grid -->
     <section class="main-content py-4">
@@ -31,7 +31,7 @@
                       @click="setActiveTab('all')"
                       type="button"
                     >
-                      All Drinks in Cellar
+                      My Cellar (All Drinks)
                       <span class="item-count" v-if="!loading">{{ totalItemCount }} Items</span>
                       <span class="item-count" v-else>...</span>
                     </button>
