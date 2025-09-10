@@ -451,13 +451,17 @@
                           </div>
                           
                           <!-- Notes (from representative bottle) -->
-                          <p 
-                            class="card-notes text-muted small mt-1 border rounded p-2" 
+                          <div 
+                            class="card-notes text-muted small mt-1 border rounded p-2 position-relative" 
                             v-if="group.representative.noteToSelf"
                             :title="group.representative.noteToSelf"
                           >
+                            <!-- Note icon -->
+                            <svg class="position-absolute" style="top: 4px; right: 6px; width: 12px; height: 12px; opacity: 0.5;" viewBox="0 0 16 16" fill="currentColor">
+                              <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
+                            </svg>
                             {{ group.representative.noteToSelf }}
-                          </p>
+                          </div>
                         </div>
                       </div>
 
@@ -527,13 +531,17 @@
                               </p>
 
                               <!-- Notes (truncated) -->
-                              <p 
-                                class="text-muted small mb-2" 
+                              <div 
+                                class="text-muted small mb-2 border rounded p-2 position-relative" 
                                 v-if="group.representative.noteToSelf"
                                 :title="group.representative.noteToSelf"
                               >
+                                <!-- Note icon -->
+                                <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.5;" viewBox="0 0 16 16" fill="currentColor">
+                                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
+                                </svg>
                                 {{ truncateText(group.representative.noteToSelf, 100) }}
-                              </p>
+                              </div>
                             </div>
 
                             <!-- Side Info -->
