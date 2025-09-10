@@ -1120,6 +1120,20 @@
                           ></textarea>
                         </div>
 
+                        <!-- Collection Selection -->
+                        <div class="form-group mb-3">
+                          <label class="form-label text-start">Select Collection</label>
+                          <select 
+                            class="form-select"
+                            v-model="addDrinkForm.selectedCollectionId"
+                          >
+                            <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                              {{ collection.collectionName }}
+                            </option>
+                          </select>
+                          <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                        </div>
+
                         <!-- Show More Fields Button -->
                         <div class="form-group mb-3">
                           <button 
@@ -2653,6 +2667,20 @@
                       rows="2"
                       placeholder="Add your personal notes about these bottles..."
                     ></textarea>
+                  </div>
+
+                  <!-- Collection Selection -->
+                  <div class="form-group mb-3">
+                    <label class="form-label text-start">Select Collection</label>
+                    <select 
+                      class="form-select"
+                      v-model="addDrinkForm.selectedCollectionId"
+                    >
+                      <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                        {{ collection.collectionName }}
+                      </option>
+                    </select>
+                    <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
                   </div>
 
                   <!-- Show More Fields Button -->
@@ -5000,14 +5028,25 @@ export default {
       console.log('TZHFrontendLog: Purchase location input focused');
       
       // Add custom class to Google Maps dropdown when it appears
+      // Use multiple attempts with longer delays for modal contexts
       this.$nextTick(() => {
-        setTimeout(() => {
-          const pacContainer = document.querySelector('.pac-container');
-          if (pacContainer) {
-            pacContainer.classList.add('add-drink-pac-container');
-            pacContainer.setAttribute('data-input-source', 'purchase-location');
-          }
-        }, 100); // Small delay to ensure Google has created the element
+        const attemptToStylePacContainer = (attempt = 1, maxAttempts = 10) => {
+          setTimeout(() => {
+            const pacContainer = document.querySelector('.pac-container');
+            if (pacContainer) {
+              pacContainer.classList.add('add-drink-pac-container');
+              pacContainer.setAttribute('data-input-source', 'purchase-location');
+              console.log('TZHFrontendLog: Successfully styled pac-container on attempt', attempt);
+            } else if (attempt < maxAttempts) {
+              console.log('TZHFrontendLog: pac-container not found, retrying attempt', attempt + 1);
+              attemptToStylePacContainer(attempt + 1, maxAttempts);
+            } else {
+              console.log('TZHFrontendLog: pac-container not found after', maxAttempts, 'attempts');
+            }
+          }, attempt === 1 ? 100 : 200); // First attempt after 100ms, subsequent attempts after 200ms
+        };
+        
+        attemptToStylePacContainer();
       });
     },
 
@@ -5144,10 +5183,38 @@ export default {
       console.log('TZHFrontendLog: Modal purchase location input focused for bottle:', bottleId);
       console.log('TZHFrontendLog: Input element:', inputElement);
       console.log('TZHFrontendLog: Found bottle container:', inputElement.closest('[data-bottle-id]'));
+      
+      // Add custom class to Google Maps dropdown when it appears (modal context)
+      this.$nextTick(() => {
+        const attemptToStylePacContainer = (attempt = 1, maxAttempts = 10) => {
+          setTimeout(() => {
+            const pacContainer = document.querySelector('.pac-container');
+            if (pacContainer) {
+              pacContainer.classList.add('add-drink-pac-container');
+              pacContainer.setAttribute('data-input-source', 'modal-purchase-location');
+              console.log('TZHFrontendLog: Successfully styled modal pac-container on attempt', attempt);
+            } else if (attempt < maxAttempts) {
+              console.log('TZHFrontendLog: Modal pac-container not found, retrying attempt', attempt + 1);
+              attemptToStylePacContainer(attempt + 1, maxAttempts);
+            } else {
+              console.log('TZHFrontendLog: Modal pac-container not found after', maxAttempts, 'attempts');
+            }
+          }, attempt === 1 ? 150 : 250); // Longer delays for modal context
+        };
+        
+        attemptToStylePacContainer();
+      });
     },
 
     // Handle blur on modal purchase location input
     onModalPurchaseLocationBlur() {
+      // Remove custom class when input loses focus
+      const pacContainer = document.querySelector('.pac-container');
+      if (pacContainer) {
+        pacContainer.classList.remove('add-drink-pac-container');
+        pacContainer.removeAttribute('data-input-source');
+      }
+      
       // Delay clearing the bottle ID to allow place_changed event to fire
       setTimeout(() => {
         this.currentModalPurchaseBottleId = null;
@@ -7007,7 +7074,7 @@ export default {
   transform: translateY(-920px) !important; 
   position: relative !important;
   @media (max-width: 451px){
-    transform: translateY(-753px) !important;
+    transform: translateY(-683px) !important;
   }
 }
 
@@ -7297,7 +7364,7 @@ export default {
     position: fixed;
     top: 50%;
     right: 0;
-    transform: translateY(100%);
+    transform: translateY(-50%);
     width: auto;
     border-radius: 12px 0 0 12px;
     margin: 0;
