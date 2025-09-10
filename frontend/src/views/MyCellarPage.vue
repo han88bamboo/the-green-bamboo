@@ -883,6 +883,8 @@
                             <option value="Bottle">Bottle</option>
                             <option value="Can">Can</option>
                             <option value="Sample">Sample</option>
+                            <option value="Carton / Pouch">Carton / Pouch</option>
+                            <option value="Keg">Keg</option>
                           </select>
                         </div>
                         <div class="col-md-6">
@@ -1458,6 +1460,8 @@
                     <option value="Bottle">Bottle</option>
                     <option value="Can">Can</option>
                     <option value="Sample">Sample</option>
+                    <option value="Carton / Pouch">Carton / Pouch</option>
+                    <option value="Keg">Keg</option>
                   </select>
                 </div>
                 <div class="col-md-3">
