@@ -727,7 +727,7 @@
                       </div>
                       
                       <!-- Notes (Mobile - separate row) -->
-                      <div class="row d-lg-none" v-if="group.representative.noteToSelf">
+                      <div class="row d-lg-none mobile-view-hide" v-if="group.representative.noteToSelf">
                         <div class="col-12">
                           <p 
                             class="card-notes text-muted small mt-2 border rounded p-2 mb-0 position-relative d-inline-block" 
