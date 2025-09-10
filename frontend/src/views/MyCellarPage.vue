@@ -2840,7 +2840,7 @@ export default {
         // Determine which form field to update based on the input element
         if (this.activeCurrentLocationInput.closest('.modal')) {
           // Modal form - find the specific bottle or determine if it's master field
-          const bottleContainer = this.activeCurrentLocationInput.closest('.bottle-card')
+          const bottleContainer = this.activeCurrentLocationInput.closest('.bottle-item')
           if (bottleContainer) {
             // Individual bottle field
             const cellarItemId = bottleContainer.dataset.bottleId
@@ -2924,7 +2924,7 @@ export default {
         // Determine which form field to update based on the input element
         if (this.activeSubLocationInput.closest('.modal')) {
           // Modal form - find the specific bottle or determine if it's master field
-          const bottleContainer = this.activeSubLocationInput.closest('.bottle-card')
+          const bottleContainer = this.activeSubLocationInput.closest('.bottle-item')
           if (bottleContainer) {
             // Individual bottle field
             const cellarItemId = bottleContainer.dataset.bottleId
