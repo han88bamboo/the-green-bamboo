@@ -1511,7 +1511,7 @@
           <div class="modal-header">
             <div class="d-flex justify-content-between align-items-center w-100">
               <div>
-                <h5 class="modal-title mb-0" id="itemDetailsModalLabel">
+                <h5 class="modal-title mb-0 mobile-view-hide" id="itemDetailsModalLabel">
                   Item Details and Management
                 </h5>
               </div>
@@ -2320,7 +2320,7 @@
           <div class="add-drink-to-cellar-mobile">
             <form @submit.prevent="addDrinkToCellar">
               <!-- Producer Search -->
-              <div class="form-group mb-3">
+              <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
                   Producer (Optional)
                   <small class="text-muted d-block text-start">Select a producer to filter drink search</small>
@@ -2367,7 +2367,7 @@
               </div>
 
               <!-- Drink Search -->
-              <div class="form-group mb-3">
+              <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
                   Drink Name <span class="text-danger">*</span>
                   <small class="text-muted d-block text-start">Start typing to search for drinks</small>
@@ -7084,7 +7084,7 @@ export default {
     position: fixed;
     top: 50%;
     right: 0;
-    transform: translateY(-50%);
+    transform: translateY(100%);
     width: auto;
     border-radius: 12px 0 0 12px;
     margin: 0;
@@ -7100,6 +7100,28 @@ export default {
   .right-sidebar-tab .tab-text {
     writing-mode: vertical-rl;
     text-orientation: mixed;
+  }
+}
+
+/* Extra small screens - make tab much smaller */
+@media (max-width: 450px) {
+  .right-sidebar-tab {
+    padding: 0px 0px !important;
+    min-height: 70px !important;
+    border-radius: 8px 0 0 8px !important;
+  }
+  
+  .right-sidebar-tab .tab-content {
+    gap: 6px !important;
+  }
+  
+  .right-sidebar-tab .tab-text {
+    font-size: 0.7rem !important;
+    letter-spacing: 1px !important;
+  }
+  
+  .right-sidebar-tab i {
+    font-size: 1.1rem !important;
   }
 }
 
