@@ -452,7 +452,7 @@
                           
                           <!-- Notes (from representative bottle) -->
                           <div 
-                            class="card-notes text-muted small mt-1 border rounded p-2 position-relative" 
+                            class="card-notes text-muted small mt-1 border rounded p-2 position-relative d-inline-block" 
                             v-if="group.representative.noteToSelf"
                             :title="group.representative.noteToSelf"
                           >
@@ -532,7 +532,7 @@
 
                               <!-- Notes (truncated) -->
                               <div 
-                                class="text-muted small mb-2 border rounded p-2 position-relative" 
+                                class="text-muted small mb-2 border rounded p-2 position-relative d-inline-block" 
                                 v-if="group.representative.noteToSelf"
                                 :title="group.representative.noteToSelf"
                               >
