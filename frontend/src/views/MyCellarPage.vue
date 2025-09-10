@@ -5174,8 +5174,9 @@ export default {
 }
 
 .currency-select {
-  max-width: 80px;
-  flex: 0 0 80px;
+  flex: 0 0 30%;
+  max-width: 100px;
+  min-width: 75px;
 }
 
 .volume-unit-select {
@@ -5242,8 +5243,9 @@ export default {
   }
   
   .currency-select {
-    max-width: 70px;
-    flex: 0 0 70px;
+    flex: 0 0 35%;
+    max-width: 90px;
+    min-width: 70px;
   }
   
   .volume-unit-select {
@@ -5918,4 +5920,8 @@ export default {
   text-align: left !important;
   margin-left: 0.25rem;
 }
+.input-group-sm > .form-select{
+  padding-right:2rem;
+}
+
 </style>
