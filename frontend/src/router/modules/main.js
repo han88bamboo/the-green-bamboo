@@ -69,12 +69,12 @@ const routes = [
     component: () => import('@/views/MyCellar.vue'),
     props: true
   },
-  // {
-  //   path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
-  //   name: "myCellar",
-  //   component: () => import('@/views/MyCellarPage.vue'),
-  //   props: true
-  // },
+  {
+    path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
+    name: "myCellar",
+    component: () => import('@/views/MyCellarPage.vue'),
+    props: true
+  },
 ];
 
 export default routes;
