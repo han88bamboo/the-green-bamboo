@@ -423,13 +423,7 @@
                         
                         <!-- Secondary Line -->
                         <p class="card-subtitle text-muted mb-2">
-                          {{ group.representative.drinkType }}
-                          <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                        </p>
-
-                        <!-- Producer -->
-                        <p class="card-producer text-muted mb-2" v-if="group.representative.producerName">
-                          {{ group.representative.producerName }}
+                          <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                         </p>
 
                         <!-- Notes (from representative bottle) -->
@@ -536,9 +530,7 @@
                               
                               <!-- Secondary Line -->
                               <p class="text-muted mb-1 small">
-                                {{ group.representative.drinkType }}
-                                <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                                <span v-if="group.representative.producerName"> | {{ group.representative.producerName }}</span>
+                                <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                               </p>
 
                               <!-- Notes (truncated) -->
