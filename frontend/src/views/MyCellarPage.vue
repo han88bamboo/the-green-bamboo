@@ -46,7 +46,8 @@
                       v-if="!collection.isDefault"
                     >
                       {{ collection.collectionName }}
-                      <span class="item-count">{{ collection.itemCount }} Items</span>
+                      <span class="item-count" v-if="!loading">{{ getCollectionItemCount(collection.id) }} Items</span>
+                      <span class="item-count" v-else>...</span>
                     </button>
                   </li>
                   <!-- Add Collection Ghost Tab -->
@@ -3288,6 +3289,14 @@ export default {
         amount: average.toFixed(2),
         currency: hasNonUSDCurrency ? ' USD (equivalent)' : ' USD'
       };
+    },
+
+    // Get item count for a specific collection
+    getCollectionItemCount(collectionId) {
+      if (!this.allItems || !collectionId) {
+        return 0;
+      }
+      return this.allItems.filter(item => item.collectionId === collectionId).length;
     },
 
     // Navigate to listing page
