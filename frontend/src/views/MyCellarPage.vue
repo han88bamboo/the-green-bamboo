@@ -424,7 +424,7 @@
                         <!-- Secondary Line -->
                         <p class="card-subtitle text-muted mb-2">
                           <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                          <span class="ms-2">
+                          <span> | 
                             <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
                               {{ group.representative.averageRating }}&nbsp;★
                             </span>
@@ -536,7 +536,7 @@
                               <!-- Secondary Line -->
                               <p class="text-muted mb-1 small">
                                 <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                                <span class="ms-2">
+                                <span> | 
                                   <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
                                     {{ group.representative.averageRating }} ★
                                   </span>
@@ -635,7 +635,7 @@
                             <span v-if="group.representative.producerName">{{ group.representative.producerName }}</span>
                             <span v-if="group.representative.drinkType"> | {{ group.representative.drinkType }}</span>
                             <span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
-                            <span class="ms-2">
+                            <span> | 
                               <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
                                 {{ group.representative.averageRating }} ★
                               </span>
