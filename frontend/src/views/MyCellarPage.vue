@@ -18,7 +18,7 @@
       <div class="container-fluid">
         <div class="row">
           <!-- Left Column - Collections & Items (responsive width) -->
-          <div :class="rightSidebarExpanded ? 'col-12 col-lg-8' : 'col-12'">
+          <div :class="'col-12 ' + (rightSidebarExpanded ? 'col-lg-8' : 'col-lg-12')">
             <!-- Tab Navigation -->
             <div class="tabs-container">
               <nav class="tabs-nav p-0">
@@ -786,9 +786,9 @@
             </section>
           </div>
 
-          <!-- Right Column - Add Drink to Cellar (4/12 columns) -->
+          <!-- Right Column - Add Drink to Cellar (4/12 columns) - Desktop Only -->
           <div 
-            class="col-12 col-lg-4 mt-4 mt-lg-0 right-sidebar-column" 
+            class="col-12 col-lg-4 mt-4 mt-lg-0 right-sidebar-column d-none d-lg-block" 
             :class="{ 'expanded': rightSidebarExpanded }"
           >
             <div class="right-sidebar-content">
@@ -1490,8 +1490,8 @@
         <!-- Collapsible Tab Button -->
         <div class="right-sidebar-tab" @click="toggleRightSidebar">
           <div class="tab-content">
-            <i :class="rightSidebarExpanded ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-            <span class="tab-text">{{ rightSidebarExpanded ? 'Close' : 'Add Drinks' }}</span>
+            <i :class="isMobile ? 'bi-chevron-left' : (rightSidebarExpanded ? 'bi-chevron-right' : 'bi-chevron-left')"></i>
+            <span class="tab-text">{{ isMobile ? 'Add Drinks' : (rightSidebarExpanded ? 'Close' : 'Add Drinks') }}</span>
           </div>
         </div>
       </div>
@@ -2293,11 +2293,579 @@
     </div>
   </main>
 
+  <!-- Mobile Add Drinks Modal -->
+  <div 
+    class="modal fade" 
+    id="mobileAddDrinksModal" 
+    tabindex="-1" 
+    aria-labelledby="mobileAddDrinksModalLabel" 
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="mobileAddDrinksModalLabel">
+            <i class="bi bi-plus-circle me-2"></i>
+            Add Drink(s) to Cellar
+          </h5>
+          <button 
+            type="button" 
+            class="btn-close" 
+            data-bs-dismiss="modal" 
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <!-- This contains the exact same content as the right sidebar -->
+          <div class="add-drink-to-cellar-mobile">
+            <form @submit.prevent="addDrinkToCellar">
+              <!-- Producer Search -->
+              <div class="form-group mb-3">
+                <label class="form-label text-start">
+                  Producer (Optional)
+                  <small class="text-muted d-block text-start">Select a producer to filter drink search</small>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control"
+                  v-model="addDrinkForm.producerSearchQuery"
+                  @input="debouncedSearchProducers"
+                  placeholder="Search for a producer to filter drinks..."
+                />
+                <ul 
+                  class="list-group mt-1"
+                  v-if="addDrinkForm.producerSearchResults && addDrinkForm.producerSearchResults.length > 0 && addDrinkForm.producerSearchQuery"
+                >
+                  <li 
+                    v-for="producer in addDrinkForm.producerSearchResults" 
+                    :key="producer.id"
+                    class="list-group-item list-group-item-action"
+                    @click="selectProducer(producer)"
+                  >
+                    {{ producer.producerName }}
+                    <small class="text-muted">
+                      ({{ producer.originCountry }})
+                    </small>
+                  </li>
+                </ul>
+                <!-- Show selected producer -->
+                <div 
+                  v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
+                  class="mt-2 p-2 bg-light border rounded text-start"
+                >
+                  <small class="text-success fw-bold">
+                    ✓ Producer Selected: {{ addDrinkForm.selectedProducer.producerName }}
+                    <button 
+                      type="button" 
+                      class="btn btn-sm btn-outline-danger ms-2"
+                      @click="clearSelectedProducer"
+                    >
+                      Clear
+                    </button>
+                  </small>
+                </div>
+              </div>
+
+              <!-- Drink Search -->
+              <div class="form-group mb-3">
+                <label class="form-label text-start">
+                  Drink Name <span class="text-danger">*</span>
+                  <small class="text-muted d-block text-start">Start typing to search for drinks</small>
+                  <small 
+                    v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
+                    class="text-info fw-bold d-block text-start"
+                  >
+                    Filtered by {{ addDrinkForm.selectedProducer.producerName }}
+                  </small>
+                </label>
+                <input 
+                  type="text" 
+                  class="form-control"
+                  v-model="addDrinkForm.searchQuery"
+                  @input="debouncedSearchDrinks"
+                  :placeholder="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id ? 
+                    'Search drinks from ' + addDrinkForm.selectedProducer.producerName : 
+                    'Enter a drink name to search...'"
+                  required
+                />
+                <ul 
+                  class="list-group mt-1"
+                  v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0 && addDrinkForm.searchQuery"
+                >
+                  <li 
+                    v-for="listing in addDrinkForm.searchResults" 
+                    :key="listing.id"
+                    class="list-group-item list-group-item-action"
+                    @click="selectDrink(listing)"
+                  >
+                    {{ listing.listingName }}
+                    <small class="text-muted d-block">
+                      Producer: {{ listing.producerName }} | 
+                      Type: {{ listing.drinkType }} | 
+                      ABV: {{ listing.abv ? listing.abv + '%' : 'N/A' }} |
+                      Country: {{ listing.originCountry }}
+                    </small>
+                  </li>
+                </ul>
+                <!-- Show selected drink -->
+                <div 
+                  v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id" 
+                  class="mt-2 p-2 bg-light border rounded text-start"
+                >
+                  <small class="text-success fw-bold">
+                    ✓ Drink Selected: {{ addDrinkForm.selectedDrink.listingName }}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Drink Preview Section -->
+              <div 
+                v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id"
+                class="cellar-item-preview mb-4"
+              >
+                <hr>
+                <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Drink Preview:</p>
+                
+                <!-- Mobile Preview -->
+                <div class="row">
+                  <!-- Item Image -->
+                  <div class="col-4 text-center">
+                    <img 
+                      :src="getPreviewImageUrl(addDrinkForm.selectedDrink)"
+                      class="preview-image-mobile"
+                      style="width: 80px; height: 80px; object-fit: contain;"
+                      @error="onImageError"
+                    />
+                  </div>
+
+                  <!-- Item Information -->
+                  <div class="col-8">
+                    <!-- Item Name -->
+                    <h6 class="fw-bold text-start text-decoration-underline mb-1 small">
+                      {{ addDrinkForm.selectedDrink.listingName }}
+                      <span v-if="addDrinkForm.vintage"> [{{ addDrinkForm.vintage }}]</span>
+                    </h6>
+
+                    <!-- Item Details -->
+                    <p class="text-start mb-1 small text-muted">
+                      <span v-if="addDrinkForm.selectedDrink.producerName">
+                        {{ addDrinkForm.selectedDrink.producerName }}
+                      </span>
+                      <span v-if="addDrinkForm.selectedDrink.drinkType">
+                        | {{ addDrinkForm.selectedDrink.drinkType }}
+                      </span>
+                      <span v-if="addDrinkForm.selectedDrink.abv">
+                        | {{ addDrinkForm.selectedDrink.abv }}% ABV
+                      </span>
+                    </p>
+
+                    <!-- Cellar Details -->
+                    <p class="text-start fw-bold text-primary mb-0 small">
+                      Adding {{ addDrinkForm.quantity || 1 }} bottle{{ (addDrinkForm.quantity || 1) !== 1 ? 's' : '' }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quantity Section -->
+              <div class="form-group mb-3" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                <label class="form-label text-start">
+                  Quantity to Add<span class="text-danger">*</span>
+                </label>
+                <input 
+                  type="number" 
+                  class="form-control"
+                  v-model="addDrinkForm.quantity"
+                  min="1"
+                  required
+                  placeholder="Number of bottles"
+                />
+              </div>
+
+              <!-- Group Properties Section -->
+              <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                <hr>
+                <h6 class="section-header text-start mb-3">
+                  <i class="bi bi-collection me-2"></i>
+                  Group Properties
+                  <small class="text-muted d-block fw-normal">Values applied to only Master Item within this group.</small>
+                </h6>
+
+                <!-- Row 1: Vintage -->
+                <div class="row g-3 mb-3" v-if="addDrinkForm.selectedDrink && ['Wine', 'Sake'].includes(addDrinkForm.selectedDrink.drinkType)">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Vintage</label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      v-model="addDrinkForm.vintage"
+                      min="1900" 
+                      max="2030"
+                      placeholder="e.g., 2020"
+                    />
+                  </div>
+                </div>
+
+                <!-- Row 2: Format, Volume -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Format</label>
+                    <select 
+                      class="form-select"
+                      v-model="addDrinkForm.format"
+                    >
+                      <option value="Bottle">Bottle</option>
+                      <option value="Can">Can</option>
+                      <option value="Sample">Sample</option>
+                      <option value="Carton / Pouch">Carton / Pouch</option>
+                      <option value="Keg">Keg</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Volume</label>
+                    <div class="input-group">
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.volumeNumber"
+                        step="0.1" 
+                        min="0"
+                        placeholder="750"
+                      />
+                      <select class="form-select" v-model="addDrinkForm.volumeUnit" style="max-width: 70px;">
+                        <option value="ml">ml</option>
+                        <option value="oz">oz</option>
+                        <option value="l">L</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 3: Market Value -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Current Market Value</label>
+                    <div class="input-group">
+                      <select class="form-select" v-model="addDrinkForm.currentValueCurrency" style="max-width: 80px;">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                      </select>
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.currentValueEstimation"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 4: Drinking Window -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Drink Onwards Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="date" 
+                        class="form-control"
+                        v-model="addDrinkForm.drinkOnwardsDate"
+                        ref="mobiledrinkOnwardsDateInput"
+                      />
+                      <span 
+                        class="input-group-text date-picker-trigger"
+                        @click="$refs.mobiledrinkOnwardsDateInput.showPicker()"
+                        role="button"
+                        title="Open calendar"
+                      >
+                        <i class="bi bi-calendar3"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Drink By Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="date" 
+                        class="form-control"
+                        v-model="addDrinkForm.drinkByDate"
+                        ref="mobiledrinkByDateInput"
+                      />
+                      <span 
+                        class="input-group-text date-picker-trigger"
+                        @click="$refs.mobiledrinkByDateInput.showPicker()"
+                        role="button"
+                        title="Open calendar"
+                      >
+                        <i class="bi bi-calendar3"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 5: Food Pairing -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Suggested Food Pairing</label>
+                    <div class="input-group">
+                      <input 
+                        type="text" 
+                        class="form-control"
+                        v-model="addDrinkForm.suggestedFoodPairing"
+                        @focus="onFoodPairingFocus"
+                        @blur="onFoodPairingBlur"
+                        placeholder="e.g., Grilled salmon, Dark chocolate"
+                      />
+                      <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Individual Item Properties Section -->
+              <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                <hr>
+                <h6 class="section-header text-start mb-3">
+                  <i class="bi bi-bottle me-2"></i>
+                  Individual Item Properties
+                  <small class="text-muted d-block fw-normal">
+                    Values here are applied to every individual bottle (can be adjusted later in the cellar)
+                  </small>
+                </h6>
+
+                <!-- Row 1: Status, Consumption -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Status</label>
+                    <select 
+                      class="form-select"
+                      v-model="addDrinkForm.status"
+                    >
+                      <option value="Purchased">Purchased</option>
+                      <option value="In Possession">In Possession</option>
+                      <option value="On Its Way">On Its Way</option>
+                      <option value="Held Elsewhere">Held Elsewhere</option>
+                      <option value="Wishlisted">Wishlisted</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Consumption</label>
+                    <select 
+                      class="form-select"
+                      v-model="addDrinkForm.consumption"
+                    >
+                      <option value="Unopened">Unopened</option>
+                      <option value="Opened">Opened</option>
+                      <option value="Empty">Empty</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 2: Storage Location, Sub Location -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Storage Location</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      v-model="addDrinkForm.currentLocation"
+                      @focus="onCurrentLocationFocus"
+                      @blur="onCurrentLocationBlur"
+                      placeholder="e.g., Wine fridge, Cellar rack 3"
+                    />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Sub Location</label>
+                    <input 
+                      type="text" 
+                      class="form-control"
+                      v-model="addDrinkForm.subLocation"
+                      @focus="onSubLocationFocus"
+                      @blur="onSubLocationBlur"
+                      placeholder="e.g., Minibar, Kitchen cabinet"
+                    />
+                  </div>
+                </div>
+
+                <!-- Row 3: Place of Purchase -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Place of Purchase</label>
+                    <div class="purchase-location-container" style="position: relative;">
+                      <!-- Google Maps Autocomplete Input -->
+                      <div class="input-group">
+                        <GMapAutocomplete 
+                          placeholder="e.g., Wine shop, Online store, or enter manually"
+                          @place_changed="setPurchasePlaceFromAutocomplete" 
+                          @input="onPurchaseLocationInput"
+                          @focus="onPurchaseLocationFocus" 
+                          @blur="onPurchaseLocationBlur"
+                          class="form-control" 
+                          ref="mobilePurchaseLocationInput" 
+                          :value="addDrinkForm.purchaseLocationInputValue"
+                          :options="{ types: ['establishment'] }"
+                        />
+                        <span class="input-group-text" :title="addDrinkForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                          <i class="bi bi-geo-alt" :class="{ 'text-success': addDrinkForm.selectedPurchasePlace }"></i>
+                        </span>
+                      </div>
+                      
+                      <!-- Location confirmation display -->
+                      <div v-if="addDrinkForm.selectedPurchasePlace && addDrinkForm.selectedPurchaseAddress" 
+                           class="alert alert-success mt-2 mb-0 small">
+                        📍 Selected: {{ addDrinkForm.selectedPurchasePlace }}
+                        <br>
+                        <small class="text-muted">{{ addDrinkForm.selectedPurchaseAddress }}</small>
+                        <button 
+                          type="button" 
+                          class="btn btn-sm btn-outline-danger ms-2"
+                          @click="clearSelectedPurchaseLocation"
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 4: Purchase Date, Delivery Date -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Purchase Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="date" 
+                        class="form-control"
+                        v-model="addDrinkForm.purchaseDate"
+                        ref="mobilePurchaseDateInput"
+                      />
+                      <span 
+                        class="input-group-text date-picker-trigger"
+                        @click="$refs.mobilePurchaseDateInput.showPicker()"
+                        role="button"
+                        title="Open calendar"
+                      >
+                        <i class="bi bi-calendar3"></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-start">Delivery Date</label>
+                    <div class="input-group">
+                      <input 
+                        type="date" 
+                        class="form-control"
+                        v-model="addDrinkForm.deliveryDate"
+                        ref="mobileDeliveryDateInput"
+                      />
+                      <span 
+                        class="input-group-text date-picker-trigger"
+                        @click="$refs.mobileDeliveryDateInput.showPicker()"
+                        role="button"
+                        title="Open calendar"
+                      >
+                        <i class="bi bi-calendar3"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 5: Purchase Price -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Purchase Price</label>
+                    <div class="input-group">
+                      <select class="form-select" v-model="addDrinkForm.purchaseCurrency" style="max-width: 80px;">
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="JPY">JPY</option>
+                        <option value="CAD">CAD</option>
+                        <option value="AUD">AUD</option>
+                      </select>
+                      <input 
+                        type="number" 
+                        class="form-control"
+                        v-model="addDrinkForm.purchasePrice"
+                        step="0.01"
+                        min="0"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Row 6: Personal Notes -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Personal Notes</label>
+                    <textarea 
+                      class="form-control"
+                      v-model="addDrinkForm.personalNotes"
+                      @focus="onPersonalNotesFocus"
+                      @blur="onPersonalNotesBlur"
+                      rows="3"
+                      placeholder="Add your personal notes about these bottles..."
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Collection Selection Section -->
+              <div class="form-section mb-4" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                <hr>
+                <h6 class="section-header text-start mb-3">
+                  <i class="bi bi-collection me-2"></i>
+                  Collection Selection
+                  <small class="text-muted d-block fw-normal">Choose which collection to add these bottles to.</small>
+                </h6>
+
+                <!-- Collection Dropdown -->
+                <div class="row g-3 mb-3">
+                  <div class="col-md-12">
+                    <label class="form-label text-start">Select Collection</label>
+                    <select 
+                      class="form-select"
+                      v-model="addDrinkForm.selectedCollectionId"
+                    >
+                      <option v-for="collection in collections" :key="collection.id" :value="collection.id">
+                        {{ collection.collectionName }}
+                      </option>
+                    </select>
+                    <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <div class="d-grid">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  :disabled="!canAddToCellar || addingToCellar"
+                >
+                  <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
+import { Modal } from 'bootstrap'
 // import { useToast } from "vue-toastification";
 
 export default {
@@ -2325,6 +2893,9 @@ export default {
       // Data loading states
       loading: true,
       error: null,
+      
+      // Responsive state
+      isMobile: false,
       
       // Tabs and collections
       activeTab: 'all',
@@ -2816,15 +3387,13 @@ export default {
   },
   async mounted() {
     try {
-      // Set initial sidebar state based on screen size
-      this.rightSidebarExpanded = window.innerWidth < 992;
+      // Set initial responsive state
+      this.isMobile = window.innerWidth < 992;
+      this.rightSidebarExpanded = false;
       
       // Add resize listener for responsive behavior
       this.handleResize = () => {
-        const isMobile = window.innerWidth < 992;
-        if (isMobile && !this.rightSidebarExpanded) {
-          this.rightSidebarExpanded = true;
-        }
+        this.isMobile = window.innerWidth < 992;
       };
       window.addEventListener('resize', this.handleResize);
       
@@ -2913,7 +3482,14 @@ export default {
   methods: {
     // Right sidebar toggle
     toggleRightSidebar() {
-      this.rightSidebarExpanded = !this.rightSidebarExpanded;
+      if (this.isMobile) {
+        // On mobile, open the modal instead of toggling sidebar
+        const modal = new Modal(document.getElementById('mobileAddDrinksModal'));
+        modal.show();
+      } else {
+        // On desktop, toggle the sidebar as before
+        this.rightSidebarExpanded = !this.rightSidebarExpanded;
+      }
     },
 
     // Mobile filters toggle
@@ -6471,40 +7047,48 @@ export default {
 /* Responsive adjustments for mobile */
 @media (max-width: 991.98px) {
   .right-sidebar-tab {
-    position: relative;
-    top: auto;
-    right: auto;
-    transform: none;
-    width: 100%;
-    border-radius: 8px;
-    margin: 1rem 0;
-    min-height: 50px;
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    width: auto;
+    border-radius: 12px 0 0 12px;
+    margin: 0;
+    min-height: 100px;
+    z-index: 1000;
   }
   
   .right-sidebar-tab .tab-content {
-    flex-direction: row;
+    flex-direction: column;
+    gap: 10px;
   }
   
   .right-sidebar-tab .tab-text {
-    writing-mode: initial;
-    text-orientation: initial;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
   }
-  
-  .right-sidebar-column {
-    position: static !important;
-    transform: none !important;
-    right: auto !important;
-    width: auto !important;
-    height: auto !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding-top: 0 !important;
-  }
-  
-  /* On mobile, show the sidebar normally when expanded */
-  .right-sidebar-column:not(.expanded) .right-sidebar-content {
-    display: none;
-  }
+}
+
+/* Mobile Add Drinks Modal */
+.add-drink-to-cellar-mobile {
+  padding: 0;
+}
+
+.add-drink-to-cellar-mobile .form-group {
+  margin-bottom: 1rem;
+}
+
+.add-drink-to-cellar-mobile .list-group {
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.add-drink-to-cellar-mobile .list-group-item {
+  border-color: #dee2e6;
+}
+
+.add-drink-to-cellar-mobile .list-group-item:hover {
+  background-color: #f8f9fa;
 }
 
 /* On large screens, make the sidebar slide in */
