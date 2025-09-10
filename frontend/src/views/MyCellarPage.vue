@@ -426,15 +426,6 @@
                           <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                         </p>
 
-                        <!-- Notes (from representative bottle) -->
-                        <p 
-                          class="card-notes text-muted small" 
-                          v-if="group.representative.noteToSelf"
-                          :title="group.representative.noteToSelf"
-                        >
-                          {{ group.representative.noteToSelf }}
-                        </p>
-
                         <!-- Status Overview -->
                         <div class="status-info mt-2">
                           <div class="status-breakdown">
@@ -458,27 +449,29 @@
                               </span>
                             </small>
                           </div>
+                          
+                          <!-- Notes (from representative bottle) -->
+                          <p 
+                            class="card-notes text-muted small mt-1 border rounded p-2" 
+                            v-if="group.representative.noteToSelf"
+                            :title="group.representative.noteToSelf"
+                          >
+                            {{ group.representative.noteToSelf }}
+                          </p>
                         </div>
                       </div>
 
                       <!-- Hover Actions (Desktop Only) -->
-                      <div class="hover-actions d-none d-lg-flex">
+                      <div class="hover-actions d-none d-lg-flex justify-content-center">
                         <button 
                           class="btn btn-sm btn-outline-primary"
                           @click.stop="consumeGroup(group)"
-                          title="Coming soon"
+                          
                           disabled
                         >
-                          Consume
+                          Edit / Learn More
                         </button>
-                        <button 
-                          class="btn btn-sm btn-outline-secondary"
-                          @click.stop="adjustGroup(group)"
-                          title="Coming soon"
-                          disabled
-                        >
-                          Adjust
-                        </button>
+
                       </div>
                     </div>
                   </div>
