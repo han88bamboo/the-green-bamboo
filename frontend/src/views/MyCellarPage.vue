@@ -1784,17 +1784,39 @@
                   <div class="row g-3 mb-3">
                     <div class="col-md-3">
                       <label class="form-label small">Place of Purchase</label>
-                      <div class="input-group input-group-sm">
-                        <input 
-                          type="text" 
-                          class="form-control" 
-                          :value="getBottleFieldValue(bottle.cellarItemId, 'purchasePlaceName')"
-                          @input="onBottleFieldChange(bottle.cellarItemId, 'purchasePlaceName', $event.target.value)"
-                          placeholder="Enter location"
-                        >
-                        <span class="input-group-text" title="Google Maps integration coming soon">
-                          <i class="bi bi-geo-alt"></i>
-                        </span>
+                      <div class="purchase-location-container" style="position: relative;">
+                        <div class="input-group input-group-sm">
+                          <GMapAutocomplete 
+                            placeholder="e.g., Wine shop, Online store, or enter manually"
+                            @place_changed="setModalPurchasePlaceFromAutocomplete" 
+                            @input="onModalPurchaseLocationInput"
+                            @focus="onModalPurchaseLocationFocus" 
+                            @blur="onModalPurchaseLocationBlur"
+                            class="form-control" 
+                            :ref="`modalPurchaseLocationInput_${bottle.cellarItemId}`"
+                            :value="getModalPurchaseLocationInputValue(bottle.cellarItemId)"
+                            :options="{ types: ['establishment'] }"
+                          />
+                          <span class="input-group-text" :title="getModalSelectedPurchasePlace(bottle.cellarItemId) ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                            <i class="bi bi-geo-alt" :class="{ 'text-success': getModalSelectedPurchasePlace(bottle.cellarItemId) }"></i>
+                          </span>
+                        </div>
+                        
+                        <!-- Location confirmation display -->
+                        <div v-if="getModalSelectedPurchasePlace(bottle.cellarItemId) && getModalSelectedPurchaseAddress(bottle.cellarItemId)" 
+                             class="alert alert-success mt-1 mb-0 small p-2">
+                          📍 Selected: {{ getModalSelectedPurchasePlace(bottle.cellarItemId) }}
+                          <br>
+                          <small class="text-muted">{{ getModalSelectedPurchaseAddress(bottle.cellarItemId) }}</small>
+                          <button 
+                            type="button" 
+                            class="btn btn-sm btn-outline-danger ms-2"
+                            @click="clearModalSelectedPurchaseLocation(bottle.cellarItemId)"
+                            style="font-size: 0.7rem; padding: 0.125rem 0.25rem;"
+                          >
+                            Clear
+                          </button>
+                        </div>
                       </div>
                     </div>
                     <div class="col-md-3">
@@ -2250,7 +2272,7 @@ export default {
         archivedBottles: new Set(), // Track bottles marked for archiving
         newBottles: [], // Track new bottles added to the group
         collectionChange: null, // Track collection changes
-        pendingCollectionId: null // Track collection dropdown selection
+        pendingCollectionId: null, // Track collection dropdown selection
       },
 
       // Add drink to cellar form
@@ -2304,6 +2326,9 @@ export default {
       
       // Add to cellar state
       addingToCellar: false,
+      
+      // Modal purchase location tracking
+      currentModalPurchaseBottleId: null,
       
       // Food pairing suggestions
       foodPairingSuggestions: [],
@@ -3193,6 +3218,9 @@ export default {
         originalCollectionId: null,
         selectedCollectionId: null
       };
+      
+      // Clear current bottle ID reference
+      this.currentModalPurchaseBottleId = null;
     },
 
     // Master record field change handlers
@@ -3969,6 +3997,121 @@ export default {
     },
 
     // ============ End Purchase Location Methods ============
+
+    // ============ Modal Purchase Location Google Maps Methods ============
+    
+    // Handle place selection from Google Maps autocomplete for modal
+    setModalPurchasePlaceFromAutocomplete(place) {
+      console.log('TZHFrontendLog: setModalPurchasePlaceFromAutocomplete called with place:', place);
+      
+      // Find which bottle this is for by checking which input is focused
+      const bottleId = this.currentModalPurchaseBottleId;
+      if (!bottleId) {
+        console.error('TZHFrontendLog: Could not determine bottle ID for purchase location');
+        return;
+      }
+      
+      if (place && place.geometry) {
+        const selectedPlace = place.name || place.formatted_address;
+        const selectedAddress = place.formatted_address;
+        
+        // Store Google Maps data in bottle changes (just like other fields)
+        this.onBottleFieldChange(bottleId, 'purchasePlaceName', selectedPlace);
+        this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', selectedPlace);
+        this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', selectedAddress);
+        this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', this.checkVenueIfExists(place));
+        
+        console.log('TZHFrontendLog: Modal purchase location selected:', {
+          bottleId: bottleId,
+          place: selectedPlace,
+          address: selectedAddress
+        });
+      }
+    },
+
+    // Handle input changes for modal purchase location
+    onModalPurchaseLocationInput(event) {
+      const bottleId = this.currentModalPurchaseBottleId;
+      if (!bottleId) return;
+      
+      // Handle both string values and event objects
+      const inputValue = typeof event === 'string' ? event : event.target.value;
+      
+      // Get current Google Maps selection for this bottle
+      const currentSelected = this.getBottleFieldValue(bottleId, '_gmapSelectedPlace') || '';
+      
+      // If user is typing manually (not from autocomplete), clear the selection
+      if (inputValue !== currentSelected) {
+        this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', '');
+        this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', '');
+        this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', null);
+      }
+      
+      // Update the bottle field with manual entry
+      this.onBottleFieldChange(bottleId, 'purchasePlaceName', inputValue ? inputValue.trim() : '');
+    },
+
+    // Handle focus on modal purchase location input
+    onModalPurchaseLocationFocus(event) {
+      // Store which bottle's input is focused
+      const inputElement = event.target;
+      const bottleId = this.findBottleIdFromRef(inputElement);
+      this.currentModalPurchaseBottleId = bottleId;
+      
+      console.log('TZHFrontendLog: Modal purchase location input focused for bottle:', bottleId);
+    },
+
+    // Handle blur on modal purchase location input
+    onModalPurchaseLocationBlur() {
+      // Clear the current bottle ID reference
+      this.currentModalPurchaseBottleId = null;
+    },
+
+    // Clear selected purchase location for modal
+    clearModalSelectedPurchaseLocation(bottleId) {
+      this.onBottleFieldChange(bottleId, 'purchasePlaceName', '');
+      this.onBottleFieldChange(bottleId, '_gmapSelectedPlace', '');
+      this.onBottleFieldChange(bottleId, '_gmapSelectedAddress', '');
+      this.onBottleFieldChange(bottleId, '_gmapSelectedVenueId', null);
+      
+      console.log('TZHFrontendLog: Modal purchase location cleared for bottle:', bottleId);
+    },
+
+    // Helper methods for modal purchase location
+    getModalPurchaseLocationInputValue(bottleId) {
+      return this.getBottleFieldValue(bottleId, 'purchasePlaceName') || '';
+    },
+
+    getModalSelectedPurchasePlace(bottleId) {
+      return this.getBottleFieldValue(bottleId, '_gmapSelectedPlace') || '';
+    },
+
+    getModalSelectedPurchaseAddress(bottleId) {
+      return this.getBottleFieldValue(bottleId, '_gmapSelectedAddress') || '';
+    },
+
+    // Helper to find bottle ID from input element reference
+    findBottleIdFromRef(inputElement) {
+      // Look for the data-bottle-id attribute on the parent bottle container
+      const bottleContainer = inputElement.closest('[data-bottle-id]');
+      if (bottleContainer) {
+        return bottleContainer.getAttribute('data-bottle-id');
+      }
+      
+      // Fallback: Look through the refs to find which bottle this input belongs to
+      for (const [refName, refElement] of Object.entries(this.$refs)) {
+        if (refName.startsWith('modalPurchaseLocationInput_') && refElement === inputElement) {
+          return refName.replace('modalPurchaseLocationInput_', '');
+        }
+        // Handle case where ref is an array
+        if (Array.isArray(refElement) && refElement.includes(inputElement)) {
+          return refName.replace('modalPurchaseLocationInput_', '');
+        }
+      }
+      return null;
+    },
+
+    // ============ End Modal Purchase Location Methods ============
 
     // Add drink to cellar
     async addDrinkToCellar() {
