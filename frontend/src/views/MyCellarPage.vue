@@ -457,7 +457,7 @@
                             :title="group.representative.noteToSelf"
                           >
                             <!-- Note icon -->
-                            <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.5;" viewBox="0 0 16 16" fill="currentColor">
+                            <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
                               <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
                             </svg>
                             {{ group.representative.noteToSelf }}
@@ -537,7 +537,7 @@
                                 :title="group.representative.noteToSelf"
                               >
                                 <!-- Note icon -->
-                                <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.5;" viewBox="0 0 16 16" fill="currentColor">
+                                <svg class="position-absolute" style="top: 0px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
                                   <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
                                 </svg>
                                 {{ truncateText(group.representative.noteToSelf, 100) }}
