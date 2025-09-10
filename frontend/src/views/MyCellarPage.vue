@@ -410,7 +410,7 @@
                 <!-- Different messages for empty cellar vs filtered results -->
                 <template v-if="allItems.length === 0">
                   <h3 class="mb-2">Your personal cellar is empty</h3>
-                  <p class="text-muted mb-4">
+                  <p class="text-muted mb-4 px-4">
                     Track your collection, manage inventory, record tasting notes, set drinking windows, and organize bottles into custom collections. Perfect for wine cellars, whiskey cabinets, sake collections, and more!
                   </p>
                   <button class="btn btn-primary" @click="toggleRightSidebar">
@@ -3742,6 +3742,11 @@ export default {
     this.activePersonalNotesInput = null
   },
   methods: {
+    // Utility method to get the correct API base URL
+    getApiBaseUrl() {
+      return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+    },
+
     // Right sidebar toggle
     toggleRightSidebar() {
       if (this.isMobile) {
@@ -3832,15 +3837,15 @@ export default {
     },
     
     async fetchCellarDashboard() {
-      // Use full URL for development since proxy doesn't handle /getData
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      // Use environment variable for API URL
+      const baseUrl = process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
       const response = await this.$axios.get(`${baseUrl}/getData/getCellarDashboard/${this.ownerType}/${this.id}`)
       return response.data
     },
     
     async fetchCellarItems() {
-      // Use full URL for development since proxy doesn't handle /getData
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      // Use environment variable for API URL
+      const baseUrl = process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
       const params = new URLSearchParams()
       if (this.activeTab !== 'all') {
         params.append('collectionId', this.activeTab)
@@ -3875,7 +3880,7 @@ export default {
       }
 
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         // TODO: Replace with actual backend endpoint when ready
         await axios.put(`${baseUrl}/editCellar/collections/public-status/${this.activeTab}/`, {
           isPublic: this.currentCollectionIsPublic
@@ -3930,7 +3935,7 @@ export default {
       this.loadingFoodPairings = true
       
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const baseUrl = this.getApiBaseUrl()
         const response = await this.$axios.get(`${baseUrl}/getData/getFoodPairings/${this.ownerType}/${this.id}`)
         
         if (response.data && response.data.data && response.data.data.foodPairings) {
@@ -4006,7 +4011,7 @@ export default {
       this.loadingCurrentLocations = true
       
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const baseUrl = this.getApiBaseUrl()
         const response = await this.$axios.get(`${baseUrl}/getData/getCurrentLocations/${this.ownerType}/${this.id}`)
         
         if (response.data && response.data.data && response.data.data.currentLocations) {
@@ -4090,7 +4095,7 @@ export default {
       this.loadingSubLocations = true
       
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const baseUrl = this.getApiBaseUrl()
         const response = await this.$axios.get(`${baseUrl}/getData/getSubLocations/${this.ownerType}/${this.id}`)
         
         if (response.data && response.data.data && response.data.data.subLocations) {
@@ -4174,7 +4179,7 @@ export default {
       this.loadingPersonalNotes = true
       
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : ''
+        const baseUrl = this.getApiBaseUrl()
         const response = await this.$axios.get(`${baseUrl}/getData/getNoteToSelf/${this.ownerType}/${this.id}`)
         
         if (response.data && response.data.data && response.data.data.noteToSelf) {
@@ -4688,7 +4693,7 @@ export default {
         
         console.log('TZHFrontendLog: Full payload being sent to backend:', JSON.stringify(payload, null, 2));
 
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         const fullUrl = `${baseUrl}/editCellar/editCellar`;
         console.log('TZHFrontendLog: Making API call to:', fullUrl);
         
@@ -4857,7 +4862,7 @@ export default {
     
     // Get the proper image URL for a cellar item or group
     getItemImageUrl(itemOrGroup) {
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      const baseUrl = this.getApiBaseUrl();
       
       // For grouped items, use the representative item's photo
       const item = itemOrGroup.representative || itemOrGroup;
@@ -4880,7 +4885,7 @@ export default {
 
     // Get preview image URL for selected drink in add form
     getPreviewImageUrl(drink) {
-      const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+      const baseUrl = this.getApiBaseUrl();
       
       // Try different possible photo properties from the API response
       const photoPath = drink.photo || drink.drinkPhoto || drink.listingPhoto;
@@ -4920,7 +4925,7 @@ export default {
       }
 
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         const response = await this.$axios.get(`${baseUrl}/getData/getProducerNamesDynamicSearch/${this.addDrinkForm.producerSearchQuery}`);
 
         if (response.status === 200) {
@@ -4984,7 +4989,7 @@ export default {
       }
 
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         let response;
         let searchUrl;
         
@@ -5438,7 +5443,7 @@ export default {
         console.log('TZHFrontendLog: Number of fields in payload:', Object.keys(cellarData).length);
 
         // Call the actual API endpoint
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         const fullUrl = `${baseUrl}/editCellar/addToCellar`;
         console.log('TZHFrontendLog: Making API call to:', fullUrl);
         console.log('TZHFrontendLog: Request headers will include axios defaults');
@@ -5624,7 +5629,7 @@ export default {
         console.log('Creating new collection with payload:', payload);
 
         // Make API call
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         const fullUrl = `${baseUrl}/editCellar/createCollection`;
         const response = await axios.post(fullUrl, payload);
 
@@ -5700,7 +5705,7 @@ export default {
           throw new Error('Missing owner information');
         }
         
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         const response = await this.$axios.get(
           `${baseUrl}/getData/getCellarItemsChangelog/${this.ownerType}/${this.id}?limit=${this.changelogLimit}`
         );
@@ -5727,7 +5732,7 @@ export default {
       this.loadingMoreChangelog = true;
       
       try {
-        const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '';
+        const baseUrl = this.getApiBaseUrl();
         // Note: You would need to modify the backend endpoint to support offset/pagination
         // For now, we'll just increase the limit
         const newLimit = this.changelogOffset + this.changelogLimit;
