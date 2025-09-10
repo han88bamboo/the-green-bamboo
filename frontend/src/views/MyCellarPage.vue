@@ -1444,7 +1444,7 @@
                       data-bs-dismiss="modal"
                       @click="goToListingPage(selectedGroup)"
                     >
-                      Learn more about this drink
+                      Learn more / Review this drink!
                     </button>
                   </div>
                 </div>
