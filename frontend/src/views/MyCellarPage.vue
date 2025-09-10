@@ -5843,6 +5843,21 @@ export default {
   }
 }
 
+/* Google Maps autocomplete dropdown positioning with Y-axis translation */
+:global(.pac-container) {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  z-index: 1051 !important;
+  transform: translateY(-920px) !important; 
+  position: relative !important;
+    @media (max-width: 451px){
+    transform: translateY(-753px) !important;
+  }
+}
+
 /* Specific styling for purchase location autocomplete dropdown */
 /* :global(.pac-container.purchase-location-pac) {
   background-color: white;
