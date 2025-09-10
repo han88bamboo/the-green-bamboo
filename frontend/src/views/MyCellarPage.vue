@@ -155,7 +155,7 @@
               <div class="filters-container">
                 <div class="row g-3">
                   <!-- Drink Type Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.drinkType">
                       <option value="">Any Type</option>
                       <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
@@ -165,7 +165,7 @@
                   </div>
 
                   <!-- Type Category Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.typeCategory" :disabled="!filters.drinkType">
                       <option value="">Any Category</option>
                       <option v-for="category in typeCategoryOptions" :key="category" :value="category">
@@ -175,7 +175,7 @@
                   </div>
 
                   <!-- Country Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.country">
                       <option value="">Any Country</option>
                       <option v-for="country in countryOptions" :key="country" :value="country">
@@ -185,7 +185,7 @@
                   </div>
 
                   <!-- Vintage Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.vintage">
                       <option value="">Any Vintage</option>
                       <option v-for="year in vintageOptions" :key="year" :value="year">
@@ -194,8 +194,20 @@
                     </select>
                   </div>
 
+                  <!-- Average Rating Filter -->
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                    <select class="form-select" v-model="filters.averageRating">
+                      <option value="">Any Rating</option>
+                      <option value="9">9+ Stars</option>
+                      <option value="8">8+ Stars</option>
+                      <option value="7">7+ Stars</option>
+                      <option value="6">6+ Stars</option>
+                      <option value="5">5+ Stars</option>
+                    </select>
+                  </div>
+
                   <!-- Status Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <select class="form-select" v-model="filters.status">
                       <option value="">Any Status</option>
                       <option value="In Possession">In Cellar</option>
@@ -206,7 +218,7 @@
                   </div>
 
                   <!-- Drink Now Checkbox -->
-                  <div class="col-6 col-md-4 col-lg-2">
+                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
                     <div class="form-check">
                       <input
                         class="form-check-input"
@@ -2250,6 +2262,7 @@ export default {
         drinkType: '',
         typeCategory: '',
         country: '',
+        averageRating: '',
         status: '',
         drinkNow: false
       },
@@ -2478,6 +2491,15 @@ export default {
       // Country filter
       if (this.filters.country) {
         groups = groups.filter(group => group.representative.originCountry === this.filters.country)
+      }
+      
+      // Average rating filter
+      if (this.filters.averageRating) {
+        const minRating = parseFloat(this.filters.averageRating)
+        groups = groups.filter(group => {
+          const rating = group.representative.averageRating || 0
+          return rating >= minRating
+        })
       }
       
       // Size filter (commented out)
@@ -2900,6 +2922,7 @@ export default {
         drinkType: '',
         typeCategory: '',
         country: '',
+        averageRating: '',
         status: '',
         drinkNow: false
       }
@@ -6380,6 +6403,14 @@ export default {
 }
 .input-group-sm > .form-select{
   padding-right:2rem;
+}
+
+/* Custom responsive layout for 7 filters */
+@media (min-width: 1200px) {
+  .col-xl-1_7 {
+    flex: 0 0 auto;
+    width: 14.2857%; /* 100% / 7 = ~14.29% */
+  }
 }
 
 </style>
