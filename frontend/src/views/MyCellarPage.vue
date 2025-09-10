@@ -3919,10 +3919,28 @@ export default {
     onPurchaseLocationFocus() {
       // Could be used for future enhancements like showing recent places
       console.log('TZHFrontendLog: Purchase location input focused');
+      
+      // Add custom class to Google Maps dropdown when it appears
+      this.$nextTick(() => {
+        setTimeout(() => {
+          const pacContainer = document.querySelector('.pac-container');
+          if (pacContainer) {
+            pacContainer.classList.add('add-drink-pac-container');
+            pacContainer.setAttribute('data-input-source', 'purchase-location');
+          }
+        }, 100); // Small delay to ensure Google has created the element
+      });
     },
 
     // Handle blur on purchase location input
     onPurchaseLocationBlur() {
+      // Remove custom class when input loses focus
+      const pacContainer = document.querySelector('.pac-container');
+      if (pacContainer) {
+        pacContainer.classList.remove('add-drink-pac-container');
+        pacContainer.removeAttribute('data-input-source');
+      }
+      
       // Ensure manual entry is captured
       if (this.addDrinkForm.purchaseLocationInputValue && !this.addDrinkForm.selectedPurchasePlace) {
         this.addDrinkForm.purchasePlaceName = this.addDrinkForm.purchaseLocationInputValue.trim();
@@ -5668,19 +5686,37 @@ export default {
 }
 
 /* Google Maps autocomplete dropdown positioning with Y-axis translation */
-:global(.pac-container) {
+:global(.pac-container.add-drink-pac-container) {
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 0.375rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-family: inherit;
   z-index: 1051 !important;
-  transform: translateY(-920px) !important; /* Move dropdown upwards */
+  transform: translateY(-920px) !important; 
   position: relative !important;
-  @media (max-width: 768px){
+  @media (max-width: 451px){
     transform: translateY(-753px) !important;
   }
 }
+
+/* Specific styling for purchase location autocomplete dropdown */
+/* :global(.pac-container.purchase-location-pac) {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 0.375rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  z-index: 1051 !important;
+  transform: translateY(-920px) !important; 
+  position: relative !important;
+  border-left: 3px solid #007bff;
+
+  @media (max-width: 991px) {
+    transform: translateY(-753px) !important;
+  }
+} */
+
 
 :global(.pac-item) {
   padding: 0.5rem 0.75rem;
