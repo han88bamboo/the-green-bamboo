@@ -155,7 +155,7 @@
               <div class="filters-container">
                 <div class="row g-3">
                   <!-- Public/Private Toggle (only show for non-"all" tabs) -->
-                  <div v-if="activeTab !== 'all' && activeTab !== 'history'" class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div v-if="activeTab !== 'all' && activeTab !== 'history'" class="col-2 col-md-1 col-lg-2 col-xl-1">
                     <div class="d-flex align-items-center h-100">
                       <div class="form-check form-switch">
                         <input
@@ -173,7 +173,7 @@
                   </div>
 
                   <!-- Drink Type Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.drinkType">
                       <option value="">Any Type</option>
                       <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
@@ -183,7 +183,7 @@
                   </div>
 
                   <!-- Type Category Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.typeCategory" :disabled="!filters.drinkType">
                       <option value="">Any Category</option>
                       <option v-for="category in typeCategoryOptions" :key="category" :value="category">
@@ -193,7 +193,7 @@
                   </div>
 
                   <!-- Country Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.country">
                       <option value="">Any Country</option>
                       <option v-for="country in countryOptions" :key="country" :value="country">
@@ -203,7 +203,7 @@
                   </div>
 
                   <!-- Vintage Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.vintage">
                       <option value="">Any Vintage</option>
                       <option v-for="year in vintageOptions" :key="year" :value="year">
@@ -213,7 +213,7 @@
                   </div>
 
                   <!-- Average Rating Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.averageRating">
                       <option value="">Any Rating</option>
                       <option value="9">9+ Stars</option>
@@ -225,7 +225,7 @@
                   </div>
 
                   <!-- Status Filter -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-1_8' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <select class="form-select" v-model="filters.status">
                       <option value="">Any Status</option>
                       <option value="In Possession">In Cellar</option>
@@ -236,7 +236,7 @@
                   </div>
 
                   <!-- Drink Now Checkbox -->
-                  <div class="col-6 col-md-4 col-lg-2 col-xl-1_7">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-3 col-md-2 col-lg-2 col-xl-2' : 'col-3 col-md-2 col-lg-2 col-xl-1_7'">
                     <div class="form-check">
                       <input
                         class="form-check-input"
@@ -247,6 +247,7 @@
                       <label 
                         class="form-check-label text-start" 
                         for="drinkNowFilter"
+                        style="font-size:0.8em;"
                         title="Show only bottles drinkable now (no drinking window specified, or current date is within the drinking window)"
                       >
                         Only show drink-now
@@ -6517,9 +6518,14 @@ export default {
 
 /* Custom responsive layout for 7 filters */
 @media (min-width: 1200px) {
+  .col-xl-1_8 {
+    flex: 0 0 auto;
+    width: 12.5%; /* 100% / 8 = 12.5% for 8 equal filters */
+  }
+  
   .col-xl-1_7 {
     flex: 0 0 auto;
-    width: 14.2857%; /* 100% / 7 = ~14.29% */
+    width: 14.2857%; /* 100% / 7 = ~14.29% for 7 equal filters */
   }
 }
 
