@@ -155,7 +155,7 @@
               <div class="filters-container">
                 <div class="row g-3">
                   <!-- Vintage Filter -->
-                  <div class="col-6 col-md-3">
+                  <div class="col-6 col-md-4 col-lg-2">
                     <select class="form-select" v-model="filters.vintage">
                       <option value="">Any Vintage</option>
                       <option v-for="year in vintageOptions" :key="year" :value="year">
@@ -165,7 +165,7 @@
                   </div>
 
                   <!-- Drink Type Filter -->
-                  <div class="col-6 col-md-3">
+                  <div class="col-6 col-md-4 col-lg-2">
                     <select class="form-select" v-model="filters.drinkType">
                       <option value="">Any Type</option>
                       <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
@@ -174,8 +174,28 @@
                     </select>
                   </div>
 
+                  <!-- Type Category Filter -->
+                  <div class="col-6 col-md-4 col-lg-2">
+                    <select class="form-select" v-model="filters.typeCategory" :disabled="!filters.drinkType">
+                      <option value="">Any Category</option>
+                      <option v-for="category in typeCategoryOptions" :key="category" :value="category">
+                        {{ category }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Country Filter -->
+                  <div class="col-6 col-md-4 col-lg-2">
+                    <select class="form-select" v-model="filters.country">
+                      <option value="">Any Country</option>
+                      <option v-for="country in countryOptions" :key="country" :value="country">
+                        {{ country }}
+                      </option>
+                    </select>
+                  </div>
+
                   <!-- Status Filter -->
-                  <div class="col-6 col-md-3">
+                  <div class="col-6 col-md-4 col-lg-2">
                     <select class="form-select" v-model="filters.status">
                       <option value="">Any Status</option>
                       <option value="In Possession">In Cellar</option>
@@ -186,7 +206,7 @@
                   </div>
 
                   <!-- Drink Now Checkbox -->
-                  <div class="col-6 col-md-3">
+                  <div class="col-6 col-md-4 col-lg-2">
                     <div class="form-check">
                       <input
                         class="form-check-input"
@@ -2228,6 +2248,8 @@ export default {
       filters: {
         vintage: '',
         drinkType: '',
+        typeCategory: '',
+        country: '',
         status: '',
         drinkNow: false
       },
@@ -2448,6 +2470,16 @@ export default {
         groups = groups.filter(group => group.representative.drinkType === this.filters.drinkType)
       }
       
+      // Type category filter (only active when drink type is selected)
+      if (this.filters.typeCategory && this.filters.drinkType) {
+        groups = groups.filter(group => group.representative.typeCategory === this.filters.typeCategory)
+      }
+      
+      // Country filter
+      if (this.filters.country) {
+        groups = groups.filter(group => group.representative.originCountry === this.filters.country)
+      }
+      
       // Size filter (commented out)
       // if (this.filters.size) {
       //   groups = groups.filter(group => group.representative.volumeNumber == this.filters.size)
@@ -2529,6 +2561,32 @@ export default {
         }
       })
       return Array.from(drinkTypes).sort()
+    },
+
+    // Type category options for filter dropdown (only shows categories for selected drink type)
+    typeCategoryOptions() {
+      if (!this.filters.drinkType) {
+        return []
+      }
+      
+      const categories = new Set()
+      this.allItems.forEach(item => {
+        if (item.drinkType === this.filters.drinkType && item.typeCategory) {
+          categories.add(item.typeCategory)
+        }
+      })
+      return Array.from(categories).sort()
+    },
+
+    // Country options for filter dropdown
+    countryOptions() {
+      const countries = new Set()
+      this.allItems.forEach(item => {
+        if (item.originCountry) {
+          countries.add(item.originCountry)
+        }
+      })
+      return Array.from(countries).sort()
     },
 
     // Form validation for add to cellar
@@ -2645,6 +2703,13 @@ export default {
         }
       },
       deep: true
+    },
+
+    // Watch for changes to drink type filter to clear type category
+    'filters.drinkType'(newType, oldType) {
+      if (newType !== oldType) {
+        this.filters.typeCategory = ''
+      }
     }
   },
   async mounted() {
@@ -2833,6 +2898,8 @@ export default {
       this.filters = {
         vintage: '',
         drinkType: '',
+        typeCategory: '',
+        country: '',
         status: '',
         drinkNow: false
       }
@@ -5479,7 +5546,7 @@ export default {
 }
 
 .learn-more-section {
-  margin-top: auto;
+  /* margin-top: auto; */
   padding-top: 0.5rem;
 }
 
