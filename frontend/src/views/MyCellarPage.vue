@@ -2126,21 +2126,29 @@
               <!-- Left side: Group actions -->
               <div class="action-buttons">
                 <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                  <button 
+                    class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                    type="button" 
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    id="groupActionsDropdown"
+                    data-bs-auto-close="true"
+                    @click="toggleGroupActionsDropdown"
+                  >
                     <i class="bi bi-three-dots"></i> Group Actions
                   </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" @click="markAllBottlesInPossession()">
+                  <ul class="dropdown-menu" aria-labelledby="groupActionsDropdown">
+                    <li><a class="dropdown-item" href="#" @click.prevent="markAllBottlesInPossession()">
                       <i class="bi bi-house-check"></i> All In Possession
                     </a></li>
-                    <li><a class="dropdown-item" href="#" @click="consumeBottle()">
+                    <li><a class="dropdown-item" href="#" @click.prevent="consumeBottle()">
                       <i class="bi bi-cup-straw"></i> All Consumed
                     </a></li>
-                    <li><a class="dropdown-item" href="#" @click="markAllBottlesEmpty()">
+                    <li><a class="dropdown-item" href="#" @click.prevent="markAllBottlesEmpty()">
                       <i class="bi bi-droplet"></i> All Empty
                     </a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item text-danger" href="#" @click="archiveGroup">
+                    <li><a class="dropdown-item text-danger" href="#" @click.prevent="archiveGroup">
                       <i class="bi bi-archive"></i> Archive All
                     </a></li>
                   </ul>
@@ -3095,7 +3103,7 @@
 <script>
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
-import { Modal } from 'bootstrap'
+import { Modal, Dropdown } from 'bootstrap'
 // import { useToast } from "vue-toastification";
 
 export default {
@@ -4533,6 +4541,15 @@ export default {
     saveGroupChanges() {
       console.log('Save group changes:', this.selectedGroup)
       // TODO: Implement save functionality for group updates
+    },
+
+    // Toggle group actions dropdown manually if needed
+    toggleGroupActionsDropdown() {
+      const dropdownElement = document.getElementById('groupActionsDropdown');
+      if (dropdownElement) {
+        const bootstrapDropdown = new Dropdown(dropdownElement);
+        bootstrapDropdown.toggle();
+      }
     },
 
     // Individual bottle management
@@ -7518,6 +7535,32 @@ export default {
 
 .form-check.form-switch .form-check-input:checked + .form-check-label {
   color: #198754;
+}
+
+/* Ensure dropdowns in modals appear above other elements */
+.modal .dropdown-menu {
+  z-index: 1056 !important; /* Higher than modal backdrop (1055) */
+}
+
+/* Group actions dropdown styling */
+.action-buttons .dropdown-menu {
+  min-width: 200px;
+}
+
+.action-buttons .dropdown-item {
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.action-buttons .dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.action-buttons .dropdown-item.text-danger:hover {
+  background-color: #f8d7da;
+  color: #721c24 !important;
 }
 
 </style>
