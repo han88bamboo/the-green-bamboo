@@ -623,7 +623,7 @@
                         </div>
 
                         <!-- Quantity & Status Info -->
-                        <div class="col-12 col-lg-5">
+                        <div class="col-12 col-lg-4">
                           <!-- Combined Badges in One Row -->
                           <div class="d-flex flex-wrap align-items-center gap-1">
                             <!-- Combined Quantity and Volume Badge -->
@@ -645,7 +645,7 @@
                         </div>
 
                         <!-- Drink Dates -->
-                        <div class="col-12 col-lg-3">
+                        <div class="col-12 col-lg-2">
                           <div class="drink-dates" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
                             <small class="text-muted">
                               <div v-if="group.representative.drinkOnwardsDate">
@@ -656,6 +656,28 @@
                               </div>
                             </small>
                           </div>
+                        </div>
+
+                        <!-- Notes (Desktop - inline) -->
+                        <div class="col-lg-2 d-none d-lg-block" v-if="group.representative.noteToSelf">
+                          <p 
+                            class="card-notes text-muted small border rounded p-1 mb-0" 
+                            :title="group.representative.noteToSelf"
+                          >
+                            {{ truncateText(group.representative.noteToSelf, 80) }}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <!-- Notes (Mobile - separate row) -->
+                      <div class="row d-lg-none" v-if="group.representative.noteToSelf">
+                        <div class="col-12">
+                          <p 
+                            class="card-notes text-muted small mt-2 border rounded p-2 mb-0" 
+                            :title="group.representative.noteToSelf"
+                          >
+                            {{ truncateText(group.representative.noteToSelf, 150) }}
+                          </p>
                         </div>
                       </div>
                     </div>
