@@ -5727,10 +5727,44 @@ export default {
 }
 
 /* Responsive adjustments for grid items when sidebar is collapsed */
-/* Custom 5-column layout for collapsed sidebar */
+/* Custom 5-column layout for collapsed sidebar - with responsive breakpoints */
 .col-lg-custom-5 {
   flex: 0 0 auto;
-  width: 20%; /* 100% / 5 = 20% per column */
+}
+
+/* Mobile: 1 column (handled by col-12) */
+@media (max-width: 767.98px) {
+  .col-lg-custom-5 {
+    width: 100%;
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .col-lg-custom-5 {
+    width: 50%;
+  }
+}
+
+/* Small Desktop: 3 columns */  
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .col-lg-custom-5 {
+    width: 33.333333%;
+  }
+}
+
+/* Medium Desktop: 4 columns */
+@media (min-width: 1200px) and (max-width: 1399.98px) {
+  .col-lg-custom-5 {
+    width: 25%;
+  }
+}
+
+/* Large Desktop: 5 columns */
+@media (min-width: 1400px) {
+  .col-lg-custom-5 {
+    width: 20%; /* 100% / 5 = 20% per column */
+  }
 }
 
 @media (min-width: 768px) {
