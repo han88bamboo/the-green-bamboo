@@ -3018,12 +3018,12 @@
 
                   <!-- Collection Selection Section -->
                   <div class="form-section mb-4">
-                    <hr>
+                    <!-- <hr>
                     <h6 class="section-header text-start mb-3">
                       <i class="bi bi-collection me-2"></i>
                       Collection Selection
                       <small class="text-muted d-block fw-normal">Choose which collection to add these bottles to.</small>
-                    </h6>
+                    </h6> -->
 
                     <!-- Collection Dropdown -->
                     <div class="row g-3 mb-3">
