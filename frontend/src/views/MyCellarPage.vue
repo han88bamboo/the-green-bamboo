@@ -1364,17 +1364,15 @@
               <div class="col-md-9">
                 <div class="drink-info-summary">
                   <h6 class="section-header mb-3">
-                    {{ selectedGroup?.representative?.listingName || 'Item Details' }}
+                    {{ selectedGroup?.representative?.listingName || 'Item Details' }}, {{ selectedGroup.representative.producerName || 'N/A' }}
                     <span v-if="selectedGroup?.representative?.variant" class="text-muted">
                       ({{ selectedGroup.representative.variant }})
                     </span>
                   </h6>
                   
-                  <!-- Row 1: Producer | Bottler | Vintage | Country | Type | Category | Style -->
+                  <!-- Row 1: Bottler | Vintage | Country | Type | Category | Style -->
                   <div class="info-row mb-2">
                     <span class="info-text">
-                      <strong>Producer:</strong> <span class="text-muted">{{ selectedGroup.representative.producerName || 'N/A' }}</span>
-                      <span v-if="selectedGroup.representative.bottlerName || selectedGroup.representative.producerName" class="mx-2">|</span>
                       <strong>Bottler:</strong> <span class="text-muted">{{ selectedGroup.representative.bottlerName || 'Original Bottling' }}</span>
                       <span v-if="selectedGroup.representative.variant" class="mx-2">|</span>
                       <span v-if="selectedGroup.representative.variant">
