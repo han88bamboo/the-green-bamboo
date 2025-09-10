@@ -59,7 +59,7 @@
                       data-bs-target="#addCollectionModal"
                     >
                       <i class="bi bi-plus-circle me-2"></i>
-                      Add new Collection
+                      New Collection
                     </button>
                   </li>
                   <!-- Cellar History Tab -->
@@ -580,7 +580,7 @@
 
                               <!-- Notes (truncated) -->
                               <div 
-                                class="text-muted small mb-2 border rounded p-2 position-relative d-inline-block" 
+                                class="text-muted small mb-2 border rounded p-2 position-relative d-inline-block mobile-view-hide" 
                                 v-if="group.representative.noteToSelf"
                                 :title="group.representative.noteToSelf"
                               >
@@ -599,10 +599,6 @@
                                 <span class="quantity-volume-badge-inline">
                                   {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
                                 </span>
-                              </div>
-
-                              <!-- Status Breakdown -->
-                              <div class="status-breakdown mb-2 justify-content-center">
                                 <span 
                                   v-for="(count, status) in getGroupStatusBreakdown(group.bottles)"
                                   :key="status"
@@ -613,6 +609,7 @@
                                   {{ count }}x {{ status }}
                                 </span>
                               </div>
+
 
                               <!-- Drink Dates -->
                               <div class="drink-dates" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
@@ -681,7 +678,7 @@
                         <!-- Quantity & Status Info -->
                         <div class="col-12 col-lg-4">
                           <!-- Combined Badges in One Row -->
-                          <div class="d-flex flex-wrap align-items-center gap-1">
+                          <div class="d-flex flex-wrap align-items-center gap-1 justify-content-center">
                             <!-- Combined Quantity and Volume Badge -->
                             <span class="quantity-volume-badge-inline small">
                               {{ group.bottleCount }} {{ getContainerType(group.representative.drinkFormat, group.bottleCount) }}{{ getVolumeText(group.representative) }}
@@ -5897,7 +5894,6 @@ export default {
   
   .item-count {
     display: block;
-    font-size: 0.7rem;
     margin-left: 0;
     margin-top: 0.125rem;
   }
@@ -6020,7 +6016,7 @@ export default {
   
   .item-count {
     display: block;
-    font-size: 0.7rem;
+    font-size: 0.5rem;
     margin-left: 0;
     margin-top: 0.125rem;
   }
@@ -6057,7 +6053,7 @@ export default {
   
   .folder-tab {
     padding: 0.4rem 0.6rem;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     height: 2.25rem;
     border-radius: 6px 6px 0 0;
   }
