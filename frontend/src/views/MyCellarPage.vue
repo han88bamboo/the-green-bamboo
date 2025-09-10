@@ -154,16 +154,6 @@
               <!-- Filters Row -->
               <div class="filters-container">
                 <div class="row g-3">
-                  <!-- Vintage Filter -->
-                  <div class="col-6 col-md-4 col-lg-2">
-                    <select class="form-select" v-model="filters.vintage">
-                      <option value="">Any Vintage</option>
-                      <option v-for="year in vintageOptions" :key="year" :value="year">
-                        {{ year }}
-                      </option>
-                    </select>
-                  </div>
-
                   <!-- Drink Type Filter -->
                   <div class="col-6 col-md-4 col-lg-2">
                     <select class="form-select" v-model="filters.drinkType">
@@ -190,6 +180,16 @@
                       <option value="">Any Country</option>
                       <option v-for="country in countryOptions" :key="country" :value="country">
                         {{ country }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Vintage Filter -->
+                  <div class="col-6 col-md-4 col-lg-2">
+                    <select class="form-select" v-model="filters.vintage">
+                      <option value="">Any Vintage</option>
+                      <option v-for="year in vintageOptions" :key="year" :value="year">
+                        {{ year }}
                       </option>
                     </select>
                   </div>
