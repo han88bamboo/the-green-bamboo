@@ -387,26 +387,47 @@
               <!-- Error State -->
               <div v-else-if="error" class="text-center py-5">
                 <div class="alert alert-danger" role="alert">
-                  <h4 class="alert-heading">Error Loading Cellar</h4>
+                  <h4 class="alert-heading">Unable to Load Your Cellar</h4>
                   <p>{{ error }}</p>
-                  <button class="btn btn-outline-danger" @click="loadCellarData">
-                    Try Again
-                  </button>
+                  <div class="mt-3">
+                    <button class="btn btn-outline-danger me-2" @click="loadCellarData">
+                      <i class="bi bi-arrow-clockwise me-1"></i>
+                      Try Again
+                    </button>
+                    <button class="btn btn-outline-secondary" @click="clearFilters">
+                      <i class="bi bi-funnel me-1"></i>
+                      Clear Filters
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <!-- Empty State -->
               <div v-else-if="filteredItems.length === 0" class="empty-state text-center py-5">
                 <div class="empty-icon mb-3">
-                  🍷
+                  🍷🍹🥃🍶🍺🍾🍸
                 </div>
-                <h3 class="mb-2">No bottles match your filters</h3>
-                <p class="text-muted">
-                  Try adjusting your search criteria or add some drinks to your cellar.
-                </p>
-                <button class="btn btn-primary" @click="clearFilters">
-                  Clear Filters
-                </button>
+                <!-- Different messages for empty cellar vs filtered results -->
+                <template v-if="allItems.length === 0">
+                  <h3 class="mb-2">Your cellar is empty</h3>
+                  <p class="text-muted mb-4">
+                    Start building your collection by adding your first bottle!
+                  </p>
+                  <button class="btn btn-primary" @click="toggleRightSidebar">
+                    <i class="bi bi-plus-circle me-2"></i>
+                    Add Your First Drink
+                  </button>
+                </template>
+                <template v-else>
+                  <h3 class="mb-2">No bottles match your filters</h3>
+                  <p class="text-muted mb-4">
+                    Try adjusting your search criteria to find what you're looking for.
+                  </p>
+                  <button class="btn btn-primary" @click="clearFilters">
+                    <i class="bi bi-funnel me-2"></i>
+                    Clear Filters
+                  </button>
+                </template>
               </div>
 
               <!-- Items Cards (Grid View) -->
@@ -3779,7 +3800,32 @@ export default {
         
       } catch (error) {
         console.error('Error loading cellar data:', error)
-        this.error = error.message || 'Failed to load cellar data'
+        
+        // Handle 404 errors as empty cellar instead of showing error
+        if (error.response && error.response.status === 404) {
+          console.log('Received 404, treating as empty cellar')
+          this.allItems = []
+          this.collections = []
+          this.dashboardData = {}
+          this.error = null // Clear any previous errors
+        } else {
+          // Only show error for non-404 errors
+          let errorMessage = 'Failed to load cellar data'
+          
+          if (error.response) {
+            if (error.response.status === 403) {
+              errorMessage = 'You do not have permission to view this cellar'
+            } else if (error.response.status === 500) {
+              errorMessage = 'Server error occurred while loading cellar data'
+            } else if (error.response.data && error.response.data.message) {
+              errorMessage = error.response.data.message
+            }
+          } else if (error.message) {
+            errorMessage = error.message
+          }
+          
+          this.error = errorMessage
+        }
       } finally {
         this.loading = false
       }
