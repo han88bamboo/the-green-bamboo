@@ -409,9 +409,9 @@
                 </div>
                 <!-- Different messages for empty cellar vs filtered results -->
                 <template v-if="allItems.length === 0">
-                  <h3 class="mb-2">Your cellar is empty</h3>
+                  <h3 class="mb-2">Your personal cellar is empty</h3>
                   <p class="text-muted mb-4">
-                    Start building your collection by adding your first bottle!
+                    Track your collection, manage inventory, record tasting notes, set drinking windows, and organize bottles into custom collections. Perfect for wine cellars, whiskey cabinets, sake collections, and more!
                   </p>
                   <button class="btn btn-primary" @click="toggleRightSidebar">
                     <i class="bi bi-plus-circle me-2"></i>
