@@ -92,20 +92,48 @@
                     </div>
                     <div class="card-body">
                       <!-- Loading State -->
-                      <div v-if="loadingChangelog" class="text-center py-4">
-                        <div class="spinner-border spinner-border-sm me-2"></div>
-                        Loading changelog...
+                      <div v-if="loadingChangelog" class="changelog-entries">
+                        <div class="changelog-entry mb-3 p-3 border rounded">
+                          <div class="change-description mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="text-start">
+                                <div class="spinner-border spinner-border-sm me-2"></div>
+                                Loading your cellar history...
+                              </span>
+                              <span class="badge bg-secondary ms-2">Loading</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       
                       <!-- Error State -->
-                      <div v-else-if="changelogError" class="alert alert-danger small">
-                        {{ changelogError }}
+                      <div v-else-if="changelogError" class="changelog-entries">
+                        <div class="changelog-entry mb-3 p-3 border rounded border-danger">
+                          <div class="change-description mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="text-start text-danger">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                {{ changelogError }}
+                              </span>
+                              <span class="badge bg-danger ms-2">Error</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       
                       <!-- Empty State -->
-                      <div v-else-if="safeChangelog.length === 0" class="text-center py-4 text-muted">
-                        <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
-                        <p class="small mb-0">No recent changes to your cellar</p>
+                      <div v-else-if="safeChangelog.length === 0" class="changelog-entries">
+                        <div class="changelog-entry mb-3 p-3 border rounded">
+                          <div class="change-description mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="text-start text-muted">
+                                <i class="bi bi-journal-x me-2"></i>
+                                No recent changes to your cellar
+                              </span>
+                              <span class="badge bg-light text-muted ms-2">Empty</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       
                       <!-- Changelog Entries -->
@@ -140,9 +168,18 @@
                       </div>
                       
                       <!-- Fallback Empty State -->
-                      <div v-else class="text-center py-4 text-muted">
-                        <i class="bi bi-journal-x fs-1 mb-2 d-block"></i>
-                        <p class="small mb-0">No recent changes to your cellar</p>
+                      <div v-else class="changelog-entries">
+                        <div class="changelog-entry mb-3 p-3 border rounded">
+                          <div class="change-description mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <span class="text-start text-muted">
+                                <i class="bi bi-journal-x me-2"></i>
+                                No recent changes to your cellar
+                              </span>
+                              <span class="badge bg-light text-muted ms-2">Empty</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
