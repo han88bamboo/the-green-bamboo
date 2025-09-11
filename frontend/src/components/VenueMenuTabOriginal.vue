@@ -370,8 +370,26 @@
                                                 <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
                                             </p>
                                         </div>
+                                        
+                                        <div class="row">
+                                            <!-- Flavor Tags Section - FIXED -->
+                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill me-2 mb-1"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
+                                            </div>
+                                        </div>
+
                                         <!-- Item Menu Details -->
                                         <div class="d-flex align-items-center gap-1">
+
                                             <!-- Item Price / Item Serving Type -->
                                             <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                 ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
@@ -431,8 +449,26 @@
                                                 <a @click="showFullItemDescription = false" style="font-weight: bold;"> (Read Less)</a>
                                             </p>
                                         </div>
+
+                                        <div class="row">
+                                            <!-- Flavor Tags Section - FIXED -->
+                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill me-2 mb-1"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
+                                            </div>
+                                        </div>
+
                                         <!-- Item Price / Item Serving Type -->
                                         <div class="d-flex align-items-center gap-3">
+
                                             <!-- Price + Serving Type -->
                                             <p class="text-start fw-bold default-text-no-background mb-0">
                                                 ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
@@ -525,8 +561,26 @@
                                                         <span v-if="subsectionItem.itemDetails['itemCountry']">{{ subsectionItem.itemDetails['itemCountry'] }}</span>
                                                     </p>
                                                 </div>
+
+                                                <div class="row">
+                                                    <!-- Flavor Tags Section - FIXED -->
+                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
+                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            class="badge rounded-pill me-2 mb-1"
+                                                            :style="{ 
+                                                                backgroundColor: tag.hexcode || '#6c757d',
+                                                                color: getContrastColor(tag.hexcode || '#6c757d')
+                                                            }"
+                                                            :title="`${tag.count} mentions`">
+                                                            {{ tag.tag }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Item Menu Details -->
                                                 <div class="d-flex align-items-center gap-1">
+
                                                     <!-- Item Price / Item Serving Type -->
                                                     <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                         ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
@@ -583,8 +637,26 @@
                                                         <a @click="showFullItemDescription = false" style="font-weight: bold;"> (Read Less)</a>
                                                     </p>
                                                 </div>
+
+                                                <div class="row">
+                                                    <!-- Flavor Tags Section - FIXED -->
+                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
+                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            class="badge rounded-pill me-2 mb-1"
+                                                            :style="{ 
+                                                                backgroundColor: tag.hexcode || '#6c757d',
+                                                                color: getContrastColor(tag.hexcode || '#6c757d')
+                                                            }"
+                                                            :title="`${tag.count} mentions`">
+                                                            {{ tag.tag }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Item Price / Item Serving Type -->
                                                 <div class="d-flex align-items-center gap-3">
+
                                                     <!-- Price + Serving Type -->
                                                     <p class="text-start fw-bold default-text-no-background mb-0">
                                                         ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
@@ -2248,6 +2320,27 @@ export default {
         });
     },
     methods: {
+        // Helper method to determine text color based on background color
+        getContrastColor(hexcolor) {
+            if (!hexcolor) return '#000000';
+            
+            // Remove # if present
+            const hex = hexcolor.replace('#', '');
+            
+            // Handle 3-character hex codes
+            const fullHex = hex.length === 3 
+                ? hex.split('').map(c => c + c).join('')
+                : hex;
+            
+            const r = parseInt(fullHex.substr(0, 2), 16);
+            const g = parseInt(fullHex.substr(2, 2), 16);
+            const b = parseInt(fullHex.substr(4, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            return luminance > 0.5 ? '#000000' : '#FFFFFF';
+        },
 
         // Helper function for accent folding/normalization
         normalizeAccents(text) {
