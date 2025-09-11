@@ -3686,6 +3686,32 @@ export default {
   },
   async mounted() {
     try {
+      // Check if user is authenticated and authorized to view this cellar
+      const currentUserId = localStorage.getItem("88B_accID");
+      const currentUserType = localStorage.getItem("88B_accType");
+      const currentUsername = localStorage.getItem("88B_accUsername");
+      
+      // If not logged in, redirect to login
+      if (!currentUserId || !currentUserType) {
+        this.$router.push('/login');
+        return;
+      }
+      
+      // Check if the current user is trying to access their own cellar
+      const isOwnCellar = (
+        currentUserType === this.ownerType &&
+        currentUserId === this.id &&
+        currentUsername === this.username
+      );
+      
+      // If not their own cellar, redirect to their own cellar or show error
+      if (!isOwnCellar) {
+        // Redirect to their own cellar based on their account type
+        const ownCellarPath = `/my-cellar/${currentUserType}/${currentUserId}/${currentUsername}`;
+        this.$router.push(ownCellarPath);
+        return;
+      }
+      
       // Set initial responsive state
       this.isMobile = window.innerWidth < 992;
       this.rightSidebarExpanded = false;
