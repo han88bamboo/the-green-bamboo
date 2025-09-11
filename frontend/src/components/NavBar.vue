@@ -394,7 +394,7 @@
                 <!-- My Cellar -->
                 <li class="drawer-section-title pt-2 text-start">
                   <router-link :to="cellarURL" style="color: black; text-decoration: none;">
-                    My Cellar
+                    My Cellar<span class="badge bg-danger ms-1" style="background-color: #E63946;">NEW!</span>
                   </router-link>
                 </li>
 
@@ -589,8 +589,8 @@
         </router-link>
 
         <router-link :to="cellarURL">
-          <button class="btn primary-btn border-0 fw-bold cellar-link" type="button" style="color:#FF3E31;">
-            My Cellar
+          <button class="btn primary-btn border-0 fw-bold">
+            My Cellar<span class="badge bg-danger ms-1">NEW!</span>
           </button>
         </router-link>
       </div>
