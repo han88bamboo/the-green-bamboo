@@ -209,13 +209,122 @@
                       </h5>
                     </div>
                     <div class="card-body">
-                      <!-- Dashboard Content Placeholder -->
+                      <!-- Dashboard Content -->
                       <div class="dashboard-content">
-                        <div class="row">
+                        <!-- Loading State -->
+                        <div v-if="loadingDashboard" class="text-center py-4">
+                          <div class="spinner-border spinner-border-sm me-2"></div>
+                          Loading dashboard data...
+                        </div>
+                        
+                        <!-- Error State -->
+                        <div v-else-if="dashboardError" class="alert alert-danger">
+                          <h5>Unable to Load Dashboard</h5>
+                          <p>{{ dashboardError }}</p>
+                          <button class="btn btn-outline-danger" @click="fetchCellarDashboard">
+                            <i class="bi bi-arrow-clockwise me-1"></i>
+                            Try Again
+                          </button>
+                        </div>
+                        
+                        <!-- Dashboard Content -->
+                        <div v-else-if="dashboardData && dashboardData.summary" class="row">
+                          <!-- Summary Cards -->
+                          <div class="col-12 mb-4">
+                            <div class="row">
+                              <div class="col-6 col-md-4 mb-3">
+                                <div class="card text-center">
+                                  <div class="card-body">
+                                    <h5 class="card-title">{{ dashboardData.summary.totalItems || 0 }}</h5>
+                                    <p class="card-text text-muted">Total Items</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-6 col-md-4 mb-3">
+                                <div class="card text-center">
+                                  <div class="card-body">
+                                    <h5 class="card-title">${{ (dashboardData.summary.totalPurchaseCost || 0).toLocaleString() }}</h5>
+                                    <p class="card-text text-muted">Total Purchase Cost</p>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="col-6 col-md-4 mb-3">
+                                <div class="card text-center">
+                                  <div class="card-body">
+                                    <h5 class="card-title">${{ (dashboardData.summary.totalCurrentValue || 0).toLocaleString() }}</h5>
+                                    <p class="card-text text-muted">Current Value</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <!-- Top Insights -->
                           <div class="col-12">
-                            <p class="text-muted">
+                            <div class="row">
+                              <!-- Top Drink Types -->
+                              <div class="col-md-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Top Drink Types</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, drinkType) in getTopBreakdowns(dashboardData.breakdowns?.byDrinkType, 5)" :key="drinkType" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span>{{ drinkType }}</span>
+                                      <span class="badge bg-primary">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.byDrinkType || Object.keys(dashboardData.breakdowns.byDrinkType).length === 0" class="text-muted small">
+                                      No drink types data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Top Categories -->
+                              <div class="col-md-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Top Categories</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, category) in getTopBreakdowns(dashboardData.breakdowns?.byCategory, 5)" :key="category" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span>{{ category }}</span>
+                                      <span class="badge bg-success">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.byCategory || Object.keys(dashboardData.breakdowns.byCategory).length === 0" class="text-muted small">
+                                      No categories data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Top Countries -->
+                              <div class="col-md-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Top Countries</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, country) in getTopBreakdowns(dashboardData.breakdowns?.byCountry, 5)" :key="country" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span>{{ country }}</span>
+                                      <span class="badge bg-info">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.byCountry || Object.keys(dashboardData.breakdowns.byCountry).length === 0" class="text-muted small">
+                                      No countries data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Placeholder for no data -->
+                        <div v-else class="row">
+                          <div class="col-12">
+                            <p class="text-muted text-center py-4">
                               <i class="bi bi-info-circle me-2"></i>
-                              Dashboard content coming soon...
+                              No dashboard data available. Add some items to your cellar first!
                             </p>
                           </div>
                         </div>
@@ -3275,6 +3384,8 @@ export default {
       
       // Dashboard data
       dashboardData: null,
+      loadingDashboard: false,
+      dashboardError: null,
       
       // Search debouncing
       searchTimeout: null,
@@ -3872,13 +3983,9 @@ export default {
       this.error = null
       
       try {
-        // Load dashboard and items data in parallel
-        const [dashboardResponse, itemsResponse] = await Promise.all([
-          this.fetchCellarDashboard(),
-          this.fetchCellarItems()
-        ])
+        // Load only items and collections data
+        const itemsResponse = await this.fetchCellarItems()
         
-        this.dashboardData = dashboardResponse.data || dashboardResponse
         this.allItems = itemsResponse.data?.items || itemsResponse.items || []
         this.collections = itemsResponse.data?.collections || itemsResponse.collections || []
         
@@ -3939,10 +4046,25 @@ export default {
     },
     
     async fetchCellarDashboard() {
-      // Use environment variable for API URL
-      const baseUrl = process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
-      const response = await this.$axios.get(`${baseUrl}/getData/getCellarDashboard/${this.ownerType}/${this.id}`)
-      return response.data
+      this.loadingDashboard = true;
+      this.dashboardError = null;
+      
+      try {
+        const baseUrl = this.getApiBaseUrl();
+        const url = `${baseUrl}/getData/getCellarDashboard/${this.ownerType}/${this.id}`;
+        
+        const response = await axios.get(url);
+        
+        // Store the nested data object which contains summary, breakdowns, etc.
+        this.dashboardData = response.data.data;
+        return response.data.data;
+      } catch (error) {
+        console.error('Error fetching cellar dashboard:', error);
+        this.dashboardError = error.response?.data?.message || 'Failed to load dashboard data';
+        throw error;
+      } finally {
+        this.loadingDashboard = false;
+      }
     },
     
     async fetchCellarItems() {
@@ -3964,6 +4086,13 @@ export default {
     setActiveTab(tabId) {
       this.activeTab = tabId
       this.currentPage = 1
+      
+      // Load dashboard data when dashboard tab is selected
+      if (tabId === 'dashboard') {
+        this.fetchCellarDashboard().catch(error => {
+          console.error('Dashboard loading failed:', error);
+        });
+      }
       
       // Update the current collection's public status when switching tabs
       if (tabId !== 'all' && tabId !== 'history' && tabId !== 'dashboard') {
@@ -6002,6 +6131,19 @@ export default {
         'DELETED': 'bg-danger'
       };
       return classMap[changeType] || 'bg-secondary';
+    },
+
+    // Helper method to get top N items from breakdowns
+    getTopBreakdowns(breakdownData, limit = 5) {
+      if (!breakdownData) return {};
+      
+      // Convert object to array, sort by count, and take top N
+      const sortedEntries = Object.entries(breakdownData)
+        .sort(([,a], [,b]) => b.count - a.count)
+        .slice(0, limit);
+      
+      // Convert back to object
+      return Object.fromEntries(sortedEntries);
     },
   }
 }

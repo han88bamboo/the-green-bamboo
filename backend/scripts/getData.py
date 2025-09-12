@@ -6110,6 +6110,7 @@ def getCellarDashboard(ownerType, ownerID):
             ci."deliveryDate",
             ci."purchaseVenueID",
             ci."purchasePlaceName",
+            ci."purchaseAddress",
             ci."noteToSelf",
             
             -- Shared Properties from Master Record (or current item if it's the master)
@@ -6177,6 +6178,7 @@ def getCellarDashboard(ownerType, ownerID):
         breakdown_by_volume_size = {}  # Volume-based breakdown
         breakdown_by_purchase_year = {}  # Purchase year breakdown
         breakdown_by_producer = {}  # Producer breakdown
+        breakdown_by_purchase_address = {}  # Purchase address breakdown
         
         # Process each item
         for item in items:
@@ -6236,6 +6238,21 @@ def getCellarDashboard(ownerType, ownerID):
             else:
                 purchase_year = 'Unknown Year'
             
+            # Purchase address breakdown
+            purchase_address = item.get('purchaseAddress')
+            purchase_venue_name = item.get('purchaseVenueName')
+            purchase_place_name = item.get('purchasePlaceName')
+            
+            # Prioritize venue name, then place name, then address
+            if purchase_venue_name:
+                purchase_location = purchase_venue_name
+            elif purchase_place_name:
+                purchase_location = purchase_place_name
+            elif purchase_address:
+                purchase_location = purchase_address
+            else:
+                purchase_location = 'Unknown Purchase Location'
+            
             # Create unique listing+variant identifier for tracking
             listing_id = item.get('listingID')
             variant = item.get('variant') or 'No Variant'
@@ -6288,6 +6305,7 @@ def getCellarDashboard(ownerType, ownerID):
             update_breakdown(breakdown_by_volume_size, volume_size, purchase_price, current_value, purchase_currency, current_value_currency)
             update_breakdown(breakdown_by_purchase_year, purchase_year, purchase_price, current_value, purchase_currency, current_value_currency)
             update_breakdown(breakdown_by_producer, producer_name, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_purchase_address, purchase_location, purchase_price, current_value, purchase_currency, current_value_currency)
         
         # Generate qualifiers for financial data
         purchase_cost_qualifier = None
@@ -6363,6 +6381,32 @@ def getCellarDashboard(ownerType, ownerID):
                 'valueChanges': round(data['valueChanges'], 2)
             })
         
+        # Generate top 5 lists for dashboard insights
+        def get_top_5_breakdown(breakdown_dict, sort_by='count'):
+            """Get top 5 items from a breakdown dictionary, sorted by count or value"""
+            items = []
+            for key, data in breakdown_dict.items():
+                if key != 'Unknown':  # Prioritize known categories
+                    items.append({
+                        'name': key,
+                        'count': data['count'],
+                        'totalPurchaseCost': round(data['totalPurchaseCost'], 2),
+                        'totalCurrentValue': round(data['totalCurrentValue'], 2),
+                        'percentage': round((data['count'] / total_items) * 100, 1) if total_items > 0 else 0
+                    })
+            
+            # Sort by count (most common) and return top 5
+            items.sort(key=lambda x: x['count'], reverse=True)
+            return items[:5]
+        
+        # Generate top 5 summaries
+        top_5_drink_types = get_top_5_breakdown(breakdown_by_drink_type)
+        top_5_countries = get_top_5_breakdown(breakdown_by_country)
+        top_5_producers = get_top_5_breakdown(breakdown_by_producer)
+        top_5_collections = get_top_5_breakdown(breakdown_by_collection)
+        top_5_categories = get_top_5_breakdown(breakdown_by_category)
+        top_5_purchase_locations = get_top_5_breakdown(breakdown_by_purchase_address)
+        
         # Prepare final response
         dashboard_data = {
             'summary': {
@@ -6375,6 +6419,14 @@ def getCellarDashboard(ownerType, ownerID):
                 'currentValueQualifier': current_value_qualifier,
                 'displayCurrency': 'USD',
                 'currencyNote': 'All values converted to USD using current exchange rates'
+            },
+            'topInsights': {
+                'topDrinkTypes': top_5_drink_types,
+                'topCountries': top_5_countries,
+                'topProducers': top_5_producers,
+                'topCollections': top_5_collections,
+                'topCategories': top_5_categories,
+                'topPurchaseLocations': top_5_purchase_locations
             },
             'breakdowns': {
                 'byCountry': breakdown_by_country,
@@ -6389,7 +6441,8 @@ def getCellarDashboard(ownerType, ownerID):
                 'byStatus': breakdown_by_status,
                 'byVolumeSize': breakdown_by_volume_size,
                 'byPurchaseYear': breakdown_by_purchase_year,
-                'byProducer': breakdown_by_producer
+                'byProducer': breakdown_by_producer,
+                'byPurchaseAddress': breakdown_by_purchase_address
             },
             'historicalData': {
                 'timeline': historical_timeline,
