@@ -2700,7 +2700,7 @@
   >
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgb(0, 123, 255), rgb(0, 86, 179)); color:white;" >
           <h5 class="modal-title" id="mobileAddDrinksModalLabel">
             <i class="bi bi-plus-circle me-2"></i>
             Add Drink(s) to Cellar
@@ -7742,6 +7742,7 @@ export default {
   align-items: center;
   border: none;
   outline: none;
+  opacity:90%;
 }
 
 .right-sidebar-tab:hover {
