@@ -15,7 +15,7 @@ import VueGoogleMaps from '@fawmi/vue-google-maps'
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 import 'quill/dist/quill.snow.css';
-import VueGtag from "vue-gtag";
+import { createGtag } from "vue-gtag";
 
 
 // Set up Axios as a global property in Vue prototype
@@ -30,7 +30,7 @@ app.config.globalProperties.$axios = axios;
 app.use(head)
 
 //  Add Google Analytics (GA4)
-app.use(VueGtag, {
+app.use(createGtag, {
   config: { id: "G-FBF3N4940Z" }
 }, router);
 

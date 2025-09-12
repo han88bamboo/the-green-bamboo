@@ -73,8 +73,10 @@
                 aspect-ratio: 1 / 1;
                 box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.4);
               ">
-              <img :src="specified_listing['photo'] || defaultPhoto" class="img-fluid h-100 object-fit-cover"
-                loading="lazy" />
+              <!-- <img :src="specified_listing['photo'] || defaultPhoto" class="img-fluid h-100 object-fit-cover"
+                loading="lazy" /> -->
+              <img :src="specified_listing['photo'] || defaultPhoto" :alt="specified_listing['listingName']"  class="img-fluid h-100 clickable-image object-fit-cover" loading="lazy"
+                @click="enlargeImage(specified_listing['photo'] || defaultPhoto, `${specified_listing['listingName']}`)" style="cursor: pointer" />
             </div>
           </div>
 
