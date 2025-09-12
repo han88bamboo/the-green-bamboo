@@ -7265,6 +7265,7 @@ export default {
           toast.error("Failed to add comment. Please try again later.");
       }
   },
+  },
   watch: {
     '$route.params.producerID': {
       handler: function(newId, oldId) {
