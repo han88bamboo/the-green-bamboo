@@ -1074,14 +1074,14 @@
           >
             <div class="right-sidebar-content">
             <div class="add-drink-to-cellar">
-              <div class="card h-100">
-                <div class="card-header">
+              <div class="card h-100" style="overflow: visible;" >
+                <div class="card-header" style="width:100%;">
                   <h5 class="card-title mb-0">
                     <i class="bi bi-plus-circle me-2"></i>
                     Add Drink(s) to Cellar
                   </h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="width:100%;">
                   <form @submit.prevent="addDrinkToCellar">
                     <!-- Producer Search -->
                     <div class="form-group mb-3">
@@ -1807,9 +1807,9 @@
             </div>
 
             <!-- Cellar Change Log Section -->
-            <div class="cellar-change-log mt-4" >
+            <div class="cellar-change-log mt-4" :class="{ 'search-results-open': isSearchResultsOpen }" >
               <div class="card h-100">
-                <div class="card-header">
+                <div class="card-header" style="width:100%;">
                   <h5 class="card-title mb-0">
                     <i class="bi bi-clock-history me-2"></i>
                     Cellar History
@@ -3834,6 +3834,13 @@ export default {
     // Safe changelog array to prevent null reference errors
     safeChangelog() {
       return Array.isArray(this.changelog) ? this.changelog : [];
+    },
+
+    // Check if search results dropdown is open
+    isSearchResultsOpen() {
+      return this.addDrinkForm.searchResults && 
+             this.addDrinkForm.searchResults.length > 0 && 
+             this.addDrinkForm.searchQuery;
     }
   },
   created() {
@@ -7977,6 +7984,16 @@ export default {
 .action-buttons .dropdown-item.text-danger:hover {
   background-color: #f8d7da;
   color: #721c24 !important;
+}
+
+/* Search Results Dropdown State */
+.cellar-change-log.search-results-open {
+  transform: translateY(150px);
+  transition: transform 0.3s ease-in-out;
+}
+
+.cellar-change-log {
+  transition: transform 0.3s ease-in-out;
 }
 
 </style>
