@@ -7185,9 +7185,8 @@ export default {
           
           // Show success message
           console.log('Process completed successfully!', response.data);
-          if (this.$toast) {
-            this.$toast.success(`Successfully added ${response.data.data.quantity} bottle(s) to cellar!`);
-          }
+          const toast = useToast();
+          toast.success(`🍷 Successfully added ${response.data.data.quantity} item${response.data.data.quantity !== 1 ? 's' : ''} to your cellar!`);
           
         } else {
           console.log('Unexpected response status or code');
@@ -7215,9 +7214,8 @@ export default {
         
         console.error('Final error message:', errorMessage);
         
-        if (this.$toast) {
-          this.$toast.error(errorMessage);
-        }
+        const toast = useToast();
+        toast.error(`❌ ${errorMessage}`);
         
       } finally {
         console.log('Setting addingToCellar flag to false');
