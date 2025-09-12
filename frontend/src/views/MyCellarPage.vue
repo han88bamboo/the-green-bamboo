@@ -344,11 +344,11 @@
                                     <h6 class="mb-0">Top Purchase Locations</h6>
                                   </div>
                                   <div class="card-body">
-                                    <div v-for="(data, location) in getTopBreakdowns(dashboardData.breakdowns?.byPurchaseAddress, 5)" :key="location" class="d-flex justify-content-between align-items-center mb-2">
+                                    <div v-for="(data, location) in getFilteredPurchaseLocations(dashboardData.breakdowns?.byPurchaseAddress, 5)" :key="location" class="d-flex justify-content-between align-items-center mb-2">
                                       <span class="text-truncate" :title="location">{{ location }}</span>
                                       <span class="badge bg-secondary">{{ data.count }}</span>
                                     </div>
-                                    <div v-if="!dashboardData.breakdowns?.byPurchaseAddress || Object.keys(dashboardData.breakdowns.byPurchaseAddress).length === 0" class="text-muted small">
+                                    <div v-if="!dashboardData.breakdowns?.byPurchaseAddress || getFilteredPurchaseLocationsCount(dashboardData.breakdowns.byPurchaseAddress) === 0" class="text-muted small">
                                       No purchase locations data available
                                     </div>
                                   </div>
@@ -6219,6 +6219,27 @@ export default {
       
       // Convert back to object
       return Object.fromEntries(sortedEntries);
+    },
+
+    // Helper method to get filtered purchase locations (excluding unknown)
+    getFilteredPurchaseLocations(breakdownData, limit = 5) {
+      if (!breakdownData) return {};
+      
+      // Filter out "Unknown Purchase Location" and sort by count
+      const filteredEntries = Object.entries(breakdownData)
+        .filter(([location]) => location !== 'Unknown Purchase Location')
+        .sort(([,a], [,b]) => b.count - a.count)
+        .slice(0, limit);
+      
+      // Convert back to object
+      return Object.fromEntries(filteredEntries);
+    },
+
+    // Helper method to count filtered purchase locations
+    getFilteredPurchaseLocationsCount(breakdownData) {
+      if (!breakdownData) return 0;
+      
+      return Object.keys(breakdownData).filter(location => location !== 'Unknown Purchase Location').length;
     },
 
     // Helper method to get dashboard status badge class
