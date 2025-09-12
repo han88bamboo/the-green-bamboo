@@ -866,7 +866,7 @@
 
 
         <!-- popular flavorTag -->
-        <div class="row pt-3 mobile-pt-2 container pe-4 g-0 align-items-center">
+        <div class="row pt-3 mobile-pt-2 container ">
           <!-- flavor tags -->
           <div class="col-8 mobile-col-12">
             <div class="text-start mb-2 mobile-mb-0 text-color-black">
@@ -911,35 +911,523 @@
             </p>
           </div>
         </div>
-
-        <!-- Add To Cellar Modal -->
+        <!--Anchor ABC-->
+        <!-- Add To Cellar Modal --> 
         <div v-if="userID != 'defaultUser'" class="modal fade" id="cellarModal" tabindex="-1"
           aria-labelledby="cellarModalLabel" aria-hidden="true" data-bs-backdrop="static">
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header" style="background: linear-gradient(135deg, #007bff, #0056b3);">
                 <h5 class="modal-title" id="cellarModalLabel" style="color: white; font-weight: bold">
+                  <i class="bi bi-plus-circle me-2"></i>
                   Add To Your Cellar
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div class="modal-body">
-                <!-- Modal content will be implemented later -->
-                <p>Cellar functionality coming soon...</p>
+              <div class="modal-body"> 
+                <form @submit.prevent="addDrinkToCellar">
+                  <!-- Drink Preview Section -->
+                  <div class="cellar-item-preview mb-4">
+                    <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Adding this drink to your cellar:</p>
+                    
+                    <!-- Preview -->
+                    <div class="row">
+                      <!-- Item Image -->
+                      <div class="col-4 text-center">
+                        <img 
+                          :src="specified_listing['photo'] || defaultPhoto"
+                          class="preview-image-mobile"
+                          style="width: 80px; height: 80px; object-fit: contain;"
+                          @error="onImageError"
+                        />
+                      </div>
+
+                      <!-- Item Information -->
+                      <div class="col-8">
+                        <!-- Item Name -->
+                        <h6 class="fw-bold text-start text-decoration-underline mb-1 small">
+                          {{ specified_listing["listingName"] }}
+                          <span v-if="cellarForm.vintage"> [{{ cellarForm.vintage }}]</span>
+                        </h6>
+
+                        <!-- Item Details -->
+                        <p class="text-start mb-1 small text-muted">
+                          <span v-if="getProducerName(specified_listing['producerID'])">
+                            {{ getProducerName(specified_listing["producerID"]) }}
+                          </span>
+                          <span v-if="specified_listing['drinkType']">
+                            | {{ specified_listing["drinkType"] }}
+                          </span>
+                          <span v-if="specified_listing['abv']">
+                            | {{ specified_listing["abv"] }}% ABV
+                          </span>
+                        </p>
+
+                        <!-- Cellar Details -->
+                        <p class="text-start fw-bold text-primary mb-0 small">
+                          Adding {{ cellarForm.quantity || 1 }} bottle{{ (cellarForm.quantity || 1) !== 1 ? 's' : '' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quantity Section -->
+                  <div class="form-group mb-3">
+                    <label class="form-label text-start">
+                      Quantity to Add<span class="text-danger">*</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      v-model="cellarForm.quantity"
+                      min="1"
+                      required
+                      placeholder="Number of bottles"
+                    />
+                  </div>
+
+                  <!-- Form Fields -->
+                  <div>
+                    <!-- Simplified form - only essential fields -->
+                    <div v-if="!showExpandedCellarForm" class="simplified-form">
+                      <!-- Place of Purchase -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Place of Purchase</label>
+                        <div class="purchase-location-container" style="position: relative;">
+                          <div class="input-group">
+                            <input 
+                              type="text"
+                              class="form-control" 
+                              v-model="cellarForm.purchaseLocationInputValue"
+                              placeholder="e.g., Wine shop, Online store, or enter manually"
+                            />
+                            <span class="input-group-text">
+                              <i class="bi bi-geo-alt"></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Purchase Price -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Purchase Price</label>
+                        <div class="input-group">
+                          <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                          </select>
+                          <input 
+                            type="number" 
+                            class="form-control"
+                            v-model="cellarForm.purchasePrice"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Personal Notes -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Personal Notes</label>
+                        <textarea 
+                          class="form-control"
+                          v-model="cellarForm.personalNotes"
+                          rows="2"
+                          placeholder="Add your personal notes about these bottles..."
+                        ></textarea>
+                      </div>
+
+                      <!-- Collection Selection -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Select Collection</label>
+                        <select 
+                          class="form-select"
+                          v-model="cellarForm.selectedCollectionId"
+                        >
+                          <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
+                            {{ collection.collectionName }}
+                          </option>
+                        </select>
+                        <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                      </div>
+
+                      <!-- Show More Fields Button -->
+                      <div class="form-group mb-3">
+                        <button 
+                          type="button" 
+                          class="btn btn-outline-secondary w-100"
+                          @click="toggleCellarFormExpansion"
+                        >
+                          <i class="bi bi-chevron-down me-2"></i>
+                          Show More Fields
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Expanded form - all fields -->
+                    <div v-else class="expanded-form">
+                      <!-- Show Less Fields Button -->
+                      <div class="form-group mb-3">
+                        <button 
+                          type="button" 
+                          class="btn btn-outline-secondary w-100"
+                          @click="toggleCellarFormExpansion"
+                        >
+                          <i class="bi bi-chevron-up me-2"></i>
+                          Show Less Fields
+                        </button>
+                      </div>
+
+                      <!-- Group Properties Section -->
+                      <div class="form-section mb-4">
+                        <hr>
+                        <h6 class="section-header text-start mb-3">
+                          <i class="bi bi-collection me-2"></i>
+                          Group Properties
+                          <small class="text-muted d-block fw-normal">Values applied to Master Item within this group.</small>
+                        </h6>
+
+                        <!-- Row 1: Vintage -->
+                        <div class="row g-3 mb-3" v-if="specified_listing && ['Wine', 'Sake'].includes(specified_listing.drinkType)">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Vintage</label>
+                            <input 
+                              type="number" 
+                              class="form-control"
+                              v-model="cellarForm.vintage"
+                              min="1900" 
+                              max="2030"
+                              placeholder="e.g., 2020"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Row 2: Format, Volume -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Format</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.format"
+                            >
+                              <option value="Bottle">Bottle</option>
+                              <option value="Can">Can</option>
+                              <option value="Sample">Sample</option>
+                              <option value="Carton / Pouch">Carton / Pouch</option>
+                              <option value="Keg">Keg</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Volume</label>
+                            <div class="input-group">
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.volumeNumber"
+                                step="0.1" 
+                                min="0"
+                                placeholder="750"
+                              />
+                              <select class="form-select" v-model="cellarForm.volumeUnit" style="max-width: 70px;">
+                                <option value="ml">ml</option>
+                                <option value="oz">oz</option>
+                                <option value="l">L</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 3: Market Value -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Current Market Value</label>
+                            <div class="input-group">
+                              <select class="form-select" v-model="cellarForm.currentValueCurrency" style="max-width: 80px;">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                              </select>
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.currentValueEstimation"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 4: Drinking Window -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Drink Onwards Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.drinkOnwardsDate"
+                                ref="cellarDrinkOnwardsDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDrinkOnwardsDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Drink By Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.drinkByDate"
+                                ref="cellarDrinkByDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDrinkByDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 5: Food Pairing -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Suggested Food Pairing</label>
+                            <div class="input-group">
+                              <input 
+                                type="text" 
+                                class="form-control"
+                                v-model="cellarForm.suggestedFoodPairing"
+                                placeholder="e.g., Grilled salmon, Dark chocolate"
+                              />
+                              <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Individual Item Properties Section -->
+                      <div class="form-section mb-4">
+                        <hr>
+                        <h6 class="section-header text-start mb-3">
+                          <i class="bi bi-bottle me-2"></i>
+                          Individual Items
+                          <small class="text-muted d-block fw-normal">
+                            Values here are applied to every individual bottle (can be adjusted later in the cellar)
+                          </small>
+                        </h6>
+
+                        <!-- Row 1: Status, Consumption -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Status</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.status"
+                            >
+                              <option value="Purchased">Purchased</option>
+                              <option value="In Possession">In Possession</option>
+                              <option value="On Its Way">On Its Way</option>
+                              <option value="Held Elsewhere">Held Elsewhere</option>
+                              <option value="Wishlisted">Wishlisted</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Consumption</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.consumption"
+                            >
+                              <option value="Unopened">Unopened</option>
+                              <option value="Opened">Opened</option>
+                              <option value="Empty">Empty</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- Row 2: Storage Location, Sub Location -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Storage Location</label>
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="cellarForm.currentLocation"
+                              placeholder="e.g., Wine fridge, Cellar rack 3"
+                            />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Sub Location</label>
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="cellarForm.subLocation"
+                              placeholder="e.g., Minibar, Kitchen cabinet"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Row 3: Place of Purchase -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Place of Purchase</label>
+                            <div class="purchase-location-container" style="position: relative;">
+                              <div class="input-group">
+                                <input 
+                                  type="text"
+                                  class="form-control" 
+                                  v-model="cellarForm.purchaseLocationInputValue"
+                                  placeholder="e.g., Wine shop, Online store, or enter manually"
+                                />
+                                <span class="input-group-text">
+                                  <i class="bi bi-geo-alt"></i>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 4: Purchase Date, Delivery Date -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Purchase Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.purchaseDate"
+                                ref="cellarPurchaseDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarPurchaseDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Delivery Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.deliveryDate"
+                                ref="cellarDeliveryDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDeliveryDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 5: Purchase Price -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Purchase Price</label>
+                            <div class="input-group">
+                              <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                              </select>
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.purchasePrice"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 6: Personal Notes -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Personal Notes</label>
+                            <textarea 
+                              class="form-control"
+                              v-model="cellarForm.personalNotes"
+                              rows="3"
+                              placeholder="Add your personal notes about these bottles..."
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Collection Selection Section -->
+                      <div class="form-section mb-4">
+                        <!-- Collection Dropdown -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Select Collection</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.selectedCollectionId"
+                            >
+                              <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
+                                {{ collection.collectionName }}
+                              </option>
+                            </select>
+                            <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>                
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                   Close
                 </button>
-                <button type="button" class="btn" 
-                  style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff;">
-                  Add to Cellar
+                <!-- Submit Button -->
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  @click="addDrinkToCellar"
+                  :disabled="!canAddToCellar || addingToCellar"
+                >
+                  <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
                 </button>
               </div>
             </div>
           </div>
         </div>
-
+        <!-- Anchor DEF -->
 
         <!-- Modal -->
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
@@ -3207,7 +3695,51 @@ export default {
 
       showModal: false,
       addCommentMode: false,
-      newReviewComment: "", 
+      newReviewComment: "",
+
+      // Cellar functionality - Add to cellar form
+      cellarForm: {
+        // Group properties (applied to all items in the drink group)
+        vintage: null,
+        format: 'Bottle', // Default fallback
+        volumeNumber: 750, // Default fallback
+        volumeUnit: 'ml', // Default fallback
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
+        quantity: 1,
+        status: 'Purchased',
+        consumption: 'Unopened',
+        currentLocation: 'At Home',
+        subLocation: '',
+        
+        // Purchase location data
+        purchaseLocationInputValue: '', // Input field value
+        purchasePlaceName: '', // Store for backend
+        
+        purchaseDate: null,
+        deliveryDate: null,
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        personalNotes: '',
+        
+        // Collection selection
+        selectedCollectionId: null
+      },
+      
+      // Add to cellar state
+      addingToCellar: false,
+      
+      // Form expansion state
+      showExpandedCellarForm: false,
+      
+      // Cellar collections
+      cellarCollections: [],
+ 
     };
   },
   mounted() {
@@ -3394,6 +3926,15 @@ export default {
           this.setupAutoResize();
         });
       }
+    },
+
+    // Computed property to determine if user can add to cellar
+    canAddToCellar() {
+      return this.specified_listing && 
+             this.specified_listing.id && 
+             this.cellarForm.quantity >= 1 &&
+             this.userType === 'user' && 
+             this.userID !== 'defaultUser';
     }
   },
   methods: {
@@ -5834,6 +6375,188 @@ export default {
       const parent = this.comments.find(c => c.id == parentId);
       if (parent) {
         parent.replies.unshift(reply);
+      }
+    },
+
+    // Cellar-related methods
+    toggleCellarFormExpansion() {
+      this.showExpandedCellarForm = !this.showExpandedCellarForm;
+    },
+
+    resetCellarForm() {
+      this.cellarForm = {
+        // Group properties (applied to all items in the drink group)
+        vintage: null,
+        format: 'Bottle',
+        volumeNumber: 750,
+        volumeUnit: 'ml',
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
+        quantity: 1,
+        status: 'Purchased',
+        consumption: 'Unopened',
+        currentLocation: 'At Home',
+        subLocation: '',
+        
+        // Purchase location data
+        purchaseLocationInputValue: '',
+        purchasePlaceName: '',
+        
+        purchaseDate: null,
+        deliveryDate: null,
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        personalNotes: '',
+        
+        // Collection selection
+        selectedCollectionId: null
+      };
+    },
+
+    async loadCellarCollections() {
+      try {
+        const response = await this.$axios.get(`${this.getApiBaseUrl()}/editCellar/collections`);
+        if (response.status === 200 && response.data.code === 200) {
+          this.cellarCollections = response.data.data || [];
+        }
+      } catch (error) {
+        console.error('Error loading cellar collections:', error);
+        this.cellarCollections = [];
+      }
+    },
+
+    async addDrinkToCellar() {
+      console.log('Starting addDrinkToCellar process for BottleListings');
+      console.log('Form validation check - canAddToCellar:', this.canAddToCellar);
+      console.log('Selected listing:', JSON.stringify(this.specified_listing, null, 2));
+      console.log('Current form state:', JSON.stringify(this.cellarForm, null, 2));
+      
+      if (!this.canAddToCellar) {
+        console.log('Form validation failed - cannot add to cellar');
+        return;
+      }
+
+      this.addingToCellar = true;
+      console.log('Set addingToCellar flag to true');
+
+      try {
+        console.log('Starting data preparation...');
+        
+        // Prepare cellar item data according to backend API specification
+        const cellarData = {
+          // Required fields
+          listingId: this.specified_listing.id,
+          ownerType: 'user', // Assuming user ownership
+          ownerId: parseInt(this.userID),
+          quantity: parseInt(this.cellarForm.quantity),
+          
+          // Group properties (master record) - only sent if they have values
+          ...(this.cellarForm.format && { format: this.cellarForm.format }),
+          ...(this.cellarForm.volumeNumber && { volumeNumber: parseFloat(this.cellarForm.volumeNumber) }),
+          ...(this.cellarForm.volumeUnit && { volumeUnit: this.cellarForm.volumeUnit }),
+          ...(this.cellarForm.currentValueEstimation && { currentValueEstimation: parseFloat(this.cellarForm.currentValueEstimation) }),
+          ...(this.cellarForm.currentValueCurrency && { currentValueCurrency: this.cellarForm.currentValueCurrency }),
+          ...(this.cellarForm.drinkOnwardsDate && { drinkOnwardsDate: this.cellarForm.drinkOnwardsDate }),
+          ...(this.cellarForm.drinkByDate && { drinkByDate: this.cellarForm.drinkByDate }),
+          ...(this.cellarForm.suggestedFoodPairing && this.cellarForm.suggestedFoodPairing.trim() && { suggestedFoodPairing: this.cellarForm.suggestedFoodPairing.trim() }),
+          ...(this.cellarForm.vintage && { variant: parseInt(this.cellarForm.vintage) }),
+          
+          // Individual properties (applied to each bottle)
+          ...(this.cellarForm.status && { status: this.cellarForm.status }),
+          ...(this.cellarForm.consumption && { consumption: this.cellarForm.consumption }),
+          ...(this.cellarForm.currentLocation && this.cellarForm.currentLocation.trim() && { currentLocation: this.cellarForm.currentLocation.trim() }),
+          ...(this.cellarForm.subLocation && this.cellarForm.subLocation.trim() && { subLocation: this.cellarForm.subLocation.trim() }),
+          
+          // Purchase data
+          ...(this.cellarForm.purchaseLocationInputValue && this.cellarForm.purchaseLocationInputValue.trim() && { purchasePlaceName: this.cellarForm.purchaseLocationInputValue.trim() }),
+          ...(this.cellarForm.purchaseDate && { purchaseDate: this.cellarForm.purchaseDate }),
+          ...(this.cellarForm.deliveryDate && { deliveryDate: this.cellarForm.deliveryDate }),
+          ...(this.cellarForm.purchasePrice && { purchasePrice: parseFloat(this.cellarForm.purchasePrice) }),
+          ...(this.cellarForm.purchaseCurrency && { purchaseCurrency: this.cellarForm.purchaseCurrency }),
+          ...(this.cellarForm.personalNotes && this.cellarForm.personalNotes.trim() && { personalNotes: this.cellarForm.personalNotes.trim() }),
+          
+          // Collection selection (optional, will use default if not provided)
+          ...(this.cellarForm.selectedCollectionId && { collectionId: parseInt(this.cellarForm.selectedCollectionId) })
+        };
+
+        console.log('Prepared cellar data payload:', JSON.stringify(cellarData, null, 2));
+        console.log('Payload size:', JSON.stringify(cellarData).length, 'characters');
+        console.log('Number of fields in payload:', Object.keys(cellarData).length);
+
+        // Call the actual API endpoint
+        const baseUrl = this.getApiBaseUrl();
+        const fullUrl = `${baseUrl}/editCellar/addToCellar`;
+        console.log('Making API call to:', fullUrl);
+        
+        const response = await this.$axios.post(fullUrl, cellarData);
+
+        console.log('API call completed');
+        console.log('Response status:', response.status);
+        console.log('Response data:', JSON.stringify(response.data, null, 2));
+
+        if (response.status === 201 && response.data.code === 201) {
+          console.log('Success response received');
+          console.log('Master ID created:', response.data.data.masterId);
+          console.log('Bottle IDs created:', response.data.data.bottleIds);
+          console.log('Collection ID used:', response.data.data.collectionId);
+          console.log('Number of bottles added:', response.data.data.quantity);
+          
+          // Success! Reset form
+          console.log('Resetting form...');
+          this.resetCellarForm();
+          
+          // Close modal
+          const modal = document.getElementById('cellarModal');
+          const modalInstance = this.$bsModal.getInstance(modal);
+          if (modalInstance) {
+            modalInstance.hide();
+          }
+          
+          // Show success message
+          console.log('Process completed successfully!', response.data);
+          if (this.$toast) {
+            this.$toast.success(`Successfully added ${response.data.data.quantity} bottle(s) to cellar!`);
+          }
+          
+        } else {
+          console.log('Unexpected response status or code');
+          console.log('Expected status 201 and code 201, got status:', response.status, 'code:', response.data.code);
+          throw new Error(response.data.message || 'Failed to add to cellar');
+        }
+
+      } catch (error) {
+        console.log('Error occurred during process');
+        console.error('Error object:', error);
+        console.error('Error message:', error.message);
+        
+        if (error.response) {
+          console.error('Error response status:', error.response.status);
+          console.error('Error response data:', JSON.stringify(error.response.data, null, 2));
+        }
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to add drink to cellar';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        console.error('Final error message:', errorMessage);
+        
+        if (this.$toast) {
+          this.$toast.error(errorMessage);
+        }
+        
+      } finally {
+        console.log('Setting addingToCellar flag to false');
+        this.addingToCellar = false;
+        console.log('Frontend process completed');
       }
     },
 
