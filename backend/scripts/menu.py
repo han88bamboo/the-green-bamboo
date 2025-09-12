@@ -290,20 +290,23 @@ def getMenuItems(section_id):
         sql = f"""
         WITH flavor_tag_counts AS (
             SELECT 
-                "reviewTarget",
+                r."reviewTarget",
+                st.id AS subTagId,
+                st."subTag",
                 st."familyTagId",
                 COUNT(*) AS tag_count
             FROM "reviews" r
             CROSS JOIN UNNEST(r."flavourTag") AS flavour_tag_id
             INNER JOIN "subTags" st ON st.id = flavour_tag_id::integer
-            WHERE "reviewTarget" IS NOT NULL 
-            AND "flavourTag" IS NOT NULL 
-            AND array_length("flavourTag", 1) > 0
-            GROUP BY "reviewTarget", st."familyTagId"
+            WHERE r."reviewTarget" IS NOT NULL 
+            AND r."flavourTag" IS NOT NULL 
+            AND array_length(r."flavourTag", 1) > 0
+            GROUP BY r."reviewTarget", st.id, st."subTag", st."familyTagId"
         ),
         ranked_flavours AS (
             SELECT 
                 "reviewTarget",
+                "subTag",
                 "familyTagId",
                 tag_count,
                 ROW_NUMBER() OVER (
@@ -311,16 +314,16 @@ def getMenuItems(section_id):
                     ORDER BY tag_count DESC
                 ) AS rn
             FROM flavor_tag_counts
-        ),
+        ),  
         top_flavours AS (
             SELECT 
                 "reviewTarget",
                 JSON_AGG(
                     JSON_BUILD_OBJECT(
-                        'tag', ft."familyTag",
+                        'tag', rf."subTag",
                         'count', rf.tag_count,
                         'hexcode', ft.hexcode,
-                        'tagId', ft.id
+                        'tagId', rf."familyTagId"  -- or keep both subTagId + familyTagId if needed
                     ) ORDER BY rf.tag_count DESC
                 ) AS top_tags
             FROM ranked_flavours rf

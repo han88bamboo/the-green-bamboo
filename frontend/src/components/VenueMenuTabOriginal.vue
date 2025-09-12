@@ -348,16 +348,31 @@
                                     </div>
                                     <!-- SECOND COLUMN: Item Information -->
                                     <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
-                                        <div class="row">
+
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
-                                            <div class="mobile-mb-1">
-                                                <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                                    <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
-                                                        {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
-                                                    </p>
-                                                </router-link>
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                    {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                                </p>
+                                            </router-link>
+
+                                            <!-- Flavor Tags - Right beside the name -->
+                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
                                             </div>
                                         </div>
+
+
                                         <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                         <div class="row">
                                             <p class="text-start mb-1 mobile-fs-7">
@@ -369,22 +384,6 @@
                                                 <span v-if="sectionItem.itemDetails['itemABV']">{{ sectionItem.itemDetails['itemABV'] }} ABV | </span>
                                                 <span v-if="sectionItem.itemDetails['itemCountry']">{{ sectionItem.itemDetails['itemCountry'] }}</span>
                                             </p>
-                                        </div>
-                                        
-                                        <div class="row">
-                                            <!-- Flavor Tags Section - FIXED -->
-                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill me-2 mb-1"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-                                            </div>
                                         </div>
 
                                         <!-- Item Menu Details -->
@@ -420,12 +419,30 @@
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
                                     <div class="col-lg-7 col-12 ps-lg-4">
-                                        <!-- Item Name -->
-                                        <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                            <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
-                                            </p>
-                                        </router-link>
+
+                                        <div class="d-flex align-items-center flex-wrap gap-2">
+                                            <!-- Item Name -->
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                    {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                                </p>
+                                            </router-link>
+
+                                            <!-- Flavor Tags - Right beside the name -->
+                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
+                                            </div>
+                                        </div>
+
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
                                         <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                             <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
@@ -448,22 +465,6 @@
                                                 <span v-if="sectionItem.itemDetails['itemDesc']">{{ sectionItem.itemDetails['itemDesc'] }}</span>
                                                 <a @click="showFullItemDescription = false" style="font-weight: bold;"> (Read Less)</a>
                                             </p>
-                                        </div>
-
-                                        <div class="row">
-                                            <!-- Flavor Tags Section - FIXED -->
-                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill me-2 mb-1"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-                                            </div>
                                         </div>
 
                                         <!-- Item Price / Item Serving Type -->
@@ -539,16 +540,29 @@
                                             </div>
                                             <!-- SECOND COLUMN: Item Information -->
                                             <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
-                                                <div class="row">
+                                                <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
-                                                    <div class="mobile-mb-1">
-                                                        <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                            <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
-                                                                {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
-                                                            </p>
-                                                        </router-link>
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                            {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
+                                                        </p>
+                                                    </router-link>
+
+                                                    <!-- Flavor Tags - Right beside the name -->
+                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
+                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            class="badge rounded-pill"
+                                                            :style="{ 
+                                                                backgroundColor: tag.hexcode || '#6c757d',
+                                                                color: getContrastColor(tag.hexcode || '#6c757d')
+                                                            }"
+                                                            :title="`${tag.count} mentions`">
+                                                            {{ tag.tag }}
+                                                        </span>
                                                     </div>
                                                 </div>
+
                                                 <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                                 <div class="row">
                                                     <p class="text-start mb-1 mobile-fs-7">
@@ -560,22 +574,6 @@
                                                         <span v-if="subsectionItem.itemDetails['itemABV']">{{ subsectionItem.itemDetails['itemABV'] }} ABV | </span>
                                                         <span v-if="subsectionItem.itemDetails['itemCountry']">{{ subsectionItem.itemDetails['itemCountry'] }}</span>
                                                     </p>
-                                                </div>
-
-                                                <div class="row">
-                                                    <!-- Flavor Tags Section - FIXED -->
-                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
-                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
-                                                            :key="tag.tagId" 
-                                                            class="badge rounded-pill me-2 mb-1"
-                                                            :style="{ 
-                                                                backgroundColor: tag.hexcode || '#6c757d',
-                                                                color: getContrastColor(tag.hexcode || '#6c757d')
-                                                            }"
-                                                            :title="`${tag.count} mentions`">
-                                                            {{ tag.tag }}
-                                                        </span>
-                                                    </div>
                                                 </div>
 
                                                 <!-- Item Menu Details -->
@@ -608,12 +606,29 @@
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
                                             <div class="col-lg-7 col-12 ps-lg-4">
-                                                <!-- Item Name -->
-                                                <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                    <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                        {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
-                                                    </p>
-                                                </router-link>
+                                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                                    <!-- Item Name -->
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                            {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
+                                                        </p>
+                                                    </router-link>
+
+                                                    <!-- Flavor Tags - Right beside the name -->
+                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
+                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            class="badge rounded-pill"
+                                                            :style="{ 
+                                                                backgroundColor: tag.hexcode || '#6c757d',
+                                                                color: getContrastColor(tag.hexcode || '#6c757d')
+                                                            }"
+                                                            :title="`${tag.count} mentions`">
+                                                            {{ tag.tag }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
                                                 <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                     <router-link v-if="subsectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + subsectionItem.itemDetails['itemProducerID'] + '/' + subsectionItem.itemDetails['itemProducer'] }">
@@ -636,22 +651,6 @@
                                                         <span v-if="subsectionItem.itemDetails['itemDesc']">{{ subsectionItem.itemDetails['itemDesc'] }}</span>
                                                         <a @click="showFullItemDescription = false" style="font-weight: bold;"> (Read Less)</a>
                                                     </p>
-                                                </div>
-
-                                                <div class="row">
-                                                    <!-- Flavor Tags Section - FIXED -->
-                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1 mb-2">
-                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
-                                                            :key="tag.tagId" 
-                                                            class="badge rounded-pill me-2 mb-1"
-                                                            :style="{ 
-                                                                backgroundColor: tag.hexcode || '#6c757d',
-                                                                color: getContrastColor(tag.hexcode || '#6c757d')
-                                                            }"
-                                                            :title="`${tag.count} mentions`">
-                                                            {{ tag.tag }}
-                                                        </span>
-                                                    </div>
                                                 </div>
 
                                                 <!-- Item Price / Item Serving Type -->
