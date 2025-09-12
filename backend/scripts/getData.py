@@ -6106,11 +6106,20 @@ def getCellarDashboard(ownerType, ownerID):
             ci."variant",
             ci."listingID",
             ci."archiveStatus",
+            ci."purchaseDate",
+            ci."deliveryDate",
+            ci."purchaseVenueID",
+            ci."purchasePlaceName",
+            ci."noteToSelf",
             
             -- Shared Properties from Master Record (or current item if it's the master)
             COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
             COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
             COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
+            COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
+            COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
+            COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
+            COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
             
             -- Collection and Listing Data
             cc."collectionName",
@@ -6121,13 +6130,17 @@ def getCellarDashboard(ownerType, ownerID):
             l."typeCategory",
             l."abv",
             l."producerID",
-            p."producerName"
+            p."producerName",
+            
+            -- Purchase Venue Data
+            v."venueName" as "purchaseVenueName"
         FROM "myCellarItems" ci
         -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
         LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
         LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
         LEFT JOIN "listings" l ON ci."listingID" = l."id"
         LEFT JOIN "producers" p ON l."producerID" = p."id"
+        LEFT JOIN "venues" v ON ci."purchaseVenueID" = v."id"
         WHERE cc."ownerID" = %s AND cc."ownerType" = %s AND ci."archiveStatus" = FALSE
         ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
         """
@@ -6160,6 +6173,10 @@ def getCellarDashboard(ownerType, ownerID):
         breakdown_by_sub_location = {}
         breakdown_by_collection = {}
         breakdown_by_listing_variant = {}  # Track unique listing+variant combinations
+        breakdown_by_status = {}  # Item status breakdown
+        breakdown_by_volume_size = {}  # Volume-based breakdown
+        breakdown_by_purchase_year = {}  # Purchase year breakdown
+        breakdown_by_producer = {}  # Producer breakdown
         
         # Process each item
         for item in items:
@@ -6201,6 +6218,23 @@ def getCellarDashboard(ownerType, ownerID):
             location = item.get('currentLocation') or 'Unknown'
             sub_location = item.get('subLocation') or 'Not Specified'
             collection = item.get('collectionName') or 'Default'
+            status = item.get('status') or 'Unknown'
+            producer_name = item.get('producerName') or 'Unknown Producer'
+            
+            # Volume breakdown
+            volume_number = item.get('volumeNumber')
+            volume_unit = item.get('volumeUnit')
+            if volume_number and volume_unit:
+                volume_size = f"{volume_number} {volume_unit}"
+            else:
+                volume_size = 'Unknown Size'
+            
+            # Purchase year breakdown
+            purchase_date = item.get('purchaseDate')
+            if purchase_date:
+                purchase_year = str(purchase_date.year) if hasattr(purchase_date, 'year') else 'Unknown Year'
+            else:
+                purchase_year = 'Unknown Year'
             
             # Create unique listing+variant identifier for tracking
             listing_id = item.get('listingID')
@@ -6250,6 +6284,10 @@ def getCellarDashboard(ownerType, ownerID):
             update_breakdown(breakdown_by_sub_location, sub_location, purchase_price, current_value, purchase_currency, current_value_currency)
             update_breakdown(breakdown_by_collection, collection, purchase_price, current_value, purchase_currency, current_value_currency)
             update_breakdown(breakdown_by_listing_variant, listing_variant_key, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_status, status, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_volume_size, volume_size, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_purchase_year, purchase_year, purchase_price, current_value, purchase_currency, current_value_currency)
+            update_breakdown(breakdown_by_producer, producer_name, purchase_price, current_value, purchase_currency, current_value_currency)
         
         # Generate qualifiers for financial data
         purchase_cost_qualifier = None
@@ -6347,7 +6385,11 @@ def getCellarDashboard(ownerType, ownerID):
                 'byLocation': breakdown_by_location,
                 'bySubLocation': breakdown_by_sub_location,
                 'byCollection': breakdown_by_collection,
-                'byListingVariant': breakdown_by_listing_variant
+                'byListingVariant': breakdown_by_listing_variant,
+                'byStatus': breakdown_by_status,
+                'byVolumeSize': breakdown_by_volume_size,
+                'byPurchaseYear': breakdown_by_purchase_year,
+                'byProducer': breakdown_by_producer
             },
             'historicalData': {
                 'timeline': historical_timeline,
