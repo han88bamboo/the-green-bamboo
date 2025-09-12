@@ -74,6 +74,18 @@
                       <span class="mobile-view-hide">History</span>
                     </button>
                   </li>
+                  <!-- Cellar Dashboard Tab -->
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link folder-tab"
+                      :class="{ active: activeTab === 'dashboard' }"
+                      @click="setActiveTab('dashboard')"
+                      type="button"
+                    >
+                      <i class="bi bi-bar-chart me-2"></i>
+                      <span class="mobile-view-hide">Dashboard</span>
+                    </button>
+                  </li>
                 </ul>
               </nav>
             </div>
@@ -186,6 +198,33 @@
                 </div>
               </div>
 
+              <!-- Dashboard Tab Content -->
+              <div v-else-if="activeTab === 'dashboard'" class="dashboard-tab-content">
+                <div class="cellar-dashboard">
+                  <div class="card h-100">
+                    <div class="card-header">
+                      <h5 class="card-title mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>
+                        Cellar Dashboard
+                      </h5>
+                    </div>
+                    <div class="card-body">
+                      <!-- Dashboard Content Placeholder -->
+                      <div class="dashboard-content">
+                        <div class="row">
+                          <div class="col-12">
+                            <p class="text-muted">
+                              <i class="bi bi-info-circle me-2"></i>
+                              Dashboard content coming soon...
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Collection/Items Tab Content -->
               <div v-else>
               <!-- Mobile Filters Toggle Button (only shown on mobile) -->
@@ -205,7 +244,7 @@
               <div class="filters-container" :class="{ 'mobile-collapsed': mobileFiltersCollapsed }">
                 <div class="row g-3">
                   <!-- Public/Private Toggle (only show for non-"all" tabs) -->
-                  <div v-if="activeTab !== 'all' && activeTab !== 'history'" class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
+                  <div v-if="activeTab !== 'all' && activeTab !== 'history' && activeTab !== 'dashboard'" class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <div class="d-flex align-items-center h-100">
                       <div class="form-check form-switch">
                         <input
@@ -3927,7 +3966,7 @@ export default {
       this.currentPage = 1
       
       // Update the current collection's public status when switching tabs
-      if (tabId !== 'all' && tabId !== 'history') {
+      if (tabId !== 'all' && tabId !== 'history' && tabId !== 'dashboard') {
         const collection = this.collections.find(c => c.id === tabId)
         if (collection) {
           this.currentCollectionIsPublic = collection.isPublic || false
@@ -3938,7 +3977,7 @@ export default {
 
     // Collection public status toggle
     async toggleCollectionPublicStatus() {
-      if (this.activeTab === 'all' || this.activeTab === 'history') {
+      if (this.activeTab === 'all' || this.activeTab === 'history' || this.activeTab === 'dashboard') {
         return // No action for these tabs
       }
 
