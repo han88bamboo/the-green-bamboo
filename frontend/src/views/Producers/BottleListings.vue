@@ -1220,6 +1220,8 @@
                                 type="text" 
                                 class="form-control"
                                 v-model="cellarForm.suggestedFoodPairing"
+                                @focus="onFoodPairingFocus"
+                                @blur="onFoodPairingBlur"
                                 placeholder="e.g., Grilled salmon, Dark chocolate"
                               />
                               <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
@@ -3279,6 +3281,40 @@
       </div>
     </div>
   </div>
+
+  <!-- Food Pairing Suggestions Dropdown -->
+  <div 
+    id="foodPairingDropdown"
+    v-if="showFoodPairingSuggestions && (foodPairingSuggestions.length > 0 || loadingFoodPairings)"
+    class="food-pairing-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingFoodPairings" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="foodPairingSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous food pairings found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in foodPairingSuggestions" 
+        :key="index"
+        class="food-pairing-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectFoodPairingSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -3850,6 +3886,12 @@ export default {
       loadingSubLocations: false,
       showSubLocationSuggestions: false,
       activeSubLocationInput: null,
+      
+      // Food pairing suggestions for dropdowns
+      foodPairingSuggestions: [],
+      loadingFoodPairings: false,
+      showFoodPairingSuggestions: false,
+      activeFoodPairingInput: null,
  
     };
   },
@@ -3913,6 +3955,7 @@ export default {
     // Clean up location dropdowns
     this.showCurrentLocationSuggestions = false
     this.showSubLocationSuggestions = false
+    this.showFoodPairingSuggestions = false
 
     document.removeEventListener('keydown', this.handleEscKey);
   },
@@ -6874,6 +6917,76 @@ export default {
     
     positionSubLocationDropdown(inputElement) {
       const dropdown = document.getElementById('subLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+
+    // Food pairing suggestions
+    async loadFoodPairingSuggestions() {
+      if (this.loadingFoodPairings || this.foodPairingSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingFoodPairings = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getFoodPairings/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.foodPairings) {
+          this.foodPairingSuggestions = response.data.data.foodPairings
+          console.log('Loaded food pairing suggestions:', this.foodPairingSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading food pairing suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingFoodPairings = false
+      }
+    },
+    
+    onFoodPairingFocus(event) {
+      // Load suggestions when user clicks into any food pairing field
+      this.loadFoodPairingSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeFoodPairingInput = event.target
+      this.showFoodPairingSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionFoodPairingDropdown(event.target)
+      })
+    },
+    
+    onFoodPairingBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showFoodPairingSuggestions = false
+        this.activeFoodPairingInput = null
+      }, 200)
+    },
+    
+    selectFoodPairingSuggestion(suggestion) {
+      if (this.activeFoodPairingInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.suggestedFoodPairing = suggestion
+      }
+      
+      this.showFoodPairingSuggestions = false
+      this.activeFoodPairingInput = null
+    },
+    
+    positionFoodPairingDropdown(inputElement) {
+      const dropdown = document.getElementById('foodPairingDropdown')
       if (!dropdown || !inputElement) return
       
       const inputRect = inputElement.getBoundingClientRect()
