@@ -1047,8 +1047,6 @@
                       <!-- Collection Selection -->
                       <div class="form-group mb-3">
                         <label class="form-label text-start">Select Collection</label>
-                        <!-- Debug info -->
-                        <small class="text-info d-block mb-1">Debug: Collections count = {{ cellarCollections?.length || 0 }}</small>
                         <select 
                           class="form-select"
                           v-model="cellarForm.selectedCollectionId"
@@ -1059,13 +1057,6 @@
                           </option>
                         </select>
                         <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
-                        <!-- More debug info -->
-                        <div v-if="cellarCollections?.length > 0" class="small text-success mt-1">
-                          ✓ Collections loaded: {{ cellarCollections.map(c => c.collectionName).join(', ') }}
-                        </div>
-                        <div v-else class="small text-warning mt-1">
-                          ⚠ No collections loaded yet
-                        </div>
                       </div>
 
                       <!-- Show More Fields Button -->
@@ -1284,6 +1275,8 @@
                               type="text" 
                               class="form-control"
                               v-model="cellarForm.currentLocation"
+                              @focus="onCurrentLocationFocus"
+                              @blur="onCurrentLocationBlur"
                               placeholder="e.g., Wine fridge, Cellar rack 3"
                             />
                           </div>
@@ -1293,6 +1286,8 @@
                               type="text" 
                               class="form-control"
                               v-model="cellarForm.subLocation"
+                              @focus="onSubLocationFocus"
+                              @blur="onSubLocationBlur"
                               placeholder="e.g., Minibar, Kitchen cabinet"
                             />
                           </div>
@@ -1405,8 +1400,6 @@
                         <div class="row g-3 mb-3">
                           <div class="col-md-12">
                             <label class="form-label text-start">Select Collection</label>
-                            <!-- Debug info -->
-                            <small class="text-info d-block mb-1">Debug: Collections count = {{ cellarCollections?.length || 0 }}</small>
                             <select 
                               class="form-select"
                               v-model="cellarForm.selectedCollectionId"
@@ -1417,13 +1410,6 @@
                               </option>
                             </select>
                             <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
-                            <!-- More debug info -->
-                            <div v-if="cellarCollections?.length > 0" class="small text-success mt-1">
-                              ✓ Collections loaded: {{ cellarCollections.map(c => c.collectionName).join(', ') }}
-                            </div>
-                            <div v-else class="small text-warning mt-1">
-                              ⚠ No collections loaded yet
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -3204,6 +3190,74 @@
       <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
     </div>
   </div>
+
+  <!-- Current Location Suggestions Dropdown -->
+  <div 
+    id="currentLocationDropdown"
+    v-if="showCurrentLocationSuggestions && (currentLocationSuggestions.length > 0 || loadingCurrentLocations)"
+    class="current-location-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingCurrentLocations" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="currentLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous storage locations found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in currentLocationSuggestions" 
+        :key="index"
+        class="current-location-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectCurrentLocationSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub Location Suggestions Dropdown -->
+  <div 
+    id="subLocationDropdown"
+    v-if="showSubLocationSuggestions && (subLocationSuggestions.length > 0 || loadingSubLocations)"
+    class="sub-location-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingSubLocations" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="subLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous sub locations found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in subLocationSuggestions" 
+        :key="index"
+        class="sub-location-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectSubLocationSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -3761,6 +3815,17 @@ export default {
       
       // Cellar collections
       cellarCollections: [],
+      
+      // Location suggestions for dropdowns
+      currentLocationSuggestions: [],
+      loadingCurrentLocations: false,
+      showCurrentLocationSuggestions: false,
+      activeCurrentLocationInput: null,
+      
+      subLocationSuggestions: [],
+      loadingSubLocations: false,
+      showSubLocationSuggestions: false,
+      activeSubLocationInput: null,
  
     };
   },
@@ -3820,6 +3885,10 @@ export default {
     if (cellarModal) {
       cellarModal.removeEventListener('show.bs.modal', this.onCellarModalOpen);
     }
+
+    // Clean up location dropdowns
+    this.showCurrentLocationSuggestions = false
+    this.showSubLocationSuggestions = false
 
     document.removeEventListener('keydown', this.handleEscKey);
   },
@@ -6648,6 +6717,146 @@ export default {
         }
         this.cellarCollections = [];
       }
+    },
+
+    // Current location suggestions
+    async loadCurrentLocationSuggestions() {
+      if (this.loadingCurrentLocations || this.currentLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingCurrentLocations = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getCurrentLocations/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.currentLocations) {
+          this.currentLocationSuggestions = response.data.data.currentLocations
+          console.log('Loaded current location suggestions:', this.currentLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading current location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingCurrentLocations = false
+      }
+    },
+    
+    onCurrentLocationFocus(event) {
+      // Load suggestions when user clicks into any current location field
+      this.loadCurrentLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeCurrentLocationInput = event.target
+      this.showCurrentLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionCurrentLocationDropdown(event.target)
+      })
+    },
+    
+    onCurrentLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showCurrentLocationSuggestions = false
+        this.activeCurrentLocationInput = null
+      }, 200)
+    },
+    
+    selectCurrentLocationSuggestion(suggestion) {
+      if (this.activeCurrentLocationInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.currentLocation = suggestion
+      }
+      
+      this.showCurrentLocationSuggestions = false
+      this.activeCurrentLocationInput = null
+    },
+    
+    positionCurrentLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('currentLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+
+    // Sub location suggestions
+    async loadSubLocationSuggestions() {
+      if (this.loadingSubLocations || this.subLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingSubLocations = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getSubLocations/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.subLocations) {
+          this.subLocationSuggestions = response.data.data.subLocations
+          console.log('Loaded sub location suggestions:', this.subLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading sub location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingSubLocations = false
+      }
+    },
+    
+    onSubLocationFocus(event) {
+      // Load suggestions when user clicks into any sub location field
+      this.loadSubLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeSubLocationInput = event.target
+      this.showSubLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionSubLocationDropdown(event.target)
+      })
+    },
+    
+    onSubLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showSubLocationSuggestions = false
+        this.activeSubLocationInput = null
+      }, 200)
+    },
+    
+    selectSubLocationSuggestion(suggestion) {
+      if (this.activeSubLocationInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.subLocation = suggestion
+      }
+      
+      this.showSubLocationSuggestions = false
+      this.activeSubLocationInput = null
+    },
+    
+    positionSubLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('subLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
     },
 
     async addDrinkToCellar() {
