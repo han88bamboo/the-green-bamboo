@@ -335,7 +335,7 @@
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                         <!-- Item Image -->
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
                                             <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                         </router-link>
                                         <!-- Item Rating (below image) -->
@@ -351,7 +351,7 @@
                                         <div class="row">
                                             <!-- Item Name -->
                                             <div class="mobile-mb-1">
-                                                <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }">
                                                     <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
                                                         {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                     </p>
@@ -361,7 +361,7 @@
                                         <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                         <div class="row">
                                             <p class="text-start mb-1 mobile-fs-7">
-                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
+                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + slugify(sectionItem.itemDetails['itemProducer']) }">
                                                     <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                 </router-link>
                                                 <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -396,7 +396,7 @@
                                 <div class="row align-items-center">
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
                                             <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                         </router-link>
                                     </div>
@@ -2249,6 +2249,44 @@ export default {
     },
     methods: {
 
+        slugify(text) {
+            if (!text) return ""
+            return text
+                .toString()
+                .toLowerCase()
+                .normalize('NFD') // Decompose accented characters
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                .replace(/[^\w]/g, '') // Remove non-word characters
+        },
+
+        // Helper function for accent folding/normalization
+        normalizeAccents(text) {
+            if (!text) return '';
+            // Use Unicode normalization to decompose accented characters, then remove diacritical marks
+            return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        },
+
+        // Helper function for space and punctuation normalization
+        normalizeSpacing(text) {
+            if (!text) return '';
+            // Remove spaces, hyphens, apostrophes, periods, and other common punctuation
+            return text.replace(/[\s\-'.:;()]/g, '');
+        },
+
+        // Combined normalization function for fuzzy matching
+        normalizeForSearch(text) {
+            if (!text) return '';
+            return this.normalizeSpacing(this.normalizeAccents(text.toLowerCase()));
+        },
+
+        // Enhanced fuzzy matching function
+        fuzzyMatch(searchTerm, targetText) {
+            const normalizedSearch = this.normalizeForSearch(searchTerm);
+            const normalizedTarget = this.normalizeForSearch(targetText);
+            return normalizedTarget.includes(normalizedSearch);
+        },
+
         // Sync editableMainSections from editMenu (called when editMenu changes)
         syncEditableMainSections() {
             // Prevent infinite loops by checking if we're already syncing
@@ -3271,8 +3309,8 @@ export default {
                         subsections: []
                     };
 
-                    // Check if main section name matches search term
-                    let mainSectionMatches = mainSection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                    // Check if main section name matches search term (using fuzzy matching)
+                    let mainSectionMatches = this.fuzzyMatch(this.searchMenuTerm, mainSection.sectionName);
                     
                     // If main section matches, include all its items and subsections
                     if (mainSectionMatches) {
@@ -3297,8 +3335,8 @@ export default {
                                 sectionMenu: []
                             };
 
-                            // Check if subsection name matches
-                            let subsectionMatches = subsection.sectionName.toLowerCase().includes(this.searchMenuTerm);
+                            // Check if subsection name matches (using fuzzy matching)
+                            let subsectionMatches = this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName);
                             
                             if (subsectionMatches) {
                                 // If subsection matches, include all its items
@@ -3337,15 +3375,15 @@ export default {
         itemMatchesSearch(menuItem) {
             const searchTerm = this.searchMenuTerm.toLowerCase();
             
-            // Check item details for matches
+            // Check item details for matches using fuzzy matching
             if (menuItem.itemDetails) {
                 const details = menuItem.itemDetails;
                 return (
-                    (details.itemName && details.itemName.toLowerCase().includes(searchTerm)) ||
-                    (details.itemType && details.itemType.toLowerCase().includes(searchTerm)) ||
-                    (details.itemProducer && details.itemProducer.toLowerCase().includes(searchTerm)) ||
-                    (details.itemCountry && details.itemCountry.toLowerCase().includes(searchTerm)) ||
-                    (details.itemDesc && details.itemDesc.toLowerCase().includes(searchTerm))
+                    (details.itemName && this.fuzzyMatch(searchTerm, details.itemName)) ||
+                    (details.itemType && this.fuzzyMatch(searchTerm, details.itemType)) ||
+                    (details.itemProducer && this.fuzzyMatch(searchTerm, details.itemProducer)) ||
+                    (details.itemCountry && this.fuzzyMatch(searchTerm, details.itemCountry)) ||
+                    (details.itemDesc && this.fuzzyMatch(searchTerm, details.itemDesc))
                 );
             }
             

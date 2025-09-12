@@ -491,7 +491,7 @@
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Best Rated Drinks </h6>
                         <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -511,7 +511,7 @@
                     <div class="card p-3 col-5 text-start" style="color:black;">
                         <h6 class="fw-bold"> Most Reviewed Drinks </h6>
                         <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id" style="justify-content: flex-start; width: 100%;">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -676,7 +676,7 @@
                         <div id="MostReviewedExpressions" class="tab-pane card p-2 fade show active col-11 text-start pt-3 mx-lg-3 ps-lg-0 pe-lg-0">
                             <div class="mobile-rating-smaller-text-2 col-md-12 col-sm-12 text-start mx-3 ps-lg-0 pe-lg-0">
                                 <div class="text-start pb-2" v-for="listing in listingsMostReviewed" v-bind:key="listing.id">
-                                    <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                                    <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                         <div class="d-flex align-items-center">
                                             <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                             <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -694,7 +694,7 @@
                             <div class="mobile-rating-smaller-text-2 col-12 text-start mx-3 ps-lg-0 pe-lg-0">
                         
                         <div class="text-start pb-2" v-for="listing in listingsBestRated" v-bind:key="listing.id">
-                            <router-link :to="{ path: '/listing/view/' + listing.id }" class="reverse-clickable-text">
+                            <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="reverse-clickable-text">
                                 <div class="d-flex align-items-center">
                                     <!-- <img :src="'data:image/png;base64,'+ (listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;"> -->
                                     <img :src="(listing.photo || defaultProfilePhoto)" style="width: 70px; height: 70px;">
@@ -1024,6 +1024,16 @@
         },
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         methods: {
+            
+            slugify(text) {
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .normalize('NFD') // Decompose accented characters
+                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/[^\w]/g, ''); // Remove non-word characters
+            },
             
             checkToShowQnA() {
                 if (this.showQnA == true) {

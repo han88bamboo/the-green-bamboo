@@ -66,7 +66,43 @@ const routes = [
   {
     path: "/my-cellar",
     name: "myCellar",
-    component: () => import(/* webpackChunkName: "main" */ "@/views/MyCellar.vue"),
+    component: () => import('@/views/MyCellar.vue'),
+    props: true
+  },
+  {
+    path: "/my-cellar/:ownerType(user|producer|venue)/:id(\\d+)/:username",
+    name: "myCellarDetailed",
+    component: () => import('@/views/MyCellarPage.vue'),
+    props: true,
+    beforeEnter: (to, from, next) => {
+      // Check if user is authenticated
+      const currentUserId = localStorage.getItem("88B_accID");
+      const currentUserType = localStorage.getItem("88B_accType");
+      const currentUsername = localStorage.getItem("88B_accUsername");
+      
+      // If not logged in, redirect to login
+      if (!currentUserId || !currentUserType) {
+        next('/login');
+        return;
+      }
+      
+      // Check if the current user is trying to access their own cellar
+      const isOwnCellar = (
+        currentUserType === to.params.ownerType &&
+        currentUserId === to.params.id &&
+        currentUsername === to.params.username
+      );
+      
+      // If not their own cellar, redirect to their own cellar
+      if (!isOwnCellar) {
+        const ownCellarPath = `/my-cellar/${currentUserType}/${currentUserId}/${currentUsername}`;
+        next(ownCellarPath);
+        return;
+      }
+      
+      // Allow access to their own cellar
+      next();
+    }
   },
 ];
 

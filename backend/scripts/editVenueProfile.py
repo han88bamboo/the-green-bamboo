@@ -209,7 +209,7 @@ def updateVenueInformation():
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit venue profile
-# - Update venue profile with new details
+# - Update venue profile with new details including venueMainType and venueSubType
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
 def editDetails():
@@ -219,7 +219,8 @@ def editDetails():
 
     venueID = int(data['venueID'])
     venueName = data['venueName']
-    venueType = data['venueType']
+    venueMainType = data.get('venueMainType')
+    venueSubType = data.get('venueSubType')
     venueDesc = data['venueDesc']
     originLocation = data['originLocation']
     image64 = data.get('image64', '')
@@ -257,7 +258,8 @@ def editDetails():
                 UPDATE venues 
                 SET 
                     "venueName" = %s,
-                    "venueType" = %s,
+                    "venueMainType" = %s,
+                    "venueSubType" = %s,
                     "venueDesc" = %s,
                     "originLocation" = %s,
                     "yearOpened" = %s,
@@ -272,7 +274,7 @@ def editDetails():
                     "photo" = %s
                 WHERE id = %s
                 """,
-                (venueName, venueType, venueDesc, originLocation, yearOpened, openForReservations, 
+                (venueName, venueMainType, venueSubType, venueDesc, originLocation, yearOpened, openForReservations, 
                  website, instagram, facebook, tiktok, email, phoneNumber, whatsappNumber, image64, venueID)
             )
 

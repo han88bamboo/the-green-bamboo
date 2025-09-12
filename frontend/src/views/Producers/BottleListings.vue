@@ -35,22 +35,30 @@
 
   <!-- main content -->
   <div class="container pt-5 mobile-pt-4" v-if="dataLoaded">
-      <!-- Master Listing Banner for Wine/Sake -->
-        <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row container mb-4">
-          <div class="col-12">
-            <div class="alert alert-info d-flex align-items-center" role="alert" style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc" class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
-                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
-              </svg>
-              <div class="text-start mobile-view-hide">
-                <span class="fw-bold text-dark">Master Listing for all vintages.</span> <span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed under "Add Your Review".</span>
-              </div>
-               <div class="text-start mobile-view-show fs-8">
-                <span class="fw-bold text-dark">Master Listing.</span><span class="text-muted ms-2">For {{ specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type' }}, specific vintages can be reviewed in "Add Your Review".</span>
-              </div>
-            </div>
+    <!-- Master Listing Banner for Wine/Sake -->
+    <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+      class="row container mb-4">
+      <div class="col-12">
+        <div class="alert alert-info d-flex align-items-center" role="alert"
+          style="background-color: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
+            class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+            <path
+              d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+          </svg>
+          <div class="text-start mobile-view-hide">
+            <span class="fw-bold text-dark">This is the Master Listing for all vintages.</span><span class="text-muted ms-2">For {{
+              specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
+              }}, specific vintages can be reviewed under "Add Your Review".</span>
+          </div>
+          <div class="text-start mobile-view-show fs-8">
+            <span class="fw-bold text-dark">This is the Master Listing for all vintages.</span><span class="text-muted ms-2">For {{
+              specified_listing.drinkType ? `${specified_listing.drinkType} listings` : 'listings of this Drink Type'
+              }}, specific vintages can be reviewed in "Add Your Review".</span>
           </div>
         </div>
+      </div>
+    </div>
 
     <div class="row">
       <!-- producer information -->
@@ -208,9 +216,9 @@
                     <h3 class="text-body-secondary mb-0 mobile-view-hide">
                       <b> {{ specified_listing["listingName"] }} </b>
                     </h3>
-                    <h4 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1">
+                    <h5 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1">
                       <b> {{ specified_listing["listingName"] }} </b>
-                    </h4>
+                    </h5>
                   </div>
                   <div class="row pt-1">
                     <!-- producer -->
@@ -223,16 +231,33 @@
                             '/' +
                             getProducerName(this.producer_id),
                         }" class="default-text-no-background">
-                          <p class="mobile-mb-0">
+                          <span class="mobile-mb-0">
                             {{
                               getProducerName(specified_listing["producerID"])
                             }}
-                          </p>
+                          </span>
                         </router-link>
+                        <span class="mobile-view-show"> | </span>
+                      <span v-if="
+                          specified_listing['bottler'] == 'OB' ||
+                          !specified_listing['bottlerID']
+                        " class="text-body-secondary producer-page mobile-view-show">
+                          Bottler: <u>OB</u>
+                      </span>
+                        <span v-else class="text-body-secondary producer-page mobile-view-show">
+                          Bottler:
+                          <router-link
+                            :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
+                            class="default-text-no-background">
+                            <u style="color: black">
+                              {{ getBottlerName(specified_listing["bottlerID"]) }}
+                            </u>
+                          </router-link>
+                        </span>
                       </h6>
                     </div>
                     <!-- bottler -->
-                    <div class="col-12 col-lg-6">
+                    <div class="col-12 col-lg-6 mobile-view-hide">
                       <h6 v-if="
                         specified_listing['bottler'] == 'OB' ||
                         !specified_listing['bottlerID']
@@ -251,6 +276,28 @@
                       </h6>
                     </div>
                   </div>
+
+                  <!-- Blue Add To Cellar Button (mobile only) -->
+                  <div class="col-12 d-flex align-items-center gap-1 mobile-view-show ">
+                    <!-- Blue Add To Cellar Button -->
+                    <template v-if="userType == 'user'">
+                      <!-- Logged-In User -->
+                      <button class="btn fw-semibold fs-7 cellar-btn-blue-mobile" data-bs-toggle="modal"
+                        data-bs-target="#cellarModal"
+                        @click="onCellarModalOpen">
+                        Add To Your Cellar
+                      </button>
+                    </template>
+
+                    <!-- Blue Add To Cellar Button When User Is Logged Out -->
+                    <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
+                      <button class="btn fw-semibold px-2 cellar-btn-blue-mobile"
+                        style="height: 38px;">
+                        Add To Your Cellar
+                      </button>
+                    </router-link>
+                  </div>
+
                 </div>
                 <!-- tzh edited classes suggest edit & report duplicate padding-top-for-suggesteditslink-large-screen-->
                 <div
@@ -290,7 +337,7 @@
                 </div>
               </div>
 
-              <!-- The Modal xyz-->
+              <!-- The Modal -->
 
               <div class="modal fade" id="whereToBuyModal" tabindex="-1" aria-labelledby="whereToBuyModalLabel"
                 aria-hidden="true">
@@ -356,16 +403,17 @@
                                       {{ venue.venueName }}
                                     </router-link>
                                     <div class="vintages-container">
-                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage" class="vintage-badge">
+                                      <span v-for="vintage in venue.vintages" v-bind:key="vintage"
+                                        class="vintage-badge">
                                         {{ vintage }}
                                       </span>
                                     </div>
                                   </div>
-                                </div> 
+                                </div>
                                 <div v-else>
                                   <p class="mb-1">We couldn't find any bars with this listing.</p>
                                 </div>
-                            
+
                                 <!-- [if] user does not allow location -->
                                 <!-- <div v-if="nearestBars.length == 0">
                                   <div v-for="venue in venueListings" v-bind:key="venue.id">
@@ -620,7 +668,8 @@
               </div>
 
               <!-- drink styles -->
-              <div v-if="specified_listing['drinkStyle']" class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['drinkStyle']"
+                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
                   <b>
                     {{ specified_listing["drinkStyle"] }}
@@ -630,7 +679,8 @@
               </div>
 
               <!-- age -->
-              <div v-if="specified_listing['age']" class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['age']"
+                class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
                 <!-- this code was only relevant before we had new vintage feature for reviews
                   <div v-if="specified_listing['drinkType'] == 'Wine'">
                   <h5 class="text-body-secondary mb-1">
@@ -639,7 +689,7 @@
                   <p class="mb-3"><u> Vintage (Year)</u></p>
                 </div>
                 <div v-else> -->
-                <div  >
+                <div>
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
@@ -656,7 +706,8 @@
               </div>
 
               <!-- abv -->
-              <div v-if="specified_listing['abv']" class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
+              <div v-if="specified_listing['abv']"
+                class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
                 <h5 class="text-body-secondary mb-1">
                   <b> {{ specified_listing["abv"] }}% </b>
                 </h5>
@@ -669,7 +720,6 @@
 
         <!-- more information (average rating, would recommend, would drink again) -->
         <div class="row pt-3 container pe-4 g-0 align-items-center">
-          <!-- xyz -->
           <div class="col-8 mobile-col-12">
             <div class="row gx-2">
               <!-- average rating -->
@@ -769,7 +819,7 @@
           <!-- ADD YOUR REVIEW & BOOKMARK -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
             <!-- Logged-in users -->
-            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"> 
+            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
               <div v-if="userType === 'user' && userID !== 'defaultUser'">
                 <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
                   data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
@@ -816,15 +866,36 @@
 
 
         <!-- popular flavorTag -->
-        <div class="row pt-3 mobile-pt-2 container">
-          <div class="text-start mb-2 mobile-mb-0 text-color-black">
-            <!-- flavor tag -->
-            <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
-              :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
-            <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
-              <u> Most Popular Flavour Tags </u>
-            </p>
+        <div class="row pt-3 mobile-pt-2 container ">
+          <!-- flavor tags -->
+          <div class="col-8 mobile-col-12">
+            <div class="text-start mb-2 mobile-mb-0 text-color-black">
+              <!-- flavor tag -->
+              <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
+                :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
+              <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
+                <u> Most Popular Flavour Tags </u>
+              </p>
+            </div>
           </div>
+
+          <!-- ADD TO CELLAR BUTTON -->
+          <div class="col-4 d-flex align-items-center mobile-view-hide me-0 mb-auto">
+            <!-- Logged-in users -->
+            <div v-if="userType === 'user' && userID !== 'defaultUser'">
+              <button class="btn btn-lg cellar-btn-blue" data-bs-toggle="modal" data-bs-target="#cellarModal" 
+                @click="onCellarModalOpen">
+                Add To Your Cellar
+              </button>
+            </div>
+            <!-- Logged-out users -->
+            <div v-else>
+              <button class="btn btn-lg cellar-btn-blue" @click="$router.push('/login')">
+                Add To Your Cellar
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <!-- popular observationTag -->
@@ -839,8 +910,573 @@
             </p>
           </div>
         </div>
+        <!--Anchor ABC-->
+        <!-- Add To Cellar Modal --> 
+        <div v-if="userID != 'defaultUser'" class="modal fade" id="cellarModal" tabindex="-1"
+          aria-labelledby="cellarModalLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                <h5 class="modal-title" id="cellarModalLabel" style="color: white; font-weight: bold">
+                  <i class="bi bi-plus-circle me-2"></i>
+                  Add To Your Cellar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body"> 
+                <form @submit.prevent="addDrinkToCellar">
+                  <!-- Drink Preview Section -->
+                  <div class="cellar-item-preview mb-4">
+                    <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Adding this drink to your cellar:</p>
+                    
+                    <!-- Preview -->
+                    <div class="row">
+                      <!-- Item Image -->
+                      <div class="col-4 text-center">
+                        <img 
+                          :src="specified_listing['photo'] || defaultPhoto"
+                          class="preview-image-mobile"
+                          style="width: 80px; height: 80px; object-fit: contain;"
+                          @error="onImageError"
+                        />
+                      </div>
 
-      
+                      <!-- Item Information -->
+                      <div class="col-8">
+                        <!-- Item Name -->
+                        <h6 class="fw-bold text-start text-decoration-underline mb-1 small">
+                          {{ specified_listing["listingName"] }}
+                          <span v-if="cellarForm.vintage"> [{{ cellarForm.vintage }}]</span>
+                        </h6>
+
+                        <!-- Item Details -->
+                        <p class="text-start mb-1 small text-muted">
+                          <span v-if="getProducerName(specified_listing['producerID'])">
+                            {{ getProducerName(specified_listing["producerID"]) }}
+                          </span>
+                          <span v-if="specified_listing['drinkType']">
+                            | {{ specified_listing["drinkType"] }}
+                          </span>
+                          <span v-if="specified_listing['abv']">
+                            | {{ specified_listing["abv"] }}% ABV
+                          </span>
+                        </p>
+
+                        <!-- Cellar Details -->
+                        <p class="text-start fw-bold text-primary mb-0 small">
+                          Adding {{ cellarForm.quantity || 1 }} bottle{{ (cellarForm.quantity || 1) !== 1 ? 's' : '' }}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quantity Section -->
+                  <div class="form-group mb-3">
+                    <label class="form-label text-start">
+                      Quantity to Add<span class="text-danger">*</span>
+                    </label>
+                    <input 
+                      type="number" 
+                      class="form-control"
+                      v-model="cellarForm.quantity"
+                      min="1"
+                      required
+                      placeholder="Number of bottles"
+                    />
+                  </div>
+
+                  <!-- Form Fields -->
+                  <div>
+                    <!-- Simplified form - only essential fields -->
+                    <div v-if="!showExpandedCellarForm" class="simplified-form">
+                      <!-- Place of Purchase -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Place of Purchase</label>
+                        <div class="purchase-location-container" style="position: relative;">
+                          <div class="input-group">
+                            <GMapAutocomplete 
+                              placeholder="e.g., Wine shop, Online store, or enter manually"
+                              @place_changed="setPurchasePlaceFromAutocomplete" 
+                              @input="onPurchaseLocationInput"
+                              @focus="onPurchaseLocationFocus" 
+                              @blur="onPurchaseLocationBlur"
+                              class="form-control" 
+                              ref="purchaseLocationInputSimplified" 
+                              :value="cellarForm.purchaseLocationInputValue"
+                              :options="{ types: ['establishment'] }"
+                            />
+                            <span class="input-group-text" :title="cellarForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                              <i class="bi bi-geo-alt" :class="{ 'text-success': cellarForm.selectedPurchasePlace }"></i>
+                            </span>
+                          </div>
+                          
+                          <!-- Location confirmation display -->
+                          <div v-if="cellarForm.selectedPurchasePlace && cellarForm.selectedPurchaseAddress" 
+                               class="alert alert-success mt-2 mb-0 small">
+                            📍 Selected: {{ cellarForm.selectedPurchasePlace }}
+                            <br>
+                            <small class="text-muted">{{ cellarForm.selectedPurchaseAddress }}</small>
+                            <button 
+                              type="button" 
+                              class="btn btn-sm btn-outline-danger ms-2"
+                              @click="clearSelectedPurchaseLocation"
+                            >
+                              Clear
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Purchase Price -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Purchase Price</label>
+                        <div class="input-group">
+                          <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
+                            <option value="USD">USD</option>
+                            <option value="EUR">EUR</option>
+                            <option value="GBP">GBP</option>
+                            <option value="JPY">JPY</option>
+                            <option value="CAD">CAD</option>
+                            <option value="AUD">AUD</option>
+                          </select>
+                          <input 
+                            type="number" 
+                            class="form-control"
+                            v-model="cellarForm.purchasePrice"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      <!-- Personal Notes -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Personal Notes</label>
+                        <textarea 
+                          class="form-control"
+                          v-model="cellarForm.personalNotes"
+                          rows="2"
+                          placeholder="Add your personal notes about these bottles..."
+                        ></textarea>
+                      </div>
+
+                      <!-- Collection Selection -->
+                      <div class="form-group mb-3">
+                        <label class="form-label text-start">Select Collection</label>
+                        <select 
+                          class="form-select"
+                          v-model="cellarForm.selectedCollectionId"
+                        >
+                          <option value="">Choose a collection...</option>
+                          <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
+                            {{ collection.collectionName }}
+                          </option>
+                        </select>
+                        <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                      </div>
+
+                      <!-- Show More Fields Button -->
+                      <div class="form-group mb-3">
+                        <button 
+                          type="button" 
+                          class="btn btn-outline-secondary w-100"
+                          @click="toggleCellarFormExpansion"
+                        >
+                          <i class="bi bi-chevron-down me-2"></i>
+                          Show More Fields
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Expanded form - all fields -->
+                    <div v-else class="expanded-form">
+                      <!-- Show Less Fields Button -->
+                      <div class="form-group mb-3">
+                        <button 
+                          type="button" 
+                          class="btn btn-outline-secondary w-100"
+                          @click="toggleCellarFormExpansion"
+                        >
+                          <i class="bi bi-chevron-up me-2"></i>
+                          Show Less Fields
+                        </button>
+                      </div>
+
+                      <!-- Group Properties Section -->
+                      <div class="form-section mb-4">
+                        <hr>
+                        <h6 class="section-header text-start mb-3">
+                          <i class="bi bi-collection me-2"></i>
+                          Group Properties
+                          <small class="text-muted d-block fw-normal">Values applied to Master Item within this group.</small>
+                        </h6>
+
+                        <!-- Row 1: Vintage -->
+                        <div class="row g-3 mb-3" v-if="specified_listing && ['Wine', 'Sake'].includes(specified_listing.drinkType)">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Vintage</label>
+                            <input 
+                              type="number" 
+                              class="form-control"
+                              v-model="cellarForm.vintage"
+                              min="1900" 
+                              max="2030"
+                              placeholder="e.g., 2020"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Row 2: Format, Volume -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Format</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.format"
+                            >
+                              <option value="Bottle">Bottle</option>
+                              <option value="Can">Can</option>
+                              <option value="Sample">Sample</option>
+                              <option value="Carton / Pouch">Carton / Pouch</option>
+                              <option value="Keg">Keg</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Volume</label>
+                            <div class="input-group">
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.volumeNumber"
+                                step="0.1" 
+                                min="0"
+                                placeholder="750"
+                              />
+                              <select class="form-select" v-model="cellarForm.volumeUnit" style="max-width: 70px;">
+                                <option value="ml">ml</option>
+                                <option value="oz">oz</option>
+                                <option value="l">L</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 3: Market Value -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Current Market Value</label>
+                            <div class="input-group">
+                              <select class="form-select" v-model="cellarForm.currentValueCurrency" style="max-width: 80px;">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                              </select>
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.currentValueEstimation"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 4: Drinking Window -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Drink Onwards Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.drinkOnwardsDate"
+                                ref="cellarDrinkOnwardsDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDrinkOnwardsDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Drink By Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.drinkByDate"
+                                ref="cellarDrinkByDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDrinkByDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 5: Food Pairing -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Suggested Food Pairing</label>
+                            <div class="input-group">
+                              <input 
+                                type="text" 
+                                class="form-control"
+                                v-model="cellarForm.suggestedFoodPairing"
+                                @focus="onFoodPairingFocus"
+                                @blur="onFoodPairingBlur"
+                                placeholder="e.g., Grilled salmon, Dark chocolate"
+                              />
+                              <button class="btn btn-outline-secondary" type="button" disabled title="Coming soon">+</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Individual Item Properties Section -->
+                      <div class="form-section mb-4">
+                        <hr>
+                        <h6 class="section-header text-start mb-3">
+                          <i class="bi bi-bottle me-2"></i>
+                          Individual Items
+                          <small class="text-muted d-block fw-normal">
+                            Values here are applied to every individual bottle (can be adjusted later in the cellar)
+                          </small>
+                        </h6>
+
+                        <!-- Row 1: Status, Consumption -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Status</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.status"
+                            >
+                              <option value="Purchased">Purchased</option>
+                              <option value="In Possession">In Possession</option>
+                              <option value="On Its Way">On Its Way</option>
+                              <option value="Held Elsewhere">Held Elsewhere</option>
+                              <option value="Wishlisted">Wishlisted</option>
+                            </select>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Consumption</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.consumption"
+                            >
+                              <option value="Unopened">Unopened</option>
+                              <option value="Opened">Opened</option>
+                              <option value="Empty">Empty</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        <!-- Row 2: Storage Location, Sub Location -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Storage Location</label>
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="cellarForm.currentLocation"
+                              @focus="onCurrentLocationFocus"
+                              @blur="onCurrentLocationBlur"
+                              placeholder="e.g., Wine fridge, Cellar rack 3"
+                            />
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Sub Location</label>
+                            <input 
+                              type="text" 
+                              class="form-control"
+                              v-model="cellarForm.subLocation"
+                              @focus="onSubLocationFocus"
+                              @blur="onSubLocationBlur"
+                              placeholder="e.g., Minibar, Kitchen cabinet"
+                            />
+                          </div>
+                        </div>
+
+                        <!-- Row 3: Place of Purchase -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Place of Purchase</label>
+                            <div class="purchase-location-container" style="position: relative;">
+                              <!-- Google Maps Autocomplete Input -->
+                              <div class="input-group">
+                                <GMapAutocomplete 
+                                  placeholder="e.g., Wine shop, Online store, or enter manually"
+                                  @place_changed="setPurchasePlaceFromAutocomplete" 
+                                  @input="onPurchaseLocationInput"
+                                  @focus="onPurchaseLocationFocus" 
+                                  @blur="onPurchaseLocationBlur"
+                                  class="form-control" 
+                                  ref="purchaseLocationInput" 
+                                  :value="cellarForm.purchaseLocationInputValue"
+                                  :options="{ types: ['establishment'] }"
+                                />
+                                <span class="input-group-text" :title="cellarForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                                  <i class="bi bi-geo-alt" :class="{ 'text-success': cellarForm.selectedPurchasePlace }"></i>
+                                </span>
+                              </div>
+                              
+                              <!-- Location confirmation display -->
+                              <div v-if="cellarForm.selectedPurchasePlace && cellarForm.selectedPurchaseAddress" 
+                                   class="alert alert-success mt-2 mb-0 small">
+                                📍 Selected: {{ cellarForm.selectedPurchasePlace }}
+                                <br>
+                                <small class="text-muted">{{ cellarForm.selectedPurchaseAddress }}</small>
+                                <button 
+                                  type="button" 
+                                  class="btn btn-sm btn-outline-danger ms-2"
+                                  @click="clearSelectedPurchaseLocation"
+                                >
+                                  Clear
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 4: Purchase Date, Delivery Date -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Purchase Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.purchaseDate"
+                                ref="cellarPurchaseDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarPurchaseDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                          <div class="col-md-6">
+                            <label class="form-label text-start">Delivery Date</label>
+                            <div class="input-group">
+                              <input 
+                                type="date" 
+                                class="form-control"
+                                v-model="cellarForm.deliveryDate"
+                                ref="cellarDeliveryDateInput"
+                              />
+                              <span 
+                                class="input-group-text date-picker-trigger"
+                                @click="$refs.cellarDeliveryDateInput.showPicker()"
+                                role="button"
+                                title="Open calendar"
+                              >
+                                <i class="bi bi-calendar3"></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 5: Purchase Price -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Purchase Price</label>
+                            <div class="input-group">
+                              <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
+                                <option value="USD">USD</option>
+                                <option value="EUR">EUR</option>
+                                <option value="GBP">GBP</option>
+                                <option value="JPY">JPY</option>
+                                <option value="CAD">CAD</option>
+                                <option value="AUD">AUD</option>
+                              </select>
+                              <input 
+                                type="number" 
+                                class="form-control"
+                                v-model="cellarForm.purchasePrice"
+                                step="0.01"
+                                min="0"
+                                placeholder="0.00"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Row 6: Personal Notes -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Personal Notes</label>
+                            <textarea 
+                              class="form-control"
+                              v-model="cellarForm.personalNotes"
+                              rows="3"
+                              placeholder="Add your personal notes about these bottles..."
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Collection Selection Section -->
+                      <div class="form-section mb-4">
+                        <!-- Collection Dropdown -->
+                        <div class="row g-3 mb-3">
+                          <div class="col-md-12">
+                            <label class="form-label text-start">Select Collection</label>
+                            <select 
+                              class="form-select"
+                              v-model="cellarForm.selectedCollectionId"
+                            >
+                              <option value="">Choose a collection...</option>
+                              <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
+                                {{ collection.collectionName }}
+                              </option>
+                            </select>
+                            <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </form>                
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <!-- Submit Button -->
+                <button 
+                  type="submit" 
+                  class="btn btn-primary"
+                  @click="addDrinkToCellar"
+                  :disabled="!canAddToCellar || addingToCellar"
+                >
+                  <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
+                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Anchor DEF -->
+
         <!-- Modal -->
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
           aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
@@ -880,7 +1516,7 @@
                 </button>
               </div>
             </div>
-            <!-- tzh xyz -->
+            <!-- tzh  -->
             <div v-if="addingReview" class="modal-content">
               <!-- change modal header colour -->
               <div class="modal-header" style="background-color: #f0b358">
@@ -930,31 +1566,33 @@
 
                 <!-- row 4A: add photo, friends, location-->
                 <div class="row">
+                  <p class="text-start mb-0 fw-bold">
+                    <span class="badge rounded-pill step-index my-2">1</span>
+                    Where You Drank It 
+                    <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Where and who you drank it with!
+                    </span>
+                  </p>
                   <div class="col-3 mobile-col-4">
                     <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
                       style="display: none" />
-                    <label for="reviewPhoto">
-                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24"
-                          fill="none" stroke="#000000" stroke-width="1.5" stroke-linecap="round"
-                          stroke-linejoin="round">
-                          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <path d="M20.4 14.5L16 10 4 20"></path>
-                          <circle cx="19" cy="19" r="3" fill="black"></circle>
-                          <line x1="18" y1="19" x2="20" y2="19" stroke="white" stroke-width="1"></line>
-                          <line x1="19" y1="18" x2="19" y2="20" stroke="white" stroke-width="1"></line>
-                        </svg>
+                    <label for="reviewPhoto" class="upload-label d-block w-100">
+                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button photo-dropzone">
+                        <div>
+                          <h2>📷</h2>
+                          <div>Upload</div>
+                        </div>
                       </div>
-                    
-                      <div v-else class="row mobile-review-svg-button">
-                        <img :src="selectedImage || image64" alt="" id="output" class="py-2 review-preview-photo"
-                          loading="lazy" />
+
+                      <div v-else class="mobile-review-svg-button">
+                        <img :src="selectedImage || image64" alt="" id="output"
+                            class="review-preview-photo" loading="lazy" />
                       </div>
                     </label>
+
                     <div class="row justify-content-center mb-2">
                       <div class="col-sm-7 text-center mt-2">
-                        <button v-if="image64 !== null" class="btn tertiary-square-btn mb-1" @click="clearPhoto">
+                        <button v-if="image64 !== null" class="btn btn-sm tertiary-square-btn mb-1" @click="clearPhoto">
                           Clear Photo
                         </button>
                       </div>
@@ -999,41 +1637,37 @@
 
                       <div class="form-group mb-2">
                         <!-- Enhanced Location Input with Home Option and Google Maps -->
-                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }" style="position: relative;">
+                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }"
+                          style="position: relative;">
                           <!-- Home Option Dropdown (appears when typing) -->
                           <div v-if="showHomeOption" class="home-option-dropdown">
                             <div class="home-option-item" @click="selectHomeLocation">
                               🏠 Tasted At Home
                             </div>
                           </div>
-                          
+
                           <!-- Combined Input Field -->
                           <div class="input-group mb-2">
                             <div class="location-input-wrapper" style="position: relative; width: 100%;">
-                              <GMapAutocomplete 
-                                placeholder="Tag where you tasted this drink" 
-                                @place_changed="setPlaceFromAutocomplete"
-                                @input="onLocationInput"
-                                @focus="onLocationFocus"
-                                @blur="onLocationBlur"
-                                @keydown="onLocationKeydown"
-                                class="form-control input-with-icon" 
-                                ref="locationInput"
-                                :value="locationInputValue"
+                              <GMapAutocomplete placeholder="Tag where you tasted this drink"
+                                @place_changed="setPlaceFromAutocomplete" @input="onLocationInput"
+                                @focus="onLocationFocus" @blur="onLocationBlur" @keydown="onLocationKeydown"
+                                class="form-control input-with-icon" ref="locationInput" :value="locationInputValue"
                                 :options="{ types: ['establishment'] }">
                               </GMapAutocomplete>
                             </div>
                           </div>
                         </div>
-                        
+
                         <!-- Location confirmation display -->
                         <div v-if="selectedLocationType === 'home'" class="alert alert-info mb-2">
                           📍 You've selected "Home" as your tasting location
                         </div>
-                        <div v-if="selectedLocationType === 'venue' && selectedLocation" class="alert alert-success mb-2">
+                        <div v-if="selectedLocationType === 'venue' && selectedLocation"
+                          class="alert alert-success mb-2">
                           📍 Selected venue: {{ selectedLocation }}
                         </div>
-                        
+
                         <div>
                           <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError">
                           </p>
@@ -1051,42 +1685,91 @@
                   </div>
                 </div>
 
-                <!-- row 3: review and vintage -->
+                <!-- row 2: rating -->
+                <div class="row">
+                  <div class="col-11 mb-3">
+                    <div class="row align-items-center text-start" >
+                      <p class="text-star mb-1 fw-bold my-2">
+                      <span class="badge rounded-pill step-index ">2</span>
+                        &nbsp;My Rating<span class="text-danger">*</span>
+                      </p>
+                      <label for="customRange2" class="form-label">
+                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
+                        Stars
+                      </label>
+                      <div class="d-flex align-items-center rounded p-2 mx-3" style="background-color: rgb(255, 246, 228);">
+                        <div class="col-auto">
+                          <label for="customRange" class="ms-2 form-label fw-bold">1</label>
+                        </div>
+                        <div class="col">
+                          <div class="slider-container" style="transform: scale(0.95); transform-origin: center;">
+                            <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
+                              id="customRange"   />
+                            <div class="tickmarks">
+                              <span class="tick" style="left: 5%">|</span>
+                              <span class="tick" style="left: 15%">|</span>
+                              <span class="tick" style="left: 25%">|</span>
+                              <span class="tick" style="left: 35%">|</span>
+                              <span class="tick" style="left: 45%">|</span>
+                              <span class="tick" style="left: 55%">|</span>
+                              <span class="tick" style="left: 65%">|</span>
+                              <span class="tick" style="left: 75%">|</span>
+                              <span class="tick" style="left: 85%">|</span>
+                              <span class="tick" style="left: 95%">|</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <label for="customRange" class="me-2 form-label fw-bold">10</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 4: review and vintage -->
                 <div class="row">
                   <div class="col justify-content-start mb-3">
                     <div class="row mb-2">
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-12">
-                        <p class="text-start mb-0 fw-bold" >Vintage
-                          <span v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                           For wine and sake, you can review specific vintage years.
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-12">
+                        <p class="text-start mb-0 fw-bold">Vintage
+                          <span
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                            For wine and sake, you can review specific vintage years.
                           </span>
-                        </p> 
+                        </p>
                       </div>
                     </div>
                     <div class="row mb-2">
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="col-4">
-                        <input v-model="variant" type="text" class="form-control" id="vintage" placeholder="e.g. 2020" />
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage"
+                          placeholder="e.g. 2020" />
                       </div>
                     </div>
                     <!-- Labels row -->
                     <div class="row mb-2">
                       <div class="col-12">
                         <p class="text-start mb-0 fw-bold">
-                          Review<span class="text-danger">*</span>
+                          <span class="badge rounded-pill step-index">3</span>&nbsp;
+                          Review<span class="text-danger fw-bold">*</span>
                         </p>
-                        
+
                       </div>
-                      
                     </div>
-                    
+
                     <!-- Input fields row -->
                     <div class="row">
                       <div class="col-12">
-                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea" rows="3"
-                          placeholder="Min 20 characters"></textarea>
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
+                          rows="3" placeholder="Min 20 characters"></textarea>
                       </div>
                     </div>
-                    
+
                     <div v-if="reviewDescError !== ''" class="col-md-12">
                       <p class="text-danger text-start mb-2 fw-bold">
                         {{ reviewDescError }}
@@ -1095,7 +1778,7 @@
                   </div>
                 </div>
 
-                <!-- row 4: buttons (would recommend, would buy again) -->
+                <!-- row 5: buttons (would recommend, would buy again) -->
                 <div class="row">
                   <!-- Would Recommend Section -->
                   <div class="col-md-6 mb-3 text-start">
@@ -1124,44 +1807,7 @@
                   </div>
                 </div>
 
-                <!-- row 5: rating -->
-                <div class="row">
-                  <div class="col-12 mb-3">
-                    <div class="row align-items-center text-start">
-                      <p class="text-star mb-1 fw-bold">
-                        My Rating<span class="text-danger">*</span>
-                      </p>
-                      <label for="customRange2" class="form-label">
-                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
-                        Stars
-                      </label>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">1</label>
-                      </div>
-                      <div class="col">
-                        <div class="slider-container" style="position: relative">
-                          <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
-                            id="customRange" />
-                          <div class="tickmarks">
-                            <span class="tick" style="left: 5%">|</span>
-                            <span class="tick" style="left: 15%">|</span>
-                            <span class="tick" style="left: 25%">|</span>
-                            <span class="tick" style="left: 35%">|</span>
-                            <span class="tick" style="left: 45%">|</span>
-                            <span class="tick" style="left: 55%">|</span>
-                            <span class="tick" style="left: 65%">|</span>
-                            <span class="tick" style="left: 75%">|</span>
-                            <span class="tick" style="left: 85%">|</span>
-                            <span class="tick" style="left: 95%">|</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-auto">
-                        <label for="customRange" class="form-label fw-bold">10</label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                
 
                 <!-- row 6: extend review -->
                 <div class="row">
@@ -1233,11 +1879,11 @@
                           </div>
                         </div>
                       </div>
-                      
+
                       <!-- Fade overlay with call-to-action -->
                       <div class="preview-fade-overlay">
                         <div class="preview-cta">
-                          <span class="fst-italic" >Extend and add more details!</span>
+                          <span class="fst-italic">Extend and add more details!</span>
                           <i class="bi bi-chevron-down ms-2"></i>
                         </div>
                       </div>
@@ -1346,15 +1992,18 @@
                     <div class="col justify-content-start mb-3">
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Aroma</p>
-                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1" placeholder="Describe the aroma..."></textarea>
+                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1"
+                          placeholder="Describe the aroma..."></textarea>
                       </div>
                       <div class="form-group mb-3">
                         <p class="text-start mb-2 fw-bold">Taste</p>
-                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1" placeholder="Describe the taste..."></textarea>
+                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1"
+                          placeholder="Describe the taste..."></textarea>
                       </div>
                       <div class="form-group mb-2">
                         <p class="text-start mb-2 fw-bold">Finish</p>
-                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1" placeholder="Describe the finish..."></textarea>
+                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1"
+                          placeholder="Describe the finish..."></textarea>
                       </div>
                     </div>
                   </div>
@@ -1363,8 +2012,14 @@
 
                 <!-- row 10: flavour tags -->
                 <div class="row">
-                  <div class="form-group mb-3 text-start">
-                    <p class="text-start mb-1 fw-bold">Flavour Tags</p>
+                  <div class="form-group mb-3 text-start ">
+                    <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">4</span>
+                      &nbsp;Flavour Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag the flavours you taste:
+                      </span>
+                    </p>
                     <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
                       Selected flavour tags:
                       <div class="row">
@@ -1389,8 +2044,7 @@
                         </div>
                       </div>
                     </div>
-                    Select flavour tags:
-                    <br />
+                    
                     <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags"
                       v-bind:key="family['_id']" :style="{
                         color: 'white',
@@ -1433,7 +2087,13 @@
                 <!-- row 11: observation tags -->
                 <div class="row">
                   <div class="form-group mb-3 text-start">
-                    <p class="text-start mb-1 fw-bold">Action Tags</p>
+                     <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">5</span>
+                      &nbsp;Action Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag what's noteworthy about this drink!
+                      </span>
+                    </p>
                     <div v-if="selectedObservations.length > 0" class="form-label pb-2">
                       Selected action tags:
                       <div class="row">
@@ -1450,8 +2110,6 @@
                         </div>
                       </div>
                     </div>
-                    Select action tags:
-                    <br />
                     <!-- Buttons for the first 8 observations -->
                     <button v-for="observation in observationTags.slice(0, 8)"
                       @click="toggleObservationSelection(observation)" v-bind:key="observation"
@@ -1541,17 +2199,20 @@
                   Close
                 </button>
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
-                <div v-if="specified_listing.drinkType !== 'Wine'"> 
+                <div v-if="specified_listing.drinkType !== 'Wine'">
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                   <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
-                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                 </div>
                 <div v-else>
                   <button type="button" @click="addReview" class="btn secondary-btn-less-round">
-                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
                   </button>
                 </div>
               </div>
@@ -1560,10 +2221,9 @@
         </div>
         <!-- END OF MODAL -->
 
-        <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" :loading="vintage_listings.loading" :error="vintage_listings.error"
-          :drinkType="specified_listing.drinkType" :listings="vintage_listings.listings" 
-          @vintage-selected="onVintageSelected"  
-        />
+        <VintageList v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+          :loading="vintage_listings.loading" :error="vintage_listings.error" :drinkType="specified_listing.drinkType"
+          :listings="vintage_listings.listings" @vintage-selected="onVintageSelected" />
 
         <!-- reviews -->
         <!-- TODO  EDIT MODAL IF NOT DOING COMPONENT-->
@@ -1577,7 +2237,7 @@
               </button>
             </div>
           </div>
-          
+
           <hr />
           <!-- photos posted by other users -->
           <h5 class="text-start" style="font-weight: bold; color: black">
@@ -1591,7 +2251,7 @@
                   userType == 'user' && userID !== 'defaultUser' && !inEdit
                 " class="row">
                   <!-- Add button -->
-                  <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 mobile-px-1">
+                  <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 p-0 mobile-px-1">
                     <div data-bs-toggle="modal" data-bs-target="#reviewModal">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="#83A9E8" class="bi bi-plus-lg review-image"
                         viewBox="0 0 16 16" style="cursor: pointer">
@@ -1601,8 +2261,9 @@
                     </div>
                   </div>
                   <div v-for="review in filteredReviewsWithImages" :key="review.id"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review.photo" alt="Review photo" class="review-image" loading="lazy" />
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    <img :src="review.photo" alt="Review photo" class="review-image clickable-image" loading="lazy"
+                      @click="enlargeImage(review.photo, `Review by user - ${review.id}`)" style="cursor: pointer" />
                   </div>
 
                 </div>
@@ -1620,9 +2281,11 @@
                   </div>
                   <!-- Display up to 5 photos -->
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
-                      loading="lazy" />
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    <img :src="review['photo'] || defaultPhoto" alt=""
+                      class="review-image shadow-effect clickable-image" loading="lazy"
+                      @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
+                      style="cursor: pointer" />
                   </div>
                 </div>
 
@@ -1630,8 +2293,10 @@
                 <div v-else class="row">
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
                     class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
-                    <img :src="review['photo'] || defaultPhoto" alt="" class="review-image shadow-effect"
-                      loading="lazy" />
+                    <img :src="review['photo'] || defaultPhoto" alt=""
+                      class="review-image shadow-effect clickable-image" loading="lazy"
+                      @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
+                      style="cursor: pointer" />
                   </div>
                 </div>
               </div>
@@ -1668,13 +2333,15 @@
                         {{ getUserRankFromReview(review) }}
                       </span>
                       &nbsp;rated <span style="color: #f0b358">★</span>
-                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": "" }}</b>
+                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + "Vintage": ""}}</b>
 
                       <!-- Location -->
-                      <span v-if="review.location || (review.location === null && review.address && review.address.toLowerCase() === 'home')">
+                      <span
+                        v-if="review.location || (review.location === null && review.address && review.address.toLowerCase() === 'home')">
                         at
-                        <router-link v-if="review.location === null && review.address && review.address.toLowerCase() === 'home'" :to="'/home/profile'" 
-                          class="text-decoration-none text-dark">
+                        <router-link
+                          v-if="review.location === null && review.address && review.address.toLowerCase() === 'home'"
+                          :to="'/home/profile'" class="text-decoration-none text-dark">
                           <b>🏠 Home</b>
                         </router-link>
                         <router-link v-else-if="checkVenue(review.address) !== ''"
@@ -1740,6 +2407,7 @@
                 <div class="text-start mb-2">
                   {{ review["reviewDesc"] }}
                 </div>
+                
 
                 <!-- Flavour Tags -->
                 <div class="text-start mb-3">
@@ -1752,7 +2420,7 @@
                     {{ tag }}
                   </span>
                 </div>
-
+                
                 <!-- Voting and Detailed Review -->
                 <div class="text-start mb-3" style="display: flex !important">
                   <div class="div">
@@ -1776,6 +2444,7 @@
                     review.userVotes.upvotes.length -
                     review.userVotes.downvotes.length
                   }}</span>
+                  
                   <div class="">
                     <!-- Downvote -->
                     <svg v-if="!review.userVotes.downvotes.some((vote) => parseInt(vote?.userId) === parseInt(userID))"
@@ -1792,20 +2461,22 @@
                     </svg>
 
                   </div>
+                  &nbsp;&nbsp;
+                  <div class="text-start">
                   <a href="#" class="text-decoration-underline text-secondary me-3" data-bs-toggle="modal"
                     data-bs-target="#detailedReviewModal" @click="updateDetailedReview(review)">
-                    Detailed Review >
+                    View Detailed Review
                   </a>
-
+                </div>
+                  <!-- Share Button -->
                   <button @click="shareReview(review)"
-                    class="btn btn-link p-0 text-decoration-underline text-secondary me-3"
+                    class="btn p-0 text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                      class="bi bi-share me-1" viewBox="0 0 16 16">
-                      <path
-                        d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.5 2.5 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5m-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3" />
-                    </svg>
-                    Share
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-box-arrow-up" viewBox="0 0 18 18" stroke-width="2">
+                                      <path fill-rule="evenodd" d="M3.5 6a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-2a.5.5 0 0 1 0-1h2A1.5 1.5 0 0 1 14 6.5v8a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 14.5v-8A1.5 1.5 0 0 1 3.5 5h2a.5.5 0 0 1 0 1z"/>
+                                      <path fill-rule="evenodd" d="M7.646.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 1.707V10.5a.5.5 0 0 1-1 0V1.707L5.354 3.854a.5.5 0 1 1-.708-.708z"/>
+                    </svg> 
+                    <span class="mobile-view-hide ms-2 text-decoration-underline">Share</span>
                   </button>
 
                   <div class="dropdown text-end">
@@ -1820,14 +2491,16 @@
                       </svg>
                     </button>
 
-                    <ul class="dropdown-menu">
-                      <li v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
+                    <ul class="dropdown-menu" >
+                      <li
+                        v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item" @click="setUpdateID(review)" data-bs-toggle="modal"
                           data-bs-target="#reviewModal">
                           Edit
                         </button>
                       </li>
-                      <li v-if="(review.userID === parseInt(userID) && Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)) || review.userID === correctModerator || (user && user.isAdmin)">
+                      <li
+                        v-if="(review.userID === parseInt(userID) && Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)) || review.userID === correctModerator || (user && user.isAdmin)">
                         <button class="dropdown-item text-danger" @click="setDeleteID(review)" data-bs-toggle="modal"
                           data-bs-target="#deleteReview">
                           Delete
@@ -1835,31 +2508,9 @@
                       </li>
                     </ul>
                   </div>
-
-
-                  <!-- kai has commented this out and replaced the buttons with a dropdown-->
-                  <!-- Edit & Delete Buttons
-                    <button
-                      v-if="review.userID === parseInt(userID) || correctModerator || user.isAdmin"
-                      class="btn btn-warning me-1 py-1 mobile-fs-7"
-                      @click="setUpdateID(review)"
-                      data-bs-toggle="modal"
-                      data-bs-target="#reviewModal"
-                      >
-                      Edit
-                      </button>
-                      <button
-                      v-if="review.userID === correctModerator || user.isAdmin"
-                      class="btn btn-danger py-1 mobile-fs-7"
-                      @click="setDeleteID(review)"
-                      data-bs-toggle="modal"
-                      data-bs-target="#deleteReview"
-                      >
-                      Delete
-                      </button>-->
                 </div>
               </div>
-
+              
               <!-- detailed review modal start -->
               <div class="modal fade" id="detailedReviewModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                 aria-hidden="true" @click="clearReviewFromUrl">
@@ -1923,7 +2574,8 @@
                           <b>Location</b>
                         </div>
                         <div class="col-9">
-                          <span v-if="detailedReview.location === null && detailedReview.address && detailedReview.address.toLowerCase() === 'home'">
+                          <span
+                            v-if="detailedReview.location === null && detailedReview.address && detailedReview.address.toLowerCase() === 'home'">
                             <router-link to="/home/profile" style="color: inherit">
                               <b>🏠 Home</b>
                             </router-link>
@@ -1990,7 +2642,9 @@
                         </div>
                       </div>
                       <!-- Variant -->
-                      <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)" class="row mt-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        class="row mt-2">
                         <div class="col-3">
                           <b>Vintage</b>
                         </div>
@@ -2077,7 +2731,7 @@
                         </div>
                         <div class="col-9">
                           <span v-for="(
-                            tag, index
+                              tag, index    
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
                             style="background-color: #f0b358; color: black">{{ tag }}</span>
                           <!--tzh changed grey to #F0B358-->
@@ -2153,17 +2807,14 @@
               </div>
               <!-- modal end -->
 
-              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel"
+                aria-hidden="true">
                 <div class="modal-dialog">
                   <!-- SHARE SUCCESS -->
-                  <div class="text-success fst-italic fw-bold fs-3 modal-content" v-if="shareSuccess">
+                  <div class="text-success fw-bold fs-5 modal-content" v-if="shareSuccess">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="m10.97 4.97-.02.022-3.473 4.425-2.093-2.094a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05"/>
-                      </svg>
-                      <br>
-                      <span>{{ shareSuccessMessage }}</span>
+                      <div class="mb-3" style="font-size: 48px;">🧃➡️📋</div>
+                      <p>{{ shareSuccessMessage }}</p>
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
@@ -2175,15 +2826,18 @@
                   <!-- SHARE ERROR -->
                   <div class="text-danger fw-bold fs-5 modal-content" v-if="shareError">
                     <div class="modal-body text-center p-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
-                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-                        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor"
+                        class="bi bi-exclamation-circle mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                          d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
                       </svg>
                       <br>
                       <span>{{ shareErrorMessage }}</span>
                     </div>
                     <div class="modal-footer">
-                      <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal" data-bs-dismiss="modal">
+                      <button type="button" class="btn btn-sm btn-secondary" @click="closeShareModal"
+                        data-bs-dismiss="modal">
                         Close
                       </button>
                     </div>
@@ -2203,8 +2857,6 @@
                   style="width: 125px; height: 125px" />
               </div>
             </div>
-
-
             <div class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1"
               aria-labelledby="reviewModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
@@ -2216,7 +2868,7 @@
               </div>
             </div>
             <div class="row">
-              <div class="col-3 xcol-lg-3 text-start mobile-view-show">
+              <div class="col-3 xcol-lg-3 text-start mb-3 mobile-view-show">
                 <!-- review photo -->
                 <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
                   review
@@ -2227,6 +2879,94 @@
                 </div>
               </div>
             </div>
+            <!-- Comments Section-->
+            <div class="rounded mobile-p-1"  style="background-color:rgb(255, 246, 228)">
+              <div class="my-3" style="display: flex !important;">
+                    <!-- Add Comment Button - Added By CP -->
+                    <button @click="addCommentMode=true"
+                      class="p-0 text-secondary me-2"
+                      style="border: none; background: none; font-size: inherit;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 18 18">
+                        <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                        <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                      </svg>
+                      <span class="text-decoration-underline ms-2">Add Comment</span>
+                    </button>
+
+                    <!-- View Comments for Review Button - Added by CP -->
+                    <button v-if="review.commentsCount > 0" @click="showModal=true"
+                      class="p-0 text-secondary me-2"
+                      style="border: none; background: none; font-size: inherit;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 18 18" stroke-width="2">
+                        <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                        <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                      </svg>
+                      <span class="text-decoration-underline ms-2">View Comments (<b>{{ review.commentsCount }}</b>)</span>
+                    </button>
+
+                    <!-- Comments Modal for each review - Added by CP -->
+                    <CommentsModal v-if="showModal" 
+                      :userID="userID" :userType="userType"
+                      :contentId="review.id" :contentType="'Review'"
+                      @close="showModal = false" 
+                    />
+              </div>
+              <!-- Add Comment Input - Added by CP -->
+              <div v-if="addCommentMode" class="row w-100 pb-3">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                    placeholder="Write a comment..."
+                    aria-label="Write a comment..."
+                    :aria-describedby="'button-addon2-' + review.id"
+                    v-model="newReviewComment"  
+                  />
+
+                  <!-- Comment Button (Desktop) -->
+                  <button
+                    class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                    type="button"
+                    :id="'button-addon2-' + review.id"
+                    @click="addComment(review.id, 'Review')"
+                  >
+                    Comment
+                  </button>
+
+                  <!-- Comment Button (Mobile) -->
+                  <button
+                    class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                    type="button"
+                    :id="'button-addon2-' + review.id"
+                    @click="addComment(review.id, 'Review')"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-send" viewBox="0 0 16 16">
+                      <path
+                        d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                          14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                          7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                          0 0 1 .54.11ZM6.636 10.07l2.761 
+                          4.338L14.13 2.576zm6.787-8.201L1.591 
+                          6.602l4.339 2.76z"
+                      />
+                    </svg>
+                  </button>
+
+                  <!-- Cancel Button -->
+                  <button
+                    class="btn btn-outline-secondary rounded ms-2"
+                    type="button"
+                    @click="newReviewComment = '', addCommentMode = false"
+                  >
+                    Cancel
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            
             <hr class="mt-4 mb-2" />
           </div>
 
@@ -2236,7 +2976,96 @@
           </div>
         </div>
         <!-- end of producer information -->
+
+
+        <!-- comments start (By CP)-->
+        <div class="text-start my-4 ms-1">
+          <h3 class="fw-bold mb-3">Community Discussion 💬</h3>
+
+          <!-- Comments List -->
+          <div v-for="comment in comments" :key="comment.id" class="row mb-3">
+            <CommentBox 
+              :comment="comment" :userID="userID" :userType="userType" 
+              :contentId="listing_id" contentType="Listing" 
+              @set-delete-comment="openDeleteModal" 
+              @comment-replied="handleReply"/>
+          </div>
+
+          <!-- Load More Comments Button -->
+          <div class="d-flex justify-content-center mb-3" v-if="hasMoreComments">
+            <button class="btn primary-btn btn-sm" @click="loadMoreComments">Load More Comments</button>
+          </div>
+
+          <!-- No More Comments Message -->
+          <div class="text-center" v-if="!hasMoreComments">
+            <p>Start a new discussion about this bottle!</p>
+          </div>
+
+          <!--Add Comment Section -->
+          <div class="row w-100 py-3">
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                placeholder="Write a comment..."
+                aria-label="Write a comment..."
+                :aria-describedby="'button-addon2-' + listing_id"
+                v-model="newComment"  
+              />
+              <button
+                class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                type="button"
+                :id="'button-addon2-' + listing_id"
+                @click="addComment(listing_id, 'Listing')"
+              >
+                Comment
+              </button>
+              <button
+                class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                type="button"
+                :id="'button-addon2-' + listing_id"
+                @click="addComment(listing_id, 'Listing')"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                  class="bi bi-send" viewBox="0 0 16 16">
+                  <path
+                    d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                      14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                      7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                      0 0 1 .54.11ZM6.636 10.07l2.761 
+                      4.338L14.13 2.576zm6.787-8.201L1.591 
+                      6.602l4.339 2.76z"
+                  />
+                </svg>
+              </button> 
+            </div>
+          </div>
+
+          <!-- Delete Comment Modal-->
+          <div v-if="showDeleteModal" class="modal fade show" tabindex="-1" style="display:block; background: rgba(0,0,0,0.5);">
+            <div class="modal-dialog modal-dialog-scrollable modal-xl">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Confirm Deletion</h5>
+                  <button type="button" class="btn-close" @click="showDeleteModal = false"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Are you sure you want to delete this comment?</p>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-danger" @click="deleteComment">Delete</button>
+                  <button type="button" class="btn btn-secondary" @click="showDeleteModal = false">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+        <!-- comments end -->
       </div>
+
+
       <!-- where to buy & where to try & 88 bamboo's review -->
       <div class="col-sm-12 col-md-9 col-lg-3 mobile-view-hide">
 
@@ -2269,7 +3098,7 @@
                       </span>
                     </div>
                   </div>
-                </div> 
+                </div>
                 <div v-else>
                   <p class="mb-1">We couldn't find any bars with this listing.</p>
                 </div>
@@ -2386,13 +3215,123 @@
 
 
 
-  <BadgePopup 
-    :badges="earnedBadges" 
-    :show="showBadgePopup" 
-    @close="closeBadgePopup"
-  />
+  <BadgePopup :badges="earnedBadges" :show="showBadgePopup" @close="closeBadgePopup" />
   <!-- end of your drinks shelf & brands you follow -->
 
+
+  <!-- NEW: Vue-based Image Enlargement Modal -->
+  <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
+    <div class="image-modal-container" @click.stop>
+      <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 6L6 18M6 6L18 18" stroke="white" stroke-width="2" stroke-linecap="round" />
+        </svg>
+      </button>
+      <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
+    </div>
+  </div>
+
+  <!-- Current Location Suggestions Dropdown -->
+  <div 
+    id="currentLocationDropdown"
+    v-if="showCurrentLocationSuggestions && (currentLocationSuggestions.length > 0 || loadingCurrentLocations)"
+    class="current-location-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingCurrentLocations" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="currentLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous storage locations found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in currentLocationSuggestions" 
+        :key="index"
+        class="current-location-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectCurrentLocationSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sub Location Suggestions Dropdown -->
+  <div 
+    id="subLocationDropdown"
+    v-if="showSubLocationSuggestions && (subLocationSuggestions.length > 0 || loadingSubLocations)"
+    class="sub-location-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingSubLocations" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="subLocationSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous sub locations found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in subLocationSuggestions" 
+        :key="index"
+        class="sub-location-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectSubLocationSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Food Pairing Suggestions Dropdown -->
+  <div 
+    id="foodPairingDropdown"
+    v-if="showFoodPairingSuggestions && (foodPairingSuggestions.length > 0 || loadingFoodPairings)"
+    class="food-pairing-dropdown"
+    style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
+  >
+    <!-- Loading state -->
+    <div v-if="loadingFoodPairings" class="p-3 text-center text-muted">
+      <div class="spinner-border spinner-border-sm me-2"></div>
+      Loading suggestions...
+    </div>
+    
+    <!-- No suggestions -->
+    <div v-else-if="foodPairingSuggestions.length === 0" class="p-3 text-center text-muted">
+      No previous food pairings found
+    </div>
+    
+    <!-- Suggestions list -->
+    <div v-else>
+      <div 
+        v-for="(suggestion, index) in foodPairingSuggestions" 
+        :key="index"
+        class="food-pairing-suggestion-item p-2 cursor-pointer"
+        style="border-bottom: 1px solid #f1f3f4; cursor: pointer;"
+        @click="selectFoodPairingSuggestion(suggestion)"
+        @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
+        @mouseleave="$event.target.style.backgroundColor = 'white'"
+      >
+        {{ suggestion }}
+      </div>
+    </div>
+  </div>
 </template>
 
 <!-- ---------------------------------------------------------------------------------------------------------------------------------------------------------- -->
@@ -2409,6 +3348,9 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import VintageList from "@/components/bottle_listings/VintageList.vue"
 import BadgePopup from '@/components/BadgePopup.vue';
+import CommentBox from '@/components/CommentBox.vue';
+import CommentsModal from '@/components/CommentsModal.vue';
+import { useToast } from "vue-toastification";
 
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
@@ -2421,7 +3363,9 @@ export default {
     BookmarkModal,
     LoadingWithFunFact,
     VintageList,
-    BadgePopup
+    BadgePopup,
+    CommentBox,
+    CommentsModal
   },
   setup() {
     // Create reactive references for meta data
@@ -2873,7 +3817,7 @@ export default {
       shareSuccessMessage: "",
       shareErrorMessage: "",
 
-      isSubmittingReview: false, 
+      isSubmittingReview: false,
 
       VARIANT_DRNK_TYP,
 
@@ -2882,6 +3826,90 @@ export default {
 
       // Paywall controls
       paywallScrollHandler: null,
+
+      showImageModal: false,
+      enlargedImageSrc: '',
+      enlargedImageAlt: '',
+
+      // Comments - Added by CP
+      comments: [],
+      lastCommentID: 0,
+      userLikedListing: false,
+      hasMoreComments: true,
+      newComment: "",
+      deleteCommentItems: {
+          commentId: null,
+          contentType: null
+      },
+      showDeleteModal: false,
+
+      showModal: false,
+      addCommentMode: false,
+      newReviewComment: "",
+
+      // Cellar functionality - Add to cellar form
+      cellarForm: {
+        // Group properties (applied to all items in the drink group)
+        vintage: null,
+        format: 'Bottle', // Default fallback
+        volumeNumber: 750, // Default fallback
+        volumeUnit: 'ml', // Default fallback
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
+        quantity: 1,
+        status: 'Purchased',
+        consumption: 'Unopened',
+        currentLocation: 'At Home',
+        subLocation: '',
+        
+        // Purchase location data
+        purchaseLocationInputValue: '', // Input field value
+        purchasePlaceName: '', // Store for backend
+        selectedPurchasePlace: '', // Name from Google Maps 
+        selectedPurchaseAddress: '', // Address from Google Maps
+        selectedPurchaseVenueId: null, // Optional venue ID if applicable
+        
+        purchaseDate: null,
+        deliveryDate: null,
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        personalNotes: '',
+        
+        // Collection selection
+        selectedCollectionId: null
+      },
+      
+      // Add to cellar state
+      addingToCellar: false,
+      
+      // Form expansion state
+      showExpandedCellarForm: false,
+      
+      // Cellar collections
+      cellarCollections: [],
+      
+      // Location suggestions for dropdowns
+      currentLocationSuggestions: [],
+      loadingCurrentLocations: false,
+      showCurrentLocationSuggestions: false,
+      activeCurrentLocationInput: null,
+      
+      subLocationSuggestions: [],
+      loadingSubLocations: false,
+      showSubLocationSuggestions: false,
+      activeSubLocationInput: null,
+      
+      // Food pairing suggestions for dropdowns
+      foodPairingSuggestions: [],
+      loadingFoodPairings: false,
+      showFoodPairingSuggestions: false,
+      activeFoodPairingInput: null,
+ 
     };
   },
   mounted() {
@@ -2899,7 +3927,7 @@ export default {
 
       // Restore cached review data if present
       this.restoreReviewCache();
-      
+
       // Initialize auto-resize functionality for textareas
       this.$nextTick(() => {
         this.setupAutoResize();
@@ -2908,18 +3936,45 @@ export default {
 
       // Initialize paywall scroll control for non-logged in users
       this.initializePaywallControls();
+
+      // Add modal event listener for cellar modal
+      this.$nextTick(() => {
+        const cellarModal = document.getElementById('cellarModal');
+        if (cellarModal) {
+          cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
+        }
+      });
     } catch (error) {
       console.error(error);
     }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.showImageModal) {
+        this.closeImageModal();
+      }
+    });
   },
   beforeUnmount() {
     // Clean up paywall scroll controls
     this.cleanupPaywallControls();
-    
+
     // Clean up Google Maps observer
     if (this._googleMapsObserver) {
       this._googleMapsObserver.disconnect();
     }
+
+    // Clean up cellar modal event listener
+    const cellarModal = document.getElementById('cellarModal');
+    if (cellarModal) {
+      cellarModal.removeEventListener('show.bs.modal', this.onCellarModalOpen);
+    }
+
+    // Clean up location dropdowns
+    this.showCurrentLocationSuggestions = false
+    this.showSubLocationSuggestions = false
+    this.showFoodPairingSuggestions = false
+
+    document.removeEventListener('keydown', this.handleEscKey);
   },
   computed: {
     filteredOptions() {
@@ -2946,8 +4001,8 @@ export default {
       if (!this.selectedVintage || this.selectedVintage === 'Show All') {
         return this.reviews; // or whatever your base review list is
       }
-      
-      return this.reviews.filter(review => 
+
+      return this.reviews.filter(review =>
         review.variant === parseInt(this.selectedVintage)
       );
     },
@@ -2964,36 +4019,122 @@ export default {
         totalReviews,
         averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
       }
+    },
+
+    // Computed property to determine if user can add to cellar
+    canAddToCellar() {
+      // Debug logging to identify the issue
+      const hasListing = this.specified_listing && this.specified_listing.id;
+      const hasValidQuantity = this.cellarForm.quantity >= 1;
+      const isValidUser = this.userType === 'user' && this.userID !== 'defaultUser';
+      
+      console.log('canAddToCellar debug:', {
+        hasListing,
+        hasValidQuantity,
+        isValidUser,
+        userType: this.userType,
+        userID: this.userID,
+        listingId: this.specified_listing?.id,
+        quantity: this.cellarForm.quantity
+      });
+      
+      return hasListing && hasValidQuantity && isValidUser;
+    },
+
+    // Default volume based on drink type (matches MyCellarPage logic)
+    defaultVolumeNumber() {
+      if (!this.specified_listing || !this.specified_listing.drinkType) {
+        console.log('defaultVolumeNumber: No listing or drinkType, returning 700');
+        return 700; // Default fallback
+      }
+      
+      const drinkType = this.specified_listing.drinkType.toLowerCase();
+      console.log('defaultVolumeNumber: drinkType =', drinkType);
+      
+      let volume;
+      if (drinkType === 'beer') {
+        volume = 355;
+      } else if (drinkType === 'wine') {
+        volume = 750;
+      } else if (drinkType === 'sake') {
+        volume = 720;
+      } else {
+        volume = 700; // Any other drinkType
+      }
+      
+      console.log('defaultVolumeNumber: returning', volume);
+      return volume;
+    },
+
+    defaultVolumeUnit() {
+      // All drink types use 'ml' as default
+      console.log('defaultVolumeUnit: returning ml');
+      return 'ml';
+    },
+
+    // Default format based on drink type (matches MyCellarPage logic)
+    defaultFormat() {
+      if (!this.specified_listing || !this.specified_listing.drinkType) {
+        console.log('defaultFormat: No listing or drinkType, returning Bottle');
+        return 'Bottle'; // Default fallback
+      }
+      
+      const drinkType = this.specified_listing.drinkType.toLowerCase();
+      console.log('defaultFormat: drinkType =', drinkType);
+      
+      let format;
+      if (drinkType === 'beer') {
+        format = 'Can';
+      } else {
+        // For Wine, Sake, and any other drinkType
+        format = 'Bottle';
+      }
+      
+      console.log('defaultFormat: returning', format);
+      return format;
     }
-  
+
   },
   watch: {
-    '$route.params.listingID': function(newId, oldId) {
+    '$route.params.listingID': function (newId, oldId) {
       console.log('Route listing ID changed from', oldId, 'to', newId);
       if (newId !== oldId) {
         // Reset data loading state
         this.dataLoaded = false;
         this.listingExists = true;
-        
+
         // Update listing ID
         this.listing_id = newId;
         this.bookmarkListingID = newId;
-        
+
         // Clear previous data
         this.reviews = [];
         this.filteredReviewsWithImages = [];
         this.specified_listing = {};
-        
+
         // Reload data
         this.checkListingExists();
-        
+
         // Clear review cache for the previous listing
         this.clearReviewCache();
       }
     },
 
+    // Watch for when specified_listing loads to initialize cellar form defaults
+    specified_listing: {
+      handler(newListing) {
+        if (newListing && newListing.id) {
+          console.log('Specified listing loaded, initializing cellar defaults...');
+          this.$nextTick(() => {
+            this.initializeCellarFormDefaults();
+          });
+        }
+      },
+      deep: true
+    },
+
     // Watch for user login/logout changes
-    userID: function(newUserID, oldUserID) {
+    userID: function (newUserID, oldUserID) {
       if (newUserID !== oldUserID) {
         if (newUserID === 'defaultUser') {
           // User logged out, setup paywall
@@ -3043,7 +4184,7 @@ export default {
     selectedLocation: 'cacheReviewForm',
     selectedLocationAddress: 'cacheReviewForm',
     image64: 'cacheReviewForm',
-    
+
     // Watch for when modal becomes visible
     addingReview(newVal) {
       if (newVal) {
@@ -3052,7 +4193,7 @@ export default {
         });
       }
     },
-    
+
     // Watch for when extend review section becomes visible
     extendReview(newVal) {
       if (newVal) {
@@ -3060,7 +4201,8 @@ export default {
           this.setupAutoResize();
         });
       }
-    }
+    },
+
   },
   methods: {
     // fetch specific listing data
@@ -3072,14 +4214,14 @@ export default {
       setTimeout(() => {
         const textareas = document.querySelectorAll('.auto-resize-textarea');
         console.log('Found textareas:', textareas.length); // Debug log
-        
+
         textareas.forEach(textarea => {
           // Remove existing listeners to avoid duplicates
           textarea.removeEventListener('input', this.autoResize);
-          
+
           // Auto-resize on input
           textarea.addEventListener('input', this.autoResize);
-          
+
           // Set initial height
           this.autoResize({ target: textarea });
         });
@@ -3089,16 +4231,16 @@ export default {
     // Auto-resize function for textareas
     autoResize(event) {
       if (!event || !event.target) return;
-      
+
       const textarea = event.target;
-      
+
       // Reset height to auto to get correct scrollHeight
       textarea.style.height = 'auto';
-      
+
       // Set new height based on content
       const newHeight = Math.max(38, textarea.scrollHeight);
       textarea.style.height = newHeight + 'px';
-      
+
       console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
     },
 
@@ -3185,7 +4327,7 @@ export default {
         );
         this.reviews = response.data;
 
-        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        // this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
 
         this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
 
@@ -3317,6 +4459,13 @@ export default {
         this.specified_listing = response.data;
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
+        
+        // Initialize cellar form defaults now that listing is loaded
+        console.log('Listing loaded, initializing cellar form defaults...');
+        this.$nextTick(() => {
+          this.initializeCellarFormDefaults();
+        });
+        
         // console.log(this.specified_listing)
         // console.log(this.specified_listing.drinkType)
 
@@ -3340,7 +4489,7 @@ export default {
         // remove caching for wine type due to variants 
         if (this.specified_listing.drinkType !== 'Wine') {
           this.specificReview = this.getLoggedUserReview();
-        } 
+        }
 
         this.formatDeepDiveLink();
       } catch (error) {
@@ -3451,6 +4600,10 @@ export default {
         // this.dataLoaded = null;
       }
 
+      // comments
+      this.loadComments(); 
+
+
       // venuesAPI
       // _id, venueName, venueDesc, originCountry
       // try {
@@ -3556,7 +4709,7 @@ export default {
         );
         this.reviews = this.reviews.concat(response.data);
 
-        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        // this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
 
         if (response.data.length > 0) {
           this.lastReviewID = response.data[response.data.length - 1].id;
@@ -4086,7 +5239,7 @@ export default {
         this.photo = this.photo.trim();
       }
       if (this.variant !== "") {
-        this.variant = this.variant.trim();        
+        this.variant = this.variant.trim();
       }
       if (this.aroma !== "") {
         this.aroma = this.aroma.trim();
@@ -4433,15 +5586,15 @@ export default {
 
         if (response.data.badgeUpdate) {
           const badge = response.data.badgeUpdate;
-          
+
           // Show popup only for positive changes
-          const shouldShowPopup = 
+          const shouldShowPopup =
             badge.isNewBadge ||           // New badge earned
             badge.isLevelUp ||            // Level up
             (!badge.removed &&           // Not removed
-            badge.change !== "decrease" && // Not a decrease
-            !badge.isLevelDown);         // Not a level down
-            
+              badge.change !== "decrease" && // Not a decrease
+              !badge.isLevelDown);         // Not a level down
+
           if (shouldShowPopup) {
             this.earnedBadges = [badge];
             this.showBadgePopup = true;
@@ -4843,7 +5996,7 @@ export default {
     onLocationInput(event) { // eslint-disable-line no-unused-vars
       const inputValue = typeof event === 'string' ? event : event.target.value; // eslint-disable-line no-unused-vars
       this.locationInputValue = inputValue;
-      
+
       // Clear any previous selection if user is typing something new
       if (this.selectedLocationType && inputValue !== 'Home' && inputValue !== this.selectedLocation) {
         this.selectedLocationType = '';
@@ -4861,7 +6014,7 @@ export default {
     onLocationFocus() {
       // Always show home option when field is focused
       this.showHomeOption = true;
-      
+
       // Adjust Google Maps autocomplete position after DOM update
       this.$nextTick(() => {
         this.adjustGoogleMapsPosition();
@@ -4913,7 +6066,7 @@ export default {
         const pacContainer = document.querySelector('.pac-container');
         if (pacContainer) {
           console.log('Adjusting Google Maps position, showHomeOption:', this.showHomeOption); // Debug log
-          
+
           if (this.showHomeOption) {
             // Get the input field position to calculate proper offset
             const inputField = this.$refs.locationInput?.$el || document.querySelector('[placeholder="Tag where you tasted this drink"]');
@@ -4921,7 +6074,7 @@ export default {
               const inputRect = inputField.getBoundingClientRect();
               const homeDropdown = document.querySelector('.home-option-dropdown');
               const homeDropdownHeight = homeDropdown ? homeDropdown.offsetHeight : 60;
-              
+
               // Move the autocomplete dropdown below the home option dropdown
               pacContainer.style.position = 'absolute';
               pacContainer.style.top = (inputRect.bottom + homeDropdownHeight + window.scrollY) + 'px';
@@ -5130,37 +6283,37 @@ export default {
       }
     },
 
-    async getMoreVenues(reviews) {
-      // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
-      let localVenueIDs = [];
+    // async getMoreVenues(reviews) {
+    //   // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
+    //   let localVenueIDs = [];
 
-      reviews.forEach((review) => {
-        if (review.location && !localVenueIDs.includes(review.location)) {
-          if (!this.venueIDs.includes(review.location)) {
-            localVenueIDs.push(review.location);
-          }
-        }
-      });
+    //   reviews.forEach((review) => {
+    //     if (review.location && !localVenueIDs.includes(review.location)) {
+    //       if (!this.venueIDs.includes(review.location)) {
+    //         localVenueIDs.push(review.location);
+    //       }
+    //     }
+    //   });
 
-      // Fetch venue details for the unique venue IDs
-      try {
-        if (localVenueIDs.length > 0) {
-          const venueResponse = await this.$axios.post(
-            `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
-            { 'venueIDs': localVenueIDs }
-          );
-          // Add to this.venues array
-          this.venues = this.venues.concat(venueResponse.data);
+    //   // Fetch venue details for the unique venue IDs
+    //   try {
+    //     if (localVenueIDs.length > 0) {
+    //       const venueResponse = await this.$axios.post(
+    //         `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
+    //         { 'venueIDs': localVenueIDs }
+    //       );
+    //       // Add to this.venues array
+    //       this.venues = this.venues.concat(venueResponse.data);
 
-          // Update venueIDs with the new venues
-          this.venueIDs = this.venueIDs.concat(
-            venueResponse.data.map((venue) => venue.id)
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching venue details:", error);
-      }
-    },
+    //       // Update venueIDs with the new venues
+    //       this.venueIDs = this.venueIDs.concat(
+    //         venueResponse.data.map((venue) => venue.id)
+    //       );
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching venue details:", error);
+    //   }
+    // },
     restoreReviewCache() {
       const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
       const cached = localStorage.getItem(cacheKey);
@@ -5304,376 +6457,1348 @@ export default {
       this.earnedBadges = [];
     },
 
+    // Handle image enlargement
+    enlargeImage(imageSrc, altText) {
+      this.enlargedImageSrc = imageSrc;
+      this.enlargedImageAlt = altText;
+      this.showImageModal = true;
+      
+      // Prevent body scrolling when modal is open
+      document.body.style.overflow = 'hidden';
+    },
+    
+    // Close modal
+    closeImageModal() {
+      this.showImageModal = false;
+      this.enlargedImageSrc = '';
+      this.enlargedImageAlt = '';
+      
+      // Restore body scrolling
+      document.body.style.overflow = '';
+    },
+
+    // Retrieve comments for the listing (initial load)
+    async loadComments() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/randomContent/getListingComments/${this.userID}/${this.userType}/` + this.listing_id
+        );
+        this.comments = response.data.comments;
+        this.lastCommentID = response.data.lastCommentId;
+        this.userLikedListing = response.data.userLiked;
+        this.hasMoreComments = response.data.comments.length == 30; // 30 is from the backend limit hardcode
+        
+      } catch (error) {
+        console.error("Error loading comments:", error);
+      }
+    },
+
+    // Function to load more comments (pagination)
+    async loadMoreComments() {
+      if (!this.hasMoreComments) return;
+
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/randomContent/getMoreListingComments/${this.listing_id}/${this.lastCommentID}`
+        );
+
+        // Append new comments to the existing array
+        this.comments = this.comments.concat(response.data.comments);
+        this.lastCommentID = response.data.lastCommentId;
+        this.hasMoreComments = response.data.comments.length == 30; // 30 is from the backend limit hardcode
+
+      } catch (error) {
+        console.error("Error loading more comments:", error);
+      }
+    },
+
+    // Function to add comment
+    async addComment(contentId, contentType) {
+        if (!this.userID || !this.userType) {
+            // Route to login page
+            this.$router.push({ name: 'Login' });
+            return;
+        }
+
+        // Use the correct comment 
+        let comment = "";
+        if (this.newComment.trim() == "") {
+          comment = this.newReviewComment.trim();
+        } else {
+          comment = this.newComment.trim();
+        }
+
+        if (comment == "") {
+            const toast = useToast();
+            toast.error("Comment cannot be empty.");
+            return;
+        }
+
+        try {
+            const response = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+            {
+                userId: this.userID,
+                userType: this.userType,
+                contentId: contentId,
+                contentType: contentType,
+                comment: comment
+            }
+            );
+
+            // Clear the input field for listing comments
+            if (response.status === 201 && contentType == 'Listing') {
+                // Add the new comment to the top of the comments array
+                this.comments.unshift(response.data.comment);
+                this.newComment = "";
+                const toast = useToast();
+                toast.success("Comment added successfully.");
+            }
+
+            // Clear the input field for review comments
+            if (response.status === 201 && contentType == 'Review') {
+                // Add 1 to commentsCount in the review
+                const review = this.reviews.find(r => r.id === contentId);
+                if (review) {
+                    review.commentsCount = (review.commentsCount || 0) + 1;
+                }
+                this.newReviewComment = "";
+                this.addCommentMode = false;
+                const toast = useToast();
+                toast.success("Reply added successfully.");
+            }
+            
+
+        } catch (error) {
+            console.error("Error adding comment:", error);
+            const toast = useToast();
+            toast.error("Failed to add comment. Please try again later.");
+        }
+    },
+
+    openDeleteModal(payload) {
+      this.deleteCommentItems = payload;
+      this.showDeleteModal = true; // now the modal renders
+    },
+    
+    // Recursive helper to remove a comment or reply by ID
+    removeCommentById(commentId, commentsArray) {
+      for (let i = 0; i < commentsArray.length; i++) {
+        const comment = commentsArray[i];
+
+        // If this is the comment we want to remove
+        if (comment.id === commentId) {
+          commentsArray.splice(i, 1); // reactive removal
+          return true; // stop searching
+        }
+
+        // If it has replies, search recursively
+        if (comment.replies?.length) {
+          const removed = this.removeCommentById(commentId, comment.replies);
+          if (removed) return true;
+        }
+      }
+      return false; // comment not found
+    },
+
+    // Function to delete comment 
+    async deleteComment() {
+
+        try {
+            const response = await this.$axios.delete(
+            `${process.env.VUE_APP_API_URL}/randomContent/deleteComment`,
+            {
+                data: {
+                    userId: this.userID,
+                    userType: this.userType,
+                    contentType: this.deleteCommentItems.contentType,
+                    commentId: this.deleteCommentItems.commentId
+                }
+            }
+            );
+
+            // Show message
+            if (response.status === 200) {
+                const toast = useToast();
+                toast.success("Comment deleted successfully.");
+
+                // Remove the comment or reply from the comments array
+                this.removeCommentById(this.deleteCommentItems.commentId, this.comments);
+
+                // Reset deleteCommentItems
+                this.deleteCommentItems = {
+                    commentId: null,
+                    contentType: null
+                };
+
+                // Close the modal
+                this.showDeleteModal = false;
+
+            }
+
+        } catch (error) {
+            console.error("Error deleting comment:", error);
+            const toast = useToast();
+            toast.error("Failed to delete comment. Please try again later.");
+        }
+    },
+
+    // Function to add reply to a comment
+    handleReply({ parentId, reply }) {
+      // Find the parent comment
+      const parent = this.comments.find(c => c.id == parentId);
+      if (parent) {
+        parent.replies.unshift(reply);
+      }
+    },
+
+    // Cellar modal open handler
+    async onCellarModalOpen() {
+      console.log('Cellar modal opening - initializing data...');
+      console.log('Current specified_listing:', this.specified_listing);
+      
+      // Load cellar collections first
+      await this.loadCellarCollections();
+      
+      // Wait a moment for collections to load, then set defaults
+      this.$nextTick(() => {
+        this.initializeCellarFormDefaults();
+      });
+    },
+
+    initializeCellarFormDefaults() {
+      console.log('=== INITIALIZING CELLAR FORM DEFAULTS ===');
+      console.log('Available collections:', this.cellarCollections);
+      console.log('Current listing:', this.specified_listing);
+      
+      // Set default volume based on drink type
+      const defaultVolume = this.defaultVolumeNumber;
+      const defaultUnit = this.defaultVolumeUnit;
+      const defaultFormat = this.defaultFormat;
+      
+      console.log('Setting default volume:', defaultVolume, defaultUnit);
+      console.log('Setting default format:', defaultFormat);
+      console.log('Drink type:', this.specified_listing?.drinkType);
+      
+      // Apply defaults
+      this.cellarForm.volumeNumber = defaultVolume;
+      this.cellarForm.volumeUnit = defaultUnit;
+      this.cellarForm.format = defaultFormat;
+      
+      // Set default collection if available
+      if (this.cellarCollections && this.cellarCollections.length > 0) {
+        const defaultCollection = this.cellarCollections.find(c => c.isDefault);
+        if (defaultCollection) {
+          console.log('Using default collection:', defaultCollection.collectionName);
+          this.cellarForm.selectedCollectionId = defaultCollection.id;
+        } else {
+          // If no default collection found, use the first one
+          console.log('Using first collection:', this.cellarCollections[0].collectionName);
+          this.cellarForm.selectedCollectionId = this.cellarCollections[0].id;
+        }
+      } else {
+        console.log('No collections available, leaving selection empty');
+        this.cellarForm.selectedCollectionId = null;
+      }
+      
+      console.log('=== CELLAR FORM DEFAULTS APPLIED ===');
+      console.log('Final form state:', {
+        volumeNumber: this.cellarForm.volumeNumber,
+        volumeUnit: this.cellarForm.volumeUnit,
+        format: this.cellarForm.format,
+        selectedCollectionId: this.cellarForm.selectedCollectionId,
+        drinkType: this.specified_listing?.drinkType,
+        collectionsCount: this.cellarCollections?.length || 0
+      });
+      console.log('=== END INITIALIZATION ===');
+    },
+
+    // Utility method to get the correct API base URL (matches MyCellarPage pattern)
+    getApiBaseUrl() {
+      return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+    },
+
+    // Cellar-related methods
+    toggleCellarFormExpansion() {
+      this.showExpandedCellarForm = !this.showExpandedCellarForm;
+    },
+
+    resetCellarForm() {
+      this.cellarForm = {
+        // Group properties (applied to all items in the drink group)
+        vintage: null,
+        format: 'Bottle',
+        volumeNumber: this.defaultVolumeNumber,
+        volumeUnit: this.defaultVolumeUnit,
+        currentValueEstimation: null,
+        currentValueCurrency: 'USD',
+        drinkOnwardsDate: null,
+        drinkByDate: null,
+        suggestedFoodPairing: '',
+        
+        // Individual item properties (applied to each bottle)
+        quantity: 1,
+        status: 'Purchased',
+        consumption: 'Unopened',
+        currentLocation: 'At Home',
+        subLocation: '',
+        
+        // Purchase location data
+        purchaseLocationInputValue: '',
+        purchasePlaceName: '',
+        selectedPurchasePlace: '',
+        selectedPurchaseAddress: '',
+        selectedPurchaseVenueId: null,
+        
+        purchaseDate: null,
+        deliveryDate: null,
+        purchasePrice: null,
+        purchaseCurrency: 'USD',
+        personalNotes: '',
+        
+        // Collection selection
+        selectedCollectionId: null
+      };
+      
+      // Set default collection if collections are available
+      this.initializeCellarFormDefaults();
+    },
+
+    async loadCellarCollections() {
+      try {
+        console.log('🔄 Loading cellar collections...');
+        
+        // Use the same pattern as MyCellarPage for API calls
+        const baseUrl = this.getApiBaseUrl();
+        const endpoint = `${baseUrl}/getData/getCellarData/user/${this.userID}`;
+        console.log('📡 API endpoint:', endpoint);
+        
+        const response = await this.$axios.get(endpoint);
+        console.log('📥 Collections API response:', response);
+        console.log('📊 Response status:', response.status);
+        console.log('📊 Response data:', response.data);
+        
+        if (response.status === 200 && response.data.code === 200) {
+          // Extract collections from the cellar data response (same pattern as MyCellarPage)
+          this.cellarCollections = response.data.data?.collections || response.data.collections || [];
+          console.log('✅ Collections loaded successfully:', this.cellarCollections);
+          console.log('📈 Number of collections:', this.cellarCollections.length);
+          
+          if (this.cellarCollections.length > 0) {
+            console.log('📝 Collection details:');
+            this.cellarCollections.forEach((collection, index) => {
+              console.log(`  ${index + 1}. ${collection.collectionName} (ID: ${collection.id}, Default: ${collection.isDefault})`);
+            });
+          } else {
+            console.warn('⚠️ No collections found in response data');
+          }
+        } else {
+          console.error('❌ Unexpected response status or code:', response.status, response.data.code);
+          this.cellarCollections = [];
+        }
+      } catch (error) {
+        console.error('💥 Error loading cellar collections:', error);
+        if (error.response) {
+          console.error('📄 Error response:', error.response.data);
+          console.error('🔢 Error status:', error.response.status);
+        }
+        this.cellarCollections = [];
+      }
+    },
+
+    // Current location suggestions
+    async loadCurrentLocationSuggestions() {
+      if (this.loadingCurrentLocations || this.currentLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingCurrentLocations = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getCurrentLocations/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.currentLocations) {
+          this.currentLocationSuggestions = response.data.data.currentLocations
+          console.log('Loaded current location suggestions:', this.currentLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading current location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingCurrentLocations = false
+      }
+    },
+    
+    onCurrentLocationFocus(event) {
+      // Load suggestions when user clicks into any current location field
+      this.loadCurrentLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeCurrentLocationInput = event.target
+      this.showCurrentLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionCurrentLocationDropdown(event.target)
+      })
+    },
+    
+    onCurrentLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showCurrentLocationSuggestions = false
+        this.activeCurrentLocationInput = null
+      }, 200)
+    },
+    
+    selectCurrentLocationSuggestion(suggestion) {
+      if (this.activeCurrentLocationInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.currentLocation = suggestion
+      }
+      
+      this.showCurrentLocationSuggestions = false
+      this.activeCurrentLocationInput = null
+    },
+    
+    positionCurrentLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('currentLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+
+    // Sub location suggestions
+    async loadSubLocationSuggestions() {
+      if (this.loadingSubLocations || this.subLocationSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingSubLocations = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getSubLocations/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.subLocations) {
+          this.subLocationSuggestions = response.data.data.subLocations
+          console.log('Loaded sub location suggestions:', this.subLocationSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading sub location suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingSubLocations = false
+      }
+    },
+    
+    onSubLocationFocus(event) {
+      // Load suggestions when user clicks into any sub location field
+      this.loadSubLocationSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeSubLocationInput = event.target
+      this.showSubLocationSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionSubLocationDropdown(event.target)
+      })
+    },
+    
+    onSubLocationBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showSubLocationSuggestions = false
+        this.activeSubLocationInput = null
+      }, 200)
+    },
+    
+    selectSubLocationSuggestion(suggestion) {
+      if (this.activeSubLocationInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.subLocation = suggestion
+      }
+      
+      this.showSubLocationSuggestions = false
+      this.activeSubLocationInput = null
+    },
+    
+    positionSubLocationDropdown(inputElement) {
+      const dropdown = document.getElementById('subLocationDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+
+    // Food pairing suggestions
+    async loadFoodPairingSuggestions() {
+      if (this.loadingFoodPairings || this.foodPairingSuggestions.length > 0) {
+        return // Already loaded or loading
+      }
+      
+      this.loadingFoodPairings = true
+      
+      try {
+        const baseUrl = this.getApiBaseUrl()
+        const response = await this.$axios.get(`${baseUrl}/getData/getFoodPairings/user/${this.userID}`)
+        
+        if (response.data && response.data.data && response.data.data.foodPairings) {
+          this.foodPairingSuggestions = response.data.data.foodPairings
+          console.log('Loaded food pairing suggestions:', this.foodPairingSuggestions.length)
+        }
+      } catch (error) {
+        console.error('Error loading food pairing suggestions:', error)
+        // Don't show error to user, just fail silently
+      } finally {
+        this.loadingFoodPairings = false
+      }
+    },
+    
+    onFoodPairingFocus(event) {
+      // Load suggestions when user clicks into any food pairing field
+      this.loadFoodPairingSuggestions()
+      
+      // Set the active input and show suggestions
+      this.activeFoodPairingInput = event.target
+      this.showFoodPairingSuggestions = true
+      
+      // Position the dropdown below the input
+      this.$nextTick(() => {
+        this.positionFoodPairingDropdown(event.target)
+      })
+    },
+    
+    onFoodPairingBlur() {
+      // Hide suggestions when user clicks away (with small delay to allow clicking suggestions)
+      setTimeout(() => {
+        this.showFoodPairingSuggestions = false
+        this.activeFoodPairingInput = null
+      }, 200)
+    },
+    
+    selectFoodPairingSuggestion(suggestion) {
+      if (this.activeFoodPairingInput) {
+        // For BottleListings, we just need to update the cellar form
+        this.cellarForm.suggestedFoodPairing = suggestion
+      }
+      
+      this.showFoodPairingSuggestions = false
+      this.activeFoodPairingInput = null
+    },
+    
+    positionFoodPairingDropdown(inputElement) {
+      const dropdown = document.getElementById('foodPairingDropdown')
+      if (!dropdown || !inputElement) return
+      
+      const inputRect = inputElement.getBoundingClientRect()
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      dropdown.style.position = 'absolute'
+      dropdown.style.top = (inputRect.bottom + scrollTop + 5) + 'px'
+      dropdown.style.left = inputRect.left + 'px'
+      dropdown.style.width = inputRect.width + 'px'
+      dropdown.style.zIndex = '1050'
+    },
+
+    // Purchase location Google Maps methods
+    setPurchasePlaceFromAutocomplete(place) {
+      console.log('setPurchasePlaceFromAutocomplete called with place:', place);
+      
+      if (place && place.geometry) {
+        this.cellarForm.selectedPurchasePlace = place.name || place.formatted_address;
+        this.cellarForm.selectedPurchaseAddress = place.formatted_address;
+        this.cellarForm.purchaseLocationInputValue = this.cellarForm.selectedPurchasePlace;
+        
+        // Set purchasePlaceName for backend compatibility
+        this.cellarForm.purchasePlaceName = this.cellarForm.selectedPurchasePlace;
+        
+        // Check if this is a known venue (optional - for future use)
+        this.cellarForm.selectedPurchaseVenueId = this.checkVenueIfExists(place);
+        
+        console.log('Purchase location selected:', {
+          place: this.cellarForm.selectedPurchasePlace,
+          address: this.cellarForm.selectedPurchaseAddress,
+          venueId: this.cellarForm.selectedPurchaseVenueId
+        });
+      }
+    },
+
+    onPurchaseLocationInput(event) {
+      // Handle both string values and event objects
+      const inputValue = typeof event === 'string' ? event : event.target.value;
+      this.cellarForm.purchaseLocationInputValue = inputValue;
+      
+      // If user is typing manually (not from autocomplete), clear the selection
+      if (inputValue !== this.cellarForm.selectedPurchasePlace) {
+        this.cellarForm.selectedPurchasePlace = '';
+        this.cellarForm.selectedPurchaseAddress = '';
+        this.cellarForm.selectedPurchaseVenueId = null;
+        
+        // Set manual entry as purchasePlaceName (only if inputValue is not empty)
+        this.cellarForm.purchasePlaceName = inputValue ? inputValue.trim() : '';
+      }
+    },
+
+    onPurchaseLocationFocus() {
+      console.log('Purchase location input focused');
+      
+      // Add custom class to Google Maps dropdown when it appears
+      this.$nextTick(() => {
+        const attemptToStylePacContainer = (attempt = 1, maxAttempts = 10) => {
+          setTimeout(() => {
+            const pacContainer = document.querySelector('.pac-container');
+            if (pacContainer) {
+              pacContainer.classList.add('cellar-pac-container');
+              pacContainer.setAttribute('data-input-source', 'purchase-location');
+              console.log('Successfully styled pac-container on attempt', attempt);
+            } else if (attempt < maxAttempts) {
+              console.log('pac-container not found, retrying attempt', attempt + 1);
+              attemptToStylePacContainer(attempt + 1, maxAttempts);
+            } else {
+              console.log('pac-container not found after', maxAttempts, 'attempts');
+            }
+          }, attempt === 1 ? 100 : 200);
+        };
+        
+        attemptToStylePacContainer();
+      });
+    },
+
+    onPurchaseLocationBlur() {
+      // Remove custom class when input loses focus
+      const pacContainer = document.querySelector('.pac-container');
+      if (pacContainer) {
+        pacContainer.classList.remove('cellar-pac-container');
+        pacContainer.removeAttribute('data-input-source');
+      }
+      
+      // Ensure manual entry is captured
+      if (this.cellarForm.purchaseLocationInputValue && !this.cellarForm.selectedPurchasePlace) {
+        this.cellarForm.purchasePlaceName = this.cellarForm.purchaseLocationInputValue.trim();
+        console.log('Manual purchase location entry captured:', this.cellarForm.purchasePlaceName);
+      }
+    },
+
+    clearSelectedPurchaseLocation() {
+      this.cellarForm.selectedPurchasePlace = '';
+      this.cellarForm.selectedPurchaseAddress = '';
+      this.cellarForm.selectedPurchaseVenueId = null;
+      this.cellarForm.purchaseLocationInputValue = '';
+      this.cellarForm.purchasePlaceName = '';
+      
+      console.log('Purchase location cleared');
+    },
+
+    checkVenueIfExists(_place) {
+      // This would check against a venues database in the future
+      // For now, return null since venue ID is optional
+      console.log('checkVenueIfExists called with place:', _place?.name || 'unknown');
+      return null;
+    },
+
+    async addDrinkToCellar() {
+      console.log('Starting addDrinkToCellar process for BottleListings');
+      console.log('Form validation check - canAddToCellar:', this.canAddToCellar);
+      console.log('Selected listing:', JSON.stringify(this.specified_listing, null, 2));
+      console.log('Current form state:', JSON.stringify(this.cellarForm, null, 2));
+      
+      if (!this.canAddToCellar) {
+        console.log('Form validation failed - cannot add to cellar');
+        return;
+      }
+
+      this.addingToCellar = true;
+      console.log('Set addingToCellar flag to true');
+
+      try {
+        console.log('Starting data preparation...');
+        
+        // Prepare cellar item data according to backend API specification
+        const cellarData = {
+          // Required fields
+          listingId: this.specified_listing.id,
+          ownerType: 'user', // Assuming user ownership
+          ownerId: parseInt(this.userID),
+          quantity: parseInt(this.cellarForm.quantity),
+          
+          // Group properties (master record) - only sent if they have values
+          ...(this.cellarForm.format && { format: this.cellarForm.format }),
+          ...(this.cellarForm.volumeNumber && { volumeNumber: parseFloat(this.cellarForm.volumeNumber) }),
+          ...(this.cellarForm.volumeUnit && { volumeUnit: this.cellarForm.volumeUnit }),
+          ...(this.cellarForm.currentValueEstimation && { currentValueEstimation: parseFloat(this.cellarForm.currentValueEstimation) }),
+          ...(this.cellarForm.currentValueCurrency && { currentValueCurrency: this.cellarForm.currentValueCurrency }),
+          ...(this.cellarForm.drinkOnwardsDate && { drinkOnwardsDate: this.cellarForm.drinkOnwardsDate }),
+          ...(this.cellarForm.drinkByDate && { drinkByDate: this.cellarForm.drinkByDate }),
+          ...(this.cellarForm.suggestedFoodPairing && this.cellarForm.suggestedFoodPairing.trim() && { suggestedFoodPairing: this.cellarForm.suggestedFoodPairing.trim() }),
+          ...(this.cellarForm.vintage && { variant: parseInt(this.cellarForm.vintage) }),
+          
+          // Individual properties (applied to each bottle)
+          ...(this.cellarForm.status && { status: this.cellarForm.status }),
+          ...(this.cellarForm.consumption && { consumption: this.cellarForm.consumption }),
+          ...(this.cellarForm.currentLocation && this.cellarForm.currentLocation.trim() && { currentLocation: this.cellarForm.currentLocation.trim() }),
+          ...(this.cellarForm.subLocation && this.cellarForm.subLocation.trim() && { subLocation: this.cellarForm.subLocation.trim() }),
+          
+          // Purchase data
+          ...(this.cellarForm.purchasePlaceName && this.cellarForm.purchasePlaceName.trim() && { purchasePlaceName: this.cellarForm.purchasePlaceName.trim() }),
+          ...(this.cellarForm.selectedPurchaseAddress && this.cellarForm.selectedPurchaseAddress.trim() && { purchaseAddress: this.cellarForm.selectedPurchaseAddress.trim() }),
+          ...(this.cellarForm.selectedPurchaseVenueId && { purchaseVenueId: parseInt(this.cellarForm.selectedPurchaseVenueId) }),
+          ...(this.cellarForm.purchaseDate && { purchaseDate: this.cellarForm.purchaseDate }),
+          ...(this.cellarForm.deliveryDate && { deliveryDate: this.cellarForm.deliveryDate }),
+          ...(this.cellarForm.purchasePrice && { purchasePrice: parseFloat(this.cellarForm.purchasePrice) }),
+          ...(this.cellarForm.purchaseCurrency && { purchaseCurrency: this.cellarForm.purchaseCurrency }),
+          ...(this.cellarForm.personalNotes && this.cellarForm.personalNotes.trim() && { personalNotes: this.cellarForm.personalNotes.trim() }),
+          
+          // Collection selection (optional, will use default if not provided)
+          ...(this.cellarForm.selectedCollectionId && { collectionId: parseInt(this.cellarForm.selectedCollectionId) })
+        };
+
+        console.log('Prepared cellar data payload:', JSON.stringify(cellarData, null, 2));
+        console.log('Payload size:', JSON.stringify(cellarData).length, 'characters');
+        console.log('Number of fields in payload:', Object.keys(cellarData).length);
+
+        // Call the actual API endpoint
+        const baseUrl = this.getApiBaseUrl();
+        const fullUrl = `${baseUrl}/editCellar/addToCellar`;
+        console.log('Making API call to:', fullUrl);
+        
+        const response = await this.$axios.post(fullUrl, cellarData);
+
+        console.log('API call completed');
+        console.log('Response status:', response.status);
+        console.log('Response data:', JSON.stringify(response.data, null, 2));
+
+        if (response.status === 201 && response.data.code === 201) {
+          console.log('Success response received');
+          console.log('Master ID created:', response.data.data.masterId);
+          console.log('Bottle IDs created:', response.data.data.bottleIds);
+          console.log('Collection ID used:', response.data.data.collectionId);
+          console.log('Number of bottles added:', response.data.data.quantity);
+          
+          // Success! Reset form
+          console.log('Resetting form...');
+          this.resetCellarForm();
+          
+          // Close modal by triggering the close button click
+          const closeButton = document.querySelector('#cellarModal .btn-close');
+          if (closeButton) {
+            closeButton.click();
+          }
+          
+          // Show success message
+          console.log('Process completed successfully!', response.data);
+          const toast = useToast();
+          toast.success(`🍷 Successfully added ${response.data.data.quantity} item${response.data.data.quantity !== 1 ? 's' : ''} to your cellar!`);
+          
+        } else {
+          console.log('Unexpected response status or code');
+          console.log('Expected status 201 and code 201, got status:', response.status, 'code:', response.data.code);
+          throw new Error(response.data.message || 'Failed to add to cellar');
+        }
+
+      } catch (error) {
+        console.log('Error occurred during process');
+        console.error('Error object:', error);
+        console.error('Error message:', error.message);
+        
+        if (error.response) {
+          console.error('Error response status:', error.response.status);
+          console.error('Error response data:', JSON.stringify(error.response.data, null, 2));
+        }
+        
+        // Show user-friendly error message
+        let errorMessage = 'Failed to add drink to cellar';
+        if (error.response && error.response.data && error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        console.error('Final error message:', errorMessage);
+        
+        const toast = useToast();
+        toast.error(`❌ ${errorMessage}`);
+        
+      } finally {
+        console.log('Setting addingToCellar flag to false');
+        this.addingToCellar = false;
+        console.log('Frontend process completed');
+      }
+    },
+
+    // Handle image loading errors
+    onImageError(event) {
+      console.log('Image failed to load, using default photo');
+      event.target.src = this.defaultPhoto;
+    },
+
+    
+
   },
 };
 </script>
 
 <style scoped>
-.venue-item {
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-}
 
-.venue-item:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
+  .step-index { background: wheat ; color: black; border:  2px solid #f0b358;  width: 25px; height: 25px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size:15px}
 
-.venue-name {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: white;
-  text-decoration: none;
-  display: block;
-}
-
-.venue-name:hover {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.vintages-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.vintage-badge {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.vintage-badge:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.05);
-}
-
-.no-venues {
-  text-align: center;
-  padding: 40px 20px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 1rem;
-}
-
-.no-venues-icon {
-  font-size: 3rem;
-  margin-bottom: 16px;
-  opacity: 0.6;
-}
-
-.location-icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  opacity: 0.8;
-}
-
-/* Auto-resizing textarea styles */
-.auto-resize-textarea {
-  resize: vertical;
-  min-height: 38px;
-  transition: height 0.2s ease;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.auto-resize-textarea:focus {
-  border-color: #006A50;
-  box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
-}
-
-/* Location input container and home option dropdown styles */
-.location-input-container {
-  position: relative;
-}
-
-.home-option-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1001;
-  max-height: 200px;
-  overflow-y: auto;
-}
-
-.home-option-item {
-  padding: 12px 16px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s ease;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #333;
-}
-
-.home-option-item:hover {
-  background-color: #f8f9fa;
-}
-
-.home-option-item:last-child {
-  border-bottom: none;
-}
-
-/* Ensure the Google Maps autocomplete dropdown appears below the home option dropdown */
-.pac-container {
-  z-index: 1000 !important;
-  transition: margin-top 0.2s ease !important;
-}
-
-/* Style for the location input wrapper */
-.location-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-/* Extended review preview styles - NYT paywall style */
-.extended-preview-container {
-  position: relative;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.extended-preview-container:hover {
-  border-color: #6c757d;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.preview-content {
-  padding: 20px;
-  height: 200px; /* Fixed height for preview */
-  overflow: hidden;
-  position: relative;
-}
-
-.preview-input-field {
-  height: 35px;
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-
-.preview-input-field::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  right: 10px;
-  height: 1px;
-  background: linear-gradient(90deg, 
-    transparent 0%, 
-    #dee2e6 20%, 
-    #dee2e6 80%, 
-    transparent 100%);
-  transform: translateY(-50%);
-}
-
-.preview-fade-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 140px; /* Increased height for stronger fade */
-  background: linear-gradient(to bottom, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.4) 30%, /* Earlier fade start */
-    rgba(255, 255, 255, 0.8) 60%, 
-    rgba(255, 255, 255, 0.95) 80%,
-    rgba(255, 255, 255, 1) 100%); /* Stronger fade */
-  display: flex;
-  align-items: start; 
-  justify-content: center;
-  padding: 15px;
-}
-
-.preview-cta {
-  color: #333;
-  font-size: 1rem;
-  font-weight: 900; /* Extra bold */
-  text-align: center;
-  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2), 
-               0px 0px 12px rgba(0, 0, 0, 0.3),
-               1px 1px 4px rgba(0, 0, 0, 0.3); /* Heavy shadow */
-  transition: all 0.3s ease;
-  background: none; /* Remove background */
-  border: none; /* Remove border */
-  padding: 0; /* Remove padding */
-  border-radius: 0; /* Remove border radius */
-  backdrop-filter: none; /* Remove backdrop filter */
-  box-shadow: none; /* Remove box shadow */
-}
-
-.extended-preview-container:hover {
-  color: #000; /* Darker on hover */
-  transform: translateY(-1px);
-  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9), 
-               0px 0px 15px rgba(0, 0, 0, 0.7),
-               2px 2px 6px rgba(0, 0, 0, 1); /* Even heavier shadow on hover */
-}
-
-
-/* Style for preview color buttons */
-.preview-color-btn {
-  margin-right: 2px !important;
-  padding: 0 !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .preview-content {
-    padding: 15px;
-    height: 150px;
+  .image-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    animation: fadeIn 0.3s ease;
   }
-  
-  .preview-fade-overlay {
-    height: 100px; /* Increased for mobile too */
+
+  .image-modal-container {
+    position: relative;
+    max-width: 80vw;
+    max-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  
-  .preview-cta {
-    font-size: 0.9rem;
-    font-weight: 800; /* Slightly less bold on mobile but still heavy */
-    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8), 
-                 0px 0px 10px rgba(0, 0, 0, 0.6),
-                 1px 1px 3px rgba(0, 0, 0, 0.9); /* Adjusted for mobile */
+
+  .enlarged-image {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: zoomIn 0.3s ease;
   }
-  
-  .preview-color-btn {
-    width: 16px !important;
-    height: 16px !important;
-    margin-right: 1px !important;
+
+  .image-modal-close {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 1;
   }
-}
 
-/* Paywall Styles */
-.paywall-container {
-  position: relative;
-  overflow: hidden;
-  max-height: 1000px;
-}
+  .image-modal-close:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
 
-.paywall-container > *:not(.paywall-overlay) {
-  pointer-events: none;
-  user-select: none;
-}
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
 
-.paywall-overlay {
-  position: absolute;
-  top: 0;
-  left: -100vw;
-  right: -100vw;
-  bottom: 0;
-  z-index: 9999;
-  pointer-events: none;
-  width: 300vw;
-  height: 100%;
-  min-height: 600px;
-}
+  @keyframes zoomIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.8); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
 
-.paywall-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    transparent 70%,
-    rgba(255, 255, 255, 0.1) 75%,
-    rgba(255, 255, 255, 0.3) 80%,
-    rgba(255, 255, 255, 0.6) 85%,
-    rgba(255, 255, 255, 0.8) 90%,
-    rgba(255, 255, 255, 0.95) 95%,
-    rgba(255, 255, 255, 1) 100%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  backdrop-filter: blur(1.15px);
-}
+  /* Clickable images */
+  .clickable-image {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-.paywall-content {
-  position: absolute;
-  top: 60%;
-  left: 48%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: all !important;
-  z-index: 10001;
-}
+  .clickable-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 
-.paywall-signup-btn {
-  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 50px;
-  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  pointer-events: all !important;
-  cursor: pointer;
-}
+  /* Plus sign styling - match the image dimensions */
+  /* .add-button {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%; 
+    position: relative;
+    border-radius: 8px;
+    background-color: rgba(131, 169, 232, 0.1);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: block;
+  } */
 
-.paywall-signup-btn {
-  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
-  color: white;
-  font-weight: 700;
-  font-size: 1.2rem;
-  padding: 16px 32px;
-  border: none;
-  border-radius: 50px;
-  box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
-  transition: all 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
+  .add-button:hover {
+    background-color: rgba(131, 169, 232, 0.2);
+    border-color: #6c94d6;
+  }
 
-.paywall-signup-btn:hover {
-  background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
-  color: white;
-}
+  .add-button svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+  }
 
-.paywall-signup-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
-}
+  /* Ensure images maintain consistent sizing */
+  .review-image:not(.add-button) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+  }
 
-/* Responsive adjustments for paywall */
-@media (max-width: 768px) {
-  .paywall-signup-btn {
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .image-modal-container {
+      max-width: 95vw;
+      max-height: 70vh;
+    }
+    
+    .enlarged-image {
+      max-height: 70vh;
+    }
+    
+    .image-modal-close {
+      top: -30px;
+      right: -15px;
+      width: 35px;
+      height: 35px;
+    }
+  }
+
+  .venue-item {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+  }
+
+  .venue-item:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .venue-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: white;
+    text-decoration: none;
+    display: block;
+  }
+
+  .venue-name:hover {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .vintages-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .vintage-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .vintage-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  .no-venues {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.8);
     font-size: 1rem;
-    padding: 14px 28px;
   }
+
+  .no-venues-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .location-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+    opacity: 0.8;
+  }
+
+  /* Auto-resizing textarea styles */
+  .auto-resize-textarea {
+    resize: vertical;
+    min-height: 38px;
+    transition: height 0.2s ease;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .auto-resize-textarea:focus {
+    border-color: #006A50;
+    box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+  }
+
+  /* Location input container and home option dropdown styles */
+  .location-input-container {
+    position: relative;
+  }
+
+  .home-option-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .home-option-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .home-option-item:hover {
+    background-color: #f8f9fa;
+  }
+
+  .home-option-item:last-child {
+    border-bottom: none;
+  }
+
+  /* Ensure the Google Maps autocomplete dropdown appears below the home option dropdown */
+  .pac-container {
+    z-index: 1000 !important;
+    transition: margin-top 0.2s ease !important;
+  }
+
+  /* Style for the location input wrapper */
+  .location-input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  /* Extended review preview styles - NYT paywall style */
+  .extended-preview-container {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .extended-preview-container:hover {
+    border-color: #6c757d;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .preview-content {
+    padding: 20px;
+    height: 200px;
+    /* Fixed height for preview */
+    overflow: hidden;
+    position: relative;
+  }
+
+  .preview-input-field {
+    height: 35px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .preview-input-field::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    right: 10px;
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        #dee2e6 20%,
+        #dee2e6 80%,
+        transparent 100%);
+    transform: translateY(-50%);
+  }
+
+  .preview-fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    /* Increased height for stronger fade */
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 30%,
+        /* Earlier fade start */
+        rgba(255, 255, 255, 0.8) 60%,
+        rgba(255, 255, 255, 0.95) 80%,
+        rgba(255, 255, 255, 1) 100%);
+    /* Stronger fade */
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    padding: 15px;
+  }
+
+  .preview-cta {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 900;
+    /* Extra bold */
+    text-align: center;
+    text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
+      0px 0px 12px rgba(0, 0, 0, 0.3),
+      1px 1px 4px rgba(0, 0, 0, 0.3);
+    /* Heavy shadow */
+    transition: all 0.3s ease;
+    background: none;
+    /* Remove background */
+    border: none;
+    /* Remove border */
+    padding: 0;
+    /* Remove padding */
+    border-radius: 0;
+    /* Remove border radius */
+    backdrop-filter: none;
+    /* Remove backdrop filter */
+    box-shadow: none;
+    /* Remove box shadow */
+  }
+
+  .extended-preview-container:hover {
+    color: #000;
+    /* Darker on hover */
+    transform: translateY(-1px);
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
+      0px 0px 15px rgba(0, 0, 0, 0.7),
+      2px 2px 6px rgba(0, 0, 0, 1);
+    /* Even heavier shadow on hover */
+  }
+
+
+  /* Style for preview color buttons */
+  .preview-color-btn {
+    margin-right: 2px !important;
+    padding: 0 !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .preview-content {
+      padding: 15px;
+      height: 150px;
+    }
+
+    .preview-fade-overlay {
+      height: 100px;
+      /* Increased for mobile too */
+    }
+
+    .preview-cta {
+      font-size: 0.9rem;
+      font-weight: 800;
+      /* Slightly less bold on mobile but still heavy */
+      text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
+        0px 0px 10px rgba(0, 0, 0, 0.6),
+        1px 1px 3px rgba(0, 0, 0, 0.9);
+      /* Adjusted for mobile */
+    }
+
+    .preview-color-btn {
+      width: 16px !important;
+      height: 16px !important;
+      margin-right: 1px !important;
+    }
+  }
+
+  /* Paywall Styles */
+  .paywall-container {
+    position: relative;
+    overflow: hidden;
+    max-height: 1000px;
+  }
+
+  .paywall-container>*:not(.paywall-overlay) {
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .paywall-overlay {
+    position: absolute;
+    top: 0;
+    left: -100vw;
+    right: -100vw;
+    bottom: 0;
+    z-index: 9999;
+    pointer-events: none;
+    width: 300vw;
+    height: 100%;
+    min-height: 600px;
+  }
+
+  .paywall-gradient {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 70%,
+        rgba(255, 255, 255, 0.1) 75%,
+        rgba(255, 255, 255, 0.3) 80%,
+        rgba(255, 255, 255, 0.6) 85%,
+        rgba(255, 255, 255, 0.8) 90%,
+        rgba(255, 255, 255, 0.95) 95%,
+        rgba(255, 255, 255, 1) 100%,
+        rgba(255, 255, 255, 1) 100%);
+    backdrop-filter: blur(1.15px);
+  }
+
+  .paywall-content {
+    position: absolute;
+    top: 60%;
+    left: 48%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: all !important;
+    z-index: 10001;
+  }
+
+  .paywall-signup-btn {
+    background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: all !important;
+    cursor: pointer;
+  }
+
+  .paywall-signup-btn {
+    background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+    color: white;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border: none;
+    border-radius: 50px;
+    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .paywall-signup-btn:hover {
+    background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
+    color: white;
+  }
+
+  .paywall-signup-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
+  }
+
+  /* Responsive adjustments for paywall */
+  @media (max-width: 768px) {
+    .paywall-signup-btn {
+      font-size: 1rem;
+      padding: 14px 28px;
+    }
+  }
+
+  /* Make the label a full-width container */
+.upload-label { display:block; width:100%; }
+
+/* Same square frame in both states */
+.mobile-review-svg-button{
+  width:100%;
+  aspect-ratio:1/1;        /* keep square */
+  border-radius:12px;
+  overflow:hidden;
 }
+
+/* Placeholder styling */
+.photo-dropzone{
+  display:flex; align-items:center; justify-content:center;
+  height:100%;
+  border:2px dashed #cfcfcf; background:#fafafa; cursor:pointer;
+}
+
+/* Preview image fills the same frame */
+.review-preview-photo{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+  background: #FF3E31;   /* change this to your colour */
+}
+
 </style>

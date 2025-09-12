@@ -124,7 +124,7 @@ html {
 .primary-btn-green-outline:hover {
   color: white;
   background-color: #027562; /*TZH added for Discovery and Following buttons on homepage */
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562; /*TZH changed 535C72 to F0B258 */
   font-weight: bold;
 }
@@ -132,7 +132,7 @@ html {
 .primary-btn-green:hover {
   color: white;
   background-color: #026453;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #026453;
   font-weight: bold;
 }
@@ -140,7 +140,7 @@ html {
 .primary-btn-green-outline {
   color: #027562;
   background-color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
   font-weight: bold;
 }
@@ -148,14 +148,14 @@ html {
 .primary-btn-green-thin-outline {
   color: #027562;
   background-color: white; /*TZH added for Reviews and Drinks List buttons on user profile */
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
 }
 
 .primary-btn-green-thin-outline:hover {
   color: white;
   background-color: #027562;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 2px solid #027562;
 }
 
@@ -227,6 +227,38 @@ html {
   color: white;
   background-color: #027562;
   border-radius: 10px;
+}
+
+.cellar-btn-blue {
+  color: #fff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-weight: bold;
+  border-radius: 10px;
+  transition: transform 0.4s ease;
+}
+
+.cellar-btn-blue:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #0056b3, #004085);
+  font-weight: bold;
+  border-radius: 10px;
+  transform: scale(1.05);
+}
+
+.cellar-btn-blue-mobile {
+  color: #fff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-weight: bold;
+  border-radius: 0;
+  transition: transform 0.4s ease;
+}
+
+.cellar-btn-blue-mobile:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #0056b3, #004085);
+  font-weight: bold;
+  border-radius: 0;
+  transform: scale(1.05);
 }
 .primary-btn-less-round-green:hover {
   color: white;
@@ -1357,7 +1389,7 @@ button.primary-square:hover {
 }
 
 .homepage-bottle-listing-description {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
   margin-top: 0;
@@ -1365,7 +1397,7 @@ button.primary-square:hover {
 }
 
 .homepage-bottle-review-description {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.2;
   margin-top: 0;
@@ -1391,11 +1423,10 @@ button.primary-square:hover {
 /* tzh added below changes for mobile */
 @media (max-width: 991px) {
   .homepage-bottle-listing-description {
-    font-size: 0.8rem;
-    display: none;
+    font-size: 0.9rem;
   } 
   .homepage-bottle-review-description {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
   }
 }
 .shadow-effect {
@@ -1553,7 +1584,7 @@ button.primary-square:hover {
     border: none !important; /* Underline for active tab */
     border-radius: 0px !important;
     font-weight: bold !important;
-    border-bottom: 1px outset rgba(0, 0, 0, 0.514) !important;
+    border-bottom: 3px outset rgba(0, 0, 0, 0.514) !important;
     text-align: left;
   }
 }
@@ -2149,6 +2180,7 @@ button.primary-square:hover {
 
 .text-decoration-underline {
   text-decoration-thickness: 2.5px !important; /* Adjust thickness here */
+  text-decoration-skip-ink: none;
   text-underline-offset: 4px; /* Optional: Adjust the space between text and underline */
 }
 
@@ -2552,4 +2584,68 @@ nav a.router-link-exact-active.dropdown-item {
   .form-control {
     font-size: 0.875rem !important; /* 14px */
   }
+}
+
+/* Quill alignment styles for display areas */
+.text-section-content .ql-align-center,
+.text-section-preview .ql-align-center {
+  text-align: center;
+}
+
+.text-section-content .ql-align-right,
+.text-section-preview .ql-align-right {
+  text-align: right;
+}
+
+.text-section-content .ql-align-left,
+.text-section-preview .ql-align-left {
+  text-align: left;
+}
+
+.text-section-content .ql-align-justify,
+.text-section-preview .ql-align-justify {
+  text-align: justify;
+}
+
+/* Also apply to any other areas where Quill content is displayed */
+.ql-align-center {
+  text-align: center;
+}
+
+.ql-align-right {
+  text-align: right;
+}
+
+.ql-align-left {
+  text-align: left;
+}
+
+.ql-align-justify {
+  text-align: justify;
+}
+
+/* Ensure paragraph elements respect alignment */
+.text-section-content p,
+.text-section-preview p {
+  margin-bottom: 1em;
+}
+
+.text-section-content p.ql-align-center,
+.text-section-preview p.ql-align-center {
+  text-align: center;
+}
+
+.text-section-content p.ql-align-right,
+.text-section-preview p.ql-align-right {
+  text-align: right;
+}
+
+.text-section-content p.ql-align-left,
+.text-section-preview p.ql-align-left {
+  text-align: left;
+}
+
+.text-section-content p.ql-align-justify,
+.text-section-preview p.ql-align-justify {
+  text-align: justify;
 }

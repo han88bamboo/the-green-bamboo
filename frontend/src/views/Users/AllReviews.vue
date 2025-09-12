@@ -256,7 +256,7 @@
                 </div>
                 <div class="col-9 mobile-col-9 mobile-ps-2">
                   <a
-                    :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                    :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
                     style="text-decoration: none; color: #223957"
                   >
                     <p class="fs-5 mobile-fs-6 mb-1 mobile-mb-0_5 default-clickable-text">
@@ -347,7 +347,7 @@
 
                 <div class="card-body d-flex flex-column">
                   <a
-                    :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                    :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
                     style="text-decoration: none; color: #223957"
                     class="text-decoration-none"
                   >
@@ -369,7 +369,7 @@
                   <p class="card-text mb-3 flex-grow-1 mobile-rating-smaller-text-2" v-if="review.reviewDesc">
                     {{ getReviewExcerpt(review.reviewDesc) }}
                     <a
-                      :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
+                      :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
                       class="btn btn-sm primary-btn-less-round-blue text-decoration-none mt-2 fw-bold"
                       
                     >
@@ -521,6 +521,17 @@ export default {
     await this.loadData();
   },
   methods: {
+    slugify(text) {
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')                    // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, '');              // Remove non-word characters
+    },
+    
     async loadData() {
       try {
         this.dataLoaded = false;

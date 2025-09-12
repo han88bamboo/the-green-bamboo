@@ -265,6 +265,18 @@ export default {
       users: []
     })
 
+    // Standardized slugify function
+    const slugify = (text) => {
+      if (!text) return ''
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, '') // Remove non-word characters
+    }
+
     // Calculate total items for keyboard navigation
     const getTotalItems = () => {
       return results.listings.length + results.venues.length + results.producers.length + results.users.length
@@ -623,19 +635,19 @@ export default {
       // Navigate directly based on type with correct URL patterns
       if (type === 'listings') {
         // Use the correct listing view route with slug if available
-        const slug = item.listingName ? '/' + item.listingName.toLowerCase().replace(/\s+/g, '') : ''
+        const slug = item.listingName ? '/' + slugify(item.listingName) : ''
         router.push(`/listing/view/${item.id}${slug}`)
       } else if (type === 'venues') {
         // Use the correct venue profile route with name slug if available
-        const slug = item.venueName ? '/' + item.venueName.toLowerCase().replace(/\s+/g, '') : ''
+        const slug = item.venueName ? '/' + slugify(item.venueName) : ''
         router.push(`/profile/venue/${item.id}${slug}`)
       } else if (type === 'producers') {
         // Use the correct producer profile route with name slug if available
-        const slug = item.producerName ? '/' + item.producerName.toLowerCase().replace(/\s+/g, '') : ''
+        const slug = item.producerName ? '/' + slugify(item.producerName) : ''
         router.push(`/profile/producer/${item.id}${slug}`)
       } else if (type === 'users') {
         // Navigate to user profile
-        const slug = item.username ? '/' + item.username.toLowerCase().replace(/\s+/g, '') : ''
+        const slug = item.username ? '/' + slugify(item.username) : ''
         router.push(`/profile/user/${item.id}${slug}`)
       }
 

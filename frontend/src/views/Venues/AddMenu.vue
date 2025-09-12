@@ -81,7 +81,7 @@
                                 <div class="col-8 ps-5">
                                     <!-- expression name -->
                                     <div class="row pt-1">
-                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id }" class="primary-clickable-text">
+                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id + '/' + slugify(selectedListing.listingName) }" class="primary-clickable-text">
                                             <h4> <b> {{ selectedListing["listingName"] }} </b> </h4>
                                         </router-link>
                                     </div>
@@ -93,7 +93,7 @@
                                     </div>
                                     <!-- review -->
                                     <div class="row pt-3">
-                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id }" class="default-clickable-text scrollable fst-italic">
+                                        <router-link :to="{ path: '/listing/view/' + selectedListing.id + '/' + slugify(selectedListing.listingName) }" class="default-clickable-text scrollable fst-italic">
                                             <h5> {{ selectedListing["officialDesc"] }}. </h5>
                                         </router-link>
                                     </div>
@@ -187,6 +187,17 @@
             await this.loadData();
         },
         methods: {
+            slugify(text) {
+                if (!text) return '';
+                return text
+                    .toString()
+                    .toLowerCase()
+                    .normalize('NFD')                    // Decompose accented characters
+                    .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+                    .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                    .replace(/[^\w]/g, '');              // Remove non-word characters
+            },
+            
             // load data from database
             async loadData() {
                 // Get the query string parameters (listing ID) from the URL

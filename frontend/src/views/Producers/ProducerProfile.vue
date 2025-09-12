@@ -787,9 +787,25 @@
         <!--review this business above-->     
         <div class="row mt-3 mobile-mt-1">
           <div class="col-12 d-flex justify-content-start mobile-pe-0" id="catalogue">
+            <!-- toggle brand updates view-->
+            <button
+              v-if="showBrandUpdates == true"
+              class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+              v-on:click="showBrandUpdatesSection()"
+            >
+              Brand Updates
+            </button>
+            <button
+              v-else
+              class="btn inactive-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
+              v-on:click="showBrandUpdatesSection()"
+            >
+              Brand Updates
+            </button>
+
             <!-- toggle latest updates-->
             <button
-              v-if="showListings == false && showTours == false"
+              v-if="showListings == false && showTours == false && showBrandUpdates == false"
               class="btn active-toggle-button mx-1 mobile-rating-smaller-text-2 mobile-ps-1 mobile-pe-1 mobile-toggle-button-producer-profile"
               v-on:click="showAllReviews()"
             >
@@ -802,6 +818,7 @@
             >
               Brand Overview
             </button>
+
             <!-- toggle expressions view-->
             <button
               v-if="showListings == true && showTours == false"
@@ -1189,10 +1206,152 @@
           </div>
         </div>
         <!-- main page (hide all listings) -->
-        <div
-          v-if="showListings == false && showTours == false"
-          class="padding-for-latestupdatesNmostpopularcontainer-large-screen"
-        >
+        <div v-if="showListings == false && showTours == false && showBrandUpdates == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
+          <!-- Text Sections -->
+          <div v-if="selfView || textSections.length > 0" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
+              <button 
+                v-if="selfView" 
+                @click="editingTextSections = !editingTextSections"
+                class="btn btn-primary"
+              >
+                {{ editingTextSections ? 'Done Editing' : 'Edit Sections' }}
+              </button>
+            </div>
+
+            <!-- Display Mode -->
+            <div v-if="!editingTextSections">
+              <div 
+                v-for="section in textSections" 
+                :key="section.id"
+                class="row mb-2"
+              >
+                <!-- Section Header Button -->
+                <div class="col-12 d-grid mobile-px-0">
+                  <button 
+                    type="button" 
+                    class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+                    data-bs-toggle="collapse" 
+                    :data-bs-target="'#collapseTextSection' + section.id"
+                    aria-expanded="true" 
+                    :aria-controls="'collapseTextSection' + section.id"
+                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+                  >
+                    {{ section.sectionTitle }} ↓
+                  </button>
+                </div>
+
+                <!-- Section Content (Collapsible) -->
+                <div class="collapse show" :id="'collapseTextSection' + section.id">
+                  <div class="container text-start">
+                    <div class="col-12 my-3">
+                      <div class="text-start text-section-content" v-html="section.richTextContent"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Edit Mode -->
+            <div v-if="editingTextSections && selfView">
+              <draggable 
+                v-model="textSections" 
+                group="textSections"
+                @change="reorderSections"
+                :disabled="false"
+                handle=".drag-handle"
+                animation="150"
+                class="mb-3"
+              >
+                <template #item="{ element: section }">
+                  <div class="row mb-4 drag-handle border rounded p-3" :data-section-order="section.sectionOrder">
+                    
+                    <!-- Section Header with Edit/Delete buttons -->
+                    <div class="col-12 mb-3">
+                      <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">{{ section.sectionTitle || 'New Section' }}</h5>
+                        <div>
+                          <button 
+                            v-if="editingSectionId !== section.id"
+                            @click="startEditingSection(section)"
+                            class="btn btn-warning btn-sm me-2"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            v-if="editingSectionId === section.id"
+                            @click="saveSection(section)"
+                            class="btn btn-success btn-sm me-2"
+                            :disabled="!section.tempTitle || !section.tempTitle.trim()"
+                          >
+                            Save
+                          </button>
+                          <button 
+                            v-if="editingSectionId === section.id"
+                            @click="cancelEditingSection(section)"
+                            class="btn btn-secondary btn-sm me-2"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            @click="deleteSection(section.id)"
+                            class="btn btn-danger btn-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Inline Editor when editing this section -->
+                    <div v-if="editingSectionId === section.id" class="col-12">
+                      <!-- Title Input -->
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Section Title</label>
+                        <input 
+                          v-model="section.tempTitle" 
+                          type="text" 
+                          class="form-control" 
+                          placeholder="Enter section title"
+                          @input="onTitleChange(section)"
+                        >
+                      </div>
+                      
+                      <!-- Rich Text Editor -->
+                      <div class="mb-3">
+                        <label class="form-label fw-bold">Content</label>
+                        <InlineRichTextEditor
+                          :ref="'editor-' + section.id"
+                          :initial-content="section.tempContent"
+                          @content-changed="content => onContentChange(section, content)"
+                          :section-id="section.id"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Preview when not editing -->
+                    <div v-else class="col-12">
+                      <div class="p-3 border rounded bg-light">
+                        <div class="text-section-preview text-start" v-html="section.richTextContent"></div>
+                      </div>
+                    </div>
+
+                  </div>
+                </template>
+              </draggable>
+
+              <button 
+                @click="addNewSection"
+                class="btn btn-success mb-3"
+              >
+                Add New Section
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="showBrandUpdates == true" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
           <!-- [if] account is claimed -->
           <div v-if="claimStatus" style="color: black">
             <!-- latest updates -->
@@ -1960,8 +2119,6 @@
             <hr />
           </div>
           
-          
-          
             <!-- most popular (highest ratings) -->
             <ListingRowDisplayProducerProfile
               :listingArr="mostPopular"
@@ -2548,6 +2705,7 @@
 
           <hr />
 
+          <!-- Tour Reviews Section -->
           <div
             class="row mb-3"
             v-for="review in filteredTourReviews"
@@ -2627,6 +2785,8 @@
                   <div class="text-start mb-2">
                     {{ review["reviewDesc"] }}
                   </div>
+
+                  <!-- Voting Buttons-->
                   <div style="display: inline" class="text-start">
                     <!-- voting -->
                     <svg
@@ -2699,6 +2859,35 @@
                     </svg>
                     <!-- <a href="#" class="text-decoration-underline text-secondary" data-bs-toggle="modal" data-bs-target="#detailedReviewModal" @click="updateDetailedReview(review)">Detailed Review ></a> -->
                   </div>
+
+                  <!-- Add Comment Button - Added By CP -->
+                  <button @click="addCommentMode=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">Add Comment</span>
+                  </button>
+
+                  <!-- View Comments for Review Button - Added by CP -->
+                  <button v-if="review.commentsCount > 0" @click="showCommentModal=true"
+                    class="p-0 text-secondary me-2"
+                    style="border: none; background: none; font-size: inherit;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-right-dots" viewBox="0 0 16 16">
+                      <path d="M2 1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h9.586a2 2 0 0 1 1.414.586l2 2V2a1 1 0 0 0-1-1zm12-1a2 2 0 0 1 2 2v12.793a.5.5 0 0 1-.854.353l-2.853-2.853a1 1 0 0 0-.707-.293H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2z"/>
+                      <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                    <span class="text-decoration-underline ms-2">View Comments</span>
+                  </button>
+
+                  <!-- Comments Modal for each review - Added by CP -->
+                  <CommentsModal v-if="showCommentModal" 
+                    :userID="user_id" :userType="userType"
+                    :contentId="review.id" :contentType="'pReview'"
+                    @close="showCommentModal = false" 
+                  />
 
                   <!-- Delete review modal -->
                   <div
@@ -2810,7 +2999,7 @@
                 style="cursor: pointer"
               >
                 <img
-                  :src="review['photos'][0] || defaultPhoto"
+                  :src="review.photos?.[0] || defaultPhoto"
                   alt=""
                   class="review-image"
                   style="width: 125px; height: 125px"
@@ -2827,7 +3016,7 @@
                     style="cursor: pointer"
                 >
                     <img
-                    :src="review['photos'][0] || defaultPhoto"
+                    :src="review.photos?.[0]|| defaultPhoto"
                     alt=""
                     class="review-image"
                     style="width: 200%; height: 200%"
@@ -2835,6 +3024,63 @@
                 </div>
               </div>
             </div>
+
+            <!-- Add Comment Input - Added by CP -->
+            <div v-if="addCommentMode" class="row w-100 py-3">
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control me-2 rounded mobile-rating-smaller-text-2"
+                  placeholder="Write a comment..."
+                  aria-label="Write a comment..."
+                  :aria-describedby="'button-addon2-' + review.id"
+                  v-model="newReviewComment"  
+                />
+
+                <!-- Comment Button (Desktop) -->
+                <button
+                  class="btn primary-btn-less-round-blue fw-bold rounded mobile-view-hide"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'pReview')"
+                >
+                  Comment
+                </button>
+
+                <!-- Comment Button (Mobile) -->
+                <button
+                  class="btn primary-btn-less-round-blue btn-sm rounded mobile-view-show"
+                  type="button"
+                  :id="'button-addon2-' + review.id"
+                  @click="addComment(review.id, 'pReview')"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-send" viewBox="0 0 16 16">
+                    <path
+                      d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 
+                        14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 
+                        7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 
+                        0 0 1 .54.11ZM6.636 10.07l2.761 
+                        4.338L14.13 2.576zm6.787-8.201L1.591 
+                        6.602l4.339 2.76z"
+                    />
+                  </svg>
+                </button>
+
+                <!-- Cancel Button -->
+                <button
+                  class="btn btn-outline-secondary rounded ms-2"
+                  type="button"
+                  @click="newReviewComment = '', addCommentMode = false"
+                >
+                  Cancel
+                </button>
+              </div>
+
+            </div>
+
+
+
             <div
               class="modal fade"
               :id="`reviewImageModal${getUsernameFromReview(review)}`"
@@ -2849,7 +3095,7 @@
                 <div class="modal-content">
                   <div class="modal-body p-4">
                     <img
-                      :src="review['photos'][0] || defaultPhoto"
+                      :src="review.photos?.[0] || defaultPhoto"
                       alt=""
                       style="width: 100%; height: auto"
                     />
@@ -3802,6 +4048,9 @@ import BookmarkModal from "@/components/BookmarkModal.vue";
 import { useToast } from "vue-toastification";
 import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
+import InlineRichTextEditor from '@/components/InlineRichTextEditor.vue';
+import draggable from 'vuedraggable';
+import CommentsModal from '@/components/CommentsModal.vue';
 
 export default {
   components: {
@@ -3811,7 +4060,10 @@ export default {
     BookmarkIcon,
     BookmarkModal,
     LoadingWithFunFact,
-    BadgePopup
+    BadgePopup,
+    InlineRichTextEditor,
+    draggable,
+    CommentsModal
   },
   setup() {
     // Create reactive references for meta data
@@ -4293,6 +4545,23 @@ export default {
 
       earnedBadges: [],
       showBadgePopup: false,
+      showBrandUpdates: true,
+
+      textSections: [],
+      editingTextSections: false,
+      editingSectionId: null,
+      showModalBackdrop: false,
+
+      // Comments - Added by CP
+      deleteCommentItems: {
+          commentId: null,
+          contentType: null
+      },
+      showDeleteModal: false,
+
+      showCommentModal: false,
+      addCommentMode: false,
+      newReviewComment: "", 
     
     };
   }, 
@@ -4371,8 +4640,10 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .normalize('NFD')                    // Decompose accented characters
+                    .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+                    .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                    .replace(/[^\w]/g, '');              // Remove non-word characters
             },
     // load data from database
     async loadData() {
@@ -4457,6 +4728,7 @@ export default {
         // console.log("DEBUG: Producer reviews API response:", response.status, response.statusText);
         // console.log("DEBUG: Producer reviews data:", response.data);
         this.filteredTourReviews = response.data || [];
+
         this.detailedReview = this.filteredTourReviews[0] || null;
       } catch (error) {
         console.error("ERROR FETCHING REVIEWS: Failed to load producer reviews");
@@ -4789,6 +5061,9 @@ export default {
           );
         });
       }
+
+      // Load text sections
+      await this.loadTextSections();
     },
 
     // // get all drinks that a producer has
@@ -5278,6 +5553,7 @@ export default {
     showAllListings() {
       this.showListings = true;
       this.showTours = false;
+      this.showBrandUpdates = false;
       this.filteredListings = this.allDrinks; // initially set filtered drinks to all drinks
       this.lazyListings = this.filteredListings.slice(0, 10);
     },
@@ -5286,12 +5562,20 @@ export default {
     showAllReviews() {
       this.showListings = false;
       this.showTours = false;
+      this.showBrandUpdates = false;
+    },
+
+    showBrandUpdatesSection() {
+      this.showListings = false;
+      this.showTours = false;
+      this.showBrandUpdates = true;
     },
 
     // show all tours and experiences that a producer has
     showAllTours() {
       this.showTours = true;
       this.showListings = false;
+      this.showBrandUpdates = false;
     },
 
     getFilteredReviewsWithImages() {
@@ -6662,12 +6946,324 @@ export default {
       window.location.href = `mailto:hello@drink-x.com?subject=${subject}&body=${body}`;
     },
 
-    closeBadgePopup() {
-      this.showBadgePopup = false;
-      this.earnedBadges = [];
-      // Reload the page when user closes the popup
-      window.location.reload();
-    },
+
+  closeBadgePopup() {
+    this.showBadgePopup = false;
+    this.earnedBadges = [];
+    // Reload the page when user closes the popup
+    window.location.reload();
+  },
+
+  // Load text sections
+  async loadTextSections() {
+    try {
+      const response = await this.$axios.get(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/getTextSections/${this.producer_id}`
+      );
+      
+      if (response.data.code === 200) {
+        this.textSections = (response.data.data || [])
+          .sort((a, b) => a.sectionOrder - b.sectionOrder)
+          .map(section => {
+            const { ...cleanSection } = section;
+            return cleanSection;
+          });
+      }
+    } catch (error) {
+      console.error('Error loading text sections:', error);
+      this.textSections = [];
+    }
+  },
+
+  startEditingSection(section) {
+    section.tempTitle = section.sectionTitle;
+    section.tempContent = section.richTextContent;
+    this.editingSectionId = section.id;
+    
+    this.$nextTick(() => {
+      const editorRef = this.$refs['editor-' + section.id];
+      if (editorRef && editorRef[0]) {
+        editorRef[0].focus();
+      }
+    });
+  },
+
+  cancelEditingSection(section) {
+    // Reset temporary values
+    delete section.tempTitle;
+    delete section.tempContent;
+    this.editingSectionId = null;
+  },
+
+  onContentChange(section, content) {
+    section.tempContent = content;
+  },
+
+  // Add new section
+  addNewSection() {
+    const newSection = {
+      id: Date.now(), // Temporary ID (number type indicates it's new)
+      sectionTitle: '',
+      richTextContent: '',
+      sectionOrder: this.textSections.length,
+      tempTitle: '',
+      tempContent: '',
+      isNew: true
+    };
+    
+    this.textSections.push(newSection);
+    this.editingSectionId = newSection.id;
+    
+    this.$nextTick(() => {
+      const titleInputs = document.querySelectorAll('input[placeholder="Enter section title"]');
+      const lastInput = titleInputs[titleInputs.length - 1];
+      if (lastInput) {
+        lastInput.focus();
+      }
+    });
+  },
+
+  async saveNewSection(section) {
+    if (!section.tempTitle || !section.tempTitle.trim()) {
+      alert('Please enter a section title');
+      return;
+    }
+
+    try {
+      const response = await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/addTextSection`,
+        {
+          producerId: this.producer_id,
+          sectionTitle: section.tempTitle,
+          richTextContent: section.tempContent || '',
+          sectionOrder: section.sectionOrder
+        }
+      );
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        this.editingSectionId = null;
+        await this.loadTextSections();
+      } else {
+        alert('Error saving section');
+      }
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Error saving section');
+    }
+  },
+
+  // Edit existing section
+  editSection(section) {
+    this.editingSectionId = section.id;
+    this.editingSectionTitle = section.sectionTitle;
+    this.editingSectionContent = section.richTextContent;
+    this.showModal();
+
+    // Add small delay to ensure modal is fully rendered before updating content
+    setTimeout(() => {
+      this.$nextTick(() => {
+        if (this.$refs.richTextEditor) {
+          this.$refs.richTextEditor.updateContent(section.sectionTitle, section.richTextContent);
+        }
+      });
+    }, 100); // 100ms delay should be sufficient for modal to render
+  },
+
+  // Save section (add or update)
+  async saveSection(section = null) {
+    if (!section) return;
+    
+    if (!section.tempTitle || !section.tempTitle.trim()) {
+      alert('Please enter a section title');
+      return;
+    }
+
+    try {
+      let response;
+      
+      // Check if this is a new section by looking for the isNew flag
+      // Don't rely on ID type since backend returns string IDs
+      if (section.isNew) {
+        // New section - use add endpoint
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/addTextSection`,
+          {
+            producerId: this.producer_id,
+            sectionTitle: section.tempTitle,
+            richTextContent: section.tempContent || '',
+            sectionOrder: this.textSections.length - 1
+          }
+        );
+      } else {
+        // Existing section - use update endpoint
+        response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProducerTextSections/updateTextSection`,
+          {
+            sectionId: section.id,
+            producerId: this.producer_id,
+            sectionTitle: section.tempTitle,
+            richTextContent: section.tempContent || '',
+            sectionOrder: section.sectionOrder
+          }
+        );
+      }
+
+      if (response.data.code === 200 || response.data.code === 201) {
+        // Clear editing state
+        this.editingSectionId = null;
+        
+        // Reload all sections from backend to get the latest data
+        await this.loadTextSections();
+      } else {
+        alert('Error saving section');
+      }
+    } catch (error) {
+      console.error('Error saving section:', error);
+      alert('Error saving section');
+    }
+  },
+
+  onTitleChange() {
+    // No special handling needed here since we use v-model on tempTitle
+  },
+
+  // Delete section
+  async deleteSection(sectionId) {
+    if (!confirm('Are you sure you want to delete this section?')) {
+      return;
+    }
+
+    // If it's a new section (not saved to backend yet)
+    const sectionIndex = this.textSections.findIndex(s => s.id === sectionId);
+    if (sectionIndex !== -1 && this.textSections[sectionIndex].isNew) {
+      this.textSections.splice(sectionIndex, 1);
+      this.editingSectionId = null;
+      return;
+    }
+
+    try {
+      const response = await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/deleteTextSection`,
+        {
+          sectionId: sectionId,
+          producerId: this.producer_id
+        }
+      );
+
+      if (response.data.code === 200) {
+        await this.loadTextSections();
+        if (this.editingSectionId === sectionId) {
+          this.editingSectionId = null;
+        }
+      } else {
+        alert('Error deleting section');
+      }
+    } catch (error) {
+      console.error('Error deleting section:', error);
+      alert('Error deleting section');
+    }
+  },
+
+  showModal() {
+    this.showModalBackdrop = true;
+    this.$nextTick(() => {
+      const modalEl = document.getElementById('textSectionModal');
+      if (modalEl) {
+        modalEl.classList.add('show', 'd-block');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+      }
+    });
+  },
+
+  closeModal() {
+    this.showModalBackdrop = false;
+    const modalEl = document.getElementById('textSectionModal');
+    if (modalEl) {
+      modalEl.classList.remove('show', 'd-block');
+      modalEl.style.display = 'none';
+      document.body.classList.remove('modal-open');
+    }
+
+    if (this.$refs.richTextEditor) {
+      this.$refs.richTextEditor.clearContent();
+    }
+    
+    // Reset form
+    this.editingSectionId = null;
+    this.editingSectionTitle = '';
+    this.editingSectionContent = '';
+  },
+
+  // Reorder sections
+  async reorderSections() {
+    const sectionsWithOrder = this.textSections.map((section, index) => ({
+      id: section.id,
+      sectionOrder: index
+    }));
+
+    try {
+      await this.$axios.post(
+        `${process.env.VUE_APP_API_URL}/editProducerTextSections/reorderTextSections`,
+        {
+          producerId: this.producer_id,
+          sections: sectionsWithOrder
+        }
+      );
+    } catch (error) {
+      console.error('Error reordering sections:', error);
+    }
+  },
+
+  // Function to add comment - Added By CP
+  async addComment(contentId, contentType) {
+      if (!this.user_id || !this.userType) {
+          // Route to login page
+          this.$router.push({ name: 'Login' });
+          return;
+      }
+
+      let comment = "";
+      comment = this.newReviewComment.trim();
+
+      if (comment == "") {
+          const toast = useToast();
+          toast.error("Comment cannot be empty.");
+          return;
+      }
+      
+
+      try {
+          const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/randomContent/addComment`,
+          {
+              userId: this.user_id,
+              userType: this.userType,
+              contentId: contentId,
+              contentType: contentType,
+              comment: comment
+          }
+          );
+
+          // Clear the input field for review comments
+          if (response.status === 201) {
+              // Add 1 to commentsCount in the review
+              const review = this.filteredTourReviews.find(r => r.id === contentId);
+              if (review) {
+                  review.commentsCount = (review.commentsCount || 0) + 1;
+              }
+              this.newReviewComment = "";
+              this.addCommentMode = false;
+              const toast = useToast();
+              toast.success("Reply added successfully.");
+          }
+          
+
+      } catch (error) {
+          console.error("Error adding comment:", error);
+          const toast = useToast();
+          toast.error("Failed to add comment. Please try again later.");
+      }
   },
   watch: {
     '$route.params.producerID': {
@@ -6726,5 +7322,250 @@ export default {
 
 .welcome-toggle .bi-chevron-down {
   transition: transform 0.3s ease;
+}
+
+.text-section-content {
+  line-height: 1.6;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.text-section-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.text-section-preview {
+  max-height: 200px;
+  overflow: hidden;
+  position: relative;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, #f8f9fa);
+  pointer-events: none;
+}
+
+.drag-handle {
+  cursor: move;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+}
+
+.drag-handle:hover {
+  border-color: #007bff;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 123, 255, 0.075);
+  transform: translateY(-1px);
+}
+
+.drag-handle.editing {
+  border-color: #28a745;
+  background-color: #f8fff9;
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.drag-handle:last-child {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.text-sections-container .drag-handle + .drag-handle {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .section-actions {
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;
+  }
+  
+  .section-actions .btn {
+    width: 100%;
+    font-size: 0.875rem;
+  }
+  
+  .drag-handle h5 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.drag-handle:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.section-saving {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.section-saving::after {
+  content: 'Saving...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.drag-handle,
+.text-section-content,
+.text-section-preview {
+  transition: all 0.2s ease;
+}
+
+@keyframes highlightNew {
+  0% { background-color: #fff3cd; }
+  100% { background-color: #ffffff; }
+}
+
+.drag-handle.new-section {
+  animation: highlightNew 2s ease-out;
+}
+
+.section-error {
+  border-color: #dc3545 !important;
+  background-color: #f8d7da;
+}
+
+.section-error .form-control {
+  border-color: #dc3545;
+}
+
+.section-success {
+  border-color: #28a745 !important;
+  animation: highlightSuccess 1s ease-out;
+}
+
+@keyframes highlightSuccess {
+  0% { background-color: #d4edda; }
+  100% { background-color: #ffffff; }
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1040;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000;
+  opacity: 0.5;
+}
+
+.modal.show {
+  display: block !important;
+}
+
+.modal {
+  z-index: 1050;
+}
+
+#textSectionModal .modal-dialog {
+  max-width: 800px;
+}
+
+#textSectionModal .modal-content {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#textSectionModal .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+#textSectionModal .modal-footer {
+  flex-shrink: 0;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+}
+
+/* Ensure Quill editor doesn't interfere with modal layout */
+#textSectionModal .ql-container {
+  position: relative;
+  z-index: 1;
+}
+
+#textSectionModal .ql-tooltip {
+  z-index: 1060;
+}
+
+.text-section-content img,
+.text-section-preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Ensure text content doesn't overflow */
+.text-section-content,
+.text-section-preview {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Additional container constraints */
+.text-section-content,
+.text-section-preview {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Preview height constraint */
+.text-section-preview {
+  max-height: 150px;
+  overflow: hidden;
+  position: relative;
+}
+
+.text-section-preview::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: linear-gradient(transparent, #f8f9fa);
+  pointer-events: none;
 }
 </style>

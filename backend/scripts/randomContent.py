@@ -1,0 +1,1941 @@
+# This backend script is to handle backend functions that supports the random content shown on the random explore page - discover tab
+
+# Routes: 
+#   [Content Retrieval - On Random Explore Page]
+#   /getRandomListings [GET], /getNext30 [POST]
+
+#   [Likes]
+#   /likeContent [POST], /unlikeContent [POST]
+
+#   [Comments]
+#   /addComment [POST], /editComment [POST], /deleteComment [DELETE]
+
+#   [Content Retrieval - On respective page]
+#   /getListingComments [GET], /getReviewComments [GET]
+#   /getProducerReviewsComments [GET], /getVenueReviewsComments [GET] - not done 
+
+# -----------------------------------------------------------------------------------------
+
+import os
+from flask import Blueprint, g, jsonify, request
+import random
+from email.utils import parsedate_to_datetime
+from psycopg2.extras import RealDictCursor
+import json
+from datetime import datetime
+
+
+file_name = os.path.basename(__file__)
+blueprint = Blueprint(file_name[:-3], __name__)
+
+# Helper Functions
+
+# Get top 3 comments
+def get_top_comments(content_id, content_type):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name 
+        table_name = get_table_name(content_type, "comment")
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type)
+
+        cursor.execute(f"""
+            SELECT * FROM "{table_name}"
+            WHERE "{unique_field}" = %s AND "parentId" IS NULL
+            ORDER BY "createdAt" DESC
+            LIMIT 3
+        """, (content_id,))
+        comments = cursor.fetchall()
+
+        # Loop through each comment
+        if comments:
+            for comment in comments:
+
+                # Get the username or producerName or venueName
+                commenter_info = get_commenter_info(comment['userId'], comment['userType'])
+                comment['username'] = commenter_info['username']
+                comment['userPhoto'] = commenter_info['photo']
+
+                # Get the number of reply comments
+                cursor.execute(f"""
+                    SELECT COUNT(*) FROM "{table_name}"
+                    WHERE "parentId" = %s
+                """, (comment['id'],))
+                reply_count = cursor.fetchone()
+                comment['replyCount'] = reply_count['count'] if reply_count else 0
+
+                # Get the latest 2 reply comments
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" DESC
+                    LIMIT 2
+                """, (comment['id'],))
+                replies = cursor.fetchall()
+
+                if replies:
+                    for reply in replies:
+                        # Get the username or producerName or venueName
+                        replier_info = get_commenter_info(reply['userId'], reply['userType'])
+                        reply['username'] = replier_info['username']
+                        reply['userPhoto'] = replier_info['photo']
+                    comment['replies'] = replies
+
+        return comments
+
+
+# Get total number of comments 
+def get_total_comments(content_id, content_type):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name 
+        table_name = get_table_name(content_type, "comment")
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type)
+
+        cursor.execute(f"""
+            SELECT COUNT(*) FROM "{table_name}"
+            WHERE "{unique_field}" = %s
+        """, (content_id,))
+
+        count = cursor.fetchone()
+        return count['count'] if count else 0
+
+
+# Get number of likes on content
+def get_likes_count(content_id, content_type):
+
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name 
+        table_name = get_table_name(content_type, "like")
+
+        # Get unique field 
+        unique_field = get_unique_field(content_type)
+
+        # If table name is reviewsUserVotes or producerReviewsUserVotes or venueReviewsUserVotes
+        if table_name == "reviewsUserVotes" or table_name == "producerReviewsUserVotes" or table_name == "venueReviewsUserVotes":
+            cursor.execute(f"""
+                           SELECT upvotes FROM "{table_name}"
+                           WHERE "id" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("upvotes"):   # <-- safe check
+                return 0
+            return len(upvotes["upvotes"])
+
+        # If table name is producerUpdateLikes or venueUpdateLikes
+        if table_name == "producerUpdateLikes" or table_name == "venueUpdateLikes":
+            cursor.execute(f"""
+                           SELECT COUNT(*) FROM "{table_name}"
+                           WHERE "id" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("count"):   # <-- safe check
+                return 0
+            return upvotes["count"]
+
+        # If table name is listingsLikes or 88BContentLikes
+        if table_name == "listingsLikes" or table_name == "88BContentLikes":
+            cursor.execute(f"""
+                           SELECT COUNT(*) FROM "{table_name}"
+                           WHERE "{unique_field}" = %s
+                       """, (content_id,))
+            upvotes = cursor.fetchone()
+            if not upvotes or not upvotes.get("count"):   # <-- safe check
+                return 0
+            return upvotes["count"]
+        
+
+
+# Get a list of content id user has liked based on a list of content ids given
+def get_liked_content_ids(user_id, user_type, content_type, content_ids):
+
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        # Get table name and unique field
+        table_name = get_table_name(content_type, "like")
+        unique_field = get_unique_field(content_type)
+
+        # ---------- reviewsUserVotes or producerReviewsUserVotes or venueReviewsUserVotes ----------
+        if (table_name == "reviewsUserVotes" or table_name == "producerReviewsUserVotes" or table_name == "venueReviewsUserVotes") and user_type == "user":
+            cursor.execute(f"""
+                SELECT "reviewId", "upvotes"
+                FROM "{table_name}"
+                WHERE "reviewId" = ANY(%s)
+            """, (content_ids,))
+            rows = cursor.fetchall()
+
+            # Loop through [] and return reviewId if the user has liked it
+            liked_review_ids = []
+            for row in rows:
+                if user_id in [upvote['userId'] for upvote in row['upvotes']]:
+                    liked_review_ids.append(row['reviewId'])
+            return liked_review_ids
+
+
+        # ---------- producerUpdateLikes / venueUpdateLikes ----------
+        if table_name in ("producerUpdateLikes", "venueUpdateLikes"):
+            cursor.execute(f"""
+                SELECT "id"
+                FROM "{table_name}"
+                WHERE "id" = ANY(%s)
+                AND "userId" = %s
+            """, (content_ids, user_id))
+            rows = cursor.fetchall()
+            return [row['id'] for row in rows] if rows else []
+
+        # ---------- listingsLikes / 88BContentLikes ----------
+        if table_name in ("listingsLikes", "88BContentLikes"):
+            cursor.execute(f"""
+                SELECT "{unique_field}"
+                FROM "{table_name}"
+                WHERE "userId" = %s
+                AND "{unique_field}" = ANY(%s)
+            """, (user_id, content_ids))
+            rows = cursor.fetchall()
+            return [row[unique_field] for row in rows] if rows else []
+
+        # Default fallback
+        return []
+
+
+# Get table name based on content_type and feature and user_type
+def get_table_name(content_type, feature):
+
+    if content_type == "Listing":
+        if feature == "like" or feature == "unlike":
+            return "listingsLikes"
+        elif feature == "comment":
+            return "listingsComments"
+        
+    elif content_type == "Review":
+        if feature == "like" or feature == "unlike":
+            return "reviewsUserVotes"
+        elif feature == "comment":
+            return "listingReviewsComments"
+        
+    elif content_type == "pReview":
+        if feature == "like" or feature == "unlike":
+            return "producerReviewsUserVotes"
+        elif feature == "comment":
+            return "producerReviewsComments"
+
+    elif content_type == "vReview":
+        if feature == "like" or feature == "unlike":
+            return "venueReviewsUserVotes"
+        elif feature == "comment":
+            return "venueReviewsComments"
+
+    elif content_type == "pUpdate":
+        if feature == "like" or feature == "unlike":
+            return "producerUpdateLikes"
+            
+        elif feature == "comment":
+            return "producerUpdateComments"
+            
+    elif content_type == "vUpdate":
+        if feature == "like" or feature == "unlike":
+            return "venueUpdateLikes"
+
+        elif feature == "comment":
+            return "venueUpdateComments"
+
+    elif content_type == "88B":
+        if feature == "like" or feature == "unlike":
+            return "88BContentLikes"
+        elif feature == "comment":
+            return "88BContentComments"
+
+    return None
+
+
+# Get unique field from content comments tables based on content_type
+def get_unique_field(content_type):
+    if content_type == "Listing":
+        return "listingId"
+
+    elif content_type == "Review" or content_type == "pReview" or content_type == "vReview":
+        return "reviewId"
+
+    elif content_type == "pUpdate":
+            return "producerUpdateId"
+    
+    elif content_type == "vUpdate":
+        return "venueUpdateId"
+
+    elif content_type == "88B":
+        return "contentId"
+
+    return None
+
+
+# Get commenter info 
+def get_commenter_info(user_id, user_type):
+    conn = g.db
+    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+
+        if user_type == "user":
+            cursor.execute("""
+                SELECT "username", photo
+                FROM "users"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["username"], "photo": result["photo"]}
+
+        elif user_type == "producer":
+            cursor.execute("""
+                SELECT "producerName", photo
+                FROM "producers"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["producerName"], "photo": result["photo"]}
+
+        elif user_type == "venue":
+            cursor.execute("""
+                SELECT "venueName", photo
+                FROM "venues"
+                WHERE "id" = %s
+            """, (user_id,))
+            result = cursor.fetchone()
+            return {"username": result["venueName"], "photo": result["photo"]}
+
+    return {"username": None, "photo": None}
+
+
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get random content
+@blueprint.route("/getRandomListings/<user_id>/<user_type>")
+def getRandomListings(user_id, user_type):
+    conn = g.db
+
+    if user_id == "null":
+        user_id = None
+    if user_type == "null":
+        user_type = None
+
+
+    try:
+
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Fetch distinct dates by converting timestamps to dates
+            cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings" WHERE "addedDate" != CURRENT_DATE')
+            date_results = cursor.fetchall()
+
+            if not date_results:
+                return jsonify({"error": "No dates found in listings"}), 400
+
+            try:
+                # Extract 'addedDate' values properly from RealDictRow
+                date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+                
+                if not date_list:
+                    return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+                random_date = random.choice(date_list)  # Select a random date
+            except Exception as e:
+                return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+
+
+            # Randomizer to determine if we want to include producerUpdates ONLY, venueUpdates ONLY, or BOTH
+            update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
+
+            # Number of records to retrieve per call
+            num_records = 30
+
+            # Fetch listings from the selected random date 
+            # Set random limit
+            limit = random.randint(8, 15)
+            cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = %s LIMIT %s', (random_date, limit))
+            listings_data = cursor.fetchall()
+
+            if len(listings_data) < num_records:
+
+                # Get listings that have been created today
+                # Set random limit
+                limit = random.randint(4, 10)
+                cursor.execute('SELECT * FROM "listings" WHERE "addedDate"::DATE = CURRENT_DATE LIMIT %s', (limit,))
+                additional_listings = cursor.fetchall()
+                listings_data.extend(additional_listings)
+
+            new_listings_last_id = additional_listings[-1]['id'] if additional_listings else None
+
+            # Loop through the listings and get the producer name
+            for listing in listings_data:
+                cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+                producer_data = cursor.fetchone()
+                if producer_data:
+                    listing['producerName'] = producer_data['producerName']
+                else:
+                    listing['producerName'] = None
+
+                # Get rating for the listing
+                cursor.execute("""
+                    SELECT AVG("rating") AS "averageRating"
+                    FROM "reviews"
+                    WHERE "reviewTarget" = %s AND "reviewType" = 'Listing'
+                """, (listing['id'],))
+
+                rating_data = cursor.fetchone()
+                listing['rating'] = round(rating_data['averageRating'],1) if rating_data and rating_data['averageRating'] is not None else '-'
+                listing['contentType'] = 'Listing'
+
+                # Get top 3 comments 
+                listing['topComments'] = get_top_comments(listing['id'], 'Listing')
+                
+                # Get number of likes
+                listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
+
+                # Get number of comments
+                listing['totalComments'] = get_total_comments(listing['id'], 'Listing')
+
+            # Determine if there are 30 records, else, retrieve new reviews from other users (reviews up to two week ago)
+            # Set random limit
+            limit = random.randint(5, 8)
+            if len(listings_data) < num_records:
+                cursor.execute("""
+                    SELECT * FROM "reviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (limit,))
+
+                reviews = cursor.fetchall()
+
+                # Add contentType to each review and retrieve userName
+                for review in reviews:
+                    review['contentType'] = 'Review'
+
+                    # Get username
+                    cursor.execute("SELECT username, photo FROM users WHERE id = %s", (review['userID'],))
+                    user_data = cursor.fetchone()
+                    review['username'] = user_data['username'] if user_data else None
+                    review['userPhoto'] = user_data['photo'] if user_data else None
+
+                    # Get listing name
+                    cursor.execute("""SELECT "listingName" FROM listings WHERE id = %s""", (review['reviewTarget'],))
+                    listing_data = cursor.fetchone()
+                    review['listingName'] = listing_data['listingName'] if listing_data else None
+
+                    # Get top 3 comments
+                    review['topComments'] = get_top_comments(review['id'], 'Review')
+
+                    # Get number of likes
+                    review['totalLikes'] = get_likes_count(review['id'], 'Review')
+
+                    # Get total number of comments
+                    review['totalComments'] = get_total_comments(review['id'], 'Review')
+
+            reviews_last_id = reviews[-1]['id'] if reviews else None
+
+            producers_updates = []
+            venues_updates = []
+            
+            # Determine if there are 30 records, else, retrieve announcements by venue and brand accounts
+            if len(listings_data) + len(reviews) < num_records:
+
+                # Calculate how many records are still needed
+                remaining = num_records - len(listings_data) - len(reviews)
+
+                # Set random limit
+                limit = random.randint(1, remaining)
+
+                # Based on randomizer, retrieve the relevant information
+                if update_type == "producerUpdates":
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (limit,)
+                    )
+                    producers_updates = cursor.fetchall()
+
+                elif update_type == "venueUpdates":
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (limit,)
+                    )
+                    venues_updates = cursor.fetchall()
+
+                elif update_type == "both":
+
+                    # Randomly decide how many go to producers vs venues
+                    producers_limit = random.randint(0, limit)   # any number between 0 and remaining
+                    venue_limit = remaining - producers_limit 
+
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (producers_limit,)
+                    )
+                    producers_updates = cursor.fetchall()
+
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        LIMIT %s
+                    """, (venue_limit,)
+                    )
+                    venues_updates = cursor.fetchall()
+
+                # Add contentType to each update
+                if len(producers_updates):
+                    for update in producers_updates:
+                        update['contentType'] = 'pUpdate'
+
+                        # Get producer name
+                        producer_info = get_commenter_info(update['producerId'], 'producer')
+                        update['producerName'] = producer_info['username']
+                        update['producerPhoto'] = producer_info['photo']
+
+                        # Get top 3 comments
+                        update['topComments'] = get_top_comments(update['id'], 'pUpdate')
+
+                        # Get number of likes
+                        update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
+
+                        # Get total number of comments
+                        update['totalComments'] = get_total_comments(update['id'], 'pUpdate')
+
+                if len(venues_updates):
+                    for update in venues_updates:
+                        update['contentType'] = 'vUpdate'
+
+                        # Get venue name
+                        venue_info = get_commenter_info(update['venueId'], 'venue')
+                        update['venueName'] = venue_info['username']
+                        update['venuePhoto'] = venue_info['photo']
+
+                        # Get top 3 comments
+                        update['topComments'] = get_top_comments(update['id'], 'vUpdate')
+
+                        # Get number of likes
+                        update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
+
+                        # Get total number of comments
+                        update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
+
+        if not listings_data:
+            return jsonify({"error": "No listings found for selected date"}), 400
+        
+        listings_likes = []
+        reviews_likes = []
+        producers_updates_likes = []
+        venues_updates_likes = []
+        
+        # Get current user's likes for the content
+        if user_id not in (None, '') and user_type not in (None, ''):
+            listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
+            reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in reviews])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "vUpdate", [row["id"] for row in venues_updates])
+
+        content = listings_data + reviews + producers_updates + venues_updates
+        random.shuffle(content)
+
+        return jsonify({
+            "content": content,
+            "datedListingPreviousDate": random_date,
+            "newListingsLastID": new_listings_last_id,
+            "reviewsLastID": reviews_last_id,
+            "pUpdateLastID": producers_updates[-1]['id'] if producers_updates else None,
+            "vUpdateLastID": venues_updates[-1]['id'] if venues_updates else None,
+            "listingsLikes": listings_likes,
+            "reviewsLikes": reviews_likes,
+            "producersUpdatesLikes": producers_updates_likes,
+            "venuesUpdatesLikes": venues_updates_likes
+        })
+    except Exception as e:
+        print(f"Error occurred: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Get next 30 random content (will include producerReviews as well as venueReviews here)
+@blueprint.route("/getNext30", methods=['POST'])
+def getNext30():
+    conn = g.db
+
+    data = request.get_json()
+
+    datedListingPreviousDate = data.get('datedListingPreviousDate')
+    datedListingPreviousDate = parsedate_to_datetime(datedListingPreviousDate).date()
+    newListingsLastID = data.get('newListingsLastID')
+    pUpdateLastID = data.get('pUpdateLastID')
+    vUpdateLastID = data.get('vUpdateLastID')
+    user_id = data.get('userId')
+    user_type = data.get('userType')
+
+    if pUpdateLastID:
+        pUpdateLastID = int(pUpdateLastID)
+    else:
+        pUpdateLastID = None
+    reviewsLastID = data.get('reviewsLastID')
+    if reviewsLastID:
+        reviewsLastID = int(reviewsLastID)
+    else:
+        reviewsLastID = None
+    vUpdateLastID = data.get('vUpdateLastID')
+    if vUpdateLastID:
+        vUpdateLastID = int(vUpdateLastID)
+    else:
+        vUpdateLastID = None
+
+    pReviewLastID = data.get('pReviewLastID')
+    if pReviewLastID:
+        pReviewLastID = int(pReviewLastID)
+    else:
+        pReviewLastID = None
+
+    vReviewLastID = data.get('vReviewLastID')
+    if vReviewLastID:
+        vReviewLastID = int(vReviewLastID)
+    else:
+        vReviewLastID = None
+
+    # Initialize list
+    listings_data = []
+    recent_reviews = []
+    producers_updates = []
+    venues_updates = []
+    producer_reviews = []
+    venue_reviews = []
+
+    try:
+
+        with conn.cursor() as cursor:
+
+            # Fetch distinct dates by converting timestamps to dates
+            cursor.execute(
+                """
+                SELECT DISTINCT "addedDate"::DATE
+                FROM "listings"
+                WHERE "addedDate"::DATE != %s
+                AND "addedDate"::DATE != CURRENT_DATE
+                """, (datedListingPreviousDate,)
+            )
+            date_results = cursor.fetchall()
+
+            if not date_results:
+                return jsonify({"error": "No dates found in listings"}), 400
+
+            try:
+                # Extract 'addedDate' values properly from RealDictRow
+                date_list = [row['addedDate'] for row in date_results if 'addedDate' in row]
+                
+                if not date_list:
+                    return jsonify({"error": "Date extraction failed (empty list)"}), 400
+
+                random_date = random.choice(date_list)  # Select a random date
+            except Exception as e:
+                return jsonify({"error": f"Random selection failed: {str(e)}"}), 500
+            
+            # Randomizer logic 
+            limit = 30
+            # Randomizer to determine if we want to include producerUpdates ONLY, venueUpdates ONLY, or BOTH
+            update_type = random.choice(['producerUpdates', 'venueUpdates', 'both'])
+
+            # Get dated listings 
+            random_records = random.randint(5, 12)
+            cursor.execute("""
+                SELECT * FROM "listings"
+                WHERE "addedDate" = %s
+                LIMIT %s
+            """, (random_date, random_records,))
+            listings_data = cursor.fetchall()
+            limit -= len(listings_data)
+            
+            # Get today's created listings after newListingsLastID
+            random_records = random.randint(5, 10)
+            
+            if newListingsLastID and newListingsLastID != '':
+                cursor.execute("""
+                    SELECT * FROM "listings"
+                    WHERE "addedDate" = CURRENT_DATE AND "id" > %s
+                    LIMIT %s
+                """, (newListingsLastID, random_records,))
+                todays_listings = cursor.fetchall()
+                listings_data.extend(todays_listings)
+                newListingsLastID = todays_listings[-1]['id'] if todays_listings else None
+                limit -= len(todays_listings)
+
+            if listings_data:
+                # Loop through the listings to get the average rating for each listing and producer name
+                for listing in listings_data:
+                    # Get the average rating for the listing
+                    cursor.execute("""
+                        SELECT AVG("rating") AS "averageRating"
+                        FROM "reviews"
+                        WHERE "reviewTarget" = %s
+                    """, (listing['id'],))
+
+                    avg_rating = cursor.fetchone()['averageRating']
+
+                    if avg_rating is not None:
+                        listing['rating'] = round(avg_rating, 1)
+                    else:
+                        listing['rating'] = '-'
+
+                    listing['contentType'] = 'Listing'
+
+                    # Get top 3 comments 
+                    listing['topComments'] = get_top_comments(listing['id'], 'Listing')
+                    
+                    # Get number of likes
+                    listing['totalLikes'] = get_likes_count(listing['id'], 'Listing')
+
+                    # Get total number of comments
+                    listing['totalComments'] = get_total_comments(listing['id'], 'Listing')
+
+
+            # Get reviews by users within the last 2 weeks after reviewsLastID
+            random_records = random.randint(8, 12)
+            cursor.execute("""
+                SELECT * FROM "reviews"
+                WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                AND "id" > %s
+                ORDER BY "createdDate" DESC
+                LIMIT %s
+            """, (reviewsLastID, random_records))
+            recent_reviews = cursor.fetchall()
+            reviewsLastID = recent_reviews[-1]['id'] if recent_reviews else None
+            limit -= len(recent_reviews)
+
+            for review in recent_reviews:
+                review['contentType'] = 'Review'
+
+                # Retrieve listing name
+                cursor.execute('SELECT "listingName" FROM "listings" WHERE "id" = %s', (review['reviewTarget'],))
+                listing = cursor.fetchone()
+                review['listingName'] = listing['listingName'] if listing else None
+
+                # Retrieve username and photo
+                cursor.execute('SELECT "username", "photo" FROM "users" WHERE "id" = %s', (review['userID'],))
+                user_data = cursor.fetchone()
+                review['username'] = user_data['username'] if user_data else None
+                review['userPhoto'] = user_data['photo'] if user_data else None
+
+                # Get top 3 comments
+                review['topComments'] = get_top_comments(review['id'], 'Review')
+
+                # Get number of likes
+                review['totalLikes'] = get_likes_count(review['id'], 'Review')
+
+                # Get total number of comments
+                review['totalComments'] = get_total_comments(review['id'], 'Review')
+
+
+            # Get producer or venue reviews after *ReviewLastID
+            if limit > 0:
+
+                # Get producer reviews
+                cursor.execute("""
+                    SELECT * FROM "producerReviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND (%s IS NULL OR "id" > %s)
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (pReviewLastID, pReviewLastID, 5))
+                producer_reviews = cursor.fetchall()
+
+                # Get venue reviews
+                cursor.execute("""
+                    SELECT * FROM "venueReviews"
+                    WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND (%s IS NULL OR "id" > %s)
+                    ORDER BY "createdDate" DESC
+                    LIMIT %s
+                """, (vReviewLastID, vReviewLastID, 5))
+                venue_reviews = cursor.fetchall()
+
+                # Get review details
+                if producer_reviews:
+                    for review in producer_reviews:
+
+                        # Get producerName
+                        producer_info = get_commenter_info(review['producerID'], 'producer')
+                        review['producerName'] = producer_info['username']
+
+                        # Get reviewer username and userPhoto
+                        reviewer_info = get_commenter_info(review['userID'], 'user')
+                        review['username'] = reviewer_info['username']
+                        review['userPhoto'] = reviewer_info['photo']
+
+                        # Set content type
+                        review['contentType'] = 'pReview'
+
+                        # Get top comments
+                        review['topComments'] = get_top_comments(review['id'], 'pReview')
+
+                        # Get number of likes
+                        review['totalLikes'] = get_likes_count(review['id'], 'pReview')
+
+                        # Get total number of comments
+                        review['totalComments'] = get_total_comments(review['id'], 'pReview')
+
+                # Get venueName and photo
+                if venue_reviews:
+                    for review in venue_reviews:
+                        venue_info = get_commenter_info(review['venueID'], 'venue')
+                        review['venueName'] = venue_info['username']
+                        review['venuePhoto'] = venue_info['photo']
+
+                        # Get reviewer username and userPhoto
+                        reviewer_info = get_commenter_info(review['userID'], 'user')
+                        review['username'] = reviewer_info['username']
+                        review['userPhoto'] = reviewer_info['photo']
+
+                        # Set content type
+                        review['contentType'] = 'vReview'
+
+                        # Get top comments
+                        review['topComments'] = get_top_comments(review['id'], 'vReview')
+
+                        # Get number of likes
+                        review['totalLikes'] = get_likes_count(review['id'], 'vReview')
+
+                        # Get total number of comments
+                        review['totalComments'] = get_total_comments(review['id'], 'vReview')
+
+                # Set last IDs
+                pReviewLastID = producer_reviews[-1]['id'] if producer_reviews else None
+                vReviewLastID = venue_reviews[-1]['id'] if venue_reviews else None
+
+                limit -= len(producer_reviews) + len(venue_reviews)
+
+            # Get producer or venue updates after *UpdateLastID
+            if limit > 0:
+
+                random_records = random.randint(5, 8)
+                if update_type == 'producerUpdates':
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates"
+                        WHERE "date" >= NOW() - INTERVAL '2 weeks'
+                        AND (%s IS NULL OR "id" > %s)
+                        LIMIT %s
+                    """, (pUpdateLastID, pUpdateLastID, random_records))
+                    producers_updates = cursor.fetchall()
+
+                elif update_type == 'venueUpdates':
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates"
+                        WHERE "date" >= NOW() - INTERVAL '2 weeks' 
+                        AND (%s IS NULL OR "id" > %s)
+                        LIMIT %s
+                    """, (vUpdateLastID, vUpdateLastID, random_records,))
+                    venues_updates = cursor.fetchall()
+
+                else:
+                    # Randomly decide how many go to producers vs venues
+                    producers_limit = random.randint(3, limit)   # any number between 0 and remaining
+                    venue_limit = limit - producers_limit 
+
+                    cursor.execute("""
+                        SELECT * FROM "producersUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        AND (%s IS NULL OR "id" > %s)
+                        LIMIT %s
+                    """, (pUpdateLastID, pUpdateLastID, producers_limit)
+                    )
+                    producers_updates = cursor.fetchall()
+
+                    cursor.execute("""
+                        SELECT * FROM "venuesUpdates" 
+                        WHERE date >= NOW() - INTERVAL '14 days'
+                        AND (%s IS NULL OR "id" > %s)
+                        LIMIT %s
+                    """, (vUpdateLastID, vUpdateLastID, venue_limit)
+                    )
+                    venues_updates = cursor.fetchall()
+
+            if producers_updates:
+                pUpdateLastID = producers_updates[-1]['id']
+
+                for update in producers_updates:
+                    update['contentType'] = 'pUpdate'
+
+                    # Get producer name
+                    cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (update['producerId'],))
+                    producer = cursor.fetchone()
+                    update['producerName'] = producer['producerName'] if producer else None
+                    update['producerPhoto'] = producer['photo'] if producer else None
+
+                    # Get top 3 comments
+                    update['topComments'] = get_top_comments(update['id'], 'pUpdate')
+
+                    # Get number of likes
+                    update['totalLikes'] = get_likes_count(update['id'], 'pUpdate')
+
+                    # Get total number of comments
+                    update['totalComments'] = get_total_comments(update['id'], 'pUpdate')
+
+            if venues_updates:
+                vUpdateLastID = venues_updates[-1]['id']
+
+                for update in venues_updates:
+                    update['contentType'] = 'vUpdate'
+                    
+                    # Get venue name
+                    venue_info = get_commenter_info(update['venueId'], 'venue')
+                    update['venueName'] = venue_info['username']
+                    update['venuePhoto'] = venue_info['photo']
+
+                    # Get top 3 comments
+                    update['topComments'] = get_top_comments(update['id'], 'vUpdate')
+
+                    # Get number of likes
+                    update['totalLikes'] = get_likes_count(update['id'], 'vUpdate')
+
+                    # Get total number of comments
+                    update['totalComments'] = get_total_comments(update['id'], 'vUpdate')
+
+        if len(listings_data) + len(recent_reviews) + len(producers_updates) + len(venues_updates) + len(producer_reviews) + len(venue_reviews) == 0:
+            return jsonify([])
+        
+        listings_likes = []
+        reviews_likes = []
+        producers_updates_likes = []
+        venues_updates_likes = []
+        producer_reviews_likes = []
+        venue_reviews_likes = []
+
+        # Get current user's likes for the content
+        if user_id not in (None, '', 0) and user_type not in (None, '', 'public'):
+            listings_likes = get_liked_content_ids(user_id, user_type, "Listing", [row["id"] for row in listings_data])
+            reviews_likes = get_liked_content_ids(user_id, user_type, "Review", [row["id"] for row in recent_reviews])
+            producers_updates_likes = get_liked_content_ids(user_id, user_type, "pUpdate", [row["id"] for row in producers_updates])
+            venues_updates_likes = get_liked_content_ids(user_id, user_type, "vUpdate", [row["id"] for row in venues_updates])
+
+            producer_reviews_likes = get_liked_content_ids(user_id, user_type, "pReview", [row["id"] for row in producer_reviews])
+            venue_reviews_likes = get_liked_content_ids(user_id, user_type, "vReview", [row["id"] for row in venue_reviews])
+
+        # Shuffle data 
+        content = listings_data + recent_reviews + producers_updates + venues_updates + producer_reviews + venue_reviews
+        random.shuffle(content)
+
+        print(f"Total content fetched: {len(content)}")
+
+        return jsonify({
+            "content": content,
+            "datedListingLastID": random_date,
+            "newListingsLastID": newListingsLastID,
+            "pUpdateLastID": pUpdateLastID,
+            "reviewsLastID": reviewsLastID,
+            "vUpdateLastID": vUpdateLastID,
+            "listingsLikes": listings_likes,
+            "reviewsLikes": reviews_likes,
+            "producersUpdatesLikes": producers_updates_likes,
+            "venuesUpdatesLikes": venues_updates_likes,
+            "producerReviewsLikes": producer_reviews_likes,
+            "venueReviewsLikes": venue_reviews_likes,
+            "pReviewLastID": pReviewLastID,
+            "vReviewLastID": vReviewLastID
+        })
+
+    except Exception as e:
+        print("Error occurred while fetching data:", e)
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Like a content 
+# Input: { "contentType": <content_type>, "contentId": <content_id>, "userId": <user_id>, "userType": <user_type> }
+@blueprint.route("/likeContent", methods=['POST'])
+def likeContent():
+    data = request.json
+    content_type = data.get("contentType")
+    content_id = data.get("contentId")
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+
+    if not all([content_type, content_id, user_id, user_type]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name 
+            table_name = get_table_name(content_type, "like")
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Insert the like into the appropriate table
+
+            # If it is listingsLikes
+            if table_name == "listingsLikes":
+                cursor.execute(f"""
+                    INSERT INTO "{table_name}" ("listingId", "userId", "userType")
+                    VALUES (%s, %s, %s)
+                """, (content_id, user_id, user_type))
+
+                conn.commit()
+
+            # If it is reviewsUserVotes
+            elif table_name == "reviewsUserVotes" and user_type == "user":
+                # Check if review exist
+                cursor.execute('SELECT COUNT(*) FROM "reviewsUserVotes" WHERE "reviewId" = %s;', (content_id,))
+                reviewRecord = cursor.fetchone()
+                review_exists = reviewRecord['count'] > 0
+
+                if review_exists:
+
+                    # Step 1: Get existing upvotes
+                    cursor.execute('SELECT "upvotes" FROM "reviewsUserVotes" WHERE "reviewId" = %s;', (content_id,))
+                    row = cursor.fetchone()
+                    upvotes = row[0] if row and row[0] is not None else []
+
+                    # Step 2: Append new vote
+                    new_vote = {"userId": user_id, "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                    upvotes.append(new_vote)
+
+                    # Step 3: Update back into DB
+                    cursor.execute('UPDATE "reviewsUserVotes" SET "upvotes" = %s WHERE "reviewId" = %s;', 
+                                (json.dumps(upvotes), content_id))
+                    
+                else:
+                    print("Goes here")
+
+                    # Step 1: Create new entry
+                    cursor.execute('INSERT INTO "reviewsUserVotes" ("reviewId", "upvotes") VALUES (%s, %s);',
+                                   (content_id, json.dumps([{"userId": user_id, "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}])))
+
+                if cursor.rowcount > 0:
+                    print("success")
+                else:
+                    print("failed")
+                conn.commit()
+
+            # If it is producerUpdateLikes
+            elif table_name == "producerUpdateLikes":
+                cursor.execute(f"""
+                    INSERT INTO "{table_name}" ("updateId", "userId", "userType")
+                    VALUES (%s, %s, %s)
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            # If it is venueUpdateLikes
+            elif table_name == "venueUpdateLikes":
+                cursor.execute(f"""
+                    INSERT INTO "{table_name}" ("updateId", "userId", "userType")
+                    VALUES (%s, %s, %s)
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            # If it is 88BContentLikes
+            elif table_name == "88BContentLikes":
+                cursor.execute(f"""
+                    INSERT INTO "{table_name}" ("contentId", "userId", "userType")
+                    VALUES (%s, %s, %s)
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            return jsonify({
+                "message": "Content liked successfully",
+                "contentId": content_id
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while liking content:", e)
+        return jsonify({"error": "Failed to like content"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Unlike a content
+# Input: { "contentType": <content_type>, "contentId": <content_id>, "userId": <user_id>, "userType": <user_type> }
+@blueprint.route("/unlikeContent", methods=['POST'])
+def unlikeContent():
+    data = request.json
+    content_type = data.get("contentType")
+    content_id = data.get("contentId")
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+
+    if not all([content_type, content_id, user_id, user_type]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name(content_type, "unlike")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Delete the like from the appropriate table
+            # If it is listingsLikes
+            if table_name == "listingsLikes":
+                cursor.execute(f"""
+                    DELETE FROM "{table_name}"
+                    WHERE "listingId" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            elif table_name == "reviewsUserVotes" and user_type == "user":
+
+                # Check if the review has upvotes
+                cursor.execute("""
+                    SELECT "upvotes"
+                    FROM "reviewsUserVotes"
+                    WHERE "reviewId" = %s
+                """, (content_id,))
+                upvotes = cursor.fetchone()
+
+                if upvotes and user_id in [u['userId'] for u in upvotes['upvotes']]:
+
+                    # User has already upvoted, remove their vote
+                    upvotes = [u for u in upvotes['upvotes'] if u['userId'] != user_id]
+
+                    # Update the upvotes array in the database
+                    cursor.execute('UPDATE "reviewsUserVotes" SET "upvotes" = %s WHERE "reviewId" = %s;', 
+                                (json.dumps(upvotes), content_id))
+                    conn.commit()
+
+            elif table_name == "producerUpdateLikes":
+                cursor.execute(f"""
+                    DELETE FROM "{table_name}"
+                    WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            elif table_name == "venueUpdateLikes":
+                cursor.execute(f"""
+                    DELETE FROM "{table_name}"
+                    WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            elif table_name == "88BContentLikes":
+                cursor.execute(f"""
+                    DELETE FROM "{table_name}"
+                    WHERE "contentId" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                conn.commit()
+
+            return jsonify({
+                "message": "Content unliked successfully",
+                "contentId": content_id
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while unliking content:", e)
+        return jsonify({"error": "Failed to unlike content"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [POST] Add a comment
+# Input: { "contentType": <content_type>, "contentId": <content_id>, "userId": <user_id>, "userType": <user_type>, "comment": <comment_text>, "parentId": <parent_id> }
+@blueprint.route("/addComment", methods=['POST'])
+def addComment():
+    data = request.json
+    content_type = data.get("contentType")
+    content_id = data.get("contentId")
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+    comment = data.get("comment")
+    parent_id = data.get("parentId")  # Optional, for replies to comments
+
+    if not all([content_type, content_id, user_id, user_type, comment]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name(content_type, "comment")
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field name
+            unique_field = get_unique_field(content_type)
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Insert the comment into the appropriate table
+            cursor.execute(f"""
+                INSERT INTO "{table_name}" ("{unique_field}", "userId", "userType", "comment", "parentId")
+                VALUES (%s, %s, %s, %s, %s)
+            """, (content_id, user_id, user_type, comment, parent_id))
+            conn.commit()
+
+            # Get the added record
+            cursor.execute(f"""
+                SELECT *
+                FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
+                ORDER BY "createdAt" DESC
+                LIMIT 1
+            """, (content_id, user_id, user_type))
+            added_comment = cursor.fetchone()
+
+            # Get the commenter username and photo 
+            user_info = get_commenter_info(user_id, user_type)
+
+            added_comment["photo"] = user_info['photo']
+            added_comment["username"] = user_info['username']
+
+            return jsonify({
+                "message": "Comment added successfully",
+                "comment": added_comment
+            }), 201
+
+    except Exception as e:
+        print("Error occurred while adding comment:", e)
+        return jsonify({"error": "Failed to add comment"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [PUT] Edit a comment
+# Input: { "contentType": <content_type>, "userId": <user_id>, "userType": <user_type>, "commentId": <comment_id>, "newComment": <new_comment_text> }
+@blueprint.route("/editComment", methods=['PUT'])
+def editComment():
+    data = request.json
+    content_type = data.get("contentType")
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+    comment_id = data.get("commentId")
+    new_comment = data.get("newComment")
+
+    if not all([content_type, user_id, user_type, comment_id, new_comment]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name(content_type, "comment")
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Update the comment in the appropriate table
+            cursor.execute(f"""
+                UPDATE "{table_name}"
+                SET "comment" = %s
+                WHERE id = %s AND "userId" = %s AND "userType" = %s
+            """, (new_comment, comment_id, user_id, user_type))
+            conn.commit()
+
+            return jsonify({
+                "message": "Comment edited successfully",
+                "commentId": comment_id,
+                "newComment": new_comment
+            }), 201
+
+    except Exception as e:
+        print("Error occurred while editing comment:", e)
+        return jsonify({"error": "Failed to edit comment"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] Delete a comment
+# Input: { "contentType": <content_type>, "userId": <user_id>, "userType": <user_type>, "commentId": <comment_id> }
+@blueprint.route("/deleteComment", methods=['DELETE'])
+def deleteComment():
+    data = request.json
+    content_type = data.get("contentType")
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+    comment_id = data.get("commentId")
+
+    if not all([content_type, user_id, user_type, comment_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name(content_type, "comment")
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Delete the comment from the appropriate table
+            cursor.execute(f"""
+                DELETE FROM "{table_name}"
+                WHERE id = %s AND "userId" = %s AND "userType" = %s
+            """, (comment_id, user_id, user_type))
+            conn.commit()
+
+            return jsonify({
+                "message": "Comment deleted successfully"
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while deleting comment:", e)
+        return jsonify({"error": "Failed to delete comment"}), 500
+
+    user_id = data.get("userId")
+    user_type = data.get("userType")
+    comment_id = data.get("commentId")
+
+    if not all([content_type, content_id, user_id, user_type, comment_id]):
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name(content_type, "comment")
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Delete the comment from the appropriate table
+            cursor.execute(f"""
+                DELETE FROM "{table_name}"
+                WHERE id = %s AND "userId" = %s AND "userType" = %s
+            """, (comment_id, user_id, user_type))
+            conn.commit()
+
+            return jsonify({
+                "message": "Comment deleted successfully",
+                "commentId": comment_id
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while deleting comment:", e)
+        return jsonify({"error": "Failed to delete comment"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific listings and check if current user likes the listing - first retrieval 
+@blueprint.route("/getListingComments/<user_id>/<user_type>/<content_id>", methods=['GET'])
+def getListingComments(user_id, user_type, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Listing", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+            
+            # Retrieve the unique field
+            unique_field = get_unique_field("Listing")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+
+            # Check if the current user likes the content
+            user_likes = False
+
+            if user_id and user_type:
+                # Get the table name
+                likes_table = get_table_name("Listing", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+                
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT * FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s AND "userId" = %s AND "userType" = %s
+                """, (content_id, user_id, user_type))
+                user_likes = cursor.fetchone() is not None
+            
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
+                "userLiked": user_likes
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific listings - subsequent retrievals
+@blueprint.route("/getMoreListingComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreListingComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Listing", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+            
+            # Retrieve the unique field
+            unique_field = get_unique_field("Listing")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific review and check if current user liked the review - first retrieval
+@blueprint.route("/getReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getReviewComments(user_id, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Review", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("Review")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+    
+            # Check if the current user likes the content
+
+            user_liked = False
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("Review", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_liked = True
+                            break
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
+                "userLiked": user_liked
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for a specific review - subsequent retrievals
+@blueprint.route("/getMoreReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreReviewComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("Review", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("Review")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for producer review and check if current user liked the review - first retrieval
+@blueprint.route("/getProducerReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getProducerReviewComments(user_id, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("pReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("pReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                    LIMIT 30
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+
+            # Check if the current user likes the content
+            user_likes = False
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("pReview", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_likes = True
+                            break
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
+                "userLiked": user_likes
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+    
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for producer review - subsequent retrievals
+@blueprint.route("/getMoreProducerReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreProducerReviewComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("pReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("pReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for venue review and check if current user liked the review - first retrieval
+@blueprint.route("/getVenueReviewComments/<user_id>/<content_id>", methods=['GET'])
+def getVenueReviewComments(user_id, content_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("vReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("vReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id,))
+            comments = cursor.fetchall()
+
+
+            for comment in comments:
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                    LIMIT 30
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+
+            # Check if the current user likes the content
+            user_likes = False
+
+            if user_id:
+                # Get the table name
+                likes_table = get_table_name("vReview", "like")
+
+                if not likes_table:
+                    return jsonify({"error": "No table found"}), 400
+
+                # Check if the user likes the content
+                cursor.execute(f"""
+                    SELECT upvotes FROM "{likes_table}"
+                    WHERE "{unique_field}" = %s
+                """, (content_id,))
+                review_upvotes = cursor.fetchone() 
+
+                # Loop through upvotes to check if user id is present
+                if review_upvotes:
+                    for upvote in review_upvotes['upvotes']:
+                        if upvote['userId'] == user_id:
+                            user_likes = True
+                            break
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None,
+                "userLiked": user_likes
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+    
+
+# -----------------------------------------------------------------------------------------
+# [GET] Retrieve comments for venue review - subsequent retrievals
+@blueprint.route("/getMoreVenueReviewComments/<content_id>/<last_comment_id>", methods=['GET'])
+def getMoreVenueReviewComments(content_id, last_comment_id):
+
+    try:
+        conn = g.db
+        with conn.cursor() as cursor:
+
+            # Retrieve the table name
+            table_name = get_table_name("vReview", "comment")
+
+            if not table_name:
+                return jsonify({"error": "No table found"}), 400
+
+            # Retrieve the unique field
+            unique_field = get_unique_field("vReview")
+
+            if not unique_field:
+                return jsonify({"error": "No unique field found"}), 400
+
+            # Get comments for the specific content
+            cursor.execute(f"""
+                SELECT * FROM "{table_name}"
+                WHERE "{unique_field}" = %s AND id < %s AND "parentId" IS NULL
+                ORDER BY "createdAt" DESC
+                LIMIT 30
+            """, (content_id, last_comment_id))
+            comments = cursor.fetchall()
+
+            for comment in comments:
+                
+                # Retrieve commenter username and photo
+                comment['username'] = get_commenter_info(comment['userId'], comment['userType']).get('username')
+                comment['photo'] = get_commenter_info(comment['userId'], comment['userType']).get('photo')
+
+                # Create a new field 'replies' in the main comment to hold its replies
+                comment['replies'] = []
+
+                # Retrieve replies for each main comment
+                cursor.execute(f"""
+                    SELECT * FROM "{table_name}"
+                    WHERE "parentId" = %s
+                    ORDER BY "createdAt" ASC
+                """, (comment['id'],))
+
+                reply_comments = cursor.fetchall()
+
+                for reply in reply_comments:
+                    # Extract commenter username and photo
+                    reply['username'] = get_commenter_info(reply['userId'], reply['userType']).get('username')
+                    reply['photo'] = get_commenter_info(reply['userId'], reply['userType']).get('photo')
+
+                    # Append reply to the main comment's replies
+                    comment['replies'].append(reply)
+
+            return jsonify({
+                "comments": comments,
+                "lastCommentId": comments[-1]['id'] if comments else None
+            }), 200
+        
+    except Exception as e:
+        print("Error occurred while retrieving comments:", e)
+        return jsonify({"error": "Failed to retrieve comments"}), 500
+
+

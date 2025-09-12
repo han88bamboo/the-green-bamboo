@@ -10,7 +10,7 @@
             <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
-            <h4 class=" mobile-fs-6 mobile-px-4 pb-4">
+            <h4 class=" mobile-fs-6 mobile-px-4 pb-0">
                 Drink-X lets you search, discover, review and share any drink you want.
             </h4>
             
@@ -55,7 +55,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Wine' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('wine', $event)">
-                            Wine
+                            🍷 Wine
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -78,7 +78,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Beer' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('beer', $event)">
-                            Beer
+                            🍺 Beer
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -102,7 +102,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Sake' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('sake', $event)">
-                            Sake
+                            🍶 Sake
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -125,7 +125,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Whisky' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('whisky', $event)">
-                            Whisky
+                            🥃 Whisky
                         </router-link>
                         <div class="mega-menu whisky-menu">
                             <div class="mega-menu-content">
@@ -149,7 +149,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Rum' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('rum', $event)">
-                            Rum
+                            🎋 Rum
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -171,7 +171,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Tequila' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('tequila', $event)">
-                            Tequila
+                            🌵 Tequila
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -193,7 +193,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Gin' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('gin', $event)">
-                            Gin
+                            🍸 Gin
                         </router-link>
                         <div class="mega-menu">
                             <div class="mega-menu-content">
@@ -216,7 +216,7 @@
                         <router-link :to="{ name: 'browse', params: { browseDrinkType: 'Baijiu' } }" 
                                      class="category-link"
                                      @click="toggleMobileCategoryMenu('baijiu', $event)">
-                            Baijiu
+                            🀄️ Baijiu
                         </router-link>
                         <div class="mega-menu baijiu-menu">
                             <div class="mega-menu-content">
@@ -1439,8 +1439,10 @@ export default {
             return text
                 .toString()
                 .toLowerCase()
-                .replace(/\s+/g, '')
-                .replace(/[^\w]/g, '');
+                .normalize('NFD') // Decompose accented characters
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                .replace(/[^\w]/g, ''); // Remove non-word characters
         },
         
         truncateText(text, maxLength = 30) {
@@ -1981,16 +1983,23 @@ button.btn.selected {
 }
 
 @media (max-width: 767px) {
-    .hero-section {
-        padding-top: 80%; /* taller mobile height */
-    }
+  .hero-section {
+    padding-top: 75%; /* taller mobile height */
+  }
 }
 
-@media (min-width: 768px) {
-    .hero-section {
-        padding-top: 20%; /* desktop height stays the same */
-    }
+@media (min-width: 768px) and (max-width: 1024px) {
+  .hero-section {
+    padding-top: 35%; /* iPad / tablet */
+  }
 }
+
+@media (min-width: 1025px) {
+  .hero-section {
+    padding-top: 22%; /* desktop */
+  }
+}
+
 
 .hero-bg {
     position: absolute;
@@ -2604,32 +2613,30 @@ button.btn.selected {
 }
 
 
-.category-ribbon-nav {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0;
-    flex-wrap: wrap;
-}
 
+.category-ribbon-nav {
+  display: flex;
+  flex-wrap: wrap;   /* ✅ allow items to wrap to new rows */
+  width: 100%;
+}
 .category-item {
     position: relative;
     display: flex;
     align-items: center;
+    flex: 1;              /* each item takes equal space */
+    text-align: center;   /* center the label inside */
 }
 
-
-
 .category-link {
-    display: block;
-    padding: 16px 24px;
+     display: block;
+    width: 100%;          /* make link fill the flex cell */
+    padding: 16px 0;      /* vertical padding only */
     color: white;
     text-decoration: none;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 18px;
     transition: all 0.3s ease;
     position: relative;
-    white-space: nowrap;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -2654,7 +2661,8 @@ button.btn.selected {
     border-radius: 8px;
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
+    transform: translateY(-10px); 
+    transform: translateX(-25px) !important;
     transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 10000;
     border-top: 3px solid #027562;
@@ -2749,7 +2757,7 @@ button.btn.selected {
     
     .category-link {
         padding: 12px 16px;
-        font-size: 13px;
+        font-size: 10px;
         white-space: nowrap;
         border-right: none;
         text-align: center;
@@ -2760,7 +2768,8 @@ button.btn.selected {
         position: absolute;
         top: 100%;
         left: 50%;
-        transform: translateX(-50%);
+        /*transform: translateX(-50%);*/
+        transform: translateX(-25%) !important;
         opacity: 0;
         visibility: hidden;
         max-height: none;
@@ -2832,8 +2841,8 @@ button.btn.selected {
     }
     
     .category-link {
-        padding: 12px 16px;
-        font-size: 13px;
+        padding: 12px 12px;
+        font-size: 12px;
     }
     
     .subcategory-link {

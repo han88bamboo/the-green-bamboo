@@ -37,14 +37,14 @@
                 <!-- Event details-->
                 <div v-for="event in events" :key="event.id" class="text-start">
                     <!-- Banner -->
-                    <div class="row rounded" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: event.eventName } })">
+                    <div class="row rounded" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">
                         <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="rounded img-fluid event-banner" alt="Event Banner">
                         <img v-else :src="defaultEventBanner" class="rounded img-fluid event-banner" alt="Event Banner">
                     </div>
 
                     <!-- Event name -->
                     <div class="row">
-                        <p class="m-0 mt-2 hover-underline mobile-rating-smaller-text-2" style="cursor: pointer; " @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: event.eventName } })">{{ event.eventName }}</p>
+                        <p class="m-0 mt-2 hover-underline mobile-rating-smaller-text-2" style="cursor: pointer; " @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">{{ event.eventName }}</p>
                     </div>
 
                     <!-- Event date and time -->
@@ -149,6 +149,18 @@ export default {
         }
     },
     methods: {
+        
+        slugify(text) {
+            if (!text) return ""
+            return text
+                .toString()
+                .toLowerCase()
+                .normalize('NFD') // Decompose accented characters
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                .replace(/[^\w]/g, '') // Remove non-word characters
+        },
+        
         // Function to get all events
         async getEvents() {
             try {

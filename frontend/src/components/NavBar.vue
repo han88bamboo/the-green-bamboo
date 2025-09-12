@@ -305,7 +305,7 @@
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/my-cellar'" class="dropdown-item" style="color:#FF3E31;">My Cellar</router-link>
+                    <router-link :to="cellarURL" class="dropdown-item" style="color:#FF3E31;">My Cellar</router-link>
                   </li>
                 </div>
 
@@ -393,8 +393,8 @@
 
                 <!-- My Cellar -->
                 <li class="drawer-section-title pt-2 text-start">
-                  <router-link to="/my-cellar" style="color: black; text-decoration: none;">
-                    My Cellar <span class="badge bg-danger ms-1">SOON</span>
+                  <router-link :to="cellarURL" style="color: black; text-decoration: none;">
+                    My Cellar<span class="badge bg-danger ms-1" style="background-color: #E63946;">NEW!</span>
                   </router-link>
                 </li>
 
@@ -588,9 +588,9 @@
           </button>
         </router-link>
 
-        <router-link :to="'/my-cellar'">
-          <button class="btn primary-btn border-0 fw-bold cellar-link" type="button" style="color:#FF3E31;">
-            My Cellar
+        <router-link :to="cellarURL">
+          <button class="btn primary-btn border-0 fw-bold">
+            My Cellar<span class="badge bg-danger ms-1">NEW!</span>
           </button>
         </router-link>
       </div>
@@ -883,6 +883,25 @@
       } else {
         return this.defaultProfilePhoto;
       }
+    },
+    cellarURL() {
+      // If user is not logged in, redirect to login
+      if (this.accType === "" || !this.userID) {
+        return "/login";
+      }
+
+      const accUsername = localStorage.getItem("88B_accUsername");
+      
+      if (this.accType === "producer") {
+        return `/my-cellar/producer/${this.userID}/${accUsername}`;
+      } else if (this.accType === "venue") {
+        return `/my-cellar/venue/${this.userID}/${accUsername}`;
+      } else if (this.accType === "user") {
+        return `/my-cellar/user/${this.userID}/${accUsername}`;
+      }
+      
+      // Fallback to login if account type is unknown
+      return "/login";
     }
       },
 
@@ -1462,7 +1481,7 @@
         background: linear-gradient(
           90deg,
           #E63946 0%,
-          #ffb3b3 50%,
+          #0d6efd 50%,
           #E63946 100%
         );
         background-size: 200% 100%;
