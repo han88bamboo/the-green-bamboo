@@ -1035,11 +1035,24 @@
                         <div class="input-group">
                           <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
                             <option value="USD">USD</option>
+                            <option value="AUD">AUD</option>
+                            <option value="CAD">CAD</option>
+                            <option value="CHF">CHF</option>
+                            <option value="CNY">CNY</option>
                             <option value="EUR">EUR</option>
                             <option value="GBP">GBP</option>
+                            <option value="HKD">HKD</option>
+                            <option value="IDR">IDR</option>
+                            <option value="INR">INR</option>
                             <option value="JPY">JPY</option>
-                            <option value="CAD">CAD</option>
-                            <option value="AUD">AUD</option>
+                            <option value="KRW">KRW</option>
+                            <option value="MXN">MXN</option>
+                            <option value="MYR">MYR</option>
+                            <option value="NZD">NZD</option>
+                            <option value="SGD">SGD</option>
+                            <option value="THB">THB</option>
+                            <option value="TWD">TWD</option>
+                            <option value="VND">VND</option>
                           </select>
                           <input 
                             type="number" 
@@ -1171,10 +1184,24 @@
                             <div class="input-group">
                               <select class="form-select" v-model="cellarForm.currentValueCurrency" style="max-width: 80px;">
                                 <option value="USD">USD</option>
+                                <option value="AUD">AUD</option>
+                                <option value="CAD">CAD</option>
+                                <option value="CHF">CHF</option>
+                                <option value="CNY">CNY</option>
                                 <option value="EUR">EUR</option>
                                 <option value="GBP">GBP</option>
-                                <option value="CAD">CAD</option>
-                                <option value="AUD">AUD</option>
+                                <option value="HKD">HKD</option>
+                                <option value="IDR">IDR</option>
+                                <option value="INR">INR</option>
+                                <option value="JPY">JPY</option>
+                                <option value="KRW">KRW</option>
+                                <option value="MXN">MXN</option>
+                                <option value="MYR">MYR</option>
+                                <option value="NZD">NZD</option>
+                                <option value="SGD">SGD</option>
+                                <option value="THB">THB</option>
+                                <option value="TWD">TWD</option>
+                                <option value="VND">VND</option>
                               </select>
                               <input 
                                 type="number" 
@@ -1404,11 +1431,24 @@
                             <div class="input-group">
                               <select class="form-select" v-model="cellarForm.purchaseCurrency" style="max-width: 80px;">
                                 <option value="USD">USD</option>
+                                <option value="AUD">AUD</option>
+                                <option value="CAD">CAD</option>
+                                <option value="CHF">CHF</option>
+                                <option value="CNY">CNY</option>
                                 <option value="EUR">EUR</option>
                                 <option value="GBP">GBP</option>
+                                <option value="HKD">HKD</option>
+                                <option value="IDR">IDR</option>
+                                <option value="INR">INR</option>
                                 <option value="JPY">JPY</option>
-                                <option value="CAD">CAD</option>
-                                <option value="AUD">AUD</option>
+                                <option value="KRW">KRW</option>
+                                <option value="MXN">MXN</option>
+                                <option value="MYR">MYR</option>
+                                <option value="NZD">NZD</option>
+                                <option value="SGD">SGD</option>
+                                <option value="THB">THB</option>
+                                <option value="TWD">TWD</option>
+                                <option value="VND">VND</option>
                               </select>
                               <input 
                                 type="number" 
