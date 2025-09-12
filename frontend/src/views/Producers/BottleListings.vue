@@ -828,15 +828,37 @@
 
 
         <!-- popular flavorTag -->
-        <div class="row pt-3 mobile-pt-2 container">
-          <div class="text-start mb-2 mobile-mb-0 text-color-black">
-            <!-- flavor tag -->
-            <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
-              :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
-            <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
-              <u> Most Popular Flavour Tags </u>
-            </p>
+        <div class="row pt-3 mobile-pt-2 container pe-4 g-0 align-items-center">
+          <!-- flavor tags -->
+          <div class="col-8 mobile-col-12">
+            <div class="text-start mb-2 mobile-mb-0 text-color-black">
+              <!-- flavor tag -->
+              <span v-for="(count, tag) in sorted_flavorTagCounts" :key="tag" class="badge rounded-pill me-2"
+                :style="{ backgroundColor: '#' + tag.split('#')[1] }">{{ tag.split("#")[0] }}</span>
+              <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
+                <u> Most Popular Flavour Tags </u>
+              </p>
+            </div>
           </div>
+
+          <!-- ADD TO CELLAR BUTTON -->
+          <div class="col-4 d-flex align-items-center mobile-view-hide me-0 mb-auto">
+            <!-- Logged-in users -->
+            <div v-if="userType === 'user' && userID !== 'defaultUser'">
+              <button class="btn btn-lg" data-bs-toggle="modal" data-bs-target="#cellarModal" 
+                style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff; font-weight: bold;">
+                Add To Your Cellar
+              </button>
+            </div>
+            <!-- Logged-out users -->
+            <div v-else>
+              <button class="btn btn-lg" @click="$router.push('/login')"
+                style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff; font-weight: bold;">
+                Add To Your Cellar
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <!-- popular observationTag -->
@@ -849,6 +871,34 @@
             <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
               <u> Most Popular Action Tags </u>
             </p>
+          </div>
+        </div>
+
+        <!-- Add To Cellar Modal -->
+        <div v-if="userID != 'defaultUser'" class="modal fade" id="cellarModal" tabindex="-1"
+          aria-labelledby="cellarModalLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                <h5 class="modal-title" id="cellarModalLabel" style="color: white; font-weight: bold">
+                  Add To Your Cellar
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Modal content will be implemented later -->
+                <p>Cellar functionality coming soon...</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <button type="button" class="btn" 
+                  style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff;">
+                  Add to Cellar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
