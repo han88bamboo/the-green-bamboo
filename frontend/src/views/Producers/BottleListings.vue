@@ -6432,7 +6432,7 @@ export default {
 
     async loadCellarCollections() {
       try {
-        const response = await this.$axios.get(`${this.getApiBaseUrl()}/editCellar/collections`);
+        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/editCellar/collections`);
         if (response.status === 200 && response.data.code === 200) {
           this.cellarCollections = response.data.data || [];
         }
@@ -6501,7 +6501,7 @@ export default {
         console.log('Number of fields in payload:', Object.keys(cellarData).length);
 
         // Call the actual API endpoint
-        const baseUrl = this.getApiBaseUrl();
+        const baseUrl = process.env.VUE_APP_API_URL;
         const fullUrl = `${baseUrl}/editCellar/addToCellar`;
         console.log('Making API call to:', fullUrl);
         
@@ -6522,11 +6522,10 @@ export default {
           console.log('Resetting form...');
           this.resetCellarForm();
           
-          // Close modal
-          const modal = document.getElementById('cellarModal');
-          const modalInstance = this.$bsModal.getInstance(modal);
-          if (modalInstance) {
-            modalInstance.hide();
+          // Close modal by triggering the close button click
+          const closeButton = document.querySelector('#cellarModal .btn-close');
+          if (closeButton) {
+            closeButton.click();
           }
           
           // Show success message
@@ -6570,6 +6569,12 @@ export default {
         this.addingToCellar = false;
         console.log('Frontend process completed');
       }
+    },
+
+    // Handle image loading errors
+    onImageError(event) {
+      console.log('Image failed to load, using default photo');
+      event.target.src = this.defaultPhoto;
     },
 
     
