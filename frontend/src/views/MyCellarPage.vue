@@ -32,8 +32,8 @@
                       type="button"
                     >
                       My Cellar (All Drinks)
-                      <span class="item-count" v-if="!loading">{{ totalItemCount }} Items</span>
-                      <span class="item-count" v-else>...</span>
+                      <span class="item-count" v-if="!loading && activeTab === 'all'">{{ totalItemCount }} Items</span>
+                      <span class="item-count" v-else-if="loading && activeTab === 'all'">...</span>
                     </button>
                   </li>
                   <!-- Dynamic Collection Tabs -->
