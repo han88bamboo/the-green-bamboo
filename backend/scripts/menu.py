@@ -250,3 +250,183 @@ def updateMenu():
         }), 500
     finally:
         cur.close()
+
+# [GET] Specific Venue
+@blueprint.route("/getMenuItems/<section_id>")
+def getMenuItems(section_id):
+    """Optimized version with performance improvements and better error handling"""
+    
+    # Input validation
+    if not section_id:
+        return jsonify({"code": 400, "message": "Menu category is mandatory."}), 400
+    
+    # Parse and validate query parameters
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+        # limit = min(100, max(1, int(request.args.get("limit", 20))))  # Cap at 100
+        limit = 1000  # Remove pagination - load all items
+        search = request.args.get("search", "").strip()
+    except ValueError:
+        return jsonify({"code": 400, "message": "Invalid pagination parameters"}), 400
+    
+    offset = 0  # (page - 1) * limit
+    
+    conn = g.db
+    cur = conn.cursor()
+    
+    try:
+        # Build WHERE conditions (use proper parameterization)
+        where_conditions = ['"sectionId" = %s']
+        params = [section_id]
+        
+        if search:
+            # Search across multiple fields for better UX
+            where_conditions.append('(LOWER(mi."variant") LIKE %s OR LOWER(mi."itemID") LIKE %s)')
+            search_param = f"%{search.lower()}%"
+            params.extend([search_param, search_param])
+        
+        where_clause = " AND ".join(where_conditions)
+        
+        sql = f"""
+        WITH flavor_tag_counts AS (
+            SELECT 
+                r."reviewTarget",
+                st.id AS subTagId,
+                st."subTag",
+                st."familyTagId",
+                COUNT(*) AS tag_count
+            FROM "reviews" r
+            CROSS JOIN UNNEST(r."flavourTag") AS flavour_tag_id
+            INNER JOIN "subTags" st ON st.id = flavour_tag_id::integer
+            WHERE r."reviewTarget" IS NOT NULL 
+            AND r."flavourTag" IS NOT NULL 
+            AND array_length(r."flavourTag", 1) > 0
+            GROUP BY r."reviewTarget", st.id, st."subTag", st."familyTagId"
+        ),
+        ranked_flavours AS (
+            SELECT 
+                "reviewTarget",
+                "subTag",
+                "familyTagId",
+                tag_count,
+                ROW_NUMBER() OVER (
+                    PARTITION BY "reviewTarget" 
+                    ORDER BY tag_count DESC
+                ) AS rn
+            FROM flavor_tag_counts
+        ),  
+        top_flavours AS (
+            SELECT 
+                "reviewTarget",
+                JSON_AGG(
+                    JSON_BUILD_OBJECT(
+                        'tag', rf."subTag",
+                        'count', rf.tag_count,
+                        'hexcode', ft.hexcode,
+                        'tagId', rf."familyTagId"  -- or keep both subTagId + familyTagId if needed
+                    ) ORDER BY rf.tag_count DESC
+                ) AS top_tags
+            FROM ranked_flavours rf
+            INNER JOIN "flavourTags" ft ON ft.id = rf."familyTagId"
+            WHERE rf.rn <= 3
+            GROUP BY "reviewTarget"
+        )
+        SELECT 
+            mi."id", mi."sectionId", mi."itemID", mi."itemOrder", 
+            lst."listingName", lst."photo", lst."bottler", lst."drinkType", lst."abv", 
+            lst."officialDesc", lst."originCountry", lst."typeCategory", lst."producerID",
+            p."producerName",
+            mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
+            srvTyp."servingType", mi."variant",
+            (SELECT AVG(r."rating") 
+            FROM "reviews" r 
+            WHERE r."reviewTarget" = lst."id") as "avgRating",
+            COALESCE(tft.top_tags, '[]'::json) as "topFlavorTags", -- Top 3 flavor tags with hex codes
+            COUNT(*) OVER() as total_count
+        FROM "menuItems" mi
+        INNER JOIN "listings" lst
+            ON mi."itemID" = lst."id"
+        INNER JOIN "producers" p
+            ON lst."producerID" = p."id"
+        LEFT JOIN "servingTypes" srvTyp
+            ON mi."itemServingType" = srvTyp."id"
+        LEFT JOIN top_flavours tft
+            ON lst."id" = tft."reviewTarget"
+        WHERE {where_clause}
+        ORDER BY mi."itemOrder" ASC; -- , mi."id" ASC for tie-breaker
+        """
+        
+        print(f"DEBUG: section_id = {section_id}, params = {params}")
+        print(f"DEBUG: SQL = {sql}")
+        cur.execute(sql, params)  # + [limit, offset]
+        rows = cur.fetchall()
+        print(f"DEBUG: Found {len(rows)} rows")
+        
+        if not rows:
+            total_items = 0
+            menu_items = []
+        else:
+            # Get total count from the window function (access by key since using RealDictRow)
+            # "description": row['officialDesc'],
+            total_items = rows[0]['total_count']
+            menu_items = [
+                {
+                    "id": row['id'],
+                    "sectionId": row['sectionId'], 
+                    "itemID": row['itemID'],
+                    "itemOrder": row['itemOrder'],
+                    "name": row['listingName'],
+                    "photo": row['photo'],
+                    "bottler": row['bottler'], 
+                    "drinkType": row['drinkType'],
+                    "abv": row['abv'],
+                    "description": row['officialDesc'],
+                    "originCountry": row['originCountry'],
+                    "typeCategory": row['typeCategory'],
+                    "producerID": row['producerID'],
+                    "producerName": row['producerName'],
+                    "avgRating": "-" if row['avgRating'] is None else round(float(row['avgRating']), 1),
+                    "itemAvailability": row['itemAvailability'],
+                    "variant": row['variant'],
+                    "servingType": row['itemServingType'],
+                    "servingTypeText": row['servingType'],
+                    "itemPrice": float(row['itemPrice']) if row['itemPrice'] is not None else None,
+                    "topFlavorTags": row['topFlavorTags']
+                }
+                for row in rows
+            ]
+        
+        # Calculate pagination info
+        total_pages = (total_items + limit - 1) // limit
+        has_next = page < total_pages
+        has_prev = page > 1
+        
+        return jsonify({
+            "code": 200,
+            "data": menu_items,
+            "pagination": {
+                "page": page,
+                "limit": limit,
+                "total_items": total_items,
+                "total_pages": total_pages,
+                "has_next": has_next,
+                "has_prev": has_prev
+            }
+        }), 200
+        
+    except Exception as e:
+        # # Log the actual error for debugging
+        # import logging
+        # logging.error(f"Database error in get_menu_items: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return generic error to client
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving menu items." + str(e)
+        }), 500
+        
+    finally:
+        if cur:
+            cur.close()
