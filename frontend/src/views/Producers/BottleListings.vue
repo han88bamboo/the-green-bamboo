@@ -216,9 +216,9 @@
                     <h3 class="text-body-secondary mb-0 mobile-view-hide">
                       <b> {{ specified_listing["listingName"] }} </b>
                     </h3>
-                    <h4 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1">
+                    <h5 class="text-body-secondary mb-0 mobile-view-show col-10 pe-1">
                       <b> {{ specified_listing["listingName"] }} </b>
-                    </h4>
+                    </h5>
                   </div>
                   <div class="row pt-1">
                     <!-- producer -->
@@ -231,16 +231,33 @@
                             '/' +
                             getProducerName(this.producer_id),
                         }" class="default-text-no-background">
-                          <p class="mobile-mb-0">
+                          <span class="mobile-mb-0">
                             {{
                               getProducerName(specified_listing["producerID"])
                             }}
-                          </p>
+                          </span>
                         </router-link>
+                        <span class="mobile-view-show"> | </span>
+                      <span v-if="
+                          specified_listing['bottler'] == 'OB' ||
+                          !specified_listing['bottlerID']
+                        " class="text-body-secondary producer-page mobile-view-show">
+                          Bottler: <u>OB</u>
+                      </span>
+                        <span v-else class="text-body-secondary producer-page mobile-view-show">
+                          Bottler:
+                          <router-link
+                            :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
+                            class="default-text-no-background">
+                            <u style="color: black">
+                              {{ getBottlerName(specified_listing["bottlerID"]) }}
+                            </u>
+                          </router-link>
+                        </span>
                       </h6>
                     </div>
                     <!-- bottler -->
-                    <div class="col-12 col-lg-6">
+                    <div class="col-12 col-lg-6 mobile-view-hide">
                       <h6 v-if="
                         specified_listing['bottler'] == 'OB' ||
                         !specified_listing['bottlerID']
@@ -259,6 +276,28 @@
                       </h6>
                     </div>
                   </div>
+
+                  <!-- Blue Add To Cellar Button (mobile only) -->
+                  <div class="col-12 d-flex align-items-center gap-1 mobile-view-show ">
+                    <!-- Blue Add To Cellar Button -->
+                    <template v-if="userType == 'user'">
+                      <!-- Logged-In User -->
+                      <button class="btn text-white fw-semibold fs-7" data-bs-toggle="modal"
+                        data-bs-target="#cellarModal"
+                        style="border-radius: 0; background: linear-gradient(135deg, #007bff, #0056b3);">
+                        Add To Your Cellar
+                      </button>
+                    </template>
+
+                    <!-- Blue Add To Cellar Button When User Is Logged Out -->
+                    <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
+                      <button class="btn text-white fw-semibold px-2"
+                        style="border-radius: 0; height: 38px; background: linear-gradient(135deg, #007bff, #0056b3);">
+                        Add To Your Cellar
+                      </button>
+                    </router-link>
+                  </div>
+
                 </div>
                 <!-- tzh edited classes suggest edit & report duplicate padding-top-for-suggesteditslink-large-screen-->
                 <div
@@ -298,7 +337,7 @@
                 </div>
               </div>
 
-              <!-- The Modal xyz-->
+              <!-- The Modal -->
 
               <div class="modal fade" id="whereToBuyModal" tabindex="-1" aria-labelledby="whereToBuyModalLabel"
                 aria-hidden="true">
@@ -681,7 +720,6 @@
 
         <!-- more information (average rating, would recommend, would drink again) -->
         <div class="row pt-3 container pe-4 g-0 align-items-center">
-          <!-- xyz -->
           <div class="col-8 mobile-col-12">
             <div class="row gx-2">
               <!-- average rating -->
@@ -942,7 +980,7 @@
                 </button>
               </div>
             </div>
-            <!-- tzh xyz -->
+            <!-- tzh  -->
             <div v-if="addingReview" class="modal-content">
               <!-- change modal header colour -->
               <div class="modal-header" style="background-color: #f0b358">
