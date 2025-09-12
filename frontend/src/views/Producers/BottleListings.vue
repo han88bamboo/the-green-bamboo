@@ -3899,6 +3899,28 @@ export default {
       // All drink types use 'ml' as default
       console.log('defaultVolumeUnit: returning ml');
       return 'ml';
+    },
+
+    // Default format based on drink type (matches MyCellarPage logic)
+    defaultFormat() {
+      if (!this.specified_listing || !this.specified_listing.drinkType) {
+        console.log('defaultFormat: No listing or drinkType, returning Bottle');
+        return 'Bottle'; // Default fallback
+      }
+      
+      const drinkType = this.specified_listing.drinkType.toLowerCase();
+      console.log('defaultFormat: drinkType =', drinkType);
+      
+      let format;
+      if (drinkType === 'beer') {
+        format = 'Can';
+      } else {
+        // For Wine, Sake, and any other drinkType
+        format = 'Bottle';
+      }
+      
+      console.log('defaultFormat: returning', format);
+      return format;
     }
 
   },
@@ -6481,13 +6503,16 @@ export default {
       // Set default volume based on drink type
       const defaultVolume = this.defaultVolumeNumber;
       const defaultUnit = this.defaultVolumeUnit;
+      const defaultFormat = this.defaultFormat;
       
       console.log('Setting default volume:', defaultVolume, defaultUnit);
+      console.log('Setting default format:', defaultFormat);
       console.log('Drink type:', this.specified_listing?.drinkType);
       
       // Apply defaults
       this.cellarForm.volumeNumber = defaultVolume;
       this.cellarForm.volumeUnit = defaultUnit;
+      this.cellarForm.format = defaultFormat;
       
       // Set default collection if available
       if (this.cellarCollections && this.cellarCollections.length > 0) {
@@ -6509,6 +6534,7 @@ export default {
       console.log('Final form state:', {
         volumeNumber: this.cellarForm.volumeNumber,
         volumeUnit: this.cellarForm.volumeUnit,
+        format: this.cellarForm.format,
         selectedCollectionId: this.cellarForm.selectedCollectionId,
         drinkType: this.specified_listing?.drinkType,
         collectionsCount: this.cellarCollections?.length || 0
