@@ -1298,16 +1298,37 @@
                           <div class="col-md-12">
                             <label class="form-label text-start">Place of Purchase</label>
                             <div class="purchase-location-container" style="position: relative;">
+                              <!-- Google Maps Autocomplete Input -->
                               <div class="input-group">
-                                <input 
-                                  type="text"
-                                  class="form-control" 
-                                  v-model="cellarForm.purchaseLocationInputValue"
+                                <GMapAutocomplete 
                                   placeholder="e.g., Wine shop, Online store, or enter manually"
+                                  @place_changed="setPurchasePlaceFromAutocomplete" 
+                                  @input="onPurchaseLocationInput"
+                                  @focus="onPurchaseLocationFocus" 
+                                  @blur="onPurchaseLocationBlur"
+                                  class="form-control" 
+                                  ref="purchaseLocationInput" 
+                                  :value="cellarForm.purchaseLocationInputValue"
+                                  :options="{ types: ['establishment'] }"
                                 />
-                                <span class="input-group-text">
-                                  <i class="bi bi-geo-alt"></i>
+                                <span class="input-group-text" :title="cellarForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                                  <i class="bi bi-geo-alt" :class="{ 'text-success': cellarForm.selectedPurchasePlace }"></i>
                                 </span>
+                              </div>
+                              
+                              <!-- Location confirmation display -->
+                              <div v-if="cellarForm.selectedPurchasePlace && cellarForm.selectedPurchaseAddress" 
+                                   class="alert alert-success mt-2 mb-0 small">
+                                📍 Selected: {{ cellarForm.selectedPurchasePlace }}
+                                <br>
+                                <small class="text-muted">{{ cellarForm.selectedPurchaseAddress }}</small>
+                                <button 
+                                  type="button" 
+                                  class="btn btn-sm btn-outline-danger ms-2"
+                                  @click="clearSelectedPurchaseLocation"
+                                >
+                                  Clear
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -3796,6 +3817,9 @@ export default {
         // Purchase location data
         purchaseLocationInputValue: '', // Input field value
         purchasePlaceName: '', // Store for backend
+        selectedPurchasePlace: '', // Name from Google Maps 
+        selectedPurchaseAddress: '', // Address from Google Maps
+        selectedPurchaseVenueId: null, // Optional venue ID if applicable
         
         purchaseDate: null,
         deliveryDate: null,
@@ -6662,6 +6686,9 @@ export default {
         // Purchase location data
         purchaseLocationInputValue: '',
         purchasePlaceName: '',
+        selectedPurchasePlace: '',
+        selectedPurchaseAddress: '',
+        selectedPurchaseVenueId: null,
         
         purchaseDate: null,
         deliveryDate: null,
@@ -6859,6 +6886,102 @@ export default {
       dropdown.style.zIndex = '1050'
     },
 
+    // Purchase location Google Maps methods
+    setPurchasePlaceFromAutocomplete(place) {
+      console.log('setPurchasePlaceFromAutocomplete called with place:', place);
+      
+      if (place && place.geometry) {
+        this.cellarForm.selectedPurchasePlace = place.name || place.formatted_address;
+        this.cellarForm.selectedPurchaseAddress = place.formatted_address;
+        this.cellarForm.purchaseLocationInputValue = this.cellarForm.selectedPurchasePlace;
+        
+        // Set purchasePlaceName for backend compatibility
+        this.cellarForm.purchasePlaceName = this.cellarForm.selectedPurchasePlace;
+        
+        // Check if this is a known venue (optional - for future use)
+        this.cellarForm.selectedPurchaseVenueId = this.checkVenueIfExists(place);
+        
+        console.log('Purchase location selected:', {
+          place: this.cellarForm.selectedPurchasePlace,
+          address: this.cellarForm.selectedPurchaseAddress,
+          venueId: this.cellarForm.selectedPurchaseVenueId
+        });
+      }
+    },
+
+    onPurchaseLocationInput(event) {
+      // Handle both string values and event objects
+      const inputValue = typeof event === 'string' ? event : event.target.value;
+      this.cellarForm.purchaseLocationInputValue = inputValue;
+      
+      // If user is typing manually (not from autocomplete), clear the selection
+      if (inputValue !== this.cellarForm.selectedPurchasePlace) {
+        this.cellarForm.selectedPurchasePlace = '';
+        this.cellarForm.selectedPurchaseAddress = '';
+        this.cellarForm.selectedPurchaseVenueId = null;
+        
+        // Set manual entry as purchasePlaceName (only if inputValue is not empty)
+        this.cellarForm.purchasePlaceName = inputValue ? inputValue.trim() : '';
+      }
+    },
+
+    onPurchaseLocationFocus() {
+      console.log('Purchase location input focused');
+      
+      // Add custom class to Google Maps dropdown when it appears
+      this.$nextTick(() => {
+        const attemptToStylePacContainer = (attempt = 1, maxAttempts = 10) => {
+          setTimeout(() => {
+            const pacContainer = document.querySelector('.pac-container');
+            if (pacContainer) {
+              pacContainer.classList.add('cellar-pac-container');
+              pacContainer.setAttribute('data-input-source', 'purchase-location');
+              console.log('Successfully styled pac-container on attempt', attempt);
+            } else if (attempt < maxAttempts) {
+              console.log('pac-container not found, retrying attempt', attempt + 1);
+              attemptToStylePacContainer(attempt + 1, maxAttempts);
+            } else {
+              console.log('pac-container not found after', maxAttempts, 'attempts');
+            }
+          }, attempt === 1 ? 100 : 200);
+        };
+        
+        attemptToStylePacContainer();
+      });
+    },
+
+    onPurchaseLocationBlur() {
+      // Remove custom class when input loses focus
+      const pacContainer = document.querySelector('.pac-container');
+      if (pacContainer) {
+        pacContainer.classList.remove('cellar-pac-container');
+        pacContainer.removeAttribute('data-input-source');
+      }
+      
+      // Ensure manual entry is captured
+      if (this.cellarForm.purchaseLocationInputValue && !this.cellarForm.selectedPurchasePlace) {
+        this.cellarForm.purchasePlaceName = this.cellarForm.purchaseLocationInputValue.trim();
+        console.log('Manual purchase location entry captured:', this.cellarForm.purchasePlaceName);
+      }
+    },
+
+    clearSelectedPurchaseLocation() {
+      this.cellarForm.selectedPurchasePlace = '';
+      this.cellarForm.selectedPurchaseAddress = '';
+      this.cellarForm.selectedPurchaseVenueId = null;
+      this.cellarForm.purchaseLocationInputValue = '';
+      this.cellarForm.purchasePlaceName = '';
+      
+      console.log('Purchase location cleared');
+    },
+
+    checkVenueIfExists(_place) {
+      // This would check against a venues database in the future
+      // For now, return null since venue ID is optional
+      console.log('checkVenueIfExists called with place:', _place?.name || 'unknown');
+      return null;
+    },
+
     async addDrinkToCellar() {
       console.log('Starting addDrinkToCellar process for BottleListings');
       console.log('Form validation check - canAddToCellar:', this.canAddToCellar);
@@ -6902,7 +7025,9 @@ export default {
           ...(this.cellarForm.subLocation && this.cellarForm.subLocation.trim() && { subLocation: this.cellarForm.subLocation.trim() }),
           
           // Purchase data
-          ...(this.cellarForm.purchaseLocationInputValue && this.cellarForm.purchaseLocationInputValue.trim() && { purchasePlaceName: this.cellarForm.purchaseLocationInputValue.trim() }),
+          ...(this.cellarForm.purchasePlaceName && this.cellarForm.purchasePlaceName.trim() && { purchasePlaceName: this.cellarForm.purchasePlaceName.trim() }),
+          ...(this.cellarForm.selectedPurchaseAddress && this.cellarForm.selectedPurchaseAddress.trim() && { purchaseAddress: this.cellarForm.selectedPurchaseAddress.trim() }),
+          ...(this.cellarForm.selectedPurchaseVenueId && { purchaseVenueId: parseInt(this.cellarForm.selectedPurchaseVenueId) }),
           ...(this.cellarForm.purchaseDate && { purchaseDate: this.cellarForm.purchaseDate }),
           ...(this.cellarForm.deliveryDate && { deliveryDate: this.cellarForm.deliveryDate }),
           ...(this.cellarForm.purchasePrice && { purchasePrice: parseFloat(this.cellarForm.purchasePrice) }),
