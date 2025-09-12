@@ -1047,6 +1047,8 @@
                       <!-- Collection Selection -->
                       <div class="form-group mb-3">
                         <label class="form-label text-start">Select Collection</label>
+                        <!-- Debug info -->
+                        <small class="text-info d-block mb-1">Debug: Collections count = {{ cellarCollections?.length || 0 }}</small>
                         <select 
                           class="form-select"
                           v-model="cellarForm.selectedCollectionId"
@@ -1057,6 +1059,13 @@
                           </option>
                         </select>
                         <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                        <!-- More debug info -->
+                        <div v-if="cellarCollections?.length > 0" class="small text-success mt-1">
+                          ✓ Collections loaded: {{ cellarCollections.map(c => c.collectionName).join(', ') }}
+                        </div>
+                        <div v-else class="small text-warning mt-1">
+                          ⚠ No collections loaded yet
+                        </div>
                       </div>
 
                       <!-- Show More Fields Button -->
@@ -1396,6 +1405,8 @@
                         <div class="row g-3 mb-3">
                           <div class="col-md-12">
                             <label class="form-label text-start">Select Collection</label>
+                            <!-- Debug info -->
+                            <small class="text-info d-block mb-1">Debug: Collections count = {{ cellarCollections?.length || 0 }}</small>
                             <select 
                               class="form-select"
                               v-model="cellarForm.selectedCollectionId"
@@ -1406,6 +1417,13 @@
                               </option>
                             </select>
                             <small class="text-muted">If no collection is selected, bottles will be added to your General Collection.</small>
+                            <!-- More debug info -->
+                            <div v-if="cellarCollections?.length > 0" class="small text-success mt-1">
+                              ✓ Collections loaded: {{ cellarCollections.map(c => c.collectionName).join(', ') }}
+                            </div>
+                            <div v-else class="small text-warning mt-1">
+                              ⚠ No collections loaded yet
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -6542,6 +6560,11 @@ export default {
       console.log('=== END INITIALIZATION ===');
     },
 
+    // Utility method to get the correct API base URL (matches MyCellarPage pattern)
+    getApiBaseUrl() {
+      return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
+    },
+
     // Cellar-related methods
     toggleCellarFormExpansion() {
       this.showExpandedCellarForm = !this.showExpandedCellarForm;
@@ -6587,17 +6610,42 @@ export default {
 
     async loadCellarCollections() {
       try {
-        console.log('Loading cellar collections...');
+        console.log('🔄 Loading cellar collections...');
+        
+        // Use the same pattern as MyCellarPage for API calls
         const baseUrl = this.getApiBaseUrl();
-        const response = await this.$axios.get(`${baseUrl}/editCellar/collections`);
-        console.log('Collections response:', response.data);
+        const endpoint = `${baseUrl}/getData/getCellarData/user/${this.userID}`;
+        console.log('📡 API endpoint:', endpoint);
+        
+        const response = await this.$axios.get(endpoint);
+        console.log('📥 Collections API response:', response);
+        console.log('📊 Response status:', response.status);
+        console.log('📊 Response data:', response.data);
         
         if (response.status === 200 && response.data.code === 200) {
-          this.cellarCollections = response.data.data || [];
-          console.log('Loaded collections:', this.cellarCollections);
+          // Extract collections from the cellar data response (same pattern as MyCellarPage)
+          this.cellarCollections = response.data.data?.collections || response.data.collections || [];
+          console.log('✅ Collections loaded successfully:', this.cellarCollections);
+          console.log('📈 Number of collections:', this.cellarCollections.length);
+          
+          if (this.cellarCollections.length > 0) {
+            console.log('📝 Collection details:');
+            this.cellarCollections.forEach((collection, index) => {
+              console.log(`  ${index + 1}. ${collection.collectionName} (ID: ${collection.id}, Default: ${collection.isDefault})`);
+            });
+          } else {
+            console.warn('⚠️ No collections found in response data');
+          }
+        } else {
+          console.error('❌ Unexpected response status or code:', response.status, response.data.code);
+          this.cellarCollections = [];
         }
       } catch (error) {
-        console.error('Error loading cellar collections:', error);
+        console.error('💥 Error loading cellar collections:', error);
+        if (error.response) {
+          console.error('📄 Error response:', error.response.data);
+          console.error('🔢 Error status:', error.response.status);
+        }
         this.cellarCollections = [];
       }
     },
@@ -6661,7 +6709,7 @@ export default {
         console.log('Number of fields in payload:', Object.keys(cellarData).length);
 
         // Call the actual API endpoint
-        const baseUrl = process.env.VUE_APP_API_URL;
+        const baseUrl = this.getApiBaseUrl();
         const fullUrl = `${baseUrl}/editCellar/addToCellar`;
         console.log('Making API call to:', fullUrl);
         
