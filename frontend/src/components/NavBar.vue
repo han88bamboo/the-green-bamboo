@@ -1481,7 +1481,7 @@
         background: linear-gradient(
           90deg,
           #E63946 0%,
-          #ffb3b3 50%,
+          #0d6efd 50%,
           #E63946 100%
         );
         background-size: 200% 100%;
