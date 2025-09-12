@@ -6382,11 +6382,12 @@ def getCellarDashboard(ownerType, ownerID):
             })
         
         # Generate top 5 lists for dashboard insights
-        def get_top_5_breakdown(breakdown_dict, sort_by='count'):
+        def get_top_5_breakdown(breakdown_dict, sort_by='count', include_unknown=False):
             """Get top 5 items from a breakdown dictionary, sorted by count or value"""
             items = []
             for key, data in breakdown_dict.items():
-                if key != 'Unknown':  # Prioritize known categories
+                # Include unknown categories for producers to help debug
+                if include_unknown or key not in ['Unknown', 'Unknown Producer']:
                     items.append({
                         'name': key,
                         'count': data['count'],
@@ -6402,7 +6403,7 @@ def getCellarDashboard(ownerType, ownerID):
         # Generate top 5 summaries
         top_5_drink_types = get_top_5_breakdown(breakdown_by_drink_type)
         top_5_countries = get_top_5_breakdown(breakdown_by_country)
-        top_5_producers = get_top_5_breakdown(breakdown_by_producer)
+        top_5_producers = get_top_5_breakdown(breakdown_by_producer)  # Back to normal filtering
         top_5_collections = get_top_5_breakdown(breakdown_by_collection)
         top_5_categories = get_top_5_breakdown(breakdown_by_category)
         top_5_purchase_locations = get_top_5_breakdown(breakdown_by_purchase_address)
