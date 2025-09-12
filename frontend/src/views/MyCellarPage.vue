@@ -263,7 +263,7 @@
                           <div class="col-12">
                             <div class="row">
                               <!-- Top Drink Types -->
-                              <div class="col-md-4 mb-4">
+                              <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
                                   <div class="card-header">
                                     <h6 class="mb-0">Top Drink Types</h6>
@@ -281,7 +281,7 @@
                               </div>
                               
                               <!-- Top Categories -->
-                              <div class="col-md-4 mb-4">
+                              <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
                                   <div class="card-header">
                                     <h6 class="mb-0">Top Categories</h6>
@@ -299,7 +299,7 @@
                               </div>
                               
                               <!-- Top Countries -->
-                              <div class="col-md-4 mb-4">
+                              <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
                                   <div class="card-header">
                                     <h6 class="mb-0">Top Countries</h6>
@@ -311,6 +311,86 @@
                                     </div>
                                     <div v-if="!dashboardData.breakdowns?.byCountry || Object.keys(dashboardData.breakdowns.byCountry).length === 0" class="text-muted small">
                                       No countries data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Top Producers -->
+                              <div class="col-md-4 col-lg-3 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Top Producers</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, producer) in getTopProducers(dashboardData.breakdowns?.byListingVariant, 5)" :key="producer" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span class="text-truncate" :title="producer">{{ producer }}</span>
+                                      <span class="badge bg-warning text-dark">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.byListingVariant || Object.keys(dashboardData.breakdowns.byListingVariant).length === 0" class="text-muted small">
+                                      No producers data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <!-- Second Row - Purchase Locations and Status Breakdowns -->
+                            <div class="row">
+                              <!-- Top Purchase Locations -->
+                              <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Top Purchase Locations</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, location) in getTopBreakdowns(dashboardData.breakdowns?.purchase_address, 5)" :key="location" class="mb-3">
+                                      <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1 me-2">
+                                          <div class="fw-bold small">{{ getLocationName(location) }}</div>
+                                          <div class="text-muted small">{{ getLocationAddress(location) }}</div>
+                                        </div>
+                                        <span class="badge bg-secondary">{{ data.count }}</span>
+                                      </div>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.purchase_address || Object.keys(dashboardData.breakdowns.purchase_address).length === 0" class="text-muted small">
+                                      No purchase locations data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Items by Status -->
+                              <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Items by Status</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, status) in getStatusBreakdown(dashboardData.breakdowns)" :key="status" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span>{{ status }}</span>
+                                      <span class="badge" :class="getDashboardStatusBadgeClass(status)">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="getStatusBreakdownCount(dashboardData.breakdowns) === 0" class="text-muted small">
+                                      No status data available
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <!-- Items by Consumption -->
+                              <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card">
+                                  <div class="card-header">
+                                    <h6 class="mb-0">Items by Consumption</h6>
+                                  </div>
+                                  <div class="card-body">
+                                    <div v-for="(data, consumption) in getTopBreakdowns(dashboardData.breakdowns?.byConsumption, 10)" :key="consumption" class="d-flex justify-content-between align-items-center mb-2">
+                                      <span>{{ consumption }}</span>
+                                      <span class="badge bg-dark">{{ data.count }}</span>
+                                    </div>
+                                    <div v-if="!dashboardData.breakdowns?.byConsumption || Object.keys(dashboardData.breakdowns.byConsumption).length === 0" class="text-muted small">
+                                      No consumption data available
                                     </div>
                                   </div>
                                 </div>
@@ -6144,6 +6224,109 @@ export default {
       
       // Convert back to object
       return Object.fromEntries(sortedEntries);
+    },
+
+    // Helper method to extract producers from listing variants
+    getTopProducers(listingVariantData, limit = 5) {
+      if (!listingVariantData) return {};
+      
+      // Group by producer (extract producer name from listing variant)
+      const producerCounts = {};
+      
+      Object.entries(listingVariantData).forEach(([variantName, data]) => {
+        // Try to extract producer name (everything before " - Variant:" or just the name if no variant)
+        let producerName = variantName;
+        if (variantName.includes(' - Variant:')) {
+          producerName = variantName.split(' - Variant:')[0];
+        }
+        
+        if (producerCounts[producerName]) {
+          producerCounts[producerName].count += data.count;
+        } else {
+          producerCounts[producerName] = { count: data.count };
+        }
+      });
+      
+      // Sort and limit
+      const sortedEntries = Object.entries(producerCounts)
+        .sort(([,a], [,b]) => b.count - a.count)
+        .slice(0, limit);
+      
+      return Object.fromEntries(sortedEntries);
+    },
+
+    // Helper method to get location name from purchase address
+    getLocationName(location) {
+      // If location contains a comma, assume format is "Name, Address"
+      if (location && location.includes(',')) {
+        return location.split(',')[0].trim();
+      }
+      return location || 'Unknown Location';
+    },
+
+    // Helper method to get location address from purchase address
+    getLocationAddress(location) {
+      // If location contains a comma, assume format is "Name, Address"
+      if (location && location.includes(',')) {
+        const parts = location.split(',');
+        parts.shift(); // Remove first part (name)
+        return parts.join(',').trim();
+      }
+      return 'Address not specified';
+    },
+
+    // Helper method to get status breakdown (combine known status types)
+    getStatusBreakdown(breakdowns) {
+      if (!breakdowns) return {};
+      
+      // Create a comprehensive status breakdown
+      const statusMap = {
+        'Purchased': 0,
+        'In Possession': 0,
+        'On Its Way': 0,
+        'Held Elsewhere': 0,
+        'Wishlisted': 0,
+        'Consumed': 0
+      };
+
+      // Check if we have status data in breakdowns (this might need backend enhancement)
+      // For now, use available data from other breakdowns as approximation
+      if (breakdowns.byConsumption) {
+        Object.entries(breakdowns.byConsumption).forEach(([status, data]) => {
+          if (status === 'Unopened') {
+            statusMap['In Possession'] += data.count;
+          }
+        });
+      }
+
+      // Convert to the expected format
+      const result = {};
+      Object.entries(statusMap).forEach(([status, count]) => {
+        if (count > 0) {
+          result[status] = { count };
+        }
+      });
+
+      return result;
+    },
+
+    // Helper method to count status breakdown items
+    getStatusBreakdownCount(breakdowns) {
+      const statusBreakdown = this.getStatusBreakdown(breakdowns);
+      return Object.keys(statusBreakdown).length;
+    },
+
+    // Helper method to get dashboard status badge class
+    getDashboardStatusBadgeClass(status) {
+      const statusClasses = {
+        'Purchased': 'bg-success',
+        'In Possession': 'bg-primary',
+        'On Its Way': 'bg-warning text-dark',
+        'Held Elsewhere': 'bg-info',
+        'Wishlisted': 'bg-secondary',
+        'Consumed': 'bg-dark'
+      };
+      return statusClasses[status] || 'bg-light text-dark';
     },
   }
 }
