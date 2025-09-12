@@ -3830,6 +3830,26 @@ export default {
         totalReviews,
         averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
       }
+    },
+
+    // Computed property to determine if user can add to cellar
+    canAddToCellar() {
+      // Debug logging to identify the issue
+      const hasListing = this.specified_listing && this.specified_listing.id;
+      const hasValidQuantity = this.cellarForm.quantity >= 1;
+      const isValidUser = this.userType === 'user' && this.userID !== 'defaultUser';
+      
+      console.log('canAddToCellar debug:', {
+        hasListing,
+        hasValidQuantity,
+        isValidUser,
+        userType: this.userType,
+        userID: this.userID,
+        listingId: this.specified_listing?.id,
+        quantity: this.cellarForm.quantity
+      });
+      
+      return hasListing && hasValidQuantity && isValidUser;
     }
 
   },
@@ -3928,14 +3948,6 @@ export default {
       }
     },
 
-    // Computed property to determine if user can add to cellar
-    canAddToCellar() {
-      return this.specified_listing && 
-             this.specified_listing.id && 
-             this.cellarForm.quantity >= 1 &&
-             this.userType === 'user' && 
-             this.userID !== 'defaultUser';
-    }
   },
   methods: {
     // fetch specific listing data
