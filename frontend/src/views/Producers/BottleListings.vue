@@ -997,15 +997,35 @@
                         <label class="form-label text-start">Place of Purchase</label>
                         <div class="purchase-location-container" style="position: relative;">
                           <div class="input-group">
-                            <input 
-                              type="text"
-                              class="form-control" 
-                              v-model="cellarForm.purchaseLocationInputValue"
+                            <GMapAutocomplete 
                               placeholder="e.g., Wine shop, Online store, or enter manually"
+                              @place_changed="setPurchasePlaceFromAutocomplete" 
+                              @input="onPurchaseLocationInput"
+                              @focus="onPurchaseLocationFocus" 
+                              @blur="onPurchaseLocationBlur"
+                              class="form-control" 
+                              ref="purchaseLocationInputSimplified" 
+                              :value="cellarForm.purchaseLocationInputValue"
+                              :options="{ types: ['establishment'] }"
                             />
-                            <span class="input-group-text">
-                              <i class="bi bi-geo-alt"></i>
+                            <span class="input-group-text" :title="cellarForm.selectedPurchasePlace ? 'Location selected via Google Maps' : 'Click input to search locations'">
+                              <i class="bi bi-geo-alt" :class="{ 'text-success': cellarForm.selectedPurchasePlace }"></i>
                             </span>
+                          </div>
+                          
+                          <!-- Location confirmation display -->
+                          <div v-if="cellarForm.selectedPurchasePlace && cellarForm.selectedPurchaseAddress" 
+                               class="alert alert-success mt-2 mb-0 small">
+                            📍 Selected: {{ cellarForm.selectedPurchasePlace }}
+                            <br>
+                            <small class="text-muted">{{ cellarForm.selectedPurchaseAddress }}</small>
+                            <button 
+                              type="button" 
+                              class="btn btn-sm btn-outline-danger ms-2"
+                              @click="clearSelectedPurchaseLocation"
+                            >
+                              Clear
+                            </button>
                           </div>
                         </div>
                       </div>
