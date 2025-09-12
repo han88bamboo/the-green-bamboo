@@ -2700,7 +2700,7 @@
   >
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header" style="background: linear-gradient(135deg, rgb(0, 123, 255), rgb(0, 86, 179)); color:white;" >
           <h5 class="modal-title" id="mobileAddDrinksModalLabel">
             <i class="bi bi-plus-circle me-2"></i>
             Add Drink(s) to Cellar
@@ -4030,6 +4030,17 @@ export default {
     this.activePersonalNotesInput = null
   },
   methods: {
+    
+    slugify(text) {
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, ''); // Remove non-word characters
+    },
+    
     // Utility method to get the correct API base URL
     getApiBaseUrl() {
       return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
@@ -4809,7 +4820,7 @@ export default {
       if (group.listingId && group.representative.listingName) {
         // Small delay to allow modal dismiss to complete
         setTimeout(() => {
-          const listingName = group.representative.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+          const listingName = this.slugify(group.representative.listingName)
           this.$router.push(`/listing/view/${group.listingId}/${listingName}`)
         }, 150)
       }
@@ -7742,6 +7753,7 @@ export default {
   align-items: center;
   border: none;
   outline: none;
+  opacity:90%;
 }
 
 .right-sidebar-tab:hover {

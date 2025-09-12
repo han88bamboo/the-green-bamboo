@@ -282,18 +282,17 @@
                     <!-- Blue Add To Cellar Button -->
                     <template v-if="userType == 'user'">
                       <!-- Logged-In User -->
-                      <button class="btn text-white fw-semibold fs-7" data-bs-toggle="modal"
+                      <button class="btn fw-semibold fs-7 cellar-btn-blue-mobile" data-bs-toggle="modal"
                         data-bs-target="#cellarModal"
-                        @click="onCellarModalOpen"
-                        style="border-radius: 0; background: linear-gradient(135deg, #007bff, #0056b3);">
+                        @click="onCellarModalOpen">
                         Add To Your Cellar
                       </button>
                     </template>
 
                     <!-- Blue Add To Cellar Button When User Is Logged Out -->
                     <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
-                      <button class="btn text-white fw-semibold px-2"
-                        style="border-radius: 0; height: 38px; background: linear-gradient(135deg, #007bff, #0056b3);">
+                      <button class="btn fw-semibold px-2 cellar-btn-blue-mobile"
+                        style="height: 38px;">
                         Add To Your Cellar
                       </button>
                     </router-link>
@@ -884,16 +883,14 @@
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0 mb-auto">
             <!-- Logged-in users -->
             <div v-if="userType === 'user' && userID !== 'defaultUser'">
-              <button class="btn btn-lg" data-bs-toggle="modal" data-bs-target="#cellarModal" 
-                @click="onCellarModalOpen"
-                style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff; font-weight: bold;">
+              <button class="btn btn-lg cellar-btn-blue" data-bs-toggle="modal" data-bs-target="#cellarModal" 
+                @click="onCellarModalOpen">
                 Add To Your Cellar
               </button>
             </div>
             <!-- Logged-out users -->
             <div v-else>
-              <button class="btn btn-lg" @click="$router.push('/login')"
-                style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff; font-weight: bold;">
+              <button class="btn btn-lg cellar-btn-blue" @click="$router.push('/login')">
                 Add To Your Cellar
               </button>
             </div>
@@ -4330,7 +4327,7 @@ export default {
         );
         this.reviews = response.data;
 
-        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        // this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
 
         this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
 
@@ -4712,7 +4709,7 @@ export default {
         );
         this.reviews = this.reviews.concat(response.data);
 
-        this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        // this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
 
         if (response.data.length > 0) {
           this.lastReviewID = response.data[response.data.length - 1].id;
@@ -6286,37 +6283,37 @@ export default {
       }
     },
 
-    async getMoreVenues(reviews) {
-      // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
-      let localVenueIDs = [];
+    // async getMoreVenues(reviews) {
+    //   // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
+    //   let localVenueIDs = [];
 
-      reviews.forEach((review) => {
-        if (review.location && !localVenueIDs.includes(review.location)) {
-          if (!this.venueIDs.includes(review.location)) {
-            localVenueIDs.push(review.location);
-          }
-        }
-      });
+    //   reviews.forEach((review) => {
+    //     if (review.location && !localVenueIDs.includes(review.location)) {
+    //       if (!this.venueIDs.includes(review.location)) {
+    //         localVenueIDs.push(review.location);
+    //       }
+    //     }
+    //   });
 
-      // Fetch venue details for the unique venue IDs
-      try {
-        if (localVenueIDs.length > 0) {
-          const venueResponse = await this.$axios.post(
-            `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
-            { 'venueIDs': localVenueIDs }
-          );
-          // Add to this.venues array
-          this.venues = this.venues.concat(venueResponse.data);
+    //   // Fetch venue details for the unique venue IDs
+    //   try {
+    //     if (localVenueIDs.length > 0) {
+    //       const venueResponse = await this.$axios.post(
+    //         `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
+    //         { 'venueIDs': localVenueIDs }
+    //       );
+    //       // Add to this.venues array
+    //       this.venues = this.venues.concat(venueResponse.data);
 
-          // Update venueIDs with the new venues
-          this.venueIDs = this.venueIDs.concat(
-            venueResponse.data.map((venue) => venue.id)
-          );
-        }
-      } catch (error) {
-        console.error("Error fetching venue details:", error);
-      }
-    },
+    //       // Update venueIDs with the new venues
+    //       this.venueIDs = this.venueIDs.concat(
+    //         venueResponse.data.map((venue) => venue.id)
+    //       );
+    //     }
+    //   } catch (error) {
+    //     console.error("Error fetching venue details:", error);
+    //   }
+    // },
     restoreReviewCache() {
       const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
       const cached = localStorage.getItem(cacheKey);

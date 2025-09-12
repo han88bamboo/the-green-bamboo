@@ -335,7 +335,7 @@
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                         <!-- Item Image -->
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
                                             <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                         </router-link>
                                         <!-- Item Rating (below image) -->
@@ -351,6 +351,7 @@
 
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
+
                                             <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                                 <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
@@ -369,6 +370,7 @@
                                                     :title="`${tag.count} mentions`">
                                                     {{ tag.tag }}
                                                 </span>
+
                                             </div>
                                         </div>
 
@@ -376,7 +378,7 @@
                                         <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
                                         <div class="row">
                                             <p class="text-start mb-1 mobile-fs-7">
-                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
+                                                <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + slugify(sectionItem.itemDetails['itemProducer']) }">
                                                     <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                                 </router-link>
                                                 <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -413,7 +415,7 @@
                                 <div class="row align-items-center">
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="default-text-no-background">
+                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
                                             <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                         </router-link>
                                     </div>
@@ -2339,6 +2341,17 @@ export default {
             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
             
             return luminance > 0.5 ? '#000000' : '#FFFFFF';
+        },
+
+        slugify(text) {
+            if (!text) return ""
+            return text
+                .toString()
+                .toLowerCase()
+                .normalize('NFD') // Decompose accented characters
+                .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                .replace(/[^\w]/g, '') // Remove non-word characters
         },
 
         // Helper function for accent folding/normalization

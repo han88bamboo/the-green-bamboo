@@ -21,7 +21,7 @@
                     <!-- Listing Name (prominent, below rating) -->
                     <div class="listing-name">
                         <router-link 
-                            :to="{ path: '/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(review.listingName || 'unknown-listing') }" 
+                            :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }" 
                             class="text-decoration-none"
                         >
                             <h6 class="fw-bold mb-0" style="color: #2a6959;">
@@ -35,7 +35,7 @@
                 <div class="content-area position-relative mb-3">
                     <!-- Image positioned on the right -->
                     <div class="image-container" style="float: right; margin-left: 15px; margin-bottom: 10px; margin-top: -60px;">
-                        <router-link :to="{ path: '/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(review.listingName || 'unknown-listing') }">
+                        <router-link :to="{ path: '/listing/view/' + review.reviewTarget + '/' + slugify(review.listingName || 'unknown-listing') }">
                             <img 
                                 v-if="review.photo && review.photo !== ''" 
                                 :src="review.photo" 
@@ -107,14 +107,14 @@
             <div v-for="(listing, index) in listingArr" :key="index" class="row mb-3" :style="{ display: 'flex' }">
                 <div class="col-3 mobile-col-3 mobile-pe-0" v-if="listing?.id">
                     <div class="Xdrink-photo-container-row Ximage-container-150">
-                        <router-link :to="{ path: '/listing/view/' + listing.id + '/' + encodeURIComponent(listing.listingName) }" class="default-text-no-background">
+                        <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-text-no-background">
                             <img v-if="listing.photo !== '' && listing.photo !== null" :src="listing.photo" class="add-drink-photo-background-user-profile centered rounded"> 
                             <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class="add-drink-photo-background-user-profile centered rounded">
                         </router-link>
                     </div>
                 </div>
                 <div class="col-9 mobile-col-9 mobile-ps-2" v-if="listing?.id">
-                    <router-link :to="{ path: '/listing/view/' + listing.id + '/' + encodeURIComponent(listing.listingName) }" class="default-clickable-text scrollable mt-2 mobile-fs-7" style="text-decoration: none">
+                    <router-link :to="{ path: '/listing/view/' + listing.id + '/' + slugify(listing.listingName) }" class="default-clickable-text scrollable mt-2 mobile-fs-7" style="text-decoration: none">
                         <p v-if="listing.listingName.length > 63" class="fs-5 mobile-fs-6 mb-1"> 
                             <b>{{ listing.listingName.slice(0,63) + (listing.listingName.length > 63 ? '...' : '') }}</b>
                         </p>
@@ -177,6 +177,18 @@ export default {
     };
   },
   methods: {
+    
+    slugify(text) {
+      if (!text) return ""
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, '') // Remove non-word characters
+    },
+    
     // Original method for listings
     getProducerName(listing) {
       if (!this.producers || !listing.producerID) {

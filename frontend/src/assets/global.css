@@ -228,6 +228,38 @@ html {
   background-color: #027562;
   border-radius: 10px;
 }
+
+.cellar-btn-blue {
+  color: #fff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-weight: bold;
+  border-radius: 10px;
+  transition: transform 0.4s ease;
+}
+
+.cellar-btn-blue:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #0056b3, #004085);
+  font-weight: bold;
+  border-radius: 10px;
+  transform: scale(1.05);
+}
+
+.cellar-btn-blue-mobile {
+  color: #fff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  font-weight: bold;
+  border-radius: 0;
+  transition: transform 0.4s ease;
+}
+
+.cellar-btn-blue-mobile:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #0056b3, #004085);
+  font-weight: bold;
+  border-radius: 0;
+  transform: scale(1.05);
+}
 .primary-btn-less-round-green:hover {
   color: white;
   background-color: #02594b;

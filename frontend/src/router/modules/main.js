@@ -42,9 +42,15 @@ const routes = [
     component: () => import(/* webpackChunkName: "main" */ "@/views/SearchView.vue"),
   },
   {
-    path: "/browse/:browseDrinkType/:browseTypeCategory?",
-    name: "browse",
+    path: "/browse/drink/:browseDrinkType/:browseTypeCategory?",
+    name: "browseDrink", // Changed from "browse" to "browseDrink"
     component: () => import(/* webpackChunkName: "main" */ "@/views/BrowseListings.vue"),
+    props: true,
+  },
+  {
+    path: "/browse/venue/",
+    name: "browseVenue", // Changed from "browse" to "browseVenue"
+    component: () => import(/* webpackChunkName: "main" */ "@/views/BrowseVenues.vue"),
     props: true,
   },
   {
