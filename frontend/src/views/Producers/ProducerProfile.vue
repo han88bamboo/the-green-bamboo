@@ -4611,8 +4611,10 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .normalize('NFD')                    // Decompose accented characters
+                    .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+                    .replace(/\s+/g, '')                 // Remove spaces
+                    .replace(/[^\w]/g, '');              // Remove non-word characters
             },
     // load data from database
     async loadData() {

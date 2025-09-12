@@ -2566,7 +2566,7 @@
                                                 <!-- Drink Name -->
                                                 <span>
                                                     for
-                                                    <router-link :to="`/listing/view/${review.reviewTarget}/${getBottleNameFromReview(review).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}`"
+                                                    <router-link :to="`/listing/view/${review.reviewTarget}/${slugify(getBottleNameFromReview(review))}`"
                                                         class="text-decoration-none text-dark">
                                                         <b>{{ getBottleNameFromReview(review) }} </b>
                                                     </router-link>
@@ -4741,6 +4741,17 @@ export default {
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     methods: {
+        
+        slugify(text) {
+            return text
+                .toString()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase()
+                .replace(/\s+/g, '-') // Replace spaces with hyphens ✅ GOOD FOR SEO
+                .replace(/[^\w]/g, '');
+        },
+        
         // Load venue type data for dropdowns
         async loadVenueMainTypes() {
             try {

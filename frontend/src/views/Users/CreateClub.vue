@@ -192,8 +192,10 @@ export default {
                 return text
                     .toString()
                     .toLowerCase()
-                    .replace(/\s+/g, '')
-                    .replace(/[^\w]/g, '');
+                    .normalize('NFD')                    // Decompose accented characters
+                    .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+                    .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+                    .replace(/[^\w]/g, '');              // Remove non-word characters
             },
 
         // Function to retrieve data for the page ========================================

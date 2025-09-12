@@ -908,14 +908,15 @@ export default {
   },
   methods: {
     slugify(text = '') {
-  return String(text)               
-    .normalize('NFKD')               
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')            
-    .replace(/[^\w-]+/g, '')         
-    .replace(/--+/g, '-');           
-},
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD')                    // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '')     // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, '');              // Remove non-word characters
+    },
     // Function to get membership details of user 
     async getMembershipDetails() {
       try {

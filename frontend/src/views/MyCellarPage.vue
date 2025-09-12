@@ -4030,6 +4030,17 @@ export default {
     this.activePersonalNotesInput = null
   },
   methods: {
+    
+    slugify(text) {
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, ''); // Remove non-word characters
+    },
+    
     // Utility method to get the correct API base URL
     getApiBaseUrl() {
       return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
@@ -4809,7 +4820,7 @@ export default {
       if (group.listingId && group.representative.listingName) {
         // Small delay to allow modal dismiss to complete
         setTimeout(() => {
-          const listingName = group.representative.listingName.replace(/[^a-zA-Z0-9\s-]/g, '').replace(/\s+/g, '-').toLowerCase()
+          const listingName = this.slugify(group.representative.listingName)
           this.$router.push(`/listing/view/${group.listingId}/${listingName}`)
         }, 150)
       }
