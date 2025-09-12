@@ -710,7 +710,7 @@
                     @keyup.enter="setSelectedGroup(group)"
                   >
                     <!-- Image Area -->
-                    <div class="card-img-container">
+                    <div class="card-img-container" style="width:100%;">
                       <img 
                         :src="getItemImageUrl(group.representative)"
                         :alt="group.representative.listingName"
