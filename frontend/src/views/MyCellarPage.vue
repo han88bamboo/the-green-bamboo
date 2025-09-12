@@ -71,7 +71,7 @@
                       type="button"
                     >
                       <i class="bi bi-clock-history me-2"></i>
-                      Cellar History
+                      <span class="mobile-view-hide">History</span>
                     </button>
                   </li>
                 </ul>
