@@ -284,6 +284,7 @@
                       <!-- Logged-In User -->
                       <button class="btn text-white fw-semibold fs-7" data-bs-toggle="modal"
                         data-bs-target="#cellarModal"
+                        @click="onCellarModalOpen"
                         style="border-radius: 0; background: linear-gradient(135deg, #007bff, #0056b3);">
                         Add To Your Cellar
                       </button>
@@ -884,6 +885,7 @@
             <!-- Logged-in users -->
             <div v-if="userType === 'user' && userID !== 'defaultUser'">
               <button class="btn btn-lg" data-bs-toggle="modal" data-bs-target="#cellarModal" 
+                @click="onCellarModalOpen"
                 style="background: linear-gradient(135deg, #007bff, #0056b3); color: #fff; font-weight: bold;">
                 Add To Your Cellar
               </button>
@@ -1049,6 +1051,7 @@
                           class="form-select"
                           v-model="cellarForm.selectedCollectionId"
                         >
+                          <option value="">Choose a collection...</option>
                           <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
                             {{ collection.collectionName }}
                           </option>
@@ -1397,6 +1400,7 @@
                               class="form-select"
                               v-model="cellarForm.selectedCollectionId"
                             >
+                              <option value="">Choose a collection...</option>
                               <option v-for="collection in cellarCollections" :key="collection.id" :value="collection.id">
                                 {{ collection.collectionName }}
                               </option>
@@ -3766,6 +3770,14 @@ export default {
 
       // Initialize paywall scroll control for non-logged in users
       this.initializePaywallControls();
+
+      // Add modal event listener for cellar modal
+      this.$nextTick(() => {
+        const cellarModal = document.getElementById('cellarModal');
+        if (cellarModal) {
+          cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
+        }
+      });
     } catch (error) {
       console.error(error);
     }
@@ -3783,6 +3795,12 @@ export default {
     // Clean up Google Maps observer
     if (this._googleMapsObserver) {
       this._googleMapsObserver.disconnect();
+    }
+
+    // Clean up cellar modal event listener
+    const cellarModal = document.getElementById('cellarModal');
+    if (cellarModal) {
+      cellarModal.removeEventListener('show.bs.modal', this.onCellarModalOpen);
     }
 
     document.removeEventListener('keydown', this.handleEscKey);
@@ -3850,6 +3868,37 @@ export default {
       });
       
       return hasListing && hasValidQuantity && isValidUser;
+    },
+
+    // Default volume based on drink type (matches MyCellarPage logic)
+    defaultVolumeNumber() {
+      if (!this.specified_listing || !this.specified_listing.drinkType) {
+        console.log('defaultVolumeNumber: No listing or drinkType, returning 700');
+        return 700; // Default fallback
+      }
+      
+      const drinkType = this.specified_listing.drinkType.toLowerCase();
+      console.log('defaultVolumeNumber: drinkType =', drinkType);
+      
+      let volume;
+      if (drinkType === 'beer') {
+        volume = 355;
+      } else if (drinkType === 'wine') {
+        volume = 750;
+      } else if (drinkType === 'sake') {
+        volume = 720;
+      } else {
+        volume = 700; // Any other drinkType
+      }
+      
+      console.log('defaultVolumeNumber: returning', volume);
+      return volume;
+    },
+
+    defaultVolumeUnit() {
+      // All drink types use 'ml' as default
+      console.log('defaultVolumeUnit: returning ml');
+      return 'ml';
     }
 
   },
@@ -3876,6 +3925,19 @@ export default {
         // Clear review cache for the previous listing
         this.clearReviewCache();
       }
+    },
+
+    // Watch for when specified_listing loads to initialize cellar form defaults
+    specified_listing: {
+      handler(newListing) {
+        if (newListing && newListing.id) {
+          console.log('Specified listing loaded, initializing cellar defaults...');
+          this.$nextTick(() => {
+            this.initializeCellarFormDefaults();
+          });
+        }
+      },
+      deep: true
     },
 
     // Watch for user login/logout changes
@@ -4204,6 +4266,13 @@ export default {
         this.specified_listing = response.data;
         this.producer_id = this.specified_listing.producerID; // find specified producer
         this.bottler_id = this.specified_listing.bottlerID; // find specified bottler
+        
+        // Initialize cellar form defaults now that listing is loaded
+        console.log('Listing loaded, initializing cellar form defaults...');
+        this.$nextTick(() => {
+          this.initializeCellarFormDefaults();
+        });
+        
         // console.log(this.specified_listing)
         // console.log(this.specified_listing.drinkType)
 
@@ -6390,6 +6459,63 @@ export default {
       }
     },
 
+    // Cellar modal open handler
+    async onCellarModalOpen() {
+      console.log('Cellar modal opening - initializing data...');
+      console.log('Current specified_listing:', this.specified_listing);
+      
+      // Load cellar collections first
+      await this.loadCellarCollections();
+      
+      // Wait a moment for collections to load, then set defaults
+      this.$nextTick(() => {
+        this.initializeCellarFormDefaults();
+      });
+    },
+
+    initializeCellarFormDefaults() {
+      console.log('=== INITIALIZING CELLAR FORM DEFAULTS ===');
+      console.log('Available collections:', this.cellarCollections);
+      console.log('Current listing:', this.specified_listing);
+      
+      // Set default volume based on drink type
+      const defaultVolume = this.defaultVolumeNumber;
+      const defaultUnit = this.defaultVolumeUnit;
+      
+      console.log('Setting default volume:', defaultVolume, defaultUnit);
+      console.log('Drink type:', this.specified_listing?.drinkType);
+      
+      // Apply defaults
+      this.cellarForm.volumeNumber = defaultVolume;
+      this.cellarForm.volumeUnit = defaultUnit;
+      
+      // Set default collection if available
+      if (this.cellarCollections && this.cellarCollections.length > 0) {
+        const defaultCollection = this.cellarCollections.find(c => c.isDefault);
+        if (defaultCollection) {
+          console.log('Using default collection:', defaultCollection.collectionName);
+          this.cellarForm.selectedCollectionId = defaultCollection.id;
+        } else {
+          // If no default collection found, use the first one
+          console.log('Using first collection:', this.cellarCollections[0].collectionName);
+          this.cellarForm.selectedCollectionId = this.cellarCollections[0].id;
+        }
+      } else {
+        console.log('No collections available, leaving selection empty');
+        this.cellarForm.selectedCollectionId = null;
+      }
+      
+      console.log('=== CELLAR FORM DEFAULTS APPLIED ===');
+      console.log('Final form state:', {
+        volumeNumber: this.cellarForm.volumeNumber,
+        volumeUnit: this.cellarForm.volumeUnit,
+        selectedCollectionId: this.cellarForm.selectedCollectionId,
+        drinkType: this.specified_listing?.drinkType,
+        collectionsCount: this.cellarCollections?.length || 0
+      });
+      console.log('=== END INITIALIZATION ===');
+    },
+
     // Cellar-related methods
     toggleCellarFormExpansion() {
       this.showExpandedCellarForm = !this.showExpandedCellarForm;
@@ -6400,8 +6526,8 @@ export default {
         // Group properties (applied to all items in the drink group)
         vintage: null,
         format: 'Bottle',
-        volumeNumber: 750,
-        volumeUnit: 'ml',
+        volumeNumber: this.defaultVolumeNumber,
+        volumeUnit: this.defaultVolumeUnit,
         currentValueEstimation: null,
         currentValueCurrency: 'USD',
         drinkOnwardsDate: null,
@@ -6428,13 +6554,21 @@ export default {
         // Collection selection
         selectedCollectionId: null
       };
+      
+      // Set default collection if collections are available
+      this.initializeCellarFormDefaults();
     },
 
     async loadCellarCollections() {
       try {
-        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/editCellar/collections`);
+        console.log('Loading cellar collections...');
+        const baseUrl = this.getApiBaseUrl();
+        const response = await this.$axios.get(`${baseUrl}/editCellar/collections`);
+        console.log('Collections response:', response.data);
+        
         if (response.status === 200 && response.data.code === 200) {
           this.cellarCollections = response.data.data || [];
+          console.log('Loaded collections:', this.cellarCollections);
         }
       } catch (error) {
         console.error('Error loading cellar collections:', error);
