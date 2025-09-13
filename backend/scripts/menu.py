@@ -276,16 +276,10 @@ def getMenuItems(section_id):
     
     try:
         # Build WHERE conditions (use proper parameterization)
-        where_conditions = ['"sectionId" = %s']
+        where_conditions = ['mi."sectionId" = %s']
         params = [section_id]
         
-        if search:
-            # Search across multiple fields for better UX
-            where_conditions.append('(LOWER(mi."variant") LIKE %s OR LOWER(mi."itemID") LIKE %s)')
-            search_param = f"%{search.lower()}%"
-            params.extend([search_param, search_param])
-        
-        where_clause = " AND ".join(where_conditions)
+        where_clause = "".join(where_conditions)
         
         sql = f"""
         WITH flavor_tag_counts AS (
