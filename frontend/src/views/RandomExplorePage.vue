@@ -3876,6 +3876,7 @@ methods: {
             }
             );
 
+
             if (response.status === 201) {
                 // Clear the reply input
                 this.replyComment = "";
@@ -3888,6 +3889,7 @@ methods: {
                 // Add the new reply to the topComments array
                 // Find the content in contents array
                 let content = this.contents.find(c => c.id === contentId && c.contentType === contentType);
+
                 if (content) {
                   // Find the topComments array for this content
                   let topComments = content.topComments || [];
@@ -3900,8 +3902,15 @@ methods: {
                     if (!parentComment.replies) {
                       this.$set(parentComment, 'replies', []);
                     }
+
+                    let newReply = response.data.comment;
+
+                    // Update the newReply "photo" key to "userPhoto"
+                    newReply.userPhoto = newReply.photo;
+                    delete newReply.photo;
+
                     // Add the new reply to the replies array
-                    parentComment.replies.unshift(response.data.comment);
+                    parentComment.replies.unshift(newReply);
                   } else {
                     // If parent comment not found, optionally handle this case
                     console.warn("Parent comment not found for reply.");

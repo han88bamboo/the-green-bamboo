@@ -75,6 +75,9 @@ def get_top_comments(content_id, content_type):
                 """, (comment['id'],))
                 replies = cursor.fetchall()
 
+                # Create the replies array
+                comment['replies'] = []
+
                 if replies:
                     for reply in replies:
                         # Get the username or producerName or venueName
