@@ -3925,7 +3925,9 @@ methods: {
                     delete newReply.photo;
 
                     // Add the new reply to the replies array
-                    parentComment.replies.unshift(newReply);
+                    parentComment.replies = [newReply, ...parentComment.replies];
+
+                    console.log("Updated parentComment with new reply:", parentComment);
                   } else {
                     // If parent comment not found, optionally handle this case
                     console.warn("Parent comment not found for reply.");
