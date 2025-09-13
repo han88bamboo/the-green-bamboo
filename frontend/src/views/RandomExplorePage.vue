@@ -3668,8 +3668,17 @@ methods: {
         // Clear the input field for this contentId
         this.newComment[contentId] = "";
 
+        let newComment = response.data.comment;
+
+        // Replace "photo" key with "userPhoto" for UI 
+        newComment.userPhoto = newComment.photo;
+        delete newComment.photo;
+
+        // Add in replies array for consistency
+        newComment.replies = [];
+
         // Push the new comment into the correct topComments array
-        topComments.push(response.data.comment);
+        topComments.push(newComment);
 
         const toast = useToast();
 
@@ -3810,6 +3819,12 @@ methods: {
           // Show message
           const toast = useToast();
           toast.success("Comment deleted successfully.");
+
+          // Decrement totalComments count
+          let content = this.contents.find(c => c.id === this.deleteCommentItems.contentId && c.contentType === this.deleteCommentItems.contentType);
+          if (content) {
+            content.totalComments = Math.max(content.totalComments, 1) - 1;
+          }
         }
 
       } catch (error) {
