@@ -902,7 +902,7 @@
     cellarURL() {
       // If user is not logged in, redirect to login
       if (this.accType === "" || !this.userID) {
-        return "/login";
+        return "/my-cellar";
       }
 
       const accUsername = localStorage.getItem("88B_accUsername");
