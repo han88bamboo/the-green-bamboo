@@ -23,6 +23,11 @@ const routes = [
     path: '/badges-and-points',
     name: 'badgesAndPoints',
      component: () => import(/* webpackChunkName: "misc" */ '@/views/BadgesAndPoints.vue')
+  },
+  {
+    path: '/find-lists',
+    name: 'findLists',
+     component: () => import(/* webpackChunkName: "misc" */ '@/views/FindLists.vue')
   }
 ];
 
