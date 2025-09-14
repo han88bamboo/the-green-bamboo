@@ -1087,7 +1087,7 @@
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
                         Producer (Optional)
-                        <small class="text-muted d-block text-start">Select a producer to filter drink search</small>
+                        <small class="text-muted d-block text-start">Filter drink search by producer name</small>
                       </label>
                       <input 
                         type="text" 
@@ -1134,7 +1134,12 @@
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
                         Drink Name <span class="text-danger">*</span>
-                        <small class="text-muted d-block text-start">Start typing to search for drinks</small>
+                        <small class="text-muted d-block text-start">Search by drink name</small> <p class="text-muted small mb-0 mt-2">
+                    Can't find your drink on Drink-X? 
+                    <router-link to="/request/new" class="text-decoration-none">
+                      Submit a new drink to the database!
+                    </router-link>
+                  </p>
                         <small 
                           v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
                           class="text-info fw-bold d-block text-start"
@@ -2785,7 +2790,7 @@
               <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
                   Producer (Optional)
-                  <small class="text-muted d-block text-start">Select a producer to filter drink search</small>
+                  <small class="text-muted d-block text-start">Filter drink search by producer name</small>
                 </label>
                 <input 
                   type="text" 
@@ -2832,7 +2837,12 @@
               <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
                   Drink Name <span class="text-danger">*</span>
-                  <small class="text-muted d-block text-start">Start typing to search for drinks</small>
+                  <small class="text-muted d-block text-start">Search by drink name</small> <p class="text-muted small mb-0 mt-2">
+                    Can't find your drink on Drink-X? 
+                    <router-link to="/request/new" class="text-decoration-none">
+                      Submit a new drink to the database!
+                    </router-link>
+                  </p>
                   <small 
                     v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
                     class="text-info fw-bold d-block text-start"
