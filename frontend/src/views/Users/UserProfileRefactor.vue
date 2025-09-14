@@ -2601,89 +2601,335 @@
                   
                   <!-- Individual Drinks List View -->
                   <div v-if="activeTab === 'list' && displayUserBookmarks[currentList]" id="list">
-                    <!-- list name, back to lists & add drink to list & share button -->
-                    <div class="row mobile-mt-2">
-                        <h5 class="mobile-fs-5">
+                    <!-- Header Row -->
+                    <div class="row align-items-center mobile-mt-2 mb-2">
+                      <div class="col-12 col-md-6">
+                        <h5 class="mobile-fs-5 mb-0">
                           <b>Drink List: {{ currentList }}</b>
-                          <p class="mobile-rating-smaller-text-2 my-1">{{ displayUserBookmarks[currentList].listDesc }}</p>
                         </h5>
+                        <p class="mobile-rating-smaller-text-2 my-1">
+                          {{ displayUserBookmarks[currentList].listDesc }}
+                        </p>
+                      </div>
+
+                      <!-- View controls (right aligned) -->
+                      <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
+                        <div class="btn-group" role="group">
+                          <button type="button" class="btn btn-sm"
+                            :class="listViewType === 'grid' ? 'btn-primary' : 'btn-outline-secondary'"
+                            @click="listViewType = 'grid'" title="Grid View">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm"
+                            :class="listViewType === 'column' ? 'btn-primary' : 'btn-outline-secondary'"
+                            @click="listViewType = 'column'" title="Column View">
+                            <i class="bi bi-view-stacked"></i>
+                          </button>
+                          <button type="button" class="btn btn-sm"
+                            :class="listViewType === 'list' ? 'btn-primary' : 'btn-outline-secondary'"
+                            @click="listViewType = 'list'" title="List View">
+                            <i class="bi bi-list"></i>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <div class="text-start d-flex gap-2 mb-3 justify-content-start">
-                        <button
-                          v-if="ownProfile"
-                          type="button"
-                          class="btn btn-sm tertiary-btn-blue drinklist"
-                          data-bs-toggle="modal"
-                          data-bs-target="#exampleModal"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="currentColor"
-                            class="bi bi-plus"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"
-                            />
-                            <path
-                              d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"
-                            />
-                          </svg>
+
+                    <!-- Actions Row -->
+                    <div class="row mb-3">
+                      <div class="col-12 d-flex flex-wrap gap-2">
+                        <button v-if="ownProfile" type="button" class="btn btn-sm tertiary-btn-blue drinklist"
+                          data-bs-toggle="modal" data-bs-target="#exampleModal">
+                          <i class="bi bi-plus"></i>
                           <span class="mobile-view-hide">&nbsp; Add Drink</span>
                         </button>
-                        <!--KAI temporarily comment out 
-                        <button
-                          @click="updateCurrentURL"
-                          type="button"
-                          class="btn btn-sm tertiary-btn-blue drinklist"
-                          data-bs-toggle="modal"
-                          data-bs-target="#shareListModal"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="currentColor"
-                            class="bi bi-share"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 30 30"
-                          >
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g
-                              id="SVGRepo_tracerCarrier"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            ></g>
-                            <g id="SVGRepo_iconCarrier">
-                              <path
-                                d="M0 25.472q0 2.368 1.664 4.032t4.032 1.664h18.944q2.336 0 4-1.664t1.664-4.032v-8.192l-3.776 3.168v5.024q0 0.8-0.544 1.344t-1.344 0.576h-18.944q-0.8 0-1.344-0.576t-0.544-1.344v-18.944q0-0.768 0.544-1.344t1.344-0.544h9.472v-3.776h-9.472q-2.368 0-4.032 1.664t-1.664 4v18.944zM5.696 19.808q0 2.752 1.088 5.28 0.512-2.944 2.24-5.344t4.288-3.872 5.632-1.664v5.6l11.36-9.472-11.36-9.472v5.664q-2.688 0-5.152 1.056t-4.224 2.848-2.848 4.224-1.024 5.152zM32 22.080v0 0 0z"
-                              ></path>
-                            </g>
-                          </svg>
-                          <span class="mobile-view-hide">&nbsp;Share List</span>
+
+                        <button @click="viewList('lists')" type="button" class="btn btn-sm tertiary-btn-blue drinklist">
+                          <i class="bi bi-arrow-left-circle"></i>
+                          <span class="mobile-view-hide">&nbsp; Back to Drinks Lists</span>
                         </button>
-                        -->
-                        <button
-                          @click="viewList('lists')"
-                          type="button"
-                          class="btn btn-sm tertiary-btn-blue drinklist"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="currentColor"
-                            class="bi bi-arrow-left-circle"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 16 16"
-                          >
-                            <path
-                              fill-rule="evenodd"
-                              d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"
-                            />
-                          </svg>
-                          <span class="mobile-view-hide">&nbsp;Back to Drinks Lists</span>
-                        </button>
+
+                        <!-- Privacy toggle -->
+                        <div v-if="ownProfile" class="d-flex align-items-center ms-auto">
+                          <label class="form-check-label me-2 small">
+                            {{ displayUserBookmarks[currentList].isPublic ? 'Public' : 'Private' }}
+                          </label>
+                          <div class="form-check form-switch m-0">
+                            <input 
+                              class="form-check-input" 
+                              type="checkbox" 
+                              :checked="displayUserBookmarks[currentList].isPublic"
+                              @change="toggleListVisibility(currentList)"
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Grid View -->
+                    <div v-if="listViewType === 'grid'" class="row">
+                      <div class="col-6 col-md-4 col-lg-3 mb-4"
+                        v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
+                        :key="index">
+                        <div class="card h-100 review-card border shadow-sm position-relative">
+                          
+                          <!-- Delete button at top right -->
+                          <button v-if="ownProfile"
+                            class="btn btn-danger btn-sm position-absolute"
+                            style="top: 8px; right: 8px; width: 28px; height: 28px; padding: 0; z-index: 10;"
+                            data-bs-toggle="modal"
+                            :data-bs-target="`#deleteFromListModal${index}`"
+                            title="Delete from list">
+                            ×
+                          </button>
+
+                          <!-- Image -->
+                          <div class="card-img-top-wrapper">
+                            <img :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
+                                :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
+                                class="card-img-top review-card-img" />
+                          </div>
+
+                          <!-- Body -->
+                          <div class="card-body d-flex flex-column">
+                            <!-- Title -->
+                            <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
+                              class="text-decoration-none" style="color: #223957">
+                              <h6 class="card-title mb-2 fw-bold">
+                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                              </h6>
+                            </a>
+
+                            <!-- Type / Country -->
+                            <p class="mb-2 small fw-bold" style="color: #f0b358;">
+                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / 
+                              {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
+                            </p>
+
+                            <!-- Rating -->
+                            <h4 class="fw-bold mb-3" style="color:#f0b358">
+                              {{
+                                bookedMarkedListings[listing?.drinkId]?.avgRating !== null &&
+                                bookedMarkedListings[listing?.drinkId]?.avgRating !== undefined
+                                  ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1)
+                                  : "-"
+                              }}★
+                            </h4>
+
+                            <!-- Note button -->
+                            <div class="mt-auto">
+                              <button v-if="ownProfile || listing.note"
+                                class="btn btn-sm w-100"
+                                :class="'btn-warning'"
+                                data-bs-toggle="modal"
+                                :data-bs-target="`#noteModal${index}`"
+                                @click="prepareNoteModal(listing, index)">
+                                {{ listing.note ? 'View Note' : 'Add Note' }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- List View -->
+                    <div v-else-if="listViewType === 'list'">
+                      <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
+                          :key="index"
+                          class="border-bottom py-3">
+
+                        <!-- Row 1: Index + Name + Delete -->
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                          <div class="d-flex align-items-center">
+                            <!-- Index number -->
+                            <span class="fw-bold me-2" style="min-width: 30px; color: #666;">
+                              {{ index + 1 }}.
+                            </span>
+                            <!-- Name -->
+                            <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
+                              class="fw-bold text-decoration-none"
+                              style="color:#223957; font-size:16px;">
+                              {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                            </a>
+                          </div>
+                          
+                          <!-- Delete -->
+                          <button v-if="ownProfile"
+                            class="btn btn-danger btn-sm"
+                            style="width: 28px; height: 28px; padding: 0;"
+                            data-bs-toggle="modal"
+                            :data-bs-target="`#deleteFromListModal${index}`"
+                            title="Delete from list">
+                            ×
+                          </button>
+                        </div>
+
+                        <!-- Row 2: Rating + Type + Note -->
+                        <div class="d-flex justify-content-between align-items-center">
+                          <!-- Wrap in flex and add left padding equal to index width -->
+                          <div style="padding-left: 32px;">
+                            <span class="fw-bold me-3" style="color:#f0b358; font-size:16px;">
+                              {{ bookedMarkedListings[listing?.drinkId]?.avgRating !== null ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1) : "-" }}★
+                            </span>
+                            <span class="small fw-bold" style="color:#f0b358;">
+                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
+                            </span>
+                          </div>
+
+                          <div>
+                            <button v-if="ownProfile || listing.note"
+                              class="btn btn-sm"
+                              style="margin-top: 0.5rem;"
+                              :class="'btn-warning'"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#noteModal${index}`"
+                              @click="prepareNoteModal(listing, index)">
+                              {{ listing.note ? 'View Note' : 'Add Note' }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Column View -->
+                    <div v-else-if="listViewType === 'column'">
+                      <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
+                          :key="index"
+                          class="border-bottom py-3">
+                        <div class="row">
+                          <!-- Image -->
+                          <div class="col-2">
+                            <img :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
+                                :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
+                                class="img-fluid rounded"
+                                style="max-height: 100px; width: 100%; object-fit: cover;" />
+                          </div>
+
+                          <!-- Content -->
+                          <div class="col-10">
+                            
+                            <!-- Row 1: Name + Delete -->
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                              <h5 class="fw-bold mb-0" style="color:#223957">
+                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                              </h5>
+                              <button v-if="ownProfile"
+                                class="btn btn-danger btn-sm"
+                                style="width: 28px; height: 28px; padding: 0;"
+                                data-bs-toggle="modal"
+                                :data-bs-target="`#deleteFromListModal${index}`"
+                                title="Delete from list">
+                                ×
+                              </button>
+                            </div>
+
+                            <!-- Row 2: Type + Rating -->
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                              <p class="mb-0 fw-bold small" style="color:#f0b358;">
+                                {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} /
+                                {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }}
+                              </p>
+                              <span class="fw-bold" style="color:#f0b358; font-size:16px;">
+                                {{ bookedMarkedListings[listing?.drinkId]?.avgRating !== null ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1) : "-" }}★
+                              </span>
+                            </div>
+
+                            <!-- Row 3: Note -->
+                            <div class="text-end">
+                              <button v-if="ownProfile || listing.note"
+                                class="btn btn-sm"
+                                style="margin-top: 0.5rem;"
+                                :class="'btn-warning'"
+                                data-bs-toggle="modal"
+                                :data-bs-target="`#noteModal${index}`"
+                                @click="prepareNoteModal(listing, index)">
+                                {{ listing.note ? 'View Note' : 'Add Note' }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Note Modals (one for each listing) -->
+                    <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems" :key="`note-modal-${index}`">
+                      <div class="modal fade" :id="`noteModal${index}`" tabindex="-1" aria-labelledby="`noteModalLabel${index}`" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h5 class="modal-title" :id="`noteModalLabel${index}`">
+                                {{ listing.note ? 'Edit Note' : 'Add Note' }} - {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                              </h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label :for="`noteText${index}`" class="form-label">Your Note:</label>
+                                <textarea 
+                                  class="form-control" 
+                                  :id="`noteText${index}`" 
+                                  rows="4" 
+                                  v-model="currentNote"
+                                  :readonly="!ownProfile"
+                                  placeholder="Add your personal note about this drink..."></textarea>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                {{ ownProfile ? 'Cancel' : 'Close' }}
+                              </button>
+                              <button v-if="ownProfile" type="button" class="btn btn-primary" @click="saveNote(index)" data-bs-dismiss="modal">
+                                Save Note
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Delete Confirmation Modals (one for each listing) -->
+                    <div v-for="(listing, index) in displayUserBookmarks[currentList].listItems" :key="`delete-modal-${index}`">
+                      <div
+                        class="modal fade"
+                        :id="`deleteFromListModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="deleteFromListLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="text-end mt-2 me-2">
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="text-center mx-2">
+                              <img
+                                src="../../../Images/Others/cancel.png"
+                                alt=""
+                                class="rounded-circle border border-dark text-center"
+                                style="width: 100px; height: 100px"
+                              />
+                              <h3>Are you sure?</h3>
+                              <br />
+                              <p>
+                                Do you really want to delete
+                                <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName || 'this item' }}</i></b>
+                                from <b><i>{{ currentList }}</i></b>?
+                              </p>
+                            </div>
+                            <div class="text-center mb-4">
+                              <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
+                              <button
+                                type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal"
+                                @click="deleteFromList(currentList, listing?.drinkId)"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <!-- add drink modal -->
@@ -2766,130 +3012,13 @@
                               class="btn btn-primary"
                               @click="addDrinkToList(currentList)"
                             >
-                              Add to List
+                              Add to Listf
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
-
-                    
-                    <!-- List details (card grid layout, no pagination/visibility checks) -->
-                    <div class="row">
-                      <div
-                        class="col-6 col-md-4 col-lg-3 mb-4"
-                        v-for="(listing, index) in displayUserBookmarks[currentList].listItems"
-                        :key="index"
-                      >
-                        <div class="card h-100 review-card border shadow-sm">
-                          <!-- Image on top -->
-                          <div class="card-img-top-wrapper">
-                            <img
-                              :src="bookedMarkedListings[listing?.drinkId]?.photo || defaultDrinkImage"
-                              :alt="bookedMarkedListings[listing?.drinkId]?.listingName || 'Drink image'"
-                              class="card-img-top review-card-img"
-                            />
-                          </div>
-                          <div class="card-body d-flex flex-column">
-                            <!-- Title links to listing -->
-                            <a
-                              :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
-                              class="text-decoration-none"
-                              style="text-decoration: none; color: #223957"
-                            >
-                              <h6 class="card-title mb-2 default-clickable-text fw-bold">
-                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                              </h6>
-                            </a>
-
-                            <!-- Producer 
-                            <p class="text-muted small mb-2">
-                              by {{ bookedMarkedListings[listing?.drinkId]?.producerName }}
-                            </p> -->
-
-                            <!-- Type / Country (optional) -->
-                            <p class="mb-3 small fw-bold" style="color: #f0b358;"
-                              v-if="bookedMarkedListings[listing?.drinkId]?.drinkType || bookedMarkedListings[listing?.drinkId]?.originCountry">
-                              
-                              {{ bookedMarkedListings[listing?.drinkId]?.drinkType }} / 
-                              {{ bookedMarkedListings[listing?.drinkId]?.originCountry || '' }} 
-                            </p>
-                            <h4 class="mobile-fs-5 fw-bold rating-text" style="color:#f0b358">
-                                {{
-                                  bookedMarkedListings[listing?.drinkId]?.avgRating !== null &&
-                                  bookedMarkedListings[listing?.drinkId]?.avgRating !== undefined
-                                    ? parseFloat(bookedMarkedListings[listing?.drinkId]?.avgRating).toFixed(1)
-                                    : "-"
-                                }}★
-                            </h4>
-                            <!-- Footer pinned to bottom: delete (if ownProfile) on left, rating on right -->
-                            <div class="d-flex justify-content-between align-items-center mt-auto">
-                              <div v-if="ownProfile">
-                                <a
-                                  href="#"
-                                  class="mobile-rating-smaller-text-2 small"
-                                  style="text-decoration: none; color:#666"
-                                  data-bs-toggle="modal"
-                                  :data-bs-target="`#deleteFromListModal${index}`"
-                                >
-                                  x Delete from list
-                                </a>
-                              </div>
-
-                              
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- delete from list modal (unchanged except position) -->
-                        <div
-                          class="modal fade"
-                          :id="`deleteFromListModal${index}`"
-                          tabindex="-1"
-                          aria-labelledby="deleteFromListLabel"
-                          aria-hidden="true"
-                        >
-                          <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                              <div class="text-end mt-2 me-2">
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-
-                              <div class="text-center mx-2">
-                                <img
-                                  src="../../../Images/Others/cancel.png"
-                                  alt=""
-                                  class="rounded-circle border border-dark text-center"
-                                  style="width: 100px; height: 100px"
-                                />
-                                <h3>Are you sure?</h3>
-                                <br />
-                                <p>
-                                  Do you really want to delete
-                                  <b><i>{{ bookedMarkedListings[listing?.drinkId]?.listingName || 'this item' }}</i></b>
-                                  from <b><i>{{ currentList }}</i></b>?
-                                </p>
-                              </div>
-                              <div class="text-center mb-4">
-                                <button type="button" class="btn btn-secondary me-3" data-bs-dismiss="modal">Cancel</button>
-                                <button
-                                  type="button"
-                                  class="btn btn-danger"
-                                  data-bs-dismiss="modal"
-                                  @click="deleteFromList(currentList, listing?.drinkId)"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!-- modal end -->
-                      </div>
-                    </div>
-
                   </div>
-                  
                 </div>
 
                 <!-- Producers Lists Content -->
@@ -3909,6 +4038,10 @@ export default {
       // badge popup related
       earnedBadges: [],
       showBadgePopup: false,
+
+      listViewType: 'grid',
+      currentNote: '',
+      currentNoteListingIndex: null,
 
     };
   },
@@ -5594,9 +5727,11 @@ export default {
       }
 
       this.newListNameError = "";
-      this.userBookmarks[this.newListName] = {};
-      this.userBookmarks[this.newListName].listDesc = this.newListDesc;
-      this.userBookmarks[this.newListName].listItems = [];
+      this.userBookmarks[this.newListName] = {
+        listDesc: this.newListDesc,
+        listItems: [],
+        isPublic: false
+      };
 
       try {
         const response = await this.$axios.post(
@@ -5623,7 +5758,101 @@ export default {
         console.error(error);
         window.location.reload();
       }
+    },
 
+    initializeListDefaults() {
+      for (const listName in this.displayUserBookmarks) {
+        if (this.displayUserBookmarks[listName].isPublic === undefined) {
+          this.displayUserBookmarks[listName].isPublic = false;
+          this.userBookmarks[listName].isPublic = false;
+        }
+      }
+    },
+
+    async toggleListVisibility(listName) {
+      // Toggle the local state first for immediate UI feedback
+      this.displayUserBookmarks[listName].isPublic = !this.displayUserBookmarks[listName].isPublic;
+      this.userBookmarks[listName].isPublic = this.displayUserBookmarks[listName].isPublic;
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log("List visibility updated:", response.data);
+        
+        const toast = useToast();
+        toast.success(`List is now ${this.displayUserBookmarks[listName].isPublic ? 'Public' : 'Private'}`);
+      } catch (error) {
+        console.error("Error updating list visibility:", error);
+        // Revert the change if API call failed
+        this.displayUserBookmarks[listName].isPublic = !this.displayUserBookmarks[listName].isPublic;
+        this.userBookmarks[listName].isPublic = this.displayUserBookmarks[listName].isPublic;
+        
+        const toast = useToast();
+        toast.error("Failed to update list visibility. Please try again.");
+      }
+    },
+
+    prepareNoteModal(listing, index) {
+      this.currentNote = listing.note || '';
+      this.currentNoteListingIndex = index;
+    },
+
+    // Save note for a listing
+    async saveNote(index) {
+      if (!this.currentNote.trim()) {
+        const toast = useToast();
+        toast.error("Note cannot be empty");
+        return;
+      }
+
+      // Update the listing item in the local data
+      const listItem = this.displayUserBookmarks[this.currentList].listItems[index];
+      listItem.note = this.currentNote.trim();
+
+      // Also update in userBookmarks
+      this.userBookmarks[this.currentList].listItems[index].note = this.currentNote.trim();
+
+      try {
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
+          {
+            userID: this.userID,
+            bookmark: this.userBookmarks,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        
+        console.log("Note saved:", response.data);
+        const toast = useToast();
+        toast.success("Note saved successfully!");
+        
+        // Clear the modal state
+        this.currentNote = '';
+        this.currentNoteListingIndex = null;
+        
+      } catch (error) {
+        console.error("Error saving note:", error);
+        // Revert the local change
+        delete listItem.note;
+        delete this.userBookmarks[this.currentList].listItems[index].note;
+        
+        const toast = useToast();
+        toast.error("Failed to save note. Please try again.");
+      }
     },
 
     async addNewProducerList() {
@@ -5720,20 +5949,26 @@ export default {
     async addDrinkToList(listName) {
       console.log("listName: ", listName);
       for (const drink of this.drinksToAdd) {
-        // Get the listing ID based on the drink name
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getListingByName/${drink}`
-        );
-        this.userBookmarks[listName].listItems.push({
-          date: new Date(),
-          drinkId: response.data.id,
-        });
+        try {
+          // Get the listing ID based on the drink name
+          const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getListingByName/${drink}`
+          );
+          
+          // Add with the new structure
+          this.userBookmarks[listName].listItems.push({
+            date: new Date(),
+            drinkId: response.data.id,
+            note: null // Initialize with null note
+          });
+        } catch (error) {
+          console.error(`Error adding drink ${drink}:`, error);
+        }
       }
 
       try {
         const response = await this.$axios.post(
           `${process.env.VUE_APP_API_URL}/editProfile/updateBookmark`,
-          // const response = await this.$axios.post(`http://127.0.0.1:5000/editProfile/updateBookmark`,
           {
             userID: this.userID,
             bookmark: this.userBookmarks,
@@ -5756,7 +5991,6 @@ export default {
         console.error(error);
         window.location.reload();
       }
-
     },
 
     // add producer to list

@@ -171,14 +171,19 @@ def get_og_image(url):
 def fetch_drink_lists(cursor, user_id):
     result = {}
     try: 
-        # Single query using LEFT JOIN to get all data at once
+        # Updated query to include createdAt, updatedAt, and upvotes
         cursor.execute("""
             SELECT 
                 udl."id" as list_id,
                 udl."listName",
                 udl."listDesc",
+                udl."isPublic",
+                udl."createdAt",
+                udl."updatedAt", 
+                COALESCE(udl."upvotes", 0) as upvotes,
                 udli."drinkId",
-                udli."addedDate"
+                udli."addedDate",
+                udli."note"
             FROM "usersDrinkLists" udl
             LEFT JOIN "usersDrinkListItems" udli ON udl."id" = udli."listId"
             WHERE udl."userId" = %s
@@ -195,6 +200,10 @@ def fetch_drink_lists(cursor, user_id):
             if list_name not in result:
                 result[list_name] = {
                     "listDesc": row["listDesc"],
+                    "isPublic": row["isPublic"],
+                    "createdAt": row["createdAt"],
+                    "updatedAt": row["updatedAt"],
+                    "upvotes": row["upvotes"],
                     "listItems": []
                 }
             
@@ -202,7 +211,8 @@ def fetch_drink_lists(cursor, user_id):
             if row["drinkId"] is not None:
                 result[list_name]["listItems"].append({
                     "drinkId": row["drinkId"],
-                    "addedDate": row["addedDate"]
+                    "addedDate": row["addedDate"],
+                    "note": row["note"] or ""
                 })
         
         return result
@@ -210,7 +220,6 @@ def fetch_drink_lists(cursor, user_id):
     except Exception as e:
         import traceback
         traceback.print_exc()
-        # print("something went wrong" + str(e), flush=True)
         return result
 
 # Helper function to fetch producer lists for a user
@@ -10040,4 +10049,160 @@ def getCellarItemsChangelog(ownerType, ownerID):
         return jsonify({
             "code": 500,
             "message": f"Error retrieving changelog data: {str(e)}"
+        }), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all public lists for the Find Lists page
+@blueprint.route('/getPublicLists', methods=['GET'])
+def get_public_lists():
+    """Get all public lists for the Find Lists page"""
+    conn = g.db
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Get public lists with user information and item counts
+        # Fixed: Moved COUNT condition from WHERE to HAVING clause
+        cursor.execute('''
+            SELECT 
+                dl."id",
+                dl."listName",
+                dl."listDesc",
+                dl."createdAt",
+                dl."updatedAt",
+                COALESCE(dl."upvotes", 0) as "upvotes",
+                u."id" as "userId",
+                u."username",
+                u."displayName",
+                u."photo" as "userPhoto",
+                COUNT(dli."drinkId") as "itemCount"
+            FROM "usersDrinkLists" dl
+            JOIN "users" u ON dl."userId" = u."id"
+            LEFT JOIN "usersDrinkListItems" dli ON dl."id" = dli."listId"
+            WHERE dl."isPublic" = true
+            GROUP BY dl."id", u."id", u."username", u."displayName", u."photo"
+            HAVING COUNT(dli."drinkId") > 0
+            ORDER BY dl."updatedAt" DESC, dl."upvotes" DESC
+            LIMIT 100
+        ''')
+        
+        lists = cursor.fetchall()
+        
+        # Get preview items for each list (first 3 items)
+        for list_item in lists:
+            cursor.execute('''
+                SELECT 
+                    dli."drinkId",
+                    l."listingName",
+                    l."photo"
+                FROM "usersDrinkListItems" dli
+                JOIN "listings" l ON dli."drinkId" = l."id"
+                WHERE dli."listId" = %s
+                ORDER BY dli."addedDate" DESC
+                LIMIT 3
+            ''', (list_item['id'],))
+            
+            preview_items = cursor.fetchall()
+            list_item['previewItems'] = preview_items
+        
+        cursor.close()
+        
+        return jsonify({
+            "code": 200,
+            "data": lists
+        }), 200
+        
+    except Exception as e:
+        print("Get public lists error:", str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred fetching public lists."
+        }), 500
+    
+# -----------------------------------------------------------------------------------------
+# [GET] Get detailed items for a specific public list
+@blueprint.route('/getPublicListDetails/<int:list_id>', methods=['GET'])
+def get_public_list_details(list_id):
+    """Get detailed items for a specific public list"""
+    conn = g.db
+    
+    try:
+        cursor = conn.cursor()
+        
+        # First verify the list is public
+        cursor.execute('''
+            SELECT "isPublic" FROM "usersDrinkLists" 
+            WHERE "id" = %s
+        ''', (list_id,))
+        
+        list_check = cursor.fetchone()
+        if not list_check or not list_check['isPublic']:
+            return jsonify({
+                "code": 404,
+                "message": "List not found or not public."
+            }), 404
+        
+        # Get all items in the list with drink details and calculated avg rating
+        cursor.execute('''
+            SELECT 
+                dli."drinkId",
+                dli."note",
+                dli."addedDate",
+                l."listingName",
+                l."photo",
+                l."drinkType",
+                l."originCountry",
+                AVG(r."rating") as "avgRating"
+            FROM "usersDrinkListItems" dli
+            JOIN "listings" l ON dli."drinkId" = l."id"
+            LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+            WHERE dli."listId" = %s
+            GROUP BY dli."drinkId", dli."note", dli."addedDate", 
+                     l."listingName", l."photo", l."drinkType", l."originCountry"
+            ORDER BY dli."addedDate" DESC
+        ''', (list_id,))
+        
+        items = cursor.fetchall()
+        cursor.close()
+        
+        return jsonify({
+            "code": 200,
+            "data": items
+        }), 200
+        
+    except Exception as e:
+        print("Get public list details error:", str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred fetching list details."
+        }), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get all lists that a specific user has upvoted
+@blueprint.route('/getUserUpvotedLists/<int:user_id>', methods=['GET'])
+def get_user_upvoted_lists(user_id):
+    """Get lists that a user has upvoted"""
+    conn = g.db
+    
+    try:
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT "listId" FROM "usersDrinkListUpvotes" 
+            WHERE "userId" = %s
+        ''', (user_id,))
+        
+        upvoted_lists = cursor.fetchall()
+        cursor.close()
+        
+        return jsonify({
+            "code": 200,
+            "data": upvoted_lists
+        }), 200
+        
+    except Exception as e:
+        print("Get user upvoted lists error:", str(e))
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred fetching upvoted lists."
         }), 500
