@@ -1134,12 +1134,7 @@
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
                         Drink Name <span class="text-danger">*</span>
-                        <small class="text-muted d-block text-start">Search by drink name</small> <p class="text-muted small mb-0 mt-2">
-                    Can't find your drink on Drink-X? 
-                    <router-link to="/request/new" class="text-decoration-none">
-                      Submit a new drink to the database!
-                    </router-link>
-                  </p>
+                        <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, <router-link to="/request/new" class="text-decoration-none"> submit a new drink to the database!</router-link></small>
                         <small 
                           v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
                           class="text-info fw-bold d-block text-start"
@@ -1152,6 +1147,7 @@
                         class="form-control"
                         v-model="addDrinkForm.searchQuery"
                         @input="debouncedSearchDrinks"
+                        @focus="onDrinkSearchFocus"
                         :placeholder="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id ? 
                           'Search drinks from ' + addDrinkForm.selectedProducer.producerName : 
                           'Enter a drink name to search...'"
@@ -1159,7 +1155,7 @@
                       />
                       <ul 
                         class="list-group mt-1"
-                        v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0 && addDrinkForm.searchQuery"
+                        v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0"
                       >
                         <li 
                           v-for="listing in addDrinkForm.searchResults" 
@@ -2837,13 +2833,11 @@
               <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
                   Drink Name <span class="text-danger">*</span>
-                  <small class="text-muted d-block text-start">Search by drink name</small> <p class="text-muted small mb-0 mt-2">
-                    Can't find your drink on Drink-X? 
+                  <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, 
                     <router-link to="/request/new" class="text-decoration-none">
-                      Submit a new drink to the database!
-                    </router-link>
-                  </p>
-                  <small 
+                      submit a new drink to the database!
+                    </router-link></small>                   
+                    <small 
                     v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
                     class="text-info fw-bold d-block text-start"
                   >
@@ -2855,6 +2849,7 @@
                   class="form-control"
                   v-model="addDrinkForm.searchQuery"
                   @input="debouncedSearchDrinks"
+                  @focus="onDrinkSearchFocus"
                   :placeholder="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id ? 
                     'Search drinks from ' + addDrinkForm.selectedProducer.producerName : 
                     'Enter a drink name to search...'"
@@ -2862,7 +2857,7 @@
                 />
                 <ul 
                   class="list-group mt-1"
-                  v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0 && addDrinkForm.searchQuery"
+                  v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0"
                 >
                   <li 
                     v-for="listing in addDrinkForm.searchResults" 
@@ -5415,13 +5410,28 @@ export default {
       }, 300);
     },
 
+    // Handle focus on drink search input
+    onDrinkSearchFocus() {
+      // If a producer is selected, trigger search immediately on focus
+      if (this.addDrinkForm.selectedProducer && this.addDrinkForm.selectedProducer.id) {
+        console.log('TZHFrontendLog: Producer selected, triggering search on focus');
+        // Don't use debounced search since we want immediate results
+        this.searchDrinks();
+      }
+      // If no producer is selected, do nothing - rely on @input event for typing
+    },
+
     // Search drinks API call
     async searchDrinks() {
       console.log('TZHFrontendLog: searchDrinks called with query:', this.addDrinkForm.searchQuery);
       console.log('TZHFrontendLog: Selected producer for filtering:', JSON.stringify(this.addDrinkForm.selectedProducer, null, 2));
       
-      if (!this.addDrinkForm.searchQuery || this.addDrinkForm.searchQuery.trim().length < 2) {
-        console.log('TZHFrontendLog: Search query too short, clearing results');
+      // Allow empty search if producer is selected (to show all drinks from producer)
+      const hasProducerSelected = this.addDrinkForm.selectedProducer && this.addDrinkForm.selectedProducer.id;
+      const queryLength = this.addDrinkForm.searchQuery ? this.addDrinkForm.searchQuery.trim().length : 0;
+      
+      if (!hasProducerSelected && queryLength < 2) {
+        console.log('TZHFrontendLog: Search query too short and no producer selected, clearing results');
         this.addDrinkForm.searchResults = [];
         return;
       }
@@ -5431,14 +5441,20 @@ export default {
         let response;
         let searchUrl;
         
+        // Ensure we have a search term for the URL (use placeholder for empty search)
+        const searchTerm = this.addDrinkForm.searchQuery ? this.addDrinkForm.searchQuery.trim() : '';
+        // Use a placeholder character for empty searches to avoid malformed URLs
+        const urlSafeSearchTerm = searchTerm || '_EMPTY_SEARCH_';
+        
         // If a producer is selected, search only within that producer's listings
         if (this.addDrinkForm.selectedProducer && this.addDrinkForm.selectedProducer.id) {
-          searchUrl = `${baseUrl}/getData/getListingNamesByProducer/${this.addDrinkForm.searchQuery}/${this.addDrinkForm.selectedProducer.id}`;
+          // Use encodeURIComponent to handle special characters
+          searchUrl = `${baseUrl}/getData/getListingNamesByProducer/${encodeURIComponent(urlSafeSearchTerm)}/${this.addDrinkForm.selectedProducer.id}`;
           console.log('TZHFrontendLog: Searching drinks by producer with URL:', searchUrl);
           response = await this.$axios.get(searchUrl);
         } else {
           // Otherwise, search all listings
-          searchUrl = `${baseUrl}/getData/getListingNamesDynamicSearch/${this.addDrinkForm.searchQuery}`;
+          searchUrl = `${baseUrl}/getData/getListingNamesDynamicSearch/${encodeURIComponent(urlSafeSearchTerm)}`;
           console.log('TZHFrontendLog: Searching all drinks with URL:', searchUrl);
           response = await this.$axios.get(searchUrl);
         }

@@ -897,6 +897,14 @@ def getListingNamesDynamicSearch(searchTerm):
     cursor = conn.cursor()
 
     try:
+        # Handle placeholder for empty search from frontend
+        if searchTerm == '_EMPTY_SEARCH_':
+            searchTerm = ''
+            
+        # For general search, require at least 1 character
+        if len(searchTerm.strip()) < 1:
+            return jsonify([])
+            
         # Searches for listings by name, starting from the lastID
         cursor.execute(""" 
             SELECT 
@@ -1024,30 +1032,57 @@ def getListingNamesByProducer(searchTerm, producerId):
 
     try:
 
-        # First, lower the similarity threshold to 0.15 for more permissive matching
-        cursor.execute("SET pg_trgm.similarity_threshold = 0.15")
+        # Handle placeholder for empty search from frontend
+        if searchTerm == '_EMPTY_SEARCH_':
+            searchTerm = ''
 
-        # Searches for listings by name from a specific producer
-        cursor.execute(""" 
-            SELECT 
-                l."id", 
-                l."listingName", 
-                l."photo",
-                p."producerName",
-                l."drinkType",
-                l."typeCategory",
-                l."abv",
-                l."originCountry",
-                l."officialDesc",
-                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
-                similarity(unaccent(l."listingName"), unaccent(%s)) AS sim_score
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE l."producerID" = %s
-            AND unaccent(l."listingName") %% unaccent(%s)
-            ORDER BY sim_score DESC
-            LIMIT 30
-        """, (searchTerm, producerId, searchTerm))
+        # Check if searchTerm is empty or too short for meaningful trigram matching
+        if len(searchTerm.strip()) < 2:
+            # For empty/very short search terms, return all listings from producer
+            cursor.execute(""" 
+                SELECT 
+                    l."id", 
+                    l."listingName", 
+                    l."photo",
+                    p."producerName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."abv",
+                    l."originCountry",
+                    l."officialDesc",
+                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                    1.0 AS sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE l."producerID" = %s
+                ORDER BY l."listingName" ASC
+                LIMIT 30
+            """, (producerId,))
+        else:
+            # First, lower the similarity threshold to 0.15 for more permissive matching
+            cursor.execute("SET pg_trgm.similarity_threshold = 0.05")
+
+            # Searches for listings by name from a specific producer with trigram matching
+            cursor.execute(""" 
+                SELECT 
+                    l."id", 
+                    l."listingName", 
+                    l."photo",
+                    p."producerName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."abv",
+                    l."originCountry",
+                    l."officialDesc",
+                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                    similarity(unaccent(l."listingName"), unaccent(%s)) AS sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE l."producerID" = %s
+                AND unaccent(l."listingName") %% unaccent(%s)
+                ORDER BY sim_score DESC
+                LIMIT 30
+            """, (searchTerm, producerId, searchTerm))
 
         listings_data = cursor.fetchall()
 
