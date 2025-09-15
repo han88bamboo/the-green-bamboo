@@ -3580,7 +3580,7 @@ export default {
       // New Collection form
       newCollectionForm: {
         collectionName: '',
-        isPublic: false,
+        isPublic: true,
         isDefault: false,
         loading: false,
         error: null,
@@ -6169,7 +6169,7 @@ export default {
     resetNewCollectionForm() {
       this.newCollectionForm = {
         collectionName: '',
-        isPublic: false,
+        isPublic: true,
         isDefault: false,
         loading: false,
         error: null,
