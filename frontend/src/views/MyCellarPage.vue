@@ -1153,6 +1153,18 @@
                           'Enter a drink name to search...'"
                         required
                       />
+                      
+                      <!-- Loading spinner for drink search -->
+                      <div 
+                        v-if="addDrinkForm.isSearchingDrinks" 
+                        class="d-flex align-items-center justify-content-center p-3 mt-1"
+                      >
+                        <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <span class="text-muted">Searching drinks...</span>
+                      </div>
+                      
                       <ul 
                         class="list-group mt-1"
                         v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0"
@@ -2855,6 +2867,18 @@
                     'Enter a drink name to search...'"
                   required
                 />
+                
+                <!-- Loading spinner for drink search -->
+                <div 
+                  v-if="addDrinkForm.isSearchingDrinks" 
+                  class="d-flex align-items-center justify-content-center p-3 mt-1"
+                >
+                  <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <span class="text-muted">Searching drinks...</span>
+                </div>
+                
                 <ul 
                   class="list-group mt-1"
                   v-if="addDrinkForm.searchResults && addDrinkForm.searchResults.length > 0"
@@ -3604,6 +3628,7 @@ export default {
         searchResults: [],
         selectedDrink: {},
         drinkDebounceTimer: null,
+        isSearchingDrinks: false,
         
         // Group properties (applied to all items in the drink group)
         vintage: null,
@@ -5433,8 +5458,12 @@ export default {
       if (!hasProducerSelected && queryLength < 2) {
         console.log('TZHFrontendLog: Search query too short and no producer selected, clearing results');
         this.addDrinkForm.searchResults = [];
+        this.addDrinkForm.isSearchingDrinks = false;
         return;
       }
+
+      // Set loading state
+      this.addDrinkForm.isSearchingDrinks = true;
 
       try {
         const baseUrl = this.getApiBaseUrl();
@@ -5469,6 +5498,9 @@ export default {
       } catch (error) {
         console.error('TZHFrontendLog: Error searching drinks:', error);
         this.addDrinkForm.searchResults = [];
+      } finally {
+        // Clear loading state
+        this.addDrinkForm.isSearchingDrinks = false;
       }
     },
 
@@ -5478,6 +5510,7 @@ export default {
       this.addDrinkForm.selectedDrink = listing;
       this.addDrinkForm.searchQuery = listing.listingName;
       this.addDrinkForm.searchResults = [];
+      this.addDrinkForm.isSearchingDrinks = false;
       
       // Apply conditional defaults based on drinkType
       this.applyDrinkTypeDefaults();
@@ -5983,6 +6016,7 @@ export default {
         searchResults: [],
         selectedDrink: {},
         drinkDebounceTimer: null,
+        isSearchingDrinks: false,
         
         // Group properties (applied to all items in the drink group)
         vintage: null,
