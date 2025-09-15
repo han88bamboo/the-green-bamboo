@@ -962,10 +962,6 @@
           }
         }
 
-
-        document.addEventListener("click", this.handleClickOutside);
-        document.addEventListener("keydown", this.handleKeyDown);
-        
         // Add event listeners for user search in the modal
         document.addEventListener("click", this.handleUserSearchClickOutside);
         document.addEventListener("keydown", this.handleUserSearchKeyDown);
@@ -976,9 +972,6 @@
         }
       },
       beforeUnmount() {
-        document.removeEventListener("click", this.handleClickOutside);
-        document.removeEventListener("keydown", this.handleKeyDown);
-        
         // Remove event listeners for user search
         document.removeEventListener("click", this.handleUserSearchClickOutside);
         document.removeEventListener("keydown", this.handleUserSearchKeyDown);
