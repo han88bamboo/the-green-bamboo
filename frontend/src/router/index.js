@@ -39,6 +39,14 @@ const router = createRouter({
   routes,
   // ADDED BY SMU GROUP 3 (This ensure that the user is brought to the top of the page when they navigate from one page to another)
   scrollBehavior(to, from, savedPosition) {
+    // Always force scroll to top immediately for new navigation
+    // This prevents scroll position inheritance from previous page
+    if (!savedPosition) {
+      // Immediately force scroll to top to prevent flash of wrong position
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+    
     if (savedPosition) {
       return savedPosition; // Keeps the previous scroll position when navigating back
     } else {
