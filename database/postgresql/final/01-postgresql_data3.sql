@@ -49,6 +49,7 @@ DROP TABLE IF EXISTS "tokens" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkLists" CASCADE;
 DROP TABLE IF EXISTS "usersDrinkListItems" CASCADE;
+DROP TABLE IF EXISTS "usersDrinkListUpvotes" CASCADE;
 DROP TABLE IF EXISTS "userProducerLists" CASCADE;
 DROP TABLE IF EXISTS "userProducerListItems" CASCADE;
 DROP TABLE IF EXISTS "usersFollowLists" CASCADE;
@@ -542,6 +543,10 @@ CREATE TABLE "usersDrinkLists" (
     "userId" INTEGER REFERENCES "users"("id") ON DELETE SET NULL,  -- [!] reference "users" FK
     "listName" TEXT,
     "listDesc" TEXT,
+    "isPublic" BOOLEAN DEFAULT false,
+    "upvotes" INTEGER DEFAULT 0,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- "drinks" TEXT[],-- Contains "listings"("id")s
     UNIQUE ("userId", "listName")
 );
@@ -552,7 +557,17 @@ CREATE TABLE "usersDrinkListItems" (
     "listId" INTEGER REFERENCES "usersDrinkLists"("id") ON DELETE CASCADE, -- [!] reference "usersDrinkLists" FK
     "drinkId" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
     "addedDate" TIMESTAMP,
+    "note" TEXT DEFAULT '',
     UNIQUE ("listId", "drinkId")
+);
+
+-- ========= "usersDrinkListUpvotes" =========
+CREATE TABLE IF NOT EXISTS "usersDrinkListUpvotes" (
+    "id" SERIAL PRIMARY KEY,
+    "listId" INTEGER REFERENCES "usersDrinkLists"("id") ON DELETE CASCADE,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "createdAt" TIMESTAMP DEFAULT NOW(),
+    UNIQUE ("listId", "userId")
 );
 
 -- ========= "userProducerLists" =========

@@ -3148,16 +3148,16 @@ INSERT INTO "usersFollowLists" (
 
 
 INSERT INTO "usersDrinkLists" (
-    "userId", "listName", "listDesc")
+    "userId", "listName", "listDesc", "isPublic", "upvotes")
     VALUES 
-    (1, 'Drinks I Have Tried', ''), 
-    (1, 'Drinks I Want To Try', ''), 
-    (2, 'Drinks I Have Tried', ''), 
-    (2, 'Drinks I Want To Try', ''), 
-    (3, 'Drinks I Have Tried', ''), 
-    (3, 'Drinks I Want To Try', ''), 
-    (4, 'Drinks I Have Tried', ''), 
-    (4, 'Drinks I Want To Try', '');
+    (1, 'Drinks I Have Tried', '', false, 0), 
+    (1, 'Drinks I Want To Try', '', false, 0),
+    (2, 'Drinks I Have Tried', '', false, 0), 
+    (2, 'Drinks I Want To Try', '', false, 0), 
+    (3, 'Drinks I Have Tried', '', false, 0), 
+    (3, 'Drinks I Want To Try', '', false, 0), 
+    (4, 'Drinks I Have Tried', '', false, 0), 
+    (4, 'Drinks I Want To Try', '', false, 0);
 
 INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37);
 
