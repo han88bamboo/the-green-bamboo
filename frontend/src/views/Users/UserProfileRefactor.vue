@@ -2368,21 +2368,33 @@
                 <!-- Collection Detail View -->
                 <div v-else>
                   <!-- Back button and collection header -->
-                  <div class="d-flex align-items-center mb-4">
-                    <button 
-                      class="btn btn-outline-secondary me-3"
-                      @click="backToCellarCollections()"
-                    >
-                      <i class="bi bi-arrow-left"></i> Back to Collections
-                    </button>
-                    <div>
-                      <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
-                      <small class="text-muted">
-                        {{ groupedCellarItems.length }} 
-                        {{ groupedCellarItems.length === 1 ? 'variant' : 'variants' }}
-                        ({{ selectedCellarCollectionItems.length }} total {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }})
-                      </small>
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div class="d-flex align-items-center">
+                      <button 
+                        class="btn btn-outline-secondary me-3"
+                        @click="backToCellarCollections()"
+                      >
+                        <i class="bi bi-arrow-left"></i> Back to Collections
+                      </button>
+                      <div>
+                        <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
+                        <small class="text-muted">
+                          {{ groupedCellarItems.length }} 
+                          {{ groupedCellarItems.length === 1 ? 'variant' : 'variants' }}
+                          ({{ selectedCellarCollectionItems.length }} total {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }})
+                        </small>
+                      </div>
                     </div>
+                    
+                    <!-- Share Button -->
+                    <button 
+                      v-if="selectedCellarCollectionData && selectedCellarCollectionData.isPublic"
+                      class="btn btn-outline-primary"
+                      @click="shareCellarCollection()"
+                      title="Share this collection"
+                    >
+                      <i class="bi bi-share"></i> Share
+                    </button>
                   </div>
 
                   <!-- Items Grid -->
@@ -4135,8 +4147,10 @@ export default {
       
       // Cellar Collection Detail View
       selectedCellarCollection: null,
+      selectedCellarCollectionData: null,
       selectedCellarCollectionItems: [],
       viewingCellarCollection: false,
+      sharedCollectionId: null, // For handling shared collection URLs
 
       // Display User Data
 
@@ -4444,6 +4458,18 @@ export default {
       } else {
         this.currentList = "";
         this.currentProducerList = "";
+      }
+    } catch (error) {
+      console.error(error);
+    }
+
+    // Handle shared collection URL - check for collection query parameter
+    try {
+      const collectionId = this.$route.query.collection;
+      if (collectionId) {
+        // Set active tab to cellar and store the collection ID to open after data loads
+        this.activeTab = "cellar";
+        this.sharedCollectionId = collectionId;
       }
     } catch (error) {
       console.error(error);
@@ -4923,6 +4949,9 @@ export default {
         }
         
         this.cellarDataLoaded = true;
+        
+        // Handle shared collection after data is loaded
+        this.handleSharedCollection();
       } catch (error) {
         console.error("Error fetching cellar data:", error);
         if (error.response && error.response.status === 404) {
@@ -4930,12 +4959,16 @@ export default {
           this.displayUserCellarCollections = {};
           this.cellarItems = [];
           this.cellarDataLoaded = true;
+          // Handle shared collection even if there's no cellar data
+          this.handleSharedCollection();
         } else {
           // For other errors, still mark as loaded but with empty data
           // This prevents infinite loading states
           this.displayUserCellarCollections = {};
           this.cellarItems = [];
           this.cellarDataLoaded = true;
+          // Handle shared collection even on error
+          this.handleSharedCollection();
           console.warn("Cellar data could not be loaded, using empty state");
         }
       }
@@ -4980,14 +5013,36 @@ export default {
       if (collection) {
         this.selectedCellarCollection = collectionName;
         this.selectedCellarCollectionItems = this.cellarItems.filter(item => item.collectionId === collection.id);
+        this.selectedCellarCollectionData = collection;
         this.viewingCellarCollection = true;
       }
+    },
+
+    // Handle shared collection URLs with collection query parameter
+    handleSharedCollection() {
+      if (!this.sharedCollectionId) return;
+      
+      // Find collection by ID
+      for (const [collectionName, collectionData] of Object.entries(this.displayUserCellarCollections)) {
+        if (collectionData.id === parseInt(this.sharedCollectionId)) {
+          // Found the shared collection, open it
+          this.viewCellarCollection(collectionName);
+          // Clear the shared collection ID so it doesn't interfere later
+          this.sharedCollectionId = null;
+          return;
+        }
+      }
+      
+      // If collection not found, just clear the ID and show cellar tab
+      console.warn(`Shared collection with ID ${this.sharedCollectionId} not found`);
+      this.sharedCollectionId = null;
     },
 
     backToCellarCollections() {
       this.viewingCellarCollection = false;
       this.selectedCellarCollection = null;
       this.selectedCellarCollectionItems = [];
+      this.selectedCellarCollectionData = null;
     },
 
     // Group cellar items by variantGroupID for display
@@ -6648,6 +6703,16 @@ export default {
       window.location.reload();
     },
 
+    // ---------------- Cellar Collection Sharing Functions ------------------
+    shareCellarCollection() {
+      if (!this.selectedCellarCollectionData) return;
+      
+      const collectionUrl = `${window.location.origin}/profile/user/${this.currentProfileUser.id}/${this.currentProfileUser.username}?collection=${this.selectedCellarCollectionData.id}`;
+      
+      // Always copy to clipboard and show toast notification
+      this.copyToClipboard(collectionUrl);
+    },
+
     // ------------------ Drink List Sharing Functions ------------------
     updateCurrentURL() {
       this.currentURL = window.location.href;
@@ -6657,13 +6722,13 @@ export default {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          this.clipboardItem = true;
-          setTimeout(() => {
-            this.clipboardItem = false;
-          }, 3000);
+          const toast = useToast();
+          toast.success("Collection link copied to clipboard!");
         })
         .catch((err) => {
           console.error("Failed to copy text: ", err);
+          const toast = useToast();
+          toast.error("Failed to copy link. Please try again.");
         });
     },
     // ------------------ Add Friend Functions ------------------
