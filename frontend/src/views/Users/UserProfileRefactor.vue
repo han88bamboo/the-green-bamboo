@@ -5925,9 +5925,7 @@ export default {
     // ------------------- Switch Tabs between Reviews, Drink Lists, and Badges -------------------
     switchTab(tab) {
       this.activeTab = tab;
-      this.$router.push(
-        "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
-      );
+      // Removed router.push to prevent scrolling to top when switching tabs
     },
 
     // ------------------- Reviews -------------------
