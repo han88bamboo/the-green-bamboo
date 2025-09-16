@@ -2407,7 +2407,7 @@
                         </div>
 
                         <!-- Info Band -->
-                        <div class="card-body">
+                        <div class="card-body text-center">
                           <div class="card-content">
                             <!-- Primary Line -->
                             <h6 class="card-title" :title="group.representative.listingName">
@@ -7528,6 +7528,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  justify-content: center;
 }
 
 .card-notes {
