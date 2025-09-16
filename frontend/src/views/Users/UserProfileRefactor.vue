@@ -6707,7 +6707,7 @@ export default {
     shareCellarCollection() {
       if (!this.selectedCellarCollectionData) return;
       
-      const collectionUrl = `${window.location.origin}/profile/user/${this.currentProfileUser.id}/${this.currentProfileUser.username}?collection=${this.selectedCellarCollectionData.id}`;
+      const collectionUrl = `${window.location.origin}/profile/user/${this.displayUserID}/${this.displayUser.username}?collection=${this.selectedCellarCollectionData.id}`;
       
       // Always copy to clipboard and show toast notification
       this.copyToClipboard(collectionUrl);
