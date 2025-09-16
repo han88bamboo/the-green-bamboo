@@ -2169,6 +2169,20 @@
               Reviews
             </button>
 
+            <!-- cellar button -->
+            <button
+              class="btn mx-1 fw-bold no-hover"
+              :class="{
+                'mobile-toggle-button-producer-profile active-toggle-button':
+                  activeTab === 'cellar',
+                'mobile-toggle-button-producer-profile inactive-toggle-button':
+                  activeTab !== 'cellar',
+              }"
+              @click="switchTab('cellar')"
+            >
+              Cellar
+            </button>
+
             <!-- drink list button -->
             <button
               class="btn mx-1 fw-bold no-hover"
@@ -2233,6 +2247,268 @@
                 
                 
                 <br>
+              </div>
+
+              <!-- cellar tab -->
+              <div v-if="activeTab == 'cellar'" id="cellar">
+                <!-- Create New Collection Button -->
+                <router-link
+                  v-if="ownProfile"
+                  :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
+                  class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
+                >
+                  Create New Cellar Collection
+                </router-link>
+                
+                <!-- Display all cellar collections -->
+                <div v-if="Object.keys(displayUserCellarCollections).length > 0" class="row g-3">
+                  <div
+                    v-for="(cellarCollection, name, index) in displayUserCellarCollections"
+                    :key="name"
+                    class="col-12 col-md-6"
+                  >
+                    <div
+                      class="pin-card h-100"
+                      @click="viewCellarCollection(name)"
+                      role="button"
+                      tabindex="0"
+                    >
+                      <!-- 3-image grid -->
+                      <div class="pin-grid">
+                        <!-- Main (first item) -->
+                        <div class="pin-cell pin-main">
+                          <template v-if="cellarCollection.items && cellarCollection.items[0]">
+                            <img
+                              class="pin-img"
+                              :src="getCellarItemPhoto(cellarCollection.items[0])"
+                              :alt="`${name} preview 1`"
+                            />
+                          </template>
+                          <div v-else class="pin-placeholder"></div>
+                        </div>
+
+                        <!-- Right-top (second item) -->
+                        <div class="pin-cell pin-side1">
+                          <template v-if="cellarCollection.items && cellarCollection.items[1]">
+                            <img
+                              class="pin-img"
+                              :src="getCellarItemPhoto(cellarCollection.items[1])"
+                              :alt="`${name} preview 2`"
+                            />
+                          </template>
+                          <div v-else class="pin-placeholder"></div>
+                        </div>
+
+                        <!-- Right-bottom (third item) -->
+                        <div class="pin-cell pin-side2">
+                          <template v-if="cellarCollection.items && cellarCollection.items[2]">
+                            <img
+                              class="pin-img"
+                              :src="getCellarItemPhoto(cellarCollection.items[2])"
+                              :alt="`${name} preview 3`"
+                            />
+                          </template>
+                          <div v-else class="pin-placeholder"></div>
+                        </div>
+                      </div>
+                      <div class="pin-body">
+                        <!-- Meta -->
+                        <div class="pin-meta">
+                          <h5 class="pin-title">{{ name }}</h5>
+                          <div class="pin-count">
+                            {{ getTotalCellarItemCount(cellarCollection) }}
+                            {{ getTotalCellarItemCount(cellarCollection) === 1 ? 'Bottle' : 'Bottles' }}
+                          </div>
+                          <div v-if="cellarCollection.isDefault" class="pin-badge">
+                            <small class="badge bg-success">Default</small>
+                          </div>
+                        </div>
+                        <div class="pin-desc">
+                          <div v-if="cellarCollection.description">
+                            {{ cellarCollection.description }}
+                          </div>
+                          <div v-else class="text-muted">
+                            <small>{{ cellarCollection.isPublic ? 'Public' : 'Private' }} collection</small>
+                          </div>
+                        </div>
+                        <div class="pin-actions">
+                          <b>
+                            <a
+                              class="me-2 my-3"
+                              @click="viewCellarCollection(name)"
+                              href="#"
+                              style="color: #027562"
+                            >View</a>
+                          </b>
+                          <b>
+                            <a
+                              v-if="ownProfile && !cellarCollection.isDefault"
+                              class="me-2 my-3"
+                              style="color: #027562"
+                              href="#"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#editCellarCollectionModal${index}`"
+                              @click="resetEditCellarCollection(name, cellarCollection)"
+                            >Edit</a>
+                          </b>
+                          <b>
+                            <a
+                              v-if="ownProfile && !cellarCollection.isDefault"
+                              class="my-3"
+                              href="#"
+                              style="color: #027562"
+                              data-bs-toggle="modal"
+                              :data-bs-target="`#deleteCellarCollectionModal${index}`"
+                            >Delete</a>
+                          </b>
+                        </div>
+                      </div>
+                      
+                      <!-- Edit cellar collection modal -->
+                      <div
+                        v-if="!cellarCollection.isDefault"
+                        class="modal fade"
+                        :id="`editCellarCollectionModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="editCellarCollectionLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="modal-header">
+                              <h1 class="modal-title fs-5" id="editCellarCollectionLabel">
+                                Edit Cellar Collection
+                              </h1>
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+                            <div class="modal-body">
+                              <div class="mb-3">
+                                <label for="basic-url" class="form-label">Collection Name</label>
+                                <div class="input-group mb-3">
+                                  <input
+                                    v-model="editCellarCollectionName"
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Collection Name"
+                                    aria-label="Collection Name"
+                                  />
+                                </div>
+                                <div
+                                  v-if="editCellarCollectionNameError"
+                                  class="text-danger text-sm"
+                                >
+                                  *{{ editCellarCollectionNameError }}
+                                </div>
+                              </div>
+                              <div class="mb-3">
+                                <div class="form-check">
+                                  <input
+                                    v-model="editCellarCollectionIsPublic"
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    id="editIsPublicCheck"
+                                  />
+                                  <label class="form-check-label" for="editIsPublicCheck">
+                                    Make this collection public
+                                  </label>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                              >
+                                Close
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-primary"
+                                @click="editCellarCollection(name)"
+                              >
+                                Save changes
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <!-- Delete cellar collection modal -->
+                      <div
+                        v-if="!cellarCollection.isDefault"
+                        class="modal fade"
+                        :id="`deleteCellarCollectionModal${index}`"
+                        tabindex="-1"
+                        aria-labelledby="deleteCellarCollectionLabel"
+                        aria-hidden="true"
+                      >
+                        <div class="modal-dialog modal-dialog-centered">
+                          <div class="modal-content">
+                            <div class="text-end mt-2 me-2">
+                              <button
+                                type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                              ></button>
+                            </div>
+                            <div class="text-center px-3">
+                              <h3><i class="bi bi-trash-fill"></i></h3>
+                              <h3>Delete this collection?</h3>
+                              <br />
+                              <p>
+                                This collection will be permanently deleted. Are you sure you want to delete
+                                <b><i>{{ name }}</i></b>?
+                              </p>
+                              <p class="text-danger">
+                                <small>All bottles in this collection will be moved to your default collection.</small>
+                              </p>
+                            </div>
+                            <div style="display: inline" class="text-center mb-4">
+                              <button
+                                type="button"
+                                class="btn btn-secondary me-3"
+                                data-bs-dismiss="modal"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                class="btn btn-danger"
+                                data-bs-dismiss="modal"
+                                @click="deleteCellarCollection(name)"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Empty state for no collections -->
+                <div v-else-if="cellarDataLoaded" class="text-center py-4">
+                  <div class="text-muted">
+                    <i class="bi bi-archive" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">No Cellar Collections</h5>
+                    <p v-if="ownProfile">Start building your cellar by creating your first collection!</p>
+                    <p v-else>This user hasn't created any public cellar collections yet.</p>
+                  </div>
+                </div>
+                
+                <!-- Loading state -->
+                <div v-else class="text-center py-4">
+                  <div class="spinner-border spinner-border-sm me-2"></div>
+                  Loading cellar data...
+                </div>
               </div>
 
               <!-- consolidated lists tab -->
@@ -3863,6 +4139,11 @@ export default {
       userBadges: [],
       userBadgesLoaded: false,
 
+      // Cellar Data
+      displayUserCellarCollections: {},
+      cellarItems: [],
+      cellarDataLoaded: false,
+
       // Display User Data
 
       displayUserID: null,
@@ -3992,6 +4273,11 @@ export default {
       editListName: "",
       editListNameError: "",
       editListDesc: "",
+
+      // Cellar Collection Variables
+      editCellarCollectionName: "",
+      editCellarCollectionNameError: "",
+      editCellarCollectionIsPublic: true,
 
       // Add Drinks to List Variables
       excludeListingNamesList: [],
@@ -4237,6 +4523,7 @@ export default {
           this.getFollowingUsers(),
           this.getFollowersUsers(),
           this.getFollowersCount(),
+          this.getCellarData(), // Add cellar data loading
         ]);
 
         await this.getReviewsSummary();
@@ -4250,7 +4537,8 @@ export default {
           this.badgesDataLoaded &&
           this.subTagsDataLoaded &&
           this.flavorTagsDataLoaded &&
-          this.drinkTypesDataLoaded
+          this.drinkTypesDataLoaded &&
+          this.cellarDataLoaded
         ) {
           this.dataLoaded = true;
         } else {
@@ -4612,6 +4900,108 @@ export default {
         console.error("Error fetching user badges:", error);
         this.userBadgesLoaded = false;
       }
+    },
+
+    // Cellar Data
+    async getCellarData() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getCellarData/user/${this.displayUserID}`
+        );
+        
+        // Transform data for profile view
+        if (response.data && response.data.data) {
+          const collections = response.data.data.collections || [];
+          const items = response.data.data.items || [];
+          
+          // Store all items for reference
+          this.cellarItems = items;
+          
+          // Transform collections for card display
+          this.displayUserCellarCollections = this.formatCellarCollectionsForProfile(collections, items);
+        } else {
+          // No data returned
+          this.displayUserCellarCollections = {};
+          this.cellarItems = [];
+        }
+        
+        this.cellarDataLoaded = true;
+      } catch (error) {
+        console.error("Error fetching cellar data:", error);
+        if (error.response && error.response.status === 404) {
+          // Handle empty cellar as success - user has no cellar data
+          this.displayUserCellarCollections = {};
+          this.cellarItems = [];
+          this.cellarDataLoaded = true;
+        } else {
+          // For other errors, still mark as loaded but with empty data
+          // This prevents infinite loading states
+          this.displayUserCellarCollections = {};
+          this.cellarItems = [];
+          this.cellarDataLoaded = true;
+          console.warn("Cellar data could not be loaded, using empty state");
+        }
+      }
+    },
+
+    formatCellarCollectionsForProfile(collections, items) {
+      const formatted = {};
+      
+      collections.forEach(collection => {
+        // Only show public collections if viewing another user's profile
+        if (!this.ownProfile && !collection.isPublic) {
+          return;
+        }
+        
+        const collectionItems = items.filter(item => item.collectionId === collection.id);
+        
+        formatted[collection.collectionName] = {
+          id: collection.id,
+          isDefault: collection.isDefault,
+          isPublic: collection.isPublic,
+          items: collectionItems.slice(0, 3), // First 3 for preview
+          totalCount: collectionItems.length,
+          description: collection.description || null
+        };
+      });
+      
+      return formatted;
+    },
+
+    // Helper methods for cellar
+    getCellarItemPhoto(cellarItem) {
+      return cellarItem.drinkPhoto || this.defaultDrinkImage;
+    },
+    
+    getTotalCellarItemCount(cellarCollection) {
+      return cellarCollection.totalCount || 0;
+    },
+    
+    viewCellarCollection(collectionName) {
+      // Navigate to individual collection view
+      if (this.ownProfile) {
+        // For own profile, go to my-cellar page
+        this.$router.push(`/my-cellar/user/${this.displayUserID}/${this.routeUsername}`);
+      } else {
+        // For other users, could implement a read-only view
+        console.log(`Viewing ${collectionName} collection`);
+      }
+    },
+
+    resetEditCellarCollection(name, collection) {
+      this.editCellarCollectionName = name;
+      this.editCellarCollectionIsPublic = collection.isPublic;
+      this.editCellarCollectionNameError = '';
+    },
+
+    async editCellarCollection(oldName) {
+      // Implementation for editing collection
+      console.log(`Editing collection: ${oldName}`);
+    },
+
+    async deleteCellarCollection(collectionName) {
+      // Implementation for deleting collection
+      console.log(`Deleting collection: ${collectionName}`);
     },
 
     // Mod Request
