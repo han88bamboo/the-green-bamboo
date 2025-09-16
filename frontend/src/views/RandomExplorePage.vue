@@ -1149,52 +1149,78 @@
                               <div class="row flex-column flex-md-row g-3 mb-3 justify-content-between align-items-start w-100">
                                 
                                 <!-- Image Section (Left) -->
-                                <div class="col-12 col-md-auto d-flex justify-content-center justify-content-md-start px-0">
+                                <div class="col-12 col-md-3 d-flex justify-content-center justify-content-md-start px-0">
                                   
                                   <!-- For Listings -->
-                                  <div v-if="content.contentType == 'Listing'" class="listing-img-wrap">
+                                  <div v-if="content.contentType == 'Listing'" class="listing-img-wrap"  style="  aspect-ratio: 1 / 1;" >
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
                                       class="listing-img"
+
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        "
                                     />
                                     <img
                                       v-else
                                       src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
                                       class="listing-img"
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        "
                                     />
                                   </div>
 
                                   <!-- For Review -->
-                                  <div v-else-if="content.contentType == 'Review' " class="listing-img-wrap">
+                                  <div v-else-if="content.contentType == 'Review' " class="listing-img-wrap" style="  aspect-ratio: 1 / 1;">
                                     <img
                                       v-if="content['photo']"
                                       :src="content['photo']"
                                       class="listing-img"
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        "                                      
                                     />
                                   </div>
 
                                   <!-- For pReview or vReview -->
-                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'" class="listing-img-wrap">
+                                  <div v-else-if="content.contentType == 'pReview' || content.contentType == 'vReview'" class="listing-img-wrap" style="  aspect-ratio: 1 / 1;" >
                                     <img
                                       v-if="content['photos'][0]"
                                       :src="content['photos'][0]"
                                       class="listing-img"
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        "                                      
                                     />
                                   </div>
 
                                   <!-- For Update -->
-                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'" class="listing-img-wrap">
+                                  <div v-else-if="content.contentType == 'pUpdate' || content.contentType == 'vUpdate'" class="listing-img-wrap" style="  aspect-ratio: 1 / 1;" >
                                     <img
                                       v-if="content.photo"
                                       :src="content.photo"
                                       class="listing-img"
+                                      style="
+                                        width: 100%;
+                                        height: 100%;
+                                        object-fit: contain;
+                                        "                                      
                                     />
                                   </div>
                                 </div>
 
                                 <!-- Details Section (Center) -->
-                                <div class="col d-flex flex-column justify-content-between px-0 p-md-3">
+                                <div class="col col-md-7 d-flex flex-column justify-content-between px-0 p-md-3">
 
                                   <!-- For Listings -->
                                   <div v-if="content.contentType == 'Listing'">
@@ -1281,8 +1307,8 @@
                                       <router-link
                                         :to="{ path: '/listing/view/' + content.reviewTarget + '/' + content.listingName }"
                                         class="primary-clickable-text text-decoration-none"
-                                        style="color: #027562"
-                                      >
+                                        
+                                      ><!-- style="color: #027562" -->
                                         <p class="homepage-bottle-listing-description">"
                                           {{
                                             content.reviewDesc.length > 300
@@ -1352,8 +1378,8 @@
                                       <router-link
                                         :to="getProfileLink((content.venueID ? content.venueID : content.producerID), (content.venueID ? 'venue' : 'producer'), (content.venueName ? content.venueName : content.producerName))"
                                         class="primary-clickable-text text-decoration-none"
-                                        style="color: #027562"
-                                      >
+                                        
+                                      ><!-- style="color: #027562" -->
                                         <p class="default-clickable-text homepage-bottle-listing-description">
                                           "
                                           {{
@@ -1436,7 +1462,7 @@
                                 </div>
 
                                 <!-- Rating & Read More (Right) -->
-                                <div class="col-12 col-md-auto text-center text-md-end mt-2 mt-md-0 pt-md-3">
+                                <div class="col-12 col-md-2 text-center text-md-end mt-2 mt-md-0 pt-md-3">
 
                                   <!-- Listings -->
                                   <div v-if="content.contentType == 'Listing'" 
