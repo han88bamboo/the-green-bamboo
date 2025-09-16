@@ -2257,13 +2257,13 @@
                   :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
                   class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
                 >
-                  Create New Cellar Collection
+                  Manage Cellar
                 </router-link>
                 
                 <!-- Display all cellar collections -->
                 <div v-if="Object.keys(displayUserCellarCollections).length > 0" class="row g-3">
                   <div
-                    v-for="(cellarCollection, name, index) in displayUserCellarCollections"
+                    v-for="(cellarCollection, name) in displayUserCellarCollections"
                     :key="name"
                     class="col-12 col-md-6"
                   >
@@ -2340,154 +2340,6 @@
                               style="color: #027562"
                             >View</a>
                           </b>
-                          <b>
-                            <a
-                              v-if="ownProfile && !cellarCollection.isDefault"
-                              class="me-2 my-3"
-                              style="color: #027562"
-                              href="#"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#editCellarCollectionModal${index}`"
-                              @click="resetEditCellarCollection(name, cellarCollection)"
-                            >Edit</a>
-                          </b>
-                          <b>
-                            <a
-                              v-if="ownProfile && !cellarCollection.isDefault"
-                              class="my-3"
-                              href="#"
-                              style="color: #027562"
-                              data-bs-toggle="modal"
-                              :data-bs-target="`#deleteCellarCollectionModal${index}`"
-                            >Delete</a>
-                          </b>
-                        </div>
-                      </div>
-                      
-                      <!-- Edit cellar collection modal -->
-                      <div
-                        v-if="!cellarCollection.isDefault"
-                        class="modal fade"
-                        :id="`editCellarCollectionModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="editCellarCollectionLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="modal-header">
-                              <h1 class="modal-title fs-5" id="editCellarCollectionLabel">
-                                Edit Cellar Collection
-                              </h1>
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
-                            </div>
-                            <div class="modal-body">
-                              <div class="mb-3">
-                                <label for="basic-url" class="form-label">Collection Name</label>
-                                <div class="input-group mb-3">
-                                  <input
-                                    v-model="editCellarCollectionName"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="Collection Name"
-                                    aria-label="Collection Name"
-                                  />
-                                </div>
-                                <div
-                                  v-if="editCellarCollectionNameError"
-                                  class="text-danger text-sm"
-                                >
-                                  *{{ editCellarCollectionNameError }}
-                                </div>
-                              </div>
-                              <div class="mb-3">
-                                <div class="form-check">
-                                  <input
-                                    v-model="editCellarCollectionIsPublic"
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    id="editIsPublicCheck"
-                                  />
-                                  <label class="form-check-label" for="editIsPublicCheck">
-                                    Make this collection public
-                                  </label>
-                                </div>
-                              </div>
-                            </div>
-                            <div class="modal-footer">
-                              <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-primary"
-                                @click="editCellarCollection(name)"
-                              >
-                                Save changes
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Delete cellar collection modal -->
-                      <div
-                        v-if="!cellarCollection.isDefault"
-                        class="modal fade"
-                        :id="`deleteCellarCollectionModal${index}`"
-                        tabindex="-1"
-                        aria-labelledby="deleteCellarCollectionLabel"
-                        aria-hidden="true"
-                      >
-                        <div class="modal-dialog modal-dialog-centered">
-                          <div class="modal-content">
-                            <div class="text-end mt-2 me-2">
-                              <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                                aria-label="Close"
-                              ></button>
-                            </div>
-                            <div class="text-center px-3">
-                              <h3><i class="bi bi-trash-fill"></i></h3>
-                              <h3>Delete this collection?</h3>
-                              <br />
-                              <p>
-                                This collection will be permanently deleted. Are you sure you want to delete
-                                <b><i>{{ name }}</i></b>?
-                              </p>
-                              <p class="text-danger">
-                                <small>All bottles in this collection will be moved to your default collection.</small>
-                              </p>
-                            </div>
-                            <div style="display: inline" class="text-center mb-4">
-                              <button
-                                type="button"
-                                class="btn btn-secondary me-3"
-                                data-bs-dismiss="modal"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="button"
-                                class="btn btn-danger"
-                                data-bs-dismiss="modal"
-                                @click="deleteCellarCollection(name)"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
                         </div>
                       </div>
                     </div>
@@ -4274,11 +4126,6 @@ export default {
       editListNameError: "",
       editListDesc: "",
 
-      // Cellar Collection Variables
-      editCellarCollectionName: "",
-      editCellarCollectionNameError: "",
-      editCellarCollectionIsPublic: true,
-
       // Add Drinks to List Variables
       excludeListingNamesList: [],
       drinksToAdd: [],
@@ -4986,22 +4833,6 @@ export default {
         // For other users, could implement a read-only view
         console.log(`Viewing ${collectionName} collection`);
       }
-    },
-
-    resetEditCellarCollection(name, collection) {
-      this.editCellarCollectionName = name;
-      this.editCellarCollectionIsPublic = collection.isPublic;
-      this.editCellarCollectionNameError = '';
-    },
-
-    async editCellarCollection(oldName) {
-      // Implementation for editing collection
-      console.log(`Editing collection: ${oldName}`);
-    },
-
-    async deleteCellarCollection(collectionName) {
-      // Implementation for deleting collection
-      console.log(`Deleting collection: ${collectionName}`);
     },
 
     // Mod Request
