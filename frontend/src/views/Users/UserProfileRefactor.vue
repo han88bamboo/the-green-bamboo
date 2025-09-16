@@ -2432,19 +2432,16 @@
 
                             <!-- Status Info -->
                             <div class="status-info mt-2">
+                              <!-- Status Breakdown -->
                               <div class="status-breakdown">
                                 <span 
+                                  v-for="(count, status) in getGroupStatusBreakdown(group.items)"
+                                  :key="status"
                                   class="status-badge badge me-1 mb-2"
-                                  :class="getStatusBadgeClass(group.representative.status)"
-                                  :title="`${group.representative.status}`"
+                                  :class="getStatusBadgeClass(status)"
+                                  :title="`${count} bottle${count !== 1 ? 's' : ''} ${status.toLowerCase()}`"
                                 >
-                                  {{ group.representative.status }}
-                                </span>
-                                <span 
-                                  v-if="group.representative.consumption && group.representative.consumption !== 'Unopened'"
-                                  class="status-badge badge bg-warning text-dark me-1 mb-2"
-                                >
-                                  {{ group.representative.consumption }}
+                                  {{ count }}x {{ status }}
                                 </span>
                               </div>
                               
@@ -2471,18 +2468,6 @@
                                   <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
                                 </svg>
                                 {{ group.representative.noteToSelf }}
-                              </div>
-                              
-                              <!-- Purchase info -->
-                              <div class="purchase-info mt-2" v-if="group.representative.purchasePrice || group.representative.purchaseDate">
-                                <small class="text-muted">
-                                  <span v-if="group.representative.purchasePrice">
-                                    Paid: {{ group.representative.purchaseCurrency }}{{ group.representative.purchasePrice }}
-                                  </span>
-                                  <span v-if="group.representative.purchaseDate">
-                                    <br>Purchased: {{ formatDate(group.representative.purchaseDate) }}
-                                  </span>
-                                </small>
                               </div>
                             </div>
                           </div>
@@ -5048,6 +5033,7 @@ export default {
 
     getStatusBadgeClass(status) {
       switch (status) {
+        // Item statuses
         case 'In Possession':
           return 'bg-success';
         case 'Consumed':
@@ -5058,6 +5044,13 @@ export default {
           return 'bg-warning';
         case 'Held Elsewhere':
           return 'bg-light text-dark';
+        // Consumption statuses
+        case 'Unopened':
+          return 'bg-success';
+        case 'Opened':
+          return 'bg-warning';
+        case 'Empty':
+          return 'bg-secondary';
         default:
           return 'bg-secondary';
       }
@@ -5067,6 +5060,16 @@ export default {
       if (!dateString) return '';
       const date = new Date(dateString);
       return date.toLocaleDateString();
+    },
+
+    // Get status breakdown for a group of cellar items
+    getGroupStatusBreakdown(items) {
+      const breakdown = {};
+      items.forEach(item => {
+        const status = item.consumption || 'Unopened';
+        breakdown[status] = (breakdown[status] || 0) + 1;
+      });
+      return breakdown;
     },
 
     // Mod Request
@@ -7484,14 +7487,15 @@ export default {
 
 .quantity-volume-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background-color: rgba(0, 0, 0, 0.7);
+  top: 0.5rem;
+  right: 0.5rem;
+  background-color: rgba(13, 202, 240, 0.9);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
   font-size: 0.75rem;
   font-weight: 600;
+  backdrop-filter: blur(4px);
 }
 
 .cellar-item-card .card-body {
@@ -7518,6 +7522,12 @@ export default {
 .status-badge {
   font-size: 0.7rem;
   padding: 0.2rem 0.4rem;
+}
+
+.status-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
 }
 
 .card-notes {
