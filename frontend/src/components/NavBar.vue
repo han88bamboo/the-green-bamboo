@@ -302,6 +302,9 @@
                     <router-link :to="'/clubs/view'" class="dropdown-item">Join Clubs</router-link>
                   </li>
                   <li>
+                    <router-link :to="'/find-lists'" class="dropdown-item">Find Lists</router-link>
+                  </li>
+                  <li>
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
                   <li>
@@ -375,6 +378,12 @@
                 <li class="drawer-section-title pt-2 text-start">
                   <router-link to="/clubs/view" style="text-decoration: none">
                     {{ accType === 'producer' || accType === 'venue' ? 'Create A Club' : 'Join Clubs' }}
+                  </router-link>
+                </li>
+
+                <li class="drawer-section-title pt-2 text-start">
+                  <router-link to="/find-lists" style="text-decoration: none">
+                    Find Lists
                   </router-link>
                 </li>
 
@@ -509,6 +518,12 @@
         <router-link :to="dashboardURL">
           <button class="btn primary-btn border-0 fw-bold" type="button">
             {{ dashboardWord }} Analytics
+          </button>
+        </router-link>
+
+        <router-link :to="'/find-lists'">
+          <button class="btn primary-btn border-0 fw-bold" type="button">
+            Find Lists
           </button>
         </router-link>
 

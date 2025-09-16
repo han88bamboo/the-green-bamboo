@@ -1,5 +1,6 @@
 # Port: 5100
 # Routes: /editDetails (POST), /updateBookmark (POST), /updateFollowLists (POST), /updateModType (POST), /removeModType (POST)
+# /updateListPrivacy (POST), /updateListItemNote (POST), /upvoteList (POST), /removeUpvote (POST)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -279,20 +280,22 @@ def updateBookmark():
 
         for listName, listData in bookmark.items():
             listItems = listData["listItems"]
+            listDesc = listData.get("listDesc", "")
+            isPublic = listData.get("isPublic", True)  # Default to public if not specified
 
             # If list exists, use its ID; otherwise, create a new one
             if listName in existing_lists:
                 list_id = existing_lists[listName]
 
-                # Update existing list desc
+                # Update existing list desc and public status
                 cursor.execute(
-                    'UPDATE "usersDrinkLists" SET "listDesc" = %s WHERE "id" = %s',
-                    (listData["listDesc"], list_id)
+                    'UPDATE "usersDrinkLists" SET "listDesc" = %s, "isPublic" = %s WHERE "id" = %s',
+                    (listDesc, isPublic, list_id)
                 )
             else:
                 cursor.execute(
-                    'INSERT INTO "usersDrinkLists" ("userId", "listName", "listDesc") VALUES (%s, %s, %s) RETURNING "id"',
-                    (userID, listName, listData["listDesc"],)
+                    'INSERT INTO "usersDrinkLists" ("userId", "listName", "listDesc", "isPublic") VALUES (%s, %s, %s, %s) RETURNING "id"',
+                    (userID, listName, listDesc, isPublic)
                 )
                 list_id = cursor.fetchone()["id"]
                 num_lists_to_add_count += 1
@@ -300,18 +303,21 @@ def updateBookmark():
             # Delete existing items in the list (to avoid duplicates)
             cursor.execute('DELETE FROM "usersDrinkListItems" WHERE "listId" = %s', (list_id,))
 
-            # Insert new drinks with their addedDate, using NOW() if missing
+            # Insert new drinks with their addedDate and note, using NOW() if missing
             for item in listItems:
                 added_date = item.get("addedDate", None)  # Get addedDate, default to None
+                note = item.get("note", "")  # Get note, default to empty string
+                drink_id = item.get("drinkId") or item  # Handle both old format (direct ID) and new format (object with drinkId)
+                
                 if added_date:
                     cursor.execute(
-                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, %s)',
-                        (list_id, item["drinkId"], added_date)
+                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") VALUES (%s, %s, %s, %s)',
+                        (list_id, drink_id, added_date, note)
                     )
                 else:
                     cursor.execute(
-                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
-                        (list_id, item["drinkId"])
+                        'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") VALUES (%s, %s, NOW(), %s)',
+                        (list_id, drink_id, note)
                     )
 
         conn.commit()
@@ -322,7 +328,7 @@ def updateBookmark():
 
         # Update proofPoints and process badges
         if (num_lists_to_delete_count > 0 or num_lists_to_add_count > 0) and (num_lists_to_delete_count - num_lists_to_add_count) != 0:
-            
+
             # Get the proofPoints for creating a new list
             cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE "id" = 14')
             proofPoints = cursor.fetchone()
@@ -349,7 +355,7 @@ def updateBookmark():
                 conn.commit()
 
                 print(f"User {userID} earned {points_earned} points for editing the number of lists.")
-            
+
             # Process PublicList badge based on net list changes
             net_list_change = num_lists_to_add_count - num_lists_to_delete_count
             if net_list_change != 0:
@@ -360,9 +366,9 @@ def updateBookmark():
         if user_row:
             # Get the username of the user
             user_username = user_row['username'] if user_row else "Someone"
-        
+
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
+
         # Notify if badge earned
         if badge_result:
             notification_data = {
@@ -386,10 +392,10 @@ def updateBookmark():
                 "bookmark": bookmark
             }
         }
-        
+
         if points_earned != 0:
             response_data["pointsEarned"] = points_earned
-            
+
         if badge_result:
             response_data["badgeAwarded"] = badge_result
 
@@ -694,3 +700,227 @@ def removeModType():
 
     finally:
         cur.close()
+
+@blueprint.route('/updateListPrivacy', methods=['POST'])
+def update_list_privacy():
+    """Update the privacy setting of a user's list"""
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    listName = data['listName']
+    isPublic = data['isPublic']
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Update the list privacy setting
+        cursor.execute(
+            'UPDATE "usersDrinkLists" SET "isPublic" = %s, "updatedAt" = NOW() WHERE "userId" = %s AND "listName" = %s',
+            (isPublic, userID, listName)
+        )
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "userID": userID,
+                "listName": listName,
+                "isPublic": isPublic
+            },
+            "message": "List privacy updated successfully."
+        }), 201
+        
+    except Exception as e:
+        print("Update list privacy error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred updating list privacy."
+        }), 500
+    
+@blueprint.route('/updateListItemNote', methods=['POST'])
+def update_list_item_note():
+    """Update note for a specific item in a list"""
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    listName = data['listName']
+    drinkId = int(data['drinkId'])
+    note = data['note']
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Get the list ID first
+        cursor.execute(
+            'SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s',
+            (userID, listName)
+        )
+        list_result = cursor.fetchone()
+        
+        if not list_result:
+            return jsonify({
+                "code": 404,
+                "message": "List not found."
+            }), 404
+            
+        listId = list_result['id']
+        
+        # Update the note for the specific item
+        cursor.execute(
+            'UPDATE "usersDrinkListItems" SET "note" = %s WHERE "listId" = %s AND "drinkId" = %s',
+            (note, listId, drinkId)
+        )
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "listName": listName,
+                "drinkId": drinkId,
+                "note": note
+            },
+            "message": "Note updated successfully."
+        }), 201
+        
+    except Exception as e:
+        print("Update list item note error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred updating the note."
+        }), 500
+
+@blueprint.route('/upvoteList', methods=['POST'])
+def upvote_list():
+    """Upvote a public list"""
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    listId = int(data['listId'])
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Check if user already upvoted this list
+        cursor.execute(
+            'SELECT "id" FROM "usersDrinkListUpvotes" WHERE "listId" = %s AND "userId" = %s',
+            (listId, userID)
+        )
+        
+        existing_upvote = cursor.fetchone()
+        
+        if existing_upvote:
+            return jsonify({
+                "code": 400,
+                "message": "You have already upvoted this list."
+            }), 400
+        
+        # Add upvote
+        cursor.execute(
+            'INSERT INTO "usersDrinkListUpvotes" ("listId", "userId") VALUES (%s, %s)',
+            (listId, userID)
+        )
+        
+        # Update upvote count
+        cursor.execute(
+            'UPDATE "usersDrinkLists" SET "upvotes" = "upvotes" + 1 WHERE "id" = %s',
+            (listId,)
+        )
+        
+        # Get updated upvote count
+        cursor.execute(
+            'SELECT "upvotes" FROM "usersDrinkLists" WHERE "id" = %s',
+            (listId,)
+        )
+        
+        updated_count = cursor.fetchone()['upvotes']
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "listId": listId,
+                "upvotes": updated_count
+            },
+            "message": "List upvoted successfully."
+        }), 201
+        
+    except Exception as e:
+        print("Upvote list error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred upvoting the list."
+        }), 500
+    
+@blueprint.route('/removeUpvote', methods=['POST'])
+def remove_upvote():
+    """Remove upvote from a public list"""
+    conn = g.db
+    data = request.get_json()
+    userID = int(data['userID'])
+    listId = int(data['listId'])
+    
+    try:
+        cursor = conn.cursor()
+        
+        # Check if user has upvoted this list
+        cursor.execute(
+            'SELECT "id" FROM "usersDrinkListUpvotes" WHERE "listId" = %s AND "userId" = %s',
+            (listId, userID)
+        )
+        
+        existing_upvote = cursor.fetchone()
+        
+        if not existing_upvote:
+            return jsonify({
+                "code": 400,
+                "message": "You haven't upvoted this list."
+            }), 400
+        
+        # Remove upvote
+        cursor.execute(
+            'DELETE FROM "usersDrinkListUpvotes" WHERE "listId" = %s AND "userId" = %s',
+            (listId, userID)
+        )
+        
+        # Update upvote count (ensure it doesn't go below 0)
+        cursor.execute(
+            'UPDATE "usersDrinkLists" SET "upvotes" = GREATEST("upvotes" - 1, 0) WHERE "id" = %s',
+            (listId,)
+        )
+        
+        # Get updated upvote count
+        cursor.execute(
+            'SELECT "upvotes" FROM "usersDrinkLists" WHERE "id" = %s',
+            (listId,)
+        )
+        
+        updated_count = cursor.fetchone()['upvotes']
+        
+        conn.commit()
+        cursor.close()
+        
+        return jsonify({
+            "code": 201,
+            "data": {
+                "listId": listId,
+                "upvotes": updated_count
+            },
+            "message": "Upvote removed successfully."
+        }), 201
+        
+    except Exception as e:
+        print("Remove upvote error:", str(e))
+        conn.rollback()
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred removing the upvote."
+        }), 500
