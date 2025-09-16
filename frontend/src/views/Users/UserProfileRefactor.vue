@@ -2378,30 +2378,31 @@
                     <div>
                       <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
                       <small class="text-muted">
-                        {{ selectedCellarCollectionItems.length }} 
-                        {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }}
+                        {{ groupedCellarItems.length }} 
+                        {{ groupedCellarItems.length === 1 ? 'variant' : 'variants' }}
+                        ({{ selectedCellarCollectionItems.length }} total {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }})
                       </small>
                     </div>
                   </div>
 
                   <!-- Items Grid -->
-                  <div class="row" v-if="selectedCellarCollectionItems.length > 0">
+                  <div class="row" v-if="groupedCellarItems.length > 0">
                     <div 
-                      v-for="item in selectedCellarCollectionItems" 
-                      :key="item.cellarItemId"
+                      v-for="group in groupedCellarItems" 
+                      :key="group.representative.cellarItemId"
                       class="col-12 col-md-6 col-lg-4 mb-3"
                     >
                       <div class="card cellar-item-card h-100">
                         <!-- Image Area -->
                         <div class="card-img-container" style="width:100%;">
                           <img 
-                            :src="getItemImageUrl(item)"
-                            :alt="item.listingName"
+                            :src="getItemImageUrl(group.representative)"
+                            :alt="group.representative.listingName"
                             class="card-img-top"
                           >
                           <!-- Quantity and Volume Badge -->
                           <div class="quantity-volume-badge">
-                            1 {{ getContainerType(item.drinkFormat, 1) }}{{ getVolumeText(item) }}
+                            {{ group.itemCount }} {{ getContainerType(group.representative.drinkFormat, group.itemCount).toLowerCase() }}{{ getVolumeText(group.representative) }}
                           </div>
                         </div>
 
@@ -2409,19 +2410,19 @@
                         <div class="card-body">
                           <div class="card-content">
                             <!-- Primary Line -->
-                            <h6 class="card-title" :title="item.listingName">
-                              {{ item.listingName }}
-                              <span v-if="item.variant" class="text-muted ms-1">
-                                ({{ item.variant }})
+                            <h6 class="card-title" :title="group.representative.listingName">
+                              {{ group.representative.listingName }}
+                              <span v-if="group.representative.variant" class="text-muted ms-1">
+                                ({{ group.representative.variant }})
                               </span>
                             </h6>
                             
                             <!-- Secondary Line -->
                             <p class="card-subtitle text-muted mb-2">
-                              <span v-if="item.producerName">{{ item.producerName }} | </span>{{ item.drinkType }}<span v-if="item.typeCategory"> | {{ item.typeCategory }}</span>
+                              <span v-if="group.representative.producerName">{{ group.representative.producerName }} | </span>{{ group.representative.drinkType }}<span v-if="group.representative.typeCategory"> | {{ group.representative.typeCategory }}</span>
                               <span> | 
-                                <span style="color: #f0b358; font-weight: bold;" v-if="item.averageRating">
-                                  {{ item.averageRating }}&nbsp;★
+                                <span style="color: #f0b358; font-weight: bold;" v-if="group.representative.averageRating">
+                                  {{ group.representative.averageRating }}&nbsp;★
                                 </span>
                                 <span style="color: #f0b358; font-weight: normal;" v-else>
                                   -&nbsp;★
@@ -2434,27 +2435,27 @@
                               <div class="status-breakdown">
                                 <span 
                                   class="status-badge badge me-1 mb-2"
-                                  :class="getStatusBadgeClass(item.status)"
-                                  :title="`${item.status}`"
+                                  :class="getStatusBadgeClass(group.representative.status)"
+                                  :title="`${group.representative.status}`"
                                 >
-                                  {{ item.status }}
+                                  {{ group.representative.status }}
                                 </span>
                                 <span 
-                                  v-if="item.consumption && item.consumption !== 'Unopened'"
+                                  v-if="group.representative.consumption && group.representative.consumption !== 'Unopened'"
                                   class="status-badge badge bg-warning text-dark me-1 mb-2"
                                 >
-                                  {{ item.consumption }}
+                                  {{ group.representative.consumption }}
                                 </span>
                               </div>
                               
                               <!-- Drink dates -->
-                              <div class="drink-dates mt-1" v-if="item.drinkByDate || item.drinkOnwardsDate">
+                              <div class="drink-dates mt-1" v-if="group.representative.drinkByDate || group.representative.drinkOnwardsDate">
                                 <small class="text-muted">
-                                  <span v-if="item.drinkOnwardsDate">
-                                    Drink from: {{ formatDate(item.drinkOnwardsDate) }}
+                                  <span v-if="group.representative.drinkOnwardsDate">
+                                    Drink from: {{ formatDate(group.representative.drinkOnwardsDate) }}
                                   </span>
-                                  <span v-if="item.drinkByDate">
-                                    <br>Drink by: {{ formatDate(item.drinkByDate) }}
+                                  <span v-if="group.representative.drinkByDate">
+                                    <br>Drink by: {{ formatDate(group.representative.drinkByDate) }}
                                   </span>
                                 </small>
                               </div>
@@ -2462,24 +2463,24 @@
                               <!-- Notes -->
                               <div 
                                 class="card-notes text-muted small mt-2 border rounded p-2 position-relative" 
-                                v-if="item.noteToSelf"
-                                :title="item.noteToSelf"
+                                v-if="group.representative.noteToSelf"
+                                :title="group.representative.noteToSelf"
                               >
                                 <!-- Note icon -->
                                 <svg class="position-absolute" style="top: 2px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
                                   <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
                                 </svg>
-                                {{ item.noteToSelf }}
+                                {{ group.representative.noteToSelf }}
                               </div>
                               
                               <!-- Purchase info -->
-                              <div class="purchase-info mt-2" v-if="item.purchasePrice || item.purchaseDate">
+                              <div class="purchase-info mt-2" v-if="group.representative.purchasePrice || group.representative.purchaseDate">
                                 <small class="text-muted">
-                                  <span v-if="item.purchasePrice">
-                                    Paid: {{ item.purchaseCurrency }}{{ item.purchasePrice }}
+                                  <span v-if="group.representative.purchasePrice">
+                                    Paid: {{ group.representative.purchaseCurrency }}{{ group.representative.purchasePrice }}
                                   </span>
-                                  <span v-if="item.purchaseDate">
-                                    <br>Purchased: {{ formatDate(item.purchaseDate) }}
+                                  <span v-if="group.representative.purchaseDate">
+                                    <br>Purchased: {{ formatDate(group.representative.purchaseDate) }}
                                   </span>
                                 </small>
                               </div>
@@ -4352,6 +4353,14 @@ export default {
       ...review,
       listingName: this.getListingName(review.reviewTarget)  // This transforms reviewTarget into listingName
     })) || [];
+  },
+
+  // Group cellar items by variantGroupID for display
+  groupedCellarItems() {
+    if (!this.selectedCellarCollectionItems || this.selectedCellarCollectionItems.length === 0) {
+      return [];
+    }
+    return this.groupCellarItems(this.selectedCellarCollectionItems);
   }
   
   },
@@ -4983,6 +4992,40 @@ export default {
       this.selectedCellarCollectionItems = [];
     },
 
+    // Group cellar items by variantGroupID for display
+    groupCellarItems(items) {
+      const groups = {};
+      
+      items.forEach(item => {
+        // Use variantGroupID for grouping - items with the same variantGroupID belong together
+        const groupKey = item.variantGroupID || `standalone_${item.cellarItemId}`;
+        
+        if (!groups[groupKey]) {
+          groups[groupKey] = {
+            // Use first item as representative for display
+            representative: item,
+            // Track all individual items in this group
+            items: [],
+            // Count of items in this group
+            itemCount: 0,
+            // Group identification
+            variantGroupID: item.variantGroupID,
+            listingId: item.listingId,
+            variant: item.variant,
+            drinkFormat: item.drinkFormat,
+            volumeNumber: item.volumeNumber,
+            volumeUnit: item.volumeUnit,
+            listingName: item.listingName
+          };
+        }
+        
+        groups[groupKey].items.push(item);
+        groups[groupKey].itemCount = groups[groupKey].items.length;
+      });
+      
+      return Object.values(groups);
+    },
+
     // Helper methods for cellar item display
     getItemImageUrl(item) {
       return item.drinkPhoto || this.defaultDrinkImage;
@@ -5000,7 +5043,7 @@ export default {
 
     getVolumeText(item) {
       if (!item.volumeNumber || !item.volumeUnit) return '';
-      return ` (${item.volumeNumber}${item.volumeUnit})`;
+      return `/${item.volumeNumber}${item.volumeUnit}`;
     },
 
     getStatusBadgeClass(status) {
