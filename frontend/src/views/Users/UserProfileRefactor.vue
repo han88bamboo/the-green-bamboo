@@ -2251,14 +2251,16 @@
 
               <!-- cellar tab -->
               <div v-if="activeTab == 'cellar'" id="cellar">
-                <!-- Create New Collection Button -->
-                <router-link
-                  v-if="ownProfile"
-                  :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
-                  class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
-                >
-                  Manage Cellar
-                </router-link>
+                <!-- Collection Overview -->
+                <div v-if="!viewingCellarCollection">
+                  <!-- Create New Collection Button -->
+                  <router-link
+                    v-if="ownProfile"
+                    :to="`/my-cellar/user/${displayUserID}/${routeUsername}`"
+                    class="btn fw-bold primary-btn-less-round-blue xprimary-btn-outline-less-round mb-3"
+                  >
+                    Manage Cellar
+                  </router-link>
                 
                 <!-- Display all cellar collections -->
                 <div v-if="Object.keys(displayUserCellarCollections).length > 0" class="row g-3">
@@ -2360,6 +2362,142 @@
                 <div v-else class="text-center py-4">
                   <div class="spinner-border spinner-border-sm me-2"></div>
                   Loading cellar data...
+                </div>
+                </div>
+
+                <!-- Collection Detail View -->
+                <div v-else>
+                  <!-- Back button and collection header -->
+                  <div class="d-flex align-items-center mb-4">
+                    <button 
+                      class="btn btn-outline-secondary me-3"
+                      @click="backToCellarCollections()"
+                    >
+                      <i class="bi bi-arrow-left"></i> Back to Collections
+                    </button>
+                    <div>
+                      <h4 class="mb-0">{{ selectedCellarCollection }}</h4>
+                      <small class="text-muted">
+                        {{ selectedCellarCollectionItems.length }} 
+                        {{ selectedCellarCollectionItems.length === 1 ? 'item' : 'items' }}
+                      </small>
+                    </div>
+                  </div>
+
+                  <!-- Items Grid -->
+                  <div class="row" v-if="selectedCellarCollectionItems.length > 0">
+                    <div 
+                      v-for="item in selectedCellarCollectionItems" 
+                      :key="item.cellarItemId"
+                      class="col-12 col-md-6 col-lg-4 mb-3"
+                    >
+                      <div class="card cellar-item-card h-100">
+                        <!-- Image Area -->
+                        <div class="card-img-container" style="width:100%;">
+                          <img 
+                            :src="getItemImageUrl(item)"
+                            :alt="item.listingName"
+                            class="card-img-top"
+                          >
+                          <!-- Quantity and Volume Badge -->
+                          <div class="quantity-volume-badge">
+                            1 {{ getContainerType(item.drinkFormat, 1) }}{{ getVolumeText(item) }}
+                          </div>
+                        </div>
+
+                        <!-- Info Band -->
+                        <div class="card-body">
+                          <div class="card-content">
+                            <!-- Primary Line -->
+                            <h6 class="card-title" :title="item.listingName">
+                              {{ item.listingName }}
+                              <span v-if="item.variant" class="text-muted ms-1">
+                                ({{ item.variant }})
+                              </span>
+                            </h6>
+                            
+                            <!-- Secondary Line -->
+                            <p class="card-subtitle text-muted mb-2">
+                              <span v-if="item.producerName">{{ item.producerName }} | </span>{{ item.drinkType }}<span v-if="item.typeCategory"> | {{ item.typeCategory }}</span>
+                              <span> | 
+                                <span style="color: #f0b358; font-weight: bold;" v-if="item.averageRating">
+                                  {{ item.averageRating }}&nbsp;★
+                                </span>
+                                <span style="color: #f0b358; font-weight: normal;" v-else>
+                                  -&nbsp;★
+                                </span>
+                              </span>
+                            </p>
+
+                            <!-- Status Info -->
+                            <div class="status-info mt-2">
+                              <div class="status-breakdown">
+                                <span 
+                                  class="status-badge badge me-1 mb-2"
+                                  :class="getStatusBadgeClass(item.status)"
+                                  :title="`${item.status}`"
+                                >
+                                  {{ item.status }}
+                                </span>
+                                <span 
+                                  v-if="item.consumption && item.consumption !== 'Unopened'"
+                                  class="status-badge badge bg-warning text-dark me-1 mb-2"
+                                >
+                                  {{ item.consumption }}
+                                </span>
+                              </div>
+                              
+                              <!-- Drink dates -->
+                              <div class="drink-dates mt-1" v-if="item.drinkByDate || item.drinkOnwardsDate">
+                                <small class="text-muted">
+                                  <span v-if="item.drinkOnwardsDate">
+                                    Drink from: {{ formatDate(item.drinkOnwardsDate) }}
+                                  </span>
+                                  <span v-if="item.drinkByDate">
+                                    <br>Drink by: {{ formatDate(item.drinkByDate) }}
+                                  </span>
+                                </small>
+                              </div>
+                              
+                              <!-- Notes -->
+                              <div 
+                                class="card-notes text-muted small mt-2 border rounded p-2 position-relative" 
+                                v-if="item.noteToSelf"
+                                :title="item.noteToSelf"
+                              >
+                                <!-- Note icon -->
+                                <svg class="position-absolute" style="top: 2px; right: 3px; width: 12px; height: 12px; opacity: 0.8;" viewBox="0 0 16 16" fill="#dc3545">
+                                  <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2z"/>
+                                </svg>
+                                {{ item.noteToSelf }}
+                              </div>
+                              
+                              <!-- Purchase info -->
+                              <div class="purchase-info mt-2" v-if="item.purchasePrice || item.purchaseDate">
+                                <small class="text-muted">
+                                  <span v-if="item.purchasePrice">
+                                    Paid: {{ item.purchaseCurrency }}{{ item.purchasePrice }}
+                                  </span>
+                                  <span v-if="item.purchaseDate">
+                                    <br>Purchased: {{ formatDate(item.purchaseDate) }}
+                                  </span>
+                                </small>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Empty state for collection -->
+                  <div v-else class="text-center py-4">
+                    <div class="text-muted">
+                      <i class="bi bi-archive" style="font-size: 3rem;"></i>
+                      <h5 class="mt-3">No Items in Collection</h5>
+                      <p>This collection is currently empty.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -3995,6 +4133,11 @@ export default {
       displayUserCellarCollections: {},
       cellarItems: [],
       cellarDataLoaded: false,
+      
+      // Cellar Collection Detail View
+      selectedCellarCollection: null,
+      selectedCellarCollectionItems: [],
+      viewingCellarCollection: false,
 
       // Display User Data
 
@@ -4825,14 +4968,62 @@ export default {
     },
     
     viewCellarCollection(collectionName) {
-      // Navigate to individual collection view
-      if (this.ownProfile) {
-        // For own profile, go to my-cellar page
-        this.$router.push(`/my-cellar/user/${this.displayUserID}/${this.routeUsername}`);
-      } else {
-        // For other users, could implement a read-only view
-        console.log(`Viewing ${collectionName} collection`);
+      // Show detailed view of collection items on the same page
+      const collection = this.displayUserCellarCollections[collectionName];
+      if (collection) {
+        this.selectedCellarCollection = collectionName;
+        this.selectedCellarCollectionItems = this.cellarItems.filter(item => item.collectionId === collection.id);
+        this.viewingCellarCollection = true;
       }
+    },
+
+    backToCellarCollections() {
+      this.viewingCellarCollection = false;
+      this.selectedCellarCollection = null;
+      this.selectedCellarCollectionItems = [];
+    },
+
+    // Helper methods for cellar item display
+    getItemImageUrl(item) {
+      return item.drinkPhoto || this.defaultDrinkImage;
+    },
+
+    getContainerType(drinkFormat, count) {
+      if (!drinkFormat) return count === 1 ? 'Item' : 'Items';
+      
+      const format = drinkFormat.toLowerCase();
+      if (format.includes('bottle')) return count === 1 ? 'Bottle' : 'Bottles';
+      if (format.includes('can')) return count === 1 ? 'Can' : 'Cans';
+      if (format.includes('sample')) return count === 1 ? 'Sample' : 'Samples';
+      return drinkFormat;
+    },
+
+    getVolumeText(item) {
+      if (!item.volumeNumber || !item.volumeUnit) return '';
+      return ` (${item.volumeNumber}${item.volumeUnit})`;
+    },
+
+    getStatusBadgeClass(status) {
+      switch (status) {
+        case 'In Possession':
+          return 'bg-success';
+        case 'Consumed':
+          return 'bg-secondary';
+        case 'On Its Way':
+          return 'bg-info';
+        case 'Wishlisted':
+          return 'bg-warning';
+        case 'Held Elsewhere':
+          return 'bg-light text-dark';
+        default:
+          return 'bg-secondary';
+      }
+    },
+
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
     },
 
     // Mod Request
@@ -7228,5 +7419,89 @@ export default {
   object-fit: cover;
 }
 
+/* Cellar Item Cards */
+.cellar-item-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.cellar-item-card .card-img-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.cellar-item-card .card-img-top {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.2s ease-in-out;
+}
+
+.quantity-volume-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cellar-item-card .card-body {
+  padding: 1rem;
+}
+
+.cellar-item-card .card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cellar-item-card .card-subtitle {
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.card-notes {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  max-height: 3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drink-dates {
+  font-size: 0.75rem;
+}
+
+.purchase-info {
+  font-size: 0.75rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .cellar-item-card .card-img-top {
+    height: 150px;
+  }
+  
+  .cellar-item-card .card-body {
+    padding: 0.75rem;
+  }
+}
 
 </style>
