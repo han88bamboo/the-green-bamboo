@@ -2489,10 +2489,9 @@
                     class="btn btn-sm btn-outline-secondary dropdown-toggle" 
                     type="button" 
                     data-bs-toggle="dropdown"
+                    data-bs-auto-close="true"
                     aria-expanded="false"
                     id="groupActionsDropdown"
-                    data-bs-auto-close="true"
-                    @click="toggleGroupActionsDropdown"
                   >
                     <i class="bi bi-three-dots"></i> Group Actions
                   </button>
@@ -3517,7 +3516,6 @@
 <script>
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
-import { Modal, Dropdown } from 'bootstrap'
 // import { useToast } from "vue-toastification";
 
 export default {
@@ -4148,6 +4146,15 @@ export default {
       clearTimeout(this.addDrinkForm.drinkDebounceTimer)
     }
 
+    // Clean up Bootstrap instances
+    const mobileAddDrinksModal = document.getElementById('mobileAddDrinksModal');
+    if (mobileAddDrinksModal) {
+      const modalInstance = window.bootstrap.Modal.getInstance(mobileAddDrinksModal);
+      if (modalInstance) {
+        modalInstance.dispose();
+      }
+    }
+
     // Clean up modal event listeners
     const addCollectionModal = document.getElementById('addCollectionModal');
     if (addCollectionModal) {
@@ -4191,7 +4198,11 @@ export default {
     toggleRightSidebar() {
       if (this.isMobile) {
         // On mobile, open the modal instead of toggling sidebar
-        const modal = new Modal(document.getElementById('mobileAddDrinksModal'));
+        const modalElement = document.getElementById('mobileAddDrinksModal');
+        let modal = window.bootstrap.Modal.getInstance(modalElement);
+        if (!modal) {
+          modal = new window.bootstrap.Modal(modalElement);
+        }
         modal.show();
       } else {
         // On desktop, toggle the sidebar as before
@@ -5050,15 +5061,6 @@ export default {
     saveGroupChanges() {
       console.log('Save group changes:', this.selectedGroup)
       // TODO: Implement save functionality for group updates
-    },
-
-    // Toggle group actions dropdown manually if needed
-    toggleGroupActionsDropdown() {
-      const dropdownElement = document.getElementById('groupActionsDropdown');
-      if (dropdownElement) {
-        const bootstrapDropdown = new Dropdown(dropdownElement);
-        bootstrapDropdown.toggle();
-      }
     },
 
     // Individual bottle management
@@ -8129,9 +8131,18 @@ export default {
   z-index: 1056 !important; /* Higher than modal backdrop (1055) */
 }
 
-/* Group actions dropdown styling */
+/* Specific fix for group actions dropdown */
 .action-buttons .dropdown-menu {
   min-width: 200px;
+  z-index: 1060 !important; /* Even higher z-index */
+  background-color: white !important;
+  border: 1px solid #dee2e6 !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Only show dropdown when Bootstrap adds the 'show' class */
+.action-buttons .dropdown-menu.show {
+  display: block !important;
 }
 
 .action-buttons .dropdown-item {
