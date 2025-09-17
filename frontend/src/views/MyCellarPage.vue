@@ -4148,7 +4148,7 @@ export default {
 
     // Clean up Bootstrap instances
     const mobileAddDrinksModal = document.getElementById('mobileAddDrinksModal');
-    if (mobileAddDrinksModal) {
+    if (mobileAddDrinksModal && window.bootstrap && window.bootstrap.Modal) {
       const modalInstance = window.bootstrap.Modal.getInstance(mobileAddDrinksModal);
       if (modalInstance) {
         modalInstance.dispose();
@@ -4199,11 +4199,13 @@ export default {
       if (this.isMobile) {
         // On mobile, open the modal instead of toggling sidebar
         const modalElement = document.getElementById('mobileAddDrinksModal');
-        let modal = window.bootstrap.Modal.getInstance(modalElement);
-        if (!modal) {
-          modal = new window.bootstrap.Modal(modalElement);
+        if (window.bootstrap && window.bootstrap.Modal) {
+          let modal = window.bootstrap.Modal.getInstance(modalElement);
+          if (!modal) {
+            modal = new window.bootstrap.Modal(modalElement);
+          }
+          modal.show();
         }
-        modal.show();
       } else {
         // On desktop, toggle the sidebar as before
         this.rightSidebarExpanded = !this.rightSidebarExpanded;
