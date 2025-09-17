@@ -5178,7 +5178,8 @@ export default {
         async loadMenuItemsForSection(section) {
             try {
                 // Use the existing getVenueMenu endpoint to get items for this section
-                const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`);
+                //const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`);
+                const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/getMenuItems/${section.id}`);
                 
                 // Backend returns structured response: {code: 200, data: [...items...], pagination: {...}}
                 if (itemsResponse.data && itemsResponse.data.code === 200 && Array.isArray(itemsResponse.data.data)) {
@@ -5197,6 +5198,7 @@ export default {
                             itemRating: item.avgRating,
                             itemDesc: item.description,
                             itemServingTypeName: item.servingTypeText,
+                            topFlavorTags: item.topFlavorTags,
                             // Legacy fields for backward compatibility
                             photo: item.photo,
                             bottler: item.bottler,
