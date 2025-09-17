@@ -357,21 +357,6 @@
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link>
-
-                                            <!-- Flavor Tags - Right beside the name -->
-                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-
-                                            </div>
                                         </div>
 
 
@@ -400,6 +385,21 @@
                                             <p v-if="sectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">
                                                 Temporarily Unavailable
                                             </p>
+
+                                            <!-- Flavor Tags - Right beside the name -->
+                                            <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
+
+                                            </template>
                                         </div>
                                     </div>
                                 </div>
@@ -430,19 +430,6 @@
                                                 </p>
                                             </router-link>
 
-                                            <!-- Flavor Tags - Right beside the name -->
-                                            <div v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-                                            </div>
                                         </div>
 
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -481,6 +468,20 @@
                                             <p v-if="sectionItem.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
                                                 Temporarily Unavailable
                                             </p>
+
+                                            <!-- Flavor Tags - Right beside the name -->
+                                            <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
+                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    class="badge rounded-pill"
+                                                    :style="{ 
+                                                        backgroundColor: tag.hexcode || '#6c757d',
+                                                        color: getContrastColor(tag.hexcode || '#6c757d')
+                                                    }"
+                                                    :title="`${tag.count} mentions`">
+                                                    {{ tag.tag }}
+                                                </span>
+                                            </template>
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
