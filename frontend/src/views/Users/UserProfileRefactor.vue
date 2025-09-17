@@ -2971,7 +2971,8 @@
                             <div class="mt-auto">
                               <button v-if="ownProfile || listing.note"
                                 class="btn btn-sm w-100"
-                                :class="'btn-warning'"
+                                :class="listing.note ? 'text-white' : 'btn-warning'"
+                                :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
                                 data-bs-toggle="modal"
                                 :data-bs-target="`#noteModal${index}`"
                                 @click="prepareNoteModal(listing, index)">
@@ -3031,7 +3032,8 @@
                             <button v-if="ownProfile || listing.note"
                               class="btn btn-sm"
                               style="margin-top: 0.5rem;"
-                              :class="'btn-warning'"
+                              :class="listing.note ? 'text-white' : 'btn-warning'"
+                              :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
                               data-bs-toggle="modal"
                               :data-bs-target="`#noteModal${index}`"
                               @click="prepareNoteModal(listing, index)">
@@ -3061,9 +3063,12 @@
                             
                             <!-- Row 1: Name + Delete -->
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                              <h5 class="fw-bold mb-0" style="color:#223957">
-                                {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
-                              </h5>
+                              <a :href="'/listing/view/' + listing?.drinkId + '/' + encodeURIComponent(bookedMarkedListings[listing?.drinkId]?.listingName || 'unknown-listing')"
+                                class="text-decoration-none" style="color:#223957">
+                                <h5 class="fw-bold mb-0" style="color:#223957">
+                                  {{ bookedMarkedListings[listing?.drinkId]?.listingName || 'Loading...' }}
+                                </h5>
+                              </a>
                               <button v-if="ownProfile"
                                 class="btn btn-danger btn-sm"
                                 style="width: 28px; height: 28px; padding: 0;"
@@ -3085,12 +3090,20 @@
                               </span>
                             </div>
 
-                            <!-- Row 3: Note -->
+                            <!-- Row 3: Description -->
+                            <div class="mb-2">
+                              <p class="mb-0 small text-muted">
+                                {{ bookedMarkedListings[listing?.drinkId]?.officialDesc || 'No description available.' }}
+                              </p>
+                            </div>
+
+                            <!-- Row 4: Note -->
                             <div class="text-end">
                               <button v-if="ownProfile || listing.note"
                                 class="btn btn-sm"
                                 style="margin-top: 0.5rem;"
-                                :class="'btn-warning'"
+                                :class="listing.note ? 'text-white' : 'btn-warning'"
+                                :style="listing.note ? 'background-color: #ff3e31; border-color: #ff3e31;' : ''"
                                 data-bs-toggle="modal"
                                 :data-bs-target="`#noteModal${index}`"
                                 @click="prepareNoteModal(listing, index)">

@@ -89,20 +89,47 @@
           </div>
         </div>
 
-        <!-- List Header (Left aligned) -->
+        <!-- List Header -->
         <div class="row mb-4">
           <div class="col-12">
             <h2 class="fw-bold text-start">{{ selectedList.listName }}</h2>
             <p class="text-muted mb-2 text-start">{{ selectedList.listDesc || 'No description provided.' }}</p>
-            <div class="d-flex align-items-center">
-              <img
-                :src="selectedList.userPhoto || defaultProfilePhoto"
-                alt="Creator"
-                class="rounded-circle me-2"
-                style="width: 32px; height: 32px; object-fit: cover;"
-              />
-              <span class="text-muted">Created by</span>
-              <span class="fw-bold ms-1">{{ selectedList.displayName || selectedList.username }}</span>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center">
+                <img
+                  :src="selectedList.userPhoto || defaultProfilePhoto"
+                  alt="Creator"
+                  class="rounded-circle me-2"
+                  style="width: 32px; height: 32px; object-fit: cover;"
+                />
+                <span class="text-muted">Created by</span>
+                <span class="fw-bold ms-1">{{ selectedList.displayName || selectedList.username }}</span>
+              </div>
+              
+              <div class="d-flex gap-2">
+                <button
+                  class="btn btn-sm d-flex align-items-center gap-1"
+                  :class="hasUserUpvoted(selectedList) ? 'btn-dark' : 'btn-outline-secondary'"
+                  @click="toggleUpvote(selectedList)"
+                  :disabled="upvoting || !userID"
+                  style="background-color: #f8f9fa; border-color: #dee2e6; color: #212529;"
+                >
+                  <i 
+                    class="bi"
+                    :class="hasUserUpvoted(selectedList) ? 'bi-arrow-up-circle-fill' : 'bi-arrow-up-circle'"
+                  ></i>
+                  <span>{{ selectedList.upvotes || 0 }}</span>
+                </button>
+
+                <button
+                  class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                  @click="shareList(selectedList)"
+                  style="background-color: #f8f9fa; border-color: #dee2e6; color: #212529;"
+                >
+                  <i class="bi bi-share"></i>
+                  <span>Share</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -152,8 +179,8 @@
                 <!-- Creator's Note (View-only for public lists) -->
                 <div class="mt-auto" v-if="item.note && item.note.trim()">
                   <button
-                    class="btn btn-sm w-100"
-                    :class="'btn-warning'"
+                    class="btn btn-sm w-100 text-white"
+                    style="background-color: #ff3e31; border-color: #ff3e31;"
                     data-bs-toggle="modal"
                     :data-bs-target="`#noteModal${index}`"
                     @click="prepareNoteModal(item, index)"
