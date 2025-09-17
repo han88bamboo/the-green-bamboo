@@ -2386,7 +2386,7 @@
                           :to="'/home/profile'" class="text-decoration-none text-dark">
                           <b>🏠 Home</b>
                         </router-link>
-                        <router-link v-else-if="checkVenue(review.address) !== ''"
+                        <router-link v-else-if="checkVenue(review.location) !== null"
                           :to="'/profile/venue/' + review.location + '/' + getVenueNameFromID(review.location)"
                           class="text-decoration-none text-dark">
                           <b>{{ getVenueNameFromID(review.location) }} </b>
@@ -3658,6 +3658,7 @@ export default {
       allRelevantUserIDs: [], // to store all userIDs from reviews and only retrieve user data whose IDs are in this array
       users: [],
       venues: [],
+      reviewedAtVenues: [], // venues mentioned in reviews (from getVenuesByIds)
       venuesAPI: [],
       drinkTypes: [],
       requestListings: [],
@@ -4369,7 +4370,7 @@ export default {
         );
         this.reviews = response.data;
 
-        // this.getMoreVenues(response.data); // get more venues which are tagged in the reviews
+        this.getReviewVenues(response.data); // get venues mentioned in reviews (separate from venues that sell bottle)
 
         this.lastReviewID = this.reviews.length > 0 ? this.reviews[this.reviews.length - 1].id : 0;
 
@@ -4872,12 +4873,13 @@ export default {
     },
 
     getVenueNameFromID(venueID) {
-      const venue = this.venues.find((venue) => {
+      const venue = this.reviewedAtVenues.find((venue) => {
         return venue["id"] == venueID;
       });
       if (venue) {
         return venue["venueName"];
       }
+      return "Unknown Venue"; // Fallback for venues not found
     },
 
 
@@ -6143,32 +6145,12 @@ export default {
 
     // return place id
 
-    checkVenue(place) {
-      // Querying MongoDB venues collection to check if a place exists
-
-      // // Querying MongoDB venues collection to check if a place exists
-      // if (this.filteredOptions.hasOwnProperty(place)) {
-      //     // Place exists as a key in filtered options
-      //     console.log("Place exists");
-      // } else {
-      //     // Place does not exist as a key in filtered options
-      //     console.log("Place does not exist");
-      // }
-      // const selectedPlace = this.filteredOptions.find(option => option.name === place);
-      // if(selectedPlace){
-      //     return selectedPlace.id;
-      // }
-      // else{
-      //     return false;
-      // }
-      if (place in this.addressDict) {
-
-        // have to get the id of the address
-        return this.addressDict[place];
-      }
-      else {
-        return null;
-      }
+    checkVenue(venueId) {
+      // Check if venue ID exists in our reviewedAtVenues array (venues mentioned in reviews)
+      if (!venueId) return null;
+      
+      const venue = this.reviewedAtVenues.find(venue => venue.id == venueId);
+      return venue ? venueId : null;
     },
     // to get webscraped SEO title
     getOGTitle(url) {
@@ -6325,37 +6307,35 @@ export default {
       }
     },
 
-    // async getMoreVenues(reviews) {
-    //   // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
-    //   let localVenueIDs = [];
+    async getReviewVenues(reviews) {
+      // Loop through the reviews and extract the location (venue ID) and retrieve the venue data
+      let localVenueIDs = [];
 
-    //   reviews.forEach((review) => {
-    //     if (review.location && !localVenueIDs.includes(review.location)) {
-    //       if (!this.venueIDs.includes(review.location)) {
-    //         localVenueIDs.push(review.location);
-    //       }
-    //     }
-    //   });
+      reviews.forEach((review) => {
+        if (review.location && !localVenueIDs.includes(review.location)) {
+          // Check if venue not already in reviewedAtVenues array
+          const alreadyExists = this.reviewedAtVenues.some(venue => venue.id == review.location);
+          if (!alreadyExists) {
+            localVenueIDs.push(review.location);
+          }
+        }
+      });
 
-    //   // Fetch venue details for the unique venue IDs
-    //   try {
-    //     if (localVenueIDs.length > 0) {
-    //       const venueResponse = await this.$axios.post(
-    //         `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
-    //         { 'venueIDs': localVenueIDs }
-    //       );
-    //       // Add to this.venues array
-    //       this.venues = this.venues.concat(venueResponse.data);
+      // Fetch venue details for the unique venue IDs
+      try {
+        if (localVenueIDs.length > 0) {
+          const venueResponse = await this.$axios.post(
+            `${process.env.VUE_APP_API_URL}/getData/getVenuesByIds`,
+            { 'venueIDs': localVenueIDs }
+          );
+          // Add to this.reviewedAtVenues array (separate from venues that sell this bottle)
+          this.reviewedAtVenues = this.reviewedAtVenues.concat(venueResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching venue details:", error);
+      }
+    },
 
-    //       // Update venueIDs with the new venues
-    //       this.venueIDs = this.venueIDs.concat(
-    //         venueResponse.data.map((venue) => venue.id)
-    //       );
-    //     }
-    //   } catch (error) {
-    //     console.error("Error fetching venue details:", error);
-    //   }
-    // },
     restoreReviewCache() {
       const cacheKey = `reviewCache_${this.listing_id}_${this.userID}`;
       const cached = localStorage.getItem(cacheKey);
