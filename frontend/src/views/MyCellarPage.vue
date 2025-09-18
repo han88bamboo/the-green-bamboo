@@ -550,24 +550,7 @@
 
                 <!-- Right Section: View Toggle + Delete Button -->
                 <div class="d-flex align-items-center">
-                  <!-- Delete Collection Button (only show for custom collection tabs) -->
-                  <div 
-                    v-if="showDeleteButton" 
-                    class="me-2"
-                  >
-                    <button
-                      type="button"
-                      class="btn btn-outline-danger btn-sm"
-                      :disabled="deletingCollectionId === activeTab"
-                      @click="confirmDeleteCollection"
-                      @click.capture="() => console.log('🔴 BUTTON CLICK DETECTED')"
-                      :title="`Delete '${getCurrentCollectionName()}' collection`"
-                    >
-                      <span v-if="deletingCollectionId === activeTab" class="spinner-border spinner-border-sm me-1"></span>
-                      <i v-else class="bi bi-trash me-1"></i>
-                      <span class="d-none d-sm-inline">{{ deletingCollectionId === activeTab ? 'Deleting...' : 'Delete Collection' }}</span>
-                    </button>
-                  </div>
+                 
 
                   <!-- View Toggle -->
                   <!-- Mobile: Compact layout -->
@@ -642,6 +625,24 @@
                         </svg>
                       </button>
                     </div>
+                  </div>
+                   <!-- Delete Collection Button (only show for custom collection tabs) -->
+                  <div 
+                    v-if="showDeleteButton" 
+                    class="me-2"
+                  >
+                    <button
+                      type="button"
+                      class="btn btn-outline-danger btn-sm"
+                      :disabled="deletingCollectionId === activeTab"
+                      @click="confirmDeleteCollection"
+                      @click.capture="() => console.log('🔴 BUTTON CLICK DETECTED')"
+                      :title="`Delete '${getCurrentCollectionName()}' collection`"
+                    >
+                      <span v-if="deletingCollectionId === activeTab" class="spinner-border spinner-border-sm me-1"></span>
+                      <i v-else class="bi bi-trash me-1"></i>
+                      <span class="d-none d-sm-inline">{{ deletingCollectionId === activeTab ? 'Deleting...' : 'Delete Collection' }}</span>
+                    </button>
                   </div>
                 </div>
               </div>
