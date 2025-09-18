@@ -548,78 +548,100 @@
                   </div>
                 </div>
 
-                <!-- View Toggle -->
-                <!-- Mobile: Compact layout -->
-                <div class="d-md-none">
-                  <div class="btn-group" role="group" aria-label="View toggle">
+                <!-- Right Section: View Toggle + Delete Button -->
+                <div class="d-flex align-items-center">
+                  <!-- Delete Collection Button (only show for custom collection tabs) -->
+                  <div 
+                    v-if="showDeleteButton" 
+                    class="me-2"
+                  >
                     <button
                       type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'grid' }"
-                      @click="viewMode = 'grid'"
-                      title="Grid View"
+                      class="btn btn-outline-danger btn-sm"
+                      :disabled="deletingCollectionId === activeTab"
+                      @click="confirmDeleteCollection"
+                      @click.capture="() => console.log('🔴 BUTTON CLICK DETECTED')"
+                      :title="`Delete '${getCurrentCollectionName()}' collection`"
                     >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'list' }"
-                      @click="viewMode = 'list'"
-                      title="List View"
-                    >
-                      <i class="bi bi-list-task"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'compact' }"
-                      @click="viewMode = 'compact'"
-                      title="Compact List View"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
-                      </svg>
+                      <span v-if="deletingCollectionId === activeTab" class="spinner-border spinner-border-sm me-1"></span>
+                      <i v-else class="bi bi-trash me-1"></i>
+                      <span class="d-none d-sm-inline">{{ deletingCollectionId === activeTab ? 'Deleting...' : 'Delete Collection' }}</span>
                     </button>
                   </div>
-                </div>
-                
-                <!-- Desktop: Right-aligned compact layout -->
-                <div class="d-none d-md-flex">
-                  <div class="btn-group" role="group" aria-label="View toggle">
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'grid' }"
-                      @click="viewMode = 'grid'"
-                      title="Grid View"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'list' }"
-                      @click="viewMode = 'list'"
-                      title="List View"
-                    >
-                      <i class="bi bi-list-task"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      :class="{ active: viewMode === 'compact' }"
-                      @click="viewMode = 'compact'"
-                      title="Compact List View"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                        <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
-                      </svg>
-                    </button>
+
+                  <!-- View Toggle -->
+                  <!-- Mobile: Compact layout -->
+                  <div class="d-md-none">
+                    <div class="btn-group" role="group" aria-label="View toggle">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'grid' }"
+                        @click="viewMode = 'grid'"
+                        title="Grid View"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'list' }"
+                        @click="viewMode = 'list'"
+                        title="List View"
+                      >
+                        <i class="bi bi-list-task"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'compact' }"
+                        @click="viewMode = 'compact'"
+                        title="Compact List View"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Desktop: Right-aligned compact layout -->
+                  <div class="d-none d-md-flex">
+                    <div class="btn-group" role="group" aria-label="View toggle">
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'grid' }"
+                        @click="viewMode = 'grid'"
+                        title="Grid View"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'list' }"
+                        @click="viewMode = 'list'"
+                        title="List View"
+                      >
+                        <i class="bi bi-list-task"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        :class="{ active: viewMode === 'compact' }"
+                        @click="viewMode = 'compact'"
+                        title="Compact List View"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                          <path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0 3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3511,6 +3533,60 @@
     </div>
   </div>
 
+  <!-- Delete Collection Confirmation Modal -->
+  <div class="modal fade" id="deleteCollectionModal" tabindex="-1" aria-labelledby="deleteCollectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="deleteCollectionModalLabel">
+            <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
+            Delete Collection
+          </h5>
+          <button type="button" class="btn-close" @click="cancelDeleteCollection" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-danger d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <div>
+              <strong>Warning:</strong> This action cannot be undone.
+            </div>
+          </div>
+          
+          <p class="mb-3">
+            Are you sure you want to delete the collection 
+            <strong>"{{ deleteConfirmationModal.collectionName }}"</strong>?
+          </p>
+          
+          <div v-if="deleteConfirmationModal.itemCount > 0" class="alert alert-warning">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            This collection contains <strong>{{ deleteConfirmationModal.itemCount }} item{{ deleteConfirmationModal.itemCount !== 1 ? 's' : '' }}</strong> 
+            that will also be permanently deleted.
+          </div>
+          
+          <div v-else class="text-muted">
+            <i class="bi bi-info-circle me-2"></i>
+            This collection is empty and safe to delete.
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" @click="cancelDeleteCollection">
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-danger" 
+            @click="deleteCollection"
+            :disabled="deletingCollectionId"
+          >
+            <span v-if="deletingCollectionId" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else class="bi bi-trash me-2"></i>
+            {{ deletingCollectionId ? 'Deleting...' : 'Delete Collection' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -3706,10 +3782,31 @@ export default {
       changelogOffset: 0,
       
       // Debug tracking
-      lastCanAddToCellarState: null
+      lastCanAddToCellarState: null,
+      
+      // Collection deletion state
+      deletingCollectionId: null,
+      deleteConfirmationModal: {
+        show: false,
+        collectionId: null,
+        collectionName: '',
+        itemCount: 0
+      }
     }
   },
   computed: {
+    // Debug computed for delete button visibility
+    showDeleteButton() {
+      const isNotSpecialTab = this.activeTab !== 'all' && this.activeTab !== 'history' && this.activeTab !== 'dashboard';
+      const hasCollectionName = this.getCurrentCollectionName();
+      console.log('🔍 DELETE BUTTON VISIBILITY CHECK:');
+      console.log('  activeTab:', this.activeTab);
+      console.log('  isNotSpecialTab:', isNotSpecialTab);
+      console.log('  hasCollectionName:', hasCollectionName);
+      console.log('  RESULT:', isNotSpecialTab && hasCollectionName);
+      return isNotSpecialTab && hasCollectionName;
+    },
+    
     // Total item count for the active tab
     totalItemCount() {
       if (this.activeTab === 'all') {
@@ -4123,6 +4220,21 @@ export default {
     if (addCollectionModal) {
       addCollectionModal.addEventListener('hidden.bs.modal', () => {
         this.resetNewCollectionForm();
+      });
+    }
+    
+    // Add event listener for delete collection modal close to reset state
+    const deleteCollectionModal = document.getElementById('deleteCollectionModal');
+    if (deleteCollectionModal) {
+      deleteCollectionModal.addEventListener('hidden.bs.modal', () => {
+        this.deleteConfirmationModal = {
+          show: false,
+          collectionId: null,
+          collectionName: '',
+          itemCount: 0
+        };
+        this.deletingCollectionId = null;
+        console.log('Delete collection modal hidden, state reset');
       });
     }
   },
@@ -6440,6 +6552,243 @@ export default {
       };
       return statusClasses[status] || 'bg-light text-dark';
     },
+
+    // Collection deletion methods
+    getCurrentCollectionName() {
+      console.log('getCurrentCollectionName called - activeTab:', this.activeTab);
+      console.log('Collections:', this.collections);
+      const collection = this.collections.find(c => c.id === this.activeTab);
+      console.log('Found collection for name:', collection);
+      const name = collection ? collection.collectionName : '';
+      console.log('Returning collection name:', name);
+      return name;
+    },
+
+    confirmDeleteCollection() {
+      console.log('🔴 DELETE BUTTON CLICKED - confirmDeleteCollection() called');
+      console.log('Active tab:', this.activeTab);
+      console.log('Collections array:', this.collections);
+      
+      const collection = this.collections.find(c => c.id === this.activeTab);
+      console.log('Found collection:', collection);
+      
+      if (!collection) {
+        console.error('Collection not found for deletion');
+        return;
+      }
+
+      // Calculate item count for this collection
+      const itemCount = this.getCollectionItemCount(collection.id);
+      console.log('Item count for collection:', itemCount);
+
+      // Set up modal data
+      this.deleteConfirmationModal = {
+        show: true,
+        collectionId: collection.id,
+        collectionName: collection.collectionName,
+        itemCount: itemCount
+      };
+      console.log('Modal data set:', this.deleteConfirmationModal);
+
+      // Show the modal using Vue's nextTick to ensure DOM is ready
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('deleteCollectionModal');
+        console.log('Modal element found:', modalElement);
+        
+        if (modalElement) {
+          // Try Bootstrap first
+          if (window.bootstrap && window.bootstrap.Modal) {
+            console.log('Using Bootstrap Modal');
+            let modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+              console.log('Creating new Bootstrap modal instance');
+              modal = new window.bootstrap.Modal(modalElement, {
+                backdrop: true,
+                keyboard: true,
+                focus: true
+              });
+            } else {
+              console.log('Using existing Bootstrap modal instance');
+            }
+            modal.show();
+            console.log('Bootstrap Modal.show() called');
+          } else {
+            // Fallback: manually show modal using CSS classes
+            console.log('Bootstrap not available, using CSS fallback');
+            modalElement.classList.add('show');
+            modalElement.style.display = 'block';
+            modalElement.setAttribute('aria-hidden', 'false');
+            
+            // Add backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.id = 'deleteCollectionModalBackdrop';
+            document.body.appendChild(backdrop);
+            
+            // Add body class to prevent scrolling
+            document.body.classList.add('modal-open');
+            
+            console.log('Manual modal display applied');
+          }
+        } else {
+          console.error('Modal element not found');
+        }
+      });
+    },
+
+    async deleteCollection() {
+      if (!this.deleteConfirmationModal.collectionId) {
+        console.error('No collection ID provided for deletion');
+        return;
+      }
+
+      this.deletingCollectionId = this.deleteConfirmationModal.collectionId;
+
+      try {
+        const baseUrl = this.getApiBaseUrl();
+        const response = await this.$axios.delete(
+          `${baseUrl}/editCellar/deleteCollection/${this.deleteConfirmationModal.collectionId}`,
+          {
+            data: {
+              ownerType: this.ownerType,
+              ownerId: this.id
+            }
+          }
+        );
+
+        if (response.data && response.data.code === 200) {
+          console.log('Collection deleted successfully:', response.data);
+          
+          // Remove collection from local state
+          this.collections = this.collections.filter(
+            c => c.id !== this.deleteConfirmationModal.collectionId
+          );
+
+          // Navigate to "All Drinks" tab since current tab was deleted
+          this.setActiveTab('all');
+
+          // Reload cellar data to reflect changes
+          await this.loadCellarData();
+
+          // Hide the modal
+          this.$nextTick(() => {
+            const modalElement = document.getElementById('deleteCollectionModal');
+            if (modalElement) {
+              if (window.bootstrap && window.bootstrap.Modal) {
+                let modal = window.bootstrap.Modal.getInstance(modalElement);
+                if (!modal) {
+                  // Create a new modal instance if none exists
+                  modal = new window.bootstrap.Modal(modalElement);
+                }
+                modal.hide();
+                
+                // Add a timeout fallback in case Bootstrap modal doesn't hide properly
+                setTimeout(() => {
+                  if (modalElement.classList.contains('show') || modalElement.style.display === 'block') {
+                    console.log('Bootstrap modal did not hide properly, forcing manual hide');
+                    this.forceModalClose();
+                  }
+                }, 500);
+              } else {
+                // Manual hide fallback
+                this.forceModalClose();
+              }
+            }
+          });
+
+          // Reset modal state
+          this.deleteConfirmationModal = {
+            show: false,
+            collectionId: null,
+            collectionName: '',
+            itemCount: 0
+          };
+
+          // TODO: Show success toast notification
+          console.log(`Collection "${response.data.data.collectionName}" deleted successfully. ${response.data.data.archivedItemCount} items were archived.`);
+
+        } else {
+          throw new Error(response.data?.message || 'Failed to delete collection');
+        }
+
+      } catch (error) {
+        console.error('Error deleting collection:', error);
+        
+        let errorMessage = 'Failed to delete collection';
+        if (error.response) {
+          if (error.response.status === 403) {
+            errorMessage = 'You do not have permission to delete this collection';
+          } else if (error.response.status === 404) {
+            errorMessage = 'Collection not found';
+          } else if (error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+
+        // TODO: Show error toast notification
+        alert(`Error: ${errorMessage}`);
+        
+      } finally {
+        this.deletingCollectionId = null;
+      }
+    },
+
+    forceModalClose() {
+      const modalElement = document.getElementById('deleteCollectionModal');
+      if (modalElement) {
+        modalElement.classList.remove('show');
+        modalElement.style.display = 'none';
+        modalElement.setAttribute('aria-hidden', 'true');
+        
+        // Remove custom backdrop
+        const backdrop = document.getElementById('deleteCollectionModalBackdrop');
+        if (backdrop) {
+          backdrop.remove();
+        }
+        
+        // Remove all Bootstrap-generated backdrops
+        const bootstrapBackdrops = document.querySelectorAll('.modal-backdrop');
+        bootstrapBackdrops.forEach(backdrop => backdrop.remove());
+        
+        // Remove body class
+        document.body.classList.remove('modal-open');
+        
+        console.log('Force modal close applied');
+      }
+    },
+
+    cancelDeleteCollection() {
+      console.log('🚫 Canceling delete collection');
+      this.deleteConfirmationModal.show = false;
+      
+      // Hide modal manually if Bootstrap not available
+      this.$nextTick(() => {
+        const modalElement = document.getElementById('deleteCollectionModal');
+        if (modalElement) {
+          if (window.bootstrap && window.bootstrap.Modal) {
+            let modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (!modal) {
+              // Create instance if it doesn't exist, then hide it
+              modal = new window.bootstrap.Modal(modalElement);
+            }
+            modal.hide();
+            
+            // Add timeout fallback
+            setTimeout(() => {
+              if (modalElement.classList.contains('show') || modalElement.style.display === 'block') {
+                console.log('Bootstrap modal cancel did not hide properly, forcing manual hide');
+                this.forceModalClose();
+              }
+            }, 500);
+          } else {
+            // Manual hide
+            this.forceModalClose();
+          }
+        }
+      });
+    },
   }
 }
 
@@ -8171,6 +8520,60 @@ export default {
 
 .cellar-change-log {
   transition: transform 0.3s ease-in-out;
+}
+
+/* Delete Collection Button Styling */
+.btn-outline-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+  transition: all 0.15s ease-in-out;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+
+.btn-outline-danger:disabled {
+  color: #6c757d;
+  border-color: #6c757d;
+  background-color: transparent;
+  opacity: 0.65;
+}
+
+/* Delete Confirmation Modal Styling */
+#deleteCollectionModal .modal-content {
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+#deleteCollectionModal .alert-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+#deleteCollectionModal .alert-warning {
+  background-color: #fff3cd;
+  border-color: #ffecb5;
+  color: #856404;
+}
+
+#deleteCollectionModal .btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+#deleteCollectionModal .btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+}
+
+#deleteCollectionModal .btn-danger:disabled {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  opacity: 0.65;
 }
 
 </style>

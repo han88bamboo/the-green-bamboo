@@ -1107,7 +1107,7 @@ CREATE INDEX idx_cellar_collections_owner ON "myCellarCollections" ("ownerID", "
 CREATE TABLE "myCellarItems" (
     "id" SERIAL PRIMARY KEY,
     "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- Reference to the drink listing
-    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE CASCADE, -- Collection this item belongs to
+    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE SET NULL, -- Collection this item belongs to
     "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
     
     -- Inventory Details
@@ -1389,7 +1389,14 @@ BEGIN
         -- Archive status changed
         IF OLD."archiveStatus" != NEW."archiveStatus" THEN
             change_desc := CASE 
-                WHEN NEW."archiveStatus" = TRUE THEN 'Bottle archived: ' || listing_name
+                WHEN NEW."archiveStatus" = TRUE THEN 
+                    CASE 
+                        -- Check if collection was also set to NULL (indicates collection deletion)
+                        WHEN OLD."collectionID" IS NOT NULL AND NEW."collectionID" IS NULL THEN
+                            'Bottle archived due to collection deletion: ' || listing_name
+                        ELSE 
+                            'Bottle archived: ' || listing_name
+                    END
                 ELSE 'Bottle restored from archive: ' || listing_name
             END;
             
@@ -1464,23 +1471,33 @@ BEGIN
     END IF;
 
     -- Handle DELETE (item removed)
+    -- Note: With new archival system, direct deletions should be rare
+    -- Items are typically archived instead of deleted when collections are removed
     IF TG_OP = 'DELETE' THEN
         change_desc := 'Cellar item removed: ' || listing_name || 
                       ' (was ' || OLD."status" || ', ' || OLD."consumption" || ')';
         
-        INSERT INTO "myCellarItemsChangelog" (
-            "cellarItemID", "changeType", "changeDescription", 
-            "oldValue", "changeDate"
-        ) VALUES (
-            OLD."id", 'DELETED', change_desc,
-            json_build_object(
-                'quantityVariantID', OLD."quantityVariantID",
-                'status', OLD."status",
-                'consumption', OLD."consumption",
-                'currentLocation', OLD."currentLocation"
-            )::text,
-            CURRENT_TIMESTAMP
-        );
+        -- Try to insert changelog entry, but handle constraint violations gracefully
+        BEGIN
+            INSERT INTO "myCellarItemsChangelog" (
+                "cellarItemID", "changeType", "changeDescription", 
+                "oldValue", "changeDate"
+            ) VALUES (
+                OLD."id", 'DELETED', change_desc,
+                json_build_object(
+                    'quantityVariantID', OLD."quantityVariantID",
+                    'status', OLD."status",
+                    'consumption', OLD."consumption",
+                    'currentLocation', OLD."currentLocation"
+                )::text,
+                CURRENT_TIMESTAMP
+            );
+        EXCEPTION 
+            WHEN foreign_key_violation THEN
+                -- If FK constraint fails, log to system instead
+                RAISE NOTICE 'Could not log deletion of item % to changelog due to FK constraint', OLD."id";
+        END;
+        
         RETURN OLD;
     END IF;
 
@@ -1493,6 +1510,59 @@ CREATE TRIGGER trigger_log_cellar_item_changes
     AFTER INSERT OR UPDATE OR DELETE ON "myCellarItems"
     FOR EACH ROW
     EXECUTE FUNCTION log_cellar_item_changes();
+
+-- ========= COLLECTION DELETION ARCHIVAL TRIGGER =========
+-- Function to archive cellar items when their collection is deleted
+CREATE OR REPLACE FUNCTION archive_items_on_collection_delete()
+RETURNS TRIGGER AS $$
+DECLARE
+    archived_count INTEGER := 0;
+    item_record RECORD;
+BEGIN
+    -- Update items that belonged to the deleted collection
+    -- Set collectionID to NULL and archiveStatus to TRUE
+    FOR item_record IN 
+        SELECT "id", "listingID" 
+        FROM "myCellarItems" 
+        WHERE "collectionID" = OLD."id" AND "archiveStatus" = FALSE
+    LOOP
+        UPDATE "myCellarItems" 
+        SET 
+            "collectionID" = NULL,
+            "archiveStatus" = TRUE,
+            "updatedDate" = CURRENT_TIMESTAMP
+        WHERE "id" = item_record."id";
+        
+        archived_count := archived_count + 1;
+        
+        -- Log the archival in the changelog
+        INSERT INTO "myCellarItemsChangelog" (
+            "cellarItemID", "changeType", "changeDescription", 
+            "oldValue", "newValue", "changeDate"
+        ) VALUES (
+            item_record."id", 
+            'COLLECTION_DELETED', 
+            'Item archived due to collection deletion: ' || OLD."collectionName",
+            OLD."id"::text,
+            'NULL',
+            CURRENT_TIMESTAMP
+        );
+    END LOOP;
+    
+    -- Log the collection deletion summary
+    IF archived_count > 0 THEN
+        RAISE NOTICE 'Collection % deleted: % items archived', OLD."collectionName", archived_count;
+    END IF;
+    
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger for collection deletion
+CREATE TRIGGER trigger_archive_items_on_collection_delete
+    BEFORE DELETE ON "myCellarCollections"
+    FOR EACH ROW
+    EXECUTE FUNCTION archive_items_on_collection_delete();
 
 -- NEWLY ADDED TABLES for Explore Page - BY CP --
 
