@@ -1107,7 +1107,7 @@ CREATE INDEX idx_cellar_collections_owner ON "myCellarCollections" ("ownerID", "
 CREATE TABLE "myCellarItems" (
     "id" SERIAL PRIMARY KEY,
     "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- Reference to the drink listing
-    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE SET NULL, -- Collection this item belongs to
+    "collectionID" INTEGER REFERENCES "myCellarCollections"("id") ON DELETE CASCADE, -- Collection this item belongs to
     "variant" SMALLINT DEFAULT NULL, -- Wine vintage or other variant (reusing existing pattern)
     
     -- Inventory Details
