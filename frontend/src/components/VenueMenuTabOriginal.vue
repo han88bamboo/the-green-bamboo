@@ -740,7 +740,7 @@
                          :data-section-order="menuSection.sectionOrder">
 
                         <!-- Section Name -->
-                        <div class="col-7 d-grid pe-0 mobile-view-hide">
+                        <div class="col-5 d-grid pe-0 mobile-view-hide">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-end-0 fs-5 fw-bold text-start"
                                 data-bs-toggle="collapse"
@@ -751,7 +751,21 @@
                                 {{ menuSection.sectionName }}
                             </button>
                         </div>
-                        <div class="col-7 d-grid ps-0 pe-0 mobile-view-show">
+                        
+                        <!-- Visibility Toggle (Desktop) -->
+                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide">
+                            <div class="form-check form-switch visibility-switch">
+                                <input class="form-check-input" type="checkbox" 
+                                       :id="'editMainSectionVisibility_' + menuSection.sectionOrder"
+                                       :checked="menuSection.isVisible !== false"
+                                       @change="toggleSectionVisibility(menuSection)">
+                                <label class="form-check-label" :for="'editMainSectionVisibility_' + menuSection.sectionOrder">
+                                    {{ menuSection.isVisible !== false ? 'Visible' : 'Hidden' }}
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-5 d-grid ps-0 pe-0 mobile-view-show">
                             <button type="button"
                                 class="btn secondary-btn-not-rounded rounded-end-0 fs-6 fw-bold text-start"
                                 data-bs-toggle="collapse"
@@ -761,6 +775,19 @@
                                 style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                 {{ menuSection.sectionName }}
                             </button>
+                        </div>
+                        
+                        <!-- Visibility Toggle (Mobile) -->
+                        <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show">
+                            <div class="form-check form-switch visibility-switch">
+                                <input class="form-check-input" type="checkbox" 
+                                       :id="'editMainSectionVisibilityMobile_' + menuSection.sectionOrder"
+                                       :checked="menuSection.isVisible !== false"
+                                       @change="toggleSectionVisibility(menuSection)">
+                                <label class="form-check-label" :for="'editMainSectionVisibilityMobile_' + menuSection.sectionOrder">
+                                    {{ menuSection.isVisible !== false ? 'Visible' : 'Hidden' }}
+                                </label>
+                            </div>
                         </div>
                         <!-- Reset Section Content Order -->
                         <div class="col-2 d-grid p-0 mobile-view-hide">
@@ -849,19 +876,6 @@
                                     </g>
                                 </svg>
                             </button>
-                        </div>
-
-                        <!-- Visibility Switch for Edit Mode Main Sections -->
-                        <div class="col-12 mt-2">
-                            <div class="form-check form-switch visibility-switch">
-                                <input class="form-check-input" type="checkbox" 
-                                       :id="'editMainSectionVisibility_' + menuSection.sectionOrder"
-                                       :checked="menuSection.isVisible !== false"
-                                       @change="toggleSectionVisibility(menuSection)">
-                                <label class="form-check-label" :for="'editMainSectionVisibility_' + menuSection.sectionOrder">
-                                    {{ menuSection.isVisible !== false ? 'Visible' : 'Hidden' }}
-                                </label>
-                            </div>
                         </div>
 
                         <div class="collapse"
@@ -1081,7 +1095,7 @@
                                 <!-- Subsection Header -->
                                 <div class="row mb-2">
                                     <!-- Subsection Name (Desktop) -->
-                                    <div class="col-8 d-grid pe-0 mobile-view-hide">
+                                    <div class="col-6 d-grid pe-0 mobile-view-hide">
                                         <button type="button"
                                             class="btn btn-outline-secondary rounded fs-6 fw-bold text-start"
                                             data-bs-toggle="collapse"
@@ -1093,8 +1107,21 @@
                                         </button>
                                     </div>
                                     
+                                    <!-- Visibility Toggle (Desktop) -->
+                                    <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide">
+                                        <div class="form-check form-switch visibility-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   :id="'editSubsectionVisibility_' + subsection.sectionOrder"
+                                                   :checked="subsection.isVisible"
+                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
+                                            <label class="form-check-label" :for="'editSubsectionVisibility_' + subsection.sectionOrder">
+                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Subsection Name (Mobile) -->
-                                    <div class="col-8 d-grid ps-0 pe-0 mobile-view-show">
+                                    <div class="col-6 d-grid ps-0 pe-0 mobile-view-show">
                                         <button type="button"
                                             class="btn btn-outline-secondary rounded fs-7 fw-bold text-start"
                                             data-bs-toggle="collapse"
@@ -1104,6 +1131,19 @@
                                             style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                                             {{ subsection.sectionName }}
                                         </button>
+                                    </div>
+                                    
+                                    <!-- Visibility Toggle (Mobile) -->
+                                    <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show">
+                                        <div class="form-check form-switch visibility-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   :id="'editSubsectionVisibilityMobile_' + subsection.sectionOrder"
+                                                   :checked="subsection.isVisible"
+                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
+                                            <label class="form-check-label" :for="'editSubsectionVisibilityMobile_' + subsection.sectionOrder">
+                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <!-- Subsection Management Buttons (Desktop) -->
@@ -1156,19 +1196,6 @@
                                                 <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                                             </svg>
                                         </button>
-                                    </div>
-                                    
-                                    <!-- Visibility Switch for Edit Mode Subsections -->
-                                    <div class="col-12 mt-2">
-                                        <div class="form-check form-switch visibility-switch">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   :id="'editSubsectionVisibility_' + subsection.sectionOrder"
-                                                   :checked="subsection.isVisible"
-                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
-                                            <label class="form-check-label" :for="'editSubsectionVisibility_' + subsection.sectionOrder">
-                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
-                                            </label>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -3299,6 +3326,7 @@ export default {
                     sectionOrder: section.sectionOrder,
                     parentSectionId: null,
                     isSubSection: false,
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
                     sectionMenu: copiedSectionMenu
                 });
                 
@@ -3357,6 +3385,7 @@ export default {
                             sectionOrder: subsection.sectionOrder,
                             parentSectionId: subsection.parentSectionId,
                             isSubSection: true,
+                            isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true, // Include visibility status
                             sectionMenu: copiedSubsectionMenu
                         });
                     });
@@ -3386,6 +3415,7 @@ export default {
                 this.editMenu.push({
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
                     sectionMenu: sectionMenu,
                 });
             }
@@ -3630,6 +3660,7 @@ export default {
             this.editMenu.push({
                 sectionName: "New Section " + (this.editMenu.length + 1),
                 sectionOrder: this.editMenu.length,
+                isVisible: true, // New sections are visible by default
                 sectionMenu: [],
             });
         },
@@ -3708,6 +3739,7 @@ export default {
                     sectionOrder: maxSectionOrder + 1,
                     parentSectionId: parentSection.id || parentSection.sectionOrder,
                     isSubSection: true,
+                    isVisible: true, // New subsections are visible by default
                     sectionMenu: []
                 };
                 
@@ -4269,6 +4301,7 @@ export default {
                     sectionOrder: section.sectionOrder,
                     isSubSection: section.isSubSection || false,
                     parentSectionId: section.parentSectionId || null,
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
                     sectionMenu: []
                 };
                 
@@ -6091,10 +6124,9 @@ export default {
 }
 
 .visibility-switch {
-  position: absolute;
-  top: 8px;
-  right: 12px;
+  /* Removed absolute positioning to work with inline grid layout */
   z-index: 10;
+  min-width: fit-content;
 }
 
 .section-header-container {
@@ -6102,8 +6134,9 @@ export default {
 }
 
 .visibility-switch .form-check-label {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: #6c757d;
   margin-left: 0.25rem;
+  white-space: nowrap;
 }
 </style>
