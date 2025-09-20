@@ -28,7 +28,8 @@ def getMenuSections(venue_id: int):
                     'sectionName', vm."sectionName",
                     'sectionOrder', vm."sectionOrder",
                     'parentSectionId', vm."parentSectionId",
-                    'isSubSection', vm."isSubSection"
+                    'isSubSection', vm."isSubSection",
+                    'isVisible', vm."isVisible"
                 ) ORDER BY vm."sectionOrder")
                 FROM "venuesMenu" vm
                 WHERE vm."venueId" = %s
@@ -106,7 +107,8 @@ def updateMenu():
                 section.get("sectionName"),
                 section.get("sectionOrder"),
                 venue_id,
-                None  # parentSectionId is NULL for top-level sections
+                None,  # parentSectionId is NULL for top-level sections
+                section.get("isVisible", True)  # Default to visible if not specified
             ))
         
         # Check if we have any valid sections to insert
@@ -122,7 +124,7 @@ def updateMenu():
         section_ids = execute_values(
             cur,
             """
-            INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+            INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible")
             VALUES %s
             RETURNING "id";
             """,
@@ -174,7 +176,8 @@ def updateMenu():
                             sub.get("sectionName"),
                             sub.get("sectionOrder"),
                             venue_id,
-                            parent_id
+                            parent_id,
+                            sub.get("isVisible", True)  # Default to visible if not specified
                         ))
         
         # Batch insert subsections if any exist and get their IDs
@@ -183,7 +186,7 @@ def updateMenu():
             subsection_ids = execute_values(
                 cur,
                 """
-                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible")
                 VALUES %s
                 RETURNING "id";
                 """,

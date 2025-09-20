@@ -620,11 +620,11 @@ def createVenueAccount():
             cur.execute(
                 """
                 INSERT INTO "venuesMenu" (
-                    "sectionName", "sectionOrder", "sectionMenu", "venueId"
+                    "sectionName", "sectionOrder", "sectionMenu", "venueId", "isVisible"
                 ) 
-                VALUES (%s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s)
                 """,
-                (section.get('sectionName', None), section.get('sectionOrder', None), section.get('sectionMenu', []), newVenueId)
+                (section.get('sectionName', None), section.get('sectionOrder', None), section.get('sectionMenu', []), newVenueId, section.get('isVisible', True))
             )
         conn.commit()
 

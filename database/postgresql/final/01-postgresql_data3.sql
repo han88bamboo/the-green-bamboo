@@ -715,7 +715,8 @@ CREATE TABLE "venuesMenu" (
     "sectionOrder" VARCHAR(255),
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL ,
     "parentSectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
-    "isSubSection" BOOLEAN GENERATED ALWAYS AS ("parentSectionId" IS NOT NULL) STORED
+    "isSubSection" BOOLEAN GENERATED ALWAYS AS ("parentSectionId" IS NOT NULL) STORED,
+    "isVisible" BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 -- 3. Copy data from old table

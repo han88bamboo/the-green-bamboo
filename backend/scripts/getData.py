@@ -4316,6 +4316,7 @@ def getVenues():
                         'sectionId', vm.id,
                         'parentSectionId', vm."parentSectionId",
                         'isSubSection', vm."isSubSection",
+                        'isVisible', vm."isVisible",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4832,6 +4833,7 @@ def getVenue(id):
                         'sectionId', vm.id,
                         'parentSectionId', vm."parentSectionId",
                         'isSubSection', vm."isSubSection",
+                        'isVisible', vm."isVisible",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",
@@ -4939,6 +4941,7 @@ def getVenueByRequestId(id):
                         'sectionId', vm.id,
                         'parentSectionId', vm."parentSectionId",
                         'isSubSection', vm."isSubSection",
+                        'isVisible', vm."isVisible",
                         'sectionMenu', COALESCE((
                             SELECT json_agg(json_build_object(
                                 'itemOrder', mi."itemOrder",

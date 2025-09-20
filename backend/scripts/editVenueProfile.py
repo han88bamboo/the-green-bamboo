@@ -1270,11 +1270,11 @@ def editMenu():
         for section in updatedMenu:
             cur.execute(
                 '''
-                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId")
-                VALUES (%s, %s, %s)
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible")
+                VALUES (%s, %s, %s, %s)
                 RETURNING id
                 ''',
-                (section['sectionName'], section['sectionOrder'], venueID)
+                (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True))
             )
             sectionId = cur.fetchone()['id']
 
@@ -1371,11 +1371,11 @@ def editMenuHierarchical():
             print(f"  Inserting main section: {section.get('sectionName')} with order {section.get('sectionOrder')}")
             cur.execute(
                 '''
-                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId")
-                VALUES (%s, %s, %s)
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible")
+                VALUES (%s, %s, %s, %s)
                 RETURNING id
                 ''',
-                (section['sectionName'], section['sectionOrder'], venueID)
+                (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True))
             )
             new_section_id = cur.fetchone()['id']
             
@@ -1416,11 +1416,11 @@ def editMenuHierarchical():
             print(f"  Inserting subsection: {subsection.get('sectionName')} with parent DB ID {parent_db_id}")
             cur.execute(
                 '''
-                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId")
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible")
+                VALUES (%s, %s, %s, %s, %s)
                 RETURNING id
                 ''',
-                (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id)
+                (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id, subsection.get('isVisible', True))
             )
             new_subsection_id = cur.fetchone()['id']
             
