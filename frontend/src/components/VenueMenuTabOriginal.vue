@@ -310,11 +310,15 @@
 
             <!-- HIERARCHICAL MENU SECTIONS -->
             <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults"
-                v-bind:key="menuSection.id || index">
+                v-bind:key="menuSection.id || index"
+                :class="{ 
+                    'menu-section-hidden': menuSection.isVisible === false
+                }">
 
                 <!-- Main Section Name -->
-                <div class="col-12 d-grid mobile-px-0">
-                    <button type="button" class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+                <div class="col-12 d-grid mobile-px-0 section-header-container">
+                    <button type="button" 
+                        class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
                         aria-expanded="true" :aria-controls="'collapseMenuSection' + index"
                         style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
@@ -503,7 +507,11 @@
 
                     <!-- SUBSECTIONS -->
                     <div v-if="menuSection.subsections && menuSection.subsections.length > 0">
-                        <div v-for="(subsection, subIndex) in menuSection.subsections" :key="subsection.id || subIndex" class="ms-3">
+                        <div v-for="(subsection, subIndex) in menuSection.subsections" :key="subsection.id || subIndex" 
+                             class="ms-3"
+                             :class="{
+                                 'menu-section-hidden': !subsection.isVisible
+                             }">
                             
                             <!-- Subsection Name -->
                             <div class="col-12 d-grid mobile-px-0 mt-3">
@@ -724,7 +732,12 @@
             <draggable v-if="Array.isArray(editableMainSections)" v-model="editableMainSections" item-key="sectionOrder" @start="dragStart" @end="dragEnd"
                 v-bind="dragOptions">
                 <template #item="{ element: menuSection }">
-                    <div v-if="menuSection" class="row mb-2" :data-section-order="menuSection.sectionOrder">
+                    <div v-if="menuSection" 
+                         class="row mb-2" 
+                         :class="{
+                             'menu-section-faded': !menuSection.isVisible
+                         }"
+                         :data-section-order="menuSection.sectionOrder">
 
                         <!-- Section Name -->
                         <div class="col-7 d-grid pe-0 mobile-view-hide">
@@ -836,6 +849,19 @@
                                     </g>
                                 </svg>
                             </button>
+                        </div>
+
+                        <!-- Visibility Switch for Edit Mode Main Sections -->
+                        <div class="col-12 mt-2">
+                            <div class="form-check form-switch visibility-switch">
+                                <input class="form-check-input" type="checkbox" 
+                                       :id="'editMainSectionVisibility_' + menuSection.sectionOrder"
+                                       :checked="menuSection.isVisible !== false"
+                                       @change="toggleSectionVisibility(menuSection)">
+                                <label class="form-check-label" :for="'editMainSectionVisibility_' + menuSection.sectionOrder">
+                                    {{ menuSection.isVisible !== false ? 'Visible' : 'Hidden' }}
+                                </label>
+                            </div>
                         </div>
 
                         <div class="collapse"
@@ -1045,8 +1071,12 @@
 
                             <!-- Show subsections for this main section AFTER direct items -->
                             <div v-for="subsection in getSubsectionsForSection(menuSection.id || menuSection.sectionOrder)" 
-                                :key="subsection.sectionOrder" class="ms-3 mb-3" 
-                                style="border-left: 3px solid #dee2e6; padding-left: 15px;">
+                                :key="subsection.sectionOrder" 
+                                class="ms-3 mb-3" 
+                                :class="{
+                                    'menu-section-faded': !subsection.isVisible
+                                }"
+                                style="border-left: 3px solid #dee2e6; padding-left: 15px;">>>
                                 
                                 <!-- Subsection Header -->
                                 <div class="row mb-2">
@@ -1126,6 +1156,19 @@
                                                 <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
                                             </svg>
                                         </button>
+                                    </div>
+                                    
+                                    <!-- Visibility Switch for Edit Mode Subsections -->
+                                    <div class="col-12 mt-2">
+                                        <div class="form-check form-switch visibility-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   :id="'editSubsectionVisibility_' + subsection.sectionOrder"
+                                                   :checked="subsection.isVisible"
+                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
+                                            <label class="form-check-label" :for="'editSubsectionVisibility_' + subsection.sectionOrder">
+                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -3730,6 +3773,47 @@ export default {
             return false;
         },
 
+        // Toggle Section Visibility
+        toggleSectionVisibility(section) {
+            if (section) {
+                // Toggle the visibility
+                section.isVisible = !section.isVisible;
+                
+                // Mark as modified for saving
+                this.hasUnsavedChanges = true;
+                
+                // TODO: Implement auto-save or manual save logic
+                console.log(`Section "${section.sectionName}" visibility changed to: ${section.isVisible}`);
+            }
+        },
+
+        // Toggle Subsection Visibility
+        toggleSubsectionVisibility(parentSection, subsectionIndexOrObject) {
+            if (parentSection) {
+                let subsection;
+                
+                // Handle both index (from view mode) and object (from edit mode)
+                if (typeof subsectionIndexOrObject === 'number') {
+                    // View mode: subsectionIndexOrObject is an index
+                    subsection = parentSection.subsections[subsectionIndexOrObject];
+                } else {
+                    // Edit mode: subsectionIndexOrObject is the subsection object
+                    subsection = subsectionIndexOrObject;
+                }
+                
+                if (subsection) {
+                    // Toggle the visibility
+                    subsection.isVisible = !subsection.isVisible;
+                    
+                    // Mark as modified for saving
+                    this.hasUnsavedChanges = true;
+                    
+                    // TODO: Implement auto-save or manual save logic
+                    console.log(`Subsection "${subsection.sectionName}" visibility changed to: ${subsection.isVisible}`);
+                }
+            }
+        },
+
         // Move items between sections/subsections
         moveItemsBetweenSections(fromSection, toSection, items) {
             if (!fromSection || !toSection || !items || items.length === 0) {
@@ -5984,5 +6068,42 @@ export default {
         width: 20px !important;
         height: 20px !important;
     }
+}
+
+/* Menu Section Visibility Styles */
+.menu-section-hidden {
+  display: none !important;
+}
+
+.menu-section-faded {
+  opacity: 0.4;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  border-radius: 4px;
+  padding: 8px;
+  margin: 4px 0;
+}
+
+.menu-section-faded .btn {
+  opacity: 0.6;
+  background-color: #e9ecef !important;
+  color: #6c757d !important;
+}
+
+.visibility-switch {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  z-index: 10;
+}
+
+.section-header-container {
+  position: relative;
+}
+
+.visibility-switch .form-check-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-left: 0.25rem;
 }
 </style>
