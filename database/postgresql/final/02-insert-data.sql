@@ -3162,10 +3162,16 @@ INSERT INTO "usersDrinkLists" (
 INSERT INTO "venuesMenu" VALUES (2540, 'Tap List (Locality)', 0, 37);
 
 -- Venue menu sections for Orh Gao (venue ID 11)
-INSERT INTO "venuesMenu" VALUES (3, 'Test new section 1 (Orh Gao)', 0, 11);
-INSERT INTO "venuesMenu" VALUES (4, 'Test new section 2 (Orh Gao)', 1, 11);
 
-INSERT INTO "venuesMenu" VALUES (9, 'Test Subsection (Orh Gao)', 0, 11, 4);
+INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible") 
+VALUES (9, 'Test new section 1 (Orh Gao)', 0, 11, NULL, FALSE);
+
+INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible") 
+VALUES (10, 'Test new section 2 (Orh Gao)', 1, 11, NULL, TRUE);
+
+INSERT INTO "venuesMenu" ("id", "sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible") 
+VALUES (11, 'Test Subsection (Orh Gao)', 0, 11, 10, TRUE);
+
 
 -- Venue menu sections for 
 INSERT INTO "venuesMenu" VALUES (5, 'Test new section 1 (Omu Nomu)', 0, 10);
@@ -3181,11 +3187,13 @@ INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
 INSERT INTO "menuItems" VALUES (13113, 2, 18.00, true, 1037431, 1, 2540, NULL);
 
 -- Menu items for Orh Gao sections
-INSERT INTO "menuItems" VALUES (13114, 0, 0.00, true, 1177334, 1, 3, NULL);
-INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 4, NULL);
+INSERT INTO "menuItems" VALUES (13114, 0, 0.00, true, 1177334, 1, 9, NULL);
+INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 10, NULL);
 
 INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
 INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
+
+
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
