@@ -287,7 +287,8 @@ CREATE TABLE "venues" (
     "whatsappNumber" TEXT,
     "pdfMenuUrl" TEXT DEFAULT NULL,
     "venueMainType" INTEGER REFERENCES "venueMainTypes"("id") ON DELETE SET NULL,
-    "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL
+    "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL,
+    "specialStatus" VARCHAR(50) DEFAULT NULL -- NULL for ordinary venues, 'EVENT_FESTIVAL' for event/festival organizers that need checkbox-style menu
 );
 
 -- ALTER TABLE your_table_name 
