@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu (Original Component - to delete later)
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu (Festival Component - to delete later)
                 </p>
             </div>
 
@@ -1986,14 +1986,14 @@
 </template>
 
 <script>
-// import VenueMenuEditOriginal from './VenueMenuEditOriginal.vue';
+
 import { useToast } from 'vue-toastification';
 import draggable from 'vuedraggable';
 
 export default {
-    name: 'VenueMenuTabOriginal',
+    name: 'VenueMenuTabFestivals',
     components: {
-        // VenueMenuEditOriginal,
+        // VenueMenuEditFestivals,
         draggable
     },
     props: {

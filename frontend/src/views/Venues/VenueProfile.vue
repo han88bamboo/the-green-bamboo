@@ -2190,6 +2190,7 @@
                     <!-- Always render menu component so it can process data and emit events -->
                     <!-- Hide it with CSS when loading, but keep it mounted -->
                     <VenueMenuTabOriginal
+                        v-if="shouldShowOriginalMenu"
                         :style="{ display: isMenuLoading ? 'none' : 'block' }"
                         :detailed-menu="detailedMenu"
                         :serving-types="servingTypes"
@@ -2206,6 +2207,37 @@
                         @menu-update-error="handleMenuUpdateError"
                         @claim-venue-account="handleClaimVenueAccount"
                     />
+
+                    <!-- Festival/Event Menu Component -->
+                    <VenueMenuTabFestivals
+                        v-if="shouldShowFestivalMenu"
+                        :style="{ display: isMenuLoading ? 'none' : 'block' }"
+                        :detailed-menu="detailedMenu"
+                        :serving-types="servingTypes"
+                        :target-venue="targetVenue"
+                        :self-view="selfView"
+                        :loaded-listings="loadedListings"
+                        :loaded-producers="loadedProducers"
+                        :edit-menu-mode="editMenuMode"
+                        @menu-data-processed="handleMenuDataProcessed"
+                        @menu-data-error="handleMenuDataError"
+                        @edit-menu-mode-changed="handleEditMenuModeChanged"
+                        @data-loaded-changed="handleDataLoadedChanged"
+                        @menu-updated="handleMenuUpdated"
+                        @menu-update-error="handleMenuUpdateError"
+                        @claim-venue-account="handleClaimVenueAccount"
+                    />
+
+                    <!-- Debug info for development -->
+                    <!-- <div v-if="process.env.NODE_ENV === 'development'" class="mt-3 p-3 bg-light border rounded">
+                        <small class="text-muted">
+                            Debug: specialStatus = "{{ targetVenue.specialStatus }}" | 
+                            Show Festival: {{ shouldShowFestivalMenu }} | 
+                            Show Original: {{ shouldShowOriginalMenu }}
+                        </small>
+                    </div> -->
+
+                    <!-- XYZ -->
                 </div>
 
                 <!-- ------- END Bar Menu ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -3945,6 +3977,7 @@ import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue';
 import BadgePopup from "@/components/BadgePopup.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
+import VenueMenuTabFestivals from '@/components/VenueMenuTabFestivals.vue';
 import CommentsModal from '@/components/CommentsModal.vue';
 
 
@@ -3978,6 +4011,7 @@ export default {
         LoadingWithFunFact,
         PWStrengthChecker,
         VenueMenuTabOriginal,
+        VenueMenuTabFestivals,
         // Add Phosphor Icons as components
         PhWine,
         PhBeerStein, 
@@ -4216,7 +4250,7 @@ export default {
             viewerID: localStorage.getItem('88B_accID'),
             viewerType: localStorage.getItem('88B_accType'),
             userName: '',
-            targetVenue: '',
+            targetVenue: {},
             targetVenueID: '',
             currentURL: window.location.href,
 
@@ -4643,6 +4677,31 @@ export default {
         // Computed property to show loading state for menu specifically
         isMenuLoading() {
             return this.venueDataLoaded && !this.menuDataLoaded;
+        },
+        
+        // Computed property for debugging menu component selection
+        shouldShowFestivalMenu() {
+            const specialStatus = this.targetVenue?.specialStatus;
+            const result = specialStatus === 'EVENT_FESTIVAL';
+            console.log('🎪 shouldShowFestivalMenu computed:', {
+                specialStatus: specialStatus,
+                result: result,
+                targetVenueType: typeof this.targetVenue,
+                hasTargetVenue: !!this.targetVenue
+            });
+            return result;
+        },
+        
+        shouldShowOriginalMenu() {
+            const specialStatus = this.targetVenue?.specialStatus;
+            const result = !specialStatus || specialStatus !== 'EVENT_FESTIVAL';
+            console.log('🏢 shouldShowOriginalMenu computed:', {
+                specialStatus: specialStatus,
+                result: result,
+                targetVenueType: typeof this.targetVenue,
+                hasTargetVenue: !!this.targetVenue
+            });
+            return result;
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4653,7 +4712,6 @@ export default {
 
         // Check if route params "venueID" is present
         if (this.$route.params.venueID != "" && this.$route.params.venueID != undefined) {
-            this.targetVenue = this.$route.params.venueID;
             this.targetVenueID = this.$route.params.venueID;
             console.log('✅ Log 146: VenueProfile: Found venueID in route params:', this.targetVenueID);
             console.log('✅ VenueProfile: Found venueID in route params:', this.targetVenueID);
@@ -4661,17 +4719,17 @@ export default {
             this.userName = this.$route.params.username || this.userName;
 
             // If logged in as a venue, check if the venueID matches the logged in venue's ID
-            if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
+            if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
                 this.selfView = true;
                 console.log('👤 VenueProfile: Self view detected');
             }
         }
         // If no venueID is specified, display logged in venue's profile page
         else if (this.viewerType == 'venue') {
-            this.targetVenue = this.viewerID;
+            this.targetVenueID = this.viewerID;
             this.selfView = true;
-            this.currentURL = this.currentURL + '/' + this.targetVenue + '/' + this.userName;
-            console.log('👤 VenueProfile: Using logged in venue ID:', this.targetVenue);
+            this.currentURL = this.currentURL + '/' + this.targetVenueID + '/' + this.userName;
+            console.log('👤 VenueProfile: Using logged in venue ID:', this.targetVenueID);
         }
         // If not logged in as a venue, redirect to your own profile page / login
         else {
@@ -4682,12 +4740,12 @@ export default {
         // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         // Obtain venue data
-        if (this.targetVenue != "" && this.targetVenue != undefined) {
-            console.log('🔄 VenueProfile: Starting getVenueData() for venue:', this.targetVenue);
+        if (this.targetVenue && typeof this.targetVenue === 'object' && this.targetVenueID) {
+            console.log('🔄 VenueProfile: Starting getVenueData() for venue ID:', this.targetVenueID);
             this.getVenueData();
         }
         else {
-            console.log('❌ VenueProfile: No target venue, setting venueExists to false');
+            console.log('❌ VenueProfile: No target venue ID, setting venueExists to false');
             this.venueExists = false;
         }
 
@@ -4925,6 +4983,11 @@ export default {
                     console.log('✅ getVenueData: Valid venue data found:', response.data);
 
                     this.targetVenue = response.data;
+                    
+                    // Debug specialStatus
+                    console.log('🏢 getVenueData: specialStatus from API:', this.targetVenue.specialStatus);
+                    console.log('🏢 getVenueData: specialStatus type:', typeof this.targetVenue.specialStatus);
+                    console.log('🏢 getVenueData: Is EVENT_FESTIVAL?:', this.targetVenue.specialStatus === 'EVENT_FESTIVAL');
                     
                     // Debug PDF menu URL
                     console.log('🍽️ getVenueData: PDF Menu URL from API:', this.targetVenue.pdfMenuUrl);
@@ -5542,7 +5605,7 @@ export default {
                     setTimeout(() => {
                         if (!this.menuDataLoaded) {
                             console.warn('⚠️ Menu component has not emitted completion after 15 seconds - this may indicate an issue');
-                            console.warn('⚠️ VenueMenuTabOriginal should have emitted menu-data-processed by now');
+                            console.warn('⚠️ VenueMenuTabOriginal or VenueMenuTabFestivals should have emitted menu-data-processed by now');
                             console.warn('⚠️ Check if the component is mounted and the watcher is working');
                         }
                     }, 15000); // Just for debugging - doesn't auto-complete
@@ -5662,7 +5725,7 @@ export default {
             this.menuDataLoaded = false; // Only affect menu loading, not venue info
         },
 
-        // Event handlers for VenueMenuTabOriginal component
+        // Event handlers for VenueMenuTabOriginal and VenueMenuTabFestivals components
         handleEditMenuModeChanged(editMode) {
             this.editMenuMode = editMode;
         },
@@ -7864,7 +7927,7 @@ Thank you!`
             this.venueExists = null;
             
             // Reset data
-            this.targetVenue = newId;
+            this.targetVenue = {};
             this.targetVenueID = newId;
 
             // Reset review-related data
@@ -7913,14 +7976,14 @@ Thank you!`
             this.specificReview = [];
             
             // Check if it's own profile
-            if (this.viewerType == 'venue' && this.viewerID == this.targetVenue) {
+            if (this.viewerType == 'venue' && this.viewerID == this.targetVenueID) {
                 this.selfView = true;
             } else {
                 this.selfView = false;
             }
             
             // Reload venue data
-            if (this.targetVenue != "" && this.targetVenue != undefined) {
+            if (this.targetVenueID) {
                 this.getVenueData();
             } else {
                 this.venueExists = false;
