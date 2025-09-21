@@ -4694,7 +4694,7 @@ export default {
         
         shouldShowOriginalMenu() {
             const specialStatus = this.targetVenue?.specialStatus;
-            const result = !specialStatus || specialStatus !== 'EVENT_FESTIVAL';
+            const result = !specialStatus;
             console.log('🏢 shouldShowOriginalMenu computed:', {
                 specialStatus: specialStatus,
                 result: result,
