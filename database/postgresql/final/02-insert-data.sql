@@ -3061,6 +3061,48 @@ INSERT INTO "venues" (
 INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 
+-- Event Space (Festival Organizer)
+INSERT INTO "venues" (
+    "venueName", 
+    "address", 
+    "venueType", 
+    "originLocation", 
+    "venueDesc", 
+    "hashedPassword", 
+    "photo", 
+    "claimStatus", 
+    "claimStatusCheckDate", 
+    "reservationDetails", 
+    "username", 
+    "publicHolidays", 
+    "stripeCustomerId", 
+    "pin",
+    "pdfMenuUrl",
+    "venueMainType",
+    "venueSubType",
+    "specialStatus")
+VALUES
+(
+    'Whisky Live Singapore',
+    '555 Festival Grounds, Marina Bay, Singapore 018989',
+    'Event Space',
+    'Singapore',
+    'Large-scale event venue hosting wine festivals, beer tastings, and corporate events.',
+    '1858568944',
+    'https://88bamboo.co/cdn/shop/articles/Whisky_Live_600x600.png?v=1670579323',
+    true,
+    NULL,
+    'https://88bamboo.co/',
+    'whiskylivesg',
+    'Chinese New Year Week, Christmas Week',
+    NULL,
+    NULL,
+    NULL,
+    1,
+    2,
+    'EVENT_FESTIVAL'
+);
+
 INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") VALUES (3, 11, 5.0, 'test review i''ll delete almost immediately i promise', '2025-08-20T19:45:56.344000'::timestamp, '{https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Orh_Gao_Tap_Room_Young_Master_480x480.png?v=1684943445}');
 
 INSERT INTO "producersQuestionAnswers" (
