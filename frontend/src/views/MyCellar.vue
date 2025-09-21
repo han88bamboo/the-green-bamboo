@@ -340,35 +340,60 @@ export default {
   perspective: 1000px;
 }
 
-.shelf {
-  display: flex;
+
+/* shelves, just for layout */
+.shelf { 
+  display:flex; 
   justify-content: center;
-  gap: 20px;
-  margin-bottom: 15px;
-  transform-style: preserve-3d;
-}
+  gap:24px; 
+  align-items:flex-end; 
+  }
 
+/* bottle body */
 .bottle {
-  width: 40px;
-  height: 120px;
-  border-radius: 6px 6px 0 0;
   position: relative;
-  animation: bobble 3s ease-in-out infinite;
-  transform-origin: bottom center;
-  box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.4);
+  width: 40px;
+  height: 100px;
+  background: var(--bottle, #722F37);
+  border-radius: 8px 8px 6px 6px;            /* softer base corners */
+  box-shadow: 4px 6px 8px rgba(0,0,0,.25);
+  transform-origin: 50% 100%;                /* bottom center */
+  animation: bobble 3s ease-in-out infinite; /* <— animation lives here */
+  will-change: transform;
 }
 
+/* longer neck */
 .bottle::before {
-  content: '';
+  content: "";
   position: absolute;
-  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);               /* center neck */
+  top: -36px;                                /* lift above body */
+  width: 16px;                               /* slimmer than body (40px) */
+  height: 36px;                              /* longer neck */
+  background: inherit;
+  border-radius: 6px 6px 0 0;
+}
+
+/* cap */
+.bottle::after {
+  content: "";
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  width: 8px;
+  top: -44px;                                /* above neck */
+  width: 12px;
   height: 8px;
-  border-radius: 50% 50% 0 0;
-  background: inherit;
+  background: #1f2937;
+  border-radius: 2px;
 }
+
+/* the wobble/bob animation */
+@keyframes bobble {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-6px) rotate(0.6deg); }
+}
+
 
 .wine-bottle {
   background: #722F37;
