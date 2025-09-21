@@ -7,7 +7,7 @@
       <div class="container">
         <div class="row align-items-center min-vh-75">
           <!-- Cellar Image Column -->
-          <div class="col-12 col-lg-5 text-center mb-4 mb-lg-0">
+          <div class="col-12 col-lg-5 text-center mb-4 mb-lg-0 mobile-mt-3 mobile-mb-2">
             <!-- <img 
               src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Cellar.png?v=1755482090" 
               alt="Cellar Collection" 
@@ -41,7 +41,7 @@
           </div>
           
           <!-- Text Content Column -->
-          <div class="col-12 col-lg-7 text-center text-lg-start py-md-5">
+          <div class="col-12 col-lg-7 text-center text-lg-start py-md-5 mobile-px-3">
             <div class="hero-content">
               <h1 class="hero-title fw-bold mb-4">
                 Manage Your Drinks. <br>
@@ -62,37 +62,10 @@
                   Try My Cellar Today: Get Your Free Drink-X Account Now
                 </router-link>
               </div>
-              <!-- Notify Me Section 
-              <section class="notify-section py-5">
-                <div class="container">
-                  <div class="row">
-                    <div class="col-md-8">
-                      <p class="mb-4">Get notified when My Cellar launches and receive early access to beta features.</p>
-                      <form action="https://formspree.io/f/xqadzlvr" method="POST" class="notify-form d-flex gap-2 justify-content-center">
-                        <input type="email" name="email" required placeholder="Enter your email"
-                              class="form-control form-control-sm rounded-pill" style="max-width:420px;">
-                        <input type="hidden" name="source" value="my-cellar">
-                        <button class="btn btn-sm fw-bold rounded-pill px-4" type="submit"
-                                style="background-color:#027562; color:white; border:2px solid #027562;">
-                          Notify Me
-                        </button>
-                      </form>
-                      <small class="text-muted d-block mt-2">We’ll only email you about My Cellar. Unsubscribe anytime.</small>
-                    </div>
-                  </div>
-                </div>
-              </section>-->
-
               
-              <!-- Optional: Keep cellar icon for smaller screens -->
-
-              <img  
-              src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Cellar.png?v=1755482090" 
-              alt="Cellar Collection" 
-              class="img-fluid cellar-image d-lg-none"
-              style="max-height:140px;"
-            />
-
+              <br>
+              <br>
+              <br>
 
             </div>
           </div>
