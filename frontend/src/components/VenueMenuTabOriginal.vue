@@ -712,7 +712,7 @@
         <div v-if="editMenuMode" class="container text-start "> <!--tzh removed scrollable-listings-->
 
             <!-- No Menu Sections to Show -->
-            <div v-if="editMenu.length == 0" class="row my-4">
+            <div v-if="editableMainSections.length == 0" class="row my-4">
                 <p class="text-center mobile-rating-smaller-text-2 fst-italic m-0">No menu sections to
                     show! Click "Add New Section" to get started.</p>
             </div>
@@ -1090,7 +1090,7 @@
                                 :class="{
                                     'menu-section-faded': !subsection.isVisible
                                 }"
-                                style="border-left: 3px solid #dee2e6; padding-left: 15px;">>>
+                                style="border-left: 3px solid #dee2e6; padding-left: 15px;">
                                 
                                 <!-- Subsection Header -->
                                 <div class="row mb-2">
@@ -2038,7 +2038,7 @@ export default {
         
         // Get all main sections (sections without parent)
         mainSections() {
-            return this.editMenu.filter(section => !section.parentSectionId);
+            return this.editableMainSections || [];
         },
         
         // Get total count of all items across sections and subsections
@@ -2054,7 +2054,7 @@ export default {
                     }
                 });
             };
-            countItems(this.editMenu);
+            countItems(this.editableMainSections);
             return count;
         },
 
@@ -2099,6 +2099,19 @@ export default {
             });
             
             return options;
+        },
+        
+        // Legacy computed property for backward compatibility
+        // Converts nested structure to flat array when needed
+        editMenu() {
+            const flatMenu = [];
+            this.editableMainSections.forEach(mainSection => {
+                flatMenu.push(mainSection);
+                if (mainSection.subsections && Array.isArray(mainSection.subsections)) {
+                    flatMenu.push(...mainSection.subsections);
+                }
+            });
+            return flatMenu;
         }
     },
     data() {
@@ -2110,7 +2123,6 @@ export default {
             defaultPhoto: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739', // You should replace this with your actual default image path
         
             // Menu Editing - Enhanced for hierarchical structure
-            editMenu: [], // Now supports sections with subsections
             editableMainSections: [], // Mutable array for main sections (for drag and drop)
             hierarchicalMenu: [], // Processed hierarchical menu for display
             flatMenuLookup: new Map(), // For quick section/subsection lookups by ID
@@ -2324,7 +2336,7 @@ export default {
                     
                     // If we don't have any menu data yet, try to load from API
                     if ((!this.detailedMenu || this.detailedMenu.length === 0) && 
-                        (!this.editMenu || this.editMenu.length === 0)) {
+                        (!this.editableMainSections || this.editableMainSections.length === 0)) {
                         console.log('🍽️ No existing menu data, loading from API with new venue ID');
                         this.loadMenuDataFromAPI();
                     }
@@ -2341,32 +2353,6 @@ export default {
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
             }
-        },
-        
-        // Watch for changes in editMenu to sync editableMainSections
-        editMenu: {
-            handler() {
-                // Only sync if watchers are enabled and not in the middle of syncing
-                if (this.watchersEnabled && !this.isSyncing) {
-                    this.$nextTick(() => {
-                        this.syncEditableMainSections();
-                    });
-                }
-            },
-            deep: true
-        },
-        
-        // Watch for changes in editableMainSections to sync back to editMenu
-        editableMainSections: {
-            handler(newMainSections) {
-                // Only sync if watchers are enabled and not in the middle of syncing
-                if (this.watchersEnabled && !this.isSyncing && Array.isArray(newMainSections)) {
-                    this.$nextTick(() => {
-                        this.syncMainSectionsToEditMenu(newMainSections);
-                    });
-                }
-            },
-            deep: true
         }
     },
     mounted() {
@@ -2381,13 +2367,8 @@ export default {
         // Smart data source detection and adaptation
         this.initializeMenuData();
         
-        // Initialize editableMainSections if editMenu already has data (use nextTick to avoid timing issues)
+        // Enable watchers after initialization is complete  
         this.$nextTick(() => {
-            if (Array.isArray(this.editMenu) && this.editMenu.length > 0) {
-                this.syncEditableMainSections();
-            }
-            
-            // Enable watchers after initialization is complete
             this.watchersEnabled = true;
         });
     },
@@ -2450,209 +2431,6 @@ export default {
             const normalizedSearch = this.normalizeForSearch(searchTerm);
             const normalizedTarget = this.normalizeForSearch(targetText);
             return normalizedTarget.includes(normalizedSearch);
-        },
-
-        // Sync editableMainSections from editMenu (called when editMenu changes)
-        syncEditableMainSections() {
-            // Prevent infinite loops by checking if we're already syncing
-            if (this.isSyncing) return;
-            
-            try {
-                this.isSyncing = true;
-                
-                // Ensure editMenu is an array
-                if (!Array.isArray(this.editMenu)) {
-                    console.warn('🍽️ editMenu is not an array, skipping sync');
-                    return;
-                }
-                
-                console.log('🔄 Syncing editableMainSections, current editMenu:', this.editMenu);
-                
-                const mainSections = this.editMenu.filter(section => 
-                    section && !section.parentSectionId
-                );
-                
-                console.log('🔄 Found main sections:', mainSections);
-                
-                // Only update if there's actually a change
-                const currentIds = (this.editableMainSections || []).map(s => s.id || s.sectionOrder).join(',');
-                const newIds = mainSections.map(s => s.id || s.sectionOrder).join(',');
-                
-                console.log('🔄 Current IDs:', currentIds, 'New IDs:', newIds);
-                
-                // Always update to ensure subsections are properly synced
-                // Create main sections with proper subsection references
-                this.editableMainSections = mainSections.map(section => {
-                    // Get subsections from editMenu for this main section
-                    const subsections = this.editMenu.filter(s => 
-                        s.isSubSection && s.parentSectionId === (section.id || section.sectionOrder)
-                    ).sort((a, b) => a.sectionOrder - b.sectionOrder);
-                    
-                    console.log(`🔄 Section "${section.sectionName}" has ${subsections.length} subsections:`, subsections);
-                    
-                    return {
-                        ...section,
-                        sectionMenu: section.sectionMenu || [], // Reference the same array, don't copy
-                        subsections: subsections // Use the actual objects from editMenu
-                    };
-                });
-                
-                console.log('🔄 Updated editableMainSections:', this.editableMainSections);
-                
-            } catch (error) {
-                console.error('🍽️ Error syncing editableMainSections:', error);
-            } finally {
-                this.isSyncing = false;
-            }
-        },
-
-        // Sync changes from editableMainSections back to editMenu after drag operations
-        syncAfterDragOperation() {
-            if (this.isSyncing) return;
-            
-            try {
-                this.isSyncing = true;
-                
-                // Update editMenu from editableMainSections (both main sections and subsections)
-                this.editableMainSections.forEach(editableSection => {
-                    // Sync main section
-                    const flatMainSection = this.editMenu.find(s => 
-                        !s.isSubSection && 
-                        (s.id === editableSection.id || s.sectionOrder === editableSection.sectionOrder)
-                    );
-                    
-                    if (flatMainSection) {
-                        flatMainSection.sectionMenu = editableSection.sectionMenu;
-                    }
-                    
-                    // Sync subsections
-                    if (editableSection.subsections && Array.isArray(editableSection.subsections)) {
-                        editableSection.subsections.forEach(subsection => {
-                            const flatSubsection = this.editMenu.find(s => 
-                                s.isSubSection && 
-                                (s.id === subsection.id || s.sectionOrder === subsection.sectionOrder)
-                            );
-                            
-                            if (flatSubsection) {
-                                flatSubsection.sectionMenu = subsection.sectionMenu;
-                            }
-                        });
-                    }
-                });
-                
-                console.log('🔄 Synchronized editMenu from editableMainSections after drag operation');
-                
-            } catch (error) {
-                console.error('🍽️ Error syncing after drag operation:', error);
-            } finally {
-                this.isSyncing = false;
-            }
-        },
-
-        // Sync changes from editableMainSections back to editMenu (called when drag reordering occurs)
-        syncMainSectionsToEditMenu(newMainSections) {
-            // Prevent infinite loops by checking if we're already syncing
-            if (this.isSyncing) return;
-            
-            try {
-                this.isSyncing = true;
-                
-                // Ensure we have valid input
-                if (!Array.isArray(newMainSections) || !Array.isArray(this.editMenu)) {
-                    console.warn('🍽️ Invalid data for syncMainSectionsToEditMenu, skipping sync');
-                    return;
-                }
-                
-                // Update sectionOrder for reordered main sections
-                newMainSections.forEach((section, index) => {
-                    if (section) {
-                        section.sectionOrder = index;
-                    }
-                });
-                
-                // Find the corresponding sections in editMenu and update their order
-                newMainSections.forEach(mainSection => {
-                    if (!mainSection) return;
-                    
-                    const editMenuSection = this.editMenu.find(s => 
-                        s && (s.id === mainSection.id || 
-                        (s.sectionName === mainSection.sectionName && !s.parentSectionId))
-                    );
-                    if (editMenuSection) {
-                        editMenuSection.sectionOrder = mainSection.sectionOrder;
-                    }
-                });
-                
-                // Sort editMenu to maintain consistency
-                this.editMenu.sort((a, b) => {
-                    if (!a || !b) return 0;
-                    
-                    // Main sections first, ordered by sectionOrder
-                    if (!a.parentSectionId && !b.parentSectionId) {
-                        return (a.sectionOrder || 0) - (b.sectionOrder || 0);
-                    }
-                    // Subsections after their parent sections
-                    if (a.parentSectionId && !b.parentSectionId) {
-                        return 1;
-                    }
-                    if (!a.parentSectionId && b.parentSectionId) {
-                        return -1;
-                    }
-                    // Both are subsections, order by sectionOrder
-                    return (a.sectionOrder || 0) - (b.sectionOrder || 0);
-                });
-                
-            } catch (error) {
-                console.error('🍽️ Error syncing main sections to editMenu:', error);
-            } finally {
-                this.isSyncing = false;
-            }
-        },
-
-        // Sync visibility changes from editableMainSections back to editMenu
-        syncVisibilityChangesToEditMenu() {
-            if (this.isSyncing) return;
-            
-            try {
-                this.isSyncing = true;
-                console.log('🔄 Syncing visibility changes from editableMainSections to editMenu');
-                
-                // Sync main sections visibility
-                if (Array.isArray(this.editableMainSections)) {
-                    this.editableMainSections.forEach(editableSection => {
-                        // Find corresponding section in editMenu
-                        const editMenuSection = this.editMenu.find(s => 
-                            s && !s.isSubSection && 
-                            (s.id === editableSection.id || s.sectionOrder === editableSection.sectionOrder)
-                        );
-                        
-                        if (editMenuSection && editableSection.isVisible !== undefined) {
-                            console.log(`🔄 Syncing main section "${editableSection.sectionName}" isVisible: ${editMenuSection.isVisible} → ${editableSection.isVisible}`);
-                            editMenuSection.isVisible = editableSection.isVisible;
-                        }
-                        
-                        // Sync subsections visibility if they exist
-                        if (editableSection.subsections && Array.isArray(editableSection.subsections)) {
-                            editableSection.subsections.forEach(editableSubsection => {
-                                const editMenuSubsection = this.editMenu.find(s => 
-                                    s && s.isSubSection && 
-                                    (s.id === editableSubsection.id || s.sectionOrder === editableSubsection.sectionOrder)
-                                );
-                                
-                                if (editMenuSubsection && editableSubsection.isVisible !== undefined) {
-                                    console.log(`🔄 Syncing subsection "${editableSubsection.sectionName}" isVisible: ${editMenuSubsection.isVisible} → ${editableSubsection.isVisible}`);
-                                    editMenuSubsection.isVisible = editableSubsection.isVisible;
-                                }
-                            });
-                        }
-                    });
-                }
-                
-            } catch (error) {
-                console.error('🍽️ Error syncing visibility changes to editMenu:', error);
-            } finally {
-                this.isSyncing = false;
-            }
         },
 
         // Smart initialization method that detects available data sources
@@ -2764,8 +2542,8 @@ export default {
             // Build the hierarchical structure and flat lookup
             this.buildMenuHierarchy(hierarchicalMenu);
 
-            // Set editMenu and searchMenuResults using the provided hierarchical data
-            this.resetEditMenuWithHierarchicalData(hierarchicalMenu);
+            // Set editableMainSections and searchMenuResults using the provided hierarchical data
+            this.resetEditableMainSectionsWithHierarchicalData(hierarchicalMenu);
             this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
 
             // Emit the processed data back to parent
@@ -2788,8 +2566,8 @@ export default {
                     // Build the hierarchical structure and flat lookup
                     this.buildMenuHierarchy(hierarchicalMenu);
 
-                    // Set editMenu and searchMenuResults
-                    this.resetEditMenuWithHierarchicalData(hierarchicalMenu);
+                    // Set editableMainSections and searchMenuResults
+                    this.resetEditableMainSectionsWithHierarchicalData(hierarchicalMenu);
                     this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
 
                     // Emit the processed data
@@ -2946,16 +2724,25 @@ export default {
                 dataSourceMode: this.dataSourceMode,
                 loadedListingsCount: this.internalLoadedListings.length,
                 loadedProducersCount: this.internalLoadedProducers.length,
-                editMenuCount: this.editMenu.length,
+                editableMainSectionsCount: this.editableMainSections.length,
                 searchMenuResultsCount: this.searchMenuResults.length,
                 processedMenuCount: processedMenu.length
+            });
+            
+            // Convert nested structure to flat array for backward compatibility with parent
+            const flatEditMenu = [];
+            this.editableMainSections.forEach(mainSection => {
+                flatEditMenu.push(mainSection);
+                if (mainSection.subsections) {
+                    flatEditMenu.push(...mainSection.subsections);
+                }
             });
             
             this.$emit('menu-data-processed', {
                 dataSourceMode: this.dataSourceMode,
                 loadedListings: this.internalLoadedListings,
                 loadedProducers: this.internalLoadedProducers,
-                editMenu: this.editMenu,
+                editMenu: flatEditMenu, // Convert nested to flat for backward compatibility
                 searchMenuResults: this.searchMenuResults,
                 processedDetailedMenu: processedMenu,
                 hierarchicalMenu: this.hierarchicalMenu
@@ -2970,7 +2757,7 @@ export default {
                 dataSourceMode: this.dataSourceMode,
                 loadedListings: this.internalLoadedListings,
                 loadedProducers: this.internalLoadedProducers,
-                editMenu: [],
+                editMenu: [], // Empty flat array for backward compatibility
                 searchMenuResults: [],
                 processedDetailedMenu: [],
                 hierarchicalMenu: []
@@ -3020,23 +2807,32 @@ export default {
                 // Build the hierarchical structure and flat lookup
                 this.buildMenuHierarchy(processedMenu);
 
-                // Set editMenu and searchMenuResults using the processed hierarchical data
-                this.resetEditMenuWithHierarchicalData(processedMenu);
+                // Set editableMainSections and searchMenuResults using the processed hierarchical data
+                this.resetEditableMainSectionsWithHierarchicalData(processedMenu);
                 this.searchMenuResults = this.buildSearchableMenu(processedMenu);
 
                 // Emit the processed data back to parent
                 console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with hierarchical data:', {
                     loadedListingsCount: this.internalLoadedListings.length,
                     loadedProducersCount: this.internalLoadedProducers.length,
-                    editMenuCount: this.editMenu.length,
+                    editableMainSectionsCount: this.editableMainSections.length,
                     searchMenuResultsCount: this.searchMenuResults.length,
                     hierarchicalMenuCount: this.hierarchicalMenu.length
+                });
+                
+                // Convert nested structure to flat array for backward compatibility with parent
+                const flatEditMenu = [];
+                this.editableMainSections.forEach(mainSection => {
+                    flatEditMenu.push(mainSection);
+                    if (mainSection.subsections) {
+                        flatEditMenu.push(...mainSection.subsections);
+                    }
                 });
                 
                 this.$emit('menu-data-processed', {
                     loadedListings: this.internalLoadedListings,
                     loadedProducers: this.internalLoadedProducers,
-                    editMenu: this.editMenu,
+                    editMenu: flatEditMenu, // Convert nested to flat for backward compatibility
                     searchMenuResults: this.searchMenuResults,
                     processedDetailedMenu: processedMenu,
                     hierarchicalMenu: this.hierarchicalMenu
@@ -3300,32 +3096,16 @@ export default {
         },
 
         // Reset Edit Menu with hierarchical data
-        resetEditMenuWithHierarchicalData(hierarchicalData) {
-            console.log('🍽️ Resetting edit menu with hierarchical data');
+        resetEditableMainSectionsWithHierarchicalData(hierarchicalData) {
+            console.log('🍽️ Resetting editable main sections with hierarchical data');
             
-            // Convert hierarchical data to flat format for editing
-            this.editMenu = this.convertHierarchicalToFlat(hierarchicalData);
-            
-            // Sort editMenu numerically by sectionOrder
-            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
-            
-            // Sync editableMainSections after setting editMenu
-            this.syncEditableMainSections();
-        },
-
-        // Convert hierarchical menu structure to flat format for editing
-        convertHierarchicalToFlat(hierarchicalData) {
-            console.log('🍽️ Converting hierarchical data to flat format for editing');
-            
-            const flatMenu = [];
-            
-            hierarchicalData.forEach(section => {
+            // Directly populate editableMainSections with hierarchical structure
+            this.editableMainSections = hierarchicalData.map(section => {
                 // Deep copy section menu items and ensure database values are preserved
                 const copiedSectionMenu = section.sectionMenu ? section.sectionMenu.map(item => {
                     const copiedItem = JSON.parse(JSON.stringify(item));
                     
                     // Ensure critical database fields are properly mapped for edit mode
-                    // These come from the menuItems table and must be editable
                     if (copiedItem.itemPrice === undefined || copiedItem.itemPrice === null) {
                         copiedItem.itemPrice = -1; // Default for no price
                     }
@@ -3368,81 +3148,67 @@ export default {
                     return copiedItem;
                 }) : [];
                 
-                // Add main section with properly mapped sectionMenu
-                flatMenu.push({
+                // Process subsections with their own menu items
+                const copiedSubsections = section.subsections ? section.subsections.map(subsection => {
+                    const copiedSubsectionMenu = subsection.sectionMenu ? subsection.sectionMenu.map(item => {
+                        const copiedItem = JSON.parse(JSON.stringify(item));
+                        
+                        // Apply same processing as main section items
+                        if (copiedItem.itemPrice === undefined || copiedItem.itemPrice === null) {
+                            copiedItem.itemPrice = -1;
+                        }
+                        if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
+                            copiedItem.itemAvailability = true;
+                        }
+                        
+                        let servingTypeValue = copiedItem.itemServingType || copiedItem.servingType || null;
+                        if (servingTypeValue === undefined || servingTypeValue === null) {
+                            const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                            copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                        } else {
+                            copiedItem.itemServingType = parseInt(servingTypeValue, 10);
+                            const servingTypeExists = this.servingTypes.find(s => s.id === copiedItem.itemServingType);
+                            if (!servingTypeExists) {
+                                console.warn('🍽️ Invalid serving type ID:', copiedItem.itemServingType, 'defaulting to first available');
+                                const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
+                                copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
+                            }
+                        }
+                        
+                        if (copiedItem.itemVintage === undefined || copiedItem.itemVintage === null) {
+                            copiedItem.itemVintage = copiedItem.vintage || null;
+                        }
+                        
+                        return copiedItem;
+                    }) : [];
+                    
+                    return {
+                        id: subsection.id,
+                        sectionName: subsection.sectionName,
+                        sectionOrder: subsection.sectionOrder,
+                        parentSectionId: subsection.parentSectionId,
+                        isSubSection: true,
+                        isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
+                        sectionMenu: copiedSubsectionMenu
+                    };
+                }) : [];
+                
+                return {
                     id: section.id,
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     parentSectionId: null,
                     isSubSection: false,
-                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
-                    sectionMenu: copiedSectionMenu
-                });
-                
-                // Add subsections with properly mapped sectionMenu
-                if (section.subsections && section.subsections.length > 0) {
-                    section.subsections.forEach(subsection => {
-                        const copiedSubsectionMenu = subsection.sectionMenu ? subsection.sectionMenu.map(item => {
-                            const copiedItem = JSON.parse(JSON.stringify(item));
-                            
-                            // Ensure critical database fields are properly mapped for edit mode
-                            if (copiedItem.itemPrice === undefined || copiedItem.itemPrice === null) {
-                                copiedItem.itemPrice = -1; // Default for no price
-                            }
-                            if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
-                                copiedItem.itemAvailability = true; // Default to available
-                            }
-                            
-                            // For serving type dropdown, handle multiple possible field names and ensure integer type
-                            let servingTypeValue = copiedItem.itemServingType || copiedItem.servingType || null;
-                            if (servingTypeValue === undefined || servingTypeValue === null) {
-                                // Find default serving type (usually "-" or first option)
-                                const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
-                                copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
-                            } else {
-                                // Ensure it's an integer (database might return string)
-                                copiedItem.itemServingType = parseInt(servingTypeValue, 10);
-                                
-                                // Validate that this serving type ID exists in servingTypes
-                                const servingTypeExists = this.servingTypes.find(s => s.id === copiedItem.itemServingType);
-                                if (!servingTypeExists) {
-                                    console.warn('🍽️ Invalid serving type ID:', copiedItem.itemServingType, 'defaulting to first available');
-                                    const defaultServing = this.servingTypes.find(s => s.servingType === "-") || this.servingTypes[0];
-                                    copiedItem.itemServingType = defaultServing ? defaultServing.id : 1;
-                                }
-                            }
-                            
-                            // Ensure itemVintage is properly mapped
-                            if (copiedItem.itemVintage === undefined || copiedItem.itemVintage === null) {
-                                copiedItem.itemVintage = copiedItem.vintage || null;
-                            }
-                            
-                            console.log('🍽️ Edit mode subsection item mapped:', {
-                                itemID: copiedItem.itemID,
-                                itemPrice: copiedItem.itemPrice,
-                                itemAvailability: copiedItem.itemAvailability,
-                                itemServingType: copiedItem.itemServingType,
-                                itemVintage: copiedItem.itemVintage
-                            });
-                            
-                            return copiedItem;
-                        }) : [];
-                        
-                        flatMenu.push({
-                            id: subsection.id,
-                            sectionName: subsection.sectionName,
-                            sectionOrder: subsection.sectionOrder,
-                            parentSectionId: subsection.parentSectionId,
-                            isSubSection: true,
-                            isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true, // Include visibility status
-                            sectionMenu: copiedSubsectionMenu
-                        });
-                    });
-                }
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                    sectionMenu: copiedSectionMenu,
+                    subsections: copiedSubsections
+                };
             });
             
-            console.log('🍽️ Converted to flat format:', flatMenu.length, 'sections');
-            return flatMenu;
+            // Sort by sectionOrder
+            this.editableMainSections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+            
+            console.log('🍽️ Converted to nested format:', this.editableMainSections.length, 'main sections');
         },
 
         // Build searchable menu structure (flattened for search but maintains hierarchy info)
@@ -3451,9 +3217,9 @@ export default {
             return JSON.parse(JSON.stringify(hierarchicalData));
         },
 
-        // Reset Edit Menu - moved from parent
-        resetEditMenu() {
-            this.editMenu = [];
+        // Reset editable main sections - moved from parent
+        resetEditableMainSections() {
+            this.editableMainSections = [];
 
             for (let section of this.detailedMenu) {
                 let sectionMenu = [];
@@ -3461,24 +3227,31 @@ export default {
                     sectionMenu.push(JSON.parse(JSON.stringify(item)));
                 }
 
-                this.editMenu.push({
+                this.editableMainSections.push({
+                    id: section.id,
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
-                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true,
                     sectionMenu: sectionMenu,
+                    subsections: section.subsections ? section.subsections.map(sub => ({
+                        id: sub.id,
+                        sectionName: sub.sectionName,
+                        sectionOrder: sub.sectionOrder,
+                        parentSectionId: sub.parentSectionId,
+                        isSubSection: true,
+                        isVisible: sub.isVisible !== undefined ? sub.isVisible : true,
+                        sectionMenu: sub.sectionMenu ? sub.sectionMenu.map(item => JSON.parse(JSON.stringify(item))) : []
+                    })) : []
                 });
             }
 
-            // Sort editMenu numerically by sectionOrder
-            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
-            
-            // Sync editableMainSections after setting editMenu
-            this.syncEditableMainSections();
+            // Sort editableMainSections numerically by sectionOrder
+            this.editableMainSections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
         },
 
-        // Reset Edit Menu with specific data - new method to avoid prop mutation
-        resetEditMenuWithData(menuData) {
-            this.editMenu = [];
+        // Reset editable main sections with specific data - new method to avoid prop mutation
+        resetEditableMainSectionsWithData(menuData) {
+            this.editableMainSections = [];
 
             for (let section of menuData) {
                 let sectionMenu = [];
@@ -3486,19 +3259,26 @@ export default {
                     sectionMenu.push(JSON.parse(JSON.stringify(item)));
                 }
 
-                this.editMenu.push({
+                this.editableMainSections.push({
+                    id: section.id,
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
-                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true,
                     sectionMenu: sectionMenu,
+                    subsections: section.subsections ? section.subsections.map(sub => ({
+                        id: sub.id,
+                        sectionName: sub.sectionName,
+                        sectionOrder: sub.sectionOrder,
+                        parentSectionId: sub.parentSectionId,
+                        isSubSection: true,
+                        isVisible: sub.isVisible !== undefined ? sub.isVisible : true,
+                        sectionMenu: sub.sectionMenu ? sub.sectionMenu.map(item => JSON.parse(JSON.stringify(item))) : []
+                    })) : []
                 });
             }
 
-            // Sort editMenu numerically by sectionOrder
-            this.editMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
-            
-            // Sync editableMainSections after setting editMenu
-            this.syncEditableMainSections();
+            // Sort editableMainSections numerically by sectionOrder
+            this.editableMainSections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
         },
 
         // Search Menu - Enhanced for hierarchical structure
@@ -3509,14 +3289,14 @@ export default {
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
             
             if (this.searchMenuTerm == '') {
-                // If empty search, show all sections and subsections
-                this.searchMenuResults = this.buildSearchableMenu(this.hierarchicalMenu);
+                // If empty search, show all sections and subsections from current editable structure
+                this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
             } else {
                 // Reset searchMenuResults
                 this.searchMenuResults = [];
 
-                // Filter hierarchical menu
-                for (let mainSection of this.hierarchicalMenu) {
+                // Filter current editable structure
+                for (let mainSection of this.editableMainSections) {
                     let filteredMainSection = {
                         id: mainSection.id,
                         sectionName: mainSection.sectionName,
@@ -3533,25 +3313,30 @@ export default {
                     // If main section matches, include all its items and subsections
                     if (mainSectionMatches) {
                         filteredMainSection.sectionMenu = [...mainSection.sectionMenu];
-                        filteredMainSection.subsections = [...mainSection.subsections];
+                        if (mainSection.subsections) {
+                            filteredMainSection.subsections = [...mainSection.subsections];
+                        }
                     } else {
                         // Filter items within main section
-                        for (let menuItem of mainSection.sectionMenu) {
-                            if (this.itemMatchesSearch(menuItem)) {
-                                filteredMainSection.sectionMenu.push(menuItem);
+                        if (mainSection.sectionMenu) {
+                            for (let menuItem of mainSection.sectionMenu) {
+                                if (this.itemMatchesSearch(menuItem)) {
+                                    filteredMainSection.sectionMenu.push(menuItem);
+                                }
                             }
                         }
 
                         // Filter subsections and their items
-                        for (let subsection of mainSection.subsections) {
-                            let filteredSubsection = {
-                                id: subsection.id,
-                                sectionName: subsection.sectionName,
-                                sectionOrder: subsection.sectionOrder,
-                                parentSectionId: subsection.parentSectionId,
-                                isSubSection: subsection.isSubSection,
-                                sectionMenu: []
-                            };
+                        if (mainSection.subsections) {
+                            for (let subsection of mainSection.subsections) {
+                                let filteredSubsection = {
+                                    id: subsection.id,
+                                    sectionName: subsection.sectionName,
+                                    sectionOrder: subsection.sectionOrder,
+                                    parentSectionId: subsection.parentSectionId,
+                                    isSubSection: subsection.isSubSection,
+                                    sectionMenu: []
+                                };
 
                             // Check if subsection name matches (using fuzzy matching)
                             let subsectionMatches = this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName);
@@ -3574,6 +3359,7 @@ export default {
                                 }
                             }
                         }
+                    }
                     }
 
                     // Add main section to results if it has items, subsections, or matches the search
@@ -3707,25 +3493,28 @@ export default {
 
         // Add Menu Section - moved from parent
         addMenuSection() {
-            this.editMenu.push({
-                sectionName: "New Section " + (this.editMenu.length + 1),
-                sectionOrder: this.editMenu.length,
+            this.editableMainSections.push({
+                id: null,
+                sectionName: "New Section " + (this.editableMainSections.length + 1),
+                sectionOrder: this.editableMainSections.length,
                 isVisible: true, // New sections are visible by default
                 sectionMenu: [],
+                subsections: []
             });
         },
 
         // Delete Menu Section - moved from parent
         deleteMenuSection(index) {
-            // Remove section from editMenu
-            this.editMenu = this.editMenu.filter(s => s.sectionOrder !== index);
+            // Remove section from editableMainSections
+            this.editableMainSections = this.editableMainSections.filter(s => s.sectionOrder !== index);
         },
 
         // Populate Rename Menu Section Modal - moved from parent
         populateRenameMenuSectionModal(index) {
+            const section = this.editableMainSections.find(s => s.sectionOrder === index);
             this.renameMenuSectionModalTarget = {
                 index: index,
-                data: JSON.parse(JSON.stringify(this.editMenu.find(s => s.sectionOrder === index))),
+                data: JSON.parse(JSON.stringify(section)),
             }
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
@@ -3734,7 +3523,7 @@ export default {
         // Rename Menu Section - moved from parent
         renameMenuSection() {
             this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            this.editMenu = this.editMenu.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+            this.editableMainSections = this.editableMainSections.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
         },
 
         // Add Subsection to a main section
@@ -3744,18 +3533,17 @@ export default {
             // Handle case where parentSection is null (when called from general "Add Subsection" buttons)
             if (!parentSection) {
                 // Find the first main section to add subsection to, or create one if none exist
-                const mainSections = this.editMenu.filter(s => !s.isSubSection);
-                console.log('🍽️ Main sections found:', mainSections.length);
+                console.log('🍽️ Main sections found:', this.editableMainSections.length);
                 
-                if (mainSections.length === 0) {
+                if (this.editableMainSections.length === 0) {
                     // No main sections exist, create one first
                     console.log('🍽️ No main sections exist, creating one first');
                     this.addMenuSection();
                     // Get the newly created section
-                    parentSection = this.editMenu.find(s => !s.isSubSection);
+                    parentSection = this.editableMainSections[0];
                 } else {
                     // Use the first main section
-                    parentSection = mainSections[0];
+                    parentSection = this.editableMainSections[0];
                 }
                 console.log('🍽️ Using parent section:', parentSection);
             }
@@ -3776,15 +3564,22 @@ export default {
             }
 
             try {
-                // Get current max section order
-                const maxSectionOrder = this.editMenu.length > 0 ? Math.max(...this.editMenu.map(s => s.sectionOrder)) : 0;
+                // Get current max section order across all sections and subsections
+                let maxSectionOrder = 0;
+                this.editableMainSections.forEach(section => {
+                    maxSectionOrder = Math.max(maxSectionOrder, section.sectionOrder);
+                    if (section.subsections) {
+                        section.subsections.forEach(sub => {
+                            maxSectionOrder = Math.max(maxSectionOrder, sub.sectionOrder);
+                        });
+                    }
+                });
                 
                 // Count existing subsections for this parent
-                const existingSubsections = this.editMenu.filter(s => 
-                    s.isSubSection && s.parentSectionId === (parentSection.id || parentSection.sectionOrder)
-                );
+                const existingSubsections = parentSection.subsections || [];
                 
                 const newSubsection = {
+                    id: null,
                     sectionName: `New Subsection ${existingSubsections.length + 1}`,
                     sectionOrder: maxSectionOrder + 1,
                     parentSectionId: parentSection.id || parentSection.sectionOrder,
@@ -3801,17 +3596,17 @@ export default {
                     parentSectionOrder: parentSection.sectionOrder
                 });
                 
-                // Add to editMenu
-                this.editMenu.push(newSubsection);
-                
-                // Update sync
-                this.syncEditableMainSections();
+                // Add to parent section's subsections array
+                if (!parentSection.subsections) {
+                    parentSection.subsections = [];
+                }
+                parentSection.subsections.push(newSubsection);
                 
                 // Show success message
                 const toast = useToast();
                 toast.success(`Subsection "${newSubsection.sectionName}" added successfully`);
                 
-                console.log('🍽️ Current editMenu after adding subsection:', this.editMenu);
+                console.log('🍽️ Current editableMainSections after adding subsection:', this.editableMainSections);
                 
                 return true;
             } catch (error) {
@@ -3837,8 +3632,10 @@ export default {
 
             if (confirm(confirmMessage)) {
                 try {
-                    // Remove subsection from editMenu
-                    this.editMenu = this.editMenu.filter(s => s.sectionOrder !== subsection.sectionOrder);
+                    // Remove subsection from parent section's subsections array
+                    if (parentSection.subsections) {
+                        parentSection.subsections = parentSection.subsections.filter(s => s.sectionOrder !== subsection.sectionOrder);
+                    }
                     
                     // Validate hierarchy after operation
                     const postValidation = this.validateMenuHierarchy();
@@ -3903,9 +3700,9 @@ export default {
                 return false;
             }
 
-            // Validate that sections exist in menu
-            const fromExists = this.editMenu.some(s => s.sectionOrder === fromSection.sectionOrder);
-            const toExists = this.editMenu.some(s => s.sectionOrder === toSection.sectionOrder);
+            // Validate that sections exist in nested structure
+            const fromExists = this.findSectionInNestedStructure(fromSection.sectionOrder);
+            const toExists = this.findSectionInNestedStructure(toSection.sectionOrder);
             
             if (!fromExists || !toExists) {
                 this.showHierarchyError('Move Items Failed', ['Source or target section no longer exists in menu']);
@@ -3945,6 +3742,25 @@ export default {
                 this.showHierarchyError('Move Items Error', [`Failed to move items between sections: ${error.message}`]);
                 return false;
             }
+        },
+
+        // Helper method to find section in nested structure
+        findSectionInNestedStructure(sectionOrder) {
+            // Search in main sections
+            for (const section of this.editableMainSections) {
+                if (section.sectionOrder === sectionOrder) {
+                    return section;
+                }
+                // Search in subsections
+                if (section.subsections) {
+                    for (const subsection of section.subsections) {
+                        if (subsection.sectionOrder === sectionOrder) {
+                            return subsection;
+                        }
+                    }
+                }
+            }
+            return null;
         },
 
         // Reorder items within a section to ensure sequential order
@@ -4001,19 +3817,35 @@ export default {
             }
 
             try {
-                const maxSectionOrder = Math.max(...this.editMenu.map(s => s.sectionOrder), 0);
+                // Get max section order across all sections and subsections
+                let maxSectionOrder = 0;
+                this.editableMainSections.forEach(section => {
+                    maxSectionOrder = Math.max(maxSectionOrder, section.sectionOrder);
+                    if (section.subsections) {
+                        section.subsections.forEach(sub => {
+                            maxSectionOrder = Math.max(maxSectionOrder, sub.sectionOrder);
+                        });
+                    }
+                });
+
                 const duplicatedSubsection = {
+                    id: null,
                     sectionName: `${subsection.sectionName} (Copy)`,
                     sectionOrder: maxSectionOrder + 1,
                     parentSectionId: parentSection.sectionOrder,
                     isSubSection: true,
+                    isVisible: subsection.isVisible,
                     sectionMenu: subsection.sectionMenu.map((item, index) => ({
                         ...item,
                         itemOrder: index // Ensure proper ordering
                     }))
                 };
 
-                this.editMenu.push(duplicatedSubsection);
+                // Add to parent section's subsections array
+                if (!parentSection.subsections) {
+                    parentSection.subsections = [];
+                }
+                parentSection.subsections.push(duplicatedSubsection);
                 
                 // Validate hierarchy after operation
                 const postValidation = this.validateMenuHierarchy();
@@ -4050,16 +3882,20 @@ export default {
         validateSubsectionStructure() {
             const issues = [];
             
-            this.editMenu.forEach(section => {
-                if (section.isSubSection) {
-                    // Check if parent section exists
-                    const parentExists = this.editMenu.some(s => 
-                        !s.isSubSection && s.id === section.parentSectionId
-                    );
-                    
-                    if (!parentExists) {
-                        issues.push(`Subsection "${section.sectionName}" has invalid parent section ID: ${section.parentSectionId}`);
-                    }
+            // Work with nested structure
+            this.editableMainSections.forEach(section => {
+                if (section.subsections && Array.isArray(section.subsections)) {
+                    section.subsections.forEach(subsection => {
+                        // Check if subsection has correct isSubSection flag
+                        if (!subsection.isSubSection) {
+                            issues.push(`Item in subsections array "${subsection.sectionName}" missing isSubSection flag`);
+                        }
+                        
+                        // Check parent-child relationship consistency
+                        if (subsection.parentSectionId && subsection.parentSectionId !== section.id) {
+                            issues.push(`Subsection "${subsection.sectionName}" parentSectionId mismatch with containing section`);
+                        }
+                    });
                 }
             });
 
@@ -4068,24 +3904,35 @@ export default {
 
         // Comprehensive menu hierarchy validation
         validateMenuHierarchy(menu = null) {
-            const menuToValidate = menu || this.editMenu;
+            // Use nested structure if no specific menu provided
+            const menuToValidate = menu || this.editableMainSections;
             const issues = [];
             const sectionOrders = new Set();
             const mainSections = [];
             const subsections = [];
 
-            // Separate main sections and subsections
-            menuToValidate.forEach(section => {
-                if (section.isSubSection) {
-                    subsections.push(section);
-                } else {
+            // If we're validating the nested structure, extract sections and subsections
+            if (menu === null) {
+                // Working with nested structure
+                menuToValidate.forEach(section => {
                     mainSections.push(section);
-                }
-            });
+                    if (section.subsections && section.subsections.length > 0) {
+                        subsections.push(...section.subsections);
+                    }
+                });
+            } else {
+                // Working with flat structure (for compatibility)
+                menuToValidate.forEach(section => {
+                    if (section.isSubSection) {
+                        subsections.push(section);
+                    } else {
+                        mainSections.push(section);
+                    }
+                });
+            }
 
-            // 1. Check for duplicate section orders
-            menuToValidate.forEach(section => {
-                // Ensure sectionOrder is a number for consistent comparison
+            // 1. Check for duplicate section orders in main sections
+            mainSections.forEach(section => {
                 const sectionOrderNum = parseInt(section.sectionOrder, 10);
                 if (sectionOrders.has(sectionOrderNum)) {
                     issues.push(`Duplicate section order found: ${sectionOrderNum} for section "${section.sectionName}"`);
@@ -4094,30 +3941,48 @@ export default {
                 }
             });
 
-            // 2. Validate parent-child relationships
-            subsections.forEach(subsection => {
-                const parentSection = mainSections.find(s => s.id === subsection.parentSectionId);
-                
-                if (!parentSection) {
-                    issues.push(`Subsection "${subsection.sectionName}" references non-existent parent section ID: ${subsection.parentSectionId}`);
-                } else {
-                    // Check for circular references (subsection cannot be its own parent)
-                    if (subsection.id === subsection.parentSectionId) {
-                        issues.push(`Circular reference detected: Subsection "${subsection.sectionName}" cannot be its own parent`);
+            // 2. Validate parent-child relationships (for nested structure)
+            if (menu === null) {
+                // In nested structure, validate that subsections belong to correct parent
+                menuToValidate.forEach(mainSection => {
+                    if (mainSection.subsections) {
+                        mainSection.subsections.forEach(subsection => {
+                            if (!subsection.isSubSection) {
+                                issues.push(`Item in subsections array "${subsection.sectionName}" missing isSubSection flag`);
+                            }
+                            if (subsection.parentSectionId && subsection.parentSectionId !== mainSection.id) {
+                                issues.push(`Subsection "${subsection.sectionName}" parentSectionId mismatch with containing section`);
+                            }
+                        });
                     }
-                }
-            });
+                });
+            } else {
+                // Legacy validation for flat structure
+                subsections.forEach(subsection => {
+                    const parentSection = mainSections.find(s => s.id === subsection.parentSectionId);
+                    
+                    if (!parentSection) {
+                        issues.push(`Subsection "${subsection.sectionName}" references non-existent parent section ID: ${subsection.parentSectionId}`);
+                    } else {
+                        // Check for circular references
+                        if (subsection.id === subsection.parentSectionId) {
+                            issues.push(`Circular reference detected: Subsection "${subsection.sectionName}" cannot be its own parent`);
+                        }
+                    }
+                });
+            }
 
-            // 3. Check for orphaned subsections (subsections without valid parents)
-            const orphanedSubsections = subsections.filter(sub => 
-                !mainSections.some(main => main.id === sub.parentSectionId)
-            );
-            orphanedSubsections.forEach(orphan => {
-                issues.push(`Orphaned subsection found: "${orphan.sectionName}" has no valid parent section`);
-            });
+            // 3. Check for orphaned subsections (only relevant for flat structure)
+            if (menu !== null) {
+                const orphanedSubsections = subsections.filter(sub => 
+                    !mainSections.some(main => main.id === sub.parentSectionId)
+                );
+                orphanedSubsections.forEach(orphan => {
+                    issues.push(`Orphaned subsection found: "${orphan.sectionName}" has no valid parent section`);
+                });
+            }
 
             // 4. Validate section order consistency (main sections should be sequential starting from 0)
-            // Only validate main sections for sequential ordering, as subsections can have different numbering
             const mainSectionOrders = mainSections.map(s => parseInt(s.sectionOrder, 10)).sort((a, b) => a - b);
             for (let i = 0; i < mainSectionOrders.length; i++) {
                 if (i === 0 && mainSectionOrders[i] !== 0) {
@@ -4247,7 +4112,7 @@ export default {
                 section.isSubSection && section.parentSectionId === parentSectionId
             ).sort((a, b) => a.sectionOrder - b.sectionOrder);
             
-            console.log('🍽️ Found subsections in editMenu for parent', parentSectionId, ':', subsections);
+            console.log('🍽️ Found subsections from fallback structure for parent', parentSectionId, ':', subsections);
             return subsections;
         },
 
@@ -4340,8 +4205,21 @@ export default {
         prepareMenuForBackend(includeMetadata = false) {
             console.log('🍽️ Preparing menu data for backend');
             
+            // Convert nested structure to flat array for backend compatibility
+            const flatSections = [];
+            
+            this.editableMainSections.forEach(mainSection => {
+                // Add main section to flat array
+                flatSections.push(mainSection);
+                
+                // Add subsections to flat array
+                if (mainSection.subsections && Array.isArray(mainSection.subsections)) {
+                    flatSections.push(...mainSection.subsections);
+                }
+            });
+            
             // Sort all sections by order
-            const sortedSections = [...this.editMenu].sort((a, b) => a.sectionOrder - b.sectionOrder);
+            const sortedSections = [...flatSections].sort((a, b) => a.sectionOrder - b.sectionOrder);
             
             const cleanSections = sortedSections.map(section => {
                 // Create clean copy without UI-specific properties
@@ -4461,7 +4339,15 @@ export default {
 
                 // Example 6: Comprehensive batch menu update
                 console.log('Example 6: Comprehensive batch update...');
-                const batchUpdateResult = await this.batchUpdateMenu(this.editMenu, {
+                // Convert nested structure to flat array for batch operation
+                const flatSections = [];
+                this.editableMainSections.forEach(mainSection => {
+                    flatSections.push(mainSection);
+                    if (mainSection.subsections) {
+                        flatSections.push(...mainSection.subsections);
+                    }
+                });
+                const batchUpdateResult = await this.batchUpdateMenu(flatSections, {
                     validateBeforeSave: true,
                     updateHierarchy: true,
                     showProgress: true
@@ -4533,14 +4419,34 @@ export default {
 
         // Helper method to get total item count across all sections
         getTotalItemCount(menu = null) {
-            const menuToCount = menu || this.editMenu;
+            // Use nested structure if no specific menu provided
+            const menuToCount = menu || this.editableMainSections;
             let count = 0;
             
-            menuToCount.forEach(section => {
-                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
-                    count += section.sectionMenu.length;
-                }
-            });
+            if (menu === null) {
+                // Working with nested structure
+                menuToCount.forEach(section => {
+                    // Count items in main section
+                    if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                        count += section.sectionMenu.length;
+                    }
+                    // Count items in subsections
+                    if (section.subsections && Array.isArray(section.subsections)) {
+                        section.subsections.forEach(subsection => {
+                            if (subsection.sectionMenu && Array.isArray(subsection.sectionMenu)) {
+                                count += subsection.sectionMenu.length;
+                            }
+                        });
+                    }
+                });
+            } else {
+                // Working with flat structure (for compatibility)
+                menuToCount.forEach(section => {
+                    if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                        count += section.sectionMenu.length;
+                    }
+                });
+            }
             
             return count;
         },
@@ -4576,45 +4482,43 @@ export default {
             this.updateHierarchicalOrdering();
             fixes.push('Updated hierarchical ordering to fix parent-child relationships');
             
-            // Fix missing isSubSection flags
-            this.editMenu.forEach(section => {
-                if (section.parentSectionId && !section.isSubSection) {
-                    section.isSubSection = true;
-                    fixes.push(`Added missing isSubSection flag to "${section.sectionName}"`);
-                }
-            });
-
-            // Remove invalid parentSectionId from main sections
-            this.editMenu.forEach(section => {
-                if (!section.isSubSection && section.parentSectionId !== undefined && section.parentSectionId !== null) {
-                    section.parentSectionId = null;
-                    fixes.push(`Removed invalid parentSectionId from main section "${section.sectionName}"`);
-                }
-            });
-
-            // Initialize missing sectionMenu arrays
-            this.editMenu.forEach(section => {
+            // Fix issues in nested structure
+            this.editableMainSections.forEach(section => {
+                // Initialize missing sectionMenu arrays
                 if (!section.sectionMenu) {
                     section.sectionMenu = [];
-                    fixes.push(`Initialized sectionMenu array for "${section.sectionName}"`);
+                    fixes.push(`Initialized missing sectionMenu for "${section.sectionName}"`);
+                }
+                
+                // Initialize missing subsections arrays
+                if (!section.subsections) {
+                    section.subsections = [];
+                    fixes.push(`Initialized missing subsections array for "${section.sectionName}"`);
+                }
+                
+                // Fix subsection issues
+                if (section.subsections) {
+                    section.subsections.forEach(subsection => {
+                        // Ensure subsection has correct flags
+                        if (!subsection.isSubSection) {
+                            subsection.isSubSection = true;
+                            fixes.push(`Added missing isSubSection flag to "${subsection.sectionName}"`);
+                        }
+                        
+                        // Ensure subsection has correct parent reference
+                        if (subsection.parentSectionId !== section.id && subsection.parentSectionId !== section.sectionOrder) {
+                            subsection.parentSectionId = section.id || section.sectionOrder;
+                            fixes.push(`Fixed parentSectionId for subsection "${subsection.sectionName}"`);
+                        }
+                        
+                        // Initialize missing sectionMenu arrays
+                        if (!subsection.sectionMenu) {
+                            subsection.sectionMenu = [];
+                            fixes.push(`Initialized missing sectionMenu for subsection "${subsection.sectionName}"`);
+                        }
+                    });
                 }
             });
-
-            // Handle orphaned subsections by assigning them to the first main section
-            const mainSections = this.editMenu.filter(s => !s.isSubSection);
-            if (mainSections.length > 0) {
-                const firstMainSectionId = mainSections[0].id;
-                
-                this.editMenu.forEach(section => {
-                    if (section.isSubSection) {
-                        const parentExists = mainSections.some(main => main.id === section.parentSectionId);
-                        if (!parentExists) {
-                            section.parentSectionId = firstMainSectionId;
-                            fixes.push(`Reassigned orphaned subsection "${section.sectionName}" to first main section`);
-                        }
-                    }
-                });
-            }
 
             return {
                 fixesApplied: fixes.length,
@@ -5272,13 +5176,6 @@ export default {
                 });
             }
             
-            // Also update editMenu for consistency
-            let editMenuSection = this.editMenu.find(s => s.sectionOrder === sectionIndex);
-            if (editMenuSection && editMenuSection.sectionMenu && Array.isArray(editMenuSection.sectionMenu)) {
-                editMenuSection.sectionMenu = editMenuSection.sectionMenu.filter(i => i.itemOrder !== itemIndex);
-                console.log('🗑️ Also updated editMenu section');
-            }
-            
             if (itemDeleted) {
                 console.log('🗑️ Item successfully deleted!');
                 // Force reactivity update
@@ -5332,9 +5229,6 @@ export default {
             
             // Update section and subsection ordering with hierarchical structure
             this.updateHierarchicalOrdering();
-
-            // Sync visibility changes from editableMainSections to editMenu before preparing payload
-            this.syncVisibilityChangesToEditMenu();
 
             // Prepare menu data for backend (remove UI-specific properties)
             const menuDataForBackend = this.prepareMenuForBackend();
@@ -5603,7 +5497,7 @@ export default {
                 // Update main sections first
                 mainSections.forEach((section) => {
                     try {
-                        const existingSection = this.editMenu.find(s => s.sectionOrder === section.sectionOrder);
+                        const existingSection = this.editableMainSections.find(s => s.sectionOrder === section.sectionOrder);
                         if (existingSection) {
                             Object.assign(existingSection, section);
                             results.success.push(`Updated main section: ${section.sectionName}`);
@@ -5617,18 +5511,23 @@ export default {
                 // Update subsections with parent validation
                 subsections.forEach(subsection => {
                     try {
+                        // Check if parent exists in updated main sections or existing structure
                         const parentExists = mainSections.some(ms => ms.id === subsection.parentSectionId) ||
-                                           this.editMenu.some(s => !s.isSubSection && s.id === subsection.parentSectionId);
+                                           this.editableMainSections.some(s => s.id === subsection.parentSectionId);
                         
                         if (!parentExists) {
                             results.errors.push(`Subsection ${subsection.sectionName} has invalid parent ${subsection.parentSectionId}`);
                             return;
                         }
 
-                        const existingSubsection = this.editMenu.find(s => s.sectionOrder === subsection.sectionOrder);
-                        if (existingSubsection) {
-                            Object.assign(existingSubsection, subsection);
-                            results.success.push(`Updated subsection: ${subsection.sectionName}`);
+                        // Find parent section and update subsection within it
+                        const parentSection = this.editableMainSections.find(s => s.id === subsection.parentSectionId);
+                        if (parentSection && parentSection.subsections) {
+                            const existingSubsection = parentSection.subsections.find(s => s.sectionOrder === subsection.sectionOrder);
+                            if (existingSubsection) {
+                                Object.assign(existingSubsection, subsection);
+                                results.success.push(`Updated subsection: ${subsection.sectionName}`);
+                            }
                         }
                         results.totalProcessed++;
                     } catch (error) {
@@ -5789,46 +5688,74 @@ export default {
         batchUpdateSectionOrdering(sections = null) {
             console.log('🍽️ Batch updating section ordering');
             
-            const sectionsToUpdate = sections || this.editMenu;
-            
             try {
-                // Separate main sections and subsections
-                const mainSections = sectionsToUpdate.filter(s => !s.isSubSection);
-                const subsections = sectionsToUpdate.filter(s => s.isSubSection);
+                if (sections) {
+                    // Working with provided flat sections (legacy compatibility)
+                    const mainSections = sections.filter(s => !s.isSubSection);
+                    const subsections = sections.filter(s => s.isSubSection);
 
-                // Update main section ordering
-                mainSections.sort((a, b) => a.sectionOrder - b.sectionOrder);
-                mainSections.forEach((section, index) => {
-                    section.sectionOrder = index;
-                });
-
-                // Group subsections by parent and update ordering
-                const subsectionsByParent = new Map();
-                subsections.forEach(subsection => {
-                    const parentId = subsection.parentSectionId;
-                    if (!subsectionsByParent.has(parentId)) {
-                        subsectionsByParent.set(parentId, []);
-                    }
-                    subsectionsByParent.get(parentId).push(subsection);
-                });
-
-                // Update subsection ordering
-                let globalSubsectionOrder = mainSections.length;
-                subsectionsByParent.forEach((parentSubsections, parentId) => {
-                    parentSubsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
-                    parentSubsections.forEach(subsection => {
-                        subsection.sectionOrder = globalSubsectionOrder++;
-                        subsection.parentSectionId = parentId;
-                        subsection.isSubSection = true;
+                    // Update main section ordering
+                    mainSections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                    mainSections.forEach((section, index) => {
+                        section.sectionOrder = index;
                     });
-                });
 
-                return {
-                    success: true,
-                    mainSectionsUpdated: mainSections.length,
-                    subsectionsUpdated: subsections.length,
-                    totalUpdated: sectionsToUpdate.length
-                };
+                    // Group subsections by parent and update ordering
+                    const subsectionsByParent = new Map();
+                    subsections.forEach(subsection => {
+                        const parentId = subsection.parentSectionId;
+                        if (!subsectionsByParent.has(parentId)) {
+                            subsectionsByParent.set(parentId, []);
+                        }
+                        subsectionsByParent.get(parentId).push(subsection);
+                    });
+
+                    // Update subsection ordering
+                    let globalSubsectionOrder = mainSections.length;
+                    subsectionsByParent.forEach((parentSubsections, parentId) => {
+                        parentSubsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                        parentSubsections.forEach(subsection => {
+                            subsection.sectionOrder = globalSubsectionOrder++;
+                            subsection.parentSectionId = parentId;
+                            subsection.isSubSection = true;
+                        });
+                    });
+
+                    return {
+                        success: true,
+                        mainSectionsUpdated: mainSections.length,
+                        subsectionsUpdated: subsections.length,
+                        totalUpdated: sections.length
+                    };
+                } else {
+                    // Working with nested structure
+                    let totalSubsections = 0;
+                    
+                    // Update main section ordering
+                    this.editableMainSections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                    this.editableMainSections.forEach((section, index) => {
+                        section.sectionOrder = index;
+                        
+                        // Update subsection ordering within each main section
+                        if (section.subsections && Array.isArray(section.subsections)) {
+                            section.subsections.sort((a, b) => a.sectionOrder - b.sectionOrder);
+                            let parentSubsectionOrder = section.sectionOrder * 100 + 1; // Ensure unique ordering
+                            section.subsections.forEach(subsection => {
+                                subsection.sectionOrder = parentSubsectionOrder++;
+                                subsection.parentSectionId = section.id;
+                                subsection.isSubSection = true;
+                                totalSubsections++;
+                            });
+                        }
+                    });
+
+                    return {
+                        success: true,
+                        mainSectionsUpdated: this.editableMainSections.length,
+                        subsectionsUpdated: totalSubsections,
+                        totalUpdated: this.editableMainSections.length + totalSubsections
+                    };
+                }
 
             } catch (error) {
                 return {
@@ -6025,9 +5952,6 @@ export default {
             } else {
                 // Reorder items to ensure proper sequence
                 this.reorderSectionItems(menuSection);
-                
-                // Sync changes back to editMenu for backend consistency
-                this.syncAfterDragOperation();
             }
             this.drag = false;
             this.menuSnapshot = null;
@@ -6079,7 +6003,6 @@ export default {
                     console.error('Failed to copy text: ', err);
                 });
         }
-
     }
 }
 </script>
