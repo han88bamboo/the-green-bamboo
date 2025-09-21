@@ -1084,471 +1084,487 @@
                             </div>
 
                             <!-- Show subsections for this main section AFTER direct items -->
-                            <div v-for="subsection in getSubsectionsForSection(menuSection.id || menuSection.sectionOrder)" 
-                                :key="subsection.sectionOrder" 
-                                class="ms-3 mb-3" 
-                                :class="{
-                                    'menu-section-faded': !subsection.isVisible
+                            <draggable v-if="Array.isArray(menuSection.subsections)" 
+                                :list="menuSection.subsections" 
+                                item-key="id" 
+                                @start="dragSubsectionStart(menuSection)" 
+                                @end="dragSubsectionEnd(menuSection)"
+                                @change="onSubsectionChange"
+                                :animation="200"
+                                :group="{
+                                    name: `subsections-${menuSection.sectionOrder}`,
+                                    pull: false,
+                                    put: false
                                 }"
-                                style="border-left: 3px solid #dee2e6; padding-left: 15px;">
-                                
-                                <!-- Subsection Header -->
-                                <div class="row mb-2">
-                                    <!-- Subsection Name (Desktop) -->
-                                    <div class="col-6 d-grid pe-0 mobile-view-hide">
-                                        <button type="button"
-                                            class="btn btn-outline-secondary rounded fs-6 fw-bold text-start"
-                                            data-bs-toggle="collapse"
-                                            :data-bs-target="'#collapseEditSubSection' + subsection.sectionOrder"
-                                            aria-expanded="true"
-                                            :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
-                                            style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                            {{ subsection.sectionName }}
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Visibility Toggle (Desktop) -->
-                                    <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide">
-                                        <div class="form-check form-switch visibility-switch">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   :id="'editSubsectionVisibility_' + subsection.sectionOrder"
-                                                   :checked="subsection.isVisible"
-                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
-                                            <label class="form-check-label" :for="'editSubsectionVisibility_' + subsection.sectionOrder">
-                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Subsection Name (Mobile) -->
-                                    <div class="col-6 d-grid ps-0 pe-0 mobile-view-show">
-                                        <button type="button"
-                                            class="btn btn-outline-secondary rounded fs-7 fw-bold text-start"
-                                            data-bs-toggle="collapse"
-                                            :data-bs-target="'#collapseEditSubSection' + subsection.sectionOrder"
-                                            aria-expanded="true"
-                                            :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
-                                            style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                            {{ subsection.sectionName }}
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Visibility Toggle (Mobile) -->
-                                    <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show">
-                                        <div class="form-check form-switch visibility-switch">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   :id="'editSubsectionVisibilityMobile_' + subsection.sectionOrder"
-                                                   :checked="subsection.isVisible"
-                                                   @change="toggleSubsectionVisibility(menuSection, subsection)">
-                                            <label class="form-check-label" :for="'editSubsectionVisibilityMobile_' + subsection.sectionOrder">
-                                                {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Subsection Management Buttons (Desktop) -->
-                                    <div class="col-2 d-grid p-0 mobile-view-hide">
-                                        <button type="button"
-                                            class="btn btn-outline-secondary btn-sm rounded px-1 text-center"
-                                            data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
-                                            @click="populateRenameMenuSectionModal(subsection.sectionOrder)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Subsection Management Buttons (Mobile) -->
-                                    <div class="col-2 d-grid p-0 mobile-view-show">
-                                        <button type="button"
-                                            class="btn btn-outline-secondary btn-sm rounded px-1 text-center"
-                                            data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
-                                            @click="populateRenameMenuSectionModal(subsection.sectionOrder)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
-                                                <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    <!-- Delete Subsection -->
-                                    <div class="col-2 d-grid ps-0 mobile-view-hide">
-                                        <button type="button"
-                                            class="btn btn-outline-danger btn-sm rounded px-1 text-center"
-                                            @click="deleteSubSection(menuSection, subsection)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    
-                                    <!-- Delete Subsection (Mobile) -->
-                                    <div class="col-2 d-grid ps-0 mobile-view-show">
-                                        <button type="button"
-                                            class="btn btn-outline-danger btn-sm rounded px-1 text-center"
-                                            @click="deleteSubSection(menuSection, subsection)">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Subsection Content -->
-                                <div class="collapse show" :id="'collapseEditSubSection' + subsection.sectionOrder">
-                                    <!-- No Subsection Contents to Show -->
-                                    <div v-if="Array.isArray(subsection?.sectionMenu) && subsection.sectionMenu.length === 0"
-                                        class="col-12 my-2">
-                                        <p class="text-center fst-italic m-0 text-muted" style="font-size: 0.9rem;">
-                                            No menu items in this subsection
-                                        </p>
-                                    </div>
-
-                                    <!-- Subsection Items -->
-                                    <draggable v-model="subsection.sectionMenu" item-key="itemOrder"
-                                        @start="dragItemStart(subsection)" @end="dragItemEnd(subsection)"
-                                        v-bind="subsectionItemDragOptions"
-                                        :data-subsection-order="subsection.sectionOrder">
-                                        <template #item="{ element: menuItem }">
-                                            <div class="col-12 my-3">
-                                                <div class="col-12 my-2 p-2" style="background-color: #f8f9fa; border-radius: 5px;">
-                                                    <!-- Shared menu item template for subsections -->
-                                                    <div class="row mobile-view-show">
-                                            <!-- Item Image -->
-                                            <div
-                                                class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                                <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image"> -->
-                                                <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
-                                                    class="producer-bottle-listing-page-bottle-image">
-                                                <!-- Remove Item From Menu Section -->
-                                                <div class="row">
-                                                    <div class="col-1 d-grid">
-                                                        <button type="button" class="btn icon-btn"
-                                                            @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
-                                                            <svg height="25" width="25"
-                                                                viewBox="0 0 24 24" fill="none"
-                                                                class="bi bi-sort-down "
-                                                                xmlns="http://www.w3.org/2000/svg">
-                                                                <g id="SVGRepo_tracerCarrier"
-                                                                    stroke-linecap="round"
-                                                                    stroke-linejoin="round"></g>
-                                                                <g id="SVGRepo_iconCarrier">
-                                                                    <path
-                                                                        d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
-                                                                        stroke="#000000"
-                                                                        stroke-width="2"
-                                                                        stroke-linecap="round"
-                                                                        stroke-linejoin="round"></path>
-                                                                </g>
-                                                            </svg>
-                                                        </button>
-                                                    </div>
+                                :move="onSubsectionMove"
+                                :disabled="false"
+                                ghost-class="ghost-subsection"
+                                :data-section-order="menuSection.sectionOrder"
+                                class="subsection-container">
+                                <template #item="{ element: subsection }">
+                                    <div class="ms-3 mb-3" 
+                                        :class="{
+                                            'menu-section-faded': !subsection.isVisible
+                                        }"
+                                        style="border-left: 3px solid #dee2e6; padding-left: 15px;">
+                                        <!-- Subsection Header -->
+                                        <div class="row mb-2">
+                                            <!-- Subsection Name (Desktop) -->
+                                            <div class="col-6 d-grid pe-0 mobile-view-hide">
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary rounded fs-6 fw-bold text-start"
+                                                    data-bs-toggle="collapse"
+                                                    :data-bs-target="'#collapseEditSubSection' + subsection.sectionOrder"
+                                                    aria-expanded="true"
+                                                    :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
+                                                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                    {{ subsection.sectionName }}
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Visibility Toggle (Desktop) -->
+                                            <div class="col-2 d-flex align-items-center justify-content-center mobile-view-hide">
+                                                <div class="form-check form-switch visibility-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                        :id="'editSubsectionVisibility_' + subsection.sectionOrder"
+                                                        :checked="subsection.isVisible"
+                                                        @change="toggleSubsectionVisibility(menuSection, subsection)">
+                                                    <label class="form-check-label" :for="'editSubsectionVisibility_' + subsection.sectionOrder">
+                                                        {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Subsection Name (Mobile) -->
+                                            <div class="col-6 d-grid ps-0 pe-0 mobile-view-show">
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary rounded fs-7 fw-bold text-start"
+                                                    data-bs-toggle="collapse"
+                                                    :data-bs-target="'#collapseEditSubSection' + subsection.sectionOrder"
+                                                    aria-expanded="true"
+                                                    :aria-controls="'collapseEditSubSection' + subsection.sectionOrder"
+                                                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                    {{ subsection.sectionName }}
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Visibility Toggle (Mobile) -->
+                                            <div class="col-2 d-flex align-items-center justify-content-center mobile-view-show">
+                                                <div class="form-check form-switch visibility-switch">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                        :id="'editSubsectionVisibilityMobile_' + subsection.sectionOrder"
+                                                        :checked="subsection.isVisible"
+                                                        @change="toggleSubsectionVisibility(menuSection, subsection)">
+                                                    <label class="form-check-label" :for="'editSubsectionVisibilityMobile_' + subsection.sectionOrder">
+                                                        {{ subsection.isVisible ? 'Visible' : 'Hidden' }}
+                                                    </label>
                                                 </div>
                                             </div>
 
-                                            <!-- Item Information -->
-                                            <div
-                                                class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
-
-                                                <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                                <!-- Item Info Header -->
-                                                <div class="row">
-
-                                                    <!-- Item Name -->
-                                                    <div class="col-12 mobile-pe-0">
-                                                        <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0"
-                                                            style="margin-bottom:0.3rem;">
-                                                            {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
-                                                        </p>
-                                                    </div>
-
-
-                                                </div>
-
-                                                <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                                <!-- Item Details -->
-                                                <div class="row">
-
-                                                    <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-
-                                                    <p class="text-start mb-1 mobile-fs-7">
-                                                        <span
-                                                            v-if="menuItem.itemDetails['itemProducer']">{{
-                                                            menuItem.itemDetails['itemProducer'] }} |
-                                                        </span>
-                                                        <span v-if="menuItem.itemDetails['itemType']">{{
-                                                            menuItem.itemDetails['itemType'] }} |
-                                                        </span>
-                                                        <span
-                                                            v-if="menuItem.itemDetails['itemTypeCategory']">{{
-                                                            menuItem.itemDetails['itemTypeCategory'] }}
-                                                            | </span>
-                                                        <span v-if="menuItem.itemDetails['itemABV']">{{
-                                                            menuItem.itemDetails['itemABV'] }} ABV |
-                                                        </span>
-                                                        <span
-                                                            v-if="menuItem.itemDetails['itemCountry']">{{
-                                                            menuItem.itemDetails['itemCountry']
-                                                            }}</span>
-                                                    </p>
-                                                </div>
-
-                                                <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-
-
-                                                <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                            </div>
-                                            <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
-                                                <div
-                                                    class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
-                                                    <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
-                                                        style="margin-bottom: 0.1rem;">
-                                                        {{ menuItem.itemDetails['itemRating'] }}
-                                                    </p>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                        height="20" fill="currentColor"
-                                                        class="bi bi-star-fill ms-2 me-2"
-                                                        viewBox="0 0 16 16">
-                                                        <path
-                                                            d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z">
-                                                        </path>
+                                            <!-- Subsection Management Buttons (Desktop) -->
+                                            <div class="col-2 d-grid p-0 mobile-view-hide">
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm rounded px-1 text-center"
+                                                    data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
+                                                    @click="populateRenameMenuSectionModal(subsection.sectionOrder)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                        fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
                                                     </svg>
-                                                </div>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Subsection Management Buttons (Mobile) -->
+                                            <div class="col-2 d-grid p-0 mobile-view-show">
+                                                <button type="button"
+                                                    class="btn btn-outline-secondary btn-sm rounded px-1 text-center"
+                                                    data-bs-toggle="modal" data-bs-target="#renameMenuSectionModal"
+                                                    @click="populateRenameMenuSectionModal(subsection.sectionOrder)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                        fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                                        <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+
+                                            <!-- Delete Subsection -->
+                                            <div class="col-2 d-grid ps-0 mobile-view-hide">
+                                                <button type="button"
+                                                    class="btn btn-outline-danger btn-sm rounded px-1 text-center"
+                                                    @click="deleteSubSection(menuSection, subsection)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                        fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Delete Subsection (Mobile) -->
+                                            <div class="col-2 d-grid ps-0 mobile-view-show">
+                                                <button type="button"
+                                                    class="btn btn-outline-danger btn-sm rounded px-1 text-center"
+                                                    @click="deleteSubSection(menuSection, subsection)">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                        fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                                                        <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         </div>
-                                        <!-- Item Menu Details abc-->
-                                        <div class="row mobile-view-show">
-                                            <!-- Toggle Item Availability -->
-                                            <div class="col-4 ps-0 pt-2">
-                                                <div class="form-check form-switch form-check-inline">
-                                                    <input class="form-check-input" type="checkbox"
-                                                        role="switch"
-                                                        :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                        :name="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                        v-model="menuItem.itemAvailability">
-                                                    <label v-if="menuItem.itemAvailability"
-                                                        class="form-check-label text-success fst-italic"
-                                                        :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                        Available
-                                                    </label>
-                                                    <label v-if="!menuItem.itemAvailability"
-                                                        class="form-check-label text-danger fst-italic"
-                                                        :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                        Unavailable
-                                                    </label>
-                                                </div>
+
+                                        <!-- Subsection Content -->
+                                        <div class="collapse show" :id="'collapseEditSubSection' + subsection.sectionOrder">
+                                            <!-- No Subsection Contents to Show -->
+                                            <div v-if="Array.isArray(subsection?.sectionMenu) && subsection.sectionMenu.length === 0"
+                                                class="col-12 my-2">
+                                                <p class="text-center fst-italic m-0 text-muted" style="font-size: 0.9rem;">
+                                                    No menu items in this subsection
+                                                </p>
                                             </div>
 
-                                            <!-- Edit Item Price -->
-                                            <div class="col-3 pe-0">
-                                                <div class="input-group">
-                                                    <span class="input-group-text fw-bold p-1">$</span>
-                                                    <input type="number" class="p-1 form-control"
-                                                        v-model="menuItem.itemPrice" placeholder="-"
-                                                        min="0" step="0.01">
-                                                </div>
-                                            </div>
-
-                                            <!-- Edit Item Serving Type -->
-                                            <div class="col-5 ps-0">
-                                                <div class="input-group">
-                                                    <span class="input-group-text fw-bold p-1">/</span>
-                                                    <select class="form-select p-1"
-                                                        v-model="menuItem.itemServingType">
-                                                        <option v-for="servingType in servingTypes"
-                                                            :key="servingType.id"
-                                                            :value="servingType.id">{{
-                                                            servingType.servingType }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row mobile-view-hide">
-
-                                            <!-- Item Image -->
-                                            <div
-                                                class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
-                                                <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
-                                                <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
-                                                    style="width: 150px; height: 150px;">
-                                            </div>
-
-                                            <!-- Item Information -->
-                                            <div class="col-lg-10 col-12 ps-5">
-
-                                                <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                                <!-- Item Info Header -->
-                                                <div class="row">
-
-                                                    <!-- Item Name -->
-                                                    <div class="col-11">
-                                                        <p class="fs-5 fw-bold text-start text-decoration-underline m-0"
-                                                            style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                            {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
-                                                        </p>
+                                            <!-- Subsection Items -->
+                                            <draggable v-model="subsection.sectionMenu" item-key="itemOrder"
+                                                @start="dragItemStart(subsection)" @end="dragItemEnd(subsection)"
+                                                v-bind="subsectionItemDragOptions"
+                                                :data-subsection-order="subsection.sectionOrder">
+                                                <template #item="{ element: menuItem }">
+                                                    <div class="col-12 my-3">
+                                                        <div class="col-12 my-2 p-2" style="background-color: #f8f9fa; border-radius: 5px;">
+                                                            <!-- Shared menu item template for subsections -->
+                                                            <div class="row mobile-view-show">
+                                                    <!-- Item Image -->
+                                                    <div
+                                                        class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
+                                                        <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image"> -->
+                                                        <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
+                                                            class="producer-bottle-listing-page-bottle-image">
+                                                        <!-- Remove Item From Menu Section -->
+                                                        <div class="row">
+                                                            <div class="col-1 d-grid">
+                                                                <button type="button" class="btn icon-btn"
+                                                                    @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
+                                                                    <svg height="25" width="25"
+                                                                        viewBox="0 0 24 24" fill="none"
+                                                                        class="bi bi-sort-down "
+                                                                        xmlns="http://www.w3.org/2000/svg">
+                                                                        <g id="SVGRepo_tracerCarrier"
+                                                                            stroke-linecap="round"
+                                                                            stroke-linejoin="round"></g>
+                                                                        <g id="SVGRepo_iconCarrier">
+                                                                            <path
+                                                                                d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6"
+                                                                                stroke="#000000"
+                                                                                stroke-width="2"
+                                                                                stroke-linecap="round"
+                                                                                stroke-linejoin="round"></path>
+                                                                        </g>
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     </div>
 
-                                                    <!-- Remove Item From Menu Section -->
-                                                    <div class="col-1 d-grid">
-                                                        <button type="button" class="btn btn-danger"
-                                                            @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
-                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                width="16" height="16"
-                                                                fill="currentColor" class="bi bi-trash"
-                                                                viewBox="0 0 16 16">
-                                                                <path
-                                                                    d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
-                                                                <path
-                                                                    d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
-                                                            </svg>
-                                                        </button>
+                                                    <!-- Item Information -->
+                                                    <div
+                                                        class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
+
+                                                        <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        <!-- Item Info Header -->
+                                                        <div class="row">
+
+                                                            <!-- Item Name -->
+                                                            <div class="col-12 mobile-pe-0">
+                                                                <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0"
+                                                                    style="margin-bottom:0.3rem;">
+                                                                    {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
+                                                                </p>
+                                                            </div>
+
+
+                                                        </div>
+
+                                                        <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        <!-- Item Details -->
+                                                        <div class="row">
+
+                                                            <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+
+                                                            <p class="text-start mb-1 mobile-fs-7">
+                                                                <span
+                                                                    v-if="menuItem.itemDetails['itemProducer']">{{
+                                                                    menuItem.itemDetails['itemProducer'] }} |
+                                                                </span>
+                                                                <span v-if="menuItem.itemDetails['itemType']">{{
+                                                                    menuItem.itemDetails['itemType'] }} |
+                                                                </span>
+                                                                <span
+                                                                    v-if="menuItem.itemDetails['itemTypeCategory']">{{
+                                                                    menuItem.itemDetails['itemTypeCategory'] }}
+                                                                    | </span>
+                                                                <span v-if="menuItem.itemDetails['itemABV']">{{
+                                                                    menuItem.itemDetails['itemABV'] }} ABV |
+                                                                </span>
+                                                                <span
+                                                                    v-if="menuItem.itemDetails['itemCountry']">{{
+                                                                    menuItem.itemDetails['itemCountry']
+                                                                    }}</span>
+                                                            </p>
+                                                        </div>
+
+                                                        <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+
+
+                                                        <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
                                                     </div>
-
-                                                </div>
-
-                                                <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                                <!-- Item Details -->
-                                                <div class="row">
-
-                                                    <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
-                                                    <div class="col-10">
-                                                        <p class="text-start mb-1"
-                                                            style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemProducer']">{{
-                                                                menuItem.itemDetails['itemProducer'] }}
-                                                                | </span>
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemType']">{{
-                                                                menuItem.itemDetails['itemType'] }} |
-                                                            </span>
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemTypeCategory']">{{
-                                                                menuItem.itemDetails['itemTypeCategory']
-                                                                }} | </span>
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemABV']">{{
-                                                                menuItem.itemDetails['itemABV'] }} ABV |
-                                                            </span>
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemCountry']">{{
-                                                                menuItem.itemDetails['itemCountry']
-                                                                }}</span>
-                                                        </p>
-
-                                                        <p class="text-start fst-italic mb-1"
-                                                            style="height: 50px; max-height: 50px; overflow-y: auto;">
-                                                            <span
-                                                                v-if="menuItem.itemDetails['itemDesc']">{{
-                                                                menuItem.itemDetails['itemDesc']
-                                                                }}</span>
-                                                        </p>
-                                                    </div>
-
-                                                    <!-- Item Rating -->
-                                                    <div class="col-2">
-                                                        <p class="fs-3 fw-bold rating-text text-end">
-                                                            {{ menuItem.itemDetails['itemRating'] }}
-                                                            <svg xmlns="http://www.w3.org/2000/svg"
-                                                                width="30" height="30"
-                                                                fill="currentColor"
-                                                                class="bi bi-star-fill"
-                                                                viewBox="0 0 16 16">
-                                                                <path
-                                                                    d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
-                                                            </svg>
-                                                        </p>
-                                                    </div>
-
-                                                </div>
-
-                                                <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
-                                                <!-- Item Menu Details -->
-                                                <div class="row">
-
-                                                    <!-- Toggle Item Availability -->
-                                                    <div class="col-4">
+                                                    <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
                                                         <div
-                                                            class="form-check form-switch form-check-inline">
-                                                            <input class="form-check-input"
-                                                                type="checkbox" role="switch"
+                                                            class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
+                                                            <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
+                                                                style="margin-bottom: 0.1rem;">
+                                                                {{ menuItem.itemDetails['itemRating'] }}
+                                                            </p>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20"
+                                                                height="20" fill="currentColor"
+                                                                class="bi bi-star-fill ms-2 me-2"
+                                                                viewBox="0 0 16 16">
+                                                                <path
+                                                                    d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z">
+                                                                </path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!-- Item Menu Details abc-->
+                                                <div class="row mobile-view-show">
+                                                    <!-- Toggle Item Availability -->
+                                                    <div class="col-4 ps-0 pt-2">
+                                                        <div class="form-check form-switch form-check-inline">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                role="switch"
                                                                 :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                 :name="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                 v-model="menuItem.itemAvailability">
                                                             <label v-if="menuItem.itemAvailability"
                                                                 class="form-check-label text-success fst-italic"
                                                                 :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                Item Available
+                                                                Available
                                                             </label>
                                                             <label v-if="!menuItem.itemAvailability"
                                                                 class="form-check-label text-danger fst-italic"
                                                                 :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
-                                                                Temporarily Unavailable
+                                                                Unavailable
                                                             </label>
                                                         </div>
                                                     </div>
 
                                                     <!-- Edit Item Price -->
-                                                    <div class="col-3">
+                                                    <div class="col-3 pe-0">
                                                         <div class="input-group">
-                                                            <span
-                                                                class="input-group-text fw-bold">$</span>
-                                                            <input type="number" class="form-control"
-                                                                v-model="menuItem.itemPrice"
-                                                                placeholder="-" min="0" step="0.01">
+                                                            <span class="input-group-text fw-bold p-1">$</span>
+                                                            <input type="number" class="p-1 form-control"
+                                                                v-model="menuItem.itemPrice" placeholder="-"
+                                                                min="0" step="0.01">
                                                         </div>
                                                     </div>
 
                                                     <!-- Edit Item Serving Type -->
-                                                    <div class="col-5">
+                                                    <div class="col-5 ps-0">
                                                         <div class="input-group">
-                                                            <span
-                                                                class="input-group-text fw-bold">/</span>
-                                                            <select class="form-select"
+                                                            <span class="input-group-text fw-bold p-1">/</span>
+                                                            <select class="form-select p-1"
                                                                 v-model="menuItem.itemServingType">
-                                                                <option
-                                                                    v-for="servingType in servingTypes"
+                                                                <option v-for="servingType in servingTypes"
                                                                     :key="servingType.id"
                                                                     :value="servingType.id">{{
                                                                     servingType.servingType }}</option>
                                                             </select>
                                                         </div>
                                                     </div>
-
-
                                                 </div>
+                                                <div class="row mobile-view-hide">
 
-                                                <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                                                    <!-- Item Image -->
+                                                    <div
+                                                        class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
+                                                        <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" style="width: 150px; height: 150px;"> -->
+                                                        <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
+                                                            style="width: 150px; height: 150px;">
+                                                    </div>
 
-                                                </div>
-                                            </div>
-                                            </div>
-                                            </div>
-                                        </template>
-                                </draggable>
-                            </div>
-                            
-                            <!-- End subsection v-for loop -->
-                            
-                            <!-- No Section Contents to Show -->
-                            <div v-if="getSubsectionsForSection(menuSection.id).length === 0 && getDirectItemsForSection(menuSection.sectionOrder).length === 0"
-                                class="col-12 my-3">
-                                <p class="text-center fst-italic m-0">No menu items to show! Search for a drink to add above.</p>
-                            </div>
+                                                    <!-- Item Information -->
+                                                    <div class="col-lg-10 col-12 ps-5">
 
-                        </div>
+                                                        <!-- ------- START Item Info Header ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        <!-- Item Info Header -->
+                                                        <div class="row">
+
+                                                            <!-- Item Name -->
+                                                            <div class="col-11">
+                                                                <p class="fs-5 fw-bold text-start text-decoration-underline m-0"
+                                                                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                    {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
+                                                                </p>
+                                                            </div>
+
+                                                            <!-- Remove Item From Menu Section -->
+                                                            <div class="col-1 d-grid">
+                                                                <button type="button" class="btn btn-danger"
+                                                                    @click.stop.prevent="deleteMenuItem(subsection.sectionOrder, menuItem.itemOrder)">
+                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                        width="16" height="16"
+                                                                        fill="currentColor" class="bi bi-trash"
+                                                                        viewBox="0 0 16 16">
+                                                                        <path
+                                                                            d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                                                        <path
+                                                                            d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                                                                    </svg>
+                                                                </button>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <!-- ------- END Item Info Header / START Item Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        <!-- Item Details -->
+                                                        <div class="row">
+
+                                                            <!-- Item Producer / Drink Type / Type Category / ABV / Country / Description -->
+                                                            <div class="col-10">
+                                                                <p class="text-start mb-1"
+                                                                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemProducer']">{{
+                                                                        menuItem.itemDetails['itemProducer'] }}
+                                                                        | </span>
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemType']">{{
+                                                                        menuItem.itemDetails['itemType'] }} |
+                                                                    </span>
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemTypeCategory']">{{
+                                                                        menuItem.itemDetails['itemTypeCategory']
+                                                                        }} | </span>
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemABV']">{{
+                                                                        menuItem.itemDetails['itemABV'] }} ABV |
+                                                                    </span>
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemCountry']">{{
+                                                                        menuItem.itemDetails['itemCountry']
+                                                                        }}</span>
+                                                                </p>
+
+                                                                <p class="text-start fst-italic mb-1"
+                                                                    style="height: 50px; max-height: 50px; overflow-y: auto;">
+                                                                    <span
+                                                                        v-if="menuItem.itemDetails['itemDesc']">{{
+                                                                        menuItem.itemDetails['itemDesc']
+                                                                        }}</span>
+                                                                </p>
+                                                            </div>
+
+                                                            <!-- Item Rating -->
+                                                            <div class="col-2">
+                                                                <p class="fs-3 fw-bold rating-text text-end">
+                                                                    {{ menuItem.itemDetails['itemRating'] }}
+                                                                    <svg xmlns="http://www.w3.org/2000/svg"
+                                                                        width="30" height="30"
+                                                                        fill="currentColor"
+                                                                        class="bi bi-star-fill"
+                                                                        viewBox="0 0 16 16">
+                                                                        <path
+                                                                            d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+                                                                    </svg>
+                                                                </p>
+                                                            </div>
+
+                                                        </div>
+
+                                                        <!-- ------- END Item Details / START Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        <!-- Item Menu Details -->
+                                                        <div class="row">
+
+                                                            <!-- Toggle Item Availability -->
+                                                            <div class="col-4">
+                                                                <div
+                                                                    class="form-check form-switch form-check-inline">
+                                                                    <input class="form-check-input"
+                                                                        type="checkbox" role="switch"
+                                                                        :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        :name="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        v-model="menuItem.itemAvailability">
+                                                                    <label v-if="menuItem.itemAvailability"
+                                                                        class="form-check-label text-success fst-italic"
+                                                                        :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        Item Available
+                                                                    </label>
+                                                                    <label v-if="!menuItem.itemAvailability"
+                                                                        class="form-check-label text-danger fst-italic"
+                                                                        :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        Temporarily Unavailable
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Edit Item Price -->
+                                                            <div class="col-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text fw-bold">$</span>
+                                                                    <input type="number" class="form-control"
+                                                                        v-model="menuItem.itemPrice"
+                                                                        placeholder="-" min="0" step="0.01">
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Edit Item Serving Type -->
+                                                            <div class="col-5">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text fw-bold">/</span>
+                                                                    <select class="form-select"
+                                                                        v-model="menuItem.itemServingType">
+                                                                        <option
+                                                                            v-for="servingType in servingTypes"
+                                                                            :key="servingType.id"
+                                                                            :value="servingType.id">{{
+                                                                            servingType.servingType }}</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+
+
+                                                        </div>
+
+                                                        <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+
+                                                        </div>
+                                                    </div>
+                                                    </div>
+                                                    </div>
+                                                </template>
+                                        </draggable>
+                                        </div>
+                                    
+                                        <!-- End subsection v-for loop -->
+                                        
+                                        <!-- No Section Contents to Show -->
+                                        <div v-if="(!menuSection.subsections || menuSection.subsections.length === 0) && getDirectItemsForSection(menuSection.sectionOrder).length === 0"
+                                            class="col-12 my-3">
+                                            <p class="text-center fst-italic m-0">No menu items to show! Search for a drink to add above.</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </draggable>
                     
                     </div>
                     </div>
@@ -1993,7 +2009,6 @@ import draggable from 'vuedraggable';
 export default {
     name: 'VenueMenuTabFestivals',
     components: {
-        // VenueMenuEditFestivals,
         draggable
     },
     props: {
@@ -2229,34 +2244,12 @@ export default {
                 fallbackOnBody: true      // Allow ghost element to appear on body when outside valid areas
             },
             
-            // Subsection drag options - Enhanced for hierarchical constraints
+            // Subsection drag options - Minimal configuration to prevent conflicts
             subsectionDragOptions: {
-                animation: 350,
-                group: {
-                    name: "subsections",
-                    pull: false,  // Prevent subsections from being dragged to other groups
-                    put: false    // Prevent items from other groups being dropped here
-                },
+                animation: 200,
+                group: "subsections",
                 disabled: false,
-                ghostClass: "ghost-subsection",
-                revertOnSpill: true,
-                fallbackOnBody: true,
-                onSpill: function () {
-                    this.showInvalidAreaMessage();
-                    return false;
-                }.bind(this),
-                onMove: function (evt) {
-                    // Only allow reordering within the same parent section
-                    const fromParent = evt.from.closest('[data-section-order]');
-                    const toParent = evt.to.closest('[data-section-order]');
-                    
-                    if (fromParent && toParent) {
-                        const fromSectionOrder = fromParent.getAttribute('data-section-order');
-                        const toSectionOrder = toParent.getAttribute('data-section-order');
-                        return fromSectionOrder === toSectionOrder;
-                    }
-                    return false;
-                }.bind(this)
+                ghostClass: "ghost-subsection"
             },
 
             // Menu item drag options for items within subsections - Allow movement within same parent section
@@ -2356,9 +2349,9 @@ export default {
         }
     },
     mounted() {
-        console.log('🍽️ VenueMenuTabOriginal: mounted() called');
-        console.log('🍽️ VenueMenuTabOriginal: detailedMenu prop:', this.detailedMenu);
-        console.log('🍽️ VenueMenuTabOriginal: detailedMenu length:', this.detailedMenu ? this.detailedMenu.length : 0);
+        console.log('🍽️ VenueMenuTabFestivals: mounted() called');
+        console.log('🍽️ VenueMenuTabFestivals: detailedMenu prop:', this.detailedMenu);
+        console.log('🍽️ VenueMenuTabFestivals: detailedMenu length:', this.detailedMenu ? this.detailedMenu.length : 0);
         
         // Initialize internal arrays from props
         this.internalLoadedListings = [...this.loadedListings];
@@ -2435,7 +2428,7 @@ export default {
 
         // Smart initialization method that detects available data sources
         initializeMenuData() {
-            console.log('🍽️ VenueMenuTabOriginal: Detecting available data sources...');
+            console.log('🍽️ VenueMenuTabFestivals: Detecting available data sources...');
             
             // Priority 1: Check if parent provides detailedMenu data (Legacy/Backward Compatibility)
             if (this.detailedMenu && this.detailedMenu.length > 0) {
@@ -2720,7 +2713,7 @@ export default {
 
         // Emit processed menu data to parent
         emitMenuDataProcessed(processedMenu) {
-            console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with data:', {
+            console.log('🍽️ VenueMenuTabFestivals: Emitting menu-data-processed with data:', {
                 dataSourceMode: this.dataSourceMode,
                 loadedListingsCount: this.internalLoadedListings.length,
                 loadedProducersCount: this.internalLoadedProducers.length,
@@ -2751,7 +2744,7 @@ export default {
 
         // Emit empty menu state when no data source is available
         emitEmptyMenuState() {
-            console.log('🍽️ VenueMenuTabOriginal: Emitting empty menu state');
+            console.log('🍽️ VenueMenuTabFestivals: Emitting empty menu state');
             
             this.$emit('menu-data-processed', {
                 dataSourceMode: this.dataSourceMode,
@@ -2775,7 +2768,7 @@ export default {
             this.isLoading = true;
             
             try {
-                console.log('🍽️ VenueMenuTabOriginal: Loading hierarchical menu data');
+                console.log('🍽️ VenueMenuTabFestivals: Loading hierarchical menu data');
                 
                 // Get venue ID
                 const venueId = this.targetVenue?.id || this.$route.params?.venueID;
@@ -2812,7 +2805,7 @@ export default {
                 this.searchMenuResults = this.buildSearchableMenu(processedMenu);
 
                 // Emit the processed data back to parent
-                console.log('🍽️ VenueMenuTabOriginal: Emitting menu-data-processed with hierarchical data:', {
+                console.log('🍽️ VenueMenuTabFestivals: Emitting menu-data-processed with hierarchical data:', {
                     loadedListingsCount: this.internalLoadedListings.length,
                     loadedProducersCount: this.internalLoadedProducers.length,
                     editableMainSectionsCount: this.editableMainSections.length,
@@ -2840,11 +2833,11 @@ export default {
 
             }
             catch (error) {
-                console.error("🍽️ VenueMenuTabOriginal: Error processing hierarchical menu data:", error);
+                console.error("🍽️ VenueMenuTabFestivals: Error processing hierarchical menu data:", error);
                 this.$emit('menu-data-error', error);
             }
             finally {
-                console.log('🍽️ VenueMenuTabOriginal: loadMenuData() finished, setting isLoading to false');
+                console.log('🍽️ VenueMenuTabFestivals: loadMenuData() finished, setting isLoading to false');
                 this.isLoading = false;
             }
         },
@@ -3189,7 +3182,9 @@ export default {
                         parentSectionId: subsection.parentSectionId,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
-                        sectionMenu: copiedSubsectionMenu
+                        sectionMenu: copiedSubsectionMenu,
+                        // Ensure unique identifier for drag operations
+                        tempId: subsection.tempId || `loaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                     };
                 }) : [];
                 
@@ -3585,7 +3580,9 @@ export default {
                     parentSectionId: parentSection.id || parentSection.sectionOrder,
                     isSubSection: true,
                     isVisible: true, // New subsections are visible by default
-                    sectionMenu: []
+                    sectionMenu: [],
+                    // Create temporary unique ID for new subsections (for drag operations)
+                    tempId: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                 };
                 
                 console.log('🍽️ Creating new subsection:', {
@@ -5959,26 +5956,117 @@ export default {
 
         // Subsection drag methods for reordering subsections within parent sections
         dragSubsectionStart(parentSection) {
+            console.log('🍽️ Starting subsection drag for parent:', parentSection?.sectionName);
+            console.log('🍽️ Parent has subsections:', parentSection?.subsections?.length || 0);
+            console.log('🍽️ Subsection details:', parentSection?.subsections?.map(s => ({
+                name: s.sectionName,
+                id: s.id,
+                tempId: s.tempId,
+                sectionOrder: s.sectionOrder,
+                uniqueKey: s.id || s.tempId || `${parentSection.sectionOrder}-${s.sectionOrder}`
+            })));
+            
             this.drag = true;
             // Take a snapshot of the current subsections
-            this.draggedSectionSnapshot = JSON.stringify(parentSection.subsections || []);
+            this.draggedSubsectionSnapshot = JSON.stringify(parentSection?.subsections || []);
         },
 
         dragSubsectionEnd(parentSection) {
+            console.log('🍽️ Ending subsection drag for parent:', parentSection?.sectionName);
+            console.log('🍽️ Current subsections after drag:', parentSection?.subsections?.map(s => ({
+                name: s.sectionName,
+                id: s.id,
+                tempId: s.tempId,
+                sectionOrder: s.sectionOrder
+            })));
+            
             // Check if the subsections changed after drag
-            const currentSubsections = JSON.stringify(parentSection.subsections || []);
-            if (this.draggedSectionSnapshot === currentSubsections) {
+            const currentSubsections = JSON.stringify(parentSection?.subsections || []);
+            if (this.draggedSubsectionSnapshot === currentSubsections) {
                 // No change occurred - likely an invalid drop
+                console.log('🍽️ No subsection reorder detected - snapshots match');
                 this.showInvalidAreaMessage();
             } else {
+                console.log('🍽️ Subsection reorder detected! Previous vs Current:');
+                console.log('Previous:', JSON.parse(this.draggedSubsectionSnapshot));
+                console.log('Current:', parentSection?.subsections);
+                
+                // Update the sectionOrder values to reflect new positions
+                if (parentSection?.subsections && Array.isArray(parentSection.subsections)) {
+                    parentSection.subsections.forEach((subsection, index) => {
+                        console.log(`🍽️ Updating subsection "${subsection.sectionName}" order from ${subsection.sectionOrder} to ${index}`);
+                        subsection.sectionOrder = index;
+                    });
+                }
+                
                 // Validate hierarchy after subsection reordering
                 const validation = this.validateMenuHierarchy();
                 if (!validation.isValid) {
                     console.warn('Hierarchy issues detected after subsection drag:', validation.issues);
+                } else {
+                    console.log('🍽️ Subsection reorder successful - hierarchy validation passed');
                 }
             }
+            
             this.drag = false;
-            this.draggedSectionSnapshot = null;
+            this.draggedSubsectionSnapshot = null;
+        },
+
+        // Vue-draggable event handlers for subsection reordering
+        onSubsectionChange(event) {
+            // Manual array reordering since vue-draggable can't properly mutate nested reactive arrays
+            if (event.moved) {
+                const movedElement = event.moved.element;
+                const oldIndex = event.moved.oldIndex;
+                const newIndex = event.moved.newIndex;
+                
+                // Find the parent section that contains this subsection
+                const parentSection = this.editableMainSections.find(section => 
+                    section.subsections && section.subsections.some(sub => sub.id === movedElement.id)
+                );
+                
+                if (parentSection && parentSection.subsections) {
+                    // Manually reorder the array
+                    const subsections = [...parentSection.subsections];
+                    const [removed] = subsections.splice(oldIndex, 1);
+                    subsections.splice(newIndex, 0, removed);
+                    
+                    // Replace the entire subsections array to trigger Vue reactivity
+                    parentSection.subsections = subsections;
+                    
+                    // Update sectionOrder values to reflect new positions
+                    parentSection.subsections.forEach((subsection, index) => {
+                        subsection.sectionOrder = index.toString();
+                    });
+                }
+            }
+        },
+
+        onSubsectionMove(event) {
+            // Validate that we're only reordering within the same parent section
+            // Prevent nesting subsections inside other subsections
+            const draggedElement = event.draggedElement;
+            const relatedElement = event.relatedElement;
+            
+            // If we're trying to move to a different container, block it
+            if (event.to !== event.from) {
+                console.log('🍽️ Blocking cross-container subsection move');
+                this.showInvalidAreaMessage();
+                return false;
+            }
+            
+            // Additional validation: ensure we're not trying to nest subsections
+            if (draggedElement && relatedElement) {
+                const draggedIsSubsection = draggedElement.classList.contains('ms-3');
+                const relatedIsSubsection = relatedElement.classList.contains('ms-3');
+                
+                if (draggedIsSubsection && relatedIsSubsection) {
+                    // This should be allowed - reordering subsections within same parent
+                    return true;
+                }
+            }
+            
+            return true;
         },
 
         // Show invalid area message for drag operations
