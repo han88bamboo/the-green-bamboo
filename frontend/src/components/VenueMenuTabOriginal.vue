@@ -2609,6 +2609,52 @@ export default {
             }
         },
 
+        // Sync visibility changes from editableMainSections back to editMenu
+        syncVisibilityChangesToEditMenu() {
+            if (this.isSyncing) return;
+            
+            try {
+                this.isSyncing = true;
+                console.log('🔄 Syncing visibility changes from editableMainSections to editMenu');
+                
+                // Sync main sections visibility
+                if (Array.isArray(this.editableMainSections)) {
+                    this.editableMainSections.forEach(editableSection => {
+                        // Find corresponding section in editMenu
+                        const editMenuSection = this.editMenu.find(s => 
+                            s && !s.isSubSection && 
+                            (s.id === editableSection.id || s.sectionOrder === editableSection.sectionOrder)
+                        );
+                        
+                        if (editMenuSection && editableSection.isVisible !== undefined) {
+                            console.log(`🔄 Syncing main section "${editableSection.sectionName}" isVisible: ${editMenuSection.isVisible} → ${editableSection.isVisible}`);
+                            editMenuSection.isVisible = editableSection.isVisible;
+                        }
+                        
+                        // Sync subsections visibility if they exist
+                        if (editableSection.subsections && Array.isArray(editableSection.subsections)) {
+                            editableSection.subsections.forEach(editableSubsection => {
+                                const editMenuSubsection = this.editMenu.find(s => 
+                                    s && s.isSubSection && 
+                                    (s.id === editableSubsection.id || s.sectionOrder === editableSubsection.sectionOrder)
+                                );
+                                
+                                if (editMenuSubsection && editableSubsection.isVisible !== undefined) {
+                                    console.log(`🔄 Syncing subsection "${editableSubsection.sectionName}" isVisible: ${editMenuSubsection.isVisible} → ${editableSubsection.isVisible}`);
+                                    editMenuSubsection.isVisible = editableSubsection.isVisible;
+                                }
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('🍽️ Error syncing visibility changes to editMenu:', error);
+            } finally {
+                this.isSyncing = false;
+            }
+        },
+
         // Smart initialization method that detects available data sources
         initializeMenuData() {
             console.log('🍽️ VenueMenuTabOriginal: Detecting available data sources...');
@@ -5287,6 +5333,9 @@ export default {
             // Update section and subsection ordering with hierarchical structure
             this.updateHierarchicalOrdering();
 
+            // Sync visibility changes from editableMainSections to editMenu before preparing payload
+            this.syncVisibilityChangesToEditMenu();
+
             // Prepare menu data for backend (remove UI-specific properties)
             const menuDataForBackend = this.prepareMenuForBackend();
 
@@ -5305,6 +5354,7 @@ export default {
                         order: section.sectionOrder,
                         isSubSection: section.isSubSection,
                         parentSectionId: section.parentSectionId,
+                        isVisible: section.isVisible, // ✅ Now includes visibility status
                         itemCount: section.sectionMenu ? section.sectionMenu.length : 0
                     });
                 });
