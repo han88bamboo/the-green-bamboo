@@ -3063,6 +3063,7 @@ INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 H
 
 -- Event Space (Festival Organizer)
 INSERT INTO "venues" (
+    "id",
     "venueName", 
     "address", 
     "venueType", 
@@ -3082,7 +3083,7 @@ INSERT INTO "venues" (
     "venueSubType",
     "specialStatus")
 VALUES
-(
+(   '38',
     'Whisky Live Singapore',
     '555 Festival Grounds, Marina Bay, Singapore 018989',
     'Event Space',
