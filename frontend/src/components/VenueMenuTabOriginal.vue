@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu (Original Component - to delete later)
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
                 </p>
             </div>
 
