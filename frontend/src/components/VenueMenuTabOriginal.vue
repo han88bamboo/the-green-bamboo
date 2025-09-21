@@ -6113,12 +6113,8 @@ export default {
 }
 
 .menu-section-faded {
-  opacity: 0.4;
   background-color: #f8f9fa;
-  border: 1px dashed #dee2e6;
   border-radius: 4px;
-  padding: 8px;
-  margin: 4px 0;
 }
 
 .menu-section-faded .btn {
