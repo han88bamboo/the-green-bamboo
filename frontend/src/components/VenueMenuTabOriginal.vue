@@ -1090,14 +1090,15 @@
                                 @start="dragSubsectionStart(menuSection)" 
                                 @end="dragSubsectionEnd(menuSection)"
                                 @change="onSubsectionChange"
-                                @update="onSubsectionUpdate"
-                                @add="onSubsectionAdd"
-                                @remove="onSubsectionRemove"
                                 :animation="200"
-                                group="subsections"
+                                :group="{
+                                    name: `subsections-${menuSection.sectionOrder}`,
+                                    pull: false,
+                                    put: false
+                                }"
+                                :move="onSubsectionMove"
                                 :disabled="false"
                                 ghost-class="ghost-subsection"
-                                v-bind="subsectionDragOptions"
                                 :data-section-order="menuSection.sectionOrder"
                                 class="subsection-container">
                                 <template #item="{ element: subsection }">
@@ -2293,12 +2294,6 @@ export default {
         // Watch for changes in detailedMenu from parent (for backward compatibility)
         detailedMenu: {
             handler(newMenu, oldMenu) {
-                // Don't re-initialize during drag operations
-                if (this.drag) {
-                    console.log('🍽️ Drag in progress, skipping detailedMenu change to prevent interference');
-                    return;
-                }
-                
                 // Only trigger if we're not already loading and this is a significant change
                 if (this.isLoading) {
                     console.log('🍽️ Already loading, skipping detailedMenu change');
@@ -6014,37 +6009,17 @@ export default {
                 }
             }
             
-            // Delay setting drag to false to allow all change events to process
-            // This prevents the detailedMenu watcher from interfering during drag operations
-            this.$nextTick(() => {
-                setTimeout(() => {
-                    this.drag = false;
-                    console.log('🍽️ Drag operation completed, resetting drag flag');
-                }, 100);
-            });
-            
+            this.drag = false;
             this.draggedSubsectionSnapshot = null;
         },
 
-        // Vue-draggable event handlers for subsection debugging
+        // Vue-draggable event handlers for subsection reordering
         onSubsectionChange(event) {
-            console.log('🍽️ Vue-draggable CHANGE event fired:', event);
-            console.log('🍽️ Event details:', {
-                added: event.added,
-                removed: event.removed,
-                moved: event.moved
-            });
-            
-            // Manual array reordering since vue-draggable isn't properly mutating the reactive array
+            // Manual array reordering since vue-draggable can't properly mutate nested reactive arrays
             if (event.moved) {
-                console.log('🍽️ MOVE detected - manually reordering array...');
-                
                 const movedElement = event.moved.element;
                 const oldIndex = event.moved.oldIndex;
                 const newIndex = event.moved.newIndex;
-                
-                console.log('🍽️ Moving element:', movedElement.sectionName);
-                console.log('🍽️ From index:', oldIndex, 'to index:', newIndex);
                 
                 // Find the parent section that contains this subsection
                 const parentSection = this.editableMainSections.find(section => 
@@ -6052,48 +6027,47 @@ export default {
                 );
                 
                 if (parentSection && parentSection.subsections) {
-                    console.log('🍽️ Found parent section:', parentSection.sectionName);
-                    console.log('🍽️ Current subsections before manual reorder:', parentSection.subsections.map(s => s.sectionName));
-                    
                     // Manually reorder the array
                     const subsections = [...parentSection.subsections];
                     const [removed] = subsections.splice(oldIndex, 1);
                     subsections.splice(newIndex, 0, removed);
                     
-                    // Replace the entire subsections array to trigger reactivity
-                    // Vue 3 approach - direct assignment should trigger reactivity
+                    // Replace the entire subsections array to trigger Vue reactivity
                     parentSection.subsections = subsections;
-                    
-                    console.log('🍽️ Subsections after manual reorder:', parentSection.subsections.map(s => s.sectionName));
                     
                     // Update sectionOrder values to reflect new positions
                     parentSection.subsections.forEach((subsection, index) => {
                         subsection.sectionOrder = index.toString();
                     });
-                    
-                    console.log('🍽️ Manual reordering completed successfully!');
-                } else {
-                    console.warn('🍽️ Could not find parent section for moved element');
                 }
             }
         },
 
-        onSubsectionUpdate(event) {
-            console.log('🍽️ Vue-draggable UPDATE event fired:', event);
-            console.log('🍽️ New index:', event.newIndex);
-            console.log('🍽️ Old index:', event.oldIndex);
-        },
-
-        onSubsectionAdd(event) {
-            console.log('🍽️ Vue-draggable ADD event fired:', event);
-            console.log('🍽️ Element added:', event.item);
-            console.log('🍽️ New index:', event.newIndex);
-        },
-
-        onSubsectionRemove(event) {
-            console.log('🍽️ Vue-draggable REMOVE event fired:', event);
-            console.log('🍽️ Element removed:', event.item);
-            console.log('🍽️ Old index:', event.oldIndex);
+        onSubsectionMove(event) {
+            // Validate that we're only reordering within the same parent section
+            // Prevent nesting subsections inside other subsections
+            const draggedElement = event.draggedElement;
+            const relatedElement = event.relatedElement;
+            
+            // If we're trying to move to a different container, block it
+            if (event.to !== event.from) {
+                console.log('🍽️ Blocking cross-container subsection move');
+                this.showInvalidAreaMessage();
+                return false;
+            }
+            
+            // Additional validation: ensure we're not trying to nest subsections
+            if (draggedElement && relatedElement) {
+                const draggedIsSubsection = draggedElement.classList.contains('ms-3');
+                const relatedIsSubsection = relatedElement.classList.contains('ms-3');
+                
+                if (draggedIsSubsection && relatedIsSubsection) {
+                    // This should be allowed - reordering subsections within same parent
+                    return true;
+                }
+            }
+            
+            return true;
         },
 
         // Show invalid area message for drag operations
