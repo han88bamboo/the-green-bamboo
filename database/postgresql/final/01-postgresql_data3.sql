@@ -1665,3 +1665,16 @@ CREATE TABLE "venueUpdateComments" (
 --     "comment" TEXT NOT NULL,
 --     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 -- );
+
+-- ========= "userFestivalTastings" =========  if record exists = checked/tasted
+CREATE TABLE "userFestivalTastings" (
+    "id" SERIAL PRIMARY KEY,
+    "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
+    "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL,
+    "itemID" INTEGER REFERENCES "listings"("id") ON DELETE CASCADE,
+    "variant" SMALLINT DEFAULT NULL, -- will copy the menuItems variant value- to keep track of vintage of drink tasted
+    "tastedDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "notes" TEXT DEFAULT '',
+    UNIQUE ("userId", "venueId", "itemID", "variant") -- Prevent duplicate tastings for same user/venue/item/variant combination
+);
