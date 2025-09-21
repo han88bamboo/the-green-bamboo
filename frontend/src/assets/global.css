@@ -2649,3 +2649,9 @@ nav a.router-link-exact-active.dropdown-item {
 .text-section-preview p.ql-align-justify {
   text-align: justify;
 }
+
+.share-icon {
+  font-size: 18px;          /* match FB size */
+  transform: scaleX(-1);    /* flip horizontally to match FB arrow direction */
+  vertical-align: middle;   /* align nicely with text */
+}

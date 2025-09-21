@@ -128,7 +128,7 @@
                       width="16"
                       height="16"
                       fill="white"
-                      class="bi bi-share fw-bold"
+                      class="bi bi-reply share-icon fw-bold"
                       viewBox="0 0 16 16"
                     >
                       <path
@@ -202,7 +202,7 @@
                     width="16"
                     height="16"
                     fill="white"
-                    class="bi bi-share fw-bold btn-sm"
+                    class="bi bi-reply share-icon fw-bold btn-sm"
                     viewBox="0 0 16 16"
                   >
                     <path
@@ -1108,7 +1108,7 @@
                 width="16"
                 height="16"
                 fill="currentColor"
-                class="bi bi-share fw-bold"
+                class="bi bi-reply share-icon fw-bold"
                 viewBox="0 0 16 16"
               >
                 <path

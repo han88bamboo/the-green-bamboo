@@ -6,7 +6,12 @@
       <!-- Header with Search and Add List Button (only show when not viewing individual list) -->
       <div v-if="!selectedList" class="row mb-4">
         <div class="col-12">
-          <div class="d-flex justify-content-center align-items-center mb-4">
+          <div class="row justify-content-left mb-2">
+              <h3 class="text-start fw-bold mobile-fs-4">Browse, create and share drinks list. 📋✨</h3>
+              <h5 class="text-start fw-bold mobile-fs-6">Bucket list wines 🍷, bar cart holy grails 👑, beers for the bottle share🍻... </h5>
+          </div>
+          <div class="d-flex justify-content-left align-items-center mb-4">
+            <!-- Header -->
             <div class="input-group" style="max-width: 400px;">
               <input
                 type="text"
@@ -21,8 +26,7 @@
             </div>
             <button 
               v-if="userID"
-              class="btn primary-btn-less-round-blue btn-md ms-3"
-              style="font-weight: bold;"
+              class="btn primary-btn-less-round-blue fw-bold btn-md ms-2 mobile-rating-smaller-text-2 "
               @click="goToMyProfile"
             >
               Add List
@@ -116,7 +120,7 @@
                 >
                   <i 
                     class="bi"
-                    :class="hasUserUpvoted(selectedList) ? 'bi-arrow-up-circle-fill' : 'bi-arrow-up-circle'"
+                    :class="hasUserUpvoted(selectedList) ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'"
                   ></i>
                   <span>{{ selectedList.upvotes || 0 }}</span>
                 </button>
@@ -126,7 +130,7 @@
                   @click="shareList(selectedList)"
                   style="background-color: #f8f9fa; border-color: #dee2e6; color: #212529;"
                 >
-                  <i class="bi bi-share"></i>
+                  <i class="bi bi-reply share-icon"></i>
                   <span>Share</span>
                 </button>
               </div>
@@ -313,7 +317,7 @@
                   >
                     <i 
                       class="bi"
-                      :class="hasUserUpvoted(list) ? 'bi-arrow-up-circle-fill' : 'bi-arrow-up-circle'"
+                      :class="hasUserUpvoted(list) ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'"
                     ></i>
                     <span>{{ list.upvotes || 0 }}</span>
                   </button>
@@ -324,7 +328,7 @@
                     @click="shareList(list)"
                     style="background-color: #f8f9fa; border-color: #dee2e6; color: #212529;"
                   >
-                    <i class="bi bi-share"></i>
+                    <i class="bi bi-reply share-icon"></i>
                     <span>Share</span>
                   </button>
                 </div>
@@ -353,7 +357,7 @@
       <!-- Empty State -->
       <div v-if="!loading && !error && !selectedList && filteredLists.length === 0" class="text-center py-5">
         <i class="bi bi-search text-muted mb-3" style="font-size: 4rem;"></i>
-        <h3 class="text-muted">No lists found</h3>
+        <h4 class="text-muted">No lists found</h4>
         <p class="text-muted">Try adjusting your search criteria or check back later for new lists.</p>
       </div>
 

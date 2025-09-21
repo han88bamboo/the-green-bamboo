@@ -2393,7 +2393,7 @@
                       @click="shareCellarCollection()"
                       title="Share this collection"
                     >
-                      <i class="bi bi-share"></i> Share
+                      <i class="bi bi-reply share-icon"></i> Share
                     </button>
                   </div>
 
@@ -3531,7 +3531,7 @@
                           class="btn primary-btn-green-thin-outline mx-1"
                           @click="updateCurrentURL(); copyToClipboard(currentURL)"
                         >
-                          <i class="bi bi-share"></i> Share
+                          <i class="bi bi-reply share-icon"></i> Share
                         </button>
                       </div>
                     </div>
@@ -3871,7 +3871,7 @@
                           class="btn primary-btn-green-thin-outline mx-1"
                           @click="updateCurrentURL(); copyToClipboard(currentURL)"
                         >
-                          <i class="bi bi-share"></i> Share
+                          <i class="bi bi-reply share-icon"></i> Share
                         </button>
                       </div>
                     </div>
