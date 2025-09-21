@@ -1667,7 +1667,7 @@ CREATE TABLE "venueUpdateComments" (
 -- );
 
 -- ========= "userFestivalTastings" =========  if record exists = checked/tasted
-CREATE TABLE "userFestivalTastings" (
+CREATE TABLE "userFestivalTastedList" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL,
