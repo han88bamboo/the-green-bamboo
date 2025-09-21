@@ -2833,6 +2833,7 @@ export default {
                 sectionOrder: section.sectionOrder || index,
                 parentSectionId: null, // All sections become main sections
                 isSubSection: false,
+                isVisible: section.isVisible !== undefined ? section.isVisible : true,
                 sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: [] // No subsections in converted flat menu
             }));
@@ -2856,6 +2857,7 @@ export default {
                 sectionOrder: section.sectionOrder,
                 parentSectionId: null,
                 isSubSection: false,
+                isVisible: section.isVisible !== undefined ? section.isVisible : true,
                 sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: []
             }));
@@ -2870,6 +2872,7 @@ export default {
                         sectionOrder: subsection.sectionOrder,
                         parentSectionId: subsection.parentSectionId,
                         isSubSection: true,
+                        isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
                         sectionMenu: subsection.sectionMenu ? [...subsection.sectionMenu] : [],
                         subsections: [] // Subsections can't have subsections
                     });
@@ -3440,6 +3443,7 @@ export default {
                 this.editMenu.push({
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
+                    isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
                     sectionMenu: sectionMenu,
                 });
             }
