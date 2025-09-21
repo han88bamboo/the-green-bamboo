@@ -1,8 +1,8 @@
 <!--component added by TZH for footer-->
 
 <template>
-  <footer class="footer-bg row row-cols-1 row-cols-sm-4 py-5 px-5 border-top justify-content-center">
-    <div class="col footer-col mb-3">
+  <footer class="footer-bg row py-5 px-5 border-top justify-content-center">
+    <div class="col-12 col-lg-3 footer-col mb-3">
       <router-link :to="'/'" class="d-flex justify-content-start mb-3 text-decoration-none">
         <img src="../../Images/Logo/Drink-X Logo.png" alt="Drink-X Logo" class="footer-logo">
       </router-link>
@@ -32,29 +32,27 @@
       <p class="text-black fw-bold text-start mt-3">Drink-X © 2025</p>
     </div>
 
-    <div class="col footer-col mb-3">
-      <ul class="nav flex-column fw-bold">
+    <div class="col-4 col-lg-3 footer-col mb-3 mobile-mb-1">
+      <ul class="nav flex-column fw-bold mobile-rating-smaller-text-2">
         <li class="nav-item mb-2"><router-link to="/help/features" class="nav-link p-0 text-black">Features</router-link></li>
         <li class="nav-item mb-2"><router-link to="/help/whats-new" class="nav-link p-0 text-black">What's New</router-link></li>
         <li class="nav-item mb-2"><router-link to="/badges-and-points" class="nav-link p-0 text-black">Badges and Points</router-link></li>
       </ul>
     </div>
 
-    <div class="col footer-col mb-3">
-      <ul class="nav flex-column fw-bold">
+    <div class="col-4 col-lg-3 footer-col mb-3 mobile-mb-1">
+      <ul class="nav flex-column fw-bold mobile-rating-smaller-text-2">
         <li class="nav-item mb-2"><router-link to="/partner" class="nav-link p-0 text-black">Partner Center</router-link></li>
         <li class="nav-item mb-2"><router-link to="/partner/venues" class="nav-link p-0 text-black">Drink-X for Venues</router-link></li>
         <li class="nav-item mb-2"><router-link to="/partner/brands" class="nav-link p-0 text-black">Drink-X for Brands</router-link></li>
       </ul>
     </div>
 
-    <div class="col footer-col mb-3">
-      <ul class="nav flex-column fw-bold">
+    <div class="col-4 col-lg-3 footer-col mb-3 mobile-mb-1">
+      <ul class="nav flex-column fw-bold mobile-rating-smaller-text-2">
         <li class="nav-item mb-2"><router-link to="/help/about" class="nav-link p-0 text-black">About</router-link></li>
         <li class="nav-item mb-2"><router-link to="/help/faqs" class="nav-link p-0 text-black">FAQs</router-link></li>
-        <li class="nav-item mb-2"><router-link to="/help/support" class="nav-link p-0 text-black">Support</router-link></li>
         <li class="nav-item mb-2"><router-link to="/help/terms" class="nav-link p-0 text-black">Terms</router-link></li>
-        <li class="nav-item mb-2"><router-link to="/help/privacy" class="nav-link p-0 text-black">Privacy</router-link></li>
         <li class="nav-item mb-2"><router-link to="/login" class="nav-link p-0 text-success">Login</router-link></li>
       </ul>
     </div>
