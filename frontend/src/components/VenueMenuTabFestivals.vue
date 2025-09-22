@@ -558,7 +558,7 @@
                                                     class="form-check-label tasting-label" 
                                                     :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                    <span class="not-tasted-text" v-else>Taste?</span>
+                                                    <span class="not-tasted-text" v-else>Tasted?</span>
                                                 </label>
                                                 <input 
                                                     class="form-check-input tasting-checkbox" 
@@ -687,7 +687,7 @@
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                             <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Taste?</span>
+                                                            <span class="not-tasted-text" v-else>Tasted?</span>
                                                         </label>
                                                     </div>
                                                 </div>
@@ -819,7 +819,7 @@
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                             <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Taste?</span>
+                                                            <span class="not-tasted-text" v-else>Tasted?</span>
                                                         </label>
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
@@ -7076,10 +7076,13 @@ export default {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
+  width: 2rem !important;
+  height: 2rem !important;
+  font-size: 1.5rem;
 }
 
 .tasting-tracker .form-check-label {
-  font-size: 0.875rem;
+  font-size: 1rem;
   cursor: pointer;
   margin-bottom: 0 !important;
   margin-left: 0 !important;
