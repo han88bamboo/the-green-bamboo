@@ -513,34 +513,34 @@
                                             </router-link>
 
                                             <!-- Add Your Review / Review Added Button -->
-                                            <div v-if="isSignedInUser" class="mt-2">
+                                            <template v-if="isSignedInUser" >
                                                 <button 
                                                     v-if="!hasUserReviewed(sectionItem)" 
                                                     type="button" 
-                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    class="btn primary-btn-less-round-blue" 
                                                     @click="goToAddReview(sectionItem)"
-                                                    style="font-weight: bold;">
+                                                    style="font-weight: bold; border-radius: 20px;">
                                                     Add Your Review
                                                 </button>
                                                 <button 
                                                     v-else 
                                                     type="button" 
-                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    class="btn primary-btn-less-round-blue" 
                                                     disabled
-                                                    style="font-weight: bold;">
+                                                    style="font-weight: bold; border-radius: 20px;">
                                                     Review Added!
                                                 </button>
-                                            </div>
+                                            </template>
                                             <!-- Logged-out users -->
-                                            <div v-else class="mt-2">
+                                            <template v-else >
                                                 <button 
                                                     type="button" 
-                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    class="btn primary-btn-less-round-blue" 
                                                     @click="goToAddReview(sectionItem)"
-                                                    style="font-weight: bold;">
+                                                    style="font-weight: bold; border-radius: 20px;">
                                                     Add Your Review
                                                 </button>
-                                            </div>
+                                            </template>
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -736,34 +736,34 @@
                                                     </router-link>
 
                                                     <!-- Add Your Review / Review Added Button -->
-                                                    <div v-if="isSignedInUser" class="mt-2">
+                                                    <template v-if="isSignedInUser" >
                                                         <button 
                                                             v-if="!hasUserReviewed(subsectionItem)" 
                                                             type="button" 
-                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            class="btn primary-btn-less-round-blue" 
                                                             @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold;">
+                                                            style="font-weight: bold; border-radius: 20px;">
                                                             Add Your Review
                                                         </button>
                                                         <button 
                                                             v-else 
                                                             type="button" 
-                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            class="btn primary-btn-less-round-blue" 
                                                             disabled
-                                                            style="font-weight: bold;">
+                                                            style="font-weight: bold; border-radius: 20px;">
                                                             Review Added!
                                                         </button>
-                                                    </div>
+                                                    </template>
                                                     <!-- Logged-out users -->
-                                                    <div v-else class="mt-2">
+                                                    <template v-else >
                                                         <button 
                                                             type="button" 
-                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            class="btn primary-btn-less-round-blue" 
                                                             @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold;">
+                                                            style="font-weight: bold; border-radius: 20px;">
                                                             Add Your Review
                                                         </button>
-                                                    </div>
+                                                    </template>
                                                 </div>
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
