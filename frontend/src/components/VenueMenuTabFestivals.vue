@@ -545,11 +545,6 @@
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
                                     <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
-                                        <!-- Item Rating -->
-                                        <p class="fs-3 fw-bold rating-text text-end">
-                                            {{ sectionItem.itemDetails['itemRating'] }}
-                                            <span style="font-size: 30px;">★</span>
-                                        </p>
                                         
                                         <!-- Festival Tasting Tracker -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
@@ -570,6 +565,13 @@
                                                 >
                                             </div>
                                         </div>
+
+                                        <!-- Item Rating -->
+                                        <p class="fs-3 fw-bold rating-text text-end mt-3">
+                                            {{ sectionItem.itemDetails['itemRating'] }}
+                                            <span style="font-size: 30px;">★</span>
+                                        </p>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -806,11 +808,6 @@
                                             </div>
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
                                             <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
-                                                <!-- Item Rating -->
-                                                <p class="fs-3 fw-bold rating-text text-end">
-                                                    {{ subsectionItem.itemDetails['itemRating'] }}
-                                                    <span style="font-size: 30px;">★</span>
-                                                </p>
                                                 
                                                 <!-- Festival Tasting Tracker -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
@@ -831,6 +828,12 @@
                                                         >
                                                     </div>
                                                 </div>
+
+                                                <!-- Item Rating -->
+                                                <p class="fs-3 fw-bold rating-text text-end mt-3">
+                                                    {{ subsectionItem.itemDetails['itemRating'] }}
+                                                    <span style="font-size: 30px;">★</span>
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
