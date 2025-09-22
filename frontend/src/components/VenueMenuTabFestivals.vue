@@ -406,23 +406,66 @@
                                             </template>
                                         </div>
                                         
-                                        <!-- Festival Tasting Tracker (Mobile) -->
-                                        <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                            <div class="form-check">
-                                                <label 
-                                                    class="form-check-label tasting-label" 
-                                                    :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
-                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                    <span class="not-tasted-text" v-else>Tasted?</span>
-                                                </label>
-                                                <input 
-                                                    class="form-check-input tasting-checkbox" 
-                                                    type="checkbox" 
-                                                    :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
-                                                    :checked="isTasted(sectionItem)"
-                                                    @change="toggleTasting(sectionItem, $event)"
-                                                    :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
-                                                >
+                                        <!-- Mobile Action Row: Tasting Tracker + Review Buttons -->
+                                        <div class="row mt-2" v-if="showTastingTracker || true">
+                                            
+                                            <!-- Review Buttons -->
+                                            <div class="col-6 d-flex flex-column gap-2">
+                                                <!-- See Reviews Button -->
+                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                    <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
+                                                </router-link>
+                                                
+                                                <!-- Add Your Review / Review Added Button -->
+                                                <template v-if="isSignedInUser">
+                                                    <button 
+                                                        v-if="!hasUserReviewed(sectionItem)" 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        @click="goToAddReview(sectionItem)"
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Add Your Review
+                                                    </button>
+                                                    <button 
+                                                        v-else 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        disabled
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Review Added!
+                                                    </button>
+                                                </template>
+                                                <!-- Logged-out users -->
+                                                <template v-else>
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        @click="goToAddReview(sectionItem)"
+                                                        style="font-weight: bold; border-radius: 20px;">
+                                                        Add Your Review
+                                                    </button>
+                                                </template>
+                                            </div>
+                                            <!-- Tasting Tracker -->
+                                            <div class="col-6" v-if="showTastingTracker">
+                                                <div class="tasting-tracker">
+                                                    <div class="form-check">
+                                                        <label 
+                                                            class="form-check-label tasting-label" 
+                                                            :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
+                                                            <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
+                                                            <span class="not-tasted-text" v-else>Tasted?</span>
+                                                        </label>
+                                                        <input 
+                                                            class="form-check-input tasting-checkbox" 
+                                                            type="checkbox" 
+                                                            :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
+                                                            :checked="isTasted(sectionItem)"
+                                                            @change="toggleTasting(sectionItem, $event)"
+                                                            :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
+                                                        >
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -674,25 +717,68 @@
                                                     </p>
                                                 </div>
                                                 
-                                                <!-- Festival Tasting Tracker (Mobile Subsection) -->
-                                                <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                                    <div class="form-check">
-
-                                                        <label 
-                                                            class="form-check-label tasting-label" 
-                                                            :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
-                                                        <input 
-                                                            class="form-check-input tasting-checkbox" 
-                                                            type="checkbox" 
-                                                            :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
-                                                            :checked="isTasted(subsectionItem)"
-                                                            @change="toggleTasting(subsectionItem, $event)"
-                                                            :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
-                                                        >
+                                                <!-- Mobile Action Row: Tasting Tracker + Review Buttons -->
+                                                <div class="row mt-2" v-if="showTastingTracker || true">
+                                                    
+                                                    <!-- Review Buttons -->
+                                                    <div class="col-6 d-flex flex-column gap-2">
+                                                        <!-- See Reviews Button -->
+                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                            <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
+                                                        </router-link>
+                                                        
+                                                        <!-- Add Your Review / Review Added Button -->
+                                                        <template v-if="isSignedInUser">
+                                                            <button 
+                                                                v-if="!hasUserReviewed(subsectionItem)" 
+                                                                type="button" 
+                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                @click="goToAddReview(subsectionItem)"
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Add Your Review
+                                                            </button>
+                                                            <button 
+                                                                v-else 
+                                                                type="button" 
+                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                disabled
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Review Added!
+                                                            </button>
+                                                        </template>
+                                                        <!-- Logged-out users -->
+                                                        <template v-else>
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                @click="goToAddReview(subsectionItem)"
+                                                                style="font-weight: bold; border-radius: 20px;">
+                                                                Add Your Review
+                                                            </button>
+                                                        </template>
                                                     </div>
+                                                    <!-- Tasting Tracker -->
+                                                    <div class="col-6" v-if="showTastingTracker">
+                                                        <div class="tasting-tracker">
+                                                            <div class="form-check">
+                                                                <label 
+                                                                    class="form-check-label tasting-label" 
+                                                                    :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                                    <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
+                                                                    <span class="not-tasted-text" v-else>Tasted?</span>
+                                                                </label>
+                                                                <input 
+                                                                    class="form-check-input tasting-checkbox" 
+                                                                    type="checkbox" 
+                                                                    :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                                    :checked="isTasted(subsectionItem)"
+                                                                    @change="toggleTasting(subsectionItem, $event)"
+                                                                    :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                                >
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -7135,6 +7221,19 @@ export default {
   
   .tasting-tracker .tasting-checkbox {
     margin-right: 0.3rem;
+  }
+  
+  /* Mobile-specific review button styling */
+  .mobile-view-show .primary-btn-less-round-blue {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .mobile-view-show .btn-read-more {
+    font-size: 0.7rem !important;
+    padding: 0.25rem 0.5rem !important;
+    line-height: 1.2 !important;
   }
 }
 </style>
