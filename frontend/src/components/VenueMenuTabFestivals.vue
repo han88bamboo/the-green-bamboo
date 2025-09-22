@@ -408,9 +408,9 @@
                                         
                                         <!-- Festival Tasting Tracker (Mobile) -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                            <div class="form-check d-flex align-items-center">
+                                            <div class="form-check">
                                                 <input 
-                                                    class="form-check-input tasting-checkbox me-2" 
+                                                    class="form-check-input tasting-checkbox" 
                                                     type="checkbox" 
                                                     :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
                                                     :checked="isTasted(sectionItem)"
@@ -421,7 +421,7 @@
                                                     class="form-check-label tasting-label" 
                                                     :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                    <span class="not-tasted-text" v-else>Taste?</span>
+                                                    <span class="not-tasted-text" v-else>Tasted?</span>
                                                 </label>
                                             </div>
                                         </div>
@@ -553,9 +553,9 @@
                                         
                                         <!-- Festival Tasting Tracker -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                            <div class="form-check d-flex align-items-center justify-content-end">
+                                            <div class="form-check justify-content-end">
                                                 <label 
-                                                    class="form-check-label tasting-label me-2" 
+                                                    class="form-check-label tasting-label" 
                                                     :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                     <span class="not-tasted-text" v-else>Taste?</span>
@@ -674,9 +674,9 @@
                                                 
                                                 <!-- Festival Tasting Tracker (Mobile Subsection) -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                                    <div class="form-check d-flex align-items-center">
+                                                    <div class="form-check">
                                                         <input 
-                                                            class="form-check-input tasting-checkbox me-2" 
+                                                            class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
                                                             :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
                                                             :checked="isTasted(subsectionItem)"
@@ -814,9 +814,9 @@
                                                 
                                                 <!-- Festival Tasting Tracker -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                                    <div class="form-check d-flex align-items-center justify-content-end">
+                                                    <div class="form-check justify-content-end">
                                                         <label 
-                                                            class="form-check-label tasting-label me-2" 
+                                                            class="form-check-label tasting-label" 
                                                             :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                             <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
                                                             <span class="not-tasted-text" v-else>Taste?</span>
@@ -7059,18 +7059,32 @@ export default {
 
 /* Festival Tasting Tracker Styles */
 .tasting-tracker {
-  min-width: 100px;
+  min-width: 150px;
+  width: auto;
+  display: inline-block;
 }
 
-.tasting-tracker .tasting-checkbox {
-  margin-right: 0.5rem;
+.tasting-tracker .form-check {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  margin-bottom: 0 !important;
+}
+
+.tasting-tracker .form-check-input {
+  margin: 0 !important;
   cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
 }
 
-.tasting-tracker .tasting-label {
+.tasting-tracker .form-check-label {
   font-size: 0.875rem;
   cursor: pointer;
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
+  margin-left: 0 !important;
+  white-space: nowrap;
+  padding-left: 0 !important;
 }
 
 .tasting-tracker .tasted-text {
@@ -7105,7 +7119,7 @@ export default {
 /* Mobile responsiveness for tasting tracker */
 @media (max-width: 768px) {
   .tasting-tracker {
-    min-width: 80px;
+    min-width: 120px;
   }
   
   .tasting-tracker .tasting-label {
