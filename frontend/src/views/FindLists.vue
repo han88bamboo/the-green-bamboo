@@ -107,7 +107,12 @@
                   style="width: 32px; height: 32px; object-fit: cover;"
                 />
                 <span class="text-muted">Created by</span>
-                <span class="fw-bold ms-1">{{ selectedList.displayName || selectedList.username }}</span>
+                <a href="#" 
+                  @click.prevent="$router.push(`/profile/user/${selectedList.userId}/${selectedList.username}`)"
+                  class="default-clickable-text"
+                  style="color: inherit;">
+                  <span class="fw-bold ms-1">{{ selectedList.displayName || selectedList.username }}</span>
+                </a>
               </div>
               
               <div class="d-flex gap-2">
@@ -284,7 +289,7 @@
             <div class="card-body d-flex flex-column p-3">
               <!-- List Name and Drink Count -->
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <a href="#" class="text-decoration-underline text-decoration-none" style="color: inherit;" @click.prevent="viewListDetails(list)">
+                <a href="#" class="text-decoration-underline default-clickable-text" style="color: inherit;" @click.prevent="viewListDetails(list)">
                   <h5 class="card-title fw-bold mb-0 flex-grow-1 text-start">{{ list.listName }}</h5>
                 </a>
                 <small class="text-muted ms-2">{{ list.itemCount }} Drink{{ list.itemCount !== 1 ? 's' : '' }}</small>
@@ -300,7 +305,12 @@
                       style="width: 24px; height: 24px; object-fit: cover;"
                     />
                     <span>Created by</span>
-                    <span class="fw-bold ms-1">{{ list.displayName || list.username }}</span>
+                    <a href="#" 
+                      @click.prevent="$router.push(`/profile/user/${list.userId}/${list.username}`)"
+                      class="default-clickable-text"
+                      style="color: inherit;">
+                      <span class="fw-bold ms-1">{{ list.displayName || list.username }}</span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -315,7 +325,8 @@
                 <!-- View Button (Left) -->
                 <a
                   href="#"
-                  class="btn btn-outline-secondary fw-semibold mobile-rating-smaller-text-2"
+                  class="btn btn-outline-secondary fw-semibold mobile-rating-smaller-text-2 "
+                  style="background-color: rgb(240, 68, 68); border-color: rgb(240, 68, 68); color: white;"
                   @click="viewListDetails(list)"
                 >
                   View
