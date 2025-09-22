@@ -26,7 +26,7 @@
                   <!-- All Drinks Tab -->
                   <li class="nav-item">
                     <button 
-                      class="nav-link folder-tab"
+                      class="nav-link folder-tab all-drinks-tab"
                       :class="{ active: activeTab === 'all' }"
                       @click="setActiveTab('all')"
                       type="button"
@@ -65,25 +65,26 @@
                   <!-- Cellar History Tab -->
                   <li class="nav-item ms-auto">
                     <button 
-                      class="nav-link folder-tab"
+                      class="nav-link folder-tab history-tab"
                       :class="{ active: activeTab === 'history' }"
                       @click="setActiveTab('history')"
                       type="button"
+                      
                     >
                       <i class="bi bi-clock-history me-2"></i>
-                      <span class="mobile-view-hide">History</span>
+                      <span>History</span>
                     </button>
                   </li>
                   <!-- Cellar Dashboard Tab -->
                   <li class="nav-item">
                     <button 
-                      class="nav-link folder-tab"
+                      class="nav-link folder-tab dashboard-tab"
                       :class="{ active: activeTab === 'dashboard' }"
                       @click="setActiveTab('dashboard')"
                       type="button"
                     >
                       <i class="bi bi-bar-chart me-2"></i>
-                      <span class="mobile-view-hide">Dashboard</span>
+                      <span>Dashboard</span>
                     </button>
                   </li>
                 </ul>
@@ -96,11 +97,11 @@
               <div v-if="activeTab === 'history'" class="history-tab-content">
                 <div class="cellar-change-log">
                   <div class="card h-100">
-                    <div class="card-header">
-                      <h5 class="card-title mb-0">
+                    <div class="card-header" style="background-color: #83a9e8">
+                      <h4 class="card-title mb-0">
                         <i class="bi bi-clock-history me-2"></i>
                         Cellar History
-                      </h5>
+                      </h4>
                     </div>
                     <div class="card-body">
                       <!-- Loading State -->
@@ -414,7 +415,7 @@
               <!-- Mobile Filters Toggle Button (only shown on mobile) -->
               <div class="mobile-filters-toggle d-block d-sm-none mb-3 mt-2">
                 <button 
-                  class="btn btn-outline-secondary btn-sm w-100" 
+                  class="btn btn-outline-secondary btn-sm w-100 mobile-rating-smaller-text-2" 
                   type="button"
                   @click="toggleMobileFilters"
                 >
@@ -534,13 +535,13 @@
               <div class="d-flex justify-content-between align-items-center mb-3 mx-3">
                 <!-- Search Input -->
                 <div class="flex-grow-1 me-3">
-                  <div class="input-group">
+                  <div class="input-group mobile-rating-smaller-text-2">
                     <span class="input-group-text">
                       <i class="bi bi-search"></i>
                     </span>
                     <input
                       type="text"
-                      class="form-control"
+                      class="form-control mobile-rating-smaller-text-2"
                       placeholder="Search by name or producer..."
                       v-model="searchQuery"
                       @input="debouncedSearch"
@@ -3520,11 +3521,11 @@
               <div class="d-grid">
                 <button 
                   type="submit" 
-                  class="btn btn-primary"
+                  class="btn btn-primary fw-bold"
                   :disabled="!canAddToCellar || addingToCellar"
                 >
                   <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
+                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar!' }}
                 </button>
               </div>
             </form>
@@ -6852,7 +6853,9 @@ export default {
 }
 
 .folder-tab.active {
-
+  background-color: white;
+  border: 1px solid #027562;
+  color: #027562;
   font-weight: 700;
   z-index: 2;
   position: relative;
@@ -6870,16 +6873,16 @@ export default {
 }
 
 .ghost-tab {
-  border: 1px dashed #dee2e6 !important;
-  background-color: #f8f9fa !important;
-  color: #6c757d !important;
+  border: 1px dashed #027562 !important;
+  background-color: #9abeb8 !important;
+  color: black !important;
   opacity: 0.7;
 }
 
 .ghost-tab:hover {
-  border-color: #adb5bd !important;
-  background-color: #e9ecef !important;
-  color: #495057 !important;
+  border-color: #027562 !important;
+  background-color: #027562 !important;
+  color: white !important;
   opacity: 0.85;
 }
 
@@ -6891,6 +6894,58 @@ export default {
   font-size: 0.75rem;
   opacity: 0.8;
   margin-left: 0.5rem;
+}
+
+/* specific tab colours */
+.all-drinks-tab {
+  background-color: #027562; 
+  color: white;
+}
+
+.all-drinks-tab:hover {
+  background-color: #9abeb8; 
+  color: black;
+}
+
+.all-drinks-tab.active {
+  background-color: #027562; 
+  color: white;
+  font-weight: 700;
+  border: 1px solid #027562; 
+}
+
+.history-tab {
+  background-color: #83a9e8; 
+  color: black;
+}
+
+.history-tab:hover {
+  background-color: #83a9e8; 
+  color: white;
+}
+
+.history-tab.active {
+  background-color: white; 
+  color: #83a9e8; ;
+  font-weight: 700;
+  border: 1px solid #83a9e8; 
+}
+
+.dashboard-tab {
+  background-color: rgb(240, 178, 88); 
+  color: black;
+}
+
+.dashboard-tab:hover {
+  background-color: rgb(240, 178, 88); 
+  color: white;
+}
+
+.dashboard-tab.active {
+  background-color: white; 
+  color: rgb(240, 178, 88); ;
+  font-weight: 700;
+  border: 1px solid rgb(240, 178, 88); 
 }
 
 /* Cellar Surface - unified container */
@@ -7238,14 +7293,17 @@ export default {
 }
 
 .btn-outline-secondary {
-  color: #223957;
-  border-color: #223957;
-}
-
-.btn-outline-secondary:hover {
   background-color: #f0b358;
   border-color: #f0b358;
   color: #000;
+  font-weight:bold;
+}
+
+.btn-outline-secondary:hover {
+  background-color:white;
+  color: #f0b358;
+  border-color: #f0b358;
+  font-weight:bold;
 }
 
 /* Loading Skeletons */
