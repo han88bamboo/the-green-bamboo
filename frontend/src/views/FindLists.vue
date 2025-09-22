@@ -3,66 +3,72 @@
   
   <div class="container px-4 mt-4">
     <div class="container">
-      <!-- Header with Search and Add List Button (only show when not viewing individual list) -->
+      <!-- Header with Search and Add List Button (only when not viewing individual list) -->
       <div v-if="!selectedList" class="row mb-4">
         <div class="col-12">
           <div class="row justify-content-left mb-2">
-              <h3 class="text-start fw-bold mobile-fs-4">Browse, create and share drinks list. 📋✨</h3>
-              <h5 class="text-start fw-bold mobile-fs-6">Bucket list wines 🍷, bar cart holy grails 👑, beers for the bottle share🍻... </h5>
+            <h3 class="text-start fw-bold mobile-fs-4">Browse, create and share drinks list. 📋✨</h3>
+            <h5 class="text-start fw-bold mobile-fs-6">Bucket list wines 🍷, bar cart holy grails 👑, beers for the bottle share🍻...</h5>
           </div>
-          <div class="d-flex justify-content-left align-items-center mb-4">
-            <!-- Header -->
-            <div class="input-group" style="max-width: 400px;">
-              <input
-                type="text"
-                class="form-control"
-                placeholder="Search for lists"
-                v-model="searchTerm"
-                @input="filterLists"
-              />
-              <button class="btn btn-outline-secondary" type="button">
-                <i class="bi bi-search"></i>
+
+          <!-- ONE responsive row for BOTH controls -->
+          <div class="row align-items-center g-2">
+            <!-- Left: Functional controls -->
+            <div class="col-12 col-md d-flex align-items-center justify-content-start gap-2 flex-wrap flex-md-nowrap">
+              <div class="input-group search-compact" style="max-width: 400px;">
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search for lists"
+                  v-model="searchTerm"
+                  @input="filterLists"
+                />
+                <button class="btn btn-outline-secondary" type="button">
+                  <i class="bi bi-search"></i>
+                </button>
+              </div>
+
+              <button 
+                v-if="userID"
+                class="btn primary-btn-less-round-blue fw-bold btn-md "
+                @click="goToMyProfile"
+              >
+                Add List
               </button>
             </div>
-            <button 
-              v-if="userID"
-              class="btn primary-btn-less-round-blue fw-bold btn-md ms-2 mobile-rating-smaller-text-2 "
-              @click="goToMyProfile"
-            >
-              Add List
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- Sort Options (Top Right) - only show when not viewing individual list -->
-      <div v-if="!selectedList && filteredLists.length > 0" class="row mb-3">
-        <div class="col-12 d-flex justify-content-end">
-          <div class="btn-group btn-group-sm" role="group">
-            <button 
-              type="button" 
-              class="btn"
-              :class="sortBy === 'popular' ? 'btn-primary' : 'btn-outline-secondary'"
-              @click="setSortBy('popular')"
+            <!-- Right: Sort options (only when there are lists) -->
+            <div
+              v-if="filteredLists.length > 0"
+              class="col-12 col-md d-flex justify-content-center justify-content-md-end mobile-mt-3"
             >
-              Most Popular
-            </button>
-            <button 
-              type="button" 
-              class="btn"
-              :class="sortBy === 'recent' ? 'btn-primary' : 'btn-outline-secondary'"
-              @click="setSortBy('recent')"
-            >
-              Most Recent
-            </button>
-            <button 
-              type="button" 
-              class="btn"
-              :class="sortBy === 'alphabetical' ? 'btn-primary' : 'btn-outline-secondary'"
-              @click="setSortBy('alphabetical')"
-            >
-              Alphabetical
-            </button>
+              <div class="btn-group btn-group-sm" role="group">
+                <button 
+                    type="button" 
+                    class="btn"
+                    :class="sortBy === 'popular' ? 'btn-primary' : 'btn-outline-secondary'"
+                    @click="setSortBy('popular')"
+                  >
+                    Most Popular
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn"
+                    :class="sortBy === 'recent' ? 'btn-primary' : 'btn-outline-secondary'"
+                    @click="setSortBy('recent')"
+                  >
+                    Most Recent
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn"
+                    :class="sortBy === 'alphabetical' ? 'btn-primary' : 'btn-outline-secondary'"
+                    @click="setSortBy('alphabetical')"
+                  >
+                    Alphabetical
+                  </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -150,7 +156,7 @@
             v-for="(item, index) in selectedListItems"
             :key="index"
           >
-            <div class="card h-100 review-card border shadow-sm position-relative">
+            <div class="card h-100 review-card border shadow position-relative">
               <!-- Image -->
               <div class="card-img-top-wrapper">
                 <img
@@ -633,7 +639,7 @@ export default {
 }
 
 .list-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .pin-grid {
@@ -733,5 +739,24 @@ export default {
 .card-img-top-wrapper {
   overflow: hidden;
   position: relative;
+}
+
+/* Let the search NOT take full width on mobile */
+.search-compact {
+  flex: 0 1 70%;        /* cap at ~70% of the row on mobile */
+  max-width: 70%;
+}
+
+/* Critical: allow the input to shrink inside the flex row */
+.search-compact .form-control {
+  min-width: 0;         /* without this, it refuses to shrink */
+}
+
+/* Desktop: use your fixed cap again */
+@media (min-width: 768px) {
+  .search-compact {
+    flex: 0 0 400px;    /* fixed width on md+ */
+    max-width: 400px;
+  }
 }
 </style>
