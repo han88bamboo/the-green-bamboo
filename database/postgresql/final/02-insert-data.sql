@@ -4797,3 +4797,32 @@ INSERT INTO "myCellarItems" (
     'Pairs beautifully with foie gras and desserts', 'Investment grade bottle, hold for 5+ years',
     CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 );
+
+
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note")
+VALUES (5, 4, 'Mon, 22 Sep 2025 09:25:56 GMT', '');
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note")
+VALUES (5, 7, 'Mon, 22 Sep 2025 09:25:56 GMT', '');
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note")
+VALUES (5, 1, 'Mon, 22 Sep 2025 09:25:33 GMT', '');
+
+UPDATE "usersDrinkLists"
+SET "listDesc" = '', "isPublic" = true
+WHERE "id" = 5;
+
+
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
+VALUES (9, 1179024, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
+VALUES (9, 42, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
+
+INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
+VALUES (9, 1177334, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
+
+UPDATE "usersDrinkLists" SET "listDesc" = '', "isPublic" = true WHERE "id" = 9;
+
