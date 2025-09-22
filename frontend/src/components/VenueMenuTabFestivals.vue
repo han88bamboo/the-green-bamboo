@@ -392,19 +392,14 @@
                                                         Temporarily Unavailable
                                                     </p>
 
-                                                    <!-- Flavor Tags - Right beside the name -->
-                                                    <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
-                                                        <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                            :key="tag.tagId" 
-                                                            class="badge rounded-pill"
-                                                            :style="{ 
-                                                                backgroundColor: tag.hexcode || '#6c757d',
-                                                                color: getContrastColor(tag.hexcode || '#6c757d')
-                                                            }"
-                                                            :title="`${tag.count} mentions`">
-                                                            {{ tag.tag }}
-                                                        </span>
-                                                    </template>
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
+                                                          style="font-size: 12px;">
+                                                        <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                                              :key="tag.tagId" 
+                                                              :style="{ color: tag.hexcode || '#6c757d' }"
+                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>
                                                 </div>
                                             </div>
                                             
@@ -700,19 +695,14 @@
                                                         </p>
                                                     </router-link>
 
-                                                    <!-- Flavor Tags - Right beside the name -->
-                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
-                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
-                                                            :key="tag.tagId" 
-                                                            class="badge rounded-pill"
-                                                            :style="{ 
-                                                                backgroundColor: tag.hexcode || '#6c757d',
-                                                                color: getContrastColor(tag.hexcode || '#6c757d')
-                                                            }"
-                                                            :title="`${tag.count} mentions`">
-                                                            {{ tag.tag }}
-                                                        </span>
-                                                    </div>
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" 
+                                                          style="font-size: 12px;">
+                                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
+                                                              :key="tag.tagId" 
+                                                              :style="{ color: tag.hexcode || '#6c757d' }"
+                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>
                                                 </div>
 
                                                 <!-- Item Producer / Drink Type / Type Category / ABV / <Country> / Description -->
