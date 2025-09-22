@@ -42,7 +42,7 @@
               v-if="filteredLists.length > 0"
               class="col-12 col-md d-flex justify-content-center justify-content-md-end mobile-mt-3"
             >
-              <div class="btn-group btn-group-sm" role="group">
+              <div class="btn-group btn-group-md" role="group">
                 <button 
                     type="button" 
                     class="btn"
