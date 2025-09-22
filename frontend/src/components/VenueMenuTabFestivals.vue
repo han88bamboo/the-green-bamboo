@@ -405,6 +405,26 @@
 
                                             </template>
                                         </div>
+                                        
+                                        <!-- Festival Tasting Tracker (Mobile) -->
+                                        <div class="tasting-tracker mt-2" v-if="showTastingTracker">
+                                            <div class="form-check d-flex align-items-center">
+                                                <input 
+                                                    class="form-check-input tasting-checkbox me-2" 
+                                                    type="checkbox" 
+                                                    :id="`tasting-mobile-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                    :checked="isTasted(sectionItem)"
+                                                    @change="toggleTasting(sectionItem, $event)"
+                                                    :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                >
+                                                <label 
+                                                    class="form-check-label tasting-label" 
+                                                    :for="`tasting-mobile-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
+                                                    <span class="not-tasted-text" v-else>Taste?</span>
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -499,6 +519,26 @@
                                         <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                             <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                         </router-link>
+                                        
+                                        <!-- Festival Tasting Tracker -->
+                                        <div class="tasting-tracker mt-2" v-if="showTastingTracker">
+                                            <div class="form-check d-flex align-items-center justify-content-end">
+                                                <label 
+                                                    class="form-check-label tasting-label me-2" 
+                                                    :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
+                                                    <span class="not-tasted-text" v-else>Taste?</span>
+                                                </label>
+                                                <input 
+                                                    class="form-check-input tasting-checkbox" 
+                                                    type="checkbox" 
+                                                    :id="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                    :checked="isTasted(sectionItem)"
+                                                    @change="toggleTasting(sectionItem, $event)"
+                                                    :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                >
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -600,6 +640,26 @@
                                                         Temporarily Unavailable
                                                     </p>
                                                 </div>
+                                                
+                                                <!-- Festival Tasting Tracker (Mobile Subsection) -->
+                                                <div class="tasting-tracker mt-2" v-if="showTastingTracker">
+                                                    <div class="form-check d-flex align-items-center">
+                                                        <input 
+                                                            class="form-check-input tasting-checkbox me-2" 
+                                                            type="checkbox" 
+                                                            :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                            :checked="isTasted(subsectionItem)"
+                                                            @change="toggleTasting(subsectionItem, $event)"
+                                                            :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                        >
+                                                        <label 
+                                                            class="form-check-label tasting-label" 
+                                                            :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
+                                                            <span class="not-tasted-text" v-else>Taste?</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -689,6 +749,26 @@
                                                 <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
                                                     <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                                 </router-link>
+                                                
+                                                <!-- Festival Tasting Tracker -->
+                                                <div class="tasting-tracker mt-2" v-if="showTastingTracker">
+                                                    <div class="form-check d-flex align-items-center justify-content-end">
+                                                        <label 
+                                                            class="form-check-label tasting-label me-2" 
+                                                            :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
+                                                            <span class="not-tasted-text" v-else>Taste?</span>
+                                                        </label>
+                                                        <input 
+                                                            class="form-check-input tasting-checkbox" 
+                                                            type="checkbox" 
+                                                            :id="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                            :checked="isTasted(subsectionItem)"
+                                                            @change="toggleTasting(subsectionItem, $event)"
+                                                            :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                        >
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2127,6 +2207,26 @@ export default {
                 }
             });
             return flatMenu;
+        },
+
+        // Festival Tasting Tracker computed properties
+        showTastingTracker() {
+            return this.isSignedInUser && !this.selfView;
+        },
+        
+        isSignedInUser() {
+            // Check if user is authenticated and is an ordinary user from "users" table
+            // (not from "venues" or "producers" table)
+            const isAuthenticated = this.$store?.getters?.isAuthenticated || false;
+            const userType = this.$store?.getters?.currentUser?.userType || null;
+            
+            // Only show for ordinary users, not venue owners or producers
+            return isAuthenticated && userType === 'user';
+        },
+        
+        currentUserId() {
+            // Get current user ID - adjust based on your auth system
+            return this.$store?.getters?.currentUser?.id || null;
         }
     },
     data() {
@@ -2226,6 +2326,11 @@ export default {
             
             // Data source mode tracking
             dataSourceMode: '', // 'legacy-flat', 'legacy-hierarchical', 'api-hierarchical', 'empty'
+
+            // Festival Tasting Tracker data
+            userTastings: new Map(), // Key: `${itemID}-${variant}`, Value: tasting record
+            tastingLoadingItems: new Set(), // Track which items are being updated
+            updatingTasting: false,
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -2346,6 +2451,30 @@ export default {
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
             }
+        },
+
+        // Watch for venue changes to reload tastings
+        'targetVenue.id': {
+            handler(newVenueId, oldVenueId) {
+                if (newVenueId && newVenueId !== oldVenueId && this.showTastingTracker) {
+                    console.log('🍽️ Venue changed, reloading tastings for venue:', newVenueId);
+                    this.loadUserTastings();
+                }
+            }
+        },
+        
+        // Watch for user authentication changes
+        currentUserId: {
+            handler(newUserId, oldUserId) {
+                if (newUserId && newUserId !== oldUserId && this.showTastingTracker) {
+                    console.log('🍽️ User signed in, loading tastings for user:', newUserId);
+                    this.loadUserTastings();
+                } else if (!newUserId) {
+                    // User signed out - clear tastings
+                    console.log('🍽️ User signed out, clearing tastings');
+                    this.userTastings.clear();
+                }
+            }
         }
     },
     mounted() {
@@ -2359,6 +2488,14 @@ export default {
         
         // Smart data source detection and adaptation
         this.initializeMenuData();
+        
+        // Load user tastings if this is a festival venue and user is signed in
+        this.$nextTick(async () => {
+            if (this.showTastingTracker) {
+                console.log('🍽️ Loading user tastings for festival venue');
+                await this.loadUserTastings();
+            }
+        });
         
         // Enable watchers after initialization is complete  
         this.$nextTick(() => {
@@ -6078,6 +6215,264 @@ export default {
             }, 1000);
         },
 
+        // ===== FESTIVAL TASTING TRACKER METHODS =====
+
+        // Check if a menu item has been tasted by current user
+        isTasted(menuItem) {
+            // Use itemID (from listings table), variant, and venueId as the key
+            // This is stable even when menuItems table gets updated/reordered
+            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            return this.userTastings.has(key);
+        },
+
+        // Get tasting record for a menu item
+        getTastingRecord(menuItem) {
+            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            return this.userTastings.get(key);
+        },
+
+        // Toggle tasting status when checkbox is clicked
+        async toggleTasting(menuItem, event) {
+            const isChecked = event.target.checked;
+            // Use itemID (from listings table), variant, and venueId as the key
+            const itemKey = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            
+            // Add to loading set
+            this.tastingLoadingItems.add(itemKey);
+            
+            try {
+                if (isChecked) {
+                    // Add tasting record
+                    await this.addTasting(menuItem);
+                } else {
+                    // Remove tasting record
+                    await this.removeTasting(menuItem);
+                }
+            } catch (error) {
+                // Revert checkbox state on error
+                event.target.checked = !isChecked;
+                console.error('Error updating tasting status:', error);
+                
+                const toast = useToast();
+                toast.error('Failed to update tasting status. Please try again.');
+            } finally {
+                // Remove from loading set
+                this.tastingLoadingItems.delete(itemKey);
+            }
+        },
+
+        // Add a tasting record
+        async addTasting(menuItem) {
+            const payload = {
+                userId: this.currentUserId,
+                venueId: this.targetVenue.id,
+                itemID: menuItem.itemID, // This references listings table ID
+                variant: menuItem.variant || menuItem.itemVintage || null, // Handle both possible field names
+                notes: '' // Could add UI for notes later
+            };
+
+            try {
+                const response = await fetch('/api/festival-tastings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.$store?.getters?.authToken || ''}` // Adjust based on your auth system
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const tastingRecord = await response.json();
+                
+                // Update local state with the correct key
+                const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+                this.userTastings.set(key, tastingRecord);
+                
+                // Optional: Show success message
+                const toast = useToast();
+                toast.success('Added to your tasting list!');
+                
+                console.log('🍽️ Successfully added tasting:', tastingRecord);
+                
+            } catch (error) {
+                console.error('Error adding tasting:', error);
+                throw error; // Re-throw to handle in toggleTasting
+            }
+        },
+
+        // Remove a tasting record
+        async removeTasting(menuItem) {
+            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            const tastingRecord = this.userTastings.get(key);
+            
+            if (!tastingRecord) {
+                console.warn('No tasting record found to remove');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/festival-tastings/${tastingRecord.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${this.$store?.getters?.authToken || ''}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                // Update local state
+                this.userTastings.delete(key);
+                
+                // Optional: Show success message
+                const toast = useToast();
+                toast.success('Removed from your tasting list');
+                
+                console.log('🍽️ Successfully removed tasting for item:', menuItem.itemID);
+                
+            } catch (error) {
+                console.error('Error removing tasting:', error);
+                throw error; // Re-throw to handle in toggleTasting
+            }
+        },
+
+        // Load user's existing tastings for this venue
+        async loadUserTastings() {
+            if (!this.showTastingTracker || !this.currentUserId || !this.targetVenue?.id) {
+                console.log('🍽️ Skipping loadUserTastings - requirements not met');
+                return;
+            }
+
+            try {
+                console.log('🍽️ Loading user tastings for venue:', this.targetVenue.id, 'user:', this.currentUserId);
+                
+                const response = await fetch(`/api/festival-tastings/venue/${this.targetVenue.id}/user/${this.currentUserId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${this.$store?.getters?.authToken || ''}`
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        console.log('🍽️ No tastings found for this venue/user combination');
+                        return;
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const tastings = await response.json();
+                
+                // Populate local tastings map
+                this.userTastings.clear();
+                tastings.forEach(tasting => {
+                    // Use itemID, variant, and venueId as the key (same as database structure)
+                    const key = `${tasting.itemID}-${tasting.variant || 'default'}-${tasting.venueId}`;
+                    this.userTastings.set(key, tasting);
+                });
+                
+                console.log(`🍽️ Loaded ${tastings.length} existing tastings for venue ${this.targetVenue.id}`);
+                
+            } catch (error) {
+                console.error('Error loading user tastings:', error);
+                // Don't show error to user - this is background loading
+                // Just clear the tastings to ensure clean state
+                this.userTastings.clear();
+            }
+        },
+
+        // Get tasting statistics for current venue
+        getTastingStats() {
+            if (!this.showTastingTracker) return null;
+            
+            let totalItems = 0;
+            let tastedItems = 0;
+            
+            // Count items in main sections
+            this.editableMainSections.forEach(section => {
+                if (section.sectionMenu) {
+                    totalItems += section.sectionMenu.length;
+                    section.sectionMenu.forEach(item => {
+                        if (this.isTasted(item)) {
+                            tastedItems++;
+                        }
+                    });
+                }
+                
+                // Count items in subsections
+                if (section.subsections) {
+                    section.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu) {
+                            totalItems += subsection.sectionMenu.length;
+                            subsection.sectionMenu.forEach(item => {
+                                if (this.isTasted(item)) {
+                                    tastedItems++;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            return {
+                totalItems,
+                tastedItems,
+                percentage: totalItems > 0 ? Math.round((tastedItems / totalItems) * 100) : 0
+            };
+        },
+
+        // Bulk operations for tasting tracker
+        async markAllSectionAsTasted(section) {
+            if (!this.showTastingTracker || !section.sectionMenu) return;
+            
+            const promises = [];
+            section.sectionMenu.forEach(item => {
+                if (!this.isTasted(item)) {
+                    promises.push(this.addTasting(item));
+                }
+            });
+            
+            if (promises.length > 0) {
+                try {
+                    await Promise.all(promises);
+                    const toast = useToast();
+                    toast.success(`Marked ${promises.length} items as tasted in ${section.sectionName}`);
+                } catch (error) {
+                    console.error('Error marking section as tasted:', error);
+                    const toast = useToast();
+                    toast.error('Failed to mark some items as tasted');
+                }
+            }
+        },
+
+        async clearAllSectionTastings(section) {
+            if (!this.showTastingTracker || !section.sectionMenu) return;
+            
+            const promises = [];
+            section.sectionMenu.forEach(item => {
+                if (this.isTasted(item)) {
+                    promises.push(this.removeTasting(item));
+                }
+            });
+            
+            if (promises.length > 0) {
+                try {
+                    await Promise.all(promises);
+                    const toast = useToast();
+                    toast.success(`Cleared ${promises.length} tastings in ${section.sectionName}`);
+                } catch (error) {
+                    console.error('Error clearing section tastings:', error);
+                    const toast = useToast();
+                    toast.error('Failed to clear some tastings');
+                }
+            }
+        },
+
         // Copy to Clipboard - transferred from parent
         copyToClipboard(text) {
             navigator.clipboard.writeText(text)
@@ -6199,5 +6594,65 @@ export default {
   color: #6c757d;
   margin-left: 0.25rem;
   white-space: nowrap;
+}
+
+/* Festival Tasting Tracker Styles */
+.tasting-tracker {
+  min-width: 100px;
+}
+
+.tasting-tracker .tasting-checkbox {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.tasting-tracker .tasting-label {
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.tasting-tracker .tasted-text {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.tasting-tracker .not-tasted-text {
+  color: #6c757d;
+}
+
+/* Loading state */
+.tasting-tracker .form-check-input:disabled + .tasting-label {
+  opacity: 0.6;
+}
+
+/* Hover states */
+.tasting-tracker .form-check-input:hover {
+  border-color: #28a745;
+}
+
+.tasting-tracker .form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.tasting-tracker .form-check-input:checked:hover {
+  background-color: #218838;
+  border-color: #1e7e34;
+}
+
+/* Mobile responsiveness for tasting tracker */
+@media (max-width: 768px) {
+  .tasting-tracker {
+    min-width: 80px;
+  }
+  
+  .tasting-tracker .tasting-label {
+    font-size: 0.75rem;
+  }
+  
+  .tasting-tracker .tasting-checkbox {
+    margin-right: 0.3rem;
+  }
 }
 </style>

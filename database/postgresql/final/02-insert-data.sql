@@ -3224,6 +3224,9 @@ INSERT INTO "venuesMenu" VALUES (6, 'Test new section 2 (Omu Nomu)', 1, 10);
 INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0, 24);
 INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24);
 
+-- Venue menu sections for venue ID 38
+INSERT INTO "venuesMenu" VALUES (2541, 'Festival Beers', 0, 38);
+INSERT INTO "venuesMenu" VALUES (2542, 'Craft Selection', 1, 38);
 
 INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
 INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
@@ -3236,7 +3239,10 @@ INSERT INTO "menuItems" VALUES (13115, 1, 0.00, true, 1040419, 1, 10, NULL);
 INSERT INTO "menuItems" VALUES (13116,0,0.00,true,4,1,5,NULL);
 INSERT INTO "menuItems" VALUES (13117,1,0.00,true,1037431,1,6,NULL);
 
-
+-- Menu items for venue ID 38 sections
+INSERT INTO "menuItems" VALUES (13118, 0, 15.00, true, 1177334, 1, 2541, NULL);
+INSERT INTO "menuItems" VALUES (13119, 1, 16.50, true, 1040419, 1, 2541, NULL);
+INSERT INTO "menuItems" VALUES (13120, 0, 17.00, true, 1037431, 1, 2542, NULL);
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (

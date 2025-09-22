@@ -5528,6 +5528,68 @@ def getModRequests():
     return jsonify(mod_requests_data)
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get festival tastings for a specific user and venue
+@blueprint.route("/getFestivalTastings/<int:user_id>/<int:venue_id>", methods=['GET'])
+def getFestivalTastings(user_id, venue_id):
+    """
+    Get all festival tastings for a specific user at a specific venue.
+    Returns a list of tasted items to allow the frontend to mark checkboxes as checked.
+    
+    Expected frontend tracking key format: ${itemID}-${variant}-${venueId}
+    
+    Args:
+        user_id (int): The ID of the user
+        venue_id (int): The ID of the venue
+        
+    Returns:
+        JSON object with:
+        - tastedItems: Array of tracking keys for items the user has tasted
+        - count: Total number of items tasted by this user at this venue
+    """
+    conn = g.db
+    
+    try:
+        with conn.cursor() as cursor:
+            # Query to get all festival tastings for this user at this venue
+            sql = '''
+                SELECT "itemId", "variant", "venueId", "tastedDate", "id" as "tastingId"
+                FROM "userFestivalTastedList"
+                WHERE "userId" = %s AND "venueId" = %s
+                ORDER BY "tastedDate" DESC
+            '''
+            
+            cursor.execute(sql, (user_id, venue_id))
+            tastings = cursor.fetchall()
+            
+            # Build array of tracking keys that match frontend format: ${itemID}-${variant}-${venueId}
+            tasted_items = []
+            for tasting in tastings:
+                tracking_key = f"{tasting['itemId']}-{tasting['variant']}-{tasting['venueId']}"
+                tasted_items.append({
+                    'trackingKey': tracking_key,
+                    'itemId': tasting['itemId'],
+                    'variant': tasting['variant'],
+                    'venueId': tasting['venueId'],
+                    'tastedDate': tasting['tastedDate'].isoformat() if tasting['tastedDate'] else None,
+                    'tastingId': tasting['tastingId']
+                })
+            
+            return jsonify({
+                'tastedItems': tasted_items,
+                'count': len(tasted_items),
+                'userId': user_id,
+                'venueId': venue_id
+            })
+            
+    except Exception as e:
+        print(f"Error getting festival tastings: {str(e)}")
+        return jsonify({
+            'error': 'Failed to retrieve festival tastings',
+            'tastedItems': [],
+            'count': 0
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] flavourTags
 @blueprint.route("/getFlavourTags")
 def getFlavourTags():
