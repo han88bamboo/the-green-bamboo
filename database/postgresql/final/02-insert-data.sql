@@ -4814,6 +4814,11 @@ SET "listDesc" = '', "isPublic" = true
 WHERE "id" = 5;
 
 
+INSERT INTO "usersDrinkLists" (
+    "userId", "listName", "listDesc", "isPublic", "upvotes")
+    VALUES 
+    (5, 'CPs favourite beers', '', false, 0);
+
 
 INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
 VALUES (9, 1179024, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
