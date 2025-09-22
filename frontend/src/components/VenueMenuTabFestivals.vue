@@ -444,7 +444,7 @@
                                         </router-link>
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
-                                    <div class="col-lg-7 col-12 ps-lg-4">
+                                    <div class="col-lg-8 col-12 ps-lg-4">
 
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
@@ -544,7 +544,7 @@
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
-                                    <div class="col-lg-3 col-12 d-flex flex-column align-items-end mb-4">
+                                    <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
                                         <!-- Item Rating -->
                                         <p class="fs-3 fw-bold rating-text text-end">
                                             {{ sectionItem.itemDetails['itemRating'] }}
@@ -707,7 +707,7 @@
                                                 </router-link>
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
-                                            <div class="col-lg-7 col-12 ps-lg-4">
+                                            <div class="col-lg-8 col-12 ps-lg-4">
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
                                                     <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
@@ -805,7 +805,7 @@
                                                 </div>
                                             </div>
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
-                                            <div class="col-lg-3 col-12 d-flex flex-column align-items-end mb-4">
+                                            <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
                                                 <!-- Item Rating -->
                                                 <p class="fs-3 fw-bold rating-text text-end">
                                                     {{ subsectionItem.itemDetails['itemRating'] }}
