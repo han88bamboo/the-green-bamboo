@@ -380,11 +380,11 @@
                     </div>
                 </div>
 
-                <button class="btn fw-semibold px-4" 
+                <button class="btn fw-semibold px-4 mt-3" 
                     @click="$router.push({ name: 'browseVenue' })"
                     style="background-color: #3CB371; border-color: #3CB371; color: white;"    
                 >
-                    Find venue
+                    Find Venue 🗺️ 🔎
                 </button>
             </div>
         </div>
