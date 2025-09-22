@@ -17,6 +17,7 @@
               v-if="!showResetPWForm"
               v-on:submit.prevent="checkLogin"
               class="login-form-box"
+              :class="getFormBackgroundClass()"
             >
               <!-- login header text -->
               <p
@@ -28,10 +29,43 @@
                 class="fw-bold mx-4 fs-6 mobile-fs-7"
                 style="font-style: italic"
               >
-                Discover new juice, find friends and log your tasting notes!
+                {{ getTaglineText() }}
               </p>
 
               <p class="text-muted small mx-4 mb-2">
+                Choose your role
+              </p>
+
+              <!-- Role tabs -->
+              <div class="row">
+                <div class="d-grid gap-2 col-xl-8 col-md-8 col-10 mx-auto">
+                  <div class="role-tabs-container">
+                    <div 
+                      class="role-tab-option" 
+                      :class="{ 'role-tab-active': selectedRole === 'user' }" 
+                      @click="setSelectedRole('user')"
+                    >
+                      Drinker
+                    </div>
+                    <div 
+                      class="role-tab-option" 
+                      :class="{ 'role-tab-active': selectedRole === 'venue' }" 
+                      @click="setSelectedRole('venue')"
+                    >
+                      Venues & Festivals
+                    </div>
+                    <div 
+                      class="role-tab-option" 
+                      :class="{ 'role-tab-active': selectedRole === 'producer' }" 
+                      @click="setSelectedRole('producer')"
+                    >
+                      Brands & Producers
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-muted small mx-4 mb-2 mt-3">
                 Choose how you want to log in
               </p>
 
@@ -362,6 +396,52 @@
   background-color: #e9ecef;
 }
 
+.role-tabs-container {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.role-tab-option {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.role-tab-active {
+  background-color: #0E6350;
+  color: white;
+  font-weight: bold;
+}
+
+.role-tab-option:hover:not(.role-tab-active) {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 767px) {
+  .role-tab-option {
+    padding: 10px 4px;
+    font-size: 12px;
+  }
+}
+
+.login-form-venue {
+  background-color: #abedc9 !important;
+}
+
+.login-form-producer {
+  background-color: #a1d7ef !important;
+}
+
 </style>
 
 <script>
@@ -385,6 +465,7 @@ export default {
       accountID: {},
       errors: [],
       loginMethod: 'username',
+      selectedRole: 'user', // New property for role tabs
 
       // form values
       role: "",
@@ -594,6 +675,37 @@ export default {
         this.email = '';
       } else {
         this.ID = '';
+      }
+    },
+
+    // Set selected role
+    setSelectedRole(role) {
+      this.selectedRole = role;
+    },
+
+    // Get tagline text based on selected role
+    getTaglineText() {
+      switch(this.selectedRole) {
+        case 'user':
+          return 'Discover new juice, find friends and log your tasting notes!';
+        case 'venue':
+          return 'Bring more thirsty patrons through your doors';
+        case 'producer':
+          return 'Put your brand under the spotlight';
+        default:
+          return 'Discover new juice, find friends and log your tasting notes!';
+      }
+    },
+
+    // Get form background class based on selected role
+    getFormBackgroundClass() {
+      switch(this.selectedRole) {
+        case 'venue':
+          return 'login-form-venue';
+        case 'producer':
+          return 'login-form-producer';
+        default:
+          return '';
       }
     },
     
