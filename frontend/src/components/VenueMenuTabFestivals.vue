@@ -556,21 +556,13 @@
                                                 Temporarily Unavailable
                                             </p>
 
-                                            <!-- Flavor Tags - Right beside the name -->
-                                            <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-                                            </template>
-                                            
-                                            <!-- See User Reviews -->
+                            <!-- Flavor Tags - Comma separated -->
+                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0">
+                                <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                      :key="tag.tagId" 
+                                      :style="{ color: tag.hexcode || '#6c757d' }"
+                                      :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                            </span>                                            <!-- See User Reviews -->
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
@@ -825,21 +817,13 @@
                                                         </p>
                                                     </router-link>
 
-                                                    <!-- Flavor Tags - Right beside the name -->
-                                                    <div v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="d-flex align-items-center gap-1">
-                                                        <span v-for="tag in subsectionItem.itemDetails['topFlavorTags']" 
-                                                            :key="tag.tagId" 
-                                                            class="badge rounded-pill"
-                                                            :style="{ 
-                                                                backgroundColor: tag.hexcode || '#6c757d',
-                                                                color: getContrastColor(tag.hexcode || '#6c757d')
-                                                            }"
-                                                            :title="`${tag.count} mentions`">
-                                                            {{ tag.tag }}
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    <!-- See User Reviews -->
+                                    <!-- Flavor Tags - Comma separated -->
+                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0">
+                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
+                                              :key="tag.tagId" 
+                                              :style="{ color: tag.hexcode || '#6c757d' }"
+                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                    </span>                                                    <!-- See User Reviews -->
                                                     <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
                                                         <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                                     </router-link>
@@ -7186,8 +7170,8 @@ export default {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  width: 2rem !important;
-  height: 2rem !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
   font-size: 1.5rem;
 }
 
