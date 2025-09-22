@@ -5564,7 +5564,9 @@ def getFestivalTastings(user_id, venue_id):
             # Build array of tracking keys that match frontend format: ${itemID}-${variant}-${venueId}
             tasted_items = []
             for tasting in tastings:
-                tracking_key = f"{tasting['itemID']}-{tasting['variant']}-{tasting['venueId']}"
+                # Convert None to 0 for consistency with frontend tracking key format
+                variant_value = 0 if tasting['variant'] is None else tasting['variant']
+                tracking_key = f"{tasting['itemID']}-{variant_value}-{tasting['venueId']}"
                 tasted_items.append({
                     'trackingKey': tracking_key,
                     'itemId': tasting['itemID'],  # Note: returning as itemId for frontend consistency

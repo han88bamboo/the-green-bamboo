@@ -2082,3 +2082,199 @@ def uploadPDFMenu():
     
     finally:
         cursor.close()
+
+# -----------------------------------------------------------------------------------------
+# [POST] Add new festival tasting
+@blueprint.route("/addFestivalTasting", methods=['POST'])
+def addFestivalTasting():
+    """
+    Add a new festival tasting entry when user checks a checkbox.
+    
+    Expected payload: { userId, itemId, variant, venueId }
+    
+    Returns:
+        JSON object with:
+        - success: Boolean indicating if the operation was successful
+        - message: Status message
+        - tastingId: ID of the newly created tasting entry (if successful)
+    """
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.json
+        
+        # Debug logging to see what was received
+        print(f"🔄 ADD TASTING - Backend received payload: {data}")
+        
+        # Validate required fields (variant can be null, so we only check if the key exists)
+        required_fields = ['userId', 'itemId', 'venueId']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({
+                    "code": 400,
+                    "success": False,
+                    "message": f"Missing required field: {field}"
+                }), 400
+        
+        # Variant is optional and can be null
+        if 'variant' not in data:
+            data['variant'] = None
+        
+        user_id = int(data['userId'])
+        item_id = int(data['itemId'])  # Frontend sends 'itemId'
+        variant = data['variant']  # Can be string or None
+        venue_id = int(data['venueId'])
+        
+        print(f"🔄 ADD TASTING - Raw payload types: userId={type(data['userId'])}, itemId={type(data['itemId'])}, variant={type(data.get('variant'))}, venueId={type(data['venueId'])}")
+        
+        print(f"🔄 ADD TASTING - Processed values: userId={user_id}, itemId={item_id}, variant={variant}, venueId={venue_id}")
+        
+        # Check if this tasting already exists (unique constraint validation)
+        check_sql = '''
+            SELECT "id" FROM "userFestivalTastedList"
+            WHERE "userId" = %s AND "itemID" = %s AND "variant" IS NOT DISTINCT FROM %s AND "venueId" = %s
+        '''
+        print(f"🔄 ADD TASTING - Executing check query with params: ({user_id}, {item_id}, {variant}, {venue_id})")
+        cursor.execute(check_sql, (user_id, item_id, variant, venue_id))
+        existing = cursor.fetchone()
+        
+        if existing:
+            print(f"🔄 ADD TASTING - Found existing entry with ID: {existing['id']}")
+            return jsonify({
+                "code": 409,
+                "success": False,
+                "message": "This item has already been marked as tasted",
+                "tastingId": existing['id']
+            }), 409
+        
+        # Insert new tasting entry
+        insert_sql = '''
+            INSERT INTO "userFestivalTastedList" ("userId", "itemID", "variant", "venueId", "tastedDate")
+            VALUES (%s, %s, %s, %s, NOW())
+            RETURNING "id"
+        '''
+        print(f"🔄 ADD TASTING - Executing insert query with params: ({user_id}, {item_id}, {variant}, {venue_id})")
+        cursor.execute(insert_sql, (user_id, item_id, variant, venue_id))
+        new_tasting = cursor.fetchone()
+        
+        if not new_tasting:
+            raise Exception("Insert query did not return a new record ID")
+            
+        tasting_id = new_tasting['id']
+        print(f"🔄 ADD TASTING - Insert successful, got tasting_id: {tasting_id}")
+        
+        conn.commit()
+        print(f"🔄 ADD TASTING - Transaction committed successfully")
+        
+        print(f"✅ ADD TASTING - Successfully created tasting with ID: {tasting_id}")
+        
+        # Generate tracking key consistent with frontend format (using 0 for null variants)
+        variant_value = 0 if variant is None else variant
+        tracking_key = f"{item_id}-{variant_value}-{venue_id}"
+        
+        return jsonify({
+            "code": 201,
+            "success": True,
+            "message": "Festival tasting added successfully",
+            "tastingId": tasting_id,
+            "trackingKey": tracking_key
+        }), 201
+        
+    except ValueError as e:
+        print(f"❌ ADD TASTING - ValueError: {str(e)}")
+        return jsonify({
+            "code": 400,
+            "success": False,
+            "message": f"Invalid data format: {str(e)}"
+        }), 400
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ ADD TASTING - Exception: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            "code": 500,
+            "success": False,
+            "message": "Failed to add festival tasting"
+        }), 500
+    
+    finally:
+        cursor.close()
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] Remove festival tasting
+@blueprint.route("/removeFestivalTasting/<int:tasting_id>", methods=['DELETE'])
+def removeFestivalTasting(tasting_id):
+    """
+    Remove a festival tasting entry when user unchecks a checkbox.
+    
+    Args:
+        tasting_id (int): The serial ID of the item in userFestivalTastedList
+    
+    Returns:
+        JSON object with:
+        - success: Boolean indicating if the operation was successful
+        - message: Status message
+        - tastingId: ID of the deleted tasting entry (if successful)
+    """
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        # Check if the tasting entry exists before deleting
+        check_sql = '''
+            SELECT "id", "userId", "itemID", "variant", "venueId" 
+            FROM "userFestivalTastedList"
+            WHERE "id" = %s
+        '''
+        cursor.execute(check_sql, (tasting_id,))
+        tasting = cursor.fetchone()
+        
+        if not tasting:
+            return jsonify({
+                "code": 404,
+                "success": False,
+                "message": "Festival tasting entry not found"
+            }), 404
+        
+        # Delete the tasting entry
+        delete_sql = '''
+            DELETE FROM "userFestivalTastedList"
+            WHERE "id" = %s
+        '''
+        cursor.execute(delete_sql, (tasting_id,))
+        
+        if cursor.rowcount == 0:
+            return jsonify({
+                "code": 404,
+                "success": False,
+                "message": "Festival tasting entry not found"
+            }), 404
+        
+        conn.commit()
+        
+        # Return success with tracking key for frontend reference (consistent format using 0 for null)
+        variant_value = 0 if tasting['variant'] is None else tasting['variant']
+        tracking_key = f"{tasting['itemID']}-{variant_value}-{tasting['venueId']}"
+        
+        return jsonify({
+            "code": 200,
+            "success": True,
+            "message": "Festival tasting removed successfully",
+            "tastingId": tasting_id,
+            "trackingKey": tracking_key
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        print(f"Error removing festival tasting: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "success": False,
+            "message": "Failed to remove festival tasting"
+        }), 500
+    
+    finally:
+        cursor.close()

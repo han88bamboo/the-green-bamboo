@@ -6274,11 +6274,25 @@ export default {
         // Helper method to get consistent variant value
         getVariantValue(menuItem) {
             // Convert null/undefined variant to 0 to match backend behavior
-            return menuItem.variant !== null && menuItem.variant !== undefined 
+            const result = menuItem.variant !== null && menuItem.variant !== undefined 
                 ? menuItem.variant 
                 : (menuItem.itemVintage !== null && menuItem.itemVintage !== undefined 
                     ? menuItem.itemVintage 
                     : 0);
+            
+            // Debug logging for variant conversion
+            if (result === 0 || result === null || result === undefined) {
+                console.log('🔍 getVariantValue debug:', {
+                    menuItem: {
+                        itemID: menuItem.itemID,
+                        variant: menuItem.variant,
+                        itemVintage: menuItem.itemVintage
+                    },
+                    result: result
+                });
+            }
+            
+            return result;
         },
 
         // Helper method to generate tracking key consistently
@@ -6323,8 +6337,8 @@ export default {
         // Toggle tasting status when checkbox is clicked
         async toggleTasting(menuItem, event) {
             const isChecked = event.target.checked;
-            // Use itemID (from listings table), variant, and venueId as the key
-            const itemKey = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            // Use consistent key generation method
+            const itemKey = this.generateTrackingKey(menuItem);
             
             // Add to loading set
             this.tastingLoadingItems.add(itemKey);
@@ -6352,16 +6366,41 @@ export default {
 
         // Add a tasting record
         async addTasting(menuItem) {
+            // Use the same variant logic as tracking key generation for consistency
+            const variantValue = this.getVariantValue(menuItem);
+            
             const payload = {
-                userId: this.currentUserId,
-                venueId: this.targetVenue.id,
-                itemID: menuItem.itemID, // This references listings table ID
-                variant: menuItem.variant || menuItem.itemVintage || null, // Handle both possible field names
-                notes: '' // Could add UI for notes later
+                userId: parseInt(this.currentUserId), // Ensure userId is an integer
+                venueId: parseInt(this.targetVenue.id), // Ensure venueId is an integer
+                itemId: parseInt(menuItem.itemID), // Ensure itemId is an integer
+                variant: variantValue === 0 ? null : variantValue // Convert 0 back to null for backend
             };
 
+            // Debug logging to verify payload format
+            console.log('🔄 ADD TASTING - Payload being sent:', {
+                payload: payload,
+                dataTypes: {
+                    userId: `${typeof payload.userId} (${payload.userId})`,
+                    venueId: `${typeof payload.venueId} (${payload.venueId})`,
+                    itemId: `${typeof payload.itemId} (${payload.itemId})`,
+                    variant: `${typeof payload.variant} (${payload.variant})`
+                },
+                menuItem: {
+                    itemID: menuItem.itemID,
+                    variant: menuItem.variant,
+                    itemVintage: menuItem.itemVintage
+                },
+                computedVariant: variantValue,
+                currentUserId: this.currentUserId,
+                venueId: this.targetVenue.id,
+                trackingKey: this.generateTrackingKey(menuItem),
+                finalPayloadString: JSON.stringify(payload)
+            });
+
             try {
-                const response = await fetch('/api/festival-tastings', {
+                console.log('🌐 Sending POST request to:', `${process.env.VUE_APP_API_URL}/editVenueProfile/addFestivalTasting`);
+                
+                const response = await fetch(`${process.env.VUE_APP_API_URL}/editVenueProfile/addFestivalTasting`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -6370,22 +6409,39 @@ export default {
                     body: JSON.stringify(payload)
                 });
 
+                console.log('🌐 Response status:', response.status, response.statusText);
+
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
+                    console.error('❌ Backend error response:', errorData);
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
 
-                const tastingRecord = await response.json();
+                const responseData = await response.json();
+                console.log('✅ Backend success response:', responseData);
                 
-                // Update local state with the correct key
-                const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+                // Check if the response indicates success
+                if (!responseData.success) {
+                    console.error('❌ Backend returned success=false:', responseData);
+                    throw new Error(responseData.message || 'Failed to add tasting');
+                }
+                
+                // Update local state with consistent key generation
+                const key = this.generateTrackingKey(menuItem);
+                const tastingRecord = {
+                    tastingId: responseData.tastingId,
+                    trackingKey: responseData.trackingKey,
+                    itemId: menuItem.itemID,
+                    variant: variantValue === 0 ? null : variantValue,
+                    venueId: this.targetVenue.id
+                };
                 this.userTastings.set(key, tastingRecord);
                 
                 // Optional: Show success message
                 const toast = useToast();
                 toast.success('Added to your tasting list!');
                 
-                console.log('🍽️ Successfully added tasting:', tastingRecord);
+                console.log('🍽️ Successfully added tasting:', responseData);
                 
             } catch (error) {
                 console.error('Error adding tasting:', error);
@@ -6395,7 +6451,8 @@ export default {
 
         // Remove a tasting record
         async removeTasting(menuItem) {
-            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            // Use consistent key generation method
+            const key = this.generateTrackingKey(menuItem);
             const tastingRecord = this.userTastings.get(key);
             
             if (!tastingRecord) {
@@ -6403,8 +6460,24 @@ export default {
                 return;
             }
 
+            // Debug logging to verify delete request format
+            console.log('🔄 REMOVE TASTING - Request details:', {
+                key: key,
+                tastingRecord: tastingRecord,
+                tastingId: tastingRecord.tastingId,
+                menuItem: {
+                    itemID: menuItem.itemID,
+                    variant: menuItem.variant,
+                    itemVintage: menuItem.itemVintage
+                },
+                computedVariant: this.getVariantValue(menuItem),
+                trackingKey: this.generateTrackingKey(menuItem),
+                deleteUrl: `${process.env.VUE_APP_API_URL}/editVenueProfile/removeFestivalTasting/${tastingRecord.tastingId}`
+            });
+
             try {
-                const response = await fetch(`/api/festival-tastings/${tastingRecord.id}`, {
+                // Use the backend endpoint format with tastingId
+                const response = await fetch(`${process.env.VUE_APP_API_URL}/editVenueProfile/removeFestivalTasting/${tastingRecord.tastingId}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${this.$store?.getters?.authToken || ''}`
@@ -6414,6 +6487,13 @@ export default {
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({}));
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                
+                // Check if the response indicates success
+                if (!responseData.success) {
+                    throw new Error(responseData.message || 'Failed to remove tasting');
                 }
 
                 // Update local state
