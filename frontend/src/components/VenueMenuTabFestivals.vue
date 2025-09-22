@@ -409,6 +409,12 @@
                                         <!-- Festival Tasting Tracker (Mobile) -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                             <div class="form-check">
+                                                <label 
+                                                    class="form-check-label tasting-label" 
+                                                    :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
+                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
+                                                    <span class="not-tasted-text" v-else>Tasted?</span>
+                                                </label>
                                                 <input 
                                                     class="form-check-input tasting-checkbox" 
                                                     type="checkbox" 
@@ -417,12 +423,6 @@
                                                     @change="toggleTasting(sectionItem, $event)"
                                                     :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
                                                 >
-                                                <label 
-                                                    class="form-check-label tasting-label" 
-                                                    :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
-                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                    <span class="not-tasted-text" v-else>Tasted?</span>
-                                                </label>
                                             </div>
                                         </div>
                                     </div>
@@ -677,6 +677,13 @@
                                                 <!-- Festival Tasting Tracker (Mobile Subsection) -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                                     <div class="form-check">
+
+                                                        <label 
+                                                            class="form-check-label tasting-label" 
+                                                            :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
+                                                            <span class="not-tasted-text" v-else>Tasted?</span>
+                                                        </label>
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
@@ -685,12 +692,6 @@
                                                             @change="toggleTasting(subsectionItem, $event)"
                                                             :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
                                                         >
-                                                        <label 
-                                                            class="form-check-label tasting-label" 
-                                                            :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
                                                     </div>
                                                 </div>
                                             </div>
