@@ -377,33 +377,58 @@
                                             </p>
                                         </div>
 
-                                        <!-- Item Menu Details -->
-                                        <div class="d-flex align-items-center gap-1">
+                                        <!-- Item Menu Details Row -->
+                                        <div class="row align-items-center">
+                                            <!-- Left Column: Item Menu Details -->
+                                            <div class="col-8">
+                                                <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                    <!-- Item Price / Item Serving Type -->
+                                                    <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
+                                                        ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                        / {{ sectionItem.itemDetails.itemServingTypeName }}
+                                                    </p>
+                                                    <!-- Item Availability -->
+                                                    <p v-if="sectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">
+                                                        Temporarily Unavailable
+                                                    </p>
 
-                                            <!-- Item Price / Item Serving Type -->
-                                            <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
-                                                ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
-                                                / {{ sectionItem.itemDetails.itemServingTypeName }}
-                                            </p>
-                                            <!-- Item Availability -->
-                                            <p v-if="sectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">
-                                                Temporarily Unavailable
-                                            </p>
-
-                                            <!-- Flavor Tags - Right beside the name -->
-                                            <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
-                                                <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
-                                                    :key="tag.tagId" 
-                                                    class="badge rounded-pill"
-                                                    :style="{ 
-                                                        backgroundColor: tag.hexcode || '#6c757d',
-                                                        color: getContrastColor(tag.hexcode || '#6c757d')
-                                                    }"
-                                                    :title="`${tag.count} mentions`">
-                                                    {{ tag.tag }}
-                                                </span>
-
-                                            </template>
+                                                    <!-- Flavor Tags - Right beside the name -->
+                                                    <template v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" >
+                                                        <span v-for="tag in sectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            class="badge rounded-pill"
+                                                            :style="{ 
+                                                                backgroundColor: tag.hexcode || '#6c757d',
+                                                                color: getContrastColor(tag.hexcode || '#6c757d')
+                                                            }"
+                                                            :title="`${tag.count} mentions`">
+                                                            {{ tag.tag }}
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Right Column: Tasting Tracker -->
+                                            <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
+                                                <div class="tasting-tracker">
+                                                    <div class="form-check">
+                                                        <label 
+                                                            class="form-check-label tasting-label" 
+                                                            :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
+                                                            <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
+                                                            <span class="not-tasted-text" v-else>Tasted?</span>
+                                                        </label>
+                                                        <input 
+                                                            class="form-check-input tasting-checkbox" 
+                                                            type="checkbox" 
+                                                            :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
+                                                            :checked="isTasted(sectionItem)"
+                                                            @change="toggleTasting(sectionItem, $event)"
+                                                            :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         
                                         <!-- Mobile Action Row: Tasting Tracker + Review Buttons -->
@@ -446,7 +471,7 @@
                                                     </button>
                                                 </template>
                                             </div>
-                                            <!-- Tasting Tracker -->
+                                            <!-- Tasting Tracker 
                                             <div class="col-6" v-if="showTastingTracker">
                                                 <div class="tasting-tracker">
                                                     <div class="form-check">
@@ -466,7 +491,7 @@
                                                         >
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div>-->
                                         </div>
                                     </div>
                                 </div>
@@ -703,22 +728,48 @@
                                                     </p>
                                                 </div>
 
-                                                <!-- Item Menu Details -->
-                                                <div class="d-flex align-items-center gap-1">
-
-                                                    <!-- Item Price / Item Serving Type -->
-                                                    <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
-                                                        ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
-                                                        / {{ subsectionItem.itemDetails.itemServingTypeName }}
-                                                    </p>
-                                                    <!-- Item Availability -->
-                                                    <p v-if="subsectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">
-                                                        Temporarily Unavailable
-                                                    </p>
+                                                <!-- Item Menu Details Row -->
+                                                <div class="row align-items-center">
+                                                    <!-- Left Column: Item Menu Details -->
+                                                    <div class="col-8">
+                                                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                            <!-- Item Price / Item Serving Type -->
+                                                            <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
+                                                                ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                                / {{ subsectionItem.itemDetails.itemServingTypeName }}
+                                                            </p>
+                                                            <!-- Item Availability -->
+                                                            <p v-if="subsectionItem.itemAvailability == false" class="text-start mobile-rating-smaller-text-2 text-danger fw-bold fst-italic text-decoration-underline mb-0">
+                                                                Temporarily Unavailable
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Right Column: Tasting Tracker -->
+                                                    <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
+                                                        <div class="tasting-tracker">
+                                                            <div class="form-check">
+                                                                <label 
+                                                                    class="form-check-label tasting-label" 
+                                                                    :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                                    <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
+                                                                    <span class="not-tasted-text" v-else>Tasted?</span>
+                                                                </label>
+                                                                <input 
+                                                                    class="form-check-input tasting-checkbox" 
+                                                                    type="checkbox" 
+                                                                    :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                                    :checked="isTasted(subsectionItem)"
+                                                                    @change="toggleTasting(subsectionItem, $event)"
+                                                                    :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                                >
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                                 
-                                                <!-- Mobile Action Row: Tasting Tracker + Review Buttons -->
-                                                <div class="row mt-2" v-if="showTastingTracker || true">
+                                                <!-- Mobile Action Row: Review Buttons -->
+                                                <div class="row mt-2">
                                                     
                                                     <!-- Review Buttons -->
                                                     <div class="col-6 d-flex flex-column gap-2">
@@ -756,27 +807,6 @@
                                                                 Add Your Review
                                                             </button>
                                                         </template>
-                                                    </div>
-                                                    <!-- Tasting Tracker -->
-                                                    <div class="col-6" v-if="showTastingTracker">
-                                                        <div class="tasting-tracker">
-                                                            <div class="form-check">
-                                                                <label 
-                                                                    class="form-check-label tasting-label" 
-                                                                    :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                                    <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                                    <span class="not-tasted-text" v-else>Tasted?</span>
-                                                                </label>
-                                                                <input 
-                                                                    class="form-check-input tasting-checkbox" 
-                                                                    type="checkbox" 
-                                                                    :id="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
-                                                                    :checked="isTasted(subsectionItem)"
-                                                                    @change="toggleTasting(subsectionItem, $event)"
-                                                                    :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
-                                                                >
-                                                            </div>
-                                                        </div>
                                                     </div>
                                                     
                                                 </div>
