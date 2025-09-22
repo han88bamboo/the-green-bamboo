@@ -506,6 +506,11 @@
                                                     {{ tag.tag }}
                                                 </span>
                                             </template>
+                                            
+                                            <!-- See User Reviews -->
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
+                                            </router-link>
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -515,10 +520,6 @@
                                             {{ sectionItem.itemDetails['itemRating'] }}
                                             <span style="font-size: 30px;">★</span>
                                         </p>
-                                        <!-- See User Reviews -->
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                            <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                        </router-link>
                                         
                                         <!-- Festival Tasting Tracker -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
@@ -698,6 +699,11 @@
                                                             {{ tag.tag }}
                                                         </span>
                                                     </div>
+                                                    
+                                                    <!-- See User Reviews -->
+                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
+                                                    </router-link>
                                                 </div>
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -745,10 +751,6 @@
                                                     {{ subsectionItem.itemDetails['itemRating'] }}
                                                     <span style="font-size: 30px;">★</span>
                                                 </p>
-                                                <!-- See User Reviews -->
-                                                <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                    <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                                </router-link>
                                                 
                                                 <!-- Festival Tasting Tracker -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
