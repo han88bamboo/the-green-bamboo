@@ -382,7 +382,7 @@
 
                 <button class="btn fw-semibold px-4 mt-3" 
                     @click="$router.push({ name: 'browseVenue' })"
-                    style="background-color: #3CB371; border-color: #3CB371; color: white;"    
+                    style="background-color: #f04444; border-color: #f04444; color: white;"
                 >
                     Find Venue 🗺️ 🔎
                 </button>

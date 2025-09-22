@@ -450,7 +450,8 @@
                   <!-- Add Collection Desktop Button -->
                   <div v-if="activeTab == 'all'" class="mobile-view-hide col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <button 
-                      class="btn btn-primary  fw-bold"
+                      class="btn btn-primary fw-bold"
+                      style="background-color: #f04444; border-color: #f04444; color: white;"
                       type="button"
                       @click="toggleRightSidebar"
                       v-show="!rightSidebarExpanded"
