@@ -1666,7 +1666,7 @@ CREATE TABLE "venueUpdateComments" (
 --     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 -- );
 
--- ========= "userFestivalTastings" =========  if record exists = checked/tasted
+-- ========= "userFestivalTastedList" =========  if record exists = checked/tasted
 CREATE TABLE "userFestivalTastedList" (
     "id" SERIAL PRIMARY KEY,
     "userId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE,
