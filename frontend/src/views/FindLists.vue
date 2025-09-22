@@ -284,13 +284,30 @@
             <div class="card-body d-flex flex-column p-3">
               <!-- List Name and Drink Count -->
               <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="card-title fw-bold mb-0 flex-grow-1 text-start">{{ list.listName }}</h5>
+                <a href="#" class="text-decoration-underline text-decoration-none" style="color: inherit;" @click.prevent="viewListDetails(list)">
+                  <h5 class="card-title fw-bold mb-0 flex-grow-1 text-start">{{ list.listName }}</h5>
+                </a>
                 <small class="text-muted ms-2">{{ list.itemCount }} Drink{{ list.itemCount !== 1 ? 's' : '' }}</small>
               </div>
-              
+              <!-- Creator Info  -->
+              <div class="mt-auto mb-2">
+                <div class="text-center">
+                  <div class="d-flex align-items-center justify-content-left ps-0">
+                    <img
+                      :src="list.userPhoto || defaultProfilePhoto"
+                      alt="Creator"
+                      class="rounded-circle me-2"
+                      style="width: 24px; height: 24px; object-fit: cover;"
+                    />
+                    <span>Created by</span>
+                    <span class="fw-bold ms-1">{{ list.displayName || list.username }}</span>
+                  </div>
+                </div>
+              </div>
+
               <!-- List Description -->
               <p class="card-text text-muted mb-3 description-text text-start">
-                {{ list.listDesc || 'No description provided.' }}
+                {{ list.listDesc || '' }}
               </p>
 
               <!-- Action Buttons Row -->
@@ -298,8 +315,7 @@
                 <!-- View Button (Left) -->
                 <a
                   href="#"
-                  class="text-decoration-underline fw-semibold"
-                  style="color: #027562;"
+                  class="btn btn-outline-secondary fw-semibold mobile-rating-smaller-text-2"
                   @click="viewListDetails(list)"
                 >
                   View
@@ -334,21 +350,7 @@
                 </div>
               </div>
 
-              <!-- Creator Info (Black Background) -->
-              <div class="mt-auto">
-                <div class="creator-bar text-center py-2">
-                  <div class="d-flex align-items-center justify-content-center">
-                    <img
-                      :src="list.userPhoto || defaultProfilePhoto"
-                      alt="Creator"
-                      class="rounded-circle me-2"
-                      style="width: 24px; height: 24px; object-fit: cover;"
-                    />
-                    <span class="text-muted-white">Created by</span>
-                    <span class="text-white fw-bold ms-1">{{ list.displayName || list.username }}</span>
-                  </div>
-                </div>
-              </div>
+              
             </div>
           </div>
         </div>
@@ -668,11 +670,7 @@ export default {
   color: #6c757d;
 }
 
-.creator-bar {
-  background-color: #000000;
-  border-radius: 0 0 0.375rem 0.375rem;
-  margin: 0 -1rem -1rem -1rem;
-}
+
 
 .text-muted-white {
   color: #999999 !important;
@@ -698,10 +696,6 @@ export default {
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
-}
-
-.list-card:hover .card-img-top {
-  transform: scale(1.05);
 }
 
 /* Review card styles similar to UserProfile */
