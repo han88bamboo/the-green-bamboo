@@ -5552,7 +5552,7 @@ def getFestivalTastings(user_id, venue_id):
         with conn.cursor() as cursor:
             # Query to get all festival tastings for this user at this venue
             sql = '''
-                SELECT "itemId", "variant", "venueId", "tastedDate", "id" as "tastingId"
+                SELECT "itemID", "variant", "venueId", "tastedDate", "id" as "tastingId"
                 FROM "userFestivalTastedList"
                 WHERE "userId" = %s AND "venueId" = %s
                 ORDER BY "tastedDate" DESC
@@ -5564,10 +5564,10 @@ def getFestivalTastings(user_id, venue_id):
             # Build array of tracking keys that match frontend format: ${itemID}-${variant}-${venueId}
             tasted_items = []
             for tasting in tastings:
-                tracking_key = f"{tasting['itemId']}-{tasting['variant']}-{tasting['venueId']}"
+                tracking_key = f"{tasting['itemID']}-{tasting['variant']}-{tasting['venueId']}"
                 tasted_items.append({
                     'trackingKey': tracking_key,
-                    'itemId': tasting['itemId'],
+                    'itemId': tasting['itemID'],  # Note: returning as itemId for frontend consistency
                     'variant': tasting['variant'],
                     'venueId': tasting['venueId'],
                     'tastedDate': tasting['tastedDate'].isoformat() if tasting['tastedDate'] else None,

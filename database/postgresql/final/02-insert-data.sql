@@ -3244,6 +3244,16 @@ INSERT INTO "menuItems" VALUES (13118, 0, 15.00, true, 1177334, 1, 2541, NULL);
 INSERT INTO "menuItems" VALUES (13119, 1, 16.50, true, 1040419, 1, 2541, NULL);
 INSERT INTO "menuItems" VALUES (13120, 0, 17.00, true, 1037431, 1, 2542, NULL);
 
+-- Insert tastings for user ID 3 at venue ID 38
+-- Tasting record for menu item 13118 (itemID: 1177334, variant: 0)
+INSERT INTO "userFestivalTastedList" ("userId", "venueId", "itemID", "variant", "tastedDate", "notes") 
+VALUES (3, 38, 1177334, 0, CURRENT_TIMESTAMP, 'Great whisky!');
+
+-- Tasting record for menu item 13120 (itemID: 1037431, variant: 0)  
+INSERT INTO "userFestivalTastedList" ("userId", "venueId", "itemID", "variant", "tastedDate", "notes")
+VALUES (3, 38, 1037431, 0, CURRENT_TIMESTAMP, 'Smooth and balanced');
+
+
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
 INSERT INTO "reviews" (
     "userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 

@@ -412,14 +412,14 @@
                                                 <input 
                                                     class="form-check-input tasting-checkbox me-2" 
                                                     type="checkbox" 
-                                                    :id="`tasting-mobile-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                    :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
                                                     :checked="isTasted(sectionItem)"
                                                     @change="toggleTasting(sectionItem, $event)"
-                                                    :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                    :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
                                                 >
                                                 <label 
                                                     class="form-check-label tasting-label" 
-                                                    :for="`tasting-mobile-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
+                                                    :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                     <span class="not-tasted-text" v-else>Taste?</span>
                                                 </label>
@@ -2211,22 +2211,55 @@ export default {
 
         // Festival Tasting Tracker computed properties
         showTastingTracker() {
-            return this.isSignedInUser && !this.selfView;
+            const result = this.isSignedInUser && !this.selfView;
+            console.log('🔍 showTastingTracker computed:', {
+                result,
+                isSignedInUser: this.isSignedInUser,
+                selfView: this.selfView
+            });
+            return result;
         },
         
         isSignedInUser() {
             // Check if user is authenticated and is an ordinary user from "users" table
             // (not from "venues" or "producers" table)
-            const isAuthenticated = this.$store?.getters?.isAuthenticated || false;
-            const userType = this.$store?.getters?.currentUser?.userType || null;
+            // Your app uses localStorage for authentication, not Vuex store
+            const userId = localStorage.getItem('88B_accID');
+            const userType = localStorage.getItem('88B_accType');
+            const isAuthenticated = !!(userId && userType);
+            const result = isAuthenticated && userType === 'user';
+            
+            console.log('🔍 isSignedInUser computed:', {
+                result,
+                isAuthenticated,
+                userType,
+                userId,
+                currentUser: {
+                    id: userId,
+                    userType: userType,
+                    username: localStorage.getItem('88B_accUsername')
+                }
+            });
             
             // Only show for ordinary users, not venue owners or producers
-            return isAuthenticated && userType === 'user';
+            return result;
         },
         
         currentUserId() {
-            // Get current user ID - adjust based on your auth system
-            return this.$store?.getters?.currentUser?.id || null;
+            // Get current user ID from localStorage
+            const userId = localStorage.getItem('88B_accID');
+            console.log('🔍 currentUserId computed:', userId);
+            return userId;
+        },
+
+        // Template helper methods for consistent tracking key generation
+        // These methods ensure variant values are consistent with backend (null -> 0)
+        tastingTrackingKey() {
+            return (menuItem) => this.generateTrackingKey(menuItem);
+        },
+
+        tastingElementId() {
+            return (prefix, menuItem) => `${prefix}-${this.generateTrackingKey(menuItem)}`;
         }
     },
     data() {
@@ -2486,6 +2519,22 @@ export default {
         this.internalLoadedListings = [...this.loadedListings];
         this.internalLoadedProducers = [...this.loadedProducers];
         
+        // DEBUG: Authentication debugging
+        console.log('=== FESTIVAL TASTING TRACKER DEBUG ===');
+        console.log('Is authenticated:', this.$store?.getters?.isAuthenticated);
+        console.log('User type:', this.$store?.getters?.currentUser?.userType);
+        console.log('User object:', this.$store?.getters?.currentUser);
+        console.log('--- ACTUAL AUTHENTICATION (localStorage) ---');
+        console.log('localStorage 88B_accID:', localStorage.getItem('88B_accID'));
+        console.log('localStorage 88B_accType:', localStorage.getItem('88B_accType'));
+        console.log('localStorage 88B_accUsername:', localStorage.getItem('88B_accUsername'));
+        console.log('Self view:', this.selfView);
+        console.log('Show tasting tracker:', this.showTastingTracker);
+        console.log('Is signed in user:', this.isSignedInUser);
+        console.log('Current user ID:', this.currentUserId);
+        console.log('Target venue:', this.targetVenue);
+        console.log('=======================================');
+        
         // Smart data source detection and adaptation
         this.initializeMenuData();
         
@@ -2494,6 +2543,11 @@ export default {
             if (this.showTastingTracker) {
                 console.log('🍽️ Loading user tastings for festival venue');
                 await this.loadUserTastings();
+            } else {
+                console.log('🍽️ NOT loading user tastings. Reasons:');
+                console.log('  - showTastingTracker:', this.showTastingTracker);
+                console.log('  - isSignedInUser:', this.isSignedInUser);
+                console.log('  - selfView:', this.selfView);
             }
         });
         
@@ -6217,17 +6271,52 @@ export default {
 
         // ===== FESTIVAL TASTING TRACKER METHODS =====
 
+        // Helper method to get consistent variant value
+        getVariantValue(menuItem) {
+            // Convert null/undefined variant to 0 to match backend behavior
+            return menuItem.variant !== null && menuItem.variant !== undefined 
+                ? menuItem.variant 
+                : (menuItem.itemVintage !== null && menuItem.itemVintage !== undefined 
+                    ? menuItem.itemVintage 
+                    : 0);
+        },
+
+        // Helper method to generate tracking key consistently
+        generateTrackingKey(menuItem) {
+            const variant = this.getVariantValue(menuItem);
+            return `${menuItem.itemID}-${variant}-${this.targetVenue.id}`;
+        },
+
         // Check if a menu item has been tasted by current user
         isTasted(menuItem) {
             // Use itemID (from listings table), variant, and venueId as the key
             // This is stable even when menuItems table gets updated/reordered
-            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
-            return this.userTastings.has(key);
+            const key = this.generateTrackingKey(menuItem);
+            const result = this.userTastings.has(key);
+            
+            // Debug logging to trace key matching
+            if (this.userTastings.size > 0) {
+                console.log('🔍 isTasted debug:', {
+                    menuItem: {
+                        itemID: menuItem.itemID,
+                        variant: menuItem.variant,
+                        itemVintage: menuItem.itemVintage,
+                        venueId: this.targetVenue.id
+                    },
+                    computedVariant: this.getVariantValue(menuItem),
+                    generatedKey: key,
+                    result: result,
+                    availableKeys: Array.from(this.userTastings.keys()),
+                    userTastingsSize: this.userTastings.size
+                });
+            }
+            
+            return result;
         },
 
         // Get tasting record for a menu item
         getTastingRecord(menuItem) {
-            const key = `${menuItem.itemID}-${menuItem.variant || menuItem.itemVintage || 'default'}-${this.targetVenue.id}`;
+            const key = this.generateTrackingKey(menuItem);
             return this.userTastings.get(key);
         },
 
@@ -6346,40 +6435,45 @@ export default {
         async loadUserTastings() {
             if (!this.showTastingTracker || !this.currentUserId || !this.targetVenue?.id) {
                 console.log('🍽️ Skipping loadUserTastings - requirements not met');
+                console.log('  - showTastingTracker:', this.showTastingTracker);
+                console.log('  - currentUserId:', this.currentUserId);
+                console.log('  - targetVenue.id:', this.targetVenue?.id);
                 return;
             }
 
             try {
                 console.log('🍽️ Loading user tastings for venue:', this.targetVenue.id, 'user:', this.currentUserId);
                 
-                const response = await fetch(`/api/festival-tastings/venue/${this.targetVenue.id}/user/${this.currentUserId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${this.$store?.getters?.authToken || ''}`
-                    }
-                });
+                // Use the same API base URL pattern as your other endpoints
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFestivalTastings/${this.currentUserId}/${this.targetVenue.id}`);
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        console.log('🍽️ No tastings found for this venue/user combination');
-                        return;
-                    }
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.status === 200 && response.data) {
+                    const responseData = response.data;
+                    console.log('🍽️ Raw response data:', responseData);
+                    
+                    // Handle the response format from your backend
+                    const tastings = responseData.tastedItems || [];
+                    console.log('🍽️ Parsed tastings:', tastings);
+                    
+                    // Populate local tastings map
+                    this.userTastings.clear();
+                    tastings.forEach(tasting => {
+                        // Use the tracking key directly since it's already in the right format
+                        console.log('🍽️ Adding tasting to map:', tasting.trackingKey, tasting);
+                        this.userTastings.set(tasting.trackingKey, tasting);
+                    });
+                    
+                    console.log(`🍽️ Loaded ${tastings.length} existing tastings for venue ${this.targetVenue.id}`);
+                    console.log('🍽️ Final userTastings Map:', Array.from(this.userTastings.entries()));
+                } else {
+                    console.log('🍽️ No tastings found for this venue/user combination');
                 }
-
-                const tastings = await response.json();
-                
-                // Populate local tastings map
-                this.userTastings.clear();
-                tastings.forEach(tasting => {
-                    // Use itemID, variant, and venueId as the key (same as database structure)
-                    const key = `${tasting.itemID}-${tasting.variant || 'default'}-${tasting.venueId}`;
-                    this.userTastings.set(key, tasting);
-                });
-                
-                console.log(`🍽️ Loaded ${tastings.length} existing tastings for venue ${this.targetVenue.id}`);
                 
             } catch (error) {
                 console.error('Error loading user tastings:', error);
+                if (error.response?.status === 404) {
+                    console.log('🍽️ No tastings found (404) - this is normal for first-time users');
+                }
                 // Don't show error to user - this is background loading
                 // Just clear the tastings to ensure clean state
                 this.userTastings.clear();
