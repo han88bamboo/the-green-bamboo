@@ -431,13 +431,13 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- Mobile Action Row: Tasting Tracker + Review Buttons -->
-                                        <div class="row mt-2" v-if="showTastingTracker || true">
+                                        <!-- Mobile Action Row: Review Buttons -->
+                                        <div class="row mt-2">
                                             
-                                            <!-- Review Buttons -->
-                                            <div class="col-6 d-flex flex-column gap-2">
+                                            <!-- Review Buttons Side by Side -->
+                                            <div class="col-12 d-flex gap-2">
                                                 <!-- See Reviews Button -->
-                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="flex-fill">
                                                     <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
                                                 </router-link>
                                                 
@@ -446,7 +446,7 @@
                                                     <button 
                                                         v-if="!hasUserReviewed(sectionItem)" 
                                                         type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                         @click="goToAddReview(sectionItem)"
                                                         style="font-weight: bold; border-radius: 20px;">
                                                         Add Your Review
@@ -454,7 +454,7 @@
                                                     <button 
                                                         v-else 
                                                         type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                         disabled
                                                         style="font-weight: bold; border-radius: 20px;">
                                                         Review Added!
@@ -464,7 +464,7 @@
                                                 <template v-else>
                                                     <button 
                                                         type="button" 
-                                                        class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                        class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                         @click="goToAddReview(sectionItem)"
                                                         style="font-weight: bold; border-radius: 20px;">
                                                         Add Your Review
@@ -771,10 +771,10 @@
                                                 <!-- Mobile Action Row: Review Buttons -->
                                                 <div class="row mt-2">
                                                     
-                                                    <!-- Review Buttons -->
-                                                    <div class="col-6 d-flex flex-column gap-2">
+                                                    <!-- Review Buttons Side by Side -->
+                                                    <div class="col-12 d-flex gap-2">
                                                         <!-- See Reviews Button -->
-                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="flex-fill">
                                                             <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
                                                         </router-link>
                                                         
@@ -783,7 +783,7 @@
                                                             <button 
                                                                 v-if="!hasUserReviewed(subsectionItem)" 
                                                                 type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                                 @click="goToAddReview(subsectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
                                                                 Add Your Review
@@ -791,7 +791,7 @@
                                                             <button 
                                                                 v-else 
                                                                 type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                                 disabled
                                                                 style="font-weight: bold; border-radius: 20px;">
                                                                 Review Added!
@@ -801,7 +801,7 @@
                                                         <template v-else>
                                                             <button 
                                                                 type="button" 
-                                                                class="btn primary-btn-less-round-blue btn-sm w-100" 
+                                                                class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                                 @click="goToAddReview(subsectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
                                                                 Add Your Review
