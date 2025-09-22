@@ -511,6 +511,36 @@
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
+
+                                            <!-- Add Your Review / Review Added Button -->
+                                            <div v-if="isSignedInUser" class="mt-2">
+                                                <button 
+                                                    v-if="!hasUserReviewed(sectionItem)" 
+                                                    type="button" 
+                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    @click="goToAddReview(sectionItem)"
+                                                    style="font-weight: bold;">
+                                                    Add Your Review
+                                                </button>
+                                                <button 
+                                                    v-else 
+                                                    type="button" 
+                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    disabled
+                                                    style="font-weight: bold;">
+                                                    Review Added!
+                                                </button>
+                                            </div>
+                                            <!-- Logged-out users -->
+                                            <div v-else class="mt-2">
+                                                <button 
+                                                    type="button" 
+                                                    class="btn primary-btn-less-round-blue btn-lg" 
+                                                    @click="goToAddReview(sectionItem)"
+                                                    style="font-weight: bold;">
+                                                    Add Your Review
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -704,6 +734,36 @@
                                                     <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
                                                         <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                                     </router-link>
+
+                                                    <!-- Add Your Review / Review Added Button -->
+                                                    <div v-if="isSignedInUser" class="mt-2">
+                                                        <button 
+                                                            v-if="!hasUserReviewed(subsectionItem)" 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            @click="goToAddReview(subsectionItem)"
+                                                            style="font-weight: bold;">
+                                                            Add Your Review
+                                                        </button>
+                                                        <button 
+                                                            v-else 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            disabled
+                                                            style="font-weight: bold;">
+                                                            Review Added!
+                                                        </button>
+                                                    </div>
+                                                    <!-- Logged-out users -->
+                                                    <div v-else class="mt-2">
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue btn-lg" 
+                                                            @click="goToAddReview(subsectionItem)"
+                                                            style="font-weight: bold;">
+                                                            Add Your Review
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -2262,6 +2322,15 @@ export default {
 
         tastingElementId() {
             return (prefix, menuItem) => `${prefix}-${this.generateTrackingKey(menuItem)}`;
+        },
+
+        // Review helper methods for consistent review checking
+        reviewTrackingKey() {
+            return (menuItem) => this.generateReviewTrackingKey(menuItem);
+        },
+
+        hasUserReviewed() {
+            return (menuItem) => this.checkUserReviewed(menuItem);
         }
     },
     data() {
@@ -2366,6 +2435,11 @@ export default {
             userTastings: new Map(), // Key: `${itemID}-${variant}`, Value: tasting record
             tastingLoadingItems: new Set(), // Track which items are being updated
             updatingTasting: false,
+
+            // User Reviews Tracker data
+            userReviews: new Map(), // Key: `${itemID}-${variant}`, Value: review record
+            reviewsLoading: false,
+            reviewLoadTimeout: null,
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -2491,9 +2565,15 @@ export default {
         // Watch for venue changes to reload tastings
         'targetVenue.id': {
             handler(newVenueId, oldVenueId) {
-                if (newVenueId && newVenueId !== oldVenueId && this.showTastingTracker) {
-                    console.log('🍽️ Venue changed, reloading tastings for venue:', newVenueId);
-                    this.loadUserTastings();
+                if (newVenueId && newVenueId !== oldVenueId) {
+                    if (this.showTastingTracker) {
+                        console.log('🍽️ Venue changed, reloading tastings for venue:', newVenueId);
+                        this.loadUserTastings();
+                    }
+                    if (this.isSignedInUser) {
+                        console.log('🍽️ Venue changed, reloading reviews for venue:', newVenueId);
+                        this.loadUserReviews();
+                    }
                 }
             }
         },
@@ -2501,15 +2581,35 @@ export default {
         // Watch for user authentication changes
         currentUserId: {
             handler(newUserId, oldUserId) {
-                if (newUserId && newUserId !== oldUserId && this.showTastingTracker) {
-                    console.log('🍽️ User signed in, loading tastings for user:', newUserId);
-                    this.loadUserTastings();
+                if (newUserId && newUserId !== oldUserId) {
+                    if (this.showTastingTracker) {
+                        console.log('🍽️ User signed in, loading tastings for user:', newUserId);
+                        this.loadUserTastings();
+                    }
+                    console.log('🍽️ User signed in, loading reviews for user:', newUserId);
+                    this.loadUserReviews();
                 } else if (!newUserId) {
-                    // User signed out - clear tastings
-                    console.log('🍽️ User signed out, clearing tastings');
+                    // User signed out - clear tastings and reviews
+                    console.log('🍽️ User signed out, clearing tastings and reviews');
                     this.userTastings.clear();
+                    this.userReviews.clear();
                 }
             }
+        },
+
+        // Watch for changes in menu data to reload reviews
+        editableMainSections: {
+            handler(newSections) {
+                if (this.isSignedInUser && newSections && newSections.length > 0) {
+                    // Debounce the review loading to avoid excessive API calls
+                    clearTimeout(this.reviewLoadTimeout);
+                    this.reviewLoadTimeout = setTimeout(() => {
+                        console.log('🍽️ Menu sections changed, reloading user reviews');
+                        this.loadUserReviews();
+                    }, 1000);
+                }
+            },
+            deep: true
         }
     },
     mounted() {
@@ -2550,6 +2650,14 @@ export default {
                 console.log('  - showTastingTracker:', this.showTastingTracker);
                 console.log('  - isSignedInUser:', this.isSignedInUser);
                 console.log('  - selfView:', this.selfView);
+            }
+
+            // Load user reviews if user is signed in (regardless of tasting tracker)
+            if (this.isSignedInUser) {
+                console.log('🍽️ Loading user reviews for menu items');
+                await this.loadUserReviews();
+            } else {
+                console.log('🍽️ NOT loading user reviews - user not signed in');
             }
         });
         
@@ -6647,6 +6755,183 @@ export default {
                     toast.error('Failed to clear some tastings');
                 }
             }
+        },
+
+        // ===== USER REVIEW TRACKER METHODS =====
+
+        // Helper method to generate review tracking key consistently
+        generateReviewTrackingKey(menuItem) {
+            const variant = this.getVariantValue(menuItem);
+            return `${menuItem.itemID}-${variant}`;
+        },
+
+        // Check if current user has reviewed a menu item
+        checkUserReviewed(menuItem) {
+            if (!this.isSignedInUser || !menuItem || !menuItem.itemID) {
+                return false;
+            }
+            
+            const key = this.generateReviewTrackingKey(menuItem);
+            const result = this.userReviews.has(key);
+            
+            // Debug logging to trace review status (only log when item is actually reviewed to reduce spam)
+            if (result || process.env.NODE_ENV === 'development') {
+                console.log('🔍 checkUserReviewed debug:', {
+                    menuItem: {
+                        itemID: menuItem.itemID,
+                        variant: menuItem.variant,
+                        itemName: menuItem.itemDetails?.itemName
+                    },
+                    key: key,
+                    hasReviewed: result,
+                    currentUserId: this.currentUserId
+                });
+            }
+            
+            return result;
+        },
+
+        // Get review record for a menu item
+        getReviewRecord(menuItem) {
+            const key = this.generateReviewTrackingKey(menuItem);
+            return this.userReviews.get(key);
+        },
+
+        // Load user's existing reviews for menu items
+        async loadUserReviews() {
+            if (!this.isSignedInUser || this.reviewsLoading) {
+                console.log('🔍 loadUserReviews: Not loading - not signed in or already loading');
+                console.log('  - isSignedInUser:', this.isSignedInUser);
+                console.log('  - reviewsLoading:', this.reviewsLoading);
+                console.log('  - currentUserId:', this.currentUserId);
+                return;
+            }
+
+            console.log('🍽️ Loading user reviews for menu items...');
+            console.log('🔍 User ID:', this.currentUserId);
+            console.log('🔍 API URL:', process.env.VUE_APP_API_URL);
+            this.reviewsLoading = true;
+
+            try {
+                // Get all menu item IDs from the current menu
+                const menuItemIds = new Set();
+                
+                // Collect item IDs from main sections
+                this.editableMainSections.forEach(section => {
+                    if (section.sectionMenu) {
+                        section.sectionMenu.forEach(item => {
+                            if (item.itemID) {
+                                menuItemIds.add(item.itemID);
+                            }
+                        });
+                    }
+                    
+                    // Collect from subsections
+                    if (section.subsections) {
+                        section.subsections.forEach(subsection => {
+                            if (subsection.sectionMenu) {
+                                subsection.sectionMenu.forEach(item => {
+                                    if (item.itemID) {
+                                        menuItemIds.add(item.itemID);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
+                if (menuItemIds.size === 0) {
+                    console.log('🔍 No menu items found to check reviews for');
+                    return;
+                }
+
+                console.log('🔍 Checking reviews for', menuItemIds.size, 'menu items');
+
+                // Fetch user's reviews using the correct endpoint
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllUserReviews/${this.currentUserId}`);
+                
+                console.log('🔍 getAllUserReviews response:', {
+                    status: response.status,
+                    responseData: response.data,
+                    reviewsLength: response.data?.reviews ? response.data.reviews.length : 0
+                });
+                
+                // The endpoint returns an object with a 'reviews' property containing the array
+                const allUserReviews = response.data.reviews || [];
+
+                // Filter to only reviews for menu items in this venue
+                const relevantReviews = allUserReviews.filter(review => 
+                    menuItemIds.has(review.reviewTarget)
+                );
+
+                console.log('🔍 Found', relevantReviews.length, 'reviews by current user for menu items');
+                console.log('🔍 Menu item IDs:', Array.from(menuItemIds));
+                console.log('🔍 Relevant reviews:', relevantReviews);
+
+                // Clear existing reviews and populate new ones
+                this.userReviews.clear();
+                
+                relevantReviews.forEach(review => {
+                    const variant = review.variant !== null && review.variant !== undefined ? review.variant : 0;
+                    const key = `${review.reviewTarget}-${variant}`;
+                    this.userReviews.set(key, review);
+                    
+                    console.log('🔍 Added review to map:', {
+                        key: key,
+                        reviewId: review.id,
+                        listingId: review.reviewTarget,
+                        variant: review.variant
+                    });
+                });
+
+                console.log('🍽️ User reviews loaded:', this.userReviews.size, 'total reviews');
+
+            } catch (error) {
+                console.error('❌ Error loading user reviews:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    response: error.response?.data,
+                    status: error.response?.status,
+                    statusText: error.response?.statusText,
+                    url: error.config?.url
+                });
+                
+                const toast = useToast();
+                
+                // Provide more specific error messages
+                if (error.response?.status === 404) {
+                    toast.error('Review endpoint not found. Please check server configuration.');
+                } else if (error.response?.status === 500) {
+                    toast.error('Server error while loading reviews. Please try again later.');
+                } else if (error.response?.status === 401 || error.response?.status === 403) {
+                    toast.error('Authentication error. Please log in again.');
+                } else if (!navigator.onLine) {
+                    toast.error('No internet connection. Please check your network.');
+                } else {
+                    toast.error(`Failed to load your review history: ${error.message || 'Unknown error'}`);
+                }
+            } finally {
+                this.reviewsLoading = false;
+            }
+        },
+
+        // Navigate to add review (for items not yet reviewed)
+        goToAddReview(menuItem) {
+            if (!menuItem || !menuItem.itemID) {
+                console.error('Invalid menu item for review:', menuItem);
+                return;
+            }
+
+            if (!this.isSignedInUser) {
+                // Redirect to login if not authenticated
+                this.$router.push('/login');
+                return;
+            }
+
+            // Navigate to the listing page where user can add a review
+            const itemName = menuItem.itemDetails?.itemName || 'item';
+            const safeName = itemName.replace(/[^a-zA-Z0-9\s]/g, ''); // Remove special characters for URL safety
+            this.$router.push(`/listing/view/${menuItem.itemID}/${safeName}`);
         },
 
         // Copy to Clipboard - transferred from parent
