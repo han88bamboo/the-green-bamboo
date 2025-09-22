@@ -62,6 +62,7 @@
                       New Collection
                     </button>
                   </li>
+                  
                   <!-- Cellar History Tab -->
                   <li class="nav-item ms-auto">
                     <button 
@@ -446,8 +447,21 @@
                     </div>
                   </div>
 
+                  <!-- Add Collection Desktop Button -->
+                  <div v-if="activeTab == 'all'" class="mobile-view-hide col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
+                    <button 
+                      class="btn btn-primary  fw-bold"
+                      type="button"
+                      @click="toggleRightSidebar"
+                      v-show="!rightSidebarExpanded"
+                    >
+                      <i class="bi bi-plus-circle me-2"></i>
+                      Add Drink
+                    </button>
+                  </div>
+
                   <!-- Drink Type Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8'">
                     <select class="form-select" v-model="filters.drinkType">
                       <option value="">Any Type</option>
                       <option v-for="drinkType in drinkTypeOptions" :key="drinkType" :value="drinkType">
@@ -457,7 +471,7 @@
                   </div>
 
                   <!-- Type Category Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <select class="form-select" v-model="filters.typeCategory" :disabled="!filters.drinkType">
                       <option value="">Any Category</option>
                       <option v-for="category in typeCategoryOptions" :key="category" :value="category">
@@ -467,7 +481,7 @@
                   </div>
 
                   <!-- Country Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <select class="form-select" v-model="filters.country">
                       <option value="">Any Country</option>
                       <option v-for="country in countryOptions" :key="country" :value="country">
@@ -477,7 +491,7 @@
                   </div>
 
                   <!-- Vintage Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <select class="form-select" v-model="filters.vintage">
                       <option value="">Any Vintage</option>
                       <option v-for="year in vintageOptions" :key="year" :value="year">
@@ -487,7 +501,7 @@
                   </div>
 
                   <!-- Average Rating Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <select class="form-select" v-model="filters.averageRating">
                       <option value="">Any Rating</option>
                       <option value="9">9+ Stars</option>
@@ -499,7 +513,7 @@
                   </div>
 
                   <!-- Status Filter -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <select class="form-select" v-model="filters.status">
                       <option value="">Any Status</option>
                       <option value="In Possession">In Cellar</option>
@@ -510,7 +524,7 @@
                   </div>
 
                   <!-- Drink Now Checkbox -->
-                  <div :class="activeTab !== 'all' && activeTab !== 'history' ? 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8' : 'col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_7'">
+                  <div class="col-6 col-sm-4 col-md-2 col-lg-2 col-xl-1_8">
                     <div class="form-check">
                       <input
                         class="form-check-input"
