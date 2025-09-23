@@ -830,42 +830,7 @@
                                                             :key="tag.tagId" 
                                                             :style="{ color: tag.hexcode || '#6c757d' }"
                                                             :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                                                    </span>                                                    <!-- See User Reviews -->
-                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                                    </router-link>
-
-                                                    <!-- Add Your Review / Review Added Button -->
-                                                    <template v-if="isSignedInUser" >
-                                                        <button 
-                                                            v-if="!hasUserReviewed(subsectionItem)" 
-                                                            type="button" 
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#menuItemReviewModal"
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="initializeReviewForMenuItem(sectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
-                                                        </button>
-                                                        <button 
-                                                            v-else 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            disabled
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Review Added!
-                                                        </button>
-                                                    </template>
-                                                    <!-- Logged-out users -->
-                                                    <template v-else >
-                                                        <button 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
-                                                        </button>
-                                                    </template>
+                                                    </span>
                                                 </div>
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -904,6 +869,43 @@
                                                     <p v-if="subsectionItem.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
                                                         Temporarily Unavailable
                                                     </p>
+
+                                                    <!-- See User Reviews -->
+                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
+                                                    </router-link>
+
+                                                    <!-- Add Your Review / Review Added Button -->
+                                                    <template v-if="isSignedInUser" >
+                                                        <button 
+                                                            v-if="!hasUserReviewed(subsectionItem)" 
+                                                            type="button" 
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#menuItemReviewModal"
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            @click="initializeReviewForMenuItem(subsectionItem)"
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Add Your Review
+                                                        </button>
+                                                        <button 
+                                                            v-else 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            disabled
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Review Added!
+                                                        </button>
+                                                    </template>
+                                                    <!-- Logged-out users -->
+                                                    <template v-else >
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            @click="goToAddReview(subsectionItem)"
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Add Your Review
+                                                        </button>
+                                                    </template>
                                                 </div>
                                             </div>
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
