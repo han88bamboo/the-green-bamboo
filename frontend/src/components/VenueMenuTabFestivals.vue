@@ -3769,7 +3769,10 @@ export default {
             }
             
             console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
-            
+
+            // Map vintage data for all menu items in the hierarchical structure
+            this.mapVintageDataInHierarchicalMenu(hierarchicalMenu);
+           
             // Build the hierarchical structure and flat lookup
             this.buildMenuHierarchy(hierarchicalMenu);
 
@@ -3779,6 +3782,33 @@ export default {
 
             // Emit the processed data back to parent
             this.emitMenuDataProcessed(hierarchicalMenu);
+        },
+
+        // Map vintage data from variant field to itemVintage for hierarchical menu structure
+        mapVintageDataInHierarchicalMenu(hierarchicalMenu) {
+            hierarchicalMenu.forEach(section => {
+                // Map vintage for main section items
+                if (section.sectionMenu && section.sectionMenu.length > 0) {
+                    section.sectionMenu.forEach(item => {
+                        if (item.variant !== undefined && item.variant !== null) {
+                            item.itemVintage = item.variant;
+                        }
+                    });
+                }
+                
+                // Map vintage for subsection items
+                if (section.subsections && section.subsections.length > 0) {
+                    section.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                            subsection.sectionMenu.forEach(item => {
+                                if (item.variant !== undefined && item.variant !== null) {
+                                    item.itemVintage = item.variant;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         },
 
         // Process flat menu structure from prop and convert to hierarchical
@@ -3871,6 +3901,10 @@ export default {
                             itemProducerID: listingData.producerID,
                             itemServingTypeName: servingTypeName,
                         };
+                        // Set the vintage from the variant field if available
+                        if (item.variant !== undefined) {
+                            item.itemVintage = item.variant;
+                        }
                     }
                 }
             }
@@ -4109,8 +4143,10 @@ export default {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${sectionId}`);
                 
                 if (response.status === 200 && response.data) {
-                    console.log('🍽️ Section items loaded:', response.data.length, 'items');
-                    return response.data;
+                    // The API returns {code, data, pagination} structure
+                    const items = response.data.data || response.data;
+                    console.log('🍽️ Section items loaded:', items.length, 'items');
+                    return items;
                 } else {
                     console.warn('🍽️ No items found for section:', sectionId);
                     return [];
@@ -4281,6 +4317,9 @@ export default {
                         itemProducer: listingData["producerName"],
                         itemProducerID: listingData["producerID"],
                     };
+
+                    // Set the vintage from the backend variant field
+                    item.itemVintage = item.variant;
 
                     // Get serving type name
                     let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
@@ -6106,11 +6145,12 @@ export default {
             // Instead of directly mutating the prop, emit to parent
             this.$emit('edit-menu-mode-changed', false);
 
-            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
+            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType, newMenuItemVintage
             this.newMenuItemID = "";
             this.newMenuItemTarget = {};
             this.newMenuItemTargetSection = {};
             this.newMenuItemPrice = '';
+            this.newMenuItemVintage = null;
             this.getDefaultServingType();
         },
 
@@ -6127,6 +6167,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
@@ -6155,6 +6196,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
