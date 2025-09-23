@@ -514,7 +514,7 @@
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
                                             <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="overflow:hidden;text-overflow: ellipsis;">
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link>
@@ -529,7 +529,7 @@
                                         </div>
 
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
-                                        <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                        <p class="text-start mb-1" style="overflow:hidden;text-overflow: ellipsis;">
                                             <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
                                                 <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                             </router-link>
@@ -819,7 +819,7 @@
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
                                                     <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                        <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                        <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                             {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
                                                         </p>
                                                     </router-link>
@@ -1260,7 +1260,7 @@
                                                 <div class="col-lg-10 col-12 ps-5">
                                                     <div class="row">
                                                         <div class="col-11">
-                                                            <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                            <p class="fs-5 fw-bold text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                                 {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
                                                             </p>
                                                         </div>
@@ -1275,7 +1275,7 @@
                                                     </div>
                                                     <div class="row">
                                                         <div class="col-10">
-                                                            <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                            <p class="text-start mb-1" style=" overflow:hidden;text-overflow: ellipsis;">
                                                                 <span v-if="menuItem.itemDetails['itemProducer']">{{ menuItem.itemDetails['itemProducer'] }} | </span>
                                                                 <span v-if="menuItem.itemDetails['itemType']">{{ menuItem.itemDetails['itemType'] }} | </span>
                                                                 <span v-if="menuItem.itemDetails['itemTypeCategory']">{{ menuItem.itemDetails['itemTypeCategory'] }} | </span>
@@ -1655,7 +1655,7 @@
                                                             <!-- Item Name -->
                                                             <div class="col-11">
                                                                 <p class="fs-5 fw-bold text-start text-decoration-underline m-0"
-                                                                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                                    style="overflow:hidden;text-overflow: ellipsis;">
                                                                     {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
                                                                 </p>
                                                             </div>
@@ -2008,7 +2008,7 @@
                                                 <div class="row">
                                                     <div class="col-7">
                                                         <p class="fs-5 fw-bold text-start text-decoration-underline m-0"
-                                                            style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                                            style=" overflow:hidden;text-overflow: ellipsis;">
                                                             {{ item.newMenuItemTarget.listingName }} {{ item.newMenuItemVintage ? ' [' + item.newMenuItemVintage + ' Vintage]' : '' }}
                                                         </p>
                                                     </div>
