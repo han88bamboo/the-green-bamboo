@@ -360,7 +360,15 @@
                                                 <p class="fw-bold mobile-fs-6 fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
-                                            </router-link>
+                                            </router-link> 
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
+                                                          style="font-size: 12px;">
+                                                        <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                                              :key="tag.tagId" 
+                                                              :style="{ color: tag.hexcode || '#6c757d' }"
+                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>
                                         </div>
 
 
@@ -392,14 +400,6 @@
                                                         Temporarily Unavailable
                                                     </p>
 
-                                                    <!-- Flavor Tags - Comma separated -->
-                                                    <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
-                                                          style="font-size: 12px;">
-                                                        <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
-                                                              :key="tag.tagId" 
-                                                              :style="{ color: tag.hexcode || '#6c757d' }"
-                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                                                    </span>
                                                 </div>
                                             </div>
                                             
@@ -518,7 +518,14 @@
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link>
-
+                                                            
+                                            <!-- Flavor Tags - Comma separated -->
+                                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0">
+                                                <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    :style="{ color: tag.hexcode || '#6c757d' }"
+                                                    :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                            </span>    
                                         </div>
 
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -558,13 +565,7 @@
                                                 Temporarily Unavailable
                                             </p>
 
-                            <!-- Flavor Tags - Comma separated -->
-                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0">
-                                <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
-                                      :key="tag.tagId" 
-                                      :style="{ color: tag.hexcode || '#6c757d' }"
-                                      :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                            </span>                                            <!-- See User Reviews -->
+                                            <!-- See User Reviews -->
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
@@ -823,13 +824,13 @@
                                                         </p>
                                                     </router-link>
 
-                                    <!-- Flavor Tags - Comma separated -->
-                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0">
-                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
-                                              :key="tag.tagId" 
-                                              :style="{ color: tag.hexcode || '#6c757d' }"
-                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                                    </span>                                                    <!-- See User Reviews -->
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0">
+                                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            :style="{ color: tag.hexcode || '#6c757d' }"
+                                                            :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>                                                    <!-- See User Reviews -->
                                                     <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
                                                         <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                                     </router-link>
@@ -3345,9 +3346,9 @@ export default {
 
 
             // Review modal properties
-            currentMenuItemID: null,
             currentMenuItem: null,
             deleteID: null,
+            reviewTarget: null,
 
             // For creating review
             languages: [],
@@ -7958,7 +7959,7 @@ export default {
       let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createReview`;
       let submitData = {
         userID: this.userID,
-        reviewTarget: this.currentMenuItemID,
+        reviewTarget: this.reviewTarget,
         rating: Number(this.rating),
         reviewDesc: this.reviewDesc,
         reviewType: "Listing",
@@ -8020,7 +8021,7 @@ export default {
     },
 
     clearReviewCache() {
-      const cacheKey = `reviewCache_${this.currentMenuItemID}_${this.userID}`;
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
       localStorage.removeItem(cacheKey);
     },
 
@@ -8044,7 +8045,7 @@ export default {
     clearPhoto() {
       this.image64 = null;
       this.selectedImage = "";
-      document.getElementById("menuItemReviewPhoto").value = "";
+      document.getElementById("reviewPhoto").value = "";
     },
 
     clearLocation() {
@@ -8267,7 +8268,7 @@ export default {
     },
 
     restoreReviewCache() {
-      const cacheKey = `reviewCache_${this.currentMenuItemID}_${this.userID}`;
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
       const cached = localStorage.getItem(cacheKey);
       if (cached && !this.inEdit) {
         try {
@@ -8299,7 +8300,7 @@ export default {
     },
 
     cacheReviewForm() {
-      const cacheKey = `reviewCache_${this.currentMenuItemID}_${this.userID}`;
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
       const data = {
         selectedLanguage: this.selectedLanguage,
         reviewDesc: this.reviewDesc,
@@ -8327,7 +8328,7 @@ export default {
 
     // Set current menu item being reviewed
     setCurrentMenuItem(menuItem) {
-    this.currentMenuItemID = menuItem.itemID;
+    this.reviewTarget = menuItem.itemID;
     this.currentMenuItem = menuItem;
     // Reset form to defaults
     this.resetReviewForm();
