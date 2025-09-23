@@ -8599,7 +8599,7 @@ export default {
 
 /* Festival Tasting Tracker Styles */
 .tasting-tracker {
-  min-width: 150px;
+  /* min-width: 150px; */
   width: auto;
   display: inline-block;
 }
@@ -8661,9 +8661,9 @@ export default {
 
 /* Mobile responsiveness for tasting tracker */
 @media (max-width: 768px) {
-  .tasting-tracker {
+  /* .tasting-tracker {
     min-width: 120px;
-  }
+  } */
   
   .tasting-tracker .tasting-label {
     font-size: 0.75rem;
@@ -8686,4 +8686,232 @@ export default {
     line-height: 1.2 !important;
   }
 }
+
+/* Review Modal Styles */
+.step-index { 
+  background: wheat; 
+  color: black; 
+  border: 2px solid #f0b358; 
+  width: 25px; 
+  height: 25px; 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-weight: bold; 
+  font-size: 15px;
+}
+
+.auto-resize-textarea {
+  resize: vertical;
+  min-height: 38px;
+  transition: height 0.2s ease;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auto-resize-textarea:focus {
+  border-color: #006A50;
+  box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+}
+
+.location-input-container {
+  position: relative;
+}
+
+.home-option-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.home-option-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.home-option-item:hover {
+  background-color: #f8f9fa;
+}
+
+.home-option-item:last-child {
+  border-bottom: none;
+}
+
+.location-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.pac-container {
+  z-index: 1000 !important;
+  transition: margin-top 0.2s ease !important;
+}
+
+.extended-preview-container {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.extended-preview-container:hover {
+  border-color: #6c757d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-content {
+  padding: 20px;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-input-field {
+  height: 35px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-input-field::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #dee2e6 20%,
+      #dee2e6 80%,
+      transparent 100%);
+  transform: translateY(-50%);
+}
+
+.preview-fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 30%,
+      rgba(255, 255, 255, 0.8) 60%,
+      rgba(255, 255, 255, 0.95) 80%,
+      rgba(255, 255, 255, 1) 100%);
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  padding: 15px;
+}
+
+.preview-cta {
+  color: #333;
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
+    0px 0px 12px rgba(0, 0, 0, 0.3),
+    1px 1px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.extended-preview-container:hover .preview-cta {
+  color: #000;
+  transform: translateY(-1px);
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
+    0px 0px 15px rgba(0, 0, 0, 0.7),
+    2px 2px 6px rgba(0, 0, 0, 1);
+}
+
+.preview-color-btn {
+  margin-right: 2px !important;
+  padding: 0 !important;
+}
+
+.upload-label { 
+  display: block; 
+  width: 100%; 
+}
+
+.mobile-review-svg-button {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.photo-dropzone {
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  height: 100%;
+  border: 2px dashed #cfcfcf; 
+  background: #fafafa; 
+  cursor: pointer;
+}
+
+.review-preview-photo {
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  display: block;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+  background: #FF3E31;
+}
+
+@media (max-width: 768px) {
+  .preview-content {
+    padding: 15px;
+    height: 150px;
+  }
+
+  .preview-fade-overlay {
+    height: 100px;
+  }
+
+  .preview-cta {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
+      0px 0px 10px rgba(0, 0, 0, 0.6),
+      1px 1px 3px rgba(0, 0, 0, 0.9);
+  }
+
+  .preview-color-btn {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 1px !important;
+  }
+}
+
 </style>
