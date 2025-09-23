@@ -363,7 +363,7 @@
                                             </router-link> 
                                                     <!-- Flavor Tags - Comma separated -->
                                                     <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
-                                                          style="font-size: 12px;">
+                                                          style="font-size: 12px;" class="fw-bold">
                                                         <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
                                                               :key="tag.tagId" 
                                                               :style="{ color: tag.hexcode || '#6c757d' }"
@@ -520,7 +520,7 @@
                                             </router-link>
                                                             
                                             <!-- Flavor Tags - Comma separated -->
-                                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0">
+                                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="fw-bold">
                                                 <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
                                                     :key="tag.tagId" 
                                                     :style="{ color: tag.hexcode || '#6c757d' }"
@@ -694,7 +694,7 @@
 
                                                     <!-- Flavor Tags - Comma separated -->
                                                     <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" 
-                                                          style="font-size: 12px;">
+                                                          style="font-size: 12px;" class="fw-bold">
                                                         <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
                                                               :key="tag.tagId" 
                                                               :style="{ color: tag.hexcode || '#6c757d' }"
@@ -825,7 +825,7 @@
                                                     </router-link>
 
                                                     <!-- Flavor Tags - Comma separated -->
-                                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0">
+                                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="fw-bold">
                                                         <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
                                                             :key="tag.tagId" 
                                                             :style="{ color: tag.hexcode || '#6c757d' }"
