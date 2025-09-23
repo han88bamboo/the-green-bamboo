@@ -2525,7 +2525,6 @@
                         class="col-4">
                         <input v-model="variant" type="text" class="form-control" id="vintage"
                           placeholder="e.g. 2020" 
-                          :readonly="isVintageAutoPopulated"
                           :class="{ 'bg-light': isVintageAutoPopulated }" />
                         <small v-if="isVintageAutoPopulated" class="text-muted">
                           <i class="fas fa-info-circle"></i> Auto-filled from menu item
