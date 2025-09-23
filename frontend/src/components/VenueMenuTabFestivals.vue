@@ -2291,11 +2291,11 @@
                 <!--tzh changed #535C72 to #F0B358-->
                 <!-- V-if to edit or add review -->
                 <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Add Your Review
+                  Add Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <!--tzh changed white to black and to bold-->
                 <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Edit Your Review
+                  Edit Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
                   aria-label="Close"></button>
