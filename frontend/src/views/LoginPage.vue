@@ -180,33 +180,7 @@
                 </div>
               </div>
 
-
-              <!-- Business Login -->
-              <p class=" fw-bold fs-4 mobile-fs-5 mb-1 mt-4">
-                Own a Business Account?
-              </p>
-              <p class="fw-bold fst-italic fs-6 mobile-fs-7">
-                Access your Venue or Brand account here.
-              </p>
-              <div class="row">
-                <div class="col">
-                  <router-link
-                    :to="{ path: '/businessLogin' }"
-                    class="default-text-no-background"
-                  >
-                    <button class="btn business-btn btn-sm px-5 fw-bold w-50">
-                      Business Login Page
-                    </button>
-                  </router-link>
-                </div>
-              </div>
               <br>
-
-              <div class="row py-1">
-                <div class="col-9 mx-auto">
-                  <hr>
-                </div>
-              </div>
 
               <!-- Prompt sign up -->
               <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
@@ -227,7 +201,34 @@
                   </router-link>
                 </div>
               </div>
-              <br>
+ 
+ 
+              <div class="row py-1">
+                <div class="col-9 mx-auto">
+                  <hr>
+                </div>
+              </div>
+             
+              <!-- Business Login -->
+              <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
+                Own a Business Account?
+              </p>
+              <p class="fw-bold fst-italic fs-6 mobile-fs-7">
+                Access your Venue or Brand account here.
+              </p>
+              <div class="row">
+                <div class="col">
+                  <router-link
+                    :to="{ path: '/businessLogin' }"
+                    class="default-text-no-background"
+                  >
+                    <button class="btn business-btn btn-sm px-5 fw-bold w-50">
+                      Business Login Page
+                    </button>
+                  </router-link>
+                </div>
+              </div>
+
               <!-- Business sign up -->
               <div class="row pt-4 pb-3">
                 <div class="col-10 col-md-8 mx-auto">
@@ -372,8 +373,7 @@
 }
 
 .business-btn {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #000000;
   color: white;
   border-radius: 25px; /* Same border radius as secondary-btn */
 }
