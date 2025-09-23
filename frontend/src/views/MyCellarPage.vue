@@ -696,7 +696,12 @@
                   <p class="text-muted mb-4 px-4">
                     Track your collection, manage inventory, record tasting notes, set drinking windows, and organize bottles into custom collections. Perfect for wine cellars, whiskey cabinets, sake collections, and more!
                   </p>
-                  <button class="btn btn-primary" @click="toggleRightSidebar">
+                  <button 
+                    class="btn btn-primary" 
+                    :data-bs-toggle="isMobile ? 'modal' : undefined"
+                    :data-bs-target="isMobile ? '#mobileAddDrinksModal' : undefined"
+                    @click="!isMobile && toggleRightSidebar()"
+                  >
                     <i class="bi bi-plus-circle me-2"></i>
                     Add Your First Drink
                   </button>
@@ -1952,7 +1957,12 @@
         </div>
         
         <!-- Collapsible Tab Button -->
-        <div class="right-sidebar-tab" @click="toggleRightSidebar">
+        <div 
+          class="right-sidebar-tab" 
+          :data-bs-toggle="isMobile ? 'modal' : undefined"
+          :data-bs-target="isMobile ? '#mobileAddDrinksModal' : undefined"
+          @click="!isMobile && toggleRightSidebar()"
+        >
           <div class="tab-content">
             <i :class="isMobile ? 'bi-chevron-left' : (rightSidebarExpanded ? 'bi-chevron-right' : 'bi-chevron-left')"></i>
             <span class="tab-text">{{ isMobile ? 'Add Drinks' : (rightSidebarExpanded ? 'Close' : 'Add Drinks') }}</span>
@@ -4307,22 +4317,11 @@ export default {
       return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '');
     },
 
-    // Right sidebar toggle
+    // Right sidebar toggle (desktop only)
     toggleRightSidebar() {
-      if (this.isMobile) {
-        // On mobile, open the modal instead of toggling sidebar
-        const modalElement = document.getElementById('mobileAddDrinksModal');
-        if (window.bootstrap && window.bootstrap.Modal) {
-          let modal = window.bootstrap.Modal.getInstance(modalElement);
-          if (!modal) {
-            modal = new window.bootstrap.Modal(modalElement);
-          }
-          modal.show();
-        }
-      } else {
-        // On desktop, toggle the sidebar as before
-        this.rightSidebarExpanded = !this.rightSidebarExpanded;
-      }
+      // This method is now only called on desktop (non-mobile)
+      // Mobile uses Bootstrap data attributes to open modal directly
+      this.rightSidebarExpanded = !this.rightSidebarExpanded;
     },
 
     // Mobile filters toggle
