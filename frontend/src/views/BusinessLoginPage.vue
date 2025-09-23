@@ -21,7 +21,7 @@
               <p
                 class="fw-bold fs-3 pt-4 mx-3 mobile-fs-5 mb-1"
               >
-                Business Portal Access
+                {{ getBusinessHeaderText() }}
               </p>
               <p
                 class="fw-bold mx-4 fs-6 mobile-fs-7"
@@ -715,6 +715,18 @@ export default {
           return 'Put your brand under the spotlight';
         default:
           return 'Access your Venue or Brand account here.';
+      }
+    },
+
+    // Get business header text based on selected role
+    getBusinessHeaderText() {
+      switch(this.selectedRole) {
+        case 'venue':
+          return 'Drink-X For Business: Venues';
+        case 'producer':
+          return 'Drink-X For Business: Brands';
+        default:
+          return 'Drink-X For Business';
       }
     },
 
