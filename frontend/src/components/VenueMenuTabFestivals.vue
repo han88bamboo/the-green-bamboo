@@ -2305,7 +2305,7 @@
                 <!-- row 0: expression name for mobile only -->
                 <div class="row mobile-view-show">
                   <p class="text-body-secondary text-start">
-                    <b> {{ specified_listing["listingName"] }} </b>
+                    <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b>
                   </p>
                 </div>
                 <!-- row 1: language, location -->
@@ -2499,11 +2499,11 @@
                   <div class="col justify-content-start mb-3">
                     <div class="row mb-2">
                       <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
                         class="col-12">
                         <p class="text-start mb-0 fw-bold">Vintage
                           <span
-                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
                             class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
                             For wine and sake, you can review specific vintage years.
                           </span>
@@ -2512,7 +2512,7 @@
                     </div>
                     <div class="row mb-2">
                       <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)"
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
                         class="col-4">
                         <input v-model="variant" type="text" class="form-control" id="vintage"
                           placeholder="e.g. 2020" />
@@ -2949,15 +2949,9 @@
 
               <!-- End of modal body -->
               <div class="modal-footer d-flex">
-                <span v-for="review in filteredReviews.filter(
-                  (review) => review.userID === parseInt(userID)
-                )" v-bind:key="review.id" class="me-auto">
+                <span v-if="hasUserReviewed(currentMenuItem)" class="me-auto">
                   <button v-if="inEdit" class="btn btn-danger py-1 mobile-fs-7" @click="
-                    setDeleteID(
-                      filteredReviews.find(
-                        (review) => review.userID === parseInt(userID)
-                      )
-                    )
+                    setDeleteID(getReviewRecord(currentMenuItem))
                     " data-bs-toggle="modal" data-bs-target="#deleteReview">
                     Delete Review
                   </button>
@@ -2966,7 +2960,7 @@
                   Close
                 </button>
                 <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
-                <div v-if="specified_listing.drinkType !== 'Wine'">
+                <div v-if="currentMenuItem?.drinkType !== 'Wine'">
                   <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
                     Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
                       role="status" aria-hidden="true"></span>
@@ -3353,6 +3347,7 @@ export default {
             // Review modal properties
             currentMenuItemID: null,
             currentMenuItem: null,
+            deleteID: null,
 
             // For creating review
             languages: [],
@@ -7900,6 +7895,11 @@ export default {
         this.image64 = base64String;
       };
       reader.readAsDataURL(file);
+    },
+
+    // Function to set delete ID for review deletion
+    setDeleteID(review) {
+      this.deleteID = review;
     },
 
     // Function to add review
