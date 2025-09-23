@@ -5,7 +5,7 @@
   <div class="body-login background-login">
     <!-- Business login header banner -->
     <div class="login-header-banner mobile-view-show">
-      <img src="@/assets/login-bg.jpg" alt="Banner" />
+      <img src="@/assets/business-signup.jpg" alt="Banner" />
     </div>
       <div class="container mb-5 mobile-mb-0">
       <div class="row">
@@ -254,7 +254,7 @@
                       <div class="col-md-4 d-flex align-items-center justify-content-center">
                         <router-link :to="{ path: '/businessSignup' }" class="d-block w-100">
                           <button class="btn business-btn fw-bold py-2 w-100">
-                            Drink-X for Business
+                            Sign up to Drink-X for Business!
                           </button>
                         </router-link>
                       </div>
@@ -317,7 +317,7 @@
 }
 
 .background-login {
-  background-image: url('@/assets/login-bg.jpg');
+  background-image: url('@/assets/business-signup.jpg');
   background-size: cover;
   background-position: center;
   min-height: 100vh;

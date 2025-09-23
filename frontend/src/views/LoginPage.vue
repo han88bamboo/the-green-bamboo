@@ -245,7 +245,7 @@
                       <div class="col-md-4 d-flex align-items-center justify-content-center">
                         <router-link :to="{ path: '/businessSignup' }" class="d-block w-100">
                           <button class="btn business-btn fw-bold py-2 w-100">
-                            Drink-X for Business
+                            Sign up to Drink-X for Business!
                           </button>
                         </router-link>
                       </div>
