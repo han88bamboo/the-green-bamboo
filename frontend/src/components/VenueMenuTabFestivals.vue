@@ -2534,7 +2534,7 @@
                     <div class="row">
                       <div class="col-12">
                         <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Min 20 characters"></textarea>
+                          rows="3" placeholder="Min 3 characters"></textarea>
                       </div>
                     </div>
 
@@ -7912,9 +7912,9 @@ export default {
 
       // let errorPhrase = "Your completion is incomplete"
       // form validation
-      if (this.reviewDesc.length < 20) {
+      if (this.reviewDesc.length < 3) {
         this.reviewDescError =
-          "Character count is less than 20, please write more for a more detailed review.";
+          "Character count is less than 3, please write more for a more detailed review.";
         alert(
           "Submission has error, please fill in the required fields properly"
         );
