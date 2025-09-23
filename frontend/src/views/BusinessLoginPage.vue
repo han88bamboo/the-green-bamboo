@@ -14,7 +14,7 @@
             <form
               id="businessLogin"
               v-if="!showResetPWForm"
-              v-on:submit.prevent="checkBusinessLogin"
+              v-on:submit.prevent="checkLogin"
               class="login-form-box business-login-form"
             >
               <!-- Business login header text -->
@@ -89,26 +89,26 @@
                     <input
                       type="text"
                       class="form-control form-box-outline"
-                      id="businessId"
+                      id="ID"
                       placeholder="Username"
-                      v-model="businessID"
+                      v-model="ID"
                     />
-                    <label for="businessId"> Username </label>
+                    <label for="ID"> Username </label>
                   </div>
                 </div>
               </div>
               <!-- email -->
-              <div class="row pt-3" v-if="loginMethod === 'email'" >
+              <div class="row pt-3" v-if="loginMethod === 'email'">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                   <div class="form-floating">
                     <input
                       type="email"
                       class="form-control form-box-outline"
-                      id="businessEmail"
+                      id="email"
                       placeholder="Email Address"
-                      v-model="businessEmail"
+                      v-model="email"
                     />
-                    <label for="businessEmail"> Email Address </label>
+                    <label for="email"> Email Address </label>
                   </div>
                 </div>
               </div>
@@ -120,11 +120,11 @@
                     <input
                       type="password"
                       class="form-control form-box-outline"
-                      id="businessPassword"
+                      id="password"
                       placeholder="Password"
-                      v-model="businessPassword"
+                      v-model="password"
                     />
-                    <label for="businessPassword"> Password </label>
+                    <label for="password"> Password </label>
                   </div>
                 </div>
               </div>
@@ -137,10 +137,10 @@
                     <div class="col text-start">
                       <input
                         type="checkbox"
-                        v-on:click="showBusinessPassword()"
+                        v-on:click="showPassword()"
                         class="form-check-input "
                       />
-                      <label for="businessPassword" class="form-check-label mobile-rating-smaller-text-2">
+                      <label for="password" class="form-check-label mobile-rating-smaller-text-2">
                         &nbsp; Show password
                       </label>
                     </div>
@@ -501,36 +501,33 @@ export default {
       loginMethod: 'username',
       selectedRole: 'venue', // Default to venue for business
 
-      // business form values
+      // form values (same as LoginPage.vue)
       role: "",
-      businessID: "",
-      businessEmail: "",
-      businessPassword: "",
+      ID: "",
+      email: "",
+      password: "",
 
       // variable to toggle password reset form
       showResetPWForm: false,
     };
   },
   mounted() {
-    this.businessLoginCheck();
+    this.loginCheck();
   },
   methods: {
-    // Check if business user is already logged in
-    businessLoginCheck() {
+    // Check if user is already logged in
+    loginCheck() {
       if (localStorage.getItem("88B_accID") != null) {
         this.accountID = localStorage.getItem("88B_accID");
         this.role = localStorage.getItem("88B_accType");
-        this.businessID = localStorage.getItem("88B_accUsername");
-        // Only redirect if it's a business account
-        if (this.role === "venue" || this.role === "producer") {
-          this.redirectBusinessPage();
-        }
+        this.ID = localStorage.getItem("88B_accUsername");
+        this.redirectPage();
       }
     },
 
-    // toggle business password visibility
-    showBusinessPassword() {
-      var password = document.getElementById("businessPassword");
+    // toggle password visibility
+    showPassword() {
+      var password = document.getElementById("password");
       if (password.type === "password") {
         password.type = "text";
       } else {
@@ -538,24 +535,24 @@ export default {
       }
     },
 
-    // Business Form Submission Function
-    checkBusinessLogin() {
+    // Form Submission Function
+    checkLogin() {
       // set authentication pending flag to true
       this.authPending = true;
       // clear previous values
       this.errors = [];
 
       // check if user is already logged in
-      this.businessLoginCheck();
+      this.loginCheck();
 
       // Check if either username or email is provided
-      if ((this.businessID == "" && this.businessEmail == "") || this.businessPassword == "") {
+      if ((this.ID == "" && this.email == "") || this.password == "") {
         // check if both ID and email are empty
-        if (this.businessID == "" && this.businessEmail == "") {
+        if (this.ID == "" && this.email == "") {
           this.errors.push("Please enter either a username or email address");
         }
         // check if password keyed in
-        if (this.businessPassword == "") {
+        if (this.password == "") {
           this.errors.push("No password entered");
         }
 
@@ -566,28 +563,28 @@ export default {
       // [else] required details keyed in
       else {
         // If email is provided, get username from email first
-        if (this.businessEmail != "") {
-          this.getBusinessUsernameFromEmail();
+        if (this.email != "") {
+          this.getUsernameFromEmail();
         } else {
           // Use username directly
-          this.proceedWithBusinessLogin(this.businessID);
+          this.proceedWithLogin(this.ID);
         }
       }
     },
 
-    // Get business username from email address
-    async getBusinessUsernameFromEmail() {
+    // Get username from email address
+    async getUsernameFromEmail() {
       try {
         const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getUsernameFromEmail/${this.businessEmail}`
+          `${process.env.VUE_APP_API_URL}/getData/getUsernameFromEmail/${this.email}`
         );
         
         if (response.data.username) {
-          // Save the username to this.businessID so it will be stored in localStorage
-          this.businessID = response.data.username;
-          this.proceedWithBusinessLogin(response.data.username);
+          // Save the username to this.ID so it will be stored in localStorage
+          this.ID = response.data.username;
+          this.proceedWithLogin(response.data.username);
         } else {
-          this.errors.push("No business account found with this email address");
+          this.errors.push("No account found with this email address");
           this.authPending = false;
         }
       } catch (error) {
@@ -596,8 +593,8 @@ export default {
       }
     },
 
-    // Proceed with business login using username
-    async proceedWithBusinessLogin(username) {
+    // Proceed with login using username
+    async proceedWithLogin(username) {
       try {
         // First get the canonical username from the database
         const response = await this.$axios.get(
@@ -608,49 +605,42 @@ export default {
           const canonicalUsername = response.data.username;
 
           // Check login validity using the canonical username
-          let hashedPassword = this.hashPassword(canonicalUsername, this.businessPassword);
+          let hashedPassword = this.hashPassword(canonicalUsername, this.password);
           let loginInfo = { 
             username: username, 
             password: hashedPassword, 
-            canonicalUsername: canonicalUsername,
-            expectedRole: this.selectedRole // Send expected business role
+            canonicalUsername: canonicalUsername // Send canonical username for verification
           };
-          this.businessAuth(
+          this.auth(
             loginInfo,
-            `${process.env.VUE_APP_API_URL}/authcheck/businessAuthcheck`
+            `${process.env.VUE_APP_API_URL}/authcheck/authcheck`
           );
         } else {
-          this.errors.push("Error retrieving business account information");
+          this.errors.push("Error retrieving account information");
           this.authPending = false;
         }
       } catch (error) {
-        this.errors.push("Error verifying business account information");
+        this.errors.push("Error verifying account information");
         this.authPending = false;
       }
     },
 
-    // Business Authentication
-    async businessAuth(loginInfo, authURL) {
+    // Authentication
+    async auth(loginInfo, authURL) {
       try {
         const response = await this.$axios.post(authURL, loginInfo);
         let responseCode = response.data.code;
 
         // Authentication successful
         if (responseCode == 200) {
-          // Verify that the user has business privileges
-          if (response.data.role === "venue" || response.data.role === "producer") {
-            this.accountID = response.data.id;
-            this.role = response.data.role;
-            localStorage.setItem("88B_accID", this.accountID);
-            localStorage.setItem("88B_accType", this.role);
-            localStorage.setItem("88B_accUsername", this.businessID);
+          this.accountID = response.data.id;
+          this.role = response.data.role;
+          localStorage.setItem("88B_accID", this.accountID);
+          localStorage.setItem("88B_accType", this.role);
+          localStorage.setItem("88B_accUsername", this.ID);
 
-            this.authPending = false;
-            this.redirectBusinessPage();
-          } else {
-            this.errors.push("This account does not have business privileges");
-            this.authPending = false;
-          }
+          this.authPending = false;
+          this.redirectPage();
         }
         // Authentication failed
         else {
@@ -658,7 +648,7 @@ export default {
           this.authPending = false;
         }
       } catch (error) {
-        this.errors.push(error.response?.data?.message || "Business authentication failed");
+        this.errors.push(error.response.data.message);
         this.authPending = false;
       }
     },
@@ -677,25 +667,25 @@ export default {
       return hash;
     },
 
-    redirectBusinessPage() {
-      // Redirect for business roles only
-      
+    redirectPage() {
+      // Redirect for all roles
+
+      // [User]
+      if (this.role == "user") {
+        this.$router.push({ 
+          path: `/profile/user/${this.accountID}/${this.ID}`, 
+        });
+      }
       // [Producer]
       if (this.role == "producer") {
         this.$router.push({
-          path: `/profile/producer/${this.accountID}/${this.businessID}`,
+          path: `/profile/producer/${this.accountID}/${this.ID}`,
         });
       }
       // [Venue]
-      else if (this.role == "venue") {
+      if (this.role == "venue") {
         this.$router.push({ 
-          path: `/profile/venue/${this.accountID}/${this.businessID}` 
-        });
-      }
-      // [Fallback] - shouldn't happen, but redirect to general business dashboard
-      else {
-        this.$router.push({ 
-          path: `/business-dashboard` 
+          path: `/profile/venue/${this.accountID}/${this.ID}` 
         });
       }
     },
@@ -710,9 +700,9 @@ export default {
       this.loginMethod = method;
       // Clear both fields when switching
       if (method === 'username') {
-        this.businessEmail = '';
+        this.email = '';
       } else {
-        this.businessID = '';
+        this.ID = '';
       }
     },
 
