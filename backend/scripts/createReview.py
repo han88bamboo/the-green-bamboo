@@ -125,7 +125,18 @@ def createReviews():
     # Insert new venue if necessary OR handle "Home" case
     venue_id = None
     stored_address = raw_review.get('address', '')
-    if raw_review.get('location') and raw_review.get('address'):
+    
+    # Check if venueId is provided directly (for pre-selected venues)
+    if raw_review.get('venueId'):
+        try:
+            venue_id = int(raw_review['venueId'])
+            print(f"Using provided venue ID: {venue_id}")
+        except (ValueError, TypeError):
+            print(f"Invalid venueId provided: {raw_review.get('venueId')}")
+            venue_id = None
+    
+    # If no valid venueId provided, fallback to location-based logic
+    if venue_id is None and raw_review.get('location') and raw_review.get('address'):
         location_name = raw_review['location']
         address = raw_review['address']
         
@@ -179,17 +190,17 @@ def createReviews():
                     if fuzzy_match:
                         venue_id = fuzzy_match['id']
             
-            if not venue_id:
-                # Create new venue if no exact or fuzzy match found
-                username = create_username(location_name)
-                insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
-                                      "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                      VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-                hashed_password = 'hashed_password'
-                cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-                venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-        
-                conn.commit()
+                if not venue_id:
+                    # Create new venue if no exact or fuzzy match found
+                    username = create_username(location_name)
+                    insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                          "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                          VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+                    hashed_password = 'hashed_password'
+                    cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+                    venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+            
+                    conn.commit()
 
     # Upload image into S3
     if raw_review['photo']:

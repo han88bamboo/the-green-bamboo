@@ -3581,25 +3581,42 @@ export default {
             // Set the review target to the menu item's listing ID
             this.reviewTarget = menuItem.itemID;
             
-            // Set variant if the menu item has a vintage/variant
+            // Store reference to current menu item for other uses
+            this.currentMenuItem = menuItem;
+            
+            // Reset the review form to default state first
+            this.resetReviewForm();
+            
+            // Auto-populate variant field - Set variant if the menu item has a vintage/variant
             if (menuItem.vintage && menuItem.vintage !== null && menuItem.vintage !== '') {
                 this.variant = menuItem.vintage.toString();
             } else if (menuItem.variant && menuItem.variant !== null && menuItem.variant !== '') {
                 this.variant = menuItem.variant.toString();
-            } else {
-                this.variant = "";
+            } else if (menuItem.itemVintage && menuItem.itemVintage !== null && menuItem.itemVintage !== '') {
+                this.variant = menuItem.itemVintage.toString();
             }
             
-            // Store reference to current menu item for other uses
-            this.currentMenuItem = menuItem;
-            
-            // Reset the review form to default state
-            this.resetReviewForm();
+            // Auto-populate venue location field - Set current venue as the location
+            if (this.targetVenue && this.targetVenue.id) {
+                this.selectedLocationType = "venue";
+                this.selectedLocation = this.targetVenue.venueName || this.targetVenue.name || "";
+                this.selectedLocationAddress = this.targetVenue.address || "";
+                this.selectedLocationId = this.targetVenue.id.toString();
+                this.locationInputValue = this.selectedLocation;
+                
+                console.log('Auto-populated venue:', {
+                    venueName: this.selectedLocation,
+                    venueAddress: this.selectedLocationAddress,
+                    venueId: this.selectedLocationId
+                });
+            }
             
             console.log('Initialized review for:', {
                 itemID: menuItem.itemID,
                 variant: this.variant,
-                itemName: menuItem.listingName || menuItem.name
+                itemName: menuItem.listingName || menuItem.name,
+                venue: this.selectedLocation,
+                venueId: this.selectedLocationId
             });
         },
 
@@ -8095,6 +8112,19 @@ export default {
           upvotes: [],
         },
       };
+
+      // Add venue ID if available (for better venue tracking)
+      if (this.selectedLocationId && this.selectedLocationId !== "") {
+        submitData.venueId = Number(this.selectedLocationId);
+      }
+
+      console.log('Submitting review with payload:', {
+        reviewTarget: submitData.reviewTarget,
+        variant: submitData.variant,
+        location: submitData.location,
+        address: submitData.address,
+        venueId: submitData.venueId
+      });
 
       this.writeReview(submitAPI, submitData);
     },
