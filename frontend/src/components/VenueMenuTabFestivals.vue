@@ -2422,8 +2422,11 @@
                               <GMapAutocomplete placeholder="Tag where you tasted this drink"
                                 @place_changed="setPlaceFromAutocomplete" @input="onLocationInput"
                                 @focus="onLocationFocus" @blur="onLocationBlur" @keydown="onLocationKeydown"
-                                class="form-control input-with-icon" ref="locationInput" :value="locationInputValue"
-                                :options="{ types: ['establishment'] }">
+                                class="form-control input-with-icon" 
+                                :class="{ 'bg-light': isVenueAutoPopulated }"
+                                ref="locationInput" :value="locationInputValue"
+                                :options="{ types: ['establishment'] }"
+                                :disabled="isVenueAutoPopulated">
                               </GMapAutocomplete>
                             </div>
                           </div>
@@ -2435,7 +2438,10 @@
                         </div>
                         <div v-if="selectedLocationType === 'venue' && selectedLocation"
                           class="alert alert-success mb-2">
-                          📍 Selected venue: {{ selectedLocation }}
+                          📍 Current venue: {{ selectedLocation }}
+                          <small v-if="isVenueAutoPopulated" class="d-block text-muted mt-1">
+                            <i class="fas fa-info-circle"></i> Auto-filled from current venue
+                          </small>
                         </div>
 
                         <div>
@@ -2444,7 +2450,7 @@
                         </div>
                         <div class="row">
                           <div class="col-6 col-md-12 d-flex justify-content-start">
-                            <button v-if="selectedLocationType !== ''"
+                            <button v-if="selectedLocationType !== '' && !isVenueAutoPopulated"
                               class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2" @click="clearLocation">
                               Clear Selection
                             </button>
@@ -2518,7 +2524,12 @@
                         v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
                         class="col-4">
                         <input v-model="variant" type="text" class="form-control" id="vintage"
-                          placeholder="e.g. 2020" />
+                          placeholder="e.g. 2020" 
+                          :readonly="isVintageAutoPopulated"
+                          :class="{ 'bg-light': isVintageAutoPopulated }" />
+                        <small v-if="isVintageAutoPopulated" class="text-muted">
+                          <i class="fas fa-info-circle"></i> Auto-filled from menu item
+                        </small>
                       </div>
                     </div>
                     <!-- Labels row -->
@@ -3387,6 +3398,8 @@ export default {
             selectedLocationId: "",
             showHomeOption: false,
             locationInputValue: "",
+            isVenueAutoPopulated: false,
+            isVintageAutoPopulated: false,
             extendObservation: false,
             loggedIn: false,
             userID: localStorage.getItem('88B_accID') || 'defaultUser',
@@ -3590,10 +3603,15 @@ export default {
             // Auto-populate variant field - Set variant if the menu item has a vintage/variant
             if (menuItem.vintage && menuItem.vintage !== null && menuItem.vintage !== '') {
                 this.variant = menuItem.vintage.toString();
+                this.isVintageAutoPopulated = true;
             } else if (menuItem.variant && menuItem.variant !== null && menuItem.variant !== '') {
                 this.variant = menuItem.variant.toString();
+                this.isVintageAutoPopulated = true;
             } else if (menuItem.itemVintage && menuItem.itemVintage !== null && menuItem.itemVintage !== '') {
                 this.variant = menuItem.itemVintage.toString();
+                this.isVintageAutoPopulated = true;
+            } else {
+                this.isVintageAutoPopulated = false;
             }
             
             // Auto-populate venue location field - Set current venue as the location
@@ -3603,12 +3621,15 @@ export default {
                 this.selectedLocationAddress = this.targetVenue.address || "";
                 this.selectedLocationId = this.targetVenue.id.toString();
                 this.locationInputValue = this.selectedLocation;
+                this.isVenueAutoPopulated = true;
                 
                 console.log('Auto-populated venue:', {
                     venueName: this.selectedLocation,
                     venueAddress: this.selectedLocationAddress,
                     venueId: this.selectedLocationId
                 });
+            } else {
+                this.isVenueAutoPopulated = false;
             }
             
             console.log('Initialized review for:', {
@@ -3616,7 +3637,9 @@ export default {
                 variant: this.variant,
                 itemName: menuItem.listingName || menuItem.name,
                 venue: this.selectedLocation,
-                venueId: this.selectedLocationId
+                venueId: this.selectedLocationId,
+                isVintageAutoPopulated: this.isVintageAutoPopulated,
+                isVenueAutoPopulated: this.isVenueAutoPopulated
             });
         },
 
@@ -8511,6 +8534,8 @@ export default {
         this.duplicateEntry = false;
         this.reviewDescError = "";
         this.nullSelectedLanguage = false;
+        this.isVenueAutoPopulated = false;
+        this.isVintageAutoPopulated = false;
         },
 
     // Load all review-related data (flavors, colors, etc.)
