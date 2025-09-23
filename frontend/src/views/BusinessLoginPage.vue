@@ -3,35 +3,60 @@
   <NavBar />
 
   <div class="body-login background-login">
-    <!-- select buttons -->
-    <!-- <div class="container row" style="width: 50%"> -->
+    <!-- Business login header banner -->
     <div class="login-header-banner mobile-view-show">
-      <img src="@/assets/login-bg.jpg" alt="Banner" />
+      <img src="@/assets/business-signup.jpg" alt="Banner" />
     </div>
       <div class="container mb-5 mobile-mb-0">
       <div class="row">
         <div class="mobile-col-12 col-8 m-auto mobile-ps-0 mobile-pe-0">
           <div class="pt-5 mobile-pt-0">
             <form
-              id="login"
+              id="businessLogin"
               v-if="!showResetPWForm"
               v-on:submit.prevent="checkLogin"
-              class="login-form-box"
+              class="login-form-box business-login-form"
             >
-              <!-- login header text -->
+              <!-- Business login header text -->
               <p
                 class="fw-bold fs-3 pt-4 mx-3 mobile-fs-5 mb-1"
               >
-                A World of Drinks Awaits.
+                {{ getBusinessHeaderText() }}
               </p>
               <p
                 class="fw-bold mx-4 fs-6 mobile-fs-7"
                 style="font-style: italic"
               >
-                Discover new juice, find friends and log your tasting notes!
+                {{ getBusinessTaglineText() }}
               </p>
 
               <p class="text-muted small mx-4 mb-2">
+                Business Account Login
+              </p>
+
+              <!-- Role tabs -->
+              <div class="row">
+                <div class="d-grid gap-2 col-xl-6 col-md-8 col-10 mx-auto">
+                  <div class="role-tabs-container">
+                    <div 
+                      class="role-tab-option" 
+                      :class="{ 'role-tab-active': selectedRole === 'venue' }" 
+                      @click="setSelectedRole('venue')"
+                    >
+                      Venues & Festivals
+                    </div>
+                    <div 
+                      class="role-tab-option" 
+                      :class="{ 'role-tab-active': selectedRole === 'producer' }" 
+                      @click="setSelectedRole('producer')"
+                    >
+                      Brands & Producers
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="text-muted small mx-4 mb-2 mt-3">
                 Choose how you want to log in
               </p>
 
@@ -64,16 +89,16 @@
                     <input
                       type="text"
                       class="form-control form-box-outline"
-                      id="id"
+                      id="ID"
                       placeholder="Username"
                       v-model="ID"
                     />
-                    <label for="username"> Username </label>
+                    <label for="ID"> Username </label>
                   </div>
                 </div>
               </div>
               <!-- email -->
-              <div class="row pt-3" v-if="loginMethod === 'email'" >
+              <div class="row pt-3" v-if="loginMethod === 'email'">
                 <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                   <div class="form-floating">
                     <input
@@ -158,13 +183,13 @@
                   </div>
                 </div>
               </div>
-              <!-- Confirm Selection -->
+              <!-- Business Login Button -->
               <div class="row">
                 <div class="col">
                   <button
                     v-if="authPending"
                     type="submit"
-                    class="btn secondary-btn btn-sm px-5 fw-bold"
+                    class="btn business-btn btn-sm px-5 fw-bold"
                     disabled
                   >
                     Loading...
@@ -172,30 +197,34 @@
                   <button
                     v-else
                     type="submit"
-                    class="btn secondary-btn btn-sm px-5 fw-bold"
+                    class="btn business-btn btn-sm px-5 fw-bold"
                   >
-                    Log In
+                    Login
                   </button>
-                  <GoogleSignIn />
                 </div>
               </div>
 
+              <div class="row py-1">
+                <div class="col-9 mx-auto">
+                  <hr>
+                </div>
+              </div>
 
-              <!-- Business Login -->
-              <p class=" fw-bold fs-4 mobile-fs-5 mb-1 mt-4">
-                Own a Business Account?
+              <!-- Regular User Login -->
+              <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
+                Not a Business User?
               </p>
               <p class="fw-bold fst-italic fs-6 mobile-fs-7">
-                Access your Venue or Brand account here.
+                Access the regular user login page.
               </p>
               <div class="row">
                 <div class="col">
                   <router-link
-                    :to="{ path: '/businessLogin' }"
+                    :to="{ path: '/login' }"
                     class="default-text-no-background"
                   >
-                    <button class="btn business-btn btn-sm px-5 fw-bold w-50">
-                      Business Login Page
+                    <button class="btn secondary-btn btn-sm px-5 fw-bold w-50">
+                      Regular Login
                     </button>
                   </router-link>
                 </div>
@@ -208,26 +237,6 @@
                 </div>
               </div>
 
-              <!-- Prompt sign up -->
-              <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
-                Don't have an account?
-              </p>
-              <p class="fw-bold fst-italic fs-6 mobile-fs-7">
-                Get Started! It's Free!
-              </p>
-              <div class="row">
-                <div class="col">
-                  <router-link
-                    :to="{ path: '/signup' }"
-                    class="default-text-no-background"
-                  >
-                    <button class="btn secondary-btn btn-sm px-5 fw-bold w-50">
-                      Sign Up for Free!
-                    </button>
-                  </router-link>
-                </div>
-              </div>
-              <br>
               <!-- Business sign up -->
               <div class="row pt-4 pb-3">
                 <div class="col-10 col-md-8 mx-auto">
@@ -293,6 +302,9 @@
   opacity: 0.97;
 }
 
+.business-login-form {
+  background-color: #e3f2fd !important; /* Light blue background for business */
+}
 
 @media (max-width: 991px) {
   .login-form-box {
@@ -305,7 +317,7 @@
 }
 
 .background-login {
-  background-image: url('@/assets/login-bg.jpg');
+  background-image: url('@/assets/business-signup.jpg');
   background-size: cover;
   background-position: center;
   min-height: 100vh;
@@ -317,27 +329,6 @@
   .background-login {
     background-image: none;
     background-color: white;
-  }
-}
-
-
-.business-signup-card {
-  background-color: white;
-  border: 2px solid #007bff;
-  border-radius: 8px;
-  padding: 18px;
-  margin-bottom: 10px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  position: relative;
-}
-
-@media (max-width: 767px) {
-  .business-signup-card {
-    padding: 15px;
-  }
-  
-  .business-signup-card ul {
-    margin-bottom: 15px;
   }
 }
 
@@ -362,8 +353,8 @@
 }
 
 .login-toggle-active {
-  background-color: #EBA446;
-  color: black;
+  background-color: #007bff;
+  color: white;
   font-weight: bold;
 }
 
@@ -389,6 +380,44 @@
   border-color: #0056b3;
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.business-role-tabs-container {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.business-role-tab-option {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  transition: all 0.2s ease;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.business-role-tab-active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.business-role-tab-option:hover:not(.business-role-tab-active) {
+  background-color: #e9ecef;
+}
+
+@media (max-width: 767px) {
+  .business-role-tab-option {
+    padding: 10px 4px;
+    font-size: 12px;
+  }
 }
 
 .role-tabs-container {
@@ -429,12 +458,24 @@
   }
 }
 
-.login-form-venue {
-  background-color: #abedc9 !important;
+.business-signup-card {
+  background-color: white;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  padding: 18px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+  position: relative;
 }
 
-.login-form-producer {
-  background-color: #a1d7ef !important;
+@media (max-width: 767px) {
+  .business-signup-card {
+    padding: 15px;
+  }
+  
+  .business-signup-card ul {
+    margin-bottom: 15px;
+  }
 }
 
 </style>
@@ -442,15 +483,13 @@
 <script>
 // import components used
 import NavBar from "@/components/NavBar.vue";
-import GoogleSignIn from "@/components/GoogleSignIn.vue";
 import ForgotPasswordForm from "@/components/ForgotPasswordForm.vue";
 
 // specify components used
 export default {
-  name: "LoginPage",
+  name: "BusinessLoginPage",
   components: {
     NavBar,
-    GoogleSignIn,
     ForgotPasswordForm,
   },
 
@@ -460,9 +499,9 @@ export default {
       accountID: {},
       errors: [],
       loginMethod: 'username',
-      selectedRole: 'user', // New property for role tabs
+      selectedRole: 'venue', // Default to venue for business
 
-      // form values
+      // form values (same as LoginPage.vue)
       role: "",
       ID: "",
       email: "",
@@ -506,9 +545,6 @@ export default {
       // check if user is already logged in
       this.loginCheck();
 
-      // // Normalize username: trim, remove all spaces and convert to lowercase
-      // this.ID = this.ID.trim().replace(/\s+/g, '').toLowerCase();
-      
       // Check if either username or email is provided
       if ((this.ID == "" && this.email == "") || this.password == "") {
         // check if both ID and email are empty
@@ -632,10 +668,7 @@ export default {
     },
 
     redirectPage() {
-      // Redirect for selected roles
-
-      // [TODO] change to correct page and use router pushing
-      // this.$router.push({path: '/Users/Bottle-Listings'})
+      // Redirect for all roles
 
       // [User]
       if (this.role == "user") {
@@ -673,35 +706,33 @@ export default {
       }
     },
 
-    // Set selected role
-    setSelectedRole(role) {
-      this.selectedRole = role;
-    },
-
-    // Get tagline text based on selected role
-    getTaglineText() {
+    // Get business tagline text based on selected role
+    getBusinessTaglineText() {
       switch(this.selectedRole) {
-        case 'user':
-          return 'Discover new juice, find friends and log your tasting notes!';
         case 'venue':
           return 'Bring more thirsty patrons through your doors';
         case 'producer':
           return 'Put your brand under the spotlight';
         default:
-          return 'Discover new juice, find friends and log your tasting notes!';
+          return 'Access your Venue or Brand account here.';
       }
     },
 
-    // Get form background class based on selected role
-    getFormBackgroundClass() {
+    // Get business header text based on selected role
+    getBusinessHeaderText() {
       switch(this.selectedRole) {
         case 'venue':
-          return 'login-form-venue';
+          return 'Drink-X For Business: Venues';
         case 'producer':
-          return 'login-form-producer';
+          return 'Drink-X For Business: Brands';
         default:
-          return '';
+          return 'Drink-X For Business';
       }
+    },
+
+    // Set selected role
+    setSelectedRole(role) {
+      this.selectedRole = role;
     },
     
   },

@@ -14,6 +14,17 @@
             <router-link :to="'/'">
               <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 30px" />
             </router-link>
+            
+            <!-- Account type badge -->
+            <span v-if="accType === 'producer'" class="badge rounded-pill ms-2" style="background-color: #007bff; color: white; font-weight: bold; font-size: 0.75rem;">
+              For Brands
+            </span>
+            <span v-else-if="accType === 'venue' && specialStatus === 'EVENT_FESTIVAL'" class="badge rounded-pill ms-2" style="background-color: #28a745; color: white; font-weight: bold; font-size: 0.75rem;">
+              For Events & Festivals
+            </span>
+            <span v-else-if="accType === 'venue'" class="badge rounded-pill ms-2" style="background-color: #28a745; color: white; font-weight: bold; font-size: 0.75rem;">
+              For Venues
+            </span>
           </div>
 
           <div class="col-6 mobile-view-hide d-flex align-items-center justify-content-center">
@@ -850,6 +861,7 @@
           defaultProfilePhoto: "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288",
           user: null,
           userID: null,
+          specialStatus: null, // For venue special status (EVENT_FESTIVAL, etc.)
         };
       },
       // computed: {
@@ -1008,6 +1020,9 @@
               ) {
                 this.isModerator = true;
               }
+            } else if (this.accType == "venue") {
+              // Capture specialStatus for venue accounts
+              this.specialStatus = response.data.specialStatus || null;
             }
           } catch (error) {
             console.error(error);

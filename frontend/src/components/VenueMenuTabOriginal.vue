@@ -2533,6 +2533,9 @@ export default {
             
             console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
             
+            // Map vintage data for all menu items in the hierarchical structure
+            this.mapVintageDataInHierarchicalMenu(hierarchicalMenu);
+            
             // Build the hierarchical structure and flat lookup
             this.buildMenuHierarchy(hierarchicalMenu);
 
@@ -2542,6 +2545,33 @@ export default {
 
             // Emit the processed data back to parent
             this.emitMenuDataProcessed(hierarchicalMenu);
+        },
+
+        // Map vintage data from variant field to itemVintage for hierarchical menu structure
+        mapVintageDataInHierarchicalMenu(hierarchicalMenu) {
+            hierarchicalMenu.forEach(section => {
+                // Map vintage for main section items
+                if (section.sectionMenu && section.sectionMenu.length > 0) {
+                    section.sectionMenu.forEach(item => {
+                        if (item.variant !== undefined && item.variant !== null) {
+                            item.itemVintage = item.variant;
+                        }
+                    });
+                }
+                
+                // Map vintage for subsection items
+                if (section.subsections && section.subsections.length > 0) {
+                    section.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                            subsection.sectionMenu.forEach(item => {
+                                if (item.variant !== undefined && item.variant !== null) {
+                                    item.itemVintage = item.variant;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         },
 
         // Process flat menu structure from prop and convert to hierarchical
@@ -2634,6 +2664,11 @@ export default {
                             itemProducerID: listingData.producerID,
                             itemServingTypeName: servingTypeName,
                         };
+
+                        // Set the vintage from the variant field if available
+                        if (item.variant !== undefined) {
+                            item.itemVintage = item.variant;
+                        }
                     }
                 }
             }
@@ -2872,8 +2907,10 @@ export default {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${sectionId}`);
                 
                 if (response.status === 200 && response.data) {
-                    console.log('🍽️ Section items loaded:', response.data.length, 'items');
-                    return response.data;
+                    // The API returns {code, data, pagination} structure
+                    const items = response.data.data || response.data;
+                    console.log('🍽️ Section items loaded:', items.length, 'items');
+                    return items;
                 } else {
                     console.warn('🍽️ No items found for section:', sectionId);
                     return [];
@@ -3045,6 +3082,9 @@ export default {
                         itemProducerID: listingData["producerID"],
                     };
 
+                    // Set the vintage from the backend variant field
+                    item.itemVintage = item.variant;
+
                     // Get serving type name
                     let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
                     if (servingTypeData != undefined) {
@@ -3177,10 +3217,10 @@ export default {
                     }) : [];
                     
                     return {
-                        id: subsection.id,
-                        sectionName: subsection.sectionName,
-                        sectionOrder: subsection.sectionOrder,
-                        parentSectionId: subsection.parentSectionId,
+                        id: subsection.id || null,
+                        sectionName: subsection.sectionName || '',
+                        sectionOrder: subsection.sectionOrder || 0,
+                        parentSectionId: subsection.parentSectionId || null,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
                         sectionMenu: copiedSubsectionMenu,
@@ -3190,9 +3230,9 @@ export default {
                 }) : [];
                 
                 return {
-                    id: section.id,
-                    sectionName: section.sectionName,
-                    sectionOrder: section.sectionOrder,
+                    id: section.id || null,
+                    sectionName: section.sectionName || '',
+                    sectionOrder: section.sectionOrder || 0,
                     parentSectionId: null,
                     isSubSection: false,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
@@ -3507,19 +3547,87 @@ export default {
 
         // Populate Rename Menu Section Modal - moved from parent
         populateRenameMenuSectionModal(index) {
-            const section = this.editableMainSections.find(s => s.sectionOrder === index);
-            this.renameMenuSectionModalTarget = {
-                index: index,
-                data: JSON.parse(JSON.stringify(section)),
+            // Ensure editableMainSections is properly initialized
+            if (!this.editableMainSections || !Array.isArray(this.editableMainSections)) {
+                console.error('editableMainSections is not properly initialized');
+                return;
             }
+            
+            // First try to find in main sections
+            const mainSection = this.editableMainSections.find(s => s && s.sectionOrder === index);
+            
+            if (mainSection && mainSection.sectionName !== undefined) {
+                // It's a main section
+                this.renameSectionType = 'section';
+                this.renameMenuSectionModalTarget = {
+                    index: index,
+                    data: JSON.parse(JSON.stringify(mainSection)),
+                }
+            } else {
+                // Look for subsection across all main sections
+                let foundSubsection = null;
+                let parentSection = null;
+                
+                for (const section of this.editableMainSections) {
+                    if (section && section.subsections && Array.isArray(section.subsections)) {
+                        const subsection = section.subsections.find(sub => sub && sub.sectionOrder === index);
+                        if (subsection && subsection.sectionName !== undefined) {
+                            foundSubsection = subsection;
+                            parentSection = section;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundSubsection && parentSection) {
+                    // It's a subsection
+                    this.renameSectionType = 'subsection';
+                    this.renameMenuSectionModalTarget = {
+                        index: index,
+                        parentIndex: parentSection.sectionOrder,
+                        data: JSON.parse(JSON.stringify(foundSubsection)),
+                    }
+                } else {
+                    console.error('Section not found with index:', index);
+                    return;
+                }
+            }
+            
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
         },
 
         // Rename Menu Section - moved from parent
         renameMenuSection() {
+            // Ensure we have valid target data
+            if (!this.renameMenuSectionModalTarget || !this.renameMenuSectionModalTarget.data) {
+                console.error('Invalid rename target data');
+                return;
+            }
+            
             this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            this.editableMainSections = this.editableMainSections.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+            
+            if (this.renameSectionType === 'section') {
+                // Update main section
+                this.editableMainSections = this.editableMainSections.map(s => 
+                    s && s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s
+                );
+            } else if (this.renameSectionType === 'subsection') {
+                // Update subsection within its parent section
+                this.editableMainSections = this.editableMainSections.map(section => {
+                    if (section && section.sectionOrder === this.renameMenuSectionModalTarget.parentIndex) {
+                        return {
+                            ...section,
+                            subsections: section.subsections ? section.subsections.map(subsection =>
+                                subsection && subsection.sectionOrder === this.renameMenuSectionModalTarget.index 
+                                    ? this.renameMenuSectionModalTarget.data 
+                                    : subsection
+                            ) : []
+                        };
+                    }
+                    return section;
+                });
+            }
         },
 
         // Add Subsection to a main section
@@ -4801,11 +4909,12 @@ export default {
             // Instead of directly mutating the prop, emit to parent
             this.$emit('edit-menu-mode-changed', false);
 
-            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
+            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType, newMenuItemVintage
             this.newMenuItemID = "";
             this.newMenuItemTarget = {};
             this.newMenuItemTargetSection = {};
             this.newMenuItemPrice = '';
+            this.newMenuItemVintage = null;
             this.getDefaultServingType();
         },
 
@@ -4822,6 +4931,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
@@ -4850,6 +4960,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,

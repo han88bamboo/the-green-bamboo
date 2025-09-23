@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu (Festival Component - to delete later)
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
                 </p>
             </div>
 
@@ -360,7 +360,15 @@
                                                 <p class="fw-bold mobile-fs-6 fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
-                                            </router-link>
+                                            </router-link> 
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
+                                                          style="font-size: 12px;" class="fw-bold">
+                                                        <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                                              :key="tag.tagId" 
+                                                              :style="{ color: tag.hexcode || '#6c757d' }"
+                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>
                                         </div>
 
 
@@ -392,14 +400,6 @@
                                                         Temporarily Unavailable
                                                     </p>
 
-                                                    <!-- Flavor Tags - Comma separated -->
-                                                    <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" 
-                                                          style="font-size: 12px;">
-                                                        <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
-                                                              :key="tag.tagId" 
-                                                              :style="{ color: tag.hexcode || '#6c757d' }"
-                                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                                                    </span>
                                                 </div>
                                             </div>
                                             
@@ -407,12 +407,12 @@
                                             <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
                                                 <div class="tasting-tracker">
                                                     <div class="form-check">
-                                                        <label 
+                                                        <!-- <label 
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
                                                             <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                             <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
+                                                        </label> -->
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
@@ -442,7 +442,9 @@
                                                         v-if="!hasUserReviewed(sectionItem)" 
                                                         type="button" 
                                                         class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                        @click="goToAddReview(sectionItem)"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#menuItemReviewModal"
+                                                        @click="initializeReviewForMenuItem(sectionItem)"
                                                         style="font-weight: bold; border-radius: 20px;">
                                                         Add Your Review
                                                     </button>
@@ -516,7 +518,14 @@
                                                     {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link>
-
+                                                            
+                                            <!-- Flavor Tags - Comma separated -->
+                                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0" class="fw-bold">
+                                                <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
+                                                    :key="tag.tagId" 
+                                                    :style="{ color: tag.hexcode || '#6c757d' }"
+                                                    :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                            </span>    
                                         </div>
 
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -556,13 +565,7 @@
                                                 Temporarily Unavailable
                                             </p>
 
-                            <!-- Flavor Tags - Comma separated -->
-                            <span v-if="sectionItem.itemDetails['topFlavorTags'] && sectionItem.itemDetails['topFlavorTags'].length > 0">
-                                <span v-for="(tag, tagIndex) in sectionItem.itemDetails['topFlavorTags']" 
-                                      :key="tag.tagId" 
-                                      :style="{ color: tag.hexcode || '#6c757d' }"
-                                      :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < sectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                            </span>                                            <!-- See User Reviews -->
+                                            <!-- See User Reviews -->
                                             <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
@@ -573,7 +576,9 @@
                                                     v-if="!hasUserReviewed(sectionItem)" 
                                                     type="button" 
                                                     class="btn primary-btn-less-round-blue" 
-                                                    @click="goToAddReview(sectionItem)"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#menuItemReviewModal"
+                                                    @click="initializeReviewForMenuItem(sectionItem)"
                                                     style="font-weight: bold; border-radius: 20px;">
                                                     Add Your Review
                                                 </button>
@@ -604,12 +609,12 @@
                                         <!-- Festival Tasting Tracker -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                             <div class="form-check justify-content-end">
-                                                <label 
+                                                <!-- <label 
                                                     class="form-check-label tasting-label" 
                                                     :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                     <span class="not-tasted-text" v-else>Tasted?</span>
-                                                </label>
+                                                </label> -->
                                                 <input 
                                                     class="form-check-input tasting-checkbox" 
                                                     type="checkbox" 
@@ -689,7 +694,7 @@
 
                                                     <!-- Flavor Tags - Comma separated -->
                                                     <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" 
-                                                          style="font-size: 12px;">
+                                                          style="font-size: 12px;" class="fw-bold">
                                                         <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
                                                               :key="tag.tagId" 
                                                               :style="{ color: tag.hexcode || '#6c757d' }"
@@ -731,12 +736,12 @@
                                                     <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
                                                         <div class="tasting-tracker">
                                                             <div class="form-check">
-                                                                <label 
+                                                                <!-- <label 
                                                                     class="form-check-label tasting-label" 
                                                                     :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                                     <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
                                                                     <span class="not-tasted-text" v-else>Tasted?</span>
-                                                                </label>
+                                                                </label> -->
                                                                 <input 
                                                                     class="form-check-input tasting-checkbox" 
                                                                     type="checkbox" 
@@ -766,7 +771,9 @@
                                                                 v-if="!hasUserReviewed(subsectionItem)" 
                                                                 type="button" 
                                                                 class="btn primary-btn-less-round-blue btn-sm flex-fill" 
-                                                                @click="goToAddReview(subsectionItem)"
+                                                                data-bs-toggle="modal"
+                                                                data-bs-target="#menuItemReviewModal"
+                                                                @click="initializeReviewForMenuItem(sectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
                                                                 Add Your Review
                                                             </button>
@@ -817,46 +824,13 @@
                                                         </p>
                                                     </router-link>
 
-                                    <!-- Flavor Tags - Comma separated -->
-                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0">
-                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
-                                              :key="tag.tagId" 
-                                              :style="{ color: tag.hexcode || '#6c757d' }"
-                                              :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
-                                    </span>                                                    <!-- See User Reviews -->
-                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
-                                                    </router-link>
-
-                                                    <!-- Add Your Review / Review Added Button -->
-                                                    <template v-if="isSignedInUser" >
-                                                        <button 
-                                                            v-if="!hasUserReviewed(subsectionItem)" 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
-                                                        </button>
-                                                        <button 
-                                                            v-else 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            disabled
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Review Added!
-                                                        </button>
-                                                    </template>
-                                                    <!-- Logged-out users -->
-                                                    <template v-else >
-                                                        <button 
-                                                            type="button" 
-                                                            class="btn primary-btn-less-round-blue" 
-                                                            @click="goToAddReview(subsectionItem)"
-                                                            style="font-weight: bold; border-radius: 20px;">
-                                                            Add Your Review
-                                                        </button>
-                                                    </template>
+                                                    <!-- Flavor Tags - Comma separated -->
+                                                    <span v-if="subsectionItem.itemDetails['topFlavorTags'] && subsectionItem.itemDetails['topFlavorTags'].length > 0" class="fw-bold">
+                                                        <span v-for="(tag, tagIndex) in subsectionItem.itemDetails['topFlavorTags']" 
+                                                            :key="tag.tagId" 
+                                                            :style="{ color: tag.hexcode || '#6c757d' }"
+                                                            :title="`${tag.count} mentions`">{{ tag.tag }}<span v-if="tagIndex < subsectionItem.itemDetails['topFlavorTags'].length - 1">, </span></span>
+                                                    </span>
                                                 </div>
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
@@ -895,6 +869,43 @@
                                                     <p v-if="subsectionItem.itemAvailability == false" class="text-start text-danger fw-bold fst-italic text-decoration-underline mb-0">
                                                         Temporarily Unavailable
                                                     </p>
+
+                                                    <!-- See User Reviews -->
+                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                        <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
+                                                    </router-link>
+
+                                                    <!-- Add Your Review / Review Added Button -->
+                                                    <template v-if="isSignedInUser" >
+                                                        <button 
+                                                            v-if="!hasUserReviewed(subsectionItem)" 
+                                                            type="button" 
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#menuItemReviewModal"
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            @click="initializeReviewForMenuItem(subsectionItem)"
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Add Your Review
+                                                        </button>
+                                                        <button 
+                                                            v-else 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            disabled
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Review Added!
+                                                        </button>
+                                                    </template>
+                                                    <!-- Logged-out users -->
+                                                    <template v-else >
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn primary-btn-less-round-blue" 
+                                                            @click="goToAddReview(subsectionItem)"
+                                                            style="font-weight: bold; border-radius: 20px;">
+                                                            Add Your Review
+                                                        </button>
+                                                    </template>
                                                 </div>
                                             </div>
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
@@ -903,12 +914,12 @@
                                                 <!-- Festival Tasting Tracker -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                                     <div class="form-check justify-content-end">
-                                                        <label 
+                                                        <!-- <label 
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                             <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
                                                             <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
+                                                        </label> -->
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
@@ -2235,6 +2246,755 @@
         </div>
     </div>
 
+
+        <!-- Modal -->
+        <div v-if="userID != 'defaultUser' && userType === 'user'" class="modal fade" id="menuItemReviewModal" tabindex="-1"
+          aria-labelledby="reviewModalLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog modal-lg">
+            <div class="text-success fw-bold fs-5 modal-content" v-if="successSubmission">
+              <span v-if="!inEdit">Your review has successfully been submitted!</span>
+              <span v-else>Your review has successfully been updated!</span>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @click="reloadRoute" data-bs-dismiss="modal">
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div class="text-danger fw-bold fs-5 modal-content" v-if="errorSubmission">
+              <div v-if="errorMessage" class="row">
+                <span v-if="!inEdit">An error occurred while attempting to submit, please try
+                  again!</span>
+                <span v-else>An error occurred while attempting to update, please try
+                  again!</span>
+                <br />
+                <button class="btn primary-btn btn-sm" @click="reset">
+                  <span class="fs-5">
+                    Retry your submission here!
+                  </span>
+                </button>
+              </div>
+              <div v-if="duplicateEntry">
+                <span v-if="!inEdit">You've already submitted a review for this bottle
+                  listing!</span>
+                <span v-else>There is no review for this bottle listing!</span>
+              </div>
+              <br />
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Close
+                </button>
+              </div>
+            </div>
+            <!-- tzh  -->
+            <div v-if="addingReview" class="modal-content">
+              <!-- change modal header colour -->
+              <div class="modal-header" style="background-color: #f0b358">
+                <!--tzh changed #535C72 to #F0B358-->
+                <!-- V-if to edit or add review -->
+                <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
+                  Add Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                </h5>
+                <!--tzh changed white to black and to bold-->
+                <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
+                  Edit Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                </h5>
+                <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
+              </div>
+
+              <!-- This is where modal starts for review-->
+              <div class="modal-body px-4">
+                <!-- row 0: expression name for mobile only -->
+                <div class="row mobile-view-show">
+                  <p class="text-body-secondary text-start">
+                    <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b>
+                  </p>
+                </div>
+                <!-- row 1: language, location -->
+                <div class="row mobile-view-hide">
+                  <!-- language-->
+                  <div class="col-6 col-md-12 justify-content-start mb-3">
+                    <p class="text-start mb-2 fw-bold">
+                      Language<span class="text-danger">*</span>
+                    </p>
+                    <div class="input-group">
+                      <select v-model="selectedLanguage" class="form-select" id="inputGroupSelect01">
+                        <!-- Add in the languages here -->
+                        <option v-for="language in languages" v-bind:key="language['_id']">
+                          {{ language["language"] }}
+                        </option>
+                      </select>
+                    </div>
+                    <div v-if="nullSelectedLanguage" class="col-md-12">
+                      <p class="text-danger text-start mb-2 fw-bold">
+                        Please select a language
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 4A: add photo, friends, location-->
+                <div class="row">
+                  <p class="text-start mb-0 fw-bold">
+                    <span class="badge rounded-pill step-index my-2">1</span>
+                    Where You Drank It 
+                    <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Where and who you drank it with!
+                    </span>
+                  </p>
+                  <div class="col-3 mobile-col-4">
+                    <input class="form-control mb-2" @change="onFileChange" type="file" id="reviewPhoto"
+                      style="display: none" />
+                    <label for="reviewPhoto" class="upload-label d-block w-100">
+                      <div v-if="!selectedImage && !image64" class="mobile-review-svg-button photo-dropzone">
+                        <div>
+                          <h2>📷</h2>
+                          <div>Upload</div>
+                        </div>
+                      </div>
+
+                      <div v-else class="mobile-review-svg-button">
+                        <img :src="selectedImage || image64" alt="" id="output"
+                            class="review-preview-photo" loading="lazy" />
+                      </div>
+                    </label>
+
+                    <div class="row justify-content-center mb-2">
+                      <div class="col-sm-7 text-center mt-2">
+                        <button v-if="image64 !== null" class="btn btn-sm tertiary-square-btn mb-1" @click="clearPhoto">
+                          Clear Photo
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-9 mobile-col-8">
+                    <div class="col-12 justify-content-start">
+                      <div class="form-group mb-2 mobile-mt-0 mt-3">
+                        <div v-if="showFriendTagList.length > 0" class="form-label pb-2 text-start">
+                          Tagged Friends:
+                          <div class="row">
+                            <div class="col">
+                              <div class="d-flex flex-wrap gap-2">
+                                <div v-for="friend in showFriendTagList" :key="friend.id" class="mb-0 pb-0">
+                                  <button @click="removeFriendTag(friend)" class="btn secondary-square-btn">
+                                    {{ friend.username }}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <input list="filteredFollowList" v-model="friendTag" class="form-control input-with-icon"
+                          id="friendTag" placeholder="Tag friends" v-on:input="updateFriendTag" />
+                        <p class="text-start fs-7" style="color:grey">To start tagging friends, follow them first!</p>
+                        <datalist id="filteredFollowList">
+                          <option v-for="user in filteredUsers" :key="user.id" :value="user.username">
+                            {{ user.username }}
+                          </option>
+                        </datalist>
+
+                        <div class="text-start mt-1">
+                          <button v-if="selectedFriendTag !== null" class="btn tertiary-square-btn mt-1"
+                            @click="tagSpecificFriend">
+                            Tag This Friend
+                          </button>
+                        </div>
+
+                        <p v-show="friendTag.length > 0" class="text-start mb-1 text-danger" id="friendTagError"></p>
+                      </div>
+
+                      <div class="form-group mb-2">
+                        <!-- Enhanced Location Input with Home Option and Google Maps -->
+                        <div class="location-input-container" :class="{ 'home-option-visible': showHomeOption }"
+                          style="position: relative;">
+                          <!-- Home Option Dropdown (appears when typing) -->
+                          <div v-if="showHomeOption" class="home-option-dropdown">
+                            <div class="home-option-item" @click="selectHomeLocation">
+                              🏠 Tasted At Home
+                            </div>
+                          </div>
+
+                          <!-- Combined Input Field -->
+                          <div class="input-group mb-2">
+                            <div class="location-input-wrapper" style="position: relative; width: 100%;">
+                              <GMapAutocomplete placeholder="Tag where you tasted this drink"
+                                @place_changed="setPlaceFromAutocomplete" @input="onLocationInput"
+                                @focus="onLocationFocus" @blur="onLocationBlur" @keydown="onLocationKeydown"
+                                class="form-control input-with-icon" 
+                                :class="{ 'bg-light': isVenueAutoPopulated }"
+                                ref="locationInput" :value="locationInputValue"
+                                :options="{ types: ['establishment'] }"
+                                :disabled="isVenueAutoPopulated">
+                              </GMapAutocomplete>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Location confirmation display -->
+                        <div v-if="selectedLocationType === 'home'" class="alert alert-info mb-2">
+                          📍 You've selected "Home" as your tasting location
+                        </div>
+                        <div v-if="selectedLocationType === 'venue' && selectedLocation"
+                          class="alert alert-success mb-2">
+                          📍 Current venue: {{ selectedLocation }}
+                          <small v-if="isVenueAutoPopulated" class="d-block text-muted mt-1">
+                            <i class="fas fa-info-circle"></i> Auto-filled from current venue
+                          </small>
+                        </div>
+
+                        <div>
+                          <p v-show="tagLocation.length > 0" class="text-start mb-1 text-danger" id="tagLocationError">
+                          </p>
+                        </div>
+                        <div class="row">
+                          <div class="col-6 col-md-12 d-flex justify-content-start">
+                            <button v-if="selectedLocationType !== '' && !isVenueAutoPopulated"
+                              class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2" @click="clearLocation">
+                              Clear Selection
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 2: rating -->
+                <div class="row">
+                  <div class="col-11 mb-3">
+                    <div class="row align-items-center text-start" >
+                      <p class="text-star mb-1 fw-bold my-2">
+                      <span class="badge rounded-pill step-index ">2</span>
+                        &nbsp;My Rating<span class="text-danger">*</span>
+                      </p>
+                      <label for="customRange2" class="form-label">
+                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
+                        Stars
+                      </label>
+                      <div class="d-flex align-items-center rounded p-2 mx-3" style="background-color: rgb(255, 246, 228);">
+                        <div class="col-auto">
+                          <label for="customRange" class="ms-2 form-label fw-bold">1</label>
+                        </div>
+                        <div class="col">
+                          <div class="slider-container" style="transform: scale(0.95); transform-origin: center;">
+                            <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
+                              id="customRange"   />
+                            <div class="tickmarks">
+                              <span class="tick" style="left: 5%">|</span>
+                              <span class="tick" style="left: 15%">|</span>
+                              <span class="tick" style="left: 25%">|</span>
+                              <span class="tick" style="left: 35%">|</span>
+                              <span class="tick" style="left: 45%">|</span>
+                              <span class="tick" style="left: 55%">|</span>
+                              <span class="tick" style="left: 65%">|</span>
+                              <span class="tick" style="left: 75%">|</span>
+                              <span class="tick" style="left: 85%">|</span>
+                              <span class="tick" style="left: 95%">|</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <label for="customRange" class="me-2 form-label fw-bold">10</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 4: review and vintage -->
+                <div class="row">
+                  <div class="col justify-content-start mb-3">
+                    <div class="row mb-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                        class="col-12">
+                        <p class="text-start mb-0 fw-bold">Vintage
+                          <span
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                            For wine and sake, you can review specific vintage years.
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="row mb-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                        class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage"
+                          placeholder="e.g. 2020" 
+                          :class="{ 'bg-light': isVintageAutoPopulated }" />
+                        <small v-if="isVintageAutoPopulated" class="text-muted">
+                          <i class="fas fa-info-circle"></i> Auto-filled from menu item
+                        </small>
+                      </div>
+                    </div>
+                    <!-- Labels row -->
+                    <div class="row mb-2">
+                      <div class="col-12">
+                        <p class="text-start mb-0 fw-bold">
+                          <span class="badge rounded-pill step-index">3</span>&nbsp;
+                          Review<span class="text-danger fw-bold">*</span>
+                        </p>
+
+                      </div>
+                    </div>
+
+                    <!-- Input fields row -->
+                    <div class="row">
+                      <div class="col-12">
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
+                          rows="3" placeholder="Min 3 characters"></textarea>
+                      </div>
+                    </div>
+
+                    <div v-if="reviewDescError !== ''" class="col-md-12">
+                      <p class="text-danger text-start mb-2 fw-bold">
+                        {{ reviewDescError }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 5: buttons (would recommend, would buy again) -->
+                <div class="row">
+                  <!-- Would Recommend Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                    <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
+                      <option value="" selected disabled>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+
+                  <!-- Would Buy Again Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                    <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
+                      <option value="" disabled selected>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+                </div>
+
+                
+
+                <!-- row 6: extend review -->
+                <div class="row">
+                  <!-- Buttons to expand -->
+                  <div v-if="!extendReview" class="col justify-content-start mb-3 text-start">
+                    <div class="col-md-12 text-center">
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
+                        @click="controlModal">
+                        Extend Review &#9660;
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Button to collapse -->
+                  <div v-if="extendReview" class="col justify-content-start mb-3 text-start">
+                    <div class="col-md-12 text-center">
+                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
+                        @click="controlModal">
+                        Condense Review &#9650;
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Preview section when collapsed -->
+                <div v-if="!extendReview" class="row mb-3">
+                  <div class="col-12">
+                    <div class="extended-preview-container" @click="controlModal">
+                      <!-- Limited height preview content -->
+                      <div class="preview-content">
+                        <!-- row 7: colours -->
+                        <div class="row">
+                          <div class="col-6 col-md-12 justify-content-start">
+                            <p class="text-start mb-1 fw-bold small">Colour</p>
+                          </div>
+                        </div>
+
+                        <!-- row 7B: all colours (show more colors, tighter spacing) -->
+                        <div class="row justify-content-start mb-1 text-start">
+                          <div class="col-12">
+                            <button v-for="(colour, i) in colours.slice(0, 14)" :key="i"
+                              class="btn me-1 mb-1 preview-color-btn" disabled :style="{
+                                width: '18px',
+                                height: '18px',
+                                backgroundColor: colour,
+                                borderRadius: '0',
+                                borderColor: 'grey',
+                                borderWidth: '1px',
+                                marginRight: '2px',
+                                padding: '0',
+                              }"></button>
+                          </div>
+                        </div>
+
+                        <!-- row 8: aroma, taste and finish (tighter spacing) -->
+                        <div class="row">
+                          <div class="col justify-content-start">
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold small">Aroma</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold small">Taste</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold small">Finish</p>
+                              <div class="preview-input-field"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Fade overlay with call-to-action -->
+                      <div class="preview-fade-overlay">
+                        <div class="preview-cta">
+                          <span class="fst-italic">Extend and add more details!</span>
+                          <i class="bi bi-chevron-down ms-2"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 7: section breaker (horizontal line) -->
+                <div class="row">
+                  <!-- Dashed line -->
+                  <div class="col justify-content-start mb-1 text-start">
+                    <div class="col-md-12 text-center">
+                      <p class="dotted-line"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TOGGLEABLE SECTION -->
+                <div v-if="extendReview">
+
+                  <!-- row 7: colours -->
+                  <div class="row">
+                    <div class="col-6 col-md-12 justify-content-start">
+                      <p class="text-start mb-2 fw-bold">Colour</p>
+                    </div>
+                  </div>
+
+                  <!-- row 7A: selected colours  -->
+                  <div class="row">
+                    <div v-if="selectedColour === ''" class="col-md-2"></div>
+                    <div v-else-if="selectedColour.includes('#')" class="col-md-1">
+                      <button class="btn text-start mb-1" :style="{
+                        width: '30px',
+                        height: '30px',
+                        backgroundColor: selectedColour,
+                        color: selectedColour,
+                        borderRadius: '0',
+                        borderColor: 'grey',
+                        borderWidth: '1px',
+                      }"></button>
+                    </div>
+                    <div v-else class="col-md-1">
+                      <button class="btn text-start mb-1" :style="{
+                        width: '30px',
+                        height: '30px',
+                        borderRadius: '0',
+                        borderColor: 'grey',
+                        borderWidth: '1px',
+                        backgroundImage: `linear-gradient(to bottom right, ${specialColours[selectedColour][0]}, ${specialColours[selectedColour][1]}`,
+                      }"></button>
+                    </div>
+                    <div v-if="selectedColour !== ''" class="col-md-4">
+                      <button @click="clearColour" class="btn tertiary-square-btn mb-1 mobile-rating-smaller-text-2">
+                        Clear Selection
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- row 7B: all colours -->
+                  <div class="row justify-content-start mb-1 text-start">
+                    <!-- normal colours-->
+                    <div class="col-7 mobile-col-12"> <!--col-7 mobile-col-9-->
+                      <button @click="displaySelectColour(colour)" v-for="(colour, i) in colours.slice(0, 14)" :key="i"
+                        :value="colour" class="btn" data-bs-toggle="button" :style="{
+                          width: '30px',
+                          height: '30px',
+                          backgroundColor: colour,
+                          color: colour,
+                          borderRadius: '0',
+                          borderColor: 'grey',
+                          borderWidth: '1px',
+                        }"></button>
+                    </div>
+                    <!-- Special gradient -->
+                    <div class="col-5 mobile-col-12 mobile-mt-2"> <!--col-md-5 col-12-->
+                      <button @click="displaySelectColour(key)" v-for="(value, key) in specialColours" :key="key"
+                        type="button" :value="key" class="btn" data-bs-toggle="button" :style="{
+                          width: '30px',
+                          height: '30px',
+                          borderRadius: '0',
+                          borderColor: 'grey',
+                          borderWidth: '1px',
+                          backgroundImage: `linear-gradient(to bottom right, ${value[0]}, ${value[1]}`,
+                        }"></button>
+                    </div>
+                  </div>
+
+                  <div class="row justify-content-start mb-1 text-start">
+                    <!--more colours-->
+                    <div class="col-7 mobile-col-12 mobile-mt-2">
+                      <button @click="displaySelectColour(colour)" v-for="(colour, i) in moreColours" :key="'more-' + i"
+                        :value="colour" class="btn" data-bs-toggle="button" :style="{
+                          width: '30px',
+                          height: '30px',
+                          backgroundColor: colour,
+                          color: colour,
+                          borderRadius: '0',
+                          borderColor: 'grey',
+                          borderWidth: '1px',
+                        }"></button>
+                    </div>
+                  </div>
+
+                  <!-- row 8: aroma, taste and finish -->
+                  <div class="row pt-2">
+                    <div class="col justify-content-start mb-3">
+                      <div class="form-group mb-3">
+                        <p class="text-start mb-2 fw-bold">Aroma</p>
+                        <textarea v-model="aroma" class="form-control auto-resize-textarea" id="aroma" rows="1"
+                          placeholder="Describe the aroma..."></textarea>
+                      </div>
+                      <div class="form-group mb-3">
+                        <p class="text-start mb-2 fw-bold">Taste</p>
+                        <textarea v-model="taste" class="form-control auto-resize-textarea" id="taste" rows="1"
+                          placeholder="Describe the taste..."></textarea>
+                      </div>
+                      <div class="form-group mb-2">
+                        <p class="text-start mb-2 fw-bold">Finish</p>
+                        <textarea v-model="finish" class="form-control auto-resize-textarea" id="finish" rows="1"
+                          placeholder="Describe the finish..."></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- end of v-if check for extendReview -->
+
+                <!-- row 10: flavour tags -->
+                <div class="row">
+                  <div class="form-group mb-3 text-start ">
+                    <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">4</span>
+                      &nbsp;Flavour Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag the flavours you taste:
+                      </span>
+                    </p>
+                    <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
+                      Selected flavour tags:
+                      <div class="row">
+                        <div class="col">
+                          <div class="d-flex flex-wrap gap-2">
+                            <div v-for="flavourTag in selectedFlavourTags" v-bind:key="flavourTag" class="mb-0 pb-0">
+                              <button v-if="flavourTag == '<deleted>'" :style="{
+                                color: 'white',
+                                backgroundColor: '#030303',
+                              }" class="btn">
+                                {{ flavourTag }}
+                              </button>
+                              <button v-else :style="{
+                                color: 'white',
+                                backgroundColor:
+                                  '#' + flavourTag.split('#')[1],
+                              }" class="btn">
+                                {{ flavourTag.split("#")[0] }}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags"
+                      v-bind:key="family['_id']" :style="{
+                        color: 'white',
+                        backgroundColor: family['hexcode'],
+                        borderColor: family['hexcode'],
+                        borderWidth: '1px',
+                      }">
+                      {{ family["familyTag"] }}
+                    </button>
+                    <!-- This is the container/dropdown box for the subtags -->
+                    <div v-for="family in flavorTags" :key="family['_id']">
+                      <div v-if="family.showBox" class="rounded p-3"
+                        :style="{ border: '3px solid ' + family['hexcode'] }">
+                        <div class="row">
+                          <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
+                            <button @click="
+                              toggleFlavourSelection(
+                                element.subTag,
+                                family['hexcode'],
+                                element.id
+                              )
+                              " class="btn mb-2 sub-flavour-tags mobile-px-1" :style="{
+                                backgroundColor: selectedFlavourTags.includes(
+                                  element.subTag + family['hexcode']
+                                )
+                                  ? 'grey'
+                                  : family['hexcode'],
+                                borderColor: family['hexcode'],
+                              }">
+                              {{ element.subTag }}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- End of dropdown -->
+                  </div>
+                </div>
+
+                <!-- row 11: observation tags -->
+                <div class="row">
+                  <div class="form-group mb-3 text-start">
+                     <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">5</span>
+                      &nbsp;Action Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag what's noteworthy about this drink!
+                      </span>
+                    </p>
+                    <div v-if="selectedObservations.length > 0" class="form-label pb-2">
+                      Selected action tags:
+                      <div class="row">
+                        <div class="col">
+                          <div class="d-flex flex-wrap gap-2">
+                            <div v-for="observationTag in selectedObservations" v-bind:key="observationTag"
+                              class="mb-0 pb-0">
+                              <button style="background-color: #f0b358" class="btn">
+                                {{ observationTag.split("#")[0] }}
+                              </button>
+                              <!--tzh changed grey to #F0B358-->
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Buttons for the first 8 observations -->
+                    <button v-for="observation in observationTags.slice(0, 8)"
+                      @click="toggleObservationSelection(observation)" v-bind:key="observation"
+                      class="btn mb-2 me-2 action-tags" data-bs-toggle="button" :style="{
+                        color: selectedObservations.includes(observation)
+                          ? 'black'
+                          : 'black',
+                        backgroundColor: selectedObservations.includes(
+                          observation
+                        )
+                          ? '#FEE5BF'
+                          : '#F0B358',
+                        borderColor: selectedObservations.includes(observation)
+                          ? '#F0B358'
+                          : 'none',
+                        borderWidth: selectedObservations.includes(observation)
+                          ? '1px'
+                          : '0px',
+                      }">
+                      <!--tzh changed lightgrey to #F0B358-->
+                      {{ observation }}
+                    </button>
+                    <!-- Buttons for additional observations (shown only when extendObservation is true) -->
+                    <div v-if="extendObservation">
+                      <button v-for="observation in observationTags.slice(8)"
+                        @click="toggleObservationSelection(observation)" v-bind:key="observation"
+                        class="btn mb-2 me-2 action-tags" :style="{
+                          color: selectedObservations.includes(observation)
+                            ? 'black'
+                            : 'black',
+                          backgroundColor: selectedObservations.includes(
+                            observation
+                          )
+                            ? '#FEE5BF'
+                            : '#F0B358',
+                          borderColor: selectedObservations.includes(
+                            observation
+                          )
+                            ? '#F0B358'
+                            : 'none',
+                          borderWidth: selectedObservations.includes(
+                            observation
+                          )
+                            ? '1px'
+                            : '0px',
+                        }">
+                        {{ observation }}
+                      </button>
+                    </div>
+                    <!-- Button to toggle between View All and View Less -->
+                    <button @click="toggleObservations" class="btn mt-2" style="
+                        color: black;
+                        background-color: white;
+                        border-color: black;
+                        border-width: 1px;
+                      " v-if="!extendObservation">
+                      View All
+                    </button>
+                    <button @click="toggleObservations" class="btn mt-2" style="
+                        color: black;
+                        background-color: white;
+                        border-color: black;
+                        border-width: 1px;
+                      " v-else>
+                      View Less
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- End of modal body -->
+              <div class="modal-footer d-flex">
+                <span v-if="hasUserReviewed(currentMenuItem)" class="me-auto">
+                  <button v-if="inEdit" class="btn btn-danger py-1 mobile-fs-7" @click="
+                    setDeleteID(getReviewRecord(currentMenuItem))
+                    " data-bs-toggle="modal" data-bs-target="#deleteReview">
+                    Delete Review
+                  </button>
+                </span>
+                <button type="button" class="btn secondary-btn-less-round-inverse" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <!--tzh removed btn-secondary added secondary-btn-less-round-inverse-->
+                <div v-if="currentMenuItem?.drinkType !== 'Wine'">
+                  <button v-if="!inEdit" type="button" @click="addReview" class="btn secondary-btn-less-round">
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
+                  </button>
+                  <button v-else type="button" @click="editReview" class="btn secondary-btn-less-round">
+                    Update Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div v-else>
+                  <button type="button" @click="addReview" class="btn secondary-btn-less-round">
+                    Submit Review <span v-if="isSubmittingReview" class="spinner-border spinner-border-sm ms-2"
+                      role="status" aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END OF MODAL -->
+
 </template>
 
 <script>
@@ -2595,6 +3355,70 @@ export default {
                     return true;
                 }.bind(this)
             },
+
+
+            // Review modal properties
+            currentMenuItem: null,
+            deleteID: null,
+            reviewTarget: null,
+
+            // For creating review
+            languages: [],
+            selectedLanguage: "English",
+            nullSelectedLanguage: false,
+            reviewDesc: "",
+            rating: 5,
+            colours: [],
+            moreColours: [],
+            specialColours: {},
+            selectedColour: "",
+            image64: null,
+            selectedImage: "",
+            photo: null,
+            observationTags: [],
+            selectedObservations: [],
+            flavorTags: [],
+            subTags: [],
+            selectedFlavourTags: [],
+            finalSelectedFlavourTags: [],
+            variant: "",
+            aroma: "",
+            taste: "",
+            finish: "",
+            wouldRecommend: "",
+            wouldBuyAgain: "",
+            extendReview: false,
+            locationOptions: [],
+            locationSearchTerm: "",
+            tagLocation: "",
+            selectedLocationType: "",
+            selectedLocation: "",
+            selectedLocationAddress: "",
+            selectedLocationId: "",
+            showHomeOption: false,
+            locationInputValue: "",
+            isVenueAutoPopulated: false,
+            isVintageAutoPopulated: false,
+            extendObservation: false,
+            loggedIn: false,
+            userID: localStorage.getItem('88B_accID') || 'defaultUser',
+            userType: localStorage.getItem('88B_accType') || '',
+            reviewDescError: "",
+            reviewResponseCode: "",
+            addingReview: true,
+            successSubmission: false,
+            errorMessage: false,
+            duplicateEntry: false,
+            errorSubmission: false,
+            followList: [],
+            filteredUsers: [],
+            friendTag: "",
+            selectedFriendTag: null,
+            friendTagList: [],
+            showFriendTagList: [],
+            isSubmittingReview: false,
+            users: [],
+
         }
     },
     watch: {
@@ -2759,8 +3583,66 @@ export default {
         this.$nextTick(() => {
             this.watchersEnabled = true;
         });
+
+        this.loadReviewData();
+
     },
     methods: {
+
+        initializeReviewForMenuItem(menuItem) {
+            // Set the review target to the menu item's listing ID
+            this.reviewTarget = menuItem.itemID;
+            
+            // Store reference to current menu item for other uses
+            this.currentMenuItem = menuItem;
+            
+            // Reset the review form to default state first
+            this.resetReviewForm();
+            
+            // Auto-populate variant field - Set variant if the menu item has a vintage/variant
+            if (menuItem.vintage && menuItem.vintage !== null && menuItem.vintage !== '') {
+                this.variant = menuItem.vintage.toString();
+                this.isVintageAutoPopulated = true;
+            } else if (menuItem.variant && menuItem.variant !== null && menuItem.variant !== '') {
+                this.variant = menuItem.variant.toString();
+                this.isVintageAutoPopulated = true;
+            } else if (menuItem.itemVintage && menuItem.itemVintage !== null && menuItem.itemVintage !== '') {
+                this.variant = menuItem.itemVintage.toString();
+                this.isVintageAutoPopulated = true;
+            } else {
+                this.isVintageAutoPopulated = false;
+            }
+            
+            // Auto-populate venue location field - Set current venue as the location
+            if (this.targetVenue && this.targetVenue.id) {
+                this.selectedLocationType = "venue";
+                this.selectedLocation = this.targetVenue.venueName || this.targetVenue.name || "";
+                this.selectedLocationAddress = this.targetVenue.address || "";
+                this.selectedLocationId = this.targetVenue.id.toString();
+                this.locationInputValue = this.selectedLocation;
+                this.isVenueAutoPopulated = true;
+                
+                console.log('Auto-populated venue:', {
+                    venueName: this.selectedLocation,
+                    venueAddress: this.selectedLocationAddress,
+                    venueId: this.selectedLocationId
+                });
+            } else {
+                this.isVenueAutoPopulated = false;
+            }
+            
+            console.log('Initialized review for:', {
+                itemID: menuItem.itemID,
+                variant: this.variant,
+                itemName: menuItem.listingName || menuItem.name,
+                venue: this.selectedLocation,
+                venueId: this.selectedLocationId,
+                isVintageAutoPopulated: this.isVintageAutoPopulated,
+                isVenueAutoPopulated: this.isVenueAutoPopulated
+            });
+        },
+
+        
         // Helper method to determine text color based on background color
         getContrastColor(hexcolor) {
             if (!hexcolor) return '#000000';
@@ -2926,7 +3808,10 @@ export default {
             }
             
             console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
-            
+
+            // Map vintage data for all menu items in the hierarchical structure
+            this.mapVintageDataInHierarchicalMenu(hierarchicalMenu);
+           
             // Build the hierarchical structure and flat lookup
             this.buildMenuHierarchy(hierarchicalMenu);
 
@@ -2936,6 +3821,33 @@ export default {
 
             // Emit the processed data back to parent
             this.emitMenuDataProcessed(hierarchicalMenu);
+        },
+
+        // Map vintage data from variant field to itemVintage for hierarchical menu structure
+        mapVintageDataInHierarchicalMenu(hierarchicalMenu) {
+            hierarchicalMenu.forEach(section => {
+                // Map vintage for main section items
+                if (section.sectionMenu && section.sectionMenu.length > 0) {
+                    section.sectionMenu.forEach(item => {
+                        if (item.variant !== undefined && item.variant !== null) {
+                            item.itemVintage = item.variant;
+                        }
+                    });
+                }
+                
+                // Map vintage for subsection items
+                if (section.subsections && section.subsections.length > 0) {
+                    section.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu && subsection.sectionMenu.length > 0) {
+                            subsection.sectionMenu.forEach(item => {
+                                if (item.variant !== undefined && item.variant !== null) {
+                                    item.itemVintage = item.variant;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         },
 
         // Process flat menu structure from prop and convert to hierarchical
@@ -3028,6 +3940,10 @@ export default {
                             itemProducerID: listingData.producerID,
                             itemServingTypeName: servingTypeName,
                         };
+                        // Set the vintage from the variant field if available
+                        if (item.variant !== undefined) {
+                            item.itemVintage = item.variant;
+                        }
                     }
                 }
             }
@@ -3266,8 +4182,10 @@ export default {
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${sectionId}`);
                 
                 if (response.status === 200 && response.data) {
-                    console.log('🍽️ Section items loaded:', response.data.length, 'items');
-                    return response.data;
+                    // The API returns {code, data, pagination} structure
+                    const items = response.data.data || response.data;
+                    console.log('🍽️ Section items loaded:', items.length, 'items');
+                    return items;
                 } else {
                     console.warn('🍽️ No items found for section:', sectionId);
                     return [];
@@ -3439,6 +4357,9 @@ export default {
                         itemProducerID: listingData["producerID"],
                     };
 
+                    // Set the vintage from the backend variant field
+                    item.itemVintage = item.variant;
+
                     // Get serving type name
                     let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
                     if (servingTypeData != undefined) {
@@ -3571,10 +4492,10 @@ export default {
                     }) : [];
                     
                     return {
-                        id: subsection.id,
-                        sectionName: subsection.sectionName,
-                        sectionOrder: subsection.sectionOrder,
-                        parentSectionId: subsection.parentSectionId,
+                        id: subsection.id || null,
+                        sectionName: subsection.sectionName || '',
+                        sectionOrder: subsection.sectionOrder || 0,
+                        parentSectionId: subsection.parentSectionId || null,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
                         sectionMenu: copiedSubsectionMenu,
@@ -3584,9 +4505,9 @@ export default {
                 }) : [];
                 
                 return {
-                    id: section.id,
-                    sectionName: section.sectionName,
-                    sectionOrder: section.sectionOrder,
+                    id: section.id || null,
+                    sectionName: section.sectionName || '',
+                    sectionOrder: section.sectionOrder || 0,
                     parentSectionId: null,
                     isSubSection: false,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
@@ -3901,19 +4822,87 @@ export default {
 
         // Populate Rename Menu Section Modal - moved from parent
         populateRenameMenuSectionModal(index) {
-            const section = this.editableMainSections.find(s => s.sectionOrder === index);
-            this.renameMenuSectionModalTarget = {
-                index: index,
-                data: JSON.parse(JSON.stringify(section)),
+            // Ensure editableMainSections is properly initialized
+            if (!this.editableMainSections || !Array.isArray(this.editableMainSections)) {
+                console.error('editableMainSections is not properly initialized');
+                return;
             }
+            
+            // First try to find in main sections
+            const mainSection = this.editableMainSections.find(s => s && s.sectionOrder === index);
+            
+            if (mainSection && mainSection.sectionName !== undefined) {
+                // It's a main section
+                this.renameSectionType = 'section';
+                this.renameMenuSectionModalTarget = {
+                    index: index,
+                    data: JSON.parse(JSON.stringify(mainSection)),
+                }
+            } else {
+                // Look for subsection across all main sections
+                let foundSubsection = null;
+                let parentSection = null;
+                
+                for (const section of this.editableMainSections) {
+                    if (section && section.subsections && Array.isArray(section.subsections)) {
+                        const subsection = section.subsections.find(sub => sub && sub.sectionOrder === index);
+                        if (subsection && subsection.sectionName !== undefined) {
+                            foundSubsection = subsection;
+                            parentSection = section;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundSubsection && parentSection) {
+                    // It's a subsection
+                    this.renameSectionType = 'subsection';
+                    this.renameMenuSectionModalTarget = {
+                        index: index,
+                        parentIndex: parentSection.sectionOrder,
+                        data: JSON.parse(JSON.stringify(foundSubsection)),
+                    }
+                } else {
+                    console.error('Section not found with index:', index);
+                    return;
+                }
+            }
+            
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
         },
 
         // Rename Menu Section - moved from parent
         renameMenuSection() {
+            // Ensure we have valid target data
+            if (!this.renameMenuSectionModalTarget || !this.renameMenuSectionModalTarget.data) {
+                console.error('Invalid rename target data');
+                return;
+            }
+            
             this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            this.editableMainSections = this.editableMainSections.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+            
+            if (this.renameSectionType === 'section') {
+                // Update main section
+                this.editableMainSections = this.editableMainSections.map(s => 
+                    s && s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s
+                );
+            } else if (this.renameSectionType === 'subsection') {
+                // Update subsection within its parent section
+                this.editableMainSections = this.editableMainSections.map(section => {
+                    if (section && section.sectionOrder === this.renameMenuSectionModalTarget.parentIndex) {
+                        return {
+                            ...section,
+                            subsections: section.subsections ? section.subsections.map(subsection =>
+                                subsection && subsection.sectionOrder === this.renameMenuSectionModalTarget.index 
+                                    ? this.renameMenuSectionModalTarget.data 
+                                    : subsection
+                            ) : []
+                        };
+                    }
+                    return section;
+                });
+            }
         },
 
         // Add Subsection to a main section
@@ -5195,11 +6184,12 @@ export default {
             // Instead of directly mutating the prop, emit to parent
             this.$emit('edit-menu-mode-changed', false);
 
-            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType
+            // Reset newMenuItemID, newMenuItemTarget, newMenuItemTargetSection, newMenuItemPrice, newMenuItemServingType, newMenuItemVintage
             this.newMenuItemID = "";
             this.newMenuItemTarget = {};
             this.newMenuItemTargetSection = {};
             this.newMenuItemPrice = '';
+            this.newMenuItemVintage = null;
             this.getDefaultServingType();
         },
 
@@ -5216,6 +6206,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
@@ -5244,6 +6235,7 @@ export default {
                     searchResults: [],
                     newMenuItemID: '',
                     newMenuItemTarget: {},
+                    newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
@@ -7040,7 +8032,627 @@ export default {
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
                 });
+        },
+
+    // function to display submitted image
+    onFileChange(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onloadend = async () => {
+        this.selectedImage = reader.result;
+        const base64String = reader.result
+          .replace("data:", "")
+          .replace(/^.+,/, "");
+        this.image64 = base64String;
+      };
+      reader.readAsDataURL(file);
+    },
+
+    // Function to set delete ID for review deletion
+    setDeleteID(review) {
+      this.deleteID = review;
+    },
+
+    // Function to add review
+    addReview() {
+
+      this.isSubmittingReview = true;
+
+      // TODO Combine with editReview because using the same variables
+
+      // let errorPhrase = "Your completion is incomplete"
+      // form validation
+      if (this.reviewDesc.length < 3) {
+        this.reviewDescError =
+          "Character count is less than 3, please write more for a more detailed review.";
+        alert(
+          "Submission has error, please fill in the required fields properly"
+        );
+        return "Submission error";
+      } else {
+        this.reviewDescError = "";
+      }
+      if (this.selectedLanguage == "") {
+        this.nullSelectedLanguage = true;
+        alert(
+          "Submission has error, please fill in the required fields properly"
+        );
+        return "Submission error";
+      }
+      let createdDate = new Date().toISOString();
+      if (this.reviewDesc !== "") {
+        this.reviewDesc = this.reviewDesc.trim();
+      }
+      if (this.photo !== null) {
+        this.photo = this.photo.trim();
+      }
+      if (this.variant !== "") {
+        this.variant = this.variant.trim();
+      }
+      if (this.aroma !== "") {
+        this.aroma = this.aroma.trim();
+      }
+      if (this.taste !== "") {
+        this.taste = this.taste.trim();
+      }
+      if (this.finish !== "") {
+        this.finish = this.finish.trim();
+      }
+
+      // Convert empty strings to null for boolean fields
+      let willRecommend = this.wouldRecommend === "" ? null : this.wouldRecommend;
+      let wouldBuyAgain = this.wouldBuyAgain === "" ? null : this.wouldBuyAgain;
+
+      // // Add console log here to debug the rating value before submission
+      // console.log("Rating before submission:", this.rating);
+
+      let submitAPI = `${process.env.VUE_APP_API_URL}/createReview/createReview`;
+      let submitData = {
+        userID: this.userID,
+        reviewTarget: this.reviewTarget,
+        rating: Number(this.rating),
+        reviewDesc: this.reviewDesc,
+        reviewType: "Listing",
+        flavourTag: this.finalSelectedFlavourTags,
+        photo: this.image64,
+        colour: this.selectedColour,
+        language: this.selectedLanguage,
+        variant: this.variant,
+        aroma: this.aroma,
+        taste: this.taste,
+        finish: this.finish,
+        location: this.selectedLocation,
+        address: this.selectedLocationAddress,
+        willRecommend: willRecommend,
+        taggedUsers: this.friendTagList,
+        wouldBuyAgain: wouldBuyAgain,
+        observationTag: this.selectedObservations,
+        createdDate: createdDate,
+        userVotes: {
+          downvotes: [],
+          upvotes: [],
+        },
+      };
+
+      // Add venue ID if available (for better venue tracking)
+      if (this.selectedLocationId && this.selectedLocationId !== "") {
+        submitData.venueId = Number(this.selectedLocationId);
+      }
+
+      console.log('Submitting review with payload:', {
+        reviewTarget: submitData.reviewTarget,
+        variant: submitData.variant,
+        location: submitData.location,
+        address: submitData.address,
+        venueId: submitData.venueId
+      });
+
+      this.writeReview(submitAPI, submitData);
+    },
+
+    async writeReview(submitAPI, submitData) {
+      const response = await this.$axios
+        .post(submitAPI, submitData)
+        .then((response) => {
+          this.reviewResponseCode = response.data.code;
+
+          // Handle badges if they were awarded
+          if (response.data.badgesAwarded && response.data.badgesAwarded.length > 0) {
+            this.earnedBadges = response.data.badgesAwarded;
+            this.showBadgePopup = true;
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          this.reviewResponseCode = error.response.data.code;
+        });
+      if (this.reviewResponseCode == 201) {
+        this.successSubmission = true; // Display success message
+        this.addingReview = false; // Hide submission in progress message
+        this.clearReviewCache();
+        // Refresh user reviews to show updated review status
+        this.loadUserReviews();
+      } else {
+        this.errorSubmission = true; // Display error message
+        this.addingReview = false; // Hide submission in progress message
+        if (this.reviewResponseCode == 400) {
+          this.duplicateEntry = true; // Display duplicate entry message
+        } else {
+          this.errorMessage = true; // Display generic error message
         }
+      }
+      this.isSubmittingReview = false; // Reset loading state
+      return response;
+    },
+
+    clearReviewCache() {
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
+      localStorage.removeItem(cacheKey);
+    },
+
+    // Function to expand/contract the modal
+    controlModal() {
+      if (this.extendReview) {
+        this.extendReview = false;
+      } else {
+        this.extendReview = true;
+      }
+    },
+
+    displaySelectColour(colour) {
+      this.selectedColour = colour;
+    },
+
+    clearColour() {
+      this.selectedColour = "";
+    },
+
+    clearPhoto() {
+      this.image64 = null;
+      this.selectedImage = "";
+      document.getElementById("reviewPhoto").value = "";
+    },
+
+    clearLocation() {
+      this.tagLocation = "";
+      this.selectedLocationType = "";
+      this.selectedLocation = "";
+      this.selectedLocationAddress = "";
+      this.locationInputValue = "";
+      this.showHomeOption = false;
+      // Clear the GMapAutocomplete component
+      if (this.$refs.locationInput) {
+        // For GMapAutocomplete, we need to clear the value differently
+        this.$refs.locationInput.$el.value = "";
+      }
+    },
+
+    toggleBox(family) {
+      let tempShowBox = family.showBox;
+      this.flavorTags.forEach((item) => {
+        item.showBox = false;
+      });
+      family.showBox = !tempShowBox; // Toggle the visibility of the box
+    },
+
+    toggleObservations() {
+      this.extendObservation = !this.extendObservation;
+    },    
+
+    toggleObservationSelection(observation) {
+      const index = this.selectedObservations.indexOf(observation);
+      if (index === -1) {
+        // Observation is not selected, so add it to the array
+        this.selectedObservations.push(observation);
+      } else {
+        // Observation is selected, so remove it from the array
+        this.selectedObservations.splice(index, 1);
+      }
+    },
+
+    toggleFlavourSelection(flavour, hexcode, id) {
+      const index = this.selectedFlavourTags.indexOf(flavour + hexcode);
+      if (index === -1) {
+        // Observation is not selected, so add it to the array
+        this.selectedFlavourTags.push(flavour + hexcode);
+        this.finalSelectedFlavourTags.push(id);
+      } else {
+        // Observation is selected, so remove it from the array
+        this.selectedFlavourTags.splice(index, 1);
+        this.finalSelectedFlavourTags.splice(index, 1);
+      }
+    },
+     
+    updateFriendTag() {
+      let friendTagError = document.getElementById("friendTagError");
+
+      // Show suggestions only if at least 2 characters are typed
+      if (this.friendTag.length >= 2) {
+        this.filteredUsers = this.users.filter((user) =>
+          user.username.toLowerCase().includes(this.friendTag.toLowerCase())
+        );
+      } else {
+        this.filteredUsers = []; // Hide suggestions if less than 2 characters
+      }
+
+      let user = this.users.find((user) => user.username === this.friendTag);
+
+      if (user) {
+        this.selectedFriendTag = user;
+        friendTagError.innerHTML = "";
+      } else {
+        this.selectedFriendTag = null;
+        friendTagError.innerHTML = "Please enter a valid username";
+      }
+    },
+    
+    tagSpecificFriend() {
+      if (
+        this.selectedFriendTag !== null &&
+        !this.friendTagList.includes(this.selectedFriendTag.id)
+      ) {
+        this.friendTagList.push(this.selectedFriendTag.id);
+        this.showFriendTagList.push({
+          username: this.selectedFriendTag.username,
+          id: this.selectedFriendTag.id,
+        });
+        this.friendTag = "";
+        this.selectedFriendTag = null;
+        this.filteredUsers = []; // Clear suggestions after tagging
+      }
+    },    
+
+    removeFriendTag(friend) {
+      this.showFriendTagList = this.showFriendTagList.filter(
+        (item) => item.username !== friend.username
+      );
+      this.friendTagList = this.friendTagList.filter(
+        (item) => item !== friend.id
+      );
+    },
+
+    // Method to handle input in the location field
+    /* eslint-disable */
+    // eslint-disable-next-line no-unused-vars
+    onLocationInput(event) { // eslint-disable-line no-unused-vars
+      const inputValue = typeof event === 'string' ? event : event.target.value; // eslint-disable-line no-unused-vars
+      this.locationInputValue = inputValue;
+
+      // Clear any previous selection if user is typing something new
+      if (this.selectedLocationType && inputValue !== 'Home' && inputValue !== this.selectedLocation) {
+        this.selectedLocationType = '';
+        this.selectedLocation = '';
+        this.selectedLocationAddress = '';
+      }
+
+      // Adjust Google Maps position when user starts typing
+      this.$nextTick(() => {
+        this.adjustGoogleMapsPosition();
+      });
+    },
+
+    // Method to handle focus on location input - triggers home option
+    onLocationFocus() {
+      // Always show home option when field is focused
+      this.showHomeOption = true;
+
+      // Adjust Google Maps autocomplete position after DOM update
+      this.$nextTick(() => {
+        this.adjustGoogleMapsPosition();
+      });
+    },
+
+
+    // Method to handle blur (with delay to allow clicking on home option)
+    onLocationBlur() {
+      // Delay hiding to allow click on home option
+      setTimeout(() => {
+        this.showHomeOption = false;
+        // Reset Google Maps position when home option is hidden
+        this.$nextTick(() => {
+          this.adjustGoogleMapsPosition();
+        });
+      }, 200);
+    },    
+
+    // Handle keyboard navigation
+    onLocationKeydown(event) {
+      // If Enter is pressed, do nothing special (removed home auto-detection)
+      // Let normal autocomplete behavior handle Enter key
+    },    
+
+    // Handle place selection from GMapAutocomplete
+    setPlaceFromAutocomplete(place) {
+      if (place && place.geometry) {
+        this.selectedLocationType = 'venue';
+        this.selectedLocation = place.name || place.formatted_address;
+        this.selectedLocationAddress = place.formatted_address;
+        this.locationInputValue = this.selectedLocation;
+        this.showHomeOption = false;
+      }
+    },
+
+    // Method to select home location
+    selectHomeLocation() {
+      this.selectedLocationType = 'home';
+      this.selectedLocation = 'Home';
+      this.selectedLocationAddress = 'Home';
+      this.locationInputValue = 'Home';
+      this.showHomeOption = false;
+    },
+
+
+    // Method to adjust Google Maps autocomplete position
+    adjustGoogleMapsPosition() {
+      // Wait a bit for the DOM to update and Google Maps to create its container
+      setTimeout(() => {
+        const pacContainer = document.querySelector('.pac-container');
+        if (pacContainer) {
+          console.log('Adjusting Google Maps position, showHomeOption:', this.showHomeOption); // Debug log
+
+          if (this.showHomeOption) {
+            // Get the input field position to calculate proper offset
+            const inputField = this.$refs.locationInput?.$el || document.querySelector('[placeholder="Tag where you tasted this drink"]');
+            if (inputField) {
+              const inputRect = inputField.getBoundingClientRect();
+              const homeDropdown = document.querySelector('.home-option-dropdown');
+              const homeDropdownHeight = homeDropdown ? homeDropdown.offsetHeight : 60;
+
+              // Move the autocomplete dropdown below the home option dropdown
+              pacContainer.style.position = 'absolute';
+              pacContainer.style.top = (inputRect.bottom + homeDropdownHeight + window.scrollY) + 'px';
+              pacContainer.style.left = inputRect.left + 'px';
+              pacContainer.style.width = inputRect.width + 'px';
+              pacContainer.style.marginTop = '0px';
+            } else {
+              // Fallback: use margin-top
+              pacContainer.style.marginTop = '60px';
+            }
+          } else {
+            // Reset to normal position when home option is hidden
+            pacContainer.style.position = '';
+            pacContainer.style.top = '';
+            pacContainer.style.left = '';
+            pacContainer.style.width = '';
+            pacContainer.style.marginTop = '0px';
+          }
+        } else {
+          console.log('PAC container not found'); // Debug log
+        }
+      }, 100);
+    },
+
+    reset() {
+      // Restore cached review data
+      this.restoreReviewCache();
+      // Reset error flags so the modal shows the form again
+      this.errorSubmission = false;
+      this.errorMessage = false;
+      this.duplicateEntry = false;
+      this.addingReview = true;
+    },
+
+    restoreReviewCache() {
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached && !this.inEdit) {
+        try {
+          const data = JSON.parse(cached);
+          // Only restore if not in edit mode (or as needed)
+          this.selectedLanguage = data.selectedLanguage || "English";
+          this.reviewDesc = data.reviewDesc || "";
+          this.rating = data.rating || 5;
+          this.selectedColour = data.selectedColour || "";
+          this.aroma = data.aroma || "";
+          this.taste = data.taste || "";
+          this.finish = data.finish || "";
+          this.wouldRecommend = data.wouldRecommend;
+          this.wouldBuyAgain = data.wouldBuyAgain;
+          this.selectedFlavourTags = data.selectedFlavourTags || [];
+          this.finalSelectedFlavourTags = data.finalSelectedFlavourTags || [];
+          this.selectedObservations = data.selectedObservations || [];
+          this.friendTagList = data.friendTagList || [];
+          this.showFriendTagList = data.showFriendTagList || [];
+          this.selectedLocationType = data.selectedLocationType || "";
+          this.selectedLocation = data.selectedLocation || "";
+          this.selectedLocationAddress = data.selectedLocationAddress || "";
+          this.locationInputValue = data.locationInputValue || "";
+          this.image64 = data.image64 || null;
+        } catch (e) {
+          // If cache is corrupted, ignore
+        }
+      }
+    },
+
+    cacheReviewForm() {
+      const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
+      const data = {
+        selectedLanguage: this.selectedLanguage,
+        reviewDesc: this.reviewDesc,
+        rating: this.rating,
+        selectedColour: this.selectedColour,
+        variant: this.variant,
+        aroma: this.aroma,
+        taste: this.taste,
+        finish: this.finish,
+        wouldRecommend: this.wouldRecommend,
+        wouldBuyAgain: this.wouldBuyAgain,
+        selectedFlavourTags: this.selectedFlavourTags,
+        finalSelectedFlavourTags: this.finalSelectedFlavourTags,
+        selectedObservations: this.selectedObservations,
+        friendTagList: this.friendTagList,
+        showFriendTagList: this.showFriendTagList,
+        selectedLocationType: this.selectedLocationType,
+        selectedLocation: this.selectedLocation,
+        selectedLocationAddress: this.selectedLocationAddress,
+        locationInputValue: this.locationInputValue,
+        image64: this.image64
+      };
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+    },    
+
+    // Set current menu item being reviewed
+    setCurrentMenuItem(menuItem) {
+    this.reviewTarget = menuItem.itemID;
+    this.currentMenuItem = menuItem;
+    // Reset form to defaults
+    this.resetReviewForm();
+    },
+
+    // Reset the review form to default values
+    resetReviewForm() {
+        this.reviewDesc = "";
+        this.rating = 5;
+        this.selectedLanguage = "English";
+        this.selectedColour = "";
+        this.image64 = null;
+        this.selectedImage = "";
+        this.variant = "";
+        this.aroma = "";
+        this.taste = "";
+        this.finish = "";
+        this.wouldRecommend = "";
+        this.wouldBuyAgain = "";
+        this.extendReview = false;
+        this.selectedFlavourTags = [];
+        this.finalSelectedFlavourTags = [];
+        this.selectedObservations = [];
+        this.friendTagList = [];
+        this.showFriendTagList = [];
+        this.selectedLocationType = "";
+        this.selectedLocation = "";
+        this.selectedLocationAddress = "";
+        this.locationInputValue = "";
+        this.showHomeOption = false;
+        this.extendObservation = false;
+        this.addingReview = true;
+        this.successSubmission = false;
+        this.errorSubmission = false;
+        this.errorMessage = false;
+        this.duplicateEntry = false;
+        this.reviewDescError = "";
+        this.nullSelectedLanguage = false;
+        this.isVenueAutoPopulated = false;
+        this.isVintageAutoPopulated = false;
+        },
+
+    // Load all review-related data (flavors, colors, etc.)
+    async loadReviewData() {
+    // Copy all the API loading code from BottleListings.vue's loadData method
+    // This includes loading flavourTags, subTags, observationTags, colours, etc.    
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getFlavourTags`
+            );
+            this.flavorTags = response.data.map((item) => {
+            return { ...item, showBox: false };
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        // subTags
+        // _id, familyTagId, subtag
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getSubTags`
+            );
+            this.subTags = response.data;
+            this.flavorTags.forEach((flavourTag) => {
+            // Filter subtags belonging to the current flavor tag
+            const subTagsForFlavourTag = this.subTags.filter(
+                (subTag) => subTag.familyTagId === flavourTag.id
+            );
+
+            // Extract required information from subtags
+            const subTagsInfo = subTagsForFlavourTag.map((subTag) => ({
+                id: subTag.id,
+                subTag: subTag.subTag,
+            }));
+            // Assign subtag information to flavor tag object
+            flavourTag.subTag2 = subTagsInfo;
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        // observationTags
+        // observationTag
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getObservationTags`
+            );
+            for (let observationTag of response.data) {
+            this.observationTags.push(observationTag.observationTag);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        // colours
+        // hexcode
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getColours`
+            );
+            for (let colour of response.data) {
+            this.colours.push(colour.hexcode);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        // moreColours
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getMoreColours`
+            );
+            for (let colour of response.data) {
+            this.moreColours.push(colour.hexcode);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+
+        // specialColours
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getSpecialColours`
+            );
+            this.specialColours = response.data.reduce((obj, item) => {
+            obj[item.colour] = item.hexList;
+            return obj;
+            }, {});
+        } catch (error) {
+            console.error(error);
+        }
+
+        // languages
+        // _id, language
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getLanguages`
+            );
+            this.languages = response.data.sort((a, b) => {
+            return a.language.localeCompare(b.language);
+            });
+        } catch (error) {
+            console.error(error);
+        }
+
+        // users - load all users for friend tagging
+        try {
+            const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getUsers`
+            );
+            this.users = response.data;
+        } catch (error) {
+            console.error(error);
+        }
+
+    }
+
     }
 }
 </script>
@@ -7153,7 +8765,7 @@ export default {
 
 /* Festival Tasting Tracker Styles */
 .tasting-tracker {
-  min-width: 150px;
+  /* min-width: 150px; */
   width: auto;
   display: inline-block;
 }
@@ -7215,9 +8827,9 @@ export default {
 
 /* Mobile responsiveness for tasting tracker */
 @media (max-width: 768px) {
-  .tasting-tracker {
+  /* .tasting-tracker {
     min-width: 120px;
-  }
+  } */
   
   .tasting-tracker .tasting-label {
     font-size: 0.75rem;
@@ -7240,4 +8852,232 @@ export default {
     line-height: 1.2 !important;
   }
 }
+
+/* Review Modal Styles */
+.step-index { 
+  background: wheat; 
+  color: black; 
+  border: 2px solid #f0b358; 
+  width: 25px; 
+  height: 25px; 
+  display: inline-flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-weight: bold; 
+  font-size: 15px;
+}
+
+.auto-resize-textarea {
+  resize: vertical;
+  min-height: 38px;
+  transition: height 0.2s ease;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auto-resize-textarea:focus {
+  border-color: #006A50;
+  box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
+}
+
+.location-input-container {
+  position: relative;
+}
+
+.home-option-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.home-option-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #333;
+}
+
+.home-option-item:hover {
+  background-color: #f8f9fa;
+}
+
+.home-option-item:last-child {
+  border-bottom: none;
+}
+
+.location-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.pac-container {
+  z-index: 1000 !important;
+  transition: margin-top 0.2s ease !important;
+}
+
+.extended-preview-container {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.extended-preview-container:hover {
+  border-color: #6c757d;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-content {
+  padding: 20px;
+  height: 200px;
+  overflow: hidden;
+  position: relative;
+}
+
+.preview-input-field {
+  height: 35px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-input-field::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 10px;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      #dee2e6 20%,
+      #dee2e6 80%,
+      transparent 100%);
+  transform: translateY(-50%);
+}
+
+.preview-fade-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.4) 30%,
+      rgba(255, 255, 255, 0.8) 60%,
+      rgba(255, 255, 255, 0.95) 80%,
+      rgba(255, 255, 255, 1) 100%);
+  display: flex;
+  align-items: start;
+  justify-content: center;
+  padding: 15px;
+}
+
+.preview-cta {
+  color: #333;
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
+    0px 0px 12px rgba(0, 0, 0, 0.3),
+    1px 1px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+.extended-preview-container:hover .preview-cta {
+  color: #000;
+  transform: translateY(-1px);
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
+    0px 0px 15px rgba(0, 0, 0, 0.7),
+    2px 2px 6px rgba(0, 0, 0, 1);
+}
+
+.preview-color-btn {
+  margin-right: 2px !important;
+  padding: 0 !important;
+}
+
+.upload-label { 
+  display: block; 
+  width: 100%; 
+}
+
+.mobile-review-svg-button {
+  width: 100%;
+  aspect-ratio: 1/1;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.photo-dropzone {
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  height: 100%;
+  border: 2px dashed #cfcfcf; 
+  background: #fafafa; 
+  cursor: pointer;
+}
+
+.review-preview-photo {
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  display: block;
+}
+
+input[type="range"].form-range::-webkit-slider-thumb {
+  background: #FF3E31;
+}
+
+@media (max-width: 768px) {
+  .preview-content {
+    padding: 15px;
+    height: 150px;
+  }
+
+  .preview-fade-overlay {
+    height: 100px;
+  }
+
+  .preview-cta {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
+      0px 0px 10px rgba(0, 0, 0, 0.6),
+      1px 1px 3px rgba(0, 0, 0, 0.9);
+  }
+
+  .preview-color-btn {
+    width: 16px !important;
+    height: 16px !important;
+    margin-right: 1px !important;
+  }
+}
+
 </style>
