@@ -8007,6 +8007,8 @@ export default {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
         this.clearReviewCache();
+        // Refresh user reviews to show updated review status
+        this.loadUserReviews();
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
