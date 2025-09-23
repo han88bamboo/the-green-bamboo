@@ -3177,10 +3177,10 @@ export default {
                     }) : [];
                     
                     return {
-                        id: subsection.id,
-                        sectionName: subsection.sectionName,
-                        sectionOrder: subsection.sectionOrder,
-                        parentSectionId: subsection.parentSectionId,
+                        id: subsection.id || null,
+                        sectionName: subsection.sectionName || '',
+                        sectionOrder: subsection.sectionOrder || 0,
+                        parentSectionId: subsection.parentSectionId || null,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
                         sectionMenu: copiedSubsectionMenu,
@@ -3190,9 +3190,9 @@ export default {
                 }) : [];
                 
                 return {
-                    id: section.id,
-                    sectionName: section.sectionName,
-                    sectionOrder: section.sectionOrder,
+                    id: section.id || null,
+                    sectionName: section.sectionName || '',
+                    sectionOrder: section.sectionOrder || 0,
                     parentSectionId: null,
                     isSubSection: false,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
@@ -3507,19 +3507,87 @@ export default {
 
         // Populate Rename Menu Section Modal - moved from parent
         populateRenameMenuSectionModal(index) {
-            const section = this.editableMainSections.find(s => s.sectionOrder === index);
-            this.renameMenuSectionModalTarget = {
-                index: index,
-                data: JSON.parse(JSON.stringify(section)),
+            // Ensure editableMainSections is properly initialized
+            if (!this.editableMainSections || !Array.isArray(this.editableMainSections)) {
+                console.error('editableMainSections is not properly initialized');
+                return;
             }
+            
+            // First try to find in main sections
+            const mainSection = this.editableMainSections.find(s => s && s.sectionOrder === index);
+            
+            if (mainSection && mainSection.sectionName !== undefined) {
+                // It's a main section
+                this.renameSectionType = 'section';
+                this.renameMenuSectionModalTarget = {
+                    index: index,
+                    data: JSON.parse(JSON.stringify(mainSection)),
+                }
+            } else {
+                // Look for subsection across all main sections
+                let foundSubsection = null;
+                let parentSection = null;
+                
+                for (const section of this.editableMainSections) {
+                    if (section && section.subsections && Array.isArray(section.subsections)) {
+                        const subsection = section.subsections.find(sub => sub && sub.sectionOrder === index);
+                        if (subsection && subsection.sectionName !== undefined) {
+                            foundSubsection = subsection;
+                            parentSection = section;
+                            break;
+                        }
+                    }
+                }
+                
+                if (foundSubsection && parentSection) {
+                    // It's a subsection
+                    this.renameSectionType = 'subsection';
+                    this.renameMenuSectionModalTarget = {
+                        index: index,
+                        parentIndex: parentSection.sectionOrder,
+                        data: JSON.parse(JSON.stringify(foundSubsection)),
+                    }
+                } else {
+                    console.error('Section not found with index:', index);
+                    return;
+                }
+            }
+            
             this.renameMenuSectionModalOld = this.renameMenuSectionModalTarget.data.sectionName;
             this.renameMenuSectionModalNew = this.renameMenuSectionModalTarget.data.sectionName;
         },
 
         // Rename Menu Section - moved from parent
         renameMenuSection() {
+            // Ensure we have valid target data
+            if (!this.renameMenuSectionModalTarget || !this.renameMenuSectionModalTarget.data) {
+                console.error('Invalid rename target data');
+                return;
+            }
+            
             this.renameMenuSectionModalTarget.data.sectionName = this.renameMenuSectionModalNew;
-            this.editableMainSections = this.editableMainSections.map(s => s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s);
+            
+            if (this.renameSectionType === 'section') {
+                // Update main section
+                this.editableMainSections = this.editableMainSections.map(s => 
+                    s && s.sectionOrder === this.renameMenuSectionModalTarget.index ? this.renameMenuSectionModalTarget.data : s
+                );
+            } else if (this.renameSectionType === 'subsection') {
+                // Update subsection within its parent section
+                this.editableMainSections = this.editableMainSections.map(section => {
+                    if (section && section.sectionOrder === this.renameMenuSectionModalTarget.parentIndex) {
+                        return {
+                            ...section,
+                            subsections: section.subsections ? section.subsections.map(subsection =>
+                                subsection && subsection.sectionOrder === this.renameMenuSectionModalTarget.index 
+                                    ? this.renameMenuSectionModalTarget.data 
+                                    : subsection
+                            ) : []
+                        };
+                    }
+                    return section;
+                });
+            }
         },
 
         // Add Subsection to a main section
