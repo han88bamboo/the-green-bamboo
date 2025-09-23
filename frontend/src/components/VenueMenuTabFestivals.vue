@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu (Festival Component - to delete later)
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
                 </p>
             </div>
 
@@ -407,12 +407,12 @@
                                             <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
                                                 <div class="tasting-tracker">
                                                     <div class="form-check">
-                                                        <label 
+                                                        <!-- <label 
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
                                                             <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                             <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
+                                                        </label> -->
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
@@ -609,12 +609,12 @@
                                         <!-- Festival Tasting Tracker -->
                                         <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                             <div class="form-check justify-content-end">
-                                                <label 
+                                                <!-- <label 
                                                     class="form-check-label tasting-label" 
                                                     :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                     <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
                                                     <span class="not-tasted-text" v-else>Tasted?</span>
-                                                </label>
+                                                </label> -->
                                                 <input 
                                                     class="form-check-input tasting-checkbox" 
                                                     type="checkbox" 
@@ -736,12 +736,12 @@
                                                     <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
                                                         <div class="tasting-tracker">
                                                             <div class="form-check">
-                                                                <label 
+                                                                <!-- <label 
                                                                     class="form-check-label tasting-label" 
                                                                     :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                                     <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
                                                                     <span class="not-tasted-text" v-else>Tasted?</span>
-                                                                </label>
+                                                                </label> -->
                                                                 <input 
                                                                     class="form-check-input tasting-checkbox" 
                                                                     type="checkbox" 
@@ -912,12 +912,12 @@
                                                 <!-- Festival Tasting Tracker -->
                                                 <div class="tasting-tracker mt-2" v-if="showTastingTracker">
                                                     <div class="form-check justify-content-end">
-                                                        <label 
+                                                        <!-- <label 
                                                             class="form-check-label tasting-label" 
                                                             :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
                                                             <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
                                                             <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label>
+                                                        </label> -->
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
