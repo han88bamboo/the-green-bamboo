@@ -419,6 +419,7 @@ def getListingsWlp2025():
                     WHEN "order" IS NOT NULL AND "order" >= 0 THEN "order" 
                     ELSE NULL 
                 END ASC NULLS LAST
+            LIMIT 20
         ''', ('%#wlp2025%',))
         listings_data = cursor.fetchall()
     
