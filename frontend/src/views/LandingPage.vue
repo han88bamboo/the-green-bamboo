@@ -1600,18 +1600,25 @@ export default {
 
         // Navigate to listing page when clicking on a review or menu item
         goToListing(item) {
-            // Handle both review objects and menu item objects
-            if (item && ((item.reviewTarget && item.listingName) || (item.listingId && item.listingName))) {
+            // Handle both review objects, menu item objects, and direct listing objects
+            if (item && item.listingName) {
                 try {
-                    const listingId = item.reviewTarget || item.listingId;
+                    // Try different possible property names for listing ID
+                    const listingId = item.reviewTarget || item.listingId || item.id || item.listingID;
                     const listingName = item.listingName;
                     
-                    this.$router.push({ 
-                        path: `/listing/view/${listingId}/${this.slugify(listingName)}` 
-                    });
+                    if (listingId && listingName) {
+                        this.$router.push({ 
+                            path: `/listing/view/${listingId}/${this.slugify(listingName)}` 
+                        });
+                    } else {
+                        console.warn("Missing listing ID or name:", item);
+                    }
                 } catch (error) {
                     console.error("Error navigating to listing:", error);
                 }
+            } else {
+                console.warn("Invalid item for navigation:", item);
             }
         },
 
