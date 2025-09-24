@@ -4594,6 +4594,11 @@ export default {
         // get display user drink choice
         this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
 
+        // Initialize selectedDrinks for edit modal
+        this.selectedDrinks = Array.isArray(this.displayUser.choiceDrinks) 
+          ? this.displayUser.choiceDrinks 
+          : [];
+
         // added by group 3 to display flavour and observation tag
         this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
           ? this.displayUser.choiceFlavours 
