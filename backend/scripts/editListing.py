@@ -39,6 +39,24 @@ def updateListing(id):
         else:
             # Handle empty ABV - set to NULL in database
             updatedListing['abv'] = None
+    
+    # Handle tags field - ensure it's a string or NULL
+    if 'tags' in updatedListing:
+        if updatedListing['tags'] is None or updatedListing['tags'].strip() == "":
+            updatedListing['tags'] = None
+        else:
+            # Ensure tags is a string (it should already be trimmed from frontend)
+            updatedListing['tags'] = str(updatedListing['tags'])
+    
+    # Handle order field - ensure it's an integer or NULL
+    if 'order' in updatedListing:
+        if updatedListing['order'] is None or updatedListing['order'] == "":
+            updatedListing['order'] = None
+        else:
+            try:
+                updatedListing['order'] = int(updatedListing['order'])
+            except (ValueError, TypeError):
+                updatedListing['order'] = None
 
     updatedListingName = updatedListing["listingName"]
 

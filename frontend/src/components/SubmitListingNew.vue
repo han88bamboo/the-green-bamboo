@@ -188,16 +188,16 @@
                         <!-- Power User Fields: Tags and Order -->
                         <div class="row" v-if="formType == 'power'">
                             <!-- Input: Tags -->
-                            <div class="col-md-8 mb-3">
-                                <p class="text-start mb-1">Tags <span class="text-muted" style="font-size: 14px;">(Use hashtags like #whiskyliveparis or #sakefestivalosaka, #sakefestivalchichibu)</span></p>
+                            <div class="col-md-7 mb-3">
+                                <p class="text-start mb-1">Tags <span class="text-muted" style="font-size: 14px;">(Separate multiple tags with commas.)</span></p>
                                 <input type="text" class="form-control" 
                                        v-model="form['tags']" 
                                        id="tags" 
-                                       placeholder="Enter tags with hashtags (e.g., #whiskyliveparis, #sakefestivalosaka)">
+                                       placeholder="#whiskyliveparis, #sakefestivalosaka">
                             </div>
                             
                             <!-- Input: Order -->
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-5 mb-3">
                                 <p class="text-start mb-1">Order <span class="text-muted" style="font-size: 14px;">(Integer from -1 onwards)</span></p>
                                 <input type="number" class="form-control" 
                                        v-model.number="form['order']" 
@@ -726,6 +726,34 @@
                     .replace(/\s+/g, '')
                     .replace(/[^\w]/g, '');
             },
+
+            // Function to validate tags format
+            validateTagsFormat(tagsString) {
+                // Split by comma and trim each tag
+                const tags = tagsString.split(',').map(tag => tag.trim());
+                
+                // Check each tag
+                for (const tag of tags) {
+                    // Must start with #
+                    if (!tag.startsWith('#')) {
+                        return false;
+                    }
+                    
+                    // Must have content after #
+                    const content = tag.substring(1);
+                    if (!content) {
+                        return false;
+                    }
+                    
+                    // Content must only contain letters and numbers
+                    if (!/^[a-zA-Z0-9]+$/.test(content)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            },
+
             // Function to check if user is a power user
             async checkPower() {
                 let powerValid = false;
@@ -1203,6 +1231,22 @@
                     this.form["age"] = parseInt(previousData.age);
                 }
                 console.log('form.age:', this.form["age"]);
+
+                // Handle tags field - populate if exists
+                if (previousData.tags) {
+                    this.form["tags"] = previousData.tags;
+                } else {
+                    this.form["tags"] = "";
+                }
+                console.log('form.tags:', this.form["tags"]);
+
+                // Handle order field - populate if exists
+                if (previousData.order !== null && previousData.order !== undefined) {
+                    this.form["order"] = previousData.order;
+                } else {
+                    this.form["order"] = "";
+                }
+                console.log('form.order:', this.form["order"]);
             },
 
             // Helper function to reset form (by refreshing page)
@@ -1462,6 +1506,14 @@
 
                     // Validate Power User Fields
                     if (this.formType == "power") {
+                        // Validate Tags field (must follow #hashtag format with comma separation)
+                        if (this.form["tags"] && this.form["tags"].trim()) {
+                            const tagsValue = this.form["tags"].trim();
+                            if (!this.validateTagsFormat(tagsValue)) {
+                                this.errors.push("Tags must start with # and contain only letters/numbers. Multiple tags must be separated by commas (e.g., #whiskyliveparis, #sakefestivalosaka).");
+                            }
+                        }
+
                         // Validate Order field (must be integer >= -1 if provided)
                         if (this.form["order"] !== "" && this.form["order"] !== null && this.form["order"] !== undefined) {
                             const orderValue = Number(this.form["order"]);
@@ -1626,6 +1678,8 @@
                             "drinkType": (this.tempDrinkType || "").trim(),
                             "typeCategory": (this.tempTypeCategory || "").trim(),
                             "drinkStyle": (this.tempDrinkStyle || "").trim(),
+                            "tags": (this.form["tags"] || "").trim(),
+                            "order": this.form["order"] || null,
                         }
 
                         // Listing Creation Mode

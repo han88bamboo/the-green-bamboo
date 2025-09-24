@@ -177,6 +177,24 @@ def createListings():
             else:
                 # Handle empty ABV - set to NULL in database
                 rawBottle['abv'] = None
+        
+        # Handle tags field - ensure it's a string or NULL
+        if 'tags' in rawBottle:
+            if rawBottle['tags'] is None or rawBottle['tags'].strip() == "":
+                rawBottle['tags'] = None
+            else:
+                # Ensure tags is a string (it should already be trimmed from frontend)
+                rawBottle['tags'] = str(rawBottle['tags'])
+        
+        # Handle order field - ensure it's an integer or NULL
+        if 'order' in rawBottle:
+            if rawBottle['order'] is None or rawBottle['order'] == "":
+                rawBottle['order'] = None
+            else:
+                try:
+                    rawBottle['order'] = int(rawBottle['order'])
+                except (ValueError, TypeError):
+                    rawBottle['order'] = None
 
         # uploading as base64 image
         if rawBottle['photo'] is not None and rawBottle['photo'] != "":

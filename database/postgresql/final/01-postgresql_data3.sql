@@ -501,7 +501,9 @@ CREATE TABLE "listings" (
     "reviewLink" VARCHAR(255),
     "sourceLink" VARCHAR(255),
     "photo" TEXT,
-    "drinkStyle" VARCHAR(255) -- added by tzh
+    "drinkStyle" VARCHAR(255), -- added by tzh
+    "tags" TEXT,
+    "order" INTEGER DEFAULT NULL
 );
 
 -- create index 
