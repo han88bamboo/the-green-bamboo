@@ -355,11 +355,20 @@
   <!-- End of display -->
   <!-- Footer End -->
   <!-- Popup 1 -->
+    <!-- End of display -->
+  <!-- Footer End -->
+  
+  <!-- ========== POPUP WORKFLOW COMMENTED OUT FOR SHORT CIRCUIT ========== -->
+  <!-- ORIGINAL WORKFLOW: Popup 1 → Popup 2 → Popup 3 → Preferences Update → Onboarding -->
+  <!-- NEW WORKFLOW: Skip directly to auto-login after account creation -->
+  
+  <!-- Popup 1 -->
+  <!--
   <ReusablePopup
     v-if="showPopup1"
     :isVisible="true"
     title="Create your profile and build your taste palate!"
-    question="What’s your drink of choice?"
+    question="What's your drink of choice?"
     note="(Please pick at least 1 drink)"
     :options="drinkType"
     :preselectedOptions="selectedDrinks"
@@ -368,8 +377,10 @@
     @updateSelection="selectedDrinks = $event"
     @next="goToPopup2"
   />
+  -->
 
   <!-- Popup 2 -->
+  <!--
   <ReusablePopup
     v-if="showPopup2"
     :isVisible="true"
@@ -387,8 +398,10 @@
     "
     @next="goToPopup3"
   />
+  -->
 
   <!-- Popup 3 -->
+  <!--
   <ReusablePopup
     v-if="showPopup3"
     :isVisible="true"
@@ -401,6 +414,19 @@
     @back="goToPopup2From3"
     @next="completeSetup"
   />
+  -->
+
+  <!-- Onboarding Popup -->
+  <!--
+  <OnboardPopup
+    v-if="showOnboardPopup"
+    :isVisible="true"
+    title="Now it's time to log your first review!"
+    message="Search for a drink and share your review with the community!"
+    @close="loginUser"
+    @search="goSearch"
+  />
+  -->
 
   <!-- Onboarding Popup -->
   <OnboardPopup
@@ -420,16 +446,18 @@
 // import components used
 import NavBar from "@/components/NavBar.vue";
 import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
-import ReusablePopup from "@/components/ReusablePopup.vue";
-import OnboardPopup from "@/components/OnboardPopup.vue";
+// POPUP COMPONENTS COMMENTED OUT FOR SHORT CIRCUIT WORKFLOW
+// import ReusablePopup from "@/components/ReusablePopup.vue";
+// import OnboardPopup from "@/components/OnboardPopup.vue";
 
 export default {
   name: "SignUpPage",
   components: {
     NavBar,
     PWStrengthChecker,
-    ReusablePopup,
-    OnboardPopup
+    // POPUP COMPONENTS COMMENTED OUT
+    // ReusablePopup,
+    // OnboardPopup
   },
   data() {
     return {
@@ -518,6 +546,12 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
+      
+      // ========== POPUP DATA LOADING COMMENTED OUT FOR SHORT CIRCUIT ==========
+      // No longer need to load drink types, flavour tags, or observation tags
+      // since popup workflow has been bypassed
+      
+      /*
       // get the drink types from database
       try {
         const response = await this.$axios.get(
@@ -571,6 +605,7 @@ export default {
         console.error(error);
         this.dataLoaded = null;
       }
+      */
     },
 
     goBack() {
@@ -742,10 +777,14 @@ export default {
           this.successSubmission = true; // Display success message
           this.submitForm = false; // Hide submission in progress message
 
-          // Show first popup
-          this.showPopup1 = true;
-          this.showPopup2 = false;
-          this.showPopup3 = false;
+          // SHORT CIRCUIT: Skip popup workflow and go directly to login
+          // Comment out popup workflow to streamline signup process
+          // this.showPopup1 = true;
+          // this.showPopup2 = false;
+          // this.showPopup3 = false;
+          
+          // Auto-login user directly after successful account creation
+          this.loginUser();
         } else {
           this.errorSubmission = true; // Display error message
           this.submitForm = false; // Hide submission in progress message
@@ -764,6 +803,12 @@ export default {
         this.submitForm = false;
       }
     },
+    
+    // ========== POPUP WORKFLOW METHODS COMMENTED OUT FOR SHORT CIRCUIT ==========
+    // These methods handled the 3-step preference collection after account creation
+    // Commented out to streamline signup process: Account Creation → Auto-Login → Profile
+    
+    /*
     goToPopup2(selectedOptions = []) {
       if (selectedOptions.length >= 1) {
         this.selectedDrinks = selectedOptions;
@@ -824,6 +869,7 @@ export default {
       this.showPopup3 = false;
       this.showOnboardPopup = false;
     },
+    */
     // goToPopup2() {
     // this.showPopup1 = false;
     // this.showPopup2 = true;
@@ -956,6 +1002,9 @@ export default {
         this.successSubmission = false;
       }
     },
+    
+    // ========== SEARCH METHOD COMMENTED OUT (USED IN ONBOARDING POPUP) ==========
+    /*
     async goSearch(searchInput) {
       // const submitURL =
       //         `http://127.0.0.1:5000/getData/getUserByUsername/` +
@@ -982,6 +1031,7 @@ export default {
         }
       }
     },
+    */
   },
 };
 </script>
