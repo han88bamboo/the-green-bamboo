@@ -226,25 +226,50 @@
                   <!-- Input: Country -->
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
-                      <div class="form-floating">
+                      <div class="form-floating" style="position: relative;">
                         <div class="input-group mb-0">
                           <span class="input-group-text" id="basic-addon1"
                             >Country</span
                           >
-                          <select
-                            v-model="selectedCountry"
-                            class="form-select form-box-outline"
-                            id="inputGroupSelect01"
-                          >
-                            <!-- Add in the languages here -->
-                            <option
-                              v-for="country in countries"
-                              v-bind:key="country['_id']"
-                            >
-                              {{ country["originCountry"] }}
-                            </option>
-                          </select>
+                          <!-- Searchable input that opens country dropdown -->
+                          <input
+                            ref="countryInput"
+                            type="text"
+                            class="form-control form-box-outline"
+                            v-model="countryInputValue"
+                            placeholder="Select your country"
+                            @input="handleCountryInput"
+                            @focus="openCountryDrawer"
+                            style="cursor: text; background-color: white;"
+                          />
+                          <!-- Search icon -->
+                          <span class="input-group-text" style="cursor: pointer;" @click="openCountryDrawer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                          </span>
                         </div>
+                        
+                        <!-- Country Selection Dropdown - attached directly below input -->
+                        <div v-if="showCountryDrawer" class="country-dropdown">
+                          <div class="country-dropdown-body">
+                            <div 
+                              v-for="country in filteredCountries" 
+                              :key="country.originCountry"
+                              class="country-item"
+                              @click="selectCountry(country.originCountry)"
+                            >
+                              <span class="country-name">{{ country.originCountry }}</span>
+                              <svg v-if="selectedCountry === country.originCountry" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="check-icon" viewBox="0 0 16 16">
+                                <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                              </svg>
+                            </div>
+                            <div v-if="filteredCountries.length === 0" class="no-results">
+                              No countries found
+                            </div>
+                          </div>
+                        </div>
+
                         <span
                           v-if="missingCountry"
                           class="text-danger mt-0 mb-3"
@@ -363,6 +388,7 @@
       </div>
     </div>
   </div>
+
   <!-- End of display -->
   <!-- Footer End -->
   <!-- Popup 1 -->
@@ -436,10 +462,8 @@
     message="Search for a drink and share your review with the community!"
     @close="loginUser"
     @search="goSearch"
-  />
-  -->
-
-  <!-- Onboarding Popup -->
+  /> -->
+        <!-- Onboarding Popup 
   <OnboardPopup
     v-if="showOnboardPopup"
     :isVisible="true"
@@ -447,8 +471,10 @@
     message="Search for a drink and share your review with the community!"
     @close="loginUser"
     @search="goSearch"
-  />
+  />-->
+
 </template>
+
 
 <!-- ------------------------------------------------------------------------------ -->
 
@@ -495,6 +521,10 @@ export default {
       selectedCountry: "",
 
       countries: [],
+      // Country drawer functionality
+      showCountryDrawer: false,
+      countryInputValue: "", // The actual input value that user types
+      filteredCountries: [],
       // Submission variables
       selectedDrinks: [], // Stores selections from Popup 1
       selectedFlavors: [], // Stores selections from Popup 2
@@ -532,6 +562,18 @@ export default {
   mounted() {
     this.loadData();
     this.loadSignupEmail();
+  },
+  beforeUnmount() {
+    // Clean up event listener when component is destroyed
+    document.removeEventListener('click', this.handleClickOutside);
+  },
+  watch: {
+    // Keep input value synced with selected country
+    selectedCountry(newVal) {
+      if (newVal && this.countryInputValue !== newVal) {
+        this.countryInputValue = newVal;
+      }
+    }
   },
   methods: {
     // Load signup email from localStorage if it exists and clear it after use
@@ -617,6 +659,62 @@ export default {
         this.dataLoaded = null;
       }
       */
+    },
+
+    // Country Drawer Methods
+    openCountryDrawer() {
+      this.showCountryDrawer = true;
+      this.filteredCountries = [...this.countries];
+      this.$nextTick(() => {
+        // Add click outside listener
+        document.addEventListener('click', this.handleClickOutside);
+      });
+    },
+
+    closeCountryDrawer() {
+      this.showCountryDrawer = false;
+      this.filteredCountries = [];
+      // Remove click outside listener
+      document.removeEventListener('click', this.handleClickOutside);
+    },
+
+    handleCountryInput() {
+      // Open dropdown when user starts typing
+      if (!this.showCountryDrawer) {
+        this.openCountryDrawer();
+      }
+      // Filter countries based on input
+      this.filterCountries();
+    },
+
+    filterCountries() {
+      const searchTerm = this.countryInputValue.toLowerCase();
+      this.filteredCountries = this.countries.filter(country =>
+        country.originCountry.toLowerCase().includes(searchTerm)
+      );
+    },
+
+    handleClickOutside(event) {
+      // Check if click was outside the dropdown and input field
+      const dropdown = event.target.closest('.country-dropdown');
+      const input = event.target.closest('.input-group');
+      if (!dropdown && !input) {
+        this.closeCountryDrawer();
+      }
+    },
+
+    selectCountry(countryName) {
+      this.selectedCountry = countryName;
+      this.countryInputValue = countryName; // Update the input field with selected country
+      this.closeCountryDrawer();
+    },
+
+    clearCountrySearch() {
+      this.countrySearchTerm = "";
+      this.filteredCountries = [...this.countries];
+      if (this.$refs.countrySearchInput) {
+        this.$refs.countrySearchInput.focus();
+      }
     },
 
     goBack() {
@@ -1099,6 +1197,89 @@ export default {
   .background-login {
     background-image: none;
     background-color: white;
+  }
+}
+
+/* Country Dropdown Styles */
+.country-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1050;
+  max-height: 300px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.country-dropdown-body {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 240px;
+}
+
+.country-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.country-item:hover {
+  background-color: #f8f9fa;
+}
+
+.country-item:last-child {
+  border-bottom: none;
+}
+
+.country-name {
+  font-size: 14px;
+  color: #333;
+}
+
+.check-icon {
+  color: #28a745;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.no-results {
+  padding: 15px 12px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+  .country-dropdown {
+    max-height: 250px;
+  }
+  
+  .country-dropdown-body {
+    max-height: 190px;
   }
 }
 </style>

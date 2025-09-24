@@ -3963,6 +3963,14 @@
         :show="showBadgePopup" 
         @close="closeBadgePopup"
     />
+
+    <!-- SignUp Popup for Festival Pages -->
+    <SignUpPopup 
+        :show="showSignUpPopup"
+        v-model:email="signUpEmail"
+        @close="closeSignUpPopup"
+        @submit="handleSignUpEmailSubmit"
+    />
 </template>
 
 <script>
@@ -3979,6 +3987,7 @@ import PWStrengthChecker from "@/components/PWStrengthChecker.vue";
 import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
 import VenueMenuTabFestivals from '@/components/VenueMenuTabFestivals.vue';
 import CommentsModal from '@/components/CommentsModal.vue';
+import SignUpPopup from '@/components/SignUpPopup.vue';
 
 
 // Import Phosphor Icons
@@ -4025,7 +4034,8 @@ export default {
         PhHouseSimple,
         PhUsersFour,
         PhLaptop,
-        CommentsModal
+        CommentsModal,
+        SignUpPopup
     },
   setup() {
     // Create reactive references for meta data
@@ -4549,6 +4559,11 @@ export default {
 
             showMenuLoadingOverlay: false,
 
+            // Sign Up Popup for Festival Pages
+            showSignUpPopup: false,
+            signUpPopupTriggered: false,
+            signUpEmail: '',
+
             invalidAreaMessageVisible: false,
 
             dragOptions: {
@@ -4702,6 +4717,23 @@ export default {
                 hasTargetVenue: !!this.targetVenue
             });
             return result;
+        },
+
+        // Check if signup popup should be triggered for festival pages with non-logged-in users
+        shouldTriggerSignUpPopup() {
+            const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
+            const isNotSignedIn = this.userType !== 'user' || this.user_id === 'defaultUser' || !this.user_id;
+            const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
+            console.log('🎪 shouldTriggerSignUpPopup computed:', {
+                isFestival: isFestival,
+                isNotSignedIn: isNotSignedIn,
+                signUpPopupTriggered: this.signUpPopupTriggered,
+                result: result,
+                specialStatus: this.targetVenue?.specialStatus,
+                userType: this.userType,
+                user_id: this.user_id
+            });
+            return result;
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -4764,6 +4796,14 @@ export default {
             this.userType = userType;
         }
 
+        // Log sign up popup conditions for debugging
+        console.log('🎪 SignUp Popup Debug - Initial state:', {
+            userType: this.userType,
+            user_id: this.user_id,
+            targetVenueSpecialStatus: this.targetVenue?.specialStatus,
+            shouldTriggerSignUpPopup: this.shouldTriggerSignUpPopup
+        });
+
         var userName = localStorage.getItem("88B_accUsername");
         if (userName !== null) {
             this.userName = userName;
@@ -4808,6 +4848,32 @@ export default {
                 .toLowerCase()
                 .replace(/\s+/g, '-') // Replace spaces with hyphens ✅ GOOD FOR SEO
                 .replace(/[^\w]/g, '');
+        },
+
+        // Sign Up Popup Methods for Festival Pages
+        triggerSignUpPopup() {
+            if (this.shouldTriggerSignUpPopup) {
+                setTimeout(() => {
+                    this.showSignUpPopup = true;
+                    this.signUpPopupTriggered = true;
+                    console.log('🎪 Sign up popup triggered for festival page');
+                }, 2500); // 2.5 seconds delay
+            }
+        },
+
+        closeSignUpPopup() {
+            this.showSignUpPopup = false;
+        },
+
+        handleSignUpEmailSubmit() {
+            if (this.signUpEmail && this.signUpEmail.trim()) {
+                // Store email in localStorage similar to LoginPage logic
+                localStorage.setItem('88B_signupEmail', this.signUpEmail.trim());
+                console.log('📧 Sign up email stored in localStorage with key 88B_signupEmail:', this.signUpEmail.trim());
+                
+                // Redirect to sign up page
+                this.$router.push('/signup');
+            }
         },
         
         // Load venue type data for dropdowns
@@ -7897,6 +7963,9 @@ Thank you!`
         venueDataLoaded: {
             handler(newVal, oldVal) {
                 console.log('🏢 Log 156: venueDataLoaded changed from', oldVal, 'to', newVal);
+                if (newVal && this.targetVenue?.specialStatus) {
+                    this.triggerSignUpPopup();
+                }
             },
             immediate: true
         },
@@ -7915,6 +7984,17 @@ Thank you!`
                 console.log('🏢 Log 155: venueExists changed from', oldVal, 'to', newVal);
             },
             immediate: true
+        },
+
+        // Watch for changes in targetVenue to trigger signup popup for festivals
+        'targetVenue.specialStatus': {
+            handler(newVal, oldVal) {
+                console.log('🎪 targetVenue.specialStatus changed from', oldVal, 'to', newVal);
+                if (newVal && this.venueDataLoaded) {
+                    this.triggerSignUpPopup();
+                }
+            },
+            immediate: false
         },
 
     '$route.params.venueID': function(newId, oldId) {
