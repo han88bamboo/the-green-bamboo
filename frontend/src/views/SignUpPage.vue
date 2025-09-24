@@ -158,62 +158,6 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Input: Display Name -->
-                  <div class="row pt-2">
-                    <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
-                      <div class="form-floating">
-                        <input
-                          type="text"
-                          class="form-control form-box-outline"
-                          v-model="displayName"
-                          id="displayName"
-                          placeholder="Display Name"
-                        />
-                        <label for="displayName"> Display Name </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Input: First Name -->
-                  <div class="row pt-2">
-                    <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
-                      <div class="form-floating">
-                        <div class="row">
-                          <div class="form-group pb-md-0 pb-2 col-md-6 col-12">
-                            <div class="form-floating">
-                              <input
-                                type="text"
-                                class="form-control form-box-outline"
-                                v-model="firstName"
-                                id="firstName"
-                                placeholder="First Name"
-                              />
-                              <label for="firstName"> First Name </label>
-                              <span v-if="missingFirstName" class="text-danger"
-                                >Please enter your First Name.</span
-                              >
-                            </div>
-                          </div>
-                          <!-- Input: Last Name -->
-                          <div class="form-group col-md-6 col-12">
-                            <div class="form-floating">
-                              <input
-                                type="text"
-                                class="form-control form-box-outline"
-                                v-model="lastName"
-                                id="lastName"
-                                placeholder="Last Name"
-                              />
-                              <label for="lastName"> Last Name </label>
-                              <span v-if="missingLastName" class="text-danger"
-                                >Please enter your Last Name.</span
-                              >
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                   <!-- Input: Email -->
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
