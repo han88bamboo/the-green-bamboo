@@ -146,8 +146,8 @@
                   <b>Flavour Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedFlavours?.length == 0"><i>None</i></span>
-                  <span v-else>{{ selectedFlavours?.join(", ") }}</span>
+                  <span v-if="!selectedFlavours || selectedFlavours.length === 0"><i>None</i></span>
+                  <span v-else>{{ Array.isArray(selectedFlavours) ? selectedFlavours.join(", ") : selectedFlavours }}</span>
                 </div>
               </div>
               <!-- Display Chosen Flavour Tag End -->
@@ -157,10 +157,10 @@
                   <b>Observation Tags</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="selectedObservationTags?.length == 0"
+                  <span v-if="!selectedObservationTags || selectedObservationTags.length === 0"
                     ><i>None</i></span
                   >
-                  <span v-else>{{ selectedObservationTags?.join(", ") }}</span>
+                  <span v-else>{{ Array.isArray(selectedObservationTags) ? selectedObservationTags.join(", ") : selectedObservationTags }}</span>
                 </div>
               </div>
                -->
@@ -4595,8 +4595,12 @@ export default {
         this.displayUserDrinkChoice = this.displayUser.choiceDrinks.join(", ");
 
         // added by group 3 to display flavour and observation tag
-        this.selectedFlavours = this.displayUser.choiceFlavours;
-        this.selectedObservationTags = this.displayUser.preferences;
+        this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
+          ? this.displayUser.choiceFlavours 
+          : [];
+        this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
+          ? this.displayUser.preferences 
+          : [];
 
         // get display user bookmark lists
         this.displayUserBookmarks = this.displayUser.drinkLists;
@@ -5633,11 +5637,17 @@ export default {
 
     // reset edit profile form
     cancelChanges() {
-      this.selectedDrinks = this.user.choiceDrinks;
+      this.selectedDrinks = Array.isArray(this.user.choiceDrinks) 
+        ? this.user.choiceDrinks 
+        : [];
       this.selectedImage = null;
       this.$refs.fileInput.value = "";
-      this.selectedFlavours = this.displayUser.choiceFlavours;
-      this.selectedObservationTags = this.displayUser.preferences;
+      this.selectedFlavours = Array.isArray(this.displayUser.choiceFlavours) 
+        ? this.displayUser.choiceFlavours 
+        : [];
+      this.selectedObservationTags = Array.isArray(this.displayUser.preferences) 
+        ? this.displayUser.preferences 
+        : [];
     },
 
     // ------------------- Change Password -------------------
