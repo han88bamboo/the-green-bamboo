@@ -186,19 +186,34 @@
               <p class=" fw-bold fs-4 mobile-fs-5 mb-1">
                 Don't have an account?
               </p>
-              <p class="fw-bold fst-italic fs-6 mobile-fs-7">
+              <p class="fw-bold fst-italic fs-6 mobile-fs-7 mb-1">
                 Get Started! It's Free!
               </p>
-              <div class="row">
+              
+              <!-- Email input for signup -->
+              <div class="row pt-2">
+                <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
+                  <div class="form-floating">
+                    <input
+                      type="email"
+                      class="form-control form-box-outline"
+                      id="signupEmail"
+                      placeholder="Email Address"
+                      v-model="signupEmail"
+                    />
+                    <label for="signupEmail"> Email Address </label>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row pt-3">
                 <div class="col">
-                  <router-link
-                    :to="{ path: '/signup' }"
-                    class="default-text-no-background"
+                  <button 
+                    class="btn secondary-btn btn-sm px-5 fw-bold w-50"
+                    @click="navigateToSignup"
                   >
-                    <button class="btn secondary-btn btn-sm px-5 fw-bold w-50">
-                      Sign Up for Free!
-                    </button>
-                  </router-link>
+                    Sign Up for Free!
+                  </button>
                 </div>
               </div>
  
@@ -467,6 +482,7 @@ export default {
       ID: "",
       email: "",
       password: "",
+      signupEmail: "", // Email for signup process
 
       // variable to toggle password reset form
       showResetPWForm: false,
@@ -474,8 +490,17 @@ export default {
   },
   mounted() {
     this.loginCheck();
+    this.loadSignupEmail();
   },
   methods: {
+    // Load signup email from localStorage if it exists
+    loadSignupEmail() {
+      const storedEmail = localStorage.getItem('88B_signupEmail');
+      if (storedEmail) {
+        this.signupEmail = storedEmail;
+      }
+    },
+
     // Check if user is already logged in
     loginCheck() {
       if (localStorage.getItem("88B_accID") != null) {
@@ -702,6 +727,20 @@ export default {
         default:
           return '';
       }
+    },
+
+    // Navigate to signup page with email stored in localStorage
+    navigateToSignup() {
+      // Store the signup email in localStorage if provided
+      if (this.signupEmail.trim()) {
+        localStorage.setItem('88B_signupEmail', this.signupEmail.trim());
+      } else {
+        // Remove any existing stored signup email if input is empty
+        localStorage.removeItem('88B_signupEmail');
+      }
+      
+      // Navigate to signup page
+      this.$router.push({ path: '/signup' });
     },
     
   },

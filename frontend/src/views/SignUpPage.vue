@@ -492,8 +492,19 @@ export default {
   },
   mounted() {
     this.loadData();
+    this.loadSignupEmail();
   },
   methods: {
+    // Load signup email from localStorage if it exists and clear it after use
+    loadSignupEmail() {
+      const storedEmail = localStorage.getItem('88B_signupEmail');
+      if (storedEmail) {
+        this.email = storedEmail;
+        // Clear the stored email after loading it to prevent it from being used again
+        localStorage.removeItem('88B_signupEmail');
+      }
+    },
+
     async loadData() {
       try {
         const response = await this.$axios.get(
