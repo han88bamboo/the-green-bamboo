@@ -400,6 +400,35 @@ def getListingsWithTags():
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Listings filtered by #wlp2025 tag, sorted by order column ascending
+@blueprint.route("/getListingsWlp2025", methods=['GET'])
+def getListingsWlp2025():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('''
+            SELECT * FROM "listings" 
+            WHERE "tags" IS NOT NULL 
+            AND "tags" LIKE %s 
+            ORDER BY 
+                CASE 
+                    WHEN "order" IS NULL OR "order" < 0 THEN 1 
+                    ELSE 0 
+                END,
+                CASE 
+                    WHEN "order" IS NOT NULL AND "order" >= 0 THEN "order" 
+                    ELSE NULL 
+                END ASC NULLS LAST
+        ''', ('%#wlp2025%',))
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Recent Listings (Past 48 Hours)
 @blueprint.route("/getRecentListings", methods=['GET'])
 def getRecentListings():

@@ -42,6 +42,84 @@
 
     <LookingFor />
 
+    <!-- Whisky Live Paris 2025 Section -->
+    <section class="recent-reviews-section py-4">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Now Pouring at Whisky Live Paris 2025</h2>
+                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Explore and review drinks at this event!</h3>
+            </div>
+            
+            <!-- WLP2025 Listings Grid - Always 5 columns with horizontal scroll -->
+            <div class="trending-reviews-container">
+                <div class="trending-reviews-grid">
+                    <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
+                        <div class="card h-100 review-card border-light" 
+                             style="border: 2px solid #f0b358; cursor: pointer;"
+                             @click="goToListing(listing)">
+                            <!-- Image at top -->
+                            <div class="card-img-top-wrapper position-relative">
+                                <img v-if="listing.photo" 
+                                     :src="listing.photo" 
+                                     class="card-img-top review-card-img"
+                                     :alt="listing.listingName" />
+                                <img v-else
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                     class="card-img-top review-card-img"
+                                     alt="Default drink image" />
+                                
+                                <!-- Event Tag Overlay 
+                                <div class="review-overlay position-absolute d-flex align-items-center">
+                                    <span class="overlay-text">
+                                        <span class="overlay-rating">#WLP2025</span>
+                                    </span>
+                                </div>-->
+                            </div>
+                            
+                            <div class="card-body d-flex flex-column">
+                                <!-- Drink name -->
+                                <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
+                                    {{ truncateText(listing.listingName, 30) }}
+                                </h6>
+                                
+                                <!-- Producer name -->
+                                <p class="text-muted small" v-if="listing.producerName" style="margin-bottom:0px;" >
+                                    by {{ truncateText(listing.producerName, 20) }}
+                                </p>
+                                
+                                <!-- Category and Country -->
+                                <p class="mb-2 small" style="color: #f0b358;" v-if="listing.drinkType || listing.originCountry">
+                                    <span v-if="listing.drinkType">{{ listing.drinkType }}</span>
+                                    <span v-if="listing.drinkType && listing.originCountry"> / </span>
+                                    <span v-if="listing.originCountry">{{ listing.originCountry }}</span>
+                                </p>
+                                
+                                <!-- Official Description -->
+                                <p class="card-text flex-grow-1 small" v-if="listing.officialDesc">
+                                    "{{ truncateText(listing.officialDesc, 80) }}"
+                                </p>
+                                <p class="card-text flex-grow-1 small" v-else>
+                                    Available at Whisky Live Paris 2025
+                                </p>
+                            </div>
+                            
+                            <!-- Review Button Footer -->
+                            <div class="text-center pb-3">
+                                <button 
+                                    class="btn fw-semibold px-4"
+                                    @click="goToListing(listing)"
+                                    style="background-color: #f04444; border-color: #f04444; color: white;">
+                                    Review Drink
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Whisky Live Paris 2025 End -->
+
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
@@ -1186,6 +1264,7 @@ export default {
             recentReviews: [], // Stores the 5 most recent reviews
             topRatedReviews: [], // Stores the 5 most highly rated reviews
             venueReviews: [], // Stores the 3 most recent venue reviews
+            wlp2025Listings: [], // Stores Whisky Live Paris 2025 listings
             venueMenus: [null, null, null], // Stores menu data for the 3 venues
             sectionTitles: {
                 latest_news: "Latest Drink News",
@@ -1212,6 +1291,7 @@ export default {
         this.fetchRecentReviews(); // Fetch 5 most recent reviews
         this.fetchTopRatedReviews(); // Fetch 5 most highly rated reviews
         this.fetchVenueReviews(); // Fetch 3 most recent venue reviews
+        this.fetchWlp2025Listings(); // Fetch WLP2025 listings
         this.fetchVenueMenus(); // Fetch venue menus
 
         const accID = localStorage.getItem("88B_accID");
@@ -1441,6 +1521,17 @@ export default {
             } catch (error) {
                 console.error("Error fetching venue reviews:", error);
                 this.venueReviews = [];
+            }
+        },
+
+        async fetchWlp2025Listings() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getListingsWlp2025`);
+                this.wlp2025Listings = response.data;
+                console.log("WLP2025 listings:", this.wlp2025Listings);
+            } catch (error) {
+                console.error("Error fetching WLP2025 listings:", error);
+                this.wlp2025Listings = [];
             }
         },
 

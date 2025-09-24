@@ -3113,7 +3113,6 @@ INSERT INTO "producersQuestionAnswers" (
 INSERT INTO "listings" (
     "listingName", "producerID", "bottler", "originCountry", "drinkType", "abv", "officialDesc", "allowMod", "addedDate", "typeCategory", "age", "reviewLink", "sourceLink", "photo", "drinkStyle")
 	VALUES 
-    ('Hennessy VS', 1, 'OB', 'Japan', 'Whisky', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/96165a5d-45ce-48fb-ada1-4a3445d73181.jpg', ''),
     ('Jack Daniel''s Old No. 7', 2, 'Jack Daniel''s', 'United States', 'Whisky', 40, 'The classic Tennessee whiskey with a smooth, charcoal-mellowed flavor.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
     ('Jack Daniel''s Single Barrel Select', 2, 'Jack Daniel''s', 'United States', 'Whisky', 47, 'A richer and more complex version of the classic Jack Daniel’s.', true, '2024-02-02', 'Bourbon', NULL, '', '', '', ''),
     ('Jack Daniel''s Tennessee Honey', 2, 'Jack Daniel''s', 'United States', 'Whisky', 35, 'A smooth blend of Jack Daniel’s and honey liqueur.', true, '2024-02-02', 'Flavored Whiskey', NULL, '', '', '', ''),
@@ -3153,14 +3152,14 @@ INSERT INTO "listings" (
     ('Absolut Vodka', 19, 'Absolut', 'Sweden', 'Vodka', 40, 'A famous Swedish vodka made with 100% natural ingredients.', true, '2024-02-02', 'Vodka', NULL, '', '', '', ''),
     ('Tiger Beer', 20, 'Tiger Brewery', 'Singapore', 'Beer', 5, 'A crisp, refreshing lager brewed in Singapore.', true, '2024-02-02', 'Lager - All Styles', NULL, '', '', '', 'Pilsner'),
     ('Tiger Crystal', 20, 'Tiger Brewery', 'Singapore', 'Beer', 4.6, 'A smooth, lighter version of the classic Tiger Beer.', true, '2025-08-28', 'Lager - All Styles', NULL, '', '', '', 'Helles'),
-    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2025-08-28', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager'),
-    ('Vina Garugele', 20, 'OB', 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2025-08-28', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red');
+    ('Tiger Black', 20, 'Tiger Brewery', 'Singapore', 'Beer', 6.9, 'A full-bodied, stronger version of Tiger Beer.', true, '2025-08-28', 'Lager - All Styles', NULL, '', '', '', 'Vienna Lager');
 
-INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, it’s the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and you’ll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-');
-INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles');
-INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy');
-INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast');
-
+INSERT INTO "listings" VALUES (1177334, 'SG LAHger', 10302, 'Original Bottling', NULL, 'Singapore', 'Beer', 4.5, 'SG LAHger is the ultimate go-to for a smooth, refreshing, and ultra crushable lager. Crisp and impeccably clean with a light malt sweetness and a crisp, dry finish, its the perfect brew to cool off and unwind. Effortlessly drinkable—just one gulp, and youll be reaching for another. Confirm shiok!', true, '2025-07-23 16:09:31.692816', 'Lager', '', '', 'https://www.gulpbeer.co/pages/taplist', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/077ade00-0aae-41be-afd9-52095adc3fc3.jpg', '-', '#wlp2025', 1);
+INSERT INTO "listings" VALUES (1040419, 'Floret', 11236, 'Original Bottling', NULL, 'Wales', 'Beer', 4.2, 'Sometimes you just want a beer that is mega sessionable. Our Core pale ale is delicious, hazy juicebomb of a beer, balanced with enough bitterness to keep drinkers coming back for more. A baby version of our incredibly popular Spur IPA - Floret is positively bursting at the seams with peach, mango, and pineapple notes, backed up with pithy orange peel form its Citra, Simcoe and Azacca hop bill.', true, '2025-06-18 03:08:09.28847', 'Pale Ale', '', '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/3ae673c8-7f13-4766-b9f7-214933979174.jpg', 'Pale Ale - All American Styles', '#wlp2025', 2);
+INSERT INTO "listings" VALUES (1037431, 'Status Quo', 10880, 'OB', NULL, 'Australia', 'Beer', 5.2, 'Status Quo is a New England Pale Ale. Made for hop lovers with massive late and dry hop additions, it''s full flavoured and more tropical than the Hawaiian ukulele orchestra.', true, '2025-06-18 03:08:09.281888', 'Pale Ale', 'N/A', NULL, NULL, 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/1bf23a40-31fb-4805-8252-fcd22487329f.jpg', 'Pale Ale - Hazy / Juicy', '#wlp2025', 3);
+INSERT INTO "listings" VALUES (1179024, 'Coronado', 9540, 'OB', NULL, 'Spain', 'Beer', 6.5, 'Directa y contundente, Coronado combina los lúpulos Simcoe y El Dorado para ofrecer aromas intensos a pino, cítricos vibrantes y frutas tropicales. Amargor limpio y refrescante, del estilo West Coast: segura, fresca y sin complicaciones.', true, '2025-06-18 03:08:09.281888', 'IPA (India Pale Ale)', '', NULL, 'https://untappd.com/b/oso-brew-co-coronado/6327225#google_vignette', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/5add825c-9cb2-4e8f-874f-f19bac4855df.jpg', 'IPA - West Coast', '#wlp2025', 4);
+INSERT INTO "listings" VALUES (1179025, 'Vina Garugele', 20, 'OB', NULL, 'Spain', 'Wine', 13.5, 'Carlos Moro Viña Garugele is a premium Rioja wine produced by Bodega Carlos Moro, a Spanish winery founded in 2014 by Carlos Moro. The wine is made from grapes grown in the Viña Garugele vineyard, which was planted in 1940 and personally selected by Carlo', true, '2025-08-28', 'Red Wine', NULL, '', '', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProducerProfilePhoto.png?v=1748434998', 'Spanish Rioja Red', '#wlp2025', 4);
+INSERT INTO "listings" VALUES (1179026, 'Hennessy VS', 1, 'OB', NULL, 'Japan', 'Whisky', 12, 'BEST EVEERRRR', true, '2024-10-05 00:14:37.661786', 'Single Malt', 12, '', '', 'https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/96165a5d-45ce-48fb-ada1-4a3445d73181.jpg', '', '#wlp2025', 4);
 
 UPDATE venues 
 SET 
@@ -4507,7 +4506,6 @@ VALUES
     (2, 'user', 18),
     (3, 'user', 19),
     (4, 'user', 20),
-    (5, 'user', 41),
     (1, 'producer', 22),
     (11, 'venue', 23),
     (10, 'venue', 24),
@@ -4523,11 +4521,7 @@ VALUES
     (2, 'user', 34),
     (3, 'user', 35),
     (4, 'user', 36),
-    (5, 'user', 39),
-    (1, 'producer', 38),
-    (11, 'venue', 39),
-    (20, 'venue', 40),
-    (1, 'user', 41);
+    (1, 'producer', 38);
 
 -- -- Insert 88BContentLikes
 -- INSERT INTO "88BContentLikes" ("userId", "userType", "contentId")
@@ -4574,20 +4568,6 @@ VALUES
 --     (19, 'venue', 40),
 --     (1, 'user', 41);
 
-
--- ========= Dummy Data for listingsComments =========
-INSERT INTO "listingsComments" ("userId", "userType", "listingId", "parentId", "comment")
-VALUES
-(1, 'user', 39, NULL, '[Test] This listing looks very interesting.'),                -- id 1
-(3, 'producer', 39, NULL, '[Test] We are preparing great content for this listing.'),-- id 2
-(11, 'venue', 40, NULL, '[Test] Happy to host events under this listing.'),           -- id 3
-(1, 'producer', 40, NULL, '[Test] We will add more details soon.'),                  -- id 4
-(3, 'user', 41, NULL, '[Test] I am excited about this listing opportunity.'),        -- id 5
-(5, 'producer', 41, NULL, '[Test] Production team is finalizing things.'),           -- id 6
-(11, 'venue', 39, 2,   '[Test] Great, thanks for sharing your plans!'),               -- reply to id 2
-(3, 'user', 40, 3,   '[Test] That’s awesome news, can’t wait!'),                     -- reply to id 3
-(11, 'venue', 41, 5,   '[Test] Thanks for your support, see you soon!'),              -- reply to id 5
-(1, 'user', 41, NULL, '[Test] Looking forward to updates on this listing.');         -- id 10
 
 
 -- ========= Dummy Data for listingReviewsComments =========
@@ -4822,9 +4802,6 @@ INSERT INTO "usersDrinkLists" (
 
 INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
 VALUES (9, 1179024, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
-
-INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
-VALUES (9, 42, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
 
 INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate", "note") 
 VALUES (9, 1177334, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
