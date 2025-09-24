@@ -290,6 +290,9 @@
                     </div>
                   </div>
 
+                  <!-- Age Verification Section -->
+                  <!-- ORIGINAL CHECKBOX VERSION (COMMENTED OUT) -->
+                  <!--
                   <div class="text-center mt-3 col mx-3 mobile-fs-7">
                     <div class="form-check form-check-inline">
                       <label class="form-check-label"
@@ -307,6 +310,14 @@
                     <span v-if="missingAgeCheck" class="text-danger"
                       >Please verify this.</span
                     >
+                  </div>
+                  -->
+
+                  <!-- SIMPLIFIED VERSION (CURRENT) -->
+                  <div class="text-center mt-3 col mx-3 mobile-fs-7">
+                    <p class="fw-normal fs-6 mobile-fs-7 text-muted">
+                      By signing up, you verify you are of legal drinking age in your country.
+                    </p>
                   </div>
 
                   <button
@@ -706,11 +717,16 @@ export default {
         }
       }
 
-      // Age Check validation
+      // Age Check validation - ORIGINAL VERSION (COMMENTED OUT)
+      /*
       if (!this.ageCheck) {
         this.missingAgeCheck = true;
         errorCount++;
       }
+      */
+
+      // Age verification is now automatic through text acknowledgment
+      // Removed checkbox validation as it's no longer required
 
       if (errorCount > 0) {
         return null;
@@ -930,7 +946,7 @@ export default {
       this.missingPassword = false;
       this.missingPasswordRepeat = false;
       this.missingBirthday = false;
-      this.missingAgeCheck = false;
+      // this.missingAgeCheck = false; // COMMENTED OUT - no longer using checkbox
       this.missingCountry = false;
       this.underAge = false;
     },
