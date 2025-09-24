@@ -185,6 +185,29 @@
                     <!-- Form: Listing Details -->
                     <div v-if="formType == 'power' || formMode == 'new'">
 
+                        <!-- Power User Fields: Tags and Order -->
+                        <div class="row" v-if="formType == 'power'">
+                            <!-- Input: Tags -->
+                            <div class="col-md-8 mb-3">
+                                <p class="text-start mb-1">Tags <span class="text-muted" style="font-size: 14px;">(Use hashtags like #whiskyliveparis or #sakefestivalosaka, #sakefestivalchichibu)</span></p>
+                                <input type="text" class="form-control" 
+                                       v-model="form['tags']" 
+                                       id="tags" 
+                                       placeholder="Enter tags with hashtags (e.g., #whiskyliveparis, #sakefestivalosaka)">
+                            </div>
+                            
+                            <!-- Input: Order -->
+                            <div class="col-md-4 mb-3">
+                                <p class="text-start mb-1">Order <span class="text-muted" style="font-size: 14px;">(Integer from -1 onwards)</span></p>
+                                <input type="number" class="form-control" 
+                                       v-model.number="form['order']" 
+                                       id="order" 
+                                       placeholder="Enter order (-1, 0, 1, 2...)" 
+                                       min="-1" 
+                                       step="1">
+                            </div>
+                        </div>
+
                         <!-- Input: Producer Name -->
                         <!-- [IF] Producer is creating listing, lock Producer selection - COMMENTED OUT for now 
                         <div class="form-group mb-3" v-if="isProducer != false">
@@ -603,6 +626,8 @@
                     "bottlerID": "",
                     "listingID": "",
                     "photo": "",
+                    "tags": "",
+                    "order": "",
                 },
                 producerDebounceTimer: null,
                 bottlerDebounceTimer: null,
@@ -1433,6 +1458,17 @@
                     // Validate Independent Bottler Name (if OB, will be handled by database writing method)
                     if (this.indOperator === true && !(this.form["bottler"] || "").trim()) {
                         this.errors.push("Name of independent bottler is required.");
+                    }
+
+                    // Validate Power User Fields
+                    if (this.formType == "power") {
+                        // Validate Order field (must be integer >= -1 if provided)
+                        if (this.form["order"] !== "" && this.form["order"] !== null && this.form["order"] !== undefined) {
+                            const orderValue = Number(this.form["order"]);
+                            if (!Number.isInteger(orderValue) || orderValue < -1) {
+                                this.errors.push("Order must be an integer greater than or equal to -1.");
+                            }
+                        }
                     }
 
                     // // Validation ONLY FOR REQUEST - removed requirement for source link 
