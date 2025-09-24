@@ -400,6 +400,22 @@ def getListingsWithTags():
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Recent Listings (Past 48 Hours)
+@blueprint.route("/getRecentListings", methods=['GET'])
+def getRecentListings():
+    conn = g.db
+
+    with conn.cursor() as cursor:
+        cursor.execute('SELECT * FROM "listings" WHERE "addedDate" >= NOW() - INTERVAL \'48 hours\'')
+        listings_data = cursor.fetchall()
+    
+    if not listings_data:
+        return jsonify([])
+
+    return jsonify(listings_data)
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Listings by user id
 @blueprint.route("/lbListings", methods=['GET'])
 def lbListings():
