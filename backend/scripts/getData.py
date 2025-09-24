@@ -430,6 +430,139 @@ def getListingsWlp2025():
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Listings filtered by tag with additional filters and custom ordering
+# Parameters: tag (string), drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int), limit (int)
+@blueprint.route("/getListingsByTag/<tag>", methods=['GET'])
+def getListingsByTag(tag):
+    conn = g.db
+    cursor = conn.cursor()
+    
+    # Get filter parameters
+    drink_type = request.args.get('drinkType', '').strip()
+    type_category = request.args.get('typeCategory', '').strip()
+    origin_country = request.args.get('originCountry', '').strip()
+    min_rating = request.args.get('minRating', '').strip()
+    max_rating = request.args.get('maxRating', '').strip()
+    offset = int(request.args.get('offset', 0))
+    limit = int(request.args.get('limit', 30))
+
+    try:
+        # Build WHERE conditions (case-insensitive matching)
+        where_conditions = ['l."tags" IS NOT NULL AND l."tags" LIKE %s']
+        params = [f'%{tag}%']
+
+        if drink_type:
+            where_conditions.append('l."drinkType" ILIKE %s')
+            params.append(drink_type)
+        
+        if type_category:
+            where_conditions.append('l."typeCategory" ILIKE %s')
+            params.append(type_category)
+        
+        if origin_country:
+            where_conditions.append('l."originCountry" ILIKE %s')
+            params.append(origin_country)
+
+        # Build rating conditions
+        if min_rating:
+            try:
+                min_rating_val = float(min_rating)
+                where_conditions.append("""l."id" IN (
+                    SELECT "reviewTarget" 
+                    FROM "reviews" 
+                    WHERE "reviewType" = 'Listing'
+                    GROUP BY "reviewTarget"
+                    HAVING AVG("rating") >= %s
+                )""")
+                params.append(min_rating_val)
+            except ValueError:
+                pass
+        
+        if max_rating:
+            try:
+                max_rating_val = float(max_rating)
+                where_conditions.append("""l."id" IN (
+                    SELECT "reviewTarget" 
+                    FROM "reviews" 
+                    WHERE "reviewType" = 'Listing'
+                    GROUP BY "reviewTarget"
+                    HAVING AVG("rating") <= %s
+                )""")
+                params.append(max_rating_val)
+            except ValueError:
+                pass
+
+        # Build WHERE clause
+        where_clause = "WHERE " + " AND ".join(where_conditions)
+
+        # Add pagination parameters
+        params.extend([limit, offset])
+
+        # Query with custom order field ordering
+        query = f"""
+            SELECT 
+                l.*,
+                p."producerName",
+                COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
+            FROM "listings" l
+            JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN (
+                SELECT 
+                    "reviewTarget",
+                    COUNT(*) AS review_count,
+                    AVG("rating") AS avg_rating
+                FROM "reviews"
+                WHERE "reviewType" = 'Listing'
+                GROUP BY "reviewTarget"
+            ) r ON l."id" = r."reviewTarget"
+            {where_clause}
+            ORDER BY 
+                CASE 
+                    WHEN l."order" IS NULL OR l."order" < 0 THEN 1 
+                    ELSE 0 
+                END,
+                CASE 
+                    WHEN l."order" IS NOT NULL AND l."order" >= 0 THEN l."order" 
+                    ELSE NULL 
+                END ASC NULLS LAST,
+                COALESCE(r.review_count, 0) DESC,
+                COALESCE(r.avg_rating, 0) DESC,
+                l."id" ASC
+            LIMIT %s OFFSET %s
+        """
+
+        cursor.execute(query, params)
+        listings_data = cursor.fetchall()
+
+        if not listings_data:
+            return jsonify([])
+
+        # Process results to match getListingsBySearch format
+        result = []
+        for listing in listings_data:
+            listing_dict = dict(listing)
+            
+            # Format averageRating to match search endpoint format
+            if listing_dict['average_rating'] == 0:
+                listing_dict['averageRating'] = '-'
+            else:
+                listing_dict['averageRating'] = listing_dict['average_rating']
+            
+            # Remove temporary fields
+            listing_dict.pop('average_rating', None)
+            
+            result.append(listing_dict)
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"Error fetching listings by tag: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"code": 500, "message": "An error occurred while fetching listings by tag."}), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Recent Listings (Past 48 Hours)
 @blueprint.route("/getRecentListings", methods=['GET'])
 def getRecentListings():
