@@ -127,11 +127,11 @@ def createAccount():
 
     # Prepare data for insertion
     columns = ['username', 'displayName', 'firstName', 'lastName', 'email', 'choiceDrinks', 'modType', 
-               'photo', 'hashedPassword', 'joinDate', 'birthday', 'isAdmin']
+               'photo', 'hashedPassword', 'joinDate', 'birthday', 'country', 'isAdmin']
     values = [rawAccount['username'], rawAccount['displayName'], rawAccount['firstName'], rawAccount['lastName'], 
               rawAccount['email'], rawAccount['choiceDrinks'], rawAccount['modType'], 
               rawAccount['photo'], rawAccount['hashedPassword'], rawAccount['joinDate'], 
-              rawAccount['birthday'], rawAccount['isAdmin']]
+              rawAccount['birthday'], rawAccount['country'], rawAccount['isAdmin']]
     
     insert_query = sql.SQL('INSERT INTO "users" ({}) VALUES ({}) RETURNING "id"').format(
         sql.SQL(', ').join(map(lambda col: sql.Identifier(col), columns)),

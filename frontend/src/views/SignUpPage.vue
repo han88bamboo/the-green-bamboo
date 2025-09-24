@@ -706,6 +706,7 @@ export default {
           venues: [],
         },
         birthday: this.birthday,
+        country: this.selectedCountry,
         isAdmin: false,
         choiceFlavours: [],
         preferences: [],
