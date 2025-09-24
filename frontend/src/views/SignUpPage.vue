@@ -170,9 +170,6 @@
                           placeholder="Display Name"
                         />
                         <label for="displayName"> Display Name </label>
-                        <span v-if="missingDisplayName" class="text-danger"
-                          >Please enter a display name.</span
-                        >
                       </div>
                     </div>
                   </div>
@@ -520,7 +517,6 @@ export default {
       selectedFlavors: [], // Stores selections from Popup 2
 
       missingUsername: false,
-      missingDisplayName: false,
       missingEmail: false,
       invalidEmail: false,
       invalidUsernameFormat: false, // Add this new line
@@ -658,11 +654,6 @@ export default {
         // }
       }
 
-      if (this.displayName == "") {
-        this.missingDisplayName = true;
-        errorCount++;
-      }
-
       // Email validation
       if (this.email == "") {
         this.missingEmail = true;
@@ -687,18 +678,6 @@ export default {
       }
       if (this.passwordRepeat == "") {
         this.missingPasswordRepeat = true;
-        errorCount++;
-      }
-
-      // First name validation
-      if (this.firstName == "") {
-        this.missingFirstName = true;
-        errorCount++;
-      }
-
-      // Last name validation
-      if (this.lastName == "") {
-        this.missingLastName = true;
         errorCount++;
       }
       // country validation
@@ -747,6 +726,10 @@ export default {
         return null;
       }
 
+      // Set default values for optional fields if they are empty
+      let firstName = this.firstName.trim() === "" ? "InsertFirstName" : this.firstName;
+      let lastName = this.lastName.trim() === "" ? "InsertLastName" : this.lastName;
+
       let hashedPassword = this.hashPassword(this.username, this.password);
       let joinDate = new Date().toISOString();
       let submitAPI = `${process.env.VUE_APP_API_URL}/createAccount/createAccount`; // comment out for local
@@ -755,8 +738,8 @@ export default {
         // pass in first name, last name, email, isadmin
         username: this.username,
         displayName: this.username,
-        firstName: this.username,
-        lastName: this.username,
+        firstName: firstName,
+        lastName: lastName,
         email: this.email,
         choiceDrinks: [],
         drinkLists: {
@@ -944,8 +927,6 @@ export default {
       this.passwordMismatch = false;
       this.missingPassword = false;
       this.missingPasswordRepeat = false;
-      this.missingFirstName = false;
-      this.missingLastName = false;
       this.missingBirthday = false;
       this.missingAgeCheck = false;
       this.missingCountry = false;
