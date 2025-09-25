@@ -455,8 +455,20 @@ export default {
     this.userType = localStorage.getItem("88B_accType");
     this.username = localStorage.getItem("88B_accUsername");
     
-    // Load public lists
+    // Load public lists and check for direct list URL
     this.loadPublicLists();
+  },
+  
+  watch: {
+    // Watch for route changes to handle direct links
+    '$route.query.listId': {
+      handler(newListId) {
+        if (newListId && this.publicLists.length > 0) {
+          this.loadListFromUrl(newListId);
+        }
+      },
+      immediate: true
+    }
   },
   methods: {
     async loadPublicLists() {
@@ -473,8 +485,14 @@ export default {
           this.filterLists();
           
           // Load user's upvoted lists if logged in
-          if (this.userID) {
+          if (this.userID && this.userID !== 'defaultUser') {
             this.loadUserUpvotedLists();
+          }
+          
+          // Check if we need to load a specific list from URL
+          const listId = this.$route.query.listId;
+          if (listId) {
+            this.loadListFromUrl(listId);
           }
         }
       } catch (error) {
@@ -502,6 +520,16 @@ export default {
     async viewListDetails(list) {
       this.selectedList = list;
       
+      // Update URL with list ID and normalized name
+      const normalizedListName = this.normalizeForUrl(list.listName);
+      this.$router.push({
+        path: '/find-lists',
+        query: { 
+          listId: list.id,
+          name: normalizedListName
+        }
+      });
+      
       try {
         // Load the detailed list items
         const response = await this.$axios.get(
@@ -518,9 +546,38 @@ export default {
       }
     },
 
+    async loadListFromUrl(listId) {
+      // Find the list in the loaded public lists
+      const list = this.publicLists.find(l => l.id === parseInt(listId));
+      if (list) {
+        this.selectedList = list;
+        
+        try {
+          // Load the detailed list items
+          const response = await this.$axios.get(
+            `${process.env.VUE_APP_API_URL}/getData/getPublicListDetails/${list.id}`
+          );
+          
+          if (response.data.code === 200) {
+            this.selectedListItems = response.data.data;
+          }
+        } catch (error) {
+          console.error('Error loading list details:', error);
+          const toast = useToast();
+          toast.error('Failed to load list details.');
+        }
+      } else {
+        // List not found, clear the query parameter
+        this.$router.replace({ path: '/find-lists' });
+      }
+    },
+
     goBackToLists() {
       this.selectedList = null;
       this.selectedListItems = [];
+      
+      // Remove list ID from URL
+      this.$router.push({ path: '/find-lists' });
     },
 
     goToMyProfile() {
@@ -620,7 +677,11 @@ export default {
     },
 
     shareList(list) {
-      const shareUrl = `${window.location.origin}/profile/user/${list.userId}/${list.username}/${encodeURIComponent(list.listName)}`;
+      // Normalize the list name for URL
+      const normalizedListName = this.normalizeForUrl(list.listName);
+      
+      // Create direct link to the list view with normalized name
+      const shareUrl = `${window.location.origin}/find-lists?listId=${list.id}&name=${normalizedListName}`;
       
       // Copy to clipboard
       navigator.clipboard.writeText(shareUrl).then(() => {
@@ -631,6 +692,25 @@ export default {
         const toast = useToast();
         toast.error('Failed to copy link.');
       });
+    },
+
+    normalizeForUrl(text) {
+      return text
+        // Remove emojis (covers most emoji ranges)
+        .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]/gu, '')
+        // Remove extra whitespace and trim
+        .trim()
+        .replace(/\s+/g, ' ')
+        // Replace spaces with hyphens
+        .replace(/\s/g, '-')
+        // Remove special characters except hyphens
+        .replace(/[^\w-]/g, '')
+        // Remove multiple consecutive hyphens
+        .replace(/-+/g, '-')
+        // Remove leading/trailing hyphens
+        .replace(/^-|-$/g, '')
+        // Convert to lowercase
+        .toLowerCase();
     },
 
     prepareNoteModal(listing, index) {
@@ -832,8 +912,8 @@ export default {
 
 .paywall-content {
   position: absolute;
-  top: 47%;
-  left: 44%;
+  top: 32%;
+  left: 45%;
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: all !important;
