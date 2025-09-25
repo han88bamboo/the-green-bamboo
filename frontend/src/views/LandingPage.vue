@@ -79,12 +79,21 @@
             </div>
 
             <!-- WLP2025 Listings Grid - Always 5 columns with horizontal scroll -->
-            <div class="trending-reviews-container">
+            <div class="trending-reviews-container" ref="wlp2025Container">
+                    <!-- Mobile scroll arrow button left -->
+                    <button 
+                        class="mobile-scroll-arrow mobile-scroll-arrow-left d-md-none"
+                        @click="scrollContainer('wlp2025Container', 'left')"
+                        v-if="wlp2025Listings && wlp2025Listings.length > 1">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+
                     <div class="trending-reviews-grid">
                         <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
                             <div class="card h-100 review-card border-light" 
-                                style="border: 2px solid #f0b358; cursor: pointer;"
-                                @click="goToListing(listing)">
+                                style="border: 2px solid #f0b358; cursor: default; ">  <!-- cursor: pointer; @click="goToListing(listing)-->
                                 <!-- Image at top -->
                                 <div class="card-img-top-wrapper position-relative">
                                     <img v-if="listing.photo" 
@@ -144,6 +153,16 @@
                             
                         </div>
                     </div>
+                    
+                    <!-- Mobile scroll arrow button right -->
+                    <button 
+                        class="mobile-scroll-arrow mobile-scroll-arrow-right d-md-none"
+                        @click="scrollContainer('wlp2025Container', 'right')"
+                        v-if="wlp2025Listings && wlp2025Listings.length > 1">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                 </div>
 
             <!-- Mobile sticky CTA -->
@@ -157,8 +176,6 @@
     </section>
     <!-- Whisky Live Paris 2025 End -->
 
-    <LookingFor />
-
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
@@ -168,7 +185,7 @@
             </div>
             
             <!-- Recent Reviews Grid - Always 5 columns with horizontal scroll -->
-            <div class="trending-reviews-container">
+            <div class="trending-reviews-container" ref="trendingContainer">
                 <div class="trending-reviews-grid">
                     <div v-for="review in recentReviews" :key="review.reviewId" class="trending-review-col">
                         <div class="card h-100 review-card border-light" 
@@ -258,7 +275,7 @@
             </div>
             
             <!-- Top Rated Reviews Grid - Always 5 columns with horizontal scroll -->
-            <div class="trending-reviews-container">
+            <div class="trending-reviews-container" ref="topRatedContainer">
                 <div class="trending-reviews-grid">
                     <div v-for="review in topRatedReviews" :key="review.reviewId" class="trending-review-col">
                         <div class="card h-100 review-card border-light" 
@@ -1423,6 +1440,21 @@ export default {
             return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
         },
 
+        // Scroll container horizontally by 2.5 cards
+        scrollContainer(refName, direction = 'right') {
+            const container = this.$refs[refName];
+            if (container) {
+                const cardWidth = 240; // Fixed width of each card
+                const gap = 16; // Gap between cards (1rem = 16px)
+                const scrollAmount = (cardWidth + gap) * 1.5; // 1.5 cards
+                
+                container.scrollBy({
+                    left: direction === 'left' ? -scrollAmount : scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        },
+
         // Debounced version of position handler for performance
         // debounce(func, wait) {
         //     let timeout;
@@ -1938,8 +1970,11 @@ button.btn.selected {
 
 /* Trending Reviews - Always 5 columns with horizontal scroll */
 .trending-reviews-container {
+    position: relative;
     overflow-x: auto;
     padding-bottom: 10px;
+    display: flex;
+    align-items: center;
 }
 
 .trending-reviews-grid {
@@ -2034,6 +2069,52 @@ button.btn.selected {
 
 .trending-reviews-container::-webkit-scrollbar-thumb:hover {
     background: #025a4a;
+}
+
+/* Mobile scroll arrow buttons */
+.mobile-scroll-arrow {
+    position: sticky;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(128, 128, 128, 0.7);
+    border: 2px solid rgba(128, 128, 128, 0.8);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: auto;
+    float: right;
+    margin-left: auto;
+}
+
+.mobile-scroll-arrow-left {
+    right: auto;
+    left: 10px;
+}
+
+.mobile-scroll-arrow-right {
+    right: 10px;
+    left: auto;
+}
+
+.mobile-scroll-arrow:hover {
+    background: rgba(128, 128, 128, 0.9);
+    border-color: rgba(128, 128, 128, 1);
+    color: white;
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(128, 128, 128, 0.3);
+}
+
+.mobile-scroll-arrow:active {
+    transform: translateY(-50%) scale(0.95);
 }
 
 /* Legacy styles for backwards compatibility */
