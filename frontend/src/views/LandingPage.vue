@@ -90,7 +90,7 @@
                         </svg>
                     </button>
 
-                    <div class="trending-reviews-grid">
+                    <div class="trending-reviews-grid wlp2025-grid">
                         <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
                             <div class="card h-100 review-card border-light" 
                                 style="border: 2px solid #f0b358; cursor: default; ">  <!-- cursor: pointer; @click="goToListing(listing)-->
@@ -1984,6 +1984,11 @@ button.btn.selected {
     padding: 0 10px;
 }
 
+/* Specific styling for WLP2025 grid - snip off left side */
+.wlp2025-grid {
+    margin-left: -30px;
+}
+
 .trending-review-col {
     flex: 0 0 240px; /* Fixed width for each column */
     width: 240px;
@@ -2076,8 +2081,8 @@ button.btn.selected {
     position: sticky;
     top: 50%;
     transform: translateY(-50%);
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
     background: rgba(128, 128, 128, 0.7);
     border: 2px solid rgba(128, 128, 128, 0.8);
     border-radius: 50%;
