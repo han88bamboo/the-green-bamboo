@@ -149,95 +149,107 @@
           </div>
         </div>
 
-        <!-- List Items Grid (Similar to UserProfile grid view) -->
-        <div class="row" v-if="selectedListItems.length > 0">
-          <div
-            class="col-6 col-md-4 col-lg-3 mb-4"
-            v-for="(item, index) in selectedListItems"
-            :key="index"
-          >
-            <div class="card h-100 review-card border shadow position-relative">
-              <!-- Image -->
-              <div class="card-img-top-wrapper">
-                <img
-                  :src="item.photo || defaultDrinkImage"
-                  :alt="item.listingName"
-                  class="card-img-top review-card-img"
-                />
+         <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
+          <!-- Paywall Overlay for Non-Logged in Users -->
+          <div v-if="userID === 'defaultUser'" class="paywall-overlay">
+            <div class="paywall-gradient"></div>
+            <div class="paywall-content">
+              <button class="btn paywall-signup-btn" @click="$router.push('/signup')">
+                Sign Up to See More
+              </button>
+            </div>
+          </div>
+            <!-- List Items Grid (Similar to UserProfile grid view) -->
+            <div class="row" v-if="selectedListItems.length > 0">
+              <div
+                class="col-6 col-md-4 col-lg-3 mb-4"
+                v-for="(item, index) in selectedListItems"
+                :key="index"
+              >
+                <div class="card h-100 review-card border shadow position-relative">
+                  <!-- Image -->
+                  <div class="card-img-top-wrapper">
+                    <img
+                      :src="item.photo || defaultDrinkImage"
+                      :alt="item.listingName"
+                      class="card-img-top review-card-img"
+                    />
+                  </div>
+
+                  <!-- Body -->
+                  <div class="card-body d-flex flex-column">
+                    <!-- Title -->
+                    <a
+                      :href="`/listing/view/${item.drinkId}/${encodeURIComponent(item.listingName)}`"
+                      class="text-decoration-none"
+                      style="color: #223957"
+                    >
+                      <h6 class="card-title mb-2 fw-bold">{{ item.listingName }}</h6>
+                    </a>
+
+                    <!-- Type / Country -->
+                    <p class="mb-2 small fw-bold" style="color: #f0b358;" v-if="item.drinkType || item.originCountry">
+                      {{ item.drinkType }}{{ item.drinkType && item.originCountry ? ' / ' : '' }}{{ item.originCountry || '' }}
+                    </p>
+
+                    <!-- Rating -->
+                    <h4 class="fw-bold mb-3" style="color:#f0b358">
+                      {{
+                        item.avgRating !== null && item.avgRating !== undefined
+                          ? parseFloat(item.avgRating).toFixed(1)
+                          : "-"
+                      }}★
+                    </h4>
+
+                    <!-- Creator's Note (View-only for public lists) -->
+                    <div class="mt-auto" v-if="item.note && item.note.trim()">
+                      <button
+                        class="btn btn-sm w-100 text-white"
+                        style="background-color: #ff3e31; border-color: #ff3e31;"
+                        data-bs-toggle="modal"
+                        :data-bs-target="`#noteModal${index}`"
+                        @click="prepareNoteModal(item, index)"
+                      >
+                        View Note
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Body -->
-              <div class="card-body d-flex flex-column">
-                <!-- Title -->
-                <a
-                  :href="`/listing/view/${item.drinkId}/${encodeURIComponent(item.listingName)}`"
-                  class="text-decoration-none"
-                  style="color: #223957"
-                >
-                  <h6 class="card-title mb-2 fw-bold">{{ item.listingName }}</h6>
-                </a>
-
-                <!-- Type / Country -->
-                <p class="mb-2 small fw-bold" style="color: #f0b358;" v-if="item.drinkType || item.originCountry">
-                  {{ item.drinkType }}{{ item.drinkType && item.originCountry ? ' / ' : '' }}{{ item.originCountry || '' }}
-                </p>
-
-                <!-- Rating -->
-                <h4 class="fw-bold mb-3" style="color:#f0b358">
-                  {{
-                    item.avgRating !== null && item.avgRating !== undefined
-                      ? parseFloat(item.avgRating).toFixed(1)
-                      : "-"
-                  }}★
-                </h4>
-
-                <!-- Creator's Note (View-only for public lists) -->
-                <div class="mt-auto" v-if="item.note && item.note.trim()">
-                  <button
-                    class="btn btn-sm w-100 text-white"
-                    style="background-color: #ff3e31; border-color: #ff3e31;"
-                    data-bs-toggle="modal"
-                    :data-bs-target="`#noteModal${index}`"
-                    @click="prepareNoteModal(item, index)"
-                  >
-                    View Note
-                  </button>
+              <!-- Note Modals (one for each listing) -->
+              <div
+                class="modal fade"
+                v-for="(item, index) in selectedListItems"
+                :key="`noteModal${index}`"
+                :id="`noteModal${index}`"
+                tabindex="-1"
+                :aria-labelledby="`noteModalLabel${index}`"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" :id="`noteModalLabel${index}`">Creator's Note</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <p v-if="currentNote && currentNote.trim()" class="text-start">{{ currentNote }}</p>
+                      <p v-else class="text-muted">No note provided.</p>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
+        
+          <!-- Empty state for selected list -->
+          <div v-else class="text-center py-5">
+            <p class="text-muted">This list is empty.</p>
           </div>
 
-          <!-- Note Modals (one for each listing) -->
-          <div
-            class="modal fade"
-            v-for="(item, index) in selectedListItems"
-            :key="`noteModal${index}`"
-            :id="`noteModal${index}`"
-            tabindex="-1"
-            :aria-labelledby="`noteModalLabel${index}`"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" :id="`noteModalLabel${index}`">Creator's Note</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <p v-if="currentNote && currentNote.trim()" class="text-start">{{ currentNote }}</p>
-                  <p v-else class="text-muted">No note provided.</p>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty state for selected list -->
-        <div v-else class="text-center py-5">
-          <p class="text-muted">This list is empty.</p>
         </div>
       </div>
 
@@ -412,7 +424,7 @@ export default {
       currentPage: 1,
       itemsPerPage: 12,
       upvoting: false,
-      userID: null,
+      userID: "defaultUser",
       userType: null,
       username: null,
       userUpvotedLists: [],
@@ -433,8 +445,13 @@ export default {
     },
   },
   mounted() {
-    // Get user info from localStorage
-    this.userID = localStorage.getItem("88B_accID");
+    // Get user info from localStorage - Fixed logic
+    const accID = localStorage.getItem("88B_accID");
+    if (accID !== null) {
+      this.userID = accID;  // Only change if user is logged in
+    }
+    // If no accID, userID remains "defaultUser"
+    
     this.userType = localStorage.getItem("88B_accType");
     this.username = localStorage.getItem("88B_accUsername");
     
@@ -759,4 +776,105 @@ export default {
     max-width: 400px;
   }
 }
+
+
+/* Desktop: use your fixed cap again */
+@media (min-width: 768px) {
+  .search-compact {
+    flex: 0 0 400px;   /* back to fixed width */
+    max-width: 400px;
+  }
+}
+
+/* Paywall Styles */
+.paywall-container {
+  position: relative;
+  overflow: hidden;
+  max-height: 1000px;
+}
+
+.paywall-container>*:not(.paywall-overlay) {
+  pointer-events: none;
+  user-select: none;
+}
+
+.paywall-overlay {
+  position: absolute;
+  top: 0;
+  left: -100vw;
+  right: -100vw;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none;
+  width: 300vw;
+  height: 100%;
+  min-height: 600px;
+}
+
+.paywall-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.1) 75%,
+      rgba(255, 255, 255, 0.3) 80%,
+      rgba(255, 255, 255, 0.6) 85%,
+      rgba(255, 255, 255, 0.8) 90%,
+      rgba(255, 255, 255, 0.95) 95%,
+      rgba(255, 255, 255, 1) 100%,
+      rgba(255, 255, 255, 1) 100%);
+  backdrop-filter: blur(1.15px);
+}
+
+.paywall-content {
+  position: absolute;
+  top: 47%;
+  left: 44%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: all !important;
+  z-index: 10001;
+}
+
+.paywall-signup-btn {
+  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1.7rem;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 8px 35px 15px rgb(0 0 0 / 80%);
+  /*0 8px 25px rgba(214, 48, 49, 0.3);*/
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: all !important;
+  cursor: pointer;
+}
+
+.paywall-signup-btn:hover {
+  background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
+  color: white;
+}
+
+.paywall-signup-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
+}
+
+/* Responsive adjustments for paywall */
+@media (max-width: 768px) {
+  .paywall-signup-btn {
+    font-size: 1rem;
+    padding: 14px 28px;
+  }
+}
+
 </style>

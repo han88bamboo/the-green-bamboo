@@ -2655,3 +2655,7 @@ nav a.router-link-exact-active.dropdown-item {
   transform: scaleX(-1);    /* flip horizontally to match FB arrow direction */
   vertical-align: middle;   /* align nicely with text */
 }
+
+.card{
+  background-color: white !important;
+}

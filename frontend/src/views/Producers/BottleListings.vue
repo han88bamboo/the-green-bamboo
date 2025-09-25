@@ -7741,7 +7741,7 @@ export default {
     padding: 16px 32px;
     border: none;
     border-radius: 50px;
-    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
+    box-shadow: 0 8px 35px 15px rgb(0 0 0 / 80%);
     transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px;
