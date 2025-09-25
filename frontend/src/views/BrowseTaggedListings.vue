@@ -44,7 +44,7 @@
                             </button>
                         </div>                        <!-- Form Title -->
                         <div class="d-grid col-11" style="color:black;">
-                            <p class="fw-bold fs-5 m-0 text-start mobile-ms-2">Browse: {{ effectiveBrowseTerm }}</p>
+                            <p class="fw-bold fs-5 m-0 text-start mobile-ms-2">Browse Whisky Live Paris 2025 <!--{{ effectiveBrowseTerm }}--></p>
                         </div>
 
                     </div>
@@ -255,129 +255,138 @@
             <!-- Results Header -->
             <div class="row mt-3">
                 <div class="col-12">
-                    <p class="fw-bold fs-6 m-0 py-2 mobile-view-hide" v-if="resultListings.length > 0">
-                        Viewing: {{ resultListings.length }} {{ effectiveBrowseTerm }} {{ resultListings.length === 1 ? 'Listing' : 'Listings' }}
-                    </p>
-                    <p class="fw-bold fs-6 m-0 py-2" v-else>No {{ effectiveBrowseTerm }} Listings Found!</p>
+                    <h3 class="fw-bold m-0 py-2 mb-4 mobile-view-hide" v-if="resultListings.length > 0">
+                        Now Pouring at Whisky Live Paris 2025 <!--{{ resultListings.length }} {{ effectiveBrowseTerm }} {{ resultListings.length === 1 ? 'Listing' : 'Listings' }}-->
+                    </h3>
+                    <p class="fw-bold fs-6 m-0 py-2" v-else>No <!--{{ effectiveBrowseTerm }} -->Listings Found!</p>
                 </div>
             </div>
-
-            <!-- Display Listings -->
-            <div class="text-start">
-                <div class="row" v-for="resultListing in resultListings" :key="resultListing.id">
-                    
-                    <!-- MOBILE VIEW-->
-                    <!-- Image -->
-                    <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
-                        <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                            <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
-                                 class="img-fluid rounded" 
-                                 :alt="resultListing.listingName"
-                                 style="width: 100%; height: 120px; object-fit: cover;">
-                        </router-link>
-                    </div>
-                    <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
-                    <!-- Listing Name + Router Link -->
-                        <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                            <h6 class="fw-bold mb-1 mobile-fs-6">{{ resultListing.listingName }}</h6>
-                        </router-link>
-                        <p class="text-start mb-1 mobile-fs-7"> 
-                            <strong>{{ resultListing.producerName }}</strong>
-                            <span v-if="resultListing.drinkType"> • {{ resultListing.drinkType }}</span>
-                            <span v-if="resultListing.typeCategory"> • {{ resultListing.typeCategory }}</span>
-                        </p>
-                        <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
-                            {{ resultListing["officialDesc"]?.length > 60 
-                                ? resultListing["officialDesc"].substring(0, 60) + "..." 
-                                : resultListing["officialDesc"] || "No description available" }}
-                        </p>
-                    </div>
-                    <!-- Rating ★ -->
-                    <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
-                        <div class="d-flex flex-column align-items-center ps-lg-3">
-                            <div class="d-flex align-items-center justify-content-center mb-1">
-                                <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
-                                    <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                </svg>
-                            </div>
-                            <!-- Bookmark Icon -->
-                            <BookmarkIcon 
-                                v-if="user"
-                                :listing="resultListing"
-                                :user="user"
-                                @icon-clicked="handleIconClick" />
+                <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
+                    <!-- Paywall Overlay for Non-Logged in Users -->
+                    <div v-if="userID === 'defaultUser'" class="paywall-overlay">
+                        <div class="paywall-gradient"></div>
+                        <div class="paywall-content">
+                        <button class="btn paywall-signup-btn" @click="$router.push('/signup')">
+                            Sign Up to See More
+                        </button>
                         </div>
                     </div>
-                    
-                    <!-- DESKTOP VIEW-->
-                    <!-- Image  -->
-                    <div class="d-flex justify-content-end col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
-                        <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                            <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
-                                 class="img-fluid rounded" 
-                                 :alt="resultListing.listingName"
-                                 style="width: 200px; height: 200px; object-fit: cover;">
-                        </router-link>
-                    </div>
-
-                    <!-- Details -->
-                    <div class="row col-9 mobile-view-hide">
-                        <div class="col-lg-6 col-12">
+                    <!-- Display Listings -->
+                    <div class="text-start">
+                        <div class="row" v-for="resultListing in resultListings" :key="resultListing.id">
+                            
+                            <!-- MOBILE VIEW-->
+                            <!-- Image -->
+                            <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
+                                <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
+                                    <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
+                                        class="img-fluid rounded" 
+                                        :alt="resultListing.listingName"
+                                        style="width: 100%; height: 120px; object-fit: cover;">
+                                </router-link>
+                            </div>
+                            <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
                             <!-- Listing Name + Router Link -->
-                            <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                                <h5 class="fw-bold mb-2">{{ resultListing.listingName }}</h5>
-                            </router-link>
-                            <!-- Producer + Type Info -->
-                            <p class="mb-1">
-                                <strong>Producer:</strong> {{ resultListing.producerName }}
-                            </p>
-                            <p class="mb-1" v-if="resultListing.drinkType">
-                                <strong>Type:</strong> {{ resultListing.drinkType }}
-                            </p>
-                            <p class="mb-1" v-if="resultListing.typeCategory">
-                                <strong>Category:</strong> {{ resultListing.typeCategory }}
-                            </p>
-                            <p class="mb-1" v-if="resultListing.originCountry">
-                                <strong>Country:</strong> {{ resultListing.originCountry }}
-                            </p>
-                        </div>
-
-                        <div class="d-flex justify-content-end col-lg-5 col-12" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                            <!-- Rating & Bookmark -->
-                            <div class="d-flex flex-column align-items-end">
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
-                                        <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
-                                    </svg>
-                                </div>
-                                <!-- Bookmark Icon -->
-                                <BookmarkIcon 
-                                    v-if="user"
-                                    :listing="resultListing"
-                                    :user="user"
-                                    @icon-clicked="handleIconClick" />
+                                <router-link class="xtext-dark xtext-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
+                                    <h6 class="fw-bold mb-1 mobile-fs-6">{{ resultListing.listingName }}</h6>
+                                </router-link>
+                                <p class="text-start mb-1 mobile-fs-7"> 
+                                    <strong>{{ resultListing.producerName }}</strong>
+                                    <span v-if="resultListing.drinkType"> • {{ resultListing.drinkType }}</span>
+                                    <span v-if="resultListing.typeCategory"> • {{ resultListing.typeCategory }}</span>
+                                </p>
+                                <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
+                                    {{ resultListing["officialDesc"]?.length > 60 
+                                        ? resultListing["officialDesc"].substring(0, 60) + "..." 
+                                        : resultListing["officialDesc"] || "No description available" }}
+                                </p>
                             </div>
+                            <!-- Rating ★ -->
+                            <div class="mobile-col-2 mobile-pe-0 mobile-ps-1 mobile-view-show">
+                                <div class="d-flex flex-column align-items-center ps-lg-3">
+                                    <div class="d-flex align-items-center justify-content-center mb-1">
+                                        <span class="mobile-fs-7">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-star-fill ms-1" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                            <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                        </svg>
+                                    </div>
+                                    <!-- Bookmark Icon -->
+                                    <BookmarkIcon 
+                                        v-if="user"
+                                        :listing="resultListing"
+                                        :user="user"
+                                        @icon-clicked="handleIconClick" />
+                                </div>
+                            </div>
+                            
+                            <!-- DESKTOP VIEW-->
+                            <!-- Image  -->
+                            <div class="d-flex justify-content-end col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
+                                <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
+                                    <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
+                                        class="img-fluid rounded" 
+                                        :alt="resultListing.listingName"
+                                        style="width: 200px; height: 200px; object-fit: cover;">
+                                </router-link>
+                            </div>
+
+                            <!-- Details -->
+                            <div class="row col-9 mobile-view-hide">
+                                <div class="col-lg-6 col-12">
+                                    <!-- Listing Name + Router Link -->
+                                    <router-link class="text-dark text-decoration-none" :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
+                                        <h5 class="fw-bold mb-2">{{ resultListing.listingName }}</h5>
+                                    </router-link>
+                                    <!-- Producer + Type Info -->
+                                    <p class="mb-1">
+                                        <strong>Producer:</strong> {{ resultListing.producerName }}
+                                    </p>
+                                    <p class="mb-1" v-if="resultListing.drinkType">
+                                        <strong>Type:</strong> {{ resultListing.drinkType }}
+                                    </p>
+                                    <p class="mb-1" v-if="resultListing.typeCategory">
+                                        <strong>Category:</strong> {{ resultListing.typeCategory }}
+                                    </p>
+                                    <p class="mb-1" v-if="resultListing.originCountry">
+                                        <strong>Country:</strong> {{ resultListing.originCountry }}
+                                    </p>
+                                </div>
+
+                                <div class="d-flex justify-content-end col-lg-5 col-12" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
+                                    <!-- Rating & Bookmark -->
+                                    <div class="d-flex flex-column align-items-end">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="fs-5 me-2">{{ resultListing.averageRating !== '-' ? resultListing.averageRating : '-' }}</span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16" style="color: gold;" v-if="resultListing.averageRating !== '-'">
+                                                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                                            </svg>
+                                        </div>
+                                        <!-- Bookmark Icon -->
+                                        <BookmarkIcon 
+                                            v-if="user"
+                                            :listing="resultListing"
+                                            :user="user"
+                                            @icon-clicked="handleIconClick" />
+                                    </div>
+                                </div>
+                                <!-- Description -->
+                                <p class="mt-1 fst-italic scrollable-long">
+                                    {{ resultListing["officialDesc"]?.length > 200 
+                                        ? resultListing["officialDesc"].substring(0, 200) + "..." 
+                                        : resultListing["officialDesc"] || "No description available" }}
+                                </p>
+                            </div>
+                            <hr>
                         </div>
-                        <!-- Description -->
-                        <p class="mt-1 fst-italic scrollable-long">
-                            {{ resultListing["officialDesc"]?.length > 200 
-                                ? resultListing["officialDesc"].substring(0, 200) + "..." 
-                                : resultListing["officialDesc"] || "No description available" }}
-                        </p>
+
+                        <!-- Load More Listing Result Button -->
+                        <div class="d-flex justify-content-center mb-3" v-if="resultListings.length > 0 && !noMoreListings">
+                            <button class="btn primary-btn btn-lg" @click="loadMoreListings()">Load More Listings</button>
+                        </div>
                     </div>
-                    <hr>
-                </div>
-
-                <!-- Load More Listing Result Button -->
-                <div class="d-flex justify-content-center mb-3" v-if="resultListings.length > 0 && !noMoreListings">
-                    <button class="btn primary-btn btn-lg" @click="loadMoreListings()">Load More Listings</button>
                 </div>
             </div>
-
         </div>
-            </div>
 
         <BookmarkModal 
             v-if="user"
@@ -392,7 +401,7 @@
     import BookmarkModal from '@/components/BookmarkModal.vue';
 
     export default {
-        name: "BrowseListings",
+        name: "BrowseTaggedListings",
         components: {
             NavBar,
             BookmarkIcon, 
@@ -405,8 +414,7 @@
                 role: localStorage.getItem('88B_accType'),
                 
                 // Browse parameters from route
-                browseDrinkType: this.$route.params.browseDrinkType, // Main drink type (e.g., 'Whisky')
-                browseTypeCategory: this.$route.params.browseTypeCategory, // Optional subcategory (e.g., 'Single Malt')
+                browseTag: this.$route.params.tag, // Tag parameter (e.g., 'whisky-tasting', 'festival')
                 
                 // Filter options
                 browseFilters: {
@@ -463,13 +471,11 @@
         },
         computed: {
             effectiveBrowseTerm() {
-                // Display the most specific term available
-                if (this.browseTypeCategory) {
-                    return `${this.browseDrinkType} - ${this.browseTypeCategory}`;
-                } else if (this.browseDrinkType) {
-                    return this.browseDrinkType;
+                // Display the tag or default term
+                if (this.browseTag) {
+                    return this.browseTag.charAt(0).toUpperCase() + this.browseTag.slice(1).replace(/-/g, ' ');
                 } else {
-                    return 'Drinks';
+                    return 'Tagged Drinks';
                 }
             },
             minRatingDisplay() {
@@ -494,6 +500,9 @@
             const accID = localStorage.getItem("88B_accID");
             if(accID !== null){
                 this.userID = localStorage.getItem('88B_accID')
+            } else {
+                // Set userID to 'defaultUser' for non-authenticated users to trigger paywall
+                this.userID = 'defaultUser'
             }
             let userType = localStorage.getItem('88B_accType')
             if(userType !=null){
@@ -556,12 +565,8 @@
 
             initializeBrowseFilters() {
                 // Set initial filters based on route parameters
-                if (this.browseDrinkType) {
-                    this.browseFilters.drinkType = this.browseDrinkType;
-                }
-                if (this.browseTypeCategory) {
-                    this.browseFilters.typeCategory = this.browseTypeCategory;
-                }
+                // For tagged listings, we don't pre-populate filters from route
+                // Users can apply additional filters on top of the tag
             },
 
             async runBrowse() {
@@ -642,10 +647,10 @@
                 }
             },
 
-            // Browse listings using filters
+            // Browse listings using filters and tag
             async browseListings(isLoadMore = false) {
                 try {
-                    // Build query parameters
+                    // Build query parameters for additional filters
                     const params = new URLSearchParams();
                     
                     if (this.browseFilters.drinkType) {
@@ -667,8 +672,11 @@
                     params.append('offset', this.offsetListings.toString());
                     params.append('limit', this.recordsPerLoad.toString());
 
+                    // Use tag-based endpoint
+                    const tag = this.browseTag || '';
+                    const queryString = params.toString() ? `?${params.toString()}` : '';
                     const response = await this.$axios.get(
-                        `${process.env.VUE_APP_API_URL}/getData/getListingsByFilters?${params.toString()}`
+                        `${process.env.VUE_APP_API_URL}/getData/getListingsByTag/${tag}${queryString}`
                     );
                     
                     if (isLoadMore) {
@@ -692,7 +700,7 @@
 
                 } 
                 catch (error) {
-                    console.error('Error browsing listings:', error);
+                    console.error('Error browsing tagged listings:', error);
                     this.loadError = true;
                 }
             },
@@ -1083,4 +1091,97 @@
         width: 66.666667%;
     }
 }
+
+
+/* Paywall Styles */
+.paywall-container {
+  position: relative;
+  overflow: hidden;
+  max-height: 8000px;
+}
+
+.paywall-container>*:not(.paywall-overlay) {
+  pointer-events: none;
+  user-select: none;
+}
+
+.paywall-overlay {
+  position: absolute;
+  top: 0;
+  left: -100vw;
+  right: -100vw;
+  bottom: 0;
+  z-index: 3;
+  pointer-events: none;
+  width: 300vw;
+  height: 100%;
+  min-height: 600px;
+}
+
+.paywall-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom,
+      transparent 0%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.1) 75%,
+      rgba(255, 255, 255, 0.3) 80%,
+      rgba(255, 255, 255, 0.6) 85%,
+      rgba(255, 255, 255, 0.8) 90%,
+      rgba(255, 255, 255, 0.95) 95%,
+      rgba(255, 255, 255, 1) 100%,
+      rgba(255, 255, 255, 1) 100%);
+  backdrop-filter: blur(1.15px);
+}
+
+.paywall-content {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: all !important;
+  z-index: 10001;
+}
+
+.paywall-signup-btn {
+  background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 1.7rem;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 50px;
+  box-shadow: 0 8px 35px 15px rgb(0 0 0 / 80%);
+  /*0 8px 25px rgba(214, 48, 49, 0.3);*/
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  pointer-events: all !important;
+  cursor: pointer;
+}
+
+.paywall-signup-btn:hover {
+  background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 35px rgba(214, 48, 49, 0.4);
+  color: white;
+}
+
+.paywall-signup-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 20px rgba(214, 48, 49, 0.3);
+}
+
+/* Responsive adjustments for paywall */
+@media (max-width: 768px) {
+  .paywall-signup-btn {
+    font-size: 1rem;
+    padding: 14px 28px;
+  }
+}
+
 </style>

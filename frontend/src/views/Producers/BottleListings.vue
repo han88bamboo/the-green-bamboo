@@ -2275,7 +2275,7 @@
             <div class="paywall-gradient"></div>
             <div class="paywall-content">
               <button class="btn paywall-signup-btn" @click="$router.push('/signup')">
-                Sign Up to Log Your Review
+                Sign Up to See Reviews or Comments!
               </button>
             </div>
           </div>
@@ -3003,9 +3003,6 @@
           <div class="d-flex justify-content-center mb-3" v-if="filteredReviews.length > 0 && !noMoreReviews">
             <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
           </div>
-        </div>
-        <!-- end of producer information -->
-
 
         <!-- comments start (By CP)-->
         <div class="text-start my-4 ms-1">
@@ -3092,6 +3089,7 @@
 
         </div>
         <!-- comments end -->
+        </div>
       </div>
 
 
@@ -7725,8 +7723,8 @@ export default {
 
   .paywall-content {
     position: absolute;
-    top: 60%;
-    left: 48%;
+    top: 27%;
+    left: 45%;
     transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: all !important;
@@ -7749,19 +7747,6 @@ export default {
     cursor: pointer;
   }
 
-  .paywall-signup-btn {
-    background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
-    color: white;
-    font-weight: 700;
-    font-size: 1.2rem;
-    padding: 16px 32px;
-    border: none;
-    border-radius: 50px;
-    box-shadow: 0 8px 25px rgba(214, 48, 49, 0.3);
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
 
   .paywall-signup-btn:hover {
     background: linear-gradient(135deg, #d63031 0%, #b71c1c 100%);

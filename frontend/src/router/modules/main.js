@@ -53,6 +53,12 @@ const routes = [
     props: true,
   },
   {
+    path: "/browse/tag/:tag",
+    name: "browseTaggedListings",
+    component: () => import(/* webpackChunkName: "main" */ "@/views/BrowseTaggedListings.vue"),
+    props: true,
+  },
+  {
     path: "/browse/venue/",
     name: "browseVenue", // Changed from "browse" to "browseVenue"
     component: () => import(/* webpackChunkName: "main" */ "@/views/BrowseVenues.vue"),

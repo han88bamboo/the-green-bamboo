@@ -149,7 +149,7 @@
           </div>
         </div>
 
-         <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
+        <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
           <!-- Paywall Overlay for Non-Logged in Users -->
           <div v-if="userID === 'defaultUser'" class="paywall-overlay">
             <div class="paywall-gradient"></div>
@@ -870,7 +870,7 @@ export default {
 .paywall-container {
   position: relative;
   overflow: hidden;
-  max-height: 1000px;
+  max-height: 2000px;
 }
 
 .paywall-container>*:not(.paywall-overlay) {
@@ -884,7 +884,7 @@ export default {
   left: -100vw;
   right: -100vw;
   bottom: 0;
-  z-index: 9999;
+  z-index: 3;
   pointer-events: none;
   width: 300vw;
   height: 100%;
@@ -912,12 +912,12 @@ export default {
 
 .paywall-content {
   position: absolute;
-  top: 32%;
-  left: 45%;
+  top: 15%;
+  left: 47.5%;
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: all !important;
-  z-index: 10001;
+  z-index: 4;
 }
 
 .paywall-signup-btn {
