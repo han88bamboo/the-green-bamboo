@@ -6,7 +6,7 @@
         <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/another-round-mads-mikkelsen.webp?v=1758423054" class="hero-bg" style="filter: brightness(0.5);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
-            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-5">
+            class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-0">
             <h1 class="my-4 fw-bold display-5 mobile-fs-3 mobile-px-4">
                 A World of Drinks. Just Look It Up.
             </h1>
@@ -21,7 +21,7 @@
 
                     <LandingPageAutocompleteSearch @select="handleSelection" />
 
-                    <!-- surprise me button -->
+                    <!-- surprise me button  -->
                     <div class="col-12 align-items-center justify-content-center mb-4">
                         <router-link :to="'/explore'">
                             <button
@@ -37,88 +37,120 @@
             </div>
         </div>
     </section>
-
     <!-- Hero End -->
 
-    <LookingFor />
+
 
     <!-- Whisky Live Paris 2025 Section -->
-    <section class="recent-reviews-section py-4">
+    <section class="wlp-section pb-4 wlp-hero">
         <div class="container">
-            <div class="text-center mb-4">
-                <h2 class="mobile-fs-4 fw-bold mb-2" style="color: #027562;">Now Pouring at Whisky Live Paris 2025</h2>
-                <h3 class="mobile-fs-6 fw-bold h5" style="color: black;">Explore and review drinks at this event!</h3>
+
+            <!-- Hero header -->
+            <div class=" rounded-4 p-4 mb-2 position-relative overflow-hidden">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+                <div>
+                <span class="wlp-badge-new d-inline-flex align-items-center px-3 py-1 me-2 mb-2 mb-md-3 rounded-pill">
+                    NEWLY RELEASED
+                </span>
+                <h2 class="mobile-fs-4 fw-bold mb-1 wlp-title">Now Pouring at Whisky Live Paris 2025</h2>
+                <h3 class="mobile-fs-6 fw-bold h5 m-0 wlp-subtitle">Explore and review drinks at this event!</h3>
+                </div>
+
+                <!-- Countdown pill -->
+                <div 
+                class="wlp-countdown ms-md-3 mt-md-0 px-3 py-2 rounded-pill 
+                        mx-auto mx-md-0 text-center">
+                ⏳ 3 Days Until Kickoff
+                </div>
+
             </div>
-            
+
+            <!-- subtle bokeh accents -->
+            <div class="wlp-bokeh wlp-bokeh-1"></div>
+            <div class="wlp-bokeh wlp-bokeh-2"></div>
+            <div class="wlp-bokeh wlp-bokeh-3"></div>
+            </div>
+
             <!-- WLP2025 Listings Grid - Always 5 columns with horizontal scroll -->
             <div class="trending-reviews-container">
-                <div class="trending-reviews-grid">
-                    <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
-                        <div class="card h-100 review-card border-light" 
-                             style="border: 2px solid #f0b358; cursor: pointer;"
-                             @click="goToListing(listing)">
-                            <!-- Image at top -->
-                            <div class="card-img-top-wrapper position-relative">
-                                <img v-if="listing.photo" 
-                                     :src="listing.photo" 
-                                     class="card-img-top review-card-img"
-                                     :alt="listing.listingName" />
-                                <img v-else
-                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
-                                     class="card-img-top review-card-img"
-                                     alt="Default drink image" />
+                    <div class="trending-reviews-grid">
+                        <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
+                            <div class="card h-100 review-card border-light" 
+                                style="border: 2px solid #f0b358; cursor: pointer;"
+                                @click="goToListing(listing)">
+                                <!-- Image at top -->
+                                <div class="card-img-top-wrapper position-relative">
+                                    <img v-if="listing.photo" 
+                                        :src="listing.photo" 
+                                        class="card-img-top review-card-img"
+                                        :alt="listing.listingName" />
+                                    <img v-else
+                                        src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
+                                        class="card-img-top review-card-img"
+                                        alt="Default drink image" />
+                                    
+                                    <!-- Event Tag Overlay 
+                                    <div class="review-overlay position-absolute d-flex align-items-center">
+                                        <span class="overlay-text">
+                                            <span class="overlay-rating">#WLP2025</span>
+                                        </span>
+                                    </div>-->
+                                </div>
                                 
-                                <!-- Event Tag Overlay 
-                                <div class="review-overlay position-absolute d-flex align-items-center">
-                                    <span class="overlay-text">
-                                        <span class="overlay-rating">#WLP2025</span>
-                                    </span>
-                                </div>-->
+                                <div class="card-body d-flex flex-column">
+                                    <!-- Drink name -->
+                                    <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
+                                        {{ truncateText(listing.listingName, 30) }}
+                                    </h6>
+                                    
+                                    <!-- Producer name -->
+                                    <p class="text-muted small" v-if="listing.producerName" style="margin-bottom:0px;" >
+                                        by {{ truncateText(listing.producerName, 20) }}
+                                    </p>
+                                    
+                                    <!-- Category and Country -->
+                                    <p class="mb-2 small" style="color: #f0b358;" v-if="listing.drinkType || listing.originCountry">
+                                        <span v-if="listing.drinkType">{{ listing.drinkType }}</span>
+                                        <span v-if="listing.drinkType && listing.originCountry"> / </span>
+                                        <span v-if="listing.originCountry">{{ listing.originCountry }}</span>
+                                    </p>
+                                    
+                                    <!-- Official Description -->
+                                    <p class="card-text flex-grow-1 small" v-if="listing.officialDesc">
+                                        "{{ truncateText(listing.officialDesc, 80) }}"
+                                    </p>
+                                    <p class="card-text flex-grow-1 small" v-else>
+                                        Available at Whisky Live Paris 2025
+                                    </p>
+                                </div>
+                                
+                                <!-- Review Button Footer -->
+                                <div class="text-center pb-3">
+                                    <button 
+                                        class="btn fw-semibold px-4"
+                                        @click="goToListing(listing)"
+                                        style="background-color: #f04444; border-color: #f04444; color: white;">
+                                        Review Drink
+                                    </button>
+                                </div>
                             </div>
                             
-                            <div class="card-body d-flex flex-column">
-                                <!-- Drink name -->
-                                <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
-                                    {{ truncateText(listing.listingName, 30) }}
-                                </h6>
-                                
-                                <!-- Producer name -->
-                                <p class="text-muted small" v-if="listing.producerName" style="margin-bottom:0px;" >
-                                    by {{ truncateText(listing.producerName, 20) }}
-                                </p>
-                                
-                                <!-- Category and Country -->
-                                <p class="mb-2 small" style="color: #f0b358;" v-if="listing.drinkType || listing.originCountry">
-                                    <span v-if="listing.drinkType">{{ listing.drinkType }}</span>
-                                    <span v-if="listing.drinkType && listing.originCountry"> / </span>
-                                    <span v-if="listing.originCountry">{{ listing.originCountry }}</span>
-                                </p>
-                                
-                                <!-- Official Description -->
-                                <p class="card-text flex-grow-1 small" v-if="listing.officialDesc">
-                                    "{{ truncateText(listing.officialDesc, 80) }}"
-                                </p>
-                                <p class="card-text flex-grow-1 small" v-else>
-                                    Available at Whisky Live Paris 2025
-                                </p>
-                            </div>
-                            
-                            <!-- Review Button Footer -->
-                            <div class="text-center pb-3">
-                                <button 
-                                    class="btn fw-semibold px-4"
-                                    @click="goToListing(listing)"
-                                    style="background-color: #f04444; border-color: #f04444; color: white;">
-                                    Review Drink
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
+
+            <!-- Mobile sticky CTA -->
+            <div class="wlp-sticky-cta ">
+            <button class="btn w-100 wlp-btn-cta fw-semibold" @click="$router.push({})">
+                Browse All Festival Drinks
+            </button>
             </div>
+
         </div>
     </section>
     <!-- Whisky Live Paris 2025 End -->
+
+        <LookingFor />
 
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
@@ -1794,7 +1826,8 @@ button.btn.selected {
 
 @media (max-width: 767px) {
   .hero-section {
-    padding-top: 75%; /* taller mobile height */
+    padding-top: 100%; /* taller mobile height */
+ 
   }
 }
 
@@ -1806,7 +1839,7 @@ button.btn.selected {
 
 @media (min-width: 1025px) {
   .hero-section {
-    padding-top: 22%; /* desktop */
+    padding-top: 28%; /* desktop */
   }
 }
 
@@ -1951,7 +1984,7 @@ button.btn.selected {
 }
 
 .trending-reviews-container::-webkit-scrollbar-thumb {
-    background: #027562;
+    background: #f0b358;
     border-radius: 4px;
 }
 
@@ -2416,5 +2449,114 @@ button.btn.selected {
 @keyframes shimmer {
   0%   { background-position: 100% 0; }
   100% { background-position: -200% 0; }
+}
+
+/* Section background */
+.wlp-section { background: #f5f7fa; }
+
+/* Gradient hero */
+.wlp-hero {
+  background: linear-gradient(180deg, #f1eee6 0%, #d4c69f 100%);
+  position: relative;
+}
+.wlp-title { color: black; }
+.wlp-subtitle { color: #172024; }
+
+/* NEW releases badge */
+.wlp-badge-new {
+  background: #f0b358;
+  color: #172024;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-size: 0.9rem;
+}
+
+/* Countdown pill */
+.wlp-countdown {
+  background: #f04444;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* Decorative bokeh */
+.wlp-bokeh { position: absolute; border-radius: 999px; filter: blur(1px); opacity: 0.5; }
+.wlp-bokeh-1 { right: 40px; top: 18px; width: 120px; height: 120px; background: rgba(240,179,88,0.35); }
+.wlp-bokeh-2 { right: 160px; top: 80px; width: 72px; height: 72px; background: rgba(240,179,88,0.25); }
+.wlp-bokeh-3 { right: 90px; bottom: 40px; width: 96px; height: 96px; background: rgba(240,179,88,0.18); }
+
+/* Rail */
+.wlp-rail-wrapper { position: relative; }
+.wlp-rail {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 1rem;
+  padding: 0.25rem 0.25rem 0.75rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.wlp-rail::-webkit-scrollbar { height: 8px; }
+.wlp-rail::-webkit-scrollbar-track { background: #d7e6df; border-radius: 8px; }
+.wlp-rail::-webkit-scrollbar-thumb { background: #027562; border-radius: 8px; }
+
+/* Desktop: 3–4 cards visible; Mobile: ~1.1 cards (peek next) */
+@media (min-width: 992px) {
+  .wlp-rail { grid-auto-columns: calc(25% - 12px); } /* 4-up with gap */
+}
+@media (min-width: 1200px) {
+  .wlp-rail { grid-auto-columns: calc(22% - 12px); } /* 4–5 with peek */
+}
+@media (max-width: 991.98px) {
+  .wlp-rail { grid-auto-columns: 82%; padding-bottom: 0.5rem; } /* 1.1 card */
+}
+
+/* Body */
+.wlp-body { padding: 14px 16px 0; }
+.wlp-name { color: #172024; }
+.wlp-producer { color: #7a8a86; font-size: 0.9rem; }
+.wlp-meta { color: #f0b358; font-weight: 600; font-size: 0.88rem; }
+.wlp-desc { color: #5a6967; font-size: 0.92rem; min-height: 2.8em; }
+
+/* CTA */
+.wlp-cta-wrap { padding: 12px 16px 16px; }
+.wlp-btn-cta {
+  background: #f0b358;
+  color: black;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+}
+.wlp-btn-cta:hover { 
+  background: wheat;
+  color: black;
+  border: solid 1px #f0b358;
+  padding: 10px 18px;
+  border-radius: 999px;
+  scale: 1.02;
+}
+
+/* Rail indicator (decorative) */
+.wlp-rail-indicator {
+  height: 10px;
+  background: #d7e6df;
+  border-radius: 999px;
+  margin: 8px 6px 0;
+  position: relative;
+}
+.wlp-rail-thumb {
+  width: 22%;
+  height: 100%;
+  background: #027562;
+  border-radius: 999px;
+}
+
+/* Mobile sticky CTA */
+.wlp-sticky-cta {
+  position: sticky;
+  bottom: 12px;
+  margin-top: 8px;
+  z-index: 2;
 }
 </style>

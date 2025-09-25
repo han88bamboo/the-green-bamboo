@@ -1,6 +1,6 @@
 <template>
   <!-- Category Navigation Ribbon -->
-  <section class="category-ribbon-section pt-5">
+  <section class="category-ribbon-section pt-0">
     <div class="category-ribbon-bar">
       <div class="container">
         <h3 class="mb-0 pt-2 fw-bold" style="color:white;">I'm Looking For</h3>
