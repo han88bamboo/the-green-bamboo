@@ -67,7 +67,7 @@
                 <div 
                 class="festival-countdown ms-md-3 mt-md-0 px-3 py-2 rounded-pill 
                         mx-auto mx-md-0 text-center">
-                ⏳ 1 Day Til Kickoff
+                {{ festivalCountdownText }}
                 </div>
 
             </div>
@@ -1281,7 +1281,11 @@ export default {
 
         return {
             // Search functionality
-            handleSelection
+            handleSelection,
+            // Set your actual dates (use Paris offset to be precise)
+            festivalStartISO: '2025-09-27T00:00:00+02:00',
+            festivalEndISO:   '2025-09-29T23:59:59+02:00', // optional but recommended
+            _countdownTimer: null, // internal,
         }
     },
     data() {
@@ -1342,6 +1346,9 @@ export default {
             this.userType = userType
         }
         this.loadData();
+        // Recompute around midnight so the label updates without reload
+        const oneHour = 1000 * 60 * 60;
+        this._countdownTimer = setInterval(() => this.$forceUpdate(), oneHour);
 
         // // Initialize mega menu positioning
         // this.$nextTick(() => {
@@ -1354,6 +1361,9 @@ export default {
         //     // Add scroll listener for repositioning on scroll
         //     window.addEventListener('scroll', this.debouncedPositionHandler, { passive: true });
         // });
+    },
+    beforeUnmount() {
+    if (this._countdownTimer) clearInterval(this._countdownTimer);
     },
     
     // beforeUnmount() {
@@ -1368,7 +1378,34 @@ export default {
             // If userID is not present, route to signup instead
             console.log("User ID:", this.userID);
             return this.userID ? `/profile/user/${this.userID}/${this.username}` : '/signup';
-        }
+        },
+        festivalCountdownText() {
+            const start = new Date(this.festivalStartISO);
+            const end   = new Date(this.festivalEndISO || this.festivalStartISO);
+
+            // Use local day boundaries to avoid partial-day off-by-ones
+            const today = new Date();
+            const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const startMid = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const daysUntil = Math.ceil((startMid - todayMid) / msPerDay);
+
+            // During festival (inclusive of start/end dates)
+            if (today >= start && today <= end) {
+                return '🔴 Happening LIVE in Paris';
+            }
+
+            // After festival
+            if (today > end) {
+                return '✅ View Event Highlights';
+            }
+
+            // Before festival
+            if (daysUntil === 0) return '🔴 LIVE in Paris';
+            if (daysUntil === 1) return '⏳ 1 Day Until Kickoff';
+            return `⏳ ${daysUntil} Days Until Kickoff`;
+            },
     },
     methods: {
         slugify(text) {
