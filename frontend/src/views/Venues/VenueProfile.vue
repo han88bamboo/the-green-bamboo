@@ -314,7 +314,7 @@
                         <div v-if="editProfile" style="position: relative; text-align: center;">
                             <!-- image -->
                             <img :src="selectedImage || (targetVenueOriginalPhoto || defaultProfilePhoto)" alt=""
-                                class="mobile-mt-4 producer-bottle-listing-page-image">
+                                class="mobile-mt-0 producer-bottle-listing-page-image">
                             <!-- change option -->
                             <label for="fileSelectPFP" class="btn primary-light-dropdown"
                                 style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2;">Choose
@@ -333,7 +333,7 @@
                         <!-- [else] not editing TZH removed style="width: 200px; height: 200px; z-index: 1;" -->
                         <div v-else>
                             <img :src="(targetVenue['photo'] || defaultProfilePhoto)" alt=""
-                                class="mobile-mt-4 producer-bottle-listing-page-image">
+                                class="mobile-mt-0 producer-bottle-listing-page-image">
                         </div>
 
                     </div>

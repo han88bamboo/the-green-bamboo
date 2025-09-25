@@ -2255,6 +2255,8 @@ nav a.router-link-exact-active.dropdown-item {
   margin-right: 15px;
 }
 
+
+
 @media (max-width: 576px) {
   .form-check-inline {
     margin-right: 10px;

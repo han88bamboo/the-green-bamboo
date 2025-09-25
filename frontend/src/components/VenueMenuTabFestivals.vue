@@ -27,7 +27,7 @@
             <!-- Menu Header -->
             <div class="dflex">
                 <p class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-5"><span
-                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Menu
+                        class="fw-bold fst-italic">{{ displayMenuItemsCount }}</span> Drinks On The Festival Line Up
                 </p>
             </div>
 
@@ -181,7 +181,7 @@
                 <!-- Search Bar -->
                 <div v-if="!editMenuMode" class="col-12 p-0">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
-                        type="text" placeholder="Search menu" v-model="searchMenuTerm"
+                        type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
                 </div>
 
@@ -233,7 +233,7 @@
                 <!-- Search Bar -->
                 <div v-if="!editMenuMode" class="col-9 p-0">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
-                        type="text" placeholder="Search menu" v-model="searchMenuTerm"
+                        type="text" placeholder="Search festival line up" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
                 </div>
 
@@ -308,6 +308,18 @@
                 <p class="text-start fw-bold fst-italic m-0 mobile-view-hide">Click on each menu section's name to expand or hide its contents! </p>
             </div>
 
+            <div class="row mobile-view-show mb-2 align-items-center">
+                <div class="col-1 text-start ps-2 me-2 pt-0">
+                    <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/festivalcheckbox_b6f88086-82a5-4dfa-9afc-e392ac60e00a.gif?v=1758781726" 
+                        alt="Checkbox icon" 
+                        style="width: 30px;">
+                </div>
+                <div class="col-10 text-start fs-8 fw-bold">
+                    Click the checkbox to mark drinks you’ve tried or want to try as you explore the festival.
+                </div>
+            </div>
+
+
             <!-- HIERARCHICAL MENU SECTIONS -->
             <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults"
                 v-bind:key="menuSection.id || index"
@@ -344,10 +356,10 @@
                                         </router-link>
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
-                                            <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center">
+                                            <h2 class="fw-bold rating-text text-center m-0 pt-2 d-flex align-items-center justify-content-center">
                                                 {{ sectionItem.itemDetails['itemRating'] }}
-                                                <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
-                                            </p>
+                                                <span style="margin-left: 0.3rem;">★</span>
+                                            </h2>
                                         </div>
                                     </div>
                                     <!-- SECOND COLUMN: Item Information -->
@@ -388,7 +400,7 @@
                                         <!-- Item Menu Details Row -->
                                         <div class="row align-items-center">
                                             <!-- Left Column: Item Menu Details -->
-                                            <div class="col-8">
+                                            <div class="col-6">
                                                 <div class="d-flex align-items-center gap-1 flex-wrap">
                                                     <!-- Item Price / Item Serving Type -->
                                                     <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
@@ -404,15 +416,10 @@
                                             </div>
                                             
                                             <!-- Right Column: Tasting Tracker -->
-                                            <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
-                                                <div class="tasting-tracker">
+                                            <div class="col-6 d-flex justify-content-end" v-if="showTastingTracker">
+                                                <div class=" tasting-tracker">
+                                                   
                                                     <div class="form-check">
-                                                        <!-- <label 
-                                                            class="form-check-label tasting-label" 
-                                                            :for="`tasting-mobile-${generateTrackingKey(sectionItem)}`">
-                                                            <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label> -->
                                                         <input 
                                                             class="form-check-input tasting-checkbox" 
                                                             type="checkbox" 
@@ -7635,7 +7642,7 @@ export default {
                 
                 // Optional: Show success message
                 const toast = useToast();
-                toast.success('Added to your tasting list!');
+                toast.success('Added to your festival tasting list!');
                 
                 console.log('🍽️ Successfully added tasting:', responseData);
                 
@@ -7697,7 +7704,7 @@ export default {
                 
                 // Optional: Show success message
                 const toast = useToast();
-                toast.success('Removed from your tasting list');
+                toast.success('Removed from your festival tasting list');
                 
                 console.log('🍽️ Successfully removed tasting for item:', menuItem.itemID);
                 
@@ -8768,6 +8775,7 @@ export default {
   /* min-width: 150px; */
   width: auto;
   display: inline-block;
+  
 }
 
 .tasting-tracker .form-check {
@@ -8782,9 +8790,11 @@ export default {
   cursor: pointer;
   flex-shrink: 0;
   position: relative;
-  width: 2.5rem !important;
-  height: 2.5rem !important;
-  font-size: 1.5rem;
+  width: 1.8rem !important;
+  height: 1.8rem !important;
+  font-size: 1.0rem;
+  position: relative;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ebebeb' stroke-linecap='square' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
 }
 
 .tasting-tracker .form-check-label {
@@ -8797,12 +8807,13 @@ export default {
 }
 
 .tasting-tracker .tasted-text {
-  color: #28a745;
+  color: #49b02e;
   font-weight: 500;
 }
 
 .tasting-tracker .not-tasted-text {
   color: #6c757d;
+  
 }
 
 /* Loading state */
@@ -8812,18 +8823,20 @@ export default {
 
 /* Hover states */
 .tasting-tracker .form-check-input:hover {
-  border-color: #28a745;
+  border-color: #49b02e;
 }
 
 .tasting-tracker .form-check-input:checked {
-  background-color: #28a745;
-  border-color: #28a745;
+  background-color: #49b02e;
+  border-color: #49b02e;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='square' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
 }
 
 .tasting-tracker .form-check-input:checked:hover {
-  background-color: #218838;
-  border-color: #1e7e34;
+  background-color: #49b02e;
+  border-color: #49b02e;
 }
+
 
 /* Mobile responsiveness for tasting tracker */
 @media (max-width: 768px) {
@@ -8836,7 +8849,8 @@ export default {
   }
   
   .tasting-tracker .tasting-checkbox {
-    margin-right: 0.3rem;
+    margin-right: 0.4rem;
+    border-radius: 3px; /* reduce this number for sharper corners */
   }
   
   /* Mobile-specific review button styling */
