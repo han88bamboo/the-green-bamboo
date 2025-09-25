@@ -17,6 +17,11 @@ import "vue-toastification/dist/index.css";
 import 'quill/dist/quill.snow.css';
 import { createGtag } from "vue-gtag";
 
+//  Add Google Analytics (GA4)
+const gtag = createGtag({
+  tagId: "G-FBF3N4940Z",
+  router,
+})
 
 // Set up Axios as a global property in Vue prototype
 const app = createApp(App);
@@ -26,23 +31,10 @@ const head = createHead()
 app.component('qr-code', VueQRCodeComponent);
 app.config.globalProperties.$axios = axios;
 
-// add SEO for later
-app.use(head)
-
-//  Add Google Analytics (GA4)
-app.use(createGtag, {
-  config: { id: "G-FBF3N4940Z" }
-}, router);
-
-// app.use(VueGtag, {
-//   property: {
-//     id: "G-FBF3N4940Z"
-//   },
-//   appName: 'Drink-X',
-//   pageTrackerScreenviewEnabled: true,
-//   isEnabled: true,
-//   isDebug: true
-// }, router);
+// Use plugins
+app.use(router);
+app.use(gtag); // add Google Analytics
+app.use(head); // add SEO for later
 
 console.log("✅ GA plugin initialized");
 
@@ -62,4 +54,4 @@ app.use(Toast, {
 });
 
 // Mount the app to the DOM
-app.use(router).mount('#app');
+app.mount('#app');
