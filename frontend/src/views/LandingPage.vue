@@ -157,7 +157,7 @@
     </section>
     <!-- Whisky Live Paris 2025 End -->
 
-        <LookingFor />
+    <LookingFor />
 
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
@@ -2567,15 +2567,15 @@ button.btn.selected {
 /* CTA */
 .festival-cta-wrap { padding: 12px 16px 16px; }
 .festival-btn-cta {
-  background: #f0b358;
-  color: black;
+  background: rgb(24, 24, 24);
+  color: #f4c175;
   border: none;
   padding: 10px 18px;
   border-radius: 999px;
 }
 .festival-btn-cta:hover { 
-  background: wheat;
-  color: black;
+  background: rgb(24, 24, 24);
+  color: wheat;
   border: solid 1px #f0b358;
   padding: 10px 18px;
   border-radius: 999px;
