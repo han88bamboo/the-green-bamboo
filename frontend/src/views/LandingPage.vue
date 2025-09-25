@@ -42,33 +42,40 @@
 
 
     <!-- Whisky Live Paris 2025 Section -->
-    <section class="wlp-section pb-4 wlp-hero">
+    <section class="festival-section pb-4 festival-hero">
         <div class="container">
 
             <!-- Hero header -->
             <div class=" rounded-4 p-4 mb-2 position-relative overflow-hidden">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div>
-                <span class="wlp-badge-new d-inline-flex align-items-center px-3 py-1 me-2 mb-2 mb-md-3 rounded-pill">
+                <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end gap-3 mb-2">
+                <!-- Logo -->
+                <img 
+                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/wlp25-logo-en.svg?v=1758788335" 
+                    alt="Whisky Live Paris 2025 Logo" 
+                    class="festival-logo"
+                />
+                <span class="festival-badge-new d-inline-flex align-items-center px-3 py-1 me-2 rounded-pill">
                     NEWLY RELEASED
                 </span>
-                <h2 class="mobile-fs-4 fw-bold mb-1 wlp-title">Now Pouring at Whisky Live Paris 2025</h2>
-                <h3 class="mobile-fs-6 fw-bold h5 m-0 wlp-subtitle">Explore and review drinks at this event!</h3>
                 </div>
-
+                <h2 class="mobile-fs-4 fw-bold mb-1 festival-title">Now Pouring at Whisky Live Paris 2025</h2>
+                <h3 class="mobile-fs-6 fw-bold h5 m-0 festival-subtitle">Explore and review drinks at this event!</h3>
+                </div>
                 <!-- Countdown pill -->
                 <div 
-                class="wlp-countdown ms-md-3 mt-md-0 px-3 py-2 rounded-pill 
+                class="festival-countdown ms-md-3 mt-md-0 px-3 py-2 rounded-pill 
                         mx-auto mx-md-0 text-center">
-                ⏳ 3 Days Until Kickoff
+                ⏳ 1 Day Til Kickoff
                 </div>
 
             </div>
 
             <!-- subtle bokeh accents -->
-            <div class="wlp-bokeh wlp-bokeh-1"></div>
-            <div class="wlp-bokeh wlp-bokeh-2"></div>
-            <div class="wlp-bokeh wlp-bokeh-3"></div>
+            <div class="festival-bokeh festival-bokeh-1"></div>
+            <div class="festival-bokeh festival-bokeh-2"></div>
+            <div class="festival-bokeh festival-bokeh-3"></div>
             </div>
 
             <!-- WLP2025 Listings Grid - Always 5 columns with horizontal scroll -->
@@ -140,9 +147,9 @@
                 </div>
 
             <!-- Mobile sticky CTA -->
-            <div class="wlp-sticky-cta ">
-            <button class="btn w-100 wlp-btn-cta fw-semibold" @click="$router.push({})">
-                Browse All Festival Drinks
+            <div class="festival-sticky-cta ">
+            <button class="btn w-100 festival-btn-cta fw-semibold" @click="$router.push({})">
+                View All Whisky Live Paris 2025 Releases 
             </button>
             </div>
 
@@ -2452,18 +2459,18 @@ button.btn.selected {
 }
 
 /* Section background */
-.wlp-section { background: #f5f7fa; }
+.festival-section { background: #f5f7fa; }
 
 /* Gradient hero */
-.wlp-hero {
+.festival-hero {
   background: linear-gradient(180deg, #f1eee6 0%, #d4c69f 100%);
   position: relative;
 }
-.wlp-title { color: black; }
-.wlp-subtitle { color: #172024; }
+.festival-title { color: black; }
+.festival-subtitle { color: #172024; }
 
 /* NEW releases badge */
-.wlp-badge-new {
+.festival-badge-new {
   background: #f0b358;
   color: #172024;
   font-weight: 700;
@@ -2472,7 +2479,7 @@ button.btn.selected {
 }
 
 /* Countdown pill */
-.wlp-countdown {
+.festival-countdown {
   background: #f04444;
   color: white;
   font-weight: 700;
@@ -2480,15 +2487,22 @@ button.btn.selected {
   white-space: nowrap;
 }
 
+.festival-logo {
+  width: 300px;   /* adjust size as needed */
+  height: auto;
+  display: block;
+  filter: brightness(0.1) saturate(90%);
+}
+
 /* Decorative bokeh */
-.wlp-bokeh { position: absolute; border-radius: 999px; filter: blur(1px); opacity: 0.5; }
-.wlp-bokeh-1 { right: 40px; top: 18px; width: 120px; height: 120px; background: rgba(240,179,88,0.35); }
-.wlp-bokeh-2 { right: 160px; top: 80px; width: 72px; height: 72px; background: rgba(240,179,88,0.25); }
-.wlp-bokeh-3 { right: 90px; bottom: 40px; width: 96px; height: 96px; background: rgba(240,179,88,0.18); }
+.festival-bokeh { position: absolute; border-radius: 999px; filter: blur(1px); opacity: 0.5; }
+.festival-bokeh-1 { right: 40px; top: 18px; width: 120px; height: 120px; background: rgba(240,179,88,0.35); }
+.festival-bokeh-2 { right: 160px; top: 80px; width: 72px; height: 72px; background: rgba(240,179,88,0.25); }
+.festival-bokeh-3 { right: 90px; bottom: 40px; width: 96px; height: 96px; background: rgba(240,179,88,0.18); }
 
 /* Rail */
-.wlp-rail-wrapper { position: relative; }
-.wlp-rail {
+.festival-rail-wrapper { position: relative; }
+.festival-rail {
   display: grid;
   grid-auto-flow: column;
   gap: 1rem;
@@ -2497,38 +2511,32 @@ button.btn.selected {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
-.wlp-rail::-webkit-scrollbar { height: 8px; }
-.wlp-rail::-webkit-scrollbar-track { background: #d7e6df; border-radius: 8px; }
-.wlp-rail::-webkit-scrollbar-thumb { background: #027562; border-radius: 8px; }
+.festival-rail::-webkit-scrollbar { height: 8px; }
+.festival-rail::-webkit-scrollbar-track { background: #d7e6df; border-radius: 8px; }
+.festival-rail::-webkit-scrollbar-thumb { background: #027562; border-radius: 8px; }
 
 /* Desktop: 3–4 cards visible; Mobile: ~1.1 cards (peek next) */
 @media (min-width: 992px) {
-  .wlp-rail { grid-auto-columns: calc(25% - 12px); } /* 4-up with gap */
+  .festival-rail { grid-auto-columns: calc(25% - 12px); } /* 4-up with gap */
 }
 @media (min-width: 1200px) {
-  .wlp-rail { grid-auto-columns: calc(22% - 12px); } /* 4–5 with peek */
+  .festival-rail { grid-auto-columns: calc(22% - 12px); } /* 4–5 with peek */
 }
 @media (max-width: 991.98px) {
-  .wlp-rail { grid-auto-columns: 82%; padding-bottom: 0.5rem; } /* 1.1 card */
+  .festival-rail { grid-auto-columns: 82%; padding-bottom: 0.5rem; } /* 1.1 card */
 }
 
-/* Body */
-.wlp-body { padding: 14px 16px 0; }
-.wlp-name { color: #172024; }
-.wlp-producer { color: #7a8a86; font-size: 0.9rem; }
-.wlp-meta { color: #f0b358; font-weight: 600; font-size: 0.88rem; }
-.wlp-desc { color: #5a6967; font-size: 0.92rem; min-height: 2.8em; }
 
 /* CTA */
-.wlp-cta-wrap { padding: 12px 16px 16px; }
-.wlp-btn-cta {
+.festival-cta-wrap { padding: 12px 16px 16px; }
+.festival-btn-cta {
   background: #f0b358;
   color: black;
   border: none;
   padding: 10px 18px;
   border-radius: 999px;
 }
-.wlp-btn-cta:hover { 
+.festival-btn-cta:hover { 
   background: wheat;
   color: black;
   border: solid 1px #f0b358;
@@ -2538,14 +2546,14 @@ button.btn.selected {
 }
 
 /* Rail indicator (decorative) */
-.wlp-rail-indicator {
+.festival-rail-indicator {
   height: 10px;
   background: #d7e6df;
   border-radius: 999px;
   margin: 8px 6px 0;
   position: relative;
 }
-.wlp-rail-thumb {
+.festival-rail-thumb {
   width: 22%;
   height: 100%;
   background: #027562;
@@ -2553,7 +2561,7 @@ button.btn.selected {
 }
 
 /* Mobile sticky CTA */
-.wlp-sticky-cta {
+.festival-sticky-cta {
   position: sticky;
   bottom: 12px;
   margin-top: 8px;
