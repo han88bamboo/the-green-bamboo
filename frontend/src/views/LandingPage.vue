@@ -148,7 +148,7 @@
 
             <!-- Mobile sticky CTA -->
             <div class="festival-sticky-cta ">
-            <button class="btn w-100 festival-btn-cta fw-semibold" @click="$router.push({})">
+            <button class="btn w-100 festival-btn-cta fw-semibold" @click="$router.push('/find-lists?listId=330&name=whisky-live-paris-2025-watchlist')">
                 View All Whisky Live Paris 2025 Releases 
             </button>
             </div>
