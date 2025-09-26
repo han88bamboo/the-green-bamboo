@@ -12,7 +12,7 @@
           <!-- logo -->
           <div class="d-flex align-items-center me-auto py-1">
             <router-link :to="'/'">
-              <img src="../../Images/Logo/Drink-X Logo.png" style="width: auto; height: 30px" />
+              <img src="../../Images/Logo/Drink-X Logo.png" class="navbar-logo"  />
             </router-link>
             
             <!-- Account type badge -->
@@ -1522,6 +1522,12 @@
           background-position: 200% 0;
         }
       }
-
+.navbar-logo{
+  width: auto; 
+  height: 30px;
+  @media (max-width: 392px) {
+    height: 25px;
+  }
+}
 
     </style>

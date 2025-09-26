@@ -2553,7 +2553,7 @@
                     <div class="row">
                       <div class="col-12">
                         <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Min 3 characters"></textarea>
+                          rows="3" placeholder="Write your review here..."></textarea>
                       </div>
                     </div>
 
@@ -8069,17 +8069,17 @@ export default {
       // TODO Combine with editReview because using the same variables
 
       // let errorPhrase = "Your completion is incomplete"
-      // form validation
-      if (this.reviewDesc.length < 3) {
-        this.reviewDescError =
-          "Character count is less than 3, please write more for a more detailed review.";
-        alert(
-          "Submission has error, please fill in the required fields properly"
-        );
-        return "Submission error";
-      } else {
-        this.reviewDescError = "";
-      }
+      // form validation  - review description validation commented out
+        //   if (this.reviewDesc.length < 3) {
+        //     this.reviewDescError =
+        //       "Character count is less than 3, please write more for a more detailed review.";
+        //     alert(
+        //       "Submission has error, please fill in the required fields properly"
+        //     );
+        //     return "Submission error";
+        //   } else {
+        //     this.reviewDescError = "";
+        //   }
       if (this.selectedLanguage == "") {
         this.nullSelectedLanguage = true;
         alert(

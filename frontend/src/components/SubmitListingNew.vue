@@ -32,13 +32,13 @@
                 <span v-if="formMode == 'dup'">The duplicate report has successfully been submitted!</span>
             </div>
             <div v-if="formType == 'power'">
-                <span v-if="formMode == 'new' && requestRemoval == false">The bottle listing has successfully been created!</span>
-                <span v-if="formMode == 'edit' && requestRemoval == false">The bottle listing has successfully been edited!</span>
+                <span v-if="formMode == 'new' && requestRemoval == false">The drink listing has successfully been created!</span>
+                <span v-if="formMode == 'edit' && requestRemoval == false">The drink listing has successfully been edited!</span>
                 <span v-if="requestRemoval == true">The request has successfully been removed!</span>
             </div>
             <br>
             <button class="btn primary-btn btn-sm" @click="reset" v-if="formMode == 'new'">
-                <span class="fs-6"> Submit another bottle listing here! </span>
+                <span class="fs-6"> Submit another drink listing here! </span>
             </button>
             <button class="btn primary-btn btn-sm" @click="goBack" v-if="formMode != 'new'">
                 <span class="fs-6"> Return to previous page </span>
@@ -78,15 +78,15 @@
                 <!-- Form Title -->
                 <div class="d-grid gap-2">
                     <div v-if="formType == 'req'"> 
-                        <p class="fw-bold fs-3" v-if="formMode == 'new'">Can't <span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">find your bottle on Drink-X</span>? Submit a new bottle listing!</p>
-                        <p class="fs-5 fw-bold mobile-rating-smaller-text-2" v-if="formMode == 'new'"><span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">Double check if it's already listed!</span></p>
-                        <p class="fw-bold fs-1" v-if="formMode == 'edit'">Propose Edit to Bottle Listing</p>
-                        <p class="fw-bold fs-1" v-if="formMode == 'dup'">Report Duplicate Bottle Listing</p>
+                        <p class="fw-bold fs-3" v-if="formMode == 'new'">Can't <span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">find your drink on Drink-X</span>? Submit a new drink listing!</p>
+                        <p class="fs-5 fw-bold mobile-rating-smaller-text-2" v-if="formMode == 'new'"><span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">Click here to check if it's already listed!</span></p>
+                        <p class="fw-bold fs-1" v-if="formMode == 'edit'">Propose Edit to Listing</p>
+                        <p class="fw-bold fs-1" v-if="formMode == 'dup'">Report Duplicate Listing</p>
                 
                     </div>
                     <div v-if="formType == 'power'">
-                        <p class="fw-bold fs-1" v-if="formMode == 'new'">Create New Bottle Listing</p> 
-                        <p class="fw-bold fs-1" v-if="formMode == 'edit'">Edit Bottle Listing</p>
+                        <p class="fw-bold fs-1" v-if="formMode == 'new'">Create New Drink Listing</p> 
+                        <p class="fw-bold fs-1" v-if="formMode == 'edit'">Edit Drink Listing</p>
                     </div>
                 </div>
                 <!-- Search Modal -->
@@ -94,7 +94,7 @@
                 <div class="modal-dialog modal-dialog" style="margin-top: 15vh;">
                     <div class="modal-content">
                     <div class="modal-header">
-                        <h6 class="modal-title" id="searchModalLabel">Let's check if your bottle is already on Drink-X!</h6>
+                        <h6 class="modal-title" id="searchModalLabel">Let's check if your drink is already on Drink-X!</h6>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -283,7 +283,7 @@
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
                             <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item<span class="text-danger">*</span></p>
-                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Bottle Name">
+                            <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name">
                         </div>
 
                         <!-- Input: Country of Origin -->
@@ -358,7 +358,7 @@
                         <!-- [POWER] Input: Drink Description -->
                         <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
                             <p class="text-start mb-1">Official Description</p>
-                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of bottle"></textarea>
+                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
                         </div>
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
@@ -375,7 +375,7 @@
 
                         <!-- Input: Photo file -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Photo of bottle</p>
+                            <p class="text-start mb-1">Photo of drink</p>
                             <button type="button" class="btn primary-btn btn-sm d-flex mb-1" @click="() => { this.form['photo'] = ''; this.selectedImage = '';}">Reset to Default Photo</button>
                             <!-- <img :src="'data:image/jpeg;base64,' + (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;"> -->
                             <img :src="selectedImage || (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;">
@@ -383,7 +383,7 @@
                         </div>
 
                         <!-- Input: Independent Bottler Check -->
-                        <p class="text-start mb-1">Is this bottle by an independent bottler? <span class="text-danger">*</span></p>
+                        <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
                         <!-- Toggleable Switch -->
                         <div class="text-start mb-3">
                             <div class="form-check form-switch form-check-inline">

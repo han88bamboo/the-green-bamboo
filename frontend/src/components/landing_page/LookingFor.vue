@@ -416,7 +416,7 @@ export default {
 
   .category-link {
     padding: 12px 16px;
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .subcategory-link {

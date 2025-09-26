@@ -641,7 +641,7 @@
                         </p>
 
                         <!-- Desktop Only Rating and Follow Section -->
-                        <div class="row mt-3 d-none d-lg-block">
+                        <div v-if="!editProfile" class="row mt-3 d-none d-lg-block">
                             <div class="col-12">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <!-- Average Rating Display -->
@@ -729,7 +729,7 @@
 
 
                         <div class="col-12 mt-4">
-                            <h6 class="fw-bold mb-3">Dining/Food Menu Upload</h6>
+                            <h6 class="fw-bold mb-3">{{ diningMenuUploadText }}</h6>
                             <div class="mb-3">
                                 <input 
                                     ref="pdfMenuInput"
@@ -738,7 +738,7 @@
                                     accept=".pdf"
                                     @change="handlePDFMenuSelect"
                                 >
-                                <div class="form-text">Upload your dining/food menu as a PDF file – we recommend 1 page! (Max 10MB)</div>
+                                <div class="form-text">{{ diningMenuUploadDescription }}</div>
                             </div>
                             
                             <!-- PDF Preview -->
@@ -757,7 +757,7 @@
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
                                 >
-                                    View existing dining menu.
+                                    {{ viewExistingMenuText }}
                                 </button>
                             </div>
                             
@@ -767,7 +767,7 @@
                                 @click="submitPDFMenu"
                                 :disabled="!pdfMenuBase64"
                             >
-                                Click to Upload PDF Menu (Make sure to Save profile edits first!)
+                                {{ uploadMenuButtonText }}
                             </button>
                         </div>
 
@@ -1442,7 +1442,7 @@
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
                                     style="font-weight: bold;">
-                                Dining Menu
+                                {{ diningMenuText }}
                             </button>
                         </div>
 
@@ -1485,7 +1485,7 @@
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
                                     style="font-weight: bold;">
-                                Dining Menu
+                                {{ diningMenuText }}
                             </button>
                         </div>
                     </div>
@@ -3856,7 +3856,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="diningMenuModalLabel">
-                        {{ targetVenue.venueName }} - Dining Menu
+                        {{ targetVenue.venueName }} - {{ diningMenuText }}
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -3878,7 +3878,7 @@
                             <div v-if="hasPdfMenu" class="text-center">
                                 <img 
                                     :src="pdfMenuUrls[currentPdfPage - 1]"
-                                    :alt="`Menu Page ${currentPdfPage}`"
+                                    :alt="`${diningMenuText} Page ${currentPdfPage}`"
                                     class="img-fluid"
                                     style="max-height: 650px; width: auto;"
                                     @error="handlePdfError">
@@ -3939,7 +3939,7 @@
                     
                     <div v-if="!hasPdfMenu" class="text-center text-muted p-5">
                         <i class="bi bi-file-earmark-x display-1 text-muted mb-3"></i>
-                        <p class="fs-5">Menu not available at the moment.</p>
+                        <p class="fs-5">{{ diningMenuText }} not available at the moment.</p>
                         <p class="text-secondary">Please check back later or contact the venue directly.</p>
                     </div>
                 </div>
@@ -4719,10 +4719,37 @@ export default {
             return result;
         },
 
+        // Computed properties for dynamic text based on venue type
+        diningMenuText() {
+            return this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' ? 'Event Map' : 'Dining Menu';
+        },
+        
+        diningMenuUploadText() {
+            return this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' ? 'Event Map Upload' : 'Dining/Food Menu Upload';
+        },
+        
+        diningMenuUploadDescription() {
+            return this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                ? 'Upload your event map as a PDF file – we recommend 1 page! (Max 10MB)'
+                : 'Upload your dining/food menu as a PDF file – we recommend 1 page! (Max 10MB)';
+        },
+        
+        viewExistingMenuText() {
+            return this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                ? 'View existing event map.'
+                : 'View existing dining menu.';
+        },
+        
+        uploadMenuButtonText() {
+            return this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                ? 'Click to Upload PDF Event Map (Make sure to Save profile edits first!)'
+                : 'Click to Upload PDF Menu (Make sure to Save profile edits first!)';
+        },
+
         // Check if signup popup should be triggered for festival pages with non-logged-in users
         shouldTriggerSignUpPopup() {
             const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
-            const isNotSignedIn = this.userType !== 'user' || this.user_id === 'defaultUser' || !this.user_id;
+            const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   //this.userType !== 'user' ||
             const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
             console.log('🎪 shouldTriggerSignUpPopup computed:', {
                 isFestival: isFestival,
@@ -7758,12 +7785,18 @@ Thank you!`
                 );
                 
                 if (response.data.success) {
-                    alert('PDF menu uploaded successfully!');
+                    const successMessage = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                        ? 'PDF event map uploaded successfully!' 
+                        : 'PDF menu uploaded successfully!';
+                    alert(successMessage);
                     this.removePDFPreview();
                     // Refresh the page to show the new menu
                     this.$router.go(0);
                 } else {
-                    alert('Failed to upload PDF menu.');
+                    const errorMessage = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                        ? 'Failed to upload PDF event map.' 
+                        : 'Failed to upload PDF menu.';
+                    alert(errorMessage);
                 }
             } catch (error) {
                 console.error('Error uploading PDF menu:', error);
