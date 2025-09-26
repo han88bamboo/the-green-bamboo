@@ -4,20 +4,20 @@
     <NavBar />
 
     <!-- Display when search is in progress -->
-    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="!dataLoaded"> 
-        <span>Currently loading drinks, please hold on!</span>
+    <div class="text-info-emphasis fw-bold fs-5 pt-5" v-if="!dataLoaded"> 
+        <span>Currently loading drinks, please hold on! 🥃</span>
         <br><br>
         <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">Still Pouring...</span>
         </div>
     </div>
     
     <!-- Display when searching encounters an error -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="loadError"> 
-        <span>An error occurred while loading drinks, please try refreshing the page!</span>
+    <div class="text-info-emphasis fw-bold fs-5 pt-5" v-if="loadError"> 
+        <span>Whoops! An error occurred while loading drinks, please try refreshing the page!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="()=>{this.$router.go(0)}">
-            <span class="fs-5 fst-italic"> Refresh Page </span>
+            <span class="fs-5"> Refresh Page </span>
         </button>
     </div>
     
