@@ -26,50 +26,51 @@
 
         <!-- Display listings after data loaded -->
         <div v-if="dataLoaded && !loadError">
-
-            <div class="row mt-2">
+            <!-- Results Header -->
+            <div class="row mt-2 mb-1">
+                <div class="col-12">
+                    <span class="festival-badge-new d-inline-flex align-items-center px-3 py-1 me-2 rounded-pill">
+                    NEWLY RELEASED
+                    </span>
+                    <span class="festival-badge-new d-inline-flex align-items-center px-3 py-2 me-2 mt-1 rounded-pill" style="background: #f04444; color: white;">
+                    🔴 Pouring LIVE in Paris
+                    </span>
+                    <h3 class="fw-bold m-0 py-2 mb-2 " v-if="resultListings.length > 0">
+                        Now Pouring at Whisky Live Paris 2025 <!--{{ resultListings.length }} {{ effectiveBrowseTerm }} {{ resultListings.length === 1 ? 'Listing' : 'Listings' }}-->
+                    </h3>
+                    <p class="fw-bold fs-6 m-0 py-2 mb-2" v-else>No <!--{{ effectiveBrowseTerm }} -->Listings Found!</p>
+                    <p class="mobile-rating-smaller-text-2 mobile-mb-0">Ready, get set, go! A juicy list of over 150+ exclusive new releases launching at <b>Whisky Live Paris 2025</b>. A new Chichibu Paris Edition, the oldest Hampden yet, Caroni Paradise returns for edition 12, and more ... scroll to find your festival Must Trys!</p>
+                </div>
+            </div>
+            <div class="row">
 
                 <!-- BACK BUTTON, FORM TITLE, BROWSE TERM -->
                 <div class="col-md-4 col-12">
 
                     <div class="row">
-                    
-                        <!-- Back Button -->
-                        <!-- Back Button -->
-                        <div class="d-grid col-1">
-                            <button class="btn btn-sm" @click="()=>{this.$router.go(-1)}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
-                                </svg>
+                        <div class="col-12 d-flex align-items-center 
+                                    justify-content-start justify-content-md-start justify-content-center">
+                            <!-- Back Button -->
+                            <button class="btn btn-sm me-2" @click="()=>{this.$router.go(-1)}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="currentColor" class="bi bi-arrow-left-circle" viewBox="0 0 16 16" style="color:rgb(145, 145, 145)">
+                                <path fill-rule="evenodd" d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8m15 0A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-4.5-.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5z"/>
+                            </svg>
                             </button>
-                        </div>                        <!-- Form Title -->
-                        <div class="d-grid col-11" style="color:black;">
-                            <p class="fw-bold fs-5 m-0 text-start mobile-ms-2">Browse Whisky Live Paris 2025 <!--{{ effectiveBrowseTerm }}--></p>
-                        </div>
-
-                    </div>
-
-                    <!-- Request / Create Listing Link (font size reduced at smaller screen width) -->
-                    <div class="row mt-2 mobile-view-hide">
-                        <div class="col-12 text-decoration-none" v-if="role == 'producer'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
-                        </div>
-                        <div class="col-12 text-decoration-none" v-if="role == 'user'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
-                        </div>
-                        <div class="col-12 text-decoration-none" v-if="role != 'producer' && role != 'user'" >
-                            <p class="fs-6 fst-italic text-start">Don't see what you're looking for? Search for it above!</p>
+                            <!-- Text -->
+                            <p class="m-0 fw-bold mobile-rating-smaller-text-2" style="color:rgb(145, 145, 145)">Back to homepage</p>
                         </div>
                     </div>
+
+                    
 
                 </div>
 
                 <div class="col-md-8 col-12">
 
-                    <div class="row d-flex justify-content-center">
+                    <div class="row d-flex justify-content-center mb-2">
 
-                        <!-- Mobile View: Create/Request Link -->
-                        <div class="col-12 mobile-view-show mobile-pe-0 mt-2 mb-3">
+                        <!-- Mobile View: Create/Request Link 
+                        <div class="col-12 mobile-view-hide mobile-pe-0 mt-2 mb-3">
                             <router-link class="text-decoration-none" v-if="role == 'producer'" :to="{ path: '/Producer/Producer-Create-Listing/' }">
                                 <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Create a new listing here!</p>
                             </router-link>
@@ -79,17 +80,17 @@
                             <router-link class="text-decoration-none" v-if="role != 'producer' && role != 'user'" :to="{ path: '/login' }">
                                 <p class="mobile-rating-smaller-text-2 fst-italic text-center">Don't see what you're looking for? Login to request a new listing!</p>
                             </router-link>
-                        </div>
+                        </div>-->
 
                         <!-- Clear All Filters Button -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2">
                             <button class="btn btn-outline-danger w-100" @click="clearAllFilters()" v-if="hasActiveFilters()">
                                 <span>Clear</span>
                             </button>
                         </div>
 
                         <!-- Drink Type Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -118,7 +119,7 @@
                         </div>
 
                         <!-- Type Category Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     :disabled="!browseFilters.drinkType"
                                     type="button" 
@@ -153,7 +154,7 @@
                         </div>
 
                         <!-- Country Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -178,7 +179,7 @@
                         </div>
 
                         <!-- Rating Filter -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -229,7 +230,7 @@
                         </div>
 
                         <!-- Sort Options -->
-                        <div class="col-lg-2 col-md-3 col-6 mb-2 dropdown">
+                        <div class="col-lg-2 col-md-3 col-4 mb-2 dropdown">
                             <button class="btn dropdown-toggle w-100" 
                                     type="button" 
                                     data-bs-toggle="dropdown" 
@@ -252,15 +253,7 @@
 
             </div>
             
-            <!-- Results Header -->
-            <div class="row mt-3">
-                <div class="col-12">
-                    <h3 class="fw-bold m-0 py-2 mb-4 mobile-view-hide" v-if="resultListings.length > 0">
-                        Now Pouring at Whisky Live Paris 2025 <!--{{ resultListings.length }} {{ effectiveBrowseTerm }} {{ resultListings.length === 1 ? 'Listing' : 'Listings' }}-->
-                    </h3>
-                    <p class="fw-bold fs-6 m-0 py-2" v-else>No <!--{{ effectiveBrowseTerm }} -->Listings Found!</p>
-                </div>
-            </div>
+            
                 <div class="container no-right-padding-large-screen" :class="{ 'paywall-container': userID === 'defaultUser' }">
                     <!-- Paywall Overlay for Non-Logged in Users -->
                     <div v-if="userID === 'defaultUser'" class="paywall-overlay">
@@ -1183,5 +1176,21 @@
     padding: 14px 28px;
   }
 }
+/* Countdown pill */
+.festival-countdown {
+  background: #f04444;
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
 
+/* NEW releases badge */
+.festival-badge-new {
+  background: #f0b358;
+  color: #172024;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-size: 0.9rem;
+}
 </style>
