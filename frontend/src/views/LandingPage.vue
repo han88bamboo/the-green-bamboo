@@ -1986,7 +1986,9 @@ button.btn.selected {
 
 /* Specific styling for WLP2025 grid - snip off left side */
 .wlp2025-grid {
-    margin-left: -30px;
+    @media (max-width: 767px) {
+        margin-left: -20px;
+    }
 }
 
 .trending-review-col {
