@@ -94,7 +94,93 @@
                     </div>
                 </div>
 
-                XYZ
+                <!-- Drink Type Guidance Section -->
+                <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
+                    <div class="card-header">
+                        <h6 class="mb-0 text-muted fw-bold">📋 Guide on Filling Information by Drink Type</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Tab Navigation -->
+                        <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="spirits-tab" data-bs-toggle="tab" data-bs-target="#spirits" type="button" role="tab" aria-controls="spirits" aria-selected="true">
+                                    🥃 Spirits
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="wine-sake-tab" data-bs-toggle="tab" data-bs-target="#wine-sake" type="button" role="tab" aria-controls="wine-sake" aria-selected="false">
+                                    🍷 Wine & Sake
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="beer-tab" data-bs-toggle="tab" data-bs-target="#beer" type="button" role="tab" aria-controls="beer" aria-selected="false">
+                                    🍺 Beer
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cocktails-tab" data-bs-toggle="tab" data-bs-target="#cocktails" type="button" role="tab" aria-controls="cocktails" aria-selected="false">
+                                    🍸 Cocktails
+                                </button>
+                            </li>
+                        </ul>
+
+                        <!-- Tab Content -->
+                        <div class="tab-content" id="drinkGuideTabContent">
+                            <!-- Spirits Tab -->
+                            <div class="tab-pane fade show active" id="spirits" role="tabpanel" aria-labelledby="spirits-tab">
+                                <div class="text-start">
+                                    <p class="fw-bold mb-2">Spirits (Whisky, Rum, Gin, Vodka, Tequila, Cognac Brandy, etc.)</p>
+                                    <ul class="mb-2" style="font-size: 0.9rem;">
+                                        <li><strong>Name:</strong> Include age/vintage if it's part of the official name (e.g., "Macallan 18 Year Old", "Glenfiddich 2005")</li>
+                                        <li><strong>Producer:</strong> Select the place of distillation (e.g., Glenmorangie Distillery), or the brand (e.g., Johnnie Walker)</li>
+                                        <li><strong>Country of Origin:</strong> Where the spirit was distilled/produced. For multi-country blends, insert "World" (e.g., for Suntory Ao World Whisky)</li>
+                                        <li><strong>Age:</strong> Use for maturation age in years (e.g., "18" for "Macallan 18 Year Old" )</li>
+                                        <li><strong>Independent Bottler:</strong> Check if bottled by someone other than the producer (e.g., "Velier" for "Foursquare Raconteur bottled by Velier")</li>
+                                        <li><strong>ABV:</strong> Alcohol by volume percentage. To convert from US proof, divide by two (e.g., 80 proof = 40% ABV)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Wine & Sake Tab -->
+                            <div class="tab-pane fade" id="wine-sake" role="tabpanel" aria-labelledby="wine-sake-tab">
+                                <div class="text-start">
+                                    <p class="fw-bold mb-2">Wine & Sake</p>
+                                    <ul class="mb-2" style="font-size: 0.9rem;">
+                                        <li><strong>Name:</strong> Do NOT include vintage year (e.g., Just "Château Margaux", not "Château Margaux 2010")</li>
+                                        <li><strong>Producer:</strong> Select the winery or brewery name (e.g., Château Latour or Asahi-Shuzo Sake Brewery), or the brand (Dassai)</li>
+                                        <li><strong>Country of Origin:</strong> Where the wine/sake was produced</li>
+                                        <li><strong>Age:</strong> Not applicable in this form (leave empty)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Beer Tab -->
+                            <div class="tab-pane fade" id="beer" role="tabpanel" aria-labelledby="beer-tab">
+                                <div class="text-start">
+                                    <p class="fw-bold mb-2">Beer</p>
+                                    <ul class="mb-2" style="font-size: 0.9rem;">
+                                        <li><strong>Name:</strong> Just the beer name without vintage (e.g., "Guinness Draught", "Asahi Super Dry")</li>
+                                        <li><strong>Country of Origin:</strong> Where the brewery or brand is located</li>
+                                        <li><strong>Age:</strong> Not applicable in this form (leave empty)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Cocktails Tab -->
+                            <div class="tab-pane fade" id="cocktails" role="tabpanel" aria-labelledby="cocktails-tab">
+                                <div class="text-start">
+                                    <p class="fw-bold mb-2">Cocktails</p>
+                                    <ul class="mb-2" style="font-size: 0.9rem;">
+                                        <li><strong>Name:</strong> Cocktail name (e.g., "Negroni", "Old Fashioned", "Bacardi Breezer")</li>
+                                        <li><strong>Producer:</strong> If served at a specific bar or venue, insert the name of the bar or venue</li>
+                                        <li><strong>Country of Origin:</strong> Select "World" for international cocktails like the Martini or Margherita </li>
+                                        <li><strong>Age:</strong> Not applicable (leave empty)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Search Modal -->
                 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
