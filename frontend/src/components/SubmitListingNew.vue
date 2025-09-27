@@ -79,7 +79,11 @@
                 <div class="d-grid gap-2">
                     <div v-if="formType == 'req'"> 
                         <p class="fw-bold fs-3" v-if="formMode == 'new'">Can't <span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">find your drink on Drink-X</span>? Submit a new drink listing!</p>
-                        <p class="fs-5 fw-bold mobile-rating-smaller-text-2" v-if="formMode == 'new'"><span style="cursor: pointer; color: #027562;" data-bs-toggle="modal" data-bs-target="#searchModal">Click here to check if it's already listed!</span></p>
+                        <div v-if="formMode == 'new'" class="text-center mb-3">
+                            <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#searchModal">
+                                Check if it's already listed!
+                            </button>
+                        </div>
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Propose Edit to Listing</p>
                         <p class="fw-bold fs-1" v-if="formMode == 'dup'">Report Duplicate Listing</p>
                 
@@ -89,6 +93,9 @@
                         <p class="fw-bold fs-1" v-if="formMode == 'edit'">Edit Drink Listing</p>
                     </div>
                 </div>
+
+                XYZ
+
                 <!-- Search Modal -->
                 <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-dialog" style="margin-top: 15vh;">
@@ -208,6 +215,44 @@
                             </div>
                         </div>
 
+                        <!-- Input: Photo file -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1 fw-bold">Photo of drink</p>
+                            <div class="row">
+                                <div class="col-4">
+                                    <input class="form-control" @change="handleFileSelect" type="file" id="formFile" style="display: none" accept="image/*" />
+                                    <label for="formFile" class="upload-label d-block w-100">
+                                        <div v-if="!selectedImage && !form['photo']" class="mobile-review-svg-button photo-dropzone">
+                                            <div class="text-center">
+                                                <h2>📷</h2>
+                                                <div>Upload Photo</div>
+                                            </div>
+                                        </div>
+
+                                        <div v-else class="mobile-review-svg-button">
+                                            <img :src="selectedImage || form['photo'] || defaultPhoto" alt="Drink photo" 
+                                                 class="review-preview-photo" loading="lazy" />
+                                        </div>
+                                    </label>
+                                    
+
+                                </div>
+                                <div class="col-8">
+                                    <div class="text-muted small">
+                                        <p class="mt-1"><strong>Snap a clear image of your drink label!</strong></p>
+                                    
+                                    </div>
+                                    <div class="text-center mt-2">
+                                        <button v-if="selectedImage || form['photo']" type="button" class="btn btn-sm btn-outline-secondary" 
+                                                @click="clearPhoto">
+                                            Clear Photo
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
                         <!-- Input: Producer Name -->
                         <!-- [IF] Producer is creating listing, lock Producer selection - COMMENTED OUT for now 
                         <div class="form-group mb-3" v-if="isProducer != false">
@@ -219,7 +264,7 @@
                         <!-- [ELSE] Dropdown menu tied to producerID, show producerNew textbox only if "Other" selected (no producerID). -->
                         <!-- set name only, then before submitting request, put the id, save computation -->
                         <div class="form-group mb-3" > <!--removed v-else-->
-                            <p class="text-start mb-1">Name of Producer (Brand, Bar or Venue, etc)<span class="text-danger">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
+                            <p class="text-start mb-1"><span class="fw-bold" >Producer (Brand, Brewery, Winery, Distillery, Bar, etc.) </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Just begin typing, then select from the drop-down suggestions.)</span></p> 
                             
                             <input type="text" class="form-control" 
                                    v-model="form['producerNew']" 
@@ -282,27 +327,13 @@
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1">Name of Drink / Bottle / Cocktail / Item<span class="text-danger">*</span></p>
+                            <p class="text-start mb-1 fw-bold">Drink Name / Name of Bottle, Cocktail or Item <span class="text-danger fw-bold">*</span></p>
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name">
-                        </div>
-
-                        <!-- Input: Country of Origin -->
-                        <div class="form-group mb-3">
-                            <div class=" mb-3">
-                                <p class="text-start mb-1">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
-                                <div class="input-group">
-                                    <select class="form-select" id="countrySelect" v-model="form['originCountry']">
-                                        <option v-for="country in countries" :key="country" :value="country">
-                                        {{ country }}
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Input: drinkType (eg. Whiskey) + typeCategory (eg. Single Malt) -->
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-4 mb-3 fw-bold">
                                 <p class="text-start mb-1">Drink Type <span class="text-danger">*</span></p>
                                 <div class="input-group">
                                     <select class="form-select" id="drinkTypeSelect" v-model="tempDrinkType" @change="getDrinkCategoryList">
@@ -355,6 +386,54 @@
                             </div>
                         </div>
 
+                        <!-- Input: Country of Origin -->
+                        <div class="form-group mb-3">
+                            <div class=" mb-3">
+                                <p class="text-start mb-1">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <div style="position: relative;">
+                                    <div class="input-group mb-0">
+                                        <!-- Searchable input that opens country dropdown -->
+                                        <input
+                                            ref="countryInput"
+                                            type="text"
+                                            class="form-control"
+                                            v-model="countryInputValue"
+                                            placeholder="Select country of origin"
+                                            @input="handleCountryInput"
+                                            @focus="openCountryDrawer"
+                                            style="cursor: text; background-color: white;"
+                                        />
+                                        <!-- Search icon -->
+                                        <span class="input-group-text" style="cursor: pointer;" @click="openCountryDrawer">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                            </svg>
+                                        </span>
+                                    </div>
+                                    
+                                    <!-- Country Selection Dropdown - attached directly below input -->
+                                    <div v-if="showCountryDrawer" class="country-dropdown">
+                                        <div class="country-dropdown-body">
+                                            <div 
+                                                v-for="country in filteredCountries" 
+                                                :key="country"
+                                                class="country-item"
+                                                @click="selectCountry(country)"
+                                            >
+                                                <span class="country-name">{{ country }}</span>
+                                                <svg v-if="selectedCountry === country" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="check-icon" viewBox="0 0 16 16">
+                                                    <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z"/>
+                                                </svg>
+                                            </div>
+                                            <div v-if="filteredCountries.length === 0" class="no-results">
+                                                No countries found
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- [POWER] Input: Drink Description -->
                         <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
                             <p class="text-start mb-1">Official Description</p>
@@ -373,23 +452,16 @@
                             <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
 
-                        <!-- Input: Photo file -->
-                        <div class="form-group mb-3">
-                            <p class="text-start mb-1">Photo of drink</p>
-                            <button type="button" class="btn primary-btn btn-sm d-flex mb-1" @click="() => { this.form['photo'] = ''; this.selectedImage = '';}">Reset to Default Photo</button>
-                            <!-- <img :src="'data:image/jpeg;base64,' + (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;"> -->
-                            <img :src="selectedImage || (this.form['photo'] || defaultPhoto)" class="rounded d-flex mb-3" alt="" style="width: 100px; height: 100px; object-fit: cover;">
-                            <input class="form-control" type="file" id="formFile" @change="handleFileSelect">
-                        </div>
-
                         <!-- Input: Independent Bottler Check -->
-                        <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
-                        <!-- Toggleable Switch -->
-                        <div class="text-start mb-3">
-                            <div class="form-check form-switch form-check-inline">
-                                <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator">
-                                <label class="form-check-label" for="IBCheck" v-if="indOperator">Yes</label>
-                                <label class="form-check-label" for="IBCheck" v-if="!indOperator">No</label>
+                        <div v-if="tempDrinkType === 'Agave +' || tempDrinkType === 'Arrack' || tempDrinkType === 'Baijiu' || tempDrinkType === 'Brandy' || tempDrinkType === 'Gin' || tempDrinkType === 'Mezcal' || tempDrinkType === 'Rice + (Soju, etc.)' || tempDrinkType === 'Rum' || tempDrinkType === 'Shochu' || tempDrinkType === 'Soju' || tempDrinkType === 'Tequila' || tempDrinkType === 'Vodka' || tempDrinkType === 'Whisky'">
+                            <p class="text-start mb-1">Is this bottled by an independent bottler? <span class="text-danger">*</span></p>
+                            <!-- Toggleable Switch -->
+                            <div class="text-start mb-3">
+                                <div class="form-check form-switch form-check-inline">
+                                    <input class="form-check-input" type="checkbox" role="switch" id="IBCheck" name="IBCheck" v-model="indOperator">
+                                    <label class="form-check-label" for="IBCheck" v-if="indOperator">Yes</label>
+                                    <label class="form-check-label" for="IBCheck" v-if="!indOperator">No</label>
+                                </div>
                             </div>
                         </div>
                         <!-- (ONLY IF above toggled to "Yes") Input Text for Independent Bottler -->
@@ -441,14 +513,13 @@
                                     <label for="abv" class="col-6 col-form-label ps-1 text-start">% ABV</label>
                                 </div>
                             </div>
-                            <div class="form-group col-6">
-                                <p class="text-start mb-1" v-if="tempDrinkType == 'Wine (Grape wine)'">Vintage (Year Bottled)</p>
-                                <p class="text-start mb-1" v-else>Age</p>
+                            <div class="form-group col-6" v-if="tempDrinkType !== 'Wine' && tempDrinkType !== 'Sake' && tempDrinkType !== 'Beer' && tempDrinkType !== 'Cocktails' && tempDrinkType !== 'Liqueurs & Bitters' && tempDrinkType !== 'Ready-To-Drink Cocktails'">
+                                <p class="text-start mb-1">Age</p>
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
                                         <input type="number" v-model="form['age']" class="form-control" id="age" min="0">
                                     </div>
-                                    <label for="age" class="col-6 col-form-label ps-1 text-start" v-if="tempDrinkType != 'Wine (Grape wine)'">years old</label>
+                                    <label for="age" class="col-6 col-form-label ps-1 text-start">years old</label>
                                 </div>
                             </div>
                         </div>
@@ -600,6 +671,12 @@
                 drinkStylesList:[],
                 tempDrinkStylesList: [],
 
+                // Country drawer functionality
+                selectedCountry: "",
+                showCountryDrawer: false,
+                countryInputValue: "", // The actual input value that user types
+                filteredCountries: [],
+
                 // New producer selection state
                 selectedProducer: {},
                 showProducerDropdown: false,
@@ -686,6 +763,10 @@
                 await this.loadData();
             }
         },
+        beforeUnmount() {
+            // Clean up event listener when component is destroyed
+            document.removeEventListener('click', this.handleClickOutside);
+        },
         watch: {
             form: {
                 handler(newData) {
@@ -702,6 +783,15 @@
             },
             tempDrinkStyle(newVal) {
                 localStorage.setItem('cachedListingTempDrinkStyle', newVal);
+            },
+
+            // Keep input value synced with selected country and form data
+            selectedCountry(newVal) {
+                if (newVal && this.countryInputValue !== newVal) {
+                    this.countryInputValue = newVal;
+                }
+                // Update form data
+                this.form['originCountry'] = newVal;
             },
 
             // Watch for changes in formMode and formType to load data accordingly
@@ -1157,6 +1247,9 @@
                 console.log('form.reviewLink:', this.form["reviewLink"]);
 
                 this.form["originCountry"] = previousData.originCountry;
+                // Also update country selection states
+                this.selectedCountry = previousData.originCountry;
+                this.countryInputValue = previousData.originCountry;
                 console.log('form.originCountry:', this.form["originCountry"]);
 
                 this.form["producerID"] = previousData.producerID;
@@ -1893,6 +1986,205 @@
                 this.showBadgePopup = false;
                 this.earnedBadges = [];
             },
+
+            // Country Drawer Methods
+            openCountryDrawer() {
+                this.showCountryDrawer = true;
+                this.filteredCountries = [...this.countries];
+                this.$nextTick(() => {
+                    // Add click outside listener
+                    document.addEventListener('click', this.handleClickOutside);
+                });
+            },
+
+            closeCountryDrawer() {
+                this.showCountryDrawer = false;
+                this.filteredCountries = [];
+                // Remove click outside listener
+                document.removeEventListener('click', this.handleClickOutside);
+            },
+
+            handleCountryInput() {
+                // Open dropdown when user starts typing
+                if (!this.showCountryDrawer) {
+                    this.openCountryDrawer();
+                }
+                // Filter countries based on input
+                this.filterCountries();
+            },
+
+            filterCountries() {
+                const searchTerm = this.countryInputValue.toLowerCase();
+                this.filteredCountries = this.countries.filter(country =>
+                    country.toLowerCase().includes(searchTerm)
+                );
+            },
+
+            handleClickOutside(event) {
+                // Check if click was outside the dropdown and input field
+                const dropdown = event.target.closest('.country-dropdown');
+                const input = event.target.closest('.input-group');
+                if (!dropdown && !input) {
+                    this.closeCountryDrawer();
+                }
+            },
+
+            selectCountry(countryName) {
+                this.selectedCountry = countryName;
+                this.countryInputValue = countryName; // Update the input field with selected country
+                this.closeCountryDrawer();
+            },
+
+            // Photo handling methods
+            clearPhoto() {
+                this.selectedImage = '';
+                this.form['photo'] = '';
+                // Reset the file input
+                const fileInput = document.getElementById('formFile');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            },
+
+            resetToDefaultPhoto() {
+                this.selectedImage = '';
+                this.form['photo'] = '';
+                // Reset the file input
+                const fileInput = document.getElementById('formFile');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            },
         }
     }
 </script>
+
+<style scoped>
+/* Country Dropdown Styles */
+.country-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    max-height: 300px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.country-dropdown-body {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 240px;
+}
+
+.country-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border-bottom: 1px solid #f5f5f5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.country-item:hover {
+    background-color: #f8f9fa;
+}
+
+.country-item:last-child {
+    border-bottom: none;
+}
+
+.country-name {
+    font-size: 14px;
+    color: #333;
+}
+
+.check-icon {
+    color: #28a745;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+
+.no-results {
+    padding: 15px 12px;
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    font-size: 14px;
+}
+
+/* Photo Upload Styles */
+.upload-label { 
+    display: block; 
+    width: 100%; 
+    cursor: pointer;
+}
+
+.mobile-review-svg-button {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    padding: 0px;
+}
+
+.mobile-review-svg-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.photo-dropzone {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    height: 100%;
+    border: 2px dashed #cfcfcf; 
+    background: #fafafa; 
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.photo-dropzone:hover {
+    border-color: #007bff;
+    background: #f0f8ff;
+}
+
+.review-preview-photo {
+    width: 100%; 
+    height: 100%; 
+    object-fit: cover; 
+    display: block;
+    border-radius: 12px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767px) {
+    .country-dropdown {
+        max-height: 250px;
+    }
+    
+    .country-dropdown-body {
+        max-height: 190px;
+    }
+}
+</style>
