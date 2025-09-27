@@ -96,7 +96,7 @@
 
                 <!-- Drink Type Guidance Section -->
                 <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
-                    <div class="card-header">
+                    <div class="card-header  w-100">
                         <!-- Mobile clickable header -->
                         <div class="d-md-none" style="cursor: pointer;" @click="toggleGuideCollapse" data-bs-toggle="collapse" data-bs-target="#guideCollapseContent" aria-expanded="false" aria-controls="guideCollapseContent">
                             <h6 class="mb-0 text-muted fw-bold d-flex justify-content-between align-items-center">
@@ -177,6 +177,7 @@
                                         <li><strong>Name:</strong> Do NOT include vintage year (e.g., Just "Château Margaux", not "Château Margaux 2010")</li>
                                         <li><strong>Producer:</strong> Select the winery or brewery name (e.g., Château Latour or Asahi-Shuzo Sake Brewery or Guinness Brewery Dublin), or the brand (Dassai or Guinness)</li>
                                         <li><strong>Country of Origin:</strong> Where the wine/sake/beer was produced</li>
+                                        <li><strong>ABV:</strong> Alcohol by volume percentage. Great but not strictly necessary!</li>
                                         <li><strong>Age:</strong> Not applicable in this form (leave empty)</li>
                                     </ul>
                                 </div>
@@ -190,6 +191,7 @@
                                         <li><strong>Name:</strong> Cocktail name (e.g., "Negroni", "Old Fashioned", "Bacardi Breezer")</li>
                                         <li><strong>Producer:</strong> If served at a specific bar or venue, insert the name of the bar or venue</li>
                                         <li><strong>Country of Origin:</strong> Select "World" for international cocktails like the Martini or Margherita </li>
+                                        <li><strong>ABV:</strong> Alcohol by volume percentage. Great but not strictly necessary!</li>
                                         <li><strong>Age:</strong> Not applicable (leave empty)</li>
                                     </ul>
                                 </div>
