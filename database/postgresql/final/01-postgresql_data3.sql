@@ -288,7 +288,8 @@ CREATE TABLE "venues" (
     "pdfMenuUrl" TEXT DEFAULT NULL,
     "venueMainType" INTEGER REFERENCES "venueMainTypes"("id") ON DELETE SET NULL,
     "venueSubType" INTEGER REFERENCES "venueSubTypes"("id") ON DELETE SET NULL,
-    "specialStatus" VARCHAR(50) DEFAULT NULL -- NULL for ordinary venues, 'EVENT_FESTIVAL' for event/festival organizers that need checkbox-style menu
+    "specialStatus" VARCHAR(50) DEFAULT NULL, -- NULL for ordinary venues, 'EVENT_FESTIVAL' for event/festival organizers that need checkbox-style menu
+    "showRating" BOOLEAN DEFAULT TRUE -- Whether to show average rating on profile
 );
 
 -- ALTER TABLE your_table_name 

@@ -266,7 +266,7 @@
                 </div>
 
                 <!-- Sort Menu -->
-                <div class="col-2 me-0">
+                <div v-if="!editMenuMode" class="col-2 me-0">
                     <div class="d-grid gap-2 dropdown">
                         <button class="btn primary-light-dropdown-homepage dropdown-toggle"
                             type="button" data-bs-toggle="dropdown" aria-expanded="false"
@@ -285,6 +285,21 @@
                                     sortOption }}</a>
                             </li>
                         </ul>
+                    </div>
+                </div>
+                <div v-if="editMenuMode" class="col-2 me-0">
+                    <div class="d-grid gap-2">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="form-check form-switch visibility-switch">
+                                <input class="form-check-input" type="checkbox" 
+                                       id="showRatingToggle"
+                                       :checked="localShowRating"
+                                       @change="toggleShowRating">
+                                <label class="form-check-label" for="showRatingToggle">
+                                    {{ localShowRating ? 'Show Rating' : 'Hide Rating' }}
+                                </label>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -344,7 +359,7 @@
                                         </router-link>
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
-                                            <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center">
+                                            <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
                                                 {{ sectionItem.itemDetails['itemRating'] }}
                                                 <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                             </p>
@@ -491,7 +506,7 @@
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
                                     <div class="col-lg-3 col-12 d-flex flex-column align-items-end mb-4">
                                         <!-- Item Rating -->
-                                        <p class="fs-3 fw-bold rating-text text-end">
+                                        <p class="fs-3 fw-bold rating-text text-end" :class="{ 'd-none': !localShowRating }">
                                             {{ sectionItem.itemDetails['itemRating'] }}
                                             <span style="font-size: 30px;">★</span>
                                         </p>
@@ -543,7 +558,7 @@
                                                 </router-link>
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
-                                                    <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center">
+                                                    <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
                                                         {{ subsectionItem.itemDetails['itemRating'] }}
                                                         <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                                     </p>
@@ -681,7 +696,7 @@
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
                                             <div class="col-lg-3 col-12 d-flex flex-column align-items-end mb-4">
                                                 <!-- Item Rating -->
-                                                <p class="fs-3 fw-bold rating-text text-end">
+                                                <p class="fs-3 fw-bold rating-text text-end" :class="{ 'd-none': !localShowRating }">
                                                     {{ subsectionItem.itemDetails['itemRating'] }}
                                                     <span style="font-size: 30px;">★</span>
                                                 </p>
@@ -962,10 +977,10 @@
                                                 </div>
                                                 <div class="mobile-col-2 mobile-pe-0 mobile-ps-1">
                                                     <div class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
-                                                        <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;">
+                                                        <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5" style="margin-bottom: 0.1rem;" :class="{ 'd-none': !localShowRating }">
                                                             {{ menuItem.itemDetails['itemRating'] }}
                                                         </p>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-star-fill ms-2 me-2" viewBox="0 0 16 16" :class="{ 'd-none': !localShowRating }">
                                                             <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
                                                         </svg>
                                                     </div>
@@ -1040,9 +1055,9 @@
                                                             </p>
                                                         </div>
                                                         <div class="col-2">
-                                                            <p class="fs-3 fw-bold rating-text text-end">
+                                                            <p class="fs-3 fw-bold rating-text text-end" :class="{ 'd-none': !localShowRating }">
                                                                 {{ menuItem.itemDetails['itemRating'] }}
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                                                                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16" :class="{ 'd-none': !localShowRating }">
                                                                     <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
                                                                 </svg>
                                                             </p>
@@ -1326,13 +1341,13 @@
                                                         <div
                                                             class="d-flex flex-column align-items-center ps-lg-3 mobile-view-show">
                                                             <p class="fs-3 fw-bold rating-text text-end d-flex align-items-center mobile-fs-5"
-                                                                style="margin-bottom: 0.1rem;">
+                                                                style="margin-bottom: 0.1rem;" :class="{ 'd-none': !localShowRating }">
                                                                 {{ menuItem.itemDetails['itemRating'] }}
                                                             </p>
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="20"
                                                                 height="20" fill="currentColor"
                                                                 class="bi bi-star-fill ms-2 me-2"
-                                                                viewBox="0 0 16 16">
+                                                                viewBox="0 0 16 16" :class="{ 'd-none': !localShowRating }">
                                                                 <path
                                                                     d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z">
                                                                 </path>
@@ -1473,13 +1488,13 @@
 
                                                             <!-- Item Rating -->
                                                             <div class="col-2">
-                                                                <p class="fs-3 fw-bold rating-text text-end">
+                                                                <p class="fs-3 fw-bold rating-text text-end" :class="{ 'd-none': !localShowRating }">
                                                                     {{ menuItem.itemDetails['itemRating'] }}
                                                                     <svg xmlns="http://www.w3.org/2000/svg"
                                                                         width="30" height="30"
                                                                         fill="currentColor"
                                                                         class="bi bi-star-fill"
-                                                                        viewBox="0 0 16 16">
+                                                                        viewBox="0 0 16 16" :class="{ 'd-none': !localShowRating }">
                                                                         <path
                                                                             d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
                                                                     </svg>
@@ -2162,6 +2177,9 @@ export default {
             // Clipboard functionality
             clipboardItem: false,
 
+            // Local showRating state (to avoid mutating props)
+            localShowRating: true,
+
             // Search + Sort Menu - Enhanced for hierarchical structure
             searchMenuResults: [], // Now supports nested sections and subsections
             searchMenuTerm: '',
@@ -2321,6 +2339,11 @@ export default {
         // Watch for changes in targetVenue (in case venue ID becomes available later)
         targetVenue: {
             handler(newVenue, oldVenue) {
+                // Sync local showRating with prop
+                if (newVenue && typeof newVenue.showRating !== 'undefined') {
+                    this.localShowRating = newVenue.showRating !== false;
+                }
+                
                 // Only react if venue ID changed and we don't have menu data yet
                 const newVenueId = newVenue?.id;
                 const oldVenueId = oldVenue?.id;
@@ -2357,6 +2380,9 @@ export default {
         // Initialize internal arrays from props
         this.internalLoadedListings = [...this.loadedListings];
         this.internalLoadedProducers = [...this.loadedProducers];
+        
+        // Initialize local showRating state from prop
+        this.localShowRating = this.targetVenue.showRating !== false;
         
         // Smart data source detection and adaptation
         this.initializeMenuData();
@@ -5366,6 +5392,7 @@ export default {
                     {
                         venueID: this.targetVenue['id'],
                         updatedMenu: menuDataForBackend,
+                        showRating: this.localShowRating, // Use local property instead of prop
                         hierarchyData: {
                             totalSections: hierarchyValidation.summary.totalSections,
                             totalSubsections: hierarchyValidation.summary.totalSubsections,
@@ -6202,6 +6229,53 @@ export default {
                 .catch(err => {
                     console.error('Failed to copy text: ', err);
                 });
+        },
+
+        // Toggle Show Rating
+        async toggleShowRating() {
+            try {
+                // Toggle the local value immediately for responsive UI
+                this.localShowRating = !this.localShowRating;
+                
+                // Make API call to update the database using the existing editMenuHierarchical endpoint
+                const response = await this.$axios.post(`${process.env.VUE_APP_API_URL}/editVenueProfile/editMenuHierarchical`, {
+                    venueID: this.targetVenue.id,
+                    showRating: this.localShowRating,
+                    updatedMenu: [] // Required by endpoint but can be empty for showRating updates
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status >= 200 && response.status < 300) {
+                    console.log('Show rating setting updated successfully:', response.data);
+                    
+                    // Emit event to notify parent component of the change
+                    this.$emit('show-rating-changed', {
+                        venueId: this.targetVenue.id,
+                        showRating: this.localShowRating
+                    });
+                    
+                    // Show success feedback to user (using existing toast system)
+                    const { useToast } = await import('vue-toastification');
+                    const toast = useToast();
+                    toast.success(`Rating display ${this.localShowRating ? 'enabled' : 'disabled'} successfully!`);
+                } else {
+                    throw new Error('Failed to update show rating setting');
+                }
+
+            } catch (error) {
+                console.error('Error updating show rating setting:', error);
+                
+                // Revert the local change on error
+                this.localShowRating = !this.localShowRating;
+                
+                // Show error feedback to user
+                const { useToast } = await import('vue-toastification');
+                const toast = useToast();
+                toast.error('Failed to update rating display setting. Please try again.');
+            }
         }
     }
 }

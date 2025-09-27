@@ -1468,6 +1468,15 @@ def editMenuHierarchical():
                     values
                 )
 
+        # Update showRating if provided in the request
+        if 'showRating' in data:
+            show_rating_value = bool(data['showRating'])  # Ensure it's a boolean
+            print(f"Updating showRating to: {show_rating_value} for venue ID: {venueID}")
+            cur.execute(
+                'UPDATE "venues" SET "showRating" = %s WHERE "id" = %s',
+                (show_rating_value, venueID)
+            )
+
         conn.commit()
         
         # Calculate statistics for response

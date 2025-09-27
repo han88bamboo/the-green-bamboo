@@ -2976,7 +2976,8 @@ INSERT INTO "venues" (
     "pin",
     "pdfMenuUrl",
     "venueMainType",
-    "venueSubType"
+    "venueSubType",
+    "showRating"
 ) VALUES (
     11,
     'Orh Gao Taproom Craft Beer Bar', 
@@ -2995,7 +2996,8 @@ INSERT INTO "venues" (
     NULL,
     '["https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_001.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_002.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_003.png", "https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/menus/a418215e-7cc7-444e-836d-0a60710138a5/page_004.png"]',
     1,
-    2
+    2,
+    false
 ), 
 (   
     10,
@@ -3015,7 +3017,8 @@ INSERT INTO "venues" (
     NULL,
     NULL,
     3,
-    4
+    4,
+    true
 ),
 (
     24,
@@ -3035,7 +3038,8 @@ INSERT INTO "venues" (
     NULL,
     NULL,
     5,
-    6
+    6,
+    true
 ),
 (
     1,
@@ -3055,7 +3059,8 @@ INSERT INTO "venues" (
     NULL,
     NULL,
     7,
-    8
+    8,
+    true
 );
 
 INSERT INTO "venues" VALUES (37, 'Locality Craft Beers', '160 Changi Rd, B1-10 Hexacube, Singapore 419728', '', 'Singapore', 'A craft beer shop with 8 rotating beer taps tucked away in a little corner of Geylang Serai. It dawned on me one day in a craft beer joint that it wasn''t always easy to find a locally brewed craft beer at a reasonable price, so here''s an all-local craft beer shop. ', '1658294445', 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/191507646_113912230977166_1437851902839948382_n.png?v=1753608260', true, NULL, 2021, true, 'https://inthelocality.wixsite.com/home', '', 'localitycraftbeers', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);

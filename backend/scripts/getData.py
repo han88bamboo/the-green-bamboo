@@ -5001,7 +5001,7 @@ def getVenue(id):
                 v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
                 v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
                 v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
-                v.email, v."phoneNumber", v."whatsappNumber", v."specialStatus",
+                v.email, v."phoneNumber", v."whatsappNumber", v."specialStatus", v."showRating",
                 CASE 
                     WHEN v."pdfMenuUrl" IS NULL THEN NULL
                     WHEN v."pdfMenuUrl" = '' THEN NULL

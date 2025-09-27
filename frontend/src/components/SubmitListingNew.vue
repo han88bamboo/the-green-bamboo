@@ -494,7 +494,7 @@
                         <!-- Input: Country of Origin -->
                         <div class="form-group mb-3">
                             <div class=" mb-3">
-                                <p class="text-start mb-1">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
                                 <div style="position: relative;">
                                     <div class="input-group mb-0">
                                         <!-- Searchable input that opens country dropdown -->
