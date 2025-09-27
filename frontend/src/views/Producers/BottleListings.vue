@@ -2375,7 +2375,7 @@
                         {{ getUserRankFromReview(review) }}
                       </span>
                       &nbsp;rated <span style="color: #f0b358">★</span>
-                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + "Vintage": ""}}</b>
+                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": ""}}</b>
 
                       <!-- Location -->
                       <span
