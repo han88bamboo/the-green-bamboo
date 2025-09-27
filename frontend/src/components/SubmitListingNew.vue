@@ -96,9 +96,9 @@
 
                 <!-- Drink Type Guidance Section -->
                 <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
-                    <div class="card-header  w-100">
-                        <!-- Mobile clickable header -->
-                        <div class="d-md-none" style="cursor: pointer;" @click="toggleGuideCollapse" data-bs-toggle="collapse" data-bs-target="#guideCollapseContent" aria-expanded="false" aria-controls="guideCollapseContent">
+                    <div class="card-header w-100">
+                        <!-- Universal clickable header for all screen sizes -->
+                        <div style="cursor: pointer;" @click="toggleGuideCollapse" data-bs-toggle="collapse" data-bs-target="#guideCollapseContent" aria-expanded="false" aria-controls="guideCollapseContent">
                             <h6 class="mb-0 text-muted fw-bold d-flex justify-content-between align-items-center">
                                 <span class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
@@ -118,20 +118,8 @@
                                 </span>
                             </h6>
                         </div>
-
-                        <!-- Desktop non-clickable header -->
-                        <div class="d-none d-md-block">
-                            <h6 class="mb-0 text-muted fw-bold d-flex align-items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
-                                    class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
-                                    <path
-                                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
-                                </svg>
-                                Guide on Filling Information
-                            </h6>
-                        </div>
                     </div>
-                    <div class="collapse d-md-block" id="guideCollapseContent">
+                    <div class="collapse" id="guideCollapseContent">
                         <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
@@ -159,7 +147,7 @@
                                 <div class="text-start">
                                     <p class="fw-bold mb-2">Spirits (Whisky, Rum, Gin, Vodka, Tequila, Cognac Brandy, etc.)</p>
                                     <ul class="mb-2" style="font-size: 0.9rem;">
-                                        <li><strong>Name:</strong> Include age/vintage if it's part of the official name (e.g., "Macallan 18 Year Old", "Glenfiddich 2005")</li>
+                                        <li><strong>Name:</strong> Include age/vintage if it's part of the official name (e.g., "Macallan 18 Year Old", "Glenfiddich 2005"); include any identification numbers eg. cask, batch, serial, barrel, edition numbers</li>
                                         <li><strong>Producer:</strong> Select the place of distillation (e.g., Glenmorangie Distillery), or the brand (e.g., Johnnie Walker)</li>
                                         <li><strong>Country of Origin:</strong> Where the spirit was distilled/produced. For multi-country blends, insert "World" (e.g., for Suntory Ao World Whisky)</li>
                                         <li><strong>Age:</strong> Use for maturation age in years (e.g., "18" for "Macallan 18 Year Old" )</li>
@@ -174,7 +162,7 @@
                                 <div class="text-start">
                                     <p class="fw-bold mb-2">Wine, Sake & Beer</p>
                                     <ul class="mb-2" style="font-size: 0.9rem;">
-                                        <li><strong>Name:</strong> Do NOT include vintage year (e.g., Just "Château Margaux", not "Château Margaux 2010")</li>
+                                        <li><strong>Name:</strong> Do NOT include vintage year (e.g., Just "Château Margaux", not "Château Margaux 2010"); for wines, don't forget to include the winery names</li>
                                         <li><strong>Producer:</strong> Select the winery or brewery name (e.g., Château Latour or Asahi-Shuzo Sake Brewery or Guinness Brewery Dublin), or the brand (Dassai or Guinness)</li>
                                         <li><strong>Country of Origin:</strong> Where the wine/sake/beer was produced</li>
                                         <li><strong>ABV:</strong> Alcohol by volume percentage. Great but not strictly necessary!</li>
@@ -432,7 +420,7 @@
 
                         <!-- Input: Bottle Name -->
                         <div class="form-group mb-3">
-                            <p class="text-start mb-1 fw-bold">Drink Name / Name of Bottle, Cocktail or Item <span class="text-danger fw-bold">*</span></p>
+                            <p class="text-start mb-1 "><span class="fw-bold">Drink Name / Name of Bottle, Cocktail or Item </span><span class="text-danger fw-bold">*</span> <span class="text-muted" style="font-size: 14px;">(Include any identification numbers eg. cask, batch, serial, barrel, edition numbers; do NOT include vintage year for wines.)</span></p>
                             <input type="text" v-model="form['listingName']" class="form-control" id="bottleName" placeholder="Enter Drink/Bottle Name">
                         </div>
 
