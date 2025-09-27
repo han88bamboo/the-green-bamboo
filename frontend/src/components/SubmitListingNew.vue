@@ -97,29 +97,57 @@
                 <!-- Drink Type Guidance Section -->
                 <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
                     <div class="card-header">
-                        <h6 class="mb-0 text-muted fw-bold">📋 Guide on Filling Information by Drink Type</h6>
+                        <!-- Mobile clickable header -->
+                        <div class="d-md-none" style="cursor: pointer;" @click="toggleGuideCollapse" data-bs-toggle="collapse" data-bs-target="#guideCollapseContent" aria-expanded="false" aria-controls="guideCollapseContent">
+                            <h6 class="mb-0 text-muted fw-bold d-flex justify-content-between align-items-center">
+                                <span class="d-flex align-items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
+                                        class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+                                        <path
+                                        d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                                    </svg>
+                                    Guide on Filling Information
+                                </span>
+                                <span>
+                                    <svg v-if="!isGuideExpanded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                                    </svg>
+                                </span>
+                            </h6>
+                        </div>
+
+                        <!-- Desktop non-clickable header -->
+                        <div class="d-none d-md-block">
+                            <h6 class="mb-0 text-muted fw-bold d-flex align-items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
+                                    class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+                                    <path
+                                    d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                                </svg>
+                                Guide on Filling Information
+                            </h6>
+                        </div>
                     </div>
-                    <div class="card-body">
+                    <div class="collapse d-md-block" id="guideCollapseContent">
+                        <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="spirits-tab" data-bs-toggle="tab" data-bs-target="#spirits" type="button" role="tab" aria-controls="spirits" aria-selected="true">
-                                    🥃 Spirits
+                                    Spirits
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="wine-sake-tab" data-bs-toggle="tab" data-bs-target="#wine-sake" type="button" role="tab" aria-controls="wine-sake" aria-selected="false">
-                                    🍷 Wine & Sake
-                                </button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="beer-tab" data-bs-toggle="tab" data-bs-target="#beer" type="button" role="tab" aria-controls="beer" aria-selected="false">
-                                    🍺 Beer
+                                    Wine, Sake, Beer
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="cocktails-tab" data-bs-toggle="tab" data-bs-target="#cocktails" type="button" role="tab" aria-controls="cocktails" aria-selected="false">
-                                    🍸 Cocktails
+                                    Cocktail
                                 </button>
                             </li>
                         </ul>
@@ -144,23 +172,11 @@
                             <!-- Wine & Sake Tab -->
                             <div class="tab-pane fade" id="wine-sake" role="tabpanel" aria-labelledby="wine-sake-tab">
                                 <div class="text-start">
-                                    <p class="fw-bold mb-2">Wine & Sake</p>
+                                    <p class="fw-bold mb-2">Wine, Sake & Beer</p>
                                     <ul class="mb-2" style="font-size: 0.9rem;">
                                         <li><strong>Name:</strong> Do NOT include vintage year (e.g., Just "Château Margaux", not "Château Margaux 2010")</li>
-                                        <li><strong>Producer:</strong> Select the winery or brewery name (e.g., Château Latour or Asahi-Shuzo Sake Brewery), or the brand (Dassai)</li>
-                                        <li><strong>Country of Origin:</strong> Where the wine/sake was produced</li>
-                                        <li><strong>Age:</strong> Not applicable in this form (leave empty)</li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Beer Tab -->
-                            <div class="tab-pane fade" id="beer" role="tabpanel" aria-labelledby="beer-tab">
-                                <div class="text-start">
-                                    <p class="fw-bold mb-2">Beer</p>
-                                    <ul class="mb-2" style="font-size: 0.9rem;">
-                                        <li><strong>Name:</strong> Just the beer name without vintage (e.g., "Guinness Draught", "Asahi Super Dry")</li>
-                                        <li><strong>Country of Origin:</strong> Where the brewery or brand is located</li>
+                                        <li><strong>Producer:</strong> Select the winery or brewery name (e.g., Château Latour or Asahi-Shuzo Sake Brewery or Guinness Brewery Dublin), or the brand (Dassai or Guinness)</li>
+                                        <li><strong>Country of Origin:</strong> Where the wine/sake/beer was produced</li>
                                         <li><strong>Age:</strong> Not applicable in this form (leave empty)</li>
                                     </ul>
                                 </div>
@@ -178,6 +194,7 @@
                                     </ul>
                                 </div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -724,6 +741,7 @@
                 fillForm: false,
                 requestRemoval: false,
                 showCreateProducerModal: false,
+                isGuideExpanded: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -894,6 +912,10 @@
             },
         },
         methods:{
+
+            toggleGuideCollapse() {
+                this.isGuideExpanded = !this.isGuideExpanded;
+            },
 
             slugify(text) {
                 return text
