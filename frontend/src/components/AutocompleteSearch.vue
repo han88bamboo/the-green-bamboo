@@ -287,7 +287,7 @@ export default {
     
     const searchPlaceholder = computed(() => {
       if (selectedCategoryKey.value === 'all') {
-        return 'Go for it!'
+        return 'Search drinks & more!'
       }
       return `Search ${selectedCategory.value.label.toLowerCase()}...`
     })

@@ -15,7 +15,7 @@
                             class="form-control fst-italic "
                             type="text"
                             style="border: none; height: 100%; line-height: 50px; padding: 0 1rem;"
-                            placeholder="Go for it!"
+                            placeholder="Search drinks & more!"
                             v-model="searchInput"
                             v-on:input="fetchSuggestion"
                             autocomplete="off"
