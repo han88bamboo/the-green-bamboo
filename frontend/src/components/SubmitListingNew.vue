@@ -642,7 +642,7 @@
                                     <label for="abv" class="col-6 col-form-label ps-1 text-start">% ABV</label>
                                 </div>
                             </div>
-                            <div class="form-group col-6" v-if="tempDrinkType !== 'Wine' && tempDrinkType !== 'Sake' && tempDrinkType !== 'Beer' && tempDrinkType !== 'Cocktails' && tempDrinkType !== 'Liqueurs & Bitters' && tempDrinkType !== 'Ready-To-Drink Cocktails'">
+                            <div class="form-group col-6" v-if="tempDrinkType !== 'Sake' && tempDrinkType !== 'Beer' && tempDrinkType !== 'Cocktails' && tempDrinkType !== 'Liqueurs & Bitters' && tempDrinkType !== 'Ready-To-Drink Cocktails'">
                                 <p class="text-start mb-1">Age</p>
                                 <div class="form-group row">
                                     <div class="col-6 pe-1">
