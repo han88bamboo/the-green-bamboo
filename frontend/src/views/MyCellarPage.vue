@@ -1463,11 +1463,11 @@
                           <textarea 
                             class="form-control"
                             v-model="addDrinkForm.personalNotes"
-                            @focus="onPersonalNotesFocus"
-                            @blur="onPersonalNotesBlur"
                             rows="2"
                             placeholder="Add your personal notes about these bottles..."
-                          ></textarea>
+                          ></textarea> 
+                            <!-- @focus="onPersonalNotesFocus" -->
+                            <!-- @blur="onPersonalNotesBlur" -->
                         </div>
 
                         <!-- Collection Selection -->
@@ -1848,11 +1848,11 @@
                               <textarea 
                                 class="form-control"
                                 v-model="addDrinkForm.personalNotes"
-                                @focus="onPersonalNotesFocus"
-                                @blur="onPersonalNotesBlur"
                                 rows="3"
                                 placeholder="Add your personal notes about these bottles..."
                               ></textarea>
+                                <!-- @focus="onPersonalNotesFocus" -->
+                                <!-- @blur="onPersonalNotesBlur" -->
                             </div>
                           </div>
                         </div>
@@ -2383,10 +2383,10 @@
                         rows="2" 
                         :value="getBottleFieldValue(bottle.cellarItemId, 'noteToSelf')"
                         @input="onBottleFieldChange(bottle.cellarItemId, 'noteToSelf', $event.target.value)"
-                        @focus="onPersonalNotesFocus"
-                        @blur="onPersonalNotesBlur"
                         placeholder="Add notes for this bottle..."
-                      ></textarea>
+                      ></textarea> 
+                        <!-- @focus="onPersonalNotesFocus" -->
+                        <!-- @blur="onPersonalNotesBlur" -->
                     </div>
                   </div>
 
@@ -2777,25 +2777,25 @@
       </div>
     </div>
 
-    <!-- Personal Notes Suggestions Dropdown -->
+    <!-- Personal Notes Suggestions Dropdown - COMMENTED OUT
     <div 
       id="personalNotesDropdown"
       v-if="showPersonalNotesSuggestions && (personalNotesSuggestions.length > 0 || loadingPersonalNotes)"
       class="personal-notes-dropdown"
       style="position: absolute; background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); max-height: 200px; overflow-y: auto; z-index: 1050;"
     >
-      <!-- Loading state -->
+      Loading state
       <div v-if="loadingPersonalNotes" class="p-3 text-center text-muted">
         <div class="spinner-border spinner-border-sm me-2"></div>
         Loading suggestions...
       </div>
       
-      <!-- No suggestions -->
+      No suggestions
       <div v-else-if="personalNotesSuggestions.length === 0" class="p-3 text-center text-muted">
         No previous personal notes found
       </div>
       
-      <!-- Suggestions list -->
+      Suggestions list
       <div v-else>
         <div class="p-2 border-bottom bg-light">
           <small class="text-muted fw-bold">Your Previous Personal Notes</small>
@@ -2813,6 +2813,7 @@
         </div>
       </div>
     </div>
+    -->
   </main>
 
   <!-- Mobile Add Drinks Modal -->
@@ -3105,11 +3106,11 @@
                     <textarea 
                       class="form-control"
                       v-model="addDrinkForm.personalNotes"
-                      @focus="onPersonalNotesFocus"
-                      @blur="onPersonalNotesBlur"
                       rows="2"
                       placeholder="Add your personal notes about these bottles..."
                     ></textarea>
+                      <!-- @focus="onPersonalNotesFocus" -->
+                      <!-- @blur="onPersonalNotesBlur" -->
                   </div>
 
                   <!-- Collection Selection -->
@@ -3504,11 +3505,11 @@
                         <textarea 
                           class="form-control"
                           v-model="addDrinkForm.personalNotes"
-                          @focus="onPersonalNotesFocus"
-                          @blur="onPersonalNotesBlur"
                           rows="3"
                           placeholder="Add your personal notes about these bottles..."
                         ></textarea>
+                          <!-- @focus="onPersonalNotesFocus" -->
+                          <!-- @blur="onPersonalNotesBlur" -->
                       </div>
                     </div>
                   </div>
@@ -3793,10 +3794,11 @@ export default {
       activeSubLocationInput: null,
       
       // Personal notes suggestions
-      personalNotesSuggestions: [],
-      loadingPersonalNotes: false,
-      showPersonalNotesSuggestions: false,
-      activePersonalNotesInput: null,
+      // COMMENTED OUT - Personal Notes Autocomplete Data Properties
+      // personalNotesSuggestions: [],
+      // loadingPersonalNotes: false,
+      // showPersonalNotesSuggestions: false,
+      // activePersonalNotesInput: null,
       
       // Cellar changelog
       changelog: [],
@@ -4311,9 +4313,9 @@ export default {
     this.showSubLocationSuggestions = false
     this.activeSubLocationInput = null
     
-    // Hide personal notes suggestions
-    this.showPersonalNotesSuggestions = false
-    this.activePersonalNotesInput = null
+    // Hide personal notes suggestions - COMMENTED OUT
+    // this.showPersonalNotesSuggestions = false
+    // this.activePersonalNotesInput = null
   },
   methods: {
     
@@ -4769,6 +4771,8 @@ export default {
     },
     
     // Personal notes suggestions
+    // COMMENTED OUT - Personal Notes Autocomplete Methods
+    /*
     async loadPersonalNotesSuggestions() {
       if (this.loadingPersonalNotes || this.personalNotesSuggestions.length > 0) {
         return // Already loaded or loading
@@ -4851,6 +4855,7 @@ export default {
       dropdown.style.width = inputRect.width + 'px'
       dropdown.style.zIndex = '1050'
     },
+    */
     
     // Pagination
     goToPage(page) {
