@@ -31,7 +31,7 @@
                       @click="setActiveTab('all')"
                       type="button"
                     >
-                      My Cellar (All Drinks)
+                      All Drinks in Cellar
                       <span class="item-count" v-if="!loading && activeTab === 'all'">{{ totalItemCount }} Items</span>
                       <span class="item-count" v-else-if="loading && activeTab === 'all'">...</span>
                     </button>
@@ -58,8 +58,8 @@
                       data-bs-toggle="modal"
                       data-bs-target="#addCollectionModal"
                     >
-                      <i class="bi bi-plus-circle me-2"></i>
-                      New Collection
+                      <i class="bi bi-plus-circle"></i>
+                      New Shelf
                     </button>
                   </li>
                   
@@ -72,8 +72,8 @@
                       type="button"
                       
                     >
-                      <i class="bi bi-clock-history me-2"></i>
-                      <span>History</span>
+                      <i class="bi bi-clock-history me-sm-2"></i>
+                      <span class="mobile-view-hide">History</span>
                     </button>
                   </li>
                   <!-- Cellar Dashboard Tab -->
@@ -84,8 +84,8 @@
                       @click="setActiveTab('dashboard')"
                       type="button"
                     >
-                      <i class="bi bi-bar-chart me-2"></i>
-                      <span>Dashboard</span>
+                      <i class="bi bi-bar-chart me-sm-2"></i>
+                      <span class="mobile-view-hide">Dashboard</span>
                     </button>
                   </li>
                 </ul>
@@ -557,7 +557,7 @@
                     <input
                       type="text"
                       class="form-control mobile-rating-smaller-text-2"
-                      placeholder="Search by name or producer..."
+                      placeholder="Search collection..."
                       v-model="searchQuery"
                       @input="debouncedSearch"
                     >
@@ -6886,8 +6886,8 @@ export default {
 }
 
 .ghost-tab {
-  border: 1px dashed #027562 !important;
-  background-color: #9abeb8 !important;
+  border: 2px dashed #027562 !important;
+  background-color: #9abeb8c7 !important;
   color: black !important;
   opacity: 0.7;
 }
