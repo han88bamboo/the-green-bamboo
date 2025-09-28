@@ -239,7 +239,7 @@ def deleteReview(id):
 
         # Update user points
         if total_points:
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s AND "userType" = %s', 
+            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s AND "userType" = %s', 
                        (total_points, user_id, 'user',))
             conn.commit()
 
@@ -508,7 +508,7 @@ def deleteProducerReview(id):
         conn.commit()
 
         # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s AND "userType" = %s', (points, userID, 'user',))
+        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s AND "userType" = %s', (points, userID, 'user',))
         conn.commit()
 
         print(f"Deducted {points} points from user {userID} for deleting review {id}.")
