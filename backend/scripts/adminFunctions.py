@@ -2,7 +2,9 @@
 # Routes: /createObservationTag (POST), /updateObservationTag (PUT), /deleteObservationTag/<id> (DELETE), 
 #         /updateFamilyTag (POST), /updateSubTag (PUT), /deleteFamilyTag/<id> (DELETE), 
 #         /deleteSubTag/<id> (DELETE), /importListings (POST), /createFamilyTag (POST), /createSubTag (POST), 
-#         /importListings (POST), /readCSV (GET)
+#         /importListings (POST), /readCSV (GET), /getProducerMergePreview (POST), /getListingMergePreview (POST), /getVenueMergePreview (POST)
+#         /mergeProducers (POST), /mergeListings (POST), /mergeVenues (POST), 
+#         /searchDuplicates/<entity_type> (GET), /getEntityById/<entity_type>/<int:entity_id> (GET)
 # -----------------------------------------------------------------------------------------
 
 import logging
@@ -956,5 +958,1079 @@ def updateSystemSetting():
             "message": f"An error occurred while updating the system setting: {str(e)}"
         }), 500
         
+    finally:
+        cursor.close()
+
+# ==================== PRODUCERS MERGE ====================
+
+# [POST] Get producer merge preview
+# - Get preview data for merging producers
+@blueprint.route('/getProducerMergePreview', methods=['POST'])
+def get_producer_merge_preview():
+    """Get preview data for merging producers"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Get all producer records
+        all_ids = [master_id] + duplicate_ids
+        cursor.execute('''
+            SELECT id, "producerName", "producerDesc", "originCountry", 
+                   "isIndependentBottler", "yearFounded", "activeStatus",
+                   "owner", "location", "website", "claimStatus"
+            FROM producers 
+            WHERE id = ANY(%s)
+            ORDER BY id = %s DESC
+        ''', (all_ids, master_id))
+        
+        producers = []
+        rows = cursor.fetchall()
+        for row in rows:
+            if hasattr(row, 'keys'):  # RealDictRow
+                producers.append({
+                    'id': row['id'],
+                    'producerName': row['producerName'],
+                    'producerDesc': row['producerDesc'],
+                    'originCountry': row['originCountry'],
+                    'isIndependentBottler': row['isIndependentBottler'],
+                    'yearFounded': row['yearFounded'],
+                    'activeStatus': row['activeStatus'],
+                    'owner': row['owner'],
+                    'location': row['location'],
+                    'website': row['website'],
+                    'claimStatus': row['claimStatus']
+                })
+            else:  # Tuple
+                producers.append({
+                    'id': row[0],
+                    'producerName': row[1],
+                    'producerDesc': row[2],
+                    'originCountry': row[3],
+                    'isIndependentBottler': row[4],
+                    'yearFounded': row[5],
+                    'activeStatus': row[6],
+                    'owner': row[7],
+                    'location': row[8],
+                    'website': row[9],
+                    'claimStatus': row[10]
+                })
+        
+        # Helper function for safe counts
+        def safe_count(query, pid):
+            cursor.execute(query, (pid,))
+            row = cursor.fetchone()
+            if not row:
+                return 0
+            # Handle both RealDictRow and tuple
+            if hasattr(row, 'keys'):
+                return row['count']
+            else:
+                return row[0]
+        
+        # Get related data counts
+        related_counts = {}
+        for pid in all_ids:
+            counts = {
+                'listings': safe_count('SELECT COUNT(*) FROM listings WHERE "producerID" = %s', pid),
+                'bottlerListings': safe_count('SELECT COUNT(*) FROM listings WHERE "bottlerID" = %s', pid),
+                'reviews': safe_count('SELECT COUNT(*) FROM "producerReviews" WHERE "producerID" = %s', pid),
+                'qa': safe_count('SELECT COUNT(*) FROM "producersQuestionAnswers" WHERE "producerId" = %s', pid),
+                'updates': safe_count('SELECT COUNT(*) FROM "producersUpdates" WHERE "producerId" = %s', pid)
+            }
+            
+            # Special case for followers (different query pattern)
+            cursor.execute('''
+                SELECT COUNT(*) FROM "usersFollowLists" 
+                WHERE %s::text = ANY(producers)
+            ''', (str(pid),))
+            row = cursor.fetchone()
+            if hasattr(row, 'keys'):
+                counts['followers'] = row['count']
+            else:
+                counts['followers'] = row[0] if row else 0
+            
+            related_counts[pid] = counts
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "producers": producers,
+                "relatedCounts": related_counts,
+                "totalAffected": {
+                    "listings": sum(c['listings'] for c in related_counts.values()),
+                    "bottlerListings": sum(c['bottlerListings'] for c in related_counts.values()),
+                    "reviews": sum(c['reviews'] for c in related_counts.values()),
+                    "qa": sum(c['qa'] for c in related_counts.values()),
+                    "updates": sum(c['updates'] for c in related_counts.values()),
+                    "followers": sum(c['followers'] for c in related_counts.values())
+                }
+            }
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error getting producer merge preview: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+# [POST] Merge producers
+# - Merge duplicate producers into a master producer
+@blueprint.route('/mergeProducers', methods=['POST'])
+def merge_producers():
+    """Merge duplicate producers into a master producer"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Update all foreign key references
+        for dup_id in duplicate_ids:
+            # Update listings where producer
+            cursor.execute('''
+                UPDATE listings SET "producerID" = %s 
+                WHERE "producerID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update listings where bottler
+            cursor.execute('''
+                UPDATE listings SET "bottlerID" = %s 
+                WHERE "bottlerID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update producer reviews
+            cursor.execute('''
+                UPDATE "producerReviews" SET "producerID" = %s 
+                WHERE "producerID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update Q&A
+            cursor.execute('''
+                UPDATE "producersQuestionAnswers" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update producer updates
+            cursor.execute('''
+                UPDATE "producersUpdates" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update opening hours
+            cursor.execute('''
+                UPDATE "producersOpeningHours" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update profile views
+            cursor.execute('''
+                UPDATE "producersProfileViews" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update text sections
+            cursor.execute('''
+                UPDATE "producerTextSections" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update user follow lists (stored as text array)
+            cursor.execute('''
+                UPDATE "usersFollowLists" 
+                SET producers = array_replace(producers, %s::text, %s::text)
+                WHERE %s::text = ANY(producers)
+            ''', (str(dup_id), str(master_id), str(dup_id)))
+            
+            # Update user producer list items
+            cursor.execute('''
+                UPDATE "userProducerListItems" SET "producerId" = %s 
+                WHERE "producerId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update request listings
+            cursor.execute('''
+                UPDATE "requestListings" SET "producerID" = %s 
+                WHERE "producerID" = %s
+            ''', (master_id, dup_id))
+            
+            cursor.execute('''
+                UPDATE "requestListings" SET "bottlerID" = %s 
+                WHERE "bottlerID" = %s
+            ''', (master_id, dup_id))
+        
+        # Delete duplicate producers
+        cursor.execute('''
+            DELETE FROM producers WHERE id = ANY(%s)
+        ''', (duplicate_ids,))
+        
+        conn.commit()
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Successfully merged {len(duplicate_ids)} producers into producer ID {master_id}"
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error merging producers: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# ==================== LISTING MERGE ====================
+
+# [POST] Get listing merge preview
+# - Get preview data for merging listings
+@blueprint.route('/getListingMergePreview', methods=['POST'])
+def get_listing_merge_preview():
+    """Get preview data for merging listings"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Collect all IDs to check
+        all_ids = [master_id] + duplicate_ids
+
+        # Get all listing records
+        cursor.execute('''
+            SELECT l.id, l."listingName", p."producerName", l."drinkType", 
+                   l."typeCategory", l.abv, l."originCountry", l."officialDesc"
+            FROM listings l
+            LEFT JOIN producers p ON l."producerID" = p.id
+            WHERE l.id = ANY(%s)
+            ORDER BY l.id = %s DESC
+        ''', (all_ids, master_id))
+        
+        listings = []
+        rows = cursor.fetchall()
+        for row in rows:
+            if hasattr(row, 'keys'):  # RealDictRow
+                listings.append({
+                    'id': row['id'],
+                    'listingName': row['listingName'],
+                    'producerName': row['producerName'],
+                    'drinkType': row['drinkType'],
+                    'typeCategory': row['typeCategory'],
+                    'abv': row['abv'],
+                    'originCountry': row['originCountry'],
+                    'officialDesc': row['officialDesc']
+                })
+            else:  # Tuple fallback
+                listings.append({
+                    'id': row[0],
+                    'listingName': row[1],
+                    'producerName': row[2],
+                    'drinkType': row[3],
+                    'typeCategory': row[4],
+                    'abv': row[5],
+                    'originCountry': row[6],
+                    'officialDesc': row[7]
+                })
+        
+        # Helper function for safe counts
+        def safe_count(query, lid):
+            cursor.execute(query, (lid,))
+            row = cursor.fetchone()
+            if not row:
+                return 0
+            # Handle both RealDictRow and tuple
+            if hasattr(row, 'keys'):
+                return row['count']
+            else:
+                return row[0]
+        
+        # Get related data counts
+        related_counts = {}
+        for lid in all_ids:
+            counts = {
+                'reviews': safe_count('SELECT COUNT(*) FROM reviews WHERE "reviewTarget" = %s', lid),
+                'menuItems': safe_count('SELECT COUNT(*) FROM "menuItems" WHERE "itemID" = %s', lid),
+                'userLists': safe_count('SELECT COUNT(*) FROM "usersDrinkListItems" WHERE "drinkId" = %s', lid),
+                'cellarItems': safe_count('SELECT COUNT(*) FROM "myCellarItems" WHERE "listingID" = %s', lid),
+                'comments': safe_count('SELECT COUNT(*) FROM "listingsComments" WHERE "listingId" = %s', lid),
+                'likes': safe_count('SELECT COUNT(*) FROM "listingsLikes" WHERE "listingId" = %s', lid)
+            }
+            related_counts[lid] = counts
+        
+        # Totals across all IDs
+        total_affected = {
+            "reviews": sum(c['reviews'] for c in related_counts.values()),
+            "menuItems": sum(c['menuItems'] for c in related_counts.values()),
+            "userLists": sum(c['userLists'] for c in related_counts.values()),
+            "cellarItems": sum(c['cellarItems'] for c in related_counts.values()),
+            "comments": sum(c['comments'] for c in related_counts.values()),
+            "likes": sum(c['likes'] for c in related_counts.values())
+        }
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "listings": listings,
+                "relatedCounts": related_counts,
+                "totalAffected": total_affected
+            }
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error getting listing merge preview: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+# [POST] Merge listings
+# - Merge duplicate listings into a master listing
+@blueprint.route('/mergeListings', methods=['POST'])
+def merge_listings():
+    """Merge duplicate listings into a master listing"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Transaction starts automatically in psycopg2
+        
+        # Update all foreign key references
+        for dup_id in duplicate_ids:
+            # Update reviews
+            cursor.execute('''
+                UPDATE reviews SET "reviewTarget" = %s 
+                WHERE "reviewTarget" = %s
+            ''', (master_id, dup_id))
+            
+            # Update menu items
+            cursor.execute('''
+                UPDATE "menuItems" SET "itemID" = %s 
+                WHERE "itemID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update user drink list items (check for duplicates first)
+            cursor.execute('''
+                DELETE FROM "usersDrinkListItems" 
+                WHERE "drinkId" = %s 
+                AND "listId" IN (
+                    SELECT "listId" FROM "usersDrinkListItems" 
+                    WHERE "drinkId" = %s
+                )
+            ''', (dup_id, master_id))
+            
+            cursor.execute('''
+                UPDATE "usersDrinkListItems" SET "drinkId" = %s 
+                WHERE "drinkId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update my cellar items
+            cursor.execute('''
+                UPDATE "myCellarItems" SET "listingID" = %s 
+                WHERE "listingID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update listings comments
+            cursor.execute('''
+                UPDATE "listingsComments" SET "listingId" = %s 
+                WHERE "listingId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update listings likes (remove duplicates first)
+            cursor.execute('''
+                DELETE FROM "listingsLikes" 
+                WHERE "listingId" = %s 
+                AND ("userId", "userType") IN (
+                    SELECT "userId", "userType" FROM "listingsLikes" 
+                    WHERE "listingId" = %s
+                )
+            ''', (dup_id, master_id))
+            
+            cursor.execute('''
+                UPDATE "listingsLikes" SET "listingId" = %s 
+                WHERE "listingId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update user leaderboard
+            cursor.execute('''
+                DELETE FROM "userLeaderboard" 
+                WHERE "listing_id" = %s 
+                AND ("user_id", "category") IN (
+                    SELECT "user_id", "category" FROM "userLeaderboard" 
+                    WHERE "listing_id" = %s
+                )
+            ''', (dup_id, master_id))
+            
+            cursor.execute('''
+                UPDATE "userLeaderboard" SET "listing_id" = %s 
+                WHERE "listing_id" = %s
+            ''', (master_id, dup_id))
+            
+            # Update request inaccuracy
+            cursor.execute('''
+                UPDATE "requestInaccuracy" SET "listingId" = %s 
+                WHERE "listingId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update request edits
+            cursor.execute('''
+                UPDATE "requestEdits" SET "listingID" = %s 
+                WHERE "listingID" = %s
+            ''', (master_id, dup_id))
+        
+        # Delete duplicate listings
+        cursor.execute('''
+            DELETE FROM listings WHERE id = ANY(%s)
+        ''', (duplicate_ids,))
+        
+        conn.commit()
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Successfully merged {len(duplicate_ids)} listings into listing ID {master_id}"
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error merging listings: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# ==================== VENUE MERGE ====================
+
+# [POST] Get venue merge preview
+# - Get preview data for merging venues
+@blueprint.route('/getVenueMergePreview', methods=['POST'])
+def get_venue_merge_preview():
+    """Get preview data for merging venues"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Get all venue records
+        all_ids = [master_id] + duplicate_ids
+        cursor.execute('''
+            SELECT id, "venueName", address, "venueType", "originLocation",
+                   "yearOpened", website, "claimStatus"
+            FROM venues 
+            WHERE id = ANY(%s)
+            ORDER BY id = %s DESC
+        ''', (all_ids, master_id))
+        
+        venues = []
+        rows = cursor.fetchall()
+        for row in rows:
+            if hasattr(row, 'keys'):  # RealDictRow
+                venues.append({
+                    'id': row['id'],
+                    'venueName': row['venueName'],
+                    'address': row['address'],
+                    'venueType': row['venueType'],
+                    'originLocation': row['originLocation'],
+                    'yearOpened': row['yearOpened'],
+                    'website': row['website'],
+                    'claimStatus': row['claimStatus']
+                })
+            else:  # Tuple
+                venues.append({
+                    'id': row[0],
+                    'venueName': row[1],
+                    'address': row[2],
+                    'venueType': row[3],
+                    'originLocation': row[4],
+                    'yearOpened': row[5],
+                    'website': row[6],
+                    'claimStatus': row[7]
+                })
+        
+        # Helper function for safe counts
+        def safe_count(query, vid):
+            cursor.execute(query, (vid,))
+            row = cursor.fetchone()
+            if not row:
+                return 0
+            # Handle both RealDictRow and tuple
+            if hasattr(row, 'keys'):
+                return row['count']
+            else:
+                return row[0]
+        
+        # Get related data counts
+        related_counts = {}
+        for vid in all_ids:
+            counts = {
+                'menuSections': safe_count('SELECT COUNT(*) FROM "venuesMenu" WHERE "venueId" = %s', vid),
+                'reviews': safe_count('SELECT COUNT(*) FROM "venueReviews" WHERE "venueID" = %s', vid),
+                'qa': safe_count('SELECT COUNT(*) FROM "venuesQuestionAnswers" WHERE "venueId" = %s', vid),
+                'updates': safe_count('SELECT COUNT(*) FROM "venuesUpdates" WHERE "venueId" = %s', vid),
+                'events': safe_count('SELECT COUNT(*) FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = \'venue\'', vid)
+            }
+            
+            # Special case for followers (different query pattern)
+            cursor.execute('''
+                SELECT COUNT(*) FROM "usersFollowLists" 
+                WHERE %s::text = ANY(venues)
+            ''', (str(vid),))
+            row = cursor.fetchone()
+            if hasattr(row, 'keys'):
+                counts['followers'] = row['count']
+            else:
+                counts['followers'] = row[0] if row else 0
+            
+            related_counts[vid] = counts
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "venues": venues,
+                "relatedCounts": related_counts,
+                "totalAffected": {
+                    "menuSections": sum(c['menuSections'] for c in related_counts.values()),
+                    "reviews": sum(c['reviews'] for c in related_counts.values()),
+                    "qa": sum(c['qa'] for c in related_counts.values()),
+                    "updates": sum(c['updates'] for c in related_counts.values()),
+                    "events": sum(c['events'] for c in related_counts.values()),
+                    "followers": sum(c['followers'] for c in related_counts.values())
+                }
+            }
+        }), 200
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error getting venue merge preview: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+# [POST] Merge venues
+# - Merge duplicate venues into a master venue
+@blueprint.route('/mergeVenues', methods=['POST'])
+def merge_venues():
+    """Merge duplicate venues into a master venue"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        master_id = data.get('masterId')
+        duplicate_ids = data.get('duplicateIds', [])
+        
+        if not master_id or not duplicate_ids:
+            return jsonify({"code": 400, "message": "Missing required fields"}), 400
+        
+        # Update all foreign key references
+        for dup_id in duplicate_ids:
+            # HANDLE UNIQUE CONSTRAINT TABLES FIRST
+            
+            # Handle venuesOpeningHours (unique constraint on venueId)
+            # Check if master already has opening hours
+            cursor.execute('SELECT id FROM "venuesOpeningHours" WHERE "venueId" = %s', (master_id,))
+            master_has_hours = cursor.fetchone()
+            
+            if master_has_hours:
+                # Delete duplicate's opening hours since master already has them
+                cursor.execute('DELETE FROM "venuesOpeningHours" WHERE "venueId" = %s', (dup_id,))
+            else:
+                # Move duplicate's opening hours to master
+                cursor.execute('''
+                    UPDATE "venuesOpeningHours" SET "venueId" = %s 
+                    WHERE "venueId" = %s
+                ''', (master_id, dup_id))
+            
+            # Handle venueAmenities (unique constraint on venueId)
+            # Check if master already has amenities
+            cursor.execute('SELECT id FROM "venueAmenities" WHERE "venueId" = %s', (master_id,))
+            master_has_amenities = cursor.fetchone()
+            
+            if master_has_amenities:
+                # Delete duplicate's amenities since master already has them
+                cursor.execute('DELETE FROM "venueAmenities" WHERE "venueId" = %s', (dup_id,))
+            else:
+                # Move duplicate's amenities to master
+                cursor.execute('''
+                    UPDATE "venueAmenities" SET "venueId" = %s 
+                    WHERE "venueId" = %s
+                ''', (master_id, dup_id))
+            
+            # HANDLE REGULAR TABLES
+            
+            # Update venue menus and their items (preserve hierarchy)
+            cursor.execute('''
+                UPDATE "venuesMenu" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update venue reviews
+            cursor.execute('''
+                UPDATE "venueReviews" SET "venueID" = %s 
+                WHERE "venueID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update venue review comments
+            cursor.execute('''
+                UPDATE "venueReviewsComments" 
+                SET "reviewId" = subquery.new_review_id
+                FROM (
+                    SELECT vrc.id, vr_new.id as new_review_id
+                    FROM "venueReviewsComments" vrc
+                    JOIN "venueReviews" vr_old ON vrc."reviewId" = vr_old.id
+                    JOIN "venueReviews" vr_new ON vr_old."userID" = vr_new."userID" 
+                        AND vr_old."createdDate" = vr_new."createdDate"
+                        AND vr_new."venueID" = %s
+                    WHERE vr_old."venueID" = %s
+                ) AS subquery
+                WHERE "venueReviewsComments".id = subquery.id
+            ''', (master_id, dup_id))
+            
+            # Update Q&A
+            cursor.execute('''
+                UPDATE "venuesQuestionAnswers" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update venue updates
+            cursor.execute('''
+                UPDATE "venuesUpdates" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update venue update comments
+            cursor.execute('''
+                UPDATE "venueUpdateComments" 
+                SET "venueUpdateId" = subquery.new_update_id
+                FROM (
+                    SELECT vuc.id, vu_new.id as new_update_id
+                    FROM "venueUpdateComments" vuc
+                    JOIN "venuesUpdates" vu_old ON vuc."venueUpdateId" = vu_old.id
+                    JOIN "venuesUpdates" vu_new ON vu_old.date = vu_new.date 
+                        AND vu_old.text = vu_new.text
+                        AND vu_new."venueId" = %s
+                    WHERE vu_old."venueId" = %s
+                ) AS subquery
+                WHERE "venueUpdateComments".id = subquery.id
+            ''', (master_id, dup_id))
+            
+            # Update profile views
+            cursor.execute('''
+                UPDATE "venuesProfileViews" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update reviews location reference
+            cursor.execute('''
+                UPDATE reviews SET location = %s 
+                WHERE location = %s
+            ''', (master_id, dup_id))
+            
+            # Update events
+            cursor.execute('''
+                UPDATE events SET "eventOwnerID" = %s 
+                WHERE "eventOwnerID" = %s AND "eventOwnerType" = 'venue'
+            ''', (master_id, dup_id))
+            
+            # Update event attendees for venue events
+            cursor.execute('''
+                UPDATE "eventAttendees" 
+                SET "eventID" = e_new."id"
+                FROM events e_old
+                JOIN events e_new ON e_old."eventName" = e_new."eventName" 
+                    AND e_old."eventStartDate" = e_new."eventStartDate"
+                    AND e_new."eventOwnerID" = %s
+                WHERE "eventAttendees"."eventID" = e_old.id
+                    AND e_old."eventOwnerID" = %s
+                    AND e_old."eventOwnerType" = 'venue'
+            ''', (master_id, dup_id))
+            
+            # Update clubs created by venues
+            cursor.execute('''
+                UPDATE clubs 
+                SET "createdByID" = %s 
+                WHERE "createdByID" = %s AND "createdByType" = 'venues'
+            ''', (master_id, dup_id))
+            
+            # Update club members for venue accounts
+            cursor.execute('''
+                UPDATE "clubMembers" 
+                SET "userID" = %s 
+                WHERE "userID" = %s AND "userType" = 'venues'
+            ''', (master_id, dup_id))
+            
+            # Update notifications for venues
+            cursor.execute('''
+                UPDATE notifications 
+                SET "userId" = %s 
+                WHERE "userId" = %s AND "userType" = 'venue'
+            ''', (master_id, dup_id))
+            
+            # Update user follow lists (stored as text array)
+            cursor.execute('''
+                UPDATE "usersFollowLists" 
+                SET venues = array_replace(venues, %s::text, %s::text)
+                WHERE %s::text = ANY(venues)
+            ''', (str(dup_id), str(master_id), str(dup_id)))
+            
+            # Update user venue list items (handle duplicates)
+            cursor.execute('''
+                DELETE FROM "userVenueListItems" 
+                WHERE "venueId" = %s 
+                AND "listId" IN (
+                    SELECT "listId" FROM "userVenueListItems" 
+                    WHERE "venueId" = %s
+                )
+            ''', (dup_id, master_id))
+            
+            cursor.execute('''
+                UPDATE "userVenueListItems" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update request inaccuracy
+            cursor.execute('''
+                UPDATE "requestInaccuracy" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update my cellar items purchase venue
+            cursor.execute('''
+                UPDATE "myCellarItems" SET "purchaseVenueID" = %s 
+                WHERE "purchaseVenueID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update request listings
+            cursor.execute('''
+                UPDATE "requestListings" SET "venueID" = %s 
+                WHERE "venueID" = %s
+            ''', (master_id, dup_id))
+            
+            # Update tokens table
+            cursor.execute('''
+                UPDATE tokens SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update userFestivalTastedList
+            cursor.execute('''
+                UPDATE "userFestivalTastedList" SET "venueId" = %s 
+                WHERE "venueId" = %s
+            ''', (master_id, dup_id))
+            
+            # Update points recorder
+            cursor.execute('''
+                UPDATE "pointsRecorder" 
+                SET "userID" = %s 
+                WHERE "userID" = %s AND "userType" = 'venues'
+            ''', (master_id, dup_id))
+        
+        # Delete duplicate venues
+        cursor.execute('''
+            DELETE FROM venues WHERE id = ANY(%s)
+        ''', (duplicate_ids,))
+        
+        conn.commit()
+        
+        return jsonify({
+            "code": 200,
+            "message": f"Successfully merged {len(duplicate_ids)} venues into venue ID {master_id}"
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        import traceback
+        traceback.print_exc()
+        logger.error(f"Error merging venues: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+# ==================== SEARCH ENDPOINTS ====================
+
+# [GET] Search for potential duplicates
+# - Search by entity type (producers, listings, venues) and search term
+@blueprint.route('/searchDuplicates/<entity_type>', methods=['GET'])
+def search_duplicates(entity_type):
+    """Search for potential duplicates by entity type and search term"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        search_term = request.args.get('q', '').strip()
+        if not search_term:
+            return jsonify({"code": 400, "message": "Search term required"}), 400
+        
+        results = []
+        
+        # Check if search term is a URL and extract ID
+        import re
+        url_patterns = {
+            'producers': r'/profile/producer/(\d+)/',
+            'listings': r'/listing/view/(\d+)/',
+            'venues': r'/profile/venue/(\d+)/'
+        }
+        
+        # Try to extract ID from URL if it matches the pattern
+        extracted_id = None
+        if entity_type in url_patterns:
+            match = re.search(url_patterns[entity_type], search_term)
+            if match:
+                extracted_id = int(match.group(1))
+        
+        if entity_type == 'producers':
+            if extracted_id:
+                # Direct ID search from URL
+                cursor.execute('''
+                    SELECT id, "producerName", "originCountry", "yearFounded"
+                    FROM producers 
+                    WHERE id = %s
+                ''', (extracted_id,))
+            else:
+                # Regular name search
+                cursor.execute('''
+                    SELECT id, "producerName", "originCountry", "yearFounded"
+                    FROM producers 
+                    WHERE LOWER("producerName") LIKE LOWER(%s)
+                    ORDER BY "producerName"
+                    LIMIT 50
+                ''', (f'%{search_term}%',))
+            
+            rows = cursor.fetchall()
+            for row in rows:
+                # Handle both RealDictRow and tuple formats
+                if hasattr(row, 'keys'):  # RealDictRow
+                    results.append({
+                        'id': row['id'],
+                        'name': row['producerName'],
+                        'country': row['originCountry'],
+                        'year': row['yearFounded']
+                    })
+                else:  # Tuple
+                    results.append({
+                        'id': row[0],
+                        'name': row[1],
+                        'country': row[2],
+                        'year': row[3]
+                    })
+                
+        elif entity_type == 'listings':
+            if extracted_id:
+                # Direct ID search from URL
+                cursor.execute('''
+                    SELECT l.id, l."listingName", p."producerName", l."drinkType", l."typeCategory"
+                    FROM listings l
+                    LEFT JOIN producers p ON l."producerID" = p.id
+                    WHERE l.id = %s
+                ''', (extracted_id,))
+            else:
+                # Regular name search
+                cursor.execute('''
+                    SELECT l.id, l."listingName", p."producerName", l."drinkType", l."typeCategory"
+                    FROM listings l
+                    LEFT JOIN producers p ON l."producerID" = p.id
+                    WHERE LOWER(l."listingName") LIKE LOWER(%s)
+                    ORDER BY l."listingName"
+                    LIMIT 50
+                ''', (f'%{search_term}%',))
+            
+            rows = cursor.fetchall()
+            for row in rows:
+                # Handle both RealDictRow and tuple formats
+                if hasattr(row, 'keys'):  # RealDictRow
+                    results.append({
+                        'id': row['id'],
+                        'name': row['listingName'],
+                        'producer': row['producerName'],
+                        'type': row['drinkType'],
+                        'category': row['typeCategory']
+                    })
+                else:  # Tuple
+                    results.append({
+                        'id': row[0],
+                        'name': row[1],
+                        'producer': row[2],
+                        'type': row[3],
+                        'category': row[4]
+                    })
+                
+        elif entity_type == 'venues':
+            if extracted_id:
+                # Direct ID search from URL
+                cursor.execute('''
+                    SELECT id, "venueName", address, "venueType"
+                    FROM venues 
+                    WHERE id = %s
+                ''', (extracted_id,))
+            else:
+                # Regular name search
+                cursor.execute('''
+                    SELECT id, "venueName", address, "venueType"
+                    FROM venues 
+                    WHERE LOWER("venueName") LIKE LOWER(%s)
+                    ORDER BY "venueName"
+                    LIMIT 50
+                ''', (f'%{search_term}%',))
+            
+            rows = cursor.fetchall()
+            for row in rows:
+                # Handle both RealDictRow and tuple formats
+                if hasattr(row, 'keys'):  # RealDictRow
+                    results.append({
+                        'id': row['id'],
+                        'name': row['venueName'],
+                        'address': row['address'],
+                        'type': row['venueType']
+                    })
+                else:  # Tuple
+                    results.append({
+                        'id': row[0],
+                        'name': row[1],
+                        'address': row[2],
+                        'type': row[3]
+                    })
+        else:
+            return jsonify({"code": 400, "message": "Invalid entity type"}), 400
+        
+        return jsonify({
+            "code": 200,
+            "data": results
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error searching duplicates: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+# [GET] Get entity by ID
+# - Fetch a specific entity's details by its ID
+@blueprint.route('/getEntityById/<entity_type>/<int:entity_id>', methods=['GET'])
+def get_entity_by_id(entity_type, entity_id):
+    """Get a specific entity by its ID"""
+    conn = g.db
+    cursor = conn.cursor()
+    
+    try:
+        result = None
+        
+        if entity_type == 'producers':
+            cursor.execute('''
+                SELECT id, "producerName", "originCountry", "yearFounded"
+                FROM producers 
+                WHERE id = %s
+            ''', (entity_id,))
+            
+            row = cursor.fetchone()
+            if row:
+                if hasattr(row, 'keys'):
+                    result = {
+                        'id': row['id'],
+                        'name': row['producerName'],
+                        'country': row['originCountry'],
+                        'year': row['yearFounded']
+                    }
+                else:
+                    result = {
+                        'id': row[0],
+                        'name': row[1],
+                        'country': row[2],
+                        'year': row[3]
+                    }
+                    
+        elif entity_type == 'listings':
+            cursor.execute('''
+                SELECT l.id, l."listingName", p."producerName", l."drinkType", l."typeCategory"
+                FROM listings l
+                LEFT JOIN producers p ON l."producerID" = p.id
+                WHERE l.id = %s
+            ''', (entity_id,))
+            
+            row = cursor.fetchone()
+            if row:
+                if hasattr(row, 'keys'):
+                    result = {
+                        'id': row['id'],
+                        'name': row['listingName'],
+                        'producer': row['producerName'],
+                        'type': row['drinkType'],
+                        'category': row['typeCategory']
+                    }
+                else:
+                    result = {
+                        'id': row[0],
+                        'name': row[1],
+                        'producer': row[2],
+                        'type': row[3],
+                        'category': row[4]
+                    }
+                    
+        elif entity_type == 'venues':
+            cursor.execute('''
+                SELECT id, "venueName", address, "venueType"
+                FROM venues 
+                WHERE id = %s
+            ''', (entity_id,))
+            
+            row = cursor.fetchone()
+            if row:
+                if hasattr(row, 'keys'):
+                    result = {
+                        'id': row['id'],
+                        'name': row['venueName'],
+                        'address': row['address'],
+                        'type': row['venueType']
+                    }
+                else:
+                    result = {
+                        'id': row[0],
+                        'name': row[1],
+                        'address': row[2],
+                        'type': row[3]
+                    }
+        
+        if result:
+            return jsonify({"code": 200, "data": result}), 200
+        else:
+            return jsonify({"code": 404, "message": "Entity not found"}), 404
+            
+    except Exception as e:
+        logger.error(f"Error getting entity by ID: {str(e)}")
+        return jsonify({"code": 500, "message": str(e)}), 500
     finally:
         cursor.close()
