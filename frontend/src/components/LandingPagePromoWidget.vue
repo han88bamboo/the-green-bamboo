@@ -64,7 +64,7 @@
       <div class="col-10 text-center mb-3 my-4" style="color: white;">
             <h3 class="mb-2 fw-bold mobile-fs-5">Every <i>Drink-X</i> account grants you access to <i>Drink-X Cellar</i>, our all-in-one universal drinks tracking tool. </h3>
             <div class="my-2">
-              <a href="/partner/venues" class="btn fw-bold px-3 mt-2 mobile-rating-smaller-text-2" style="background-color: #f0b358">Sign up for FREE on Drink-X here!</a>
+              <a href="/signup" class="btn fw-bold px-3 mt-2 mobile-rating-smaller-text-2" style="background-color: #f0b358">Sign up for FREE on Drink-X here!</a>
             </div>
       </div>
       <div class="col-1"></div>
