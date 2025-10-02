@@ -1243,7 +1243,7 @@
                       v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id"
                       class="cellar-item-preview mb-4"
                     >
-                      <hr>
+                      
                       <p class="text-secondary-emphasis fw-bold text-start mb-3">Drink Preview:</p>
                       
                       <!-- Desktop Preview -->
