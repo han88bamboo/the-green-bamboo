@@ -1119,7 +1119,7 @@
             <div class="add-drink-to-cellar">
               <div class="card h-100" style="overflow: visible;" >
                 <div class="card-header" style="width:100%;">
-                  <h5 class="card-title mb-0">
+                  <h5 class="card-title mb-0" style="color: white">
                     <i class="bi bi-plus-circle me-2"></i>
                     Add Drink(s) to Cellar
                   </h5>
@@ -1176,7 +1176,7 @@
                     <!-- Drink Search -->
                     <div class="form-group mb-3">
                       <label class="form-label text-start">
-                        Drink Name <span class="text-danger">*</span>
+                        <b>Drink Name </b><span class="text-danger">*</span>
                         <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, <router-link to="/request/new" class="text-decoration-none"> submit a new drink to the database!</router-link></small>
                         <small 
                           v-if="addDrinkForm.selectedProducer && addDrinkForm.selectedProducer.id" 
@@ -1244,7 +1244,7 @@
                       class="cellar-item-preview mb-4"
                     >
                       <hr>
-                      <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Drink Preview:</p>
+                      <p class="text-secondary-emphasis fw-bold text-start mb-3">Drink Preview:</p>
                       
                       <!-- Desktop Preview -->
                       <div class="row d-none d-md-flex">
@@ -1367,6 +1367,7 @@
                     <div v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
                       <!-- Quantity Section -->
                       <div class="form-group mb-3">
+                        
                         <label class="form-label text-start">
                           Quantity to Add<span class="text-danger">*</span>
                         </label>
@@ -1862,8 +1863,7 @@
                           <hr>
                           <h6 class="section-header text-start mb-3">
                             <i class="bi bi-collection me-2"></i>
-                            Collection Selection
-                            <small class="text-muted d-block fw-normal">Choose which collection to add these bottles to.</small>
+                            Choose Which Collection To Add Bottle(s) To
                           </h6>
 
                           <!-- Collection Dropdown -->
@@ -2892,7 +2892,7 @@
               <!-- Drink Search -->
               <div class="form-group mb-3 text-start">
                 <label class="form-label text-start">
-                  Drink Name <span class="text-danger">*</span>
+                  <b> Drink Name </b><span class="text-danger">*</span>
                   <small class="text-muted d-block text-start">Search by drink name. If you can't find your drink on Drink-X, 
                     <router-link to="/request/new" class="text-decoration-none">
                       submit a new drink to the database!
@@ -2963,7 +2963,7 @@
                 class="cellar-item-preview mb-4"
               >
                 <hr>
-                <p class="text-secondary-emphasis fw-bold fst-italic text-start mb-3">Drink Preview:</p>
+                <p class="text-secondary-emphasis fw-bold text-start mb-3" style="color:grey">Drink Preview:</p>
                 
                 <!-- Mobile Preview -->
                 <div class="row">
@@ -3008,6 +3008,7 @@
 
               <!-- Quantity Section -->
               <div class="form-group mb-3" v-if="addDrinkForm.selectedDrink && addDrinkForm.selectedDrink.id">
+                
                 <label class="form-label text-start">
                   Quantity to Add<span class="text-danger">*</span>
                 </label>
@@ -3519,8 +3520,8 @@
                     <!-- <hr>
                     <h6 class="section-header text-start mb-3">
                       <i class="bi bi-collection me-2"></i>
-                      Collection Selection
-                      <small class="text-muted d-block fw-normal">Choose which collection to add these bottles to.</small>
+                      Select A Collection to Add Bottle(s) To
+                      
                     </h6> -->
 
                     <!-- Collection Dropdown -->
@@ -3550,7 +3551,7 @@
                   :disabled="!canAddToCellar || addingToCellar"
                 >
                   <span v-if="addingToCellar" class="spinner-border spinner-border-sm me-2"></span>
-                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar!' }}
+                  {{ addingToCellar ? 'Adding...' : 'Add to Cellar' }}
                 </button>
               </div>
             </form>
@@ -7376,13 +7377,14 @@ export default {
 
 /* Right Column Placeholder */
 .add-drink-to-cellar .card {
-  border: 1px solid #dee2e6;
+  border: 1px solid #007bff;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 .add-drink-to-cellar .card-header {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  border-bottom: 1px solid #007bff;
 }
 
 .add-drink-to-cellar .form-label {
@@ -7458,9 +7460,10 @@ export default {
 }
 
 .add-drink-to-cellar .btn-primary:disabled {
-  background-color: #6c757d;
-  border-color: #6c757d;
-  opacity: 0.65;
+  bbackground-color: #0b5ed7;
+  border-color: #0a58ca;
+  opaciy: 0.8;
+  
 }
 
 .add-drink-to-cellar .spinner-border-sm {
@@ -8171,12 +8174,12 @@ export default {
 /* Cellar Change Log Styles */
 .cellar-change-log .card {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-  border: 1px solid #e0e0e0;
+  border: 1px solid rgb(219, 219, 219);
 }
 
 .cellar-change-log .card-header {
-  background: linear-gradient(45deg, #f8f9fa, #ffffff);
-  border-bottom: 1px solid #e0e0e0;
+  background: linear-gradient(45deg,  #ffffff, #b5b5b5ff);
+  border-bottom: 1px solid rgb(219, 219, 219);
   padding: 1rem 1.25rem;
 }
 
