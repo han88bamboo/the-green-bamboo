@@ -7,59 +7,28 @@
       <div class="container">
         <div class="row align-items-center min-vh-75">
           <!-- Cellar Image Column -->
-          <div class="col-12 col-lg-5 text-center mb-4 mb-lg-0 mobile-mt-3 mobile-mb-2">
-            <!-- <img 
-              src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Cellar.png?v=1755482090" 
-              alt="Cellar Collection" 
-              class="img-fluid cellar-image"
-            /> -->
-              <div class="cellar-icon ">
-                <div class="cellar-visual">
-                  <div class="shelf shelf-1">
-                    <div class="bottle wine-bottle"></div>
-                    <div class="bottle beer-bottle"></div>
-                    <div class="bottle spirit-bottle"></div>
-                    <div class="bottle cocktail-bottle"></div>
-                    <div class="bottle champagne-bottle"></div>
-                  </div>
-                  <div class="shelf shelf-2">
-                    <div class="bottle sake-bottle"></div>
-                    <div class="bottle whiskey-bottle"></div>
-                    <div class="bottle cocktail-bottle"></div>
-                    <div class="bottle beer-bottle"></div>
-                    <div class="bottle spirit-bottle"></div>
-                  </div>
-                  <div class="shelf shelf-3">
-                    <div class="bottle champagne-bottle"></div>
-                    <div class="bottle rum-bottle"></div>
-                    <div class="bottle vodka-bottle"></div>
-                    <div class="bottle wine-bottle"></div>
-                    <div class="bottle beer-bottle"></div>
-                  </div>
-                </div>
-              </div>
+          <div class="col-12 col-lg-5 text-center mb-4 pt-0 mobile-mt-3 mobile-mb-2" >
+          <video autoplay loop muted playsinline class="responsive-video img-fluid">
+            <source src="https://cdn.shopify.com/videos/c/o/v/6bc5078ab6dc4fcb92db24fcae589fac.mp4" type="video/mp4">
+          </video>
           </div>
-          
           <!-- Text Content Column -->
-          <div class="col-12 col-lg-7 text-center text-lg-start py-md-5 mobile-px-3">
+          <div class="col-12 col-lg-7 text-center text-lg-start ps-5 py-md-5 mobile-px-4">
             <div class="hero-content">
-              <h1 class="hero-title fw-bold mb-4">
-                Manage Your Drinks. <br>
-                <span class="accent-text">Any Drink, All in One Place.</span>
+              <h1 class="hero-title fw-bold mb-2 mobile-fs-3">
+                Carry your entire bottle collection in your pocket. <br>
               </h1>
+              <h2 class="fw-bold mb-4 mobile-fs-6"><span class="accent-text">Beers in your minifridge 🍺, wines in your cellar 🍷, whiskies on your shelf 🥃... Manage them all in one place.</span></h2>
               
-              <p class="hero-subtitle lead mb-4">
-                Cellars aren't just for wines. Fridges are for more than beers.  Whether you’re storing spirits, wines, beers, sakes at home or in your friend's bar, Drink-X keeps your collection organised and accessible.
+              <p class="hero-subtitle lead mb-4 mobile-view-hide">
+                Already thousands of bottles added. Track key stats and get to know your collection: from purchase price, storage location, percentage consumed, favourite food pairings... and more!
               </p>
-              
-              
-              <h3 class="coming-soon-text mb-0">Already thousands of bottles added. Join now to start managing yours in seconds.</h3>
               
               
               <!-- Sign Up Button -->
               <div class="mt-4 mb-5">
-                <router-link to="/signup" class="btn btn-sign-up btn-lg fw-bold px-5 py-3">
-                  Try My Cellar Today: Get Your Free Drink-X Account Now
+                <router-link to="/signup" class="btn primary-btn-less-round-blue btn-md fw-bold px-5 py-3 mobile-p-2">
+                  Join Drink-X for Free to Manage Your Cellar Now
                 </router-link>
               </div>
               
@@ -77,19 +46,19 @@
     </section>
     
     <!-- Features Preview Section -->
-    <section class="features-preview py-5" style="background-color: #f0f8ff;">
+    <section class="features-preview py-5" style="background-color: white;">
       <div class="container">
         <div class="row">
           <div class="col-12 text-center mb-5">
-            <h2 class="fw-bold mb-3" style="color: #027562;">Your Universal Drinks Cellar, Ready Now</h2>
-            <p class="lead">Revolutionary cellar management for all your drinks in one place</p>
+            <h3 class="fw-bold mb-3" >Your Universal Drinks Cellar, Ready Now</h3>
+            <p class="lead mobile-rating-smaller-text">Revolutionary cellar management for all your drinks in one place. Free to use with your Drink-X account.</p>
           </div>
         </div>
         
         <div class="row g-4">
           <!-- Feature 1 -->
           <div class="col-md-4">
-            <div class="feature-card h-100 p-4 text-center">
+            <div class="feature-card h-80 p-4 text-center">
               <div class="feature-icon mb-3">📱</div>
               <h4 class="fw-bold mb-3">Smart Tracking</h4>
               <p>Scan bottles, track quantities, and never lose track of your collection again.</p>
@@ -98,7 +67,7 @@
           
           <!-- Feature 2 -->
           <div class="col-md-4">
-            <div class="feature-card h-100 p-4 text-center">
+            <div class="feature-card h-80 p-4 text-center">
               <div class="feature-icon mb-3">🍷🥃🍺🍶🥂</div>
               <h4 class="fw-bold mb-3">Universal Support</h4>
               <p>From vintage wines to craft beers, premium spirits to artisanal sakes - manage it all.</p>
@@ -107,7 +76,7 @@
           
           <!-- Feature 3 -->
           <div class="col-md-4">
-            <div class="feature-card h-100 p-4 text-center">
+            <div class="feature-card h-80 p-4 text-center">
               <div class="feature-icon mb-3">📊</div>
               <h4 class="fw-bold mb-3">Smart Analytics</h4>
               <p>Get insights into your drinking patterns and discover new recommendations.</p>
@@ -425,7 +394,7 @@ export default {
   left: 0;
   width: 100%;
   height: 120px;
-  background: #f0f8ff;
+  background: white;
   clip-path: polygon(100% 0, 0 60%, 0 100%, 100% 100%);
   z-index: 1;
 }
@@ -434,7 +403,7 @@ export default {
 .feature-card {
   background: white;
   border: 2px solid #f0b358;
-  border-radius: 15px;
+  border-radius: 10px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }

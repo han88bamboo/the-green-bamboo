@@ -356,6 +356,8 @@
     </section>
     <!-- Top Rated Reviews End -->
 
+    <LandingPagePromoWidget />
+
     <!-- Recent Venue Reviews Section -->
     <section class="recent-reviews-section py-4">
         <div class="container">
@@ -1152,6 +1154,7 @@ import NavBar from "@/components/NavBar.vue";
 import LookingFor from '@/components/landing_page/LookingFor.vue';
 import editorialSection from '@/components/landing_page/editorialSection.vue';
 import LandingPageAutocompleteSearch from '@/components/LandingPageAutocompleteSearch.vue';
+import LandingPagePromoWidget from '@/components/LandingPagePromoWidget.vue';
 
 export default {
     components: {
@@ -1159,7 +1162,8 @@ export default {
         // AutocompleteSearch,
         LookingFor,
         editorialSection,
-        LandingPageAutocompleteSearch
+        LandingPageAutocompleteSearch,
+        LandingPagePromoWidget
     },
     setup() {
         // Computed property for structured data
