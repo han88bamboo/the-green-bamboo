@@ -1682,3 +1682,82 @@ CREATE TABLE "userFestivalTastedList" (
     "notes" TEXT DEFAULT '',
     UNIQUE ("userId", "venueId", "itemID", "variant") -- Prevent duplicate tastings for same user/venue/item/variant combination
 );
+
+-- ========= POLLING FEATURE TABLES =========
+
+-- ========= "pollQuestions" for creator to determine each question =========
+CREATE TABLE "pollQuestions" (
+    "id" SERIAL PRIMARY KEY,
+    "creatorId" INTEGER NOT NULL, -- The actual ID of the creator
+    "creatorType" VARCHAR(20) NOT NULL CHECK ("creatorType" IN ('user', 'venue', 'producer')), -- Type of creator
+    "title" VARCHAR(255) NOT NULL,
+    "questionText" TEXT NOT NULL,
+    "questionType" VARCHAR(20) NOT NULL CHECK ("questionType" IN ('multiple_choice_single_selection', 'multiple_choice_multi_selection', 'rating_scale')),
+    "isActive" BOOLEAN DEFAULT TRUE, -- whether poll is active (accepting responses) or closed (not accepting new responses) 
+    "isVisible" BOOLEAN DEFAULT TRUE, -- Whether poll is visible (if isActive is true, it's accepting responses and you can see responses and if isActive is false, you can just see the responses) or hidden (whether isActive is true or false, the public cannot see the poll)
+    "expiresAt" TIMESTAMP DEFAULT NULL, -- Optional expiration date after which poll will not acccept  responses anymore
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "orderIndex" INTEGER NOT NULL, -- Order of questions for the same creator (ie with the same creatorId and creatorType),
+    UNIQUE ("creatorId", "creatorType", "orderIndex") -- Ensure unique ordering within each creator
+);
+
+
+-- ========= "pollOptions" for creator to determine - only relevant for multiple_choice_single_selection and multiple_choice_multi_selection =========
+CREATE TABLE "pollOptions" (
+    "id" SERIAL PRIMARY KEY,
+    "pollId" INTEGER REFERENCES "pollQuestions"("id") ON DELETE CASCADE, -- The poll this option belongs to, foreign key referencing row in "pollQuestions"
+    "optionText" VARCHAR(500) NOT NULL,
+    "optionOrder" INTEGER NOT NULL, -- Order of options within the question
+    UNIQUE ("pollId", "optionOrder") -- Ensure unique ordering within each poll
+);
+
+-- ========= "pollResponses" for respondents to select =========
+CREATE TABLE "pollResponses" (
+    "id" SERIAL PRIMARY KEY,
+    "pollId" INTEGER REFERENCES "pollQuestions"("id") ON DELETE CASCADE,-- The poll this response belongs to, foreign key referencing row in "pollQuestions"
+    "respondentId" INTEGER REFERENCES "users"("id") ON DELETE CASCADE, -- only ordinary users are allowed to participate in polls
+    "selectedOptionIds" INTEGER[] DEFAULT NULL, -- Array of selected option IDs in pollOptions (only relevant for multiple_choice_single_selection and multiple_choice_multi_selection questions)
+    "ratingValue" INTEGER DEFAULT NULL, -- For rating_scale questions from 1 to 5 (only relevant for rating_scale questions)
+    CONSTRAINT check_response_data CHECK (
+        (selectedOptionIds IS NOT NULL AND ratingValue IS NULL) OR
+        (selectedOptionIds IS NULL AND ratingValue IS NOT NULL)
+    ),
+    UNIQUE ("pollId", "respondentId") -- Ensure each user can only have one response per poll
+);
+
+-- ========= POLLING FEATURE TRIGGERS =========
+
+-- Function to automatically deactivate expired polls
+CREATE OR REPLACE FUNCTION deactivate_expired_polls()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Check if poll has expired and is still active
+    IF NEW."expiresAt" IS NOT NULL AND 
+       NEW."expiresAt" <= CURRENT_TIMESTAMP AND 
+       NEW."isActive" = TRUE THEN
+        NEW."isActive" = FALSE;
+        NEW."updatedAt" = CURRENT_TIMESTAMP;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to automatically deactivate expired polls on UPDATE
+CREATE TRIGGER trigger_deactivate_expired_polls
+    BEFORE UPDATE ON "pollQuestions"
+    FOR EACH ROW
+    EXECUTE FUNCTION deactivate_expired_polls();
+
+-- Create indexes for better performance
+CREATE INDEX idx_poll_questions_creator ON "pollQuestions" ("creatorId", "creatorType");
+CREATE INDEX idx_poll_questions_active_visible ON "pollQuestions" ("isActive", "isVisible");
+CREATE INDEX idx_poll_questions_expires_at ON "pollQuestions" ("expiresAt") WHERE "expiresAt" IS NOT NULL;
+CREATE INDEX idx_poll_questions_created_at ON "pollQuestions" ("createdAt");
+CREATE INDEX idx_poll_options_poll_order ON "pollOptions" ("pollId", "optionOrder");
+CREATE INDEX idx_poll_responses_poll ON "pollResponses" ("pollId");
+CREATE INDEX idx_poll_responses_user ON "pollResponses" ("respondentId");
+CREATE INDEX idx_poll_responses_date ON "pollResponses" ("responseDate");
+
+
