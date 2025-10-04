@@ -42,7 +42,7 @@
         <!-- Poll Status Indicators -->
         <div class="poll-status">
           <span v-if="!currentPoll.isActive" class="badge bg-secondary me-2">Closed</span>
-          <span v-if="!currentPoll.isVisible" class="badge bg-warning me-2">Hidden</span>
+          <span v-if="!currentPoll.isVisible" class="badge  me-2" style="background-color:#596269;"><i class="bi bi-eye"></i> Hidden</span>
           <span v-if="currentPoll.expiresAt" class="badge bg-info me-2">
             Expires: {{ formatDate(currentPoll.expiresAt) }}
           </span>
@@ -54,7 +54,7 @@
           <div v-if="!canUserVote && currentUserId" class="user-status-message mb-3">
             <div v-if="isCreator" class="alert alert-secondary">
               <i class="bi bi-person-gear me-2"></i>
-              <strong>Poll Creator:</strong> You created this poll and can view the results.
+              <strong>Poll Creator:</strong> You created this poll.
             </div>
             <div v-else-if="currentUserType !== 'user'" class="alert alert-info">
               <i class="bi bi-building me-2"></i>
