@@ -2763,7 +2763,7 @@
             <div class="col-xl-3 col-12">
 
                 <!-- ------- START View Analytics ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                UVW
+                
                 
                 <!-- View Event Report Button (Festival/Event venues only) -->
                 <div v-if="selfView && targetVenue?.specialStatus === 'EVENT_FESTIVAL'" class="row">
