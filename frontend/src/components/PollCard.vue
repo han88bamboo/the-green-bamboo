@@ -209,9 +209,8 @@
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
               <div class="rating-scale">
-                <div class="rating-labels">
-                  <span class="rating-label-left">Strongly Disagree</span>
-                  <span class="rating-label-right">Strongly Agree</span>
+                <div class="rating-labels d-flex justify-content-center">
+                    <h5 >Select from 1 to 5:</h5>
                 </div>
                 <div class="rating-options">
                   <div 
@@ -288,19 +287,14 @@
       </button>
     </div>
 
-    <!-- Empty State -->
-    <div v-else class="empty-state">
-      <div class="empty-state-content">
-        <i class="bi bi-bar-chart text-muted"></i>
-        <h5 class="text-muted mt-2">No Polls Available</h5>
-        <p class="text-muted">{{ isCreator ? 'Create your first poll to engage with your audience!' : 'No polls have been created yet.' }}</p>
-      </div>
-    </div>
-
     <!-- Create Poll Button (for creators) -->
     <div v-if="isCreator" class="create-poll-section">
       <button class="btn btn-primary w-100" @click="showCreateModal = true">
-        <i class="bi bi-plus-lg me-2"></i>Create New Poll
+        <i class="bi bi-plus-lg me-2"></i>
+        <span v-if="polls.length === 0">
+          Create your first poll!
+        </span>
+        <span v-else>Create Another Poll</span>
       </button>
     </div>
 
@@ -1528,21 +1522,15 @@ export default {
   font-size: 0.875rem;
 }
 
-/* Empty State */
-.empty-state {
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.empty-state-content i {
-  font-size: 3rem;
-  margin-bottom: 15px;
-}
-
 /* Create Poll Section */
 .create-poll-section {
   padding: 20px;
   border-top: 1px solid #e9ecef;
+}
+
+.create-poll-section .btn {
+  line-height: 1.4;
+  padding: 15px 20px;
 }
 
 /* Mobile Responsive */
