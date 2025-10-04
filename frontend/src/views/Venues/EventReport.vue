@@ -202,7 +202,6 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h4 class="mb-0">Top 5 Most Popular Items</h4>
-                                        <p class="mb-0 text-muted">Items with the most unique tasters</p>
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
