@@ -321,7 +321,7 @@
             <form @submit.prevent="createPoll">
               <!-- Poll Title -->
               <div class="mb-3">
-                <label class="form-label">Poll Title</label>
+                <label class="form-label text-start d-flex">Poll Title</label>
                 <input 
                   type="text" 
                   class="form-control" 
@@ -333,7 +333,7 @@
 
               <!-- Poll Question -->
               <div class="mb-3">
-                <label class="form-label">Question</label>
+                <label class="form-label text-start d-flex">Question</label>
                 <textarea 
                   class="form-control" 
                   v-model="newPoll.questionText"
@@ -345,17 +345,17 @@
 
               <!-- Poll Type -->
               <div class="mb-3">
-                <label class="form-label">Poll Type</label>
+                <label class="form-label text-start d-flex">Poll Type</label>
                 <select class="form-select" v-model="newPoll.questionType" @change="resetOptions">
-                  <option value="multiple_choice_single_selection">Single Choice (like Instagram)</option>
-                  <option value="multiple_choice_multi_selection">Multiple Choice</option>
-                  <option value="rating_scale">Rating Scale (1-5)</option>
+                  <option value="multiple_choice_single_selection">Multiple Choices; Respondents Select One</option>
+                  <option value="multiple_choice_multi_selection">Multiple Choices; Respondents Select All That Apply</option>
+                  <option value="rating_scale">Rating Scale; Respondents Select From 1-5</option>
                 </select>
               </div>
 
               <!-- Options for Multiple Choice -->
               <div v-if="newPoll.questionType.includes('multiple_choice')" class="mb-3">
-                <label class="form-label">Options</label>
+                <label class="form-label text-start d-flex">Options</label>
                 <div 
                   v-for="(option, index) in newPoll.options" 
                   :key="index"
@@ -389,7 +389,7 @@
 
               <!-- Expiration Date -->
               <div class="mb-3">
-                <label class="form-label">Expiration Date (Optional)</label>
+                <label class="form-label text-start d-flex">Poll Closing Date (Optional)</label>
                 <input 
                   type="datetime-local" 
                   class="form-control" 
