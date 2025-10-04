@@ -71,18 +71,15 @@ def createPoll():
                     }), 400
         
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get the next orderIndex for this creator
-            if 'orderIndex' not in data:
-                cursor.execute("""
-                    SELECT COALESCE(MAX("orderIndex"), -1) + 1 as next_order
-                    FROM "pollQuestions" 
-                    WHERE "creatorId" = %s AND "creatorType" = %s
-                """, (data['creatorId'], data['creatorType']))
-                
-                result = cursor.fetchone()
-                next_order_index = result['next_order'] if result else 0
-            else:
-                next_order_index = data['orderIndex']
+            # Always calculate the next orderIndex for this creator (ignore any provided value)
+            cursor.execute("""
+                SELECT COALESCE(MAX("orderIndex"), -1) + 1 as next_order
+                FROM "pollQuestions" 
+                WHERE "creatorId" = %s AND "creatorType" = %s
+            """, (data['creatorId'], data['creatorType']))
+            
+            result = cursor.fetchone()
+            next_order_index = result['next_order'] if result else 0
             
             # Insert the poll question
             cursor.execute("""

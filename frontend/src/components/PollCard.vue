@@ -875,7 +875,7 @@ export default {
           questionType: this.newPoll.questionType,
           isVisible: this.newPoll.isVisible,
           expiresAt: this.newPoll.expiresAt || null,
-          orderIndex: this.polls.length,
+          // orderIndex will be calculated by backend
           options: []
         };
         
@@ -937,6 +937,10 @@ export default {
               }));
           }
           
+          // Calculate next orderIndex safely
+          const maxOrderIndex = this.polls.length > 0 ? Math.max(...this.polls.map(p => p.orderIndex || 0)) : -1;
+          const nextOrderIndex = maxOrderIndex + 1;
+          
           const newPoll = {
             id: Date.now(), // Temporary ID
             creatorId: this.creatorId,
@@ -949,7 +953,7 @@ export default {
             expiresAt: this.newPoll.expiresAt || null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            orderIndex: this.polls.length,
+            orderIndex: nextOrderIndex,
             options: fallbackOptions
           };
           
