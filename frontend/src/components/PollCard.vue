@@ -1264,7 +1264,7 @@ export default {
     async toggleDetailedResponses(pollId) {
       // If already showing, just hide
       if (this.showDetailedResponses[pollId]) {
-        this.$set(this.showDetailedResponses, pollId, false);
+        this.showDetailedResponses[pollId] = false;
         return;
       }
 
@@ -1274,7 +1274,7 @@ export default {
       }
 
       // Toggle visibility
-      this.$set(this.showDetailedResponses, pollId, !this.showDetailedResponses[pollId]);
+      this.showDetailedResponses[pollId] = !this.showDetailedResponses[pollId];
     },
 
     async loadDetailedResponses(pollId) {
@@ -1293,24 +1293,24 @@ export default {
             
             if (pollData && pollData.responses) {
               // Store the detailed responses for this poll
-              this.$set(this.detailedResponses, pollId, pollData.responses);
+              this.detailedResponses[pollId] = pollData.responses;
               console.log('Loaded detailed responses for poll', pollId, ':', pollData.responses);
             } else {
               // No responses found for this poll
-              this.$set(this.detailedResponses, pollId, []);
+              this.detailedResponses[pollId] = [];
             }
           } else {
             console.error('Error loading detailed responses:', responseData.message);
-            this.$set(this.detailedResponses, pollId, []);
+            this.detailedResponses[pollId] = [];
           }
         } else {
           console.error('Failed to load detailed responses:', response.statusText);
-          this.$set(this.detailedResponses, pollId, []);
+          this.detailedResponses[pollId] = [];
         }
         
       } catch (error) {
         console.error('Error loading detailed responses:', error);
-        this.$set(this.detailedResponses, pollId, []);
+        this.detailedResponses[pollId] = [];
       } finally {
         this.loadingDetailedResponses = false;
       }
