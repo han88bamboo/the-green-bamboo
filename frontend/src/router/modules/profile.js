@@ -42,6 +42,11 @@ const routes = [
     name: "profileVenue",
     component: () => import(/* webpackChunkName: "profile" */ "@/views/Venues/VenueProfile.vue"),
   },
+  {
+    path: "/venue/:venueID/event-report",
+    name: "eventReport",
+    component: () => import(/* webpackChunkName: "profile" */ "@/views/Venues/EventReport.vue"),
+  },
   // { - refactored venue profile commented out for now 
   //   path: "/profile/venue-refac/:venueID?/:username",
   //   name: "profileVenueRefac",

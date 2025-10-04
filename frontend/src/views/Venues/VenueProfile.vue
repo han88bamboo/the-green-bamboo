@@ -246,6 +246,31 @@
                                 </div>
                             </div>
 
+                            <!-- Event Report Button (Festival/Event venues only) -->
+                            <div v-if="targetVenue?.specialStatus === 'EVENT_FESTIVAL'" style="
+                display: flex;
+                align-items: flex-start;
+                gap: 16px;
+                margin-bottom: 16px;
+                ">
+                                <img src="/CreateEvent.png" style="
+                    width: 64px;
+                    height: 64px;
+                    object-fit: contain;
+                    border-radius: 4px;
+                " alt="View Event Report" />
+                                <div class="text-start">
+                                    <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                                        <strong>View Event Report</strong> (Access comprehensive analytics and insights about your event's performance, including tasting patterns, popular sections, and attendee engagement!)
+                                    </p>
+                                    <router-link :to="`/venue/${targetVenueID || targetVenue.id}/event-report`">
+                                        <button class="btn btn-warning btn-sm rounded fw-bold fs-8">
+                                            View Event Report
+                                        </button>
+                                    </router-link>
+                                </div>
+                            </div>
+
                             <!-- Action Item 6 -->
                             <div style="
                 display: flex;
@@ -2738,7 +2763,16 @@
             <div class="col-xl-3 col-12">
 
                 <!-- ------- START View Analytics ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-
+                UVW
+                
+                <!-- View Event Report Button (Festival/Event venues only) -->
+                <div v-if="selfView && targetVenue?.specialStatus === 'EVENT_FESTIVAL'" class="row">
+                    <router-link class="d-grid pb-3 text-decoration-none" :to="`/venue/${targetVenueID || targetVenue.id}/event-report`">
+                        <button type="button" class="btn secondary-btn-not-rounded rounded-0"
+                            style=" font-weight: bold;"> View Event Report </button>
+                    </router-link>
+                </div>
+                
                 <!-- View Analytics Button (Venue) -->
                 <div v-if="selfView" class="row">
                     <router-link class="d-grid pb-3 text-decoration-none" :to="{ path: '/dashboard/venue' }">
