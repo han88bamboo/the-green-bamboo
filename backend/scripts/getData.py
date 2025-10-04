@@ -5790,6 +5790,205 @@ def getFestivalTastings(user_id, venue_id):
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get aggregated festival tasting analytics for a venue
+@blueprint.route("/getUserFestivalTastedListAggregatedData/<int:venue_id>", methods=['GET'])
+def getUserFestivalTastedListAggregatedData(venue_id):
+    """
+    Get comprehensive festival tasting analytics for a specific venue.
+    Provides aggregated data for post-event reporting and analytics.
+    
+    Args:
+        venue_id (int): The ID of the venue
+        
+    Returns:
+        JSON object with:
+        - averageItemsPerAttendee: Average number of items tasted by each attendee
+        - topItems: Top 5 items with most unique tasters (including item details)
+        - topTasters: Top users with most items tasted
+        - tastingVelocity: Daily tasting velocity over the past 6 months
+        - totalStats: Overall statistics
+    """
+    conn = g.db
+    
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Base date filter for past 6 months
+            date_filter = "AND uft.\"tastedDate\" >= NOW() - INTERVAL '6 months'"
+            
+            # 1. Calculate average items per attendee
+            cursor.execute(f"""
+                SELECT 
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."userId") as unique_attendees,
+                    CASE 
+                        WHEN COUNT(DISTINCT uft."userId") > 0 
+                        THEN ROUND(COUNT(*)::DECIMAL / COUNT(DISTINCT uft."userId"), 2) 
+                        ELSE 0 
+                    END as avg_items_per_attendee
+                FROM "userFestivalTastedList" uft
+                WHERE uft."venueId" = %s
+                {date_filter}
+            """, (venue_id,))
+            
+            avg_stats = cursor.fetchone()
+            
+            # 2. Get top 5 items with most unique tasters (including item details)
+            cursor.execute(f"""
+                SELECT 
+                    uft."itemID",
+                    l."listingName",
+                    l."drinkType",
+                    l."drinkStyle", 
+                    l."abv",
+                    l."photo",
+                    p."producerName",
+                    l."originCountry",
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    ARRAY_AGG(DISTINCT uft."variant") FILTER (WHERE uft."variant" IS NOT NULL) as variants_tasted
+                FROM "userFestivalTastedList" uft
+                JOIN "listings" l ON uft."itemID" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                WHERE uft."venueId" = %s
+                {date_filter}
+                GROUP BY uft."itemID", l."listingName", l."drinkType", l."drinkStyle", 
+                         l."abv", l."photo", p."producerName", l."originCountry"
+                ORDER BY unique_tasters DESC, total_tastings DESC
+                LIMIT 5
+            """, (venue_id,))
+            
+            top_items = cursor.fetchall()
+            
+            # 3. Get top tasters (users with most items tasted)
+            cursor.execute(f"""
+                SELECT 
+                    uft."userId",
+                    u."username",
+                    u."displayName",
+                    u."photo",
+                    COUNT(*) as items_tasted,
+                    COUNT(DISTINCT uft."itemID") as unique_items_tasted,
+                    MIN(uft."tastedDate") as first_tasting,
+                    MAX(uft."tastedDate") as last_tasting
+                FROM "userFestivalTastedList" uft
+                JOIN "users" u ON uft."userId" = u."id"
+                WHERE uft."venueId" = %s
+                {date_filter}
+                GROUP BY uft."userId", u."username", u."displayName", u."photo"
+                ORDER BY items_tasted DESC, unique_items_tasted DESC
+                LIMIT 10
+            """, (venue_id,))
+            
+            top_tasters = cursor.fetchall()
+            
+            # 4. Calculate daily tasting velocity
+            cursor.execute(f"""
+                SELECT 
+                    DATE(uft."tastedDate") as tasting_date,
+                    COUNT(*) as daily_tastings,
+                    COUNT(DISTINCT uft."userId") as daily_unique_tasters,
+                    COUNT(DISTINCT uft."itemID") as daily_unique_items
+                FROM "userFestivalTastedList" uft
+                WHERE uft."venueId" = %s
+                {date_filter}
+                GROUP BY DATE(uft."tastedDate")
+                ORDER BY tasting_date DESC
+            """, (venue_id,))
+            
+            daily_velocity = cursor.fetchall()
+            
+            # 5. Get overall statistics
+            cursor.execute(f"""
+                SELECT 
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."userId") as total_unique_attendees,
+                    COUNT(DISTINCT uft."itemID") as total_unique_items,
+                    MIN(uft."tastedDate") as earliest_tasting,
+                    MAX(uft."tastedDate") as latest_tasting,
+                    COUNT(DISTINCT DATE(uft."tastedDate")) as active_days
+                FROM "userFestivalTastedList" uft
+                WHERE uft."venueId" = %s
+                {date_filter}
+            """, (venue_id,))
+            
+            total_stats = cursor.fetchone()
+            
+            # Format the response
+            response_data = {
+                "venueId": venue_id,
+                "dateRange": "Past 6 months",
+                "generatedAt": "CURRENT_TIMESTAMP",
+                
+                # Average items per attendee
+                "averageItemsPerAttendee": {
+                    "totalTastings": avg_stats['total_tastings'],
+                    "uniqueAttendees": avg_stats['unique_attendees'], 
+                    "average": float(avg_stats['avg_items_per_attendee'])
+                },
+                
+                # Top 5 items with most unique tasters
+                "topItems": [{
+                    "itemId": item['itemID'],
+                    "listingName": item['listingName'],
+                    "drinkType": item['drinkType'],
+                    "drinkStyle": item['drinkStyle'],
+                    "abv": float(item['abv']) if item['abv'] else None,
+                    "photo": item['photo'],
+                    "producerName": item['producerName'],
+                    "originCountry": item['originCountry'],
+                    "uniqueTasters": item['unique_tasters'],
+                    "totalTastings": item['total_tastings'],
+                    "variantsTasted": item['variants_tasted'] or []
+                } for item in top_items],
+                
+                # Top tasters
+                "topTasters": [{
+                    "userId": taster['userId'],
+                    "username": taster['username'],
+                    "displayName": taster['displayName'],
+                    "photo": taster['photo'],
+                    "itemsTasted": taster['items_tasted'],
+                    "uniqueItemsTasted": taster['unique_items_tasted'],
+                    "firstTasting": taster['first_tasting'].isoformat() if taster['first_tasting'] else None,
+                    "lastTasting": taster['last_tasting'].isoformat() if taster['last_tasting'] else None
+                } for taster in top_tasters],
+                
+                # Daily tasting velocity
+                "tastingVelocity": [{
+                    "date": velocity['tasting_date'].isoformat() if velocity['tasting_date'] else None,
+                    "dailyTastings": velocity['daily_tastings'],
+                    "dailyUniqueTasters": velocity['daily_unique_tasters'],
+                    "dailyUniqueItems": velocity['daily_unique_items']
+                } for velocity in daily_velocity],
+                
+                # Overall statistics
+                "totalStats": {
+                    "totalTastings": total_stats['total_tastings'],
+                    "totalUniqueAttendees": total_stats['total_unique_attendees'],
+                    "totalUniqueItems": total_stats['total_unique_items'],
+                    "earliestTasting": total_stats['earliest_tasting'].isoformat() if total_stats['earliest_tasting'] else None,
+                    "latestTasting": total_stats['latest_tasting'].isoformat() if total_stats['latest_tasting'] else None,
+                    "activeDays": total_stats['active_days']
+                }
+            }
+            
+            return jsonify({
+                "code": 200,
+                "success": True,
+                "data": response_data,
+                "message": f"Successfully retrieved festival analytics for venue {venue_id}"
+            })
+            
+    except Exception as e:
+        print(f"Error getting festival analytics for venue {venue_id}: {str(e)}")
+        return jsonify({
+            "code": 500,
+            "success": False,
+            "error": "Failed to retrieve festival analytics",
+            "message": str(e)
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] flavourTags
 @blueprint.route("/getFlavourTags")
 def getFlavourTags():
