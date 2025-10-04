@@ -35,6 +35,14 @@
                         <div class="mb-5">
                             <h2 class="mb-3">Event Overview & Summary</h2>
                             <div v-if="analyticsData">
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        
+                                    </div>
+                                    <div class="col-md-6">
+
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-3 col-6 mb-3">
                                         <div class="card text-center">
@@ -48,7 +56,7 @@
                                         <div class="card text-center">
                                             <div class="card-body">
                                                 <h3 class="text-success">{{ analyticsData.totalStats.totalUniqueAttendees }}</h3>
-                                                <p class="mb-0">Unique Attendees</p>
+                                                <p class="mb-0">Unique Tasters</p>
                                             </div>
                                         </div>
                                     </div>
@@ -67,14 +75,6 @@
                                                 <p class="mb-0">Active Days</p>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="row mt-3">
-                                    <div class="col-md-6">
-                                        <p><strong>Event Period:</strong> {{ formatDate(analyticsData.totalStats.earliestTasting) }} - {{ formatDate(analyticsData.totalStats.latestTasting) }}</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p><strong>Data Range:</strong> {{ analyticsData.dateRange }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -96,7 +96,7 @@
                                         <div class="row text-center">
                                             <div class="col-md-4">
                                                 <h2 class="text-primary">{{ analyticsData.averageItemsPerAttendee.average }}</h2>
-                                                <p class="text-muted">Items per attendee</p>
+                                                <p class="text-muted">Average number of items tasted per attendee</p>
                                             </div>
                                             <div class="col-md-4">
                                                 <h5>{{ analyticsData.averageItemsPerAttendee.totalTastings }}</h5>
@@ -104,7 +104,7 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <h5>{{ analyticsData.averageItemsPerAttendee.uniqueAttendees }}</h5>
-                                                <p class="text-muted">Unique attendees</p>
+                                                <p class="text-muted">Unique tasters</p>
                                             </div>
                                         </div>
                                     </div>
@@ -236,10 +236,6 @@
                                                             </div>
                                                             <div class="col-md-4 text-end">
                                                                 <div class="row text-center">
-                                                                    <div class="col-6">
-                                                                        <h4 class="text-success mb-0">{{ item.uniqueTasters }}</h4>
-                                                                        <small class="text-muted">Unique Tasters</small>
-                                                                    </div>
                                                                     <div class="col-6">
                                                                         <h4 class="text-primary mb-0">{{ item.totalTastings }}</h4>
                                                                         <small class="text-muted">Total Tastings</small>
