@@ -329,9 +329,114 @@
                         <!-- Poll Results Summary -->
                         <div class="mb-5">
                             <h2 class="mb-3">Poll Results Summary</h2>
-                            <div class="alert alert-info">
+                            
+                            <!-- Loading State -->
+                            <div v-if="!pollsLoaded" class="text-center py-4">
+                                <p class="text-muted">Loading poll data...</p>
+                            </div>
+                            
+                            <!-- No Polls State -->
+                            <div v-else-if="!pollData || pollData.polls.length === 0" class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                Poll results integration is coming soon. This section will display comprehensive poll analytics and attendee feedback.
+                                No polls found for this venue. Create polls to gather attendee feedback and see results here.
+                            </div>
+                            
+                            <!-- Poll Results Content -->
+                            <div v-else>
+                                <!-- Summary Stats -->
+                                <div class="row mb-4">
+                                    <div class="col-md-4 col-6 mb-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h3 class="text-primary">{{ pollData.summary.totalPolls }}</h3>
+                                                <p class="mb-0">Total Polls</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-6 mb-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h3 class="text-success">{{ pollData.summary.totalResponses }}</h3>
+                                                <p class="mb-0">Total Responses</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 col-12 mb-3">
+                                        <div class="card text-center">
+                                            <div class="card-body">
+                                                <h3 class="text-info">{{ pollData.summary.uniqueRespondents }}</h3>
+                                                <p class="mb-0">Unique Respondents</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Individual Poll Results -->
+                                <div class="row">
+                                    <div v-for="(poll, index) in pollData.polls" :key="poll.pollId" class="col-12 mb-4">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h5 class="mb-1">{{ poll.pollTitle }}</h5>
+                                                        <p class="mb-0 text-muted">{{ poll.questionText }}</p>
+                                                    </div>
+                                                    <span class="badge bg-secondary">{{ poll.totalResponses }} responses</span>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <!-- Multiple Choice Results -->
+                                                <div v-if="poll.processedResults && poll.processedResults.type === 'multiple_choice'">
+                                                    <div class="row">
+                                                        <div v-for="(option, optionId) in poll.processedResults.optionCounts" :key="optionId" class="col-md-6 mb-3">
+                                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                                <span class="fw-medium">{{ option.text }}</span>
+                                                                <span class="text-muted">{{ option.count }} ({{ option.percentage }}%)</span>
+                                                            </div>
+                                                            <div class="progress" style="height: 8px;">
+                                                                <div class="progress-bar" 
+                                                                     :style="{ width: option.percentage + '%' }"
+                                                                     :class="'bg-' + getProgressBarColor(index)">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Rating Results -->
+                                                <div v-else-if="poll.processedResults && poll.processedResults.type === 'rating'">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="text-center mb-3">
+                                                                <h2 class="text-primary mb-0">{{ poll.processedResults.average }}</h2>
+                                                                <p class="text-muted mb-0">Average Rating</p>
+                                                                <small class="text-muted">Based on {{ poll.processedResults.totalRatings }} ratings</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6 class="mb-2">Rating Distribution</h6>
+                                                            <div v-for="(count, rating) in poll.processedResults.distribution" :key="rating" class="d-flex align-items-center mb-1">
+                                                                <span class="me-2" style="min-width: 30px;">{{ rating }}★</span>
+                                                                <div class="progress flex-grow-1 me-2" style="height: 6px;">
+                                                                    <div class="progress-bar bg-warning" 
+                                                                         :style="{ width: poll.processedResults.totalRatings > 0 ? (count / poll.processedResults.totalRatings * 100) + '%' : '0%' }">
+                                                                    </div>
+                                                                </div>
+                                                                <span class="text-muted" style="min-width: 30px;">{{ count }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Fallback for other question types -->
+                                                <div v-else>
+                                                    <p class="text-muted">{{ poll.totalResponses }} responses received</p>
+                                                    <small class="text-muted">Question type: {{ poll.questionType }}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
@@ -360,6 +465,8 @@ export default {
             venueData: null,
             analyticsData: null,
             analyticsLoaded: false,
+            pollData: null,
+            pollsLoaded: false,
             showAllVelocityData: false,
             viewerType: localStorage.getItem('88B_accType') || '',
             viewerID: localStorage.getItem('88B_accID') || '',
@@ -377,6 +484,7 @@ export default {
         // Load analytics data if authorized
         if (this.isAuthorized) {
             await this.loadAnalyticsData();
+            await this.loadPollData();
         }
         
         this.dataLoaded = true;
@@ -468,6 +576,165 @@ export default {
                 
                 this.analyticsData = null;
             }
+        },
+        
+        async loadPollData() {
+            try {
+                console.log('📊 Loading poll data for venue:', this.venueID);
+                
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getPollResponses/${this.venueID}/venue`
+                );
+                
+                if (response.status === 200 && response.data?.code === 200) {
+                    console.log('✅ Poll data loaded successfully');
+                    console.log('📊 Poll data:', response.data.data);
+                    
+                    this.pollData = this.processPollData(response.data.data);
+                    this.pollsLoaded = true;
+                } else {
+                    console.error('❌ Failed to load poll data:', response.data);
+                    this.pollData = null;
+                }
+            } catch (error) {
+                console.error('❌ Error loading poll data:', error);
+                
+                // Handle specific error cases
+                if (error.response?.status === 404) {
+                    console.log('📭 No poll data found for this venue');
+                    this.pollData = { polls: [], summary: { totalPolls: 0, totalResponses: 0, uniqueRespondents: 0 } };
+                } else {
+                    this.pollData = null;
+                }
+                this.pollsLoaded = true;
+            }
+        },
+        
+        processPollData(rawPollData) {
+            if (!rawPollData || rawPollData.length === 0) {
+                return { 
+                    polls: [], 
+                    summary: { 
+                        totalPolls: 0, 
+                        totalResponses: 0, 
+                        uniqueRespondents: 0 
+                    } 
+                };
+            }
+            
+            const uniqueRespondents = new Set();
+            const processedPolls = rawPollData.map(poll => {
+                // Count unique respondents across all polls
+                poll.responses.forEach(response => {
+                    if (response.respondentId) {
+                        uniqueRespondents.add(response.respondentId);
+                    }
+                });
+                
+                // Process based on question type
+                if (poll.questionType === 'multiple_choice_single_selection' || poll.questionType === 'multiple_choice_multi_selection') {
+                    return this.processMultipleChoicePoll(poll);
+                } else if (poll.questionType === 'rating' || poll.questionType === 'rating_scale') {
+                    return this.processRatingPoll(poll);
+                } else {
+                    return poll; // Return as-is for other types
+                }
+            });
+            
+            return {
+                polls: processedPolls,
+                summary: {
+                    totalPolls: rawPollData.length,
+                    totalResponses: rawPollData.reduce((sum, poll) => sum + poll.totalResponses, 0),
+                    uniqueRespondents: uniqueRespondents.size
+                }
+            };
+        },
+        
+        processMultipleChoicePoll(poll) {
+            const optionCounts = {};
+            const totalResponses = poll.responses.length;
+            
+            // Initialize option counts
+            poll.options.forEach(option => {
+                optionCounts[option.id] = {
+                    text: option.optionText,
+                    count: 0,
+                    percentage: 0
+                };
+            });
+            
+            // Count responses
+            poll.responses.forEach(response => {
+                if (response.selectedOptionIds && Array.isArray(response.selectedOptionIds)) {
+                    response.selectedOptionIds.forEach(optionId => {
+                        if (optionCounts[optionId]) {
+                            optionCounts[optionId].count++;
+                        }
+                    });
+                }
+            });
+            
+            // Calculate percentages
+            Object.values(optionCounts).forEach(option => {
+                option.percentage = totalResponses > 0 ? Math.round((option.count / totalResponses) * 100) : 0;
+            });
+            
+            return {
+                ...poll,
+                processedResults: {
+                    type: 'multiple_choice',
+                    optionCounts: optionCounts,
+                    totalResponses: totalResponses
+                }
+            };
+        },
+        
+        processRatingPoll(poll) {
+            console.log('🔍 Processing rating poll:', poll.pollTitle, 'Type:', poll.questionType);
+            console.log('🔍 Poll responses:', poll.responses);
+            
+            const ratings = [];
+            let sum = 0;
+            let validRatings = 0;
+            
+            poll.responses.forEach(response => {
+                console.log('🔍 Processing response:', response.ratingValue, typeof response.ratingValue);
+                if (response.ratingValue !== null && response.ratingValue !== undefined) {
+                    ratings.push(response.ratingValue);
+                    sum += response.ratingValue;
+                    validRatings++;
+                }
+            });
+            
+            const average = validRatings > 0 ? (sum / validRatings).toFixed(1) : 0;
+            
+            // Count rating distribution (assuming 1-5 scale)
+            const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            ratings.forEach(rating => {
+                if (Object.prototype.hasOwnProperty.call(distribution, rating)) {
+                    distribution[rating]++;
+                }
+            });
+            
+            const result = {
+                ...poll,
+                processedResults: {
+                    type: 'rating',
+                    average: average,
+                    totalRatings: validRatings,
+                    distribution: distribution,
+                    ratings: ratings
+                }
+            };
+            
+            console.log('🔍 Processed rating poll result:', result);
+            return result;
+        },
+        
+        getProgressBarColor(index) {
+            const colors = ['primary', 'success', 'info', 'warning', 'danger', 'secondary'];
+            return colors[index % colors.length];
         },
         
         formatDate(dateString) {
