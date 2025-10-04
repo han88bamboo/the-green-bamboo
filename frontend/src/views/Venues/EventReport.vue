@@ -27,14 +27,35 @@
             <div v-else>
                 <div class="row">
                     <div class="col-12">
-                        <h1 class="mb-4">Event Report - {{ venueName }}</h1>
-                        <p class="text-muted">Comprehensive analytics and insights for your event</p>
+                        <!-- Main Title -->
+                        <h1 class="mb-2">Drink-X Event Report: {{ venueName }}</h1>
+                        <p class="text-muted mb-4">Date Generated: {{ getCurrentDate() }}</p>
                         
-                        <!-- Placeholder for future content -->
-                        <div class="alert alert-info">
-                            <h5>Coming Soon!</h5>
-                            <p class="mb-0">Event analytics and reporting features will be implemented here.</p>
+                        <!-- Event Overview & Summary -->
+                        <div class="mb-5">
+                            <h2 class="mb-3">Event Overview & Summary</h2>
                         </div>
+                        
+                        <!-- Attendee Engagement Metrics -->
+                        <div class="mb-5">
+                            <h2 class="mb-3">Attendee Engagement Metrics</h2>
+                        </div>
+                        
+                        <!-- Item Performance Analytics -->
+                        <div class="mb-5">
+                            <h2 class="mb-3">Item Performance Analytics</h2>
+                        </div>
+                        
+                        <!-- Section Performance Analysis -->
+                        <div class="mb-5">
+                            <h2 class="mb-3">Section Performance Analysis</h2>
+                        </div>
+                        
+                        <!-- Poll Results Summary -->
+                        <div class="mb-5">
+                            <h2 class="mb-3">Poll Results Summary</h2>
+                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -120,6 +141,14 @@ export default {
                 console.log('🚫 Access denied - redirecting');
                 this.$router.push('/');
             }
+        },
+        
+        getCurrentDate() {
+            return new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
         }
     },
     watch: {
