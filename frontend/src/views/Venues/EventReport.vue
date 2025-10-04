@@ -27,6 +27,13 @@
             <div v-else>
                 <div class="row">
                     <div class="col-12">
+                        <!-- Print Button - Hidden in print view -->
+                        <div class="d-print-none mb-4">
+                            <button @click="printReport" class="btn btn-outline-primary">
+                                <i class="fas fa-print me-2"></i>Print Report
+                            </button>
+                        </div>
+                        
                         <!-- Main Title -->
                         <h1 class="mb-2">Drink-X Event Report: {{ venueName }}</h1>
                         <p class="text-muted mb-4">Date Generated: {{ getCurrentDate() }}</p>
@@ -490,6 +497,12 @@ export default {
         this.dataLoaded = true;
     },
     methods: {
+        printReport() {
+            // Trigger the browser's print dialog
+            // The CSS @media print rules will handle hiding non-report elements
+            window.print();
+        },
+        
         async loadVenueData() {
             try {
                 console.log('🔄 Loading venue data for ID:', this.venueID);
@@ -791,6 +804,138 @@ export default {
 @media (min-width: 768px) {
     .mobile-pt-3 {
         padding-top: 3rem;
+    }
+}
+</style>
+
+<!-- Global print styles to ensure footer hiding works across components -->
+<style>
+/* Print Styles - Global to affect all components */
+@media print {
+    /* Hide everything by default */
+    * {
+        visibility: hidden;
+    }
+    
+    /* Specifically hide common footer and navigation elements */
+    footer,
+    nav,
+    .navbar,
+    .footer,
+    .nav,
+    .navigation,
+    [class*="footer"],
+    [class*="nav"],
+    [id*="footer"],
+    [id*="nav"],
+    .d-print-none {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Show only the report container and its children */
+    .container, .container * {
+        visibility: visible;
+    }
+    
+    /* Position the report container to fill the page */
+    .container {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Ensure proper page breaks */
+    .mb-5 {
+        page-break-inside: avoid;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    /* Optimize card layouts for print */
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        margin-bottom: 1rem !important;
+        page-break-inside: avoid;
+    }
+    
+    /* Ensure proper text colors for print */
+    .text-muted {
+        color: #6c757d !important;
+    }
+    
+    .text-primary {
+        color: #0d6efd !important;
+    }
+    
+    .text-success {
+        color: #198754 !important;
+    }
+    
+    .text-warning {
+        color: #ffc107 !important;
+    }
+    
+    .text-info {
+        color: #0dcaf0 !important;
+    }
+    
+    /* Optimize table layouts */
+    .table {
+        font-size: 0.85rem !important;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    /* Optimize badge styles for print */
+    .badge {
+        border: 1px solid #dee2e6 !important;
+        color: #000 !important;
+        background-color: #f8f9fa !important;
+    }
+    
+    /* Progress bars for print */
+    .progress {
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    .progress-bar {
+        background-color: #6c757d !important;
+    }
+    
+    /* Optimize image sizes */
+    img {
+        max-width: 60px !important;
+        max-height: 60px !important;
+    }
+    
+    /* Remove unnecessary spacing */
+    .py-4, .py-5 {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+    }
+    
+    /* Ensure headers are kept with content */
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Optimize row layouts */
+    .row {
+        margin: 0 !important;
+    }
+    
+    .col-12, .col-md-3, .col-md-4, .col-md-6 {
+        padding: 0.25rem !important;
     }
 }
 </style>
