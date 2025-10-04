@@ -1,0 +1,1335 @@
+<template>
+  <div class="poll-card-container">
+    <!-- Poll Cards Carousel -->
+    <div class="poll-carousel" v-if="polls.length > 0">
+      <!-- Navigation Arrows -->
+      <button 
+        v-if="polls.length > 1"
+        class="carousel-arrow carousel-arrow-left" 
+        @click="previousPoll"
+        :disabled="currentPollIndex === 0"
+      >
+        <i class="bi bi-chevron-left"></i>
+      </button>
+
+      <!-- Poll Card -->
+      <div class="poll-card">
+        <div class="poll-header">
+          <div class="poll-title-section">
+            <h4 class="poll-title">{{ currentPoll.title }}</h4>
+            <p class="poll-question">{{ currentPoll.questionText }}</p>
+          </div>
+          
+          <!-- Creator Controls (only visible to poll creator) -->
+          <div v-if="isCreator" class="poll-controls">
+            <button 
+              class="btn btn-sm btn-outline-secondary me-2" 
+              @click="toggleVisibility(currentPoll)"
+              :title="currentPoll.isVisible ? 'Hide Poll' : 'Show Poll'"
+            >
+              <i :class="currentPoll.isVisible ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+            </button>
+            <button 
+              class="btn btn-sm btn-outline-danger" 
+              @click="deletePoll(currentPoll.id)"
+              title="Delete Poll"
+            >
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Poll Status Indicators -->
+        <div class="poll-status">
+          <span v-if="!currentPoll.isActive" class="badge bg-secondary me-2">Closed</span>
+          <span v-if="!currentPoll.isVisible" class="badge bg-warning me-2">Hidden</span>
+          <span v-if="currentPoll.expiresAt" class="badge bg-info me-2">
+            Expires: {{ formatDate(currentPoll.expiresAt) }}
+          </span>
+        </div>
+
+        <!-- Poll Content Based on Type -->
+        <div class="poll-content mt-3">
+          <!-- Multiple Choice Single Selection -->
+          <div v-if="currentPoll.questionType === 'multiple_choice_single_selection'">
+            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+              <div 
+                v-for="option in currentPoll.options" 
+                :key="option.id"
+                class="poll-option single-choice"
+                @click="selectSingleOption(currentPoll.id, option.id)"
+                :class="{ 'selected': selectedSingleOption === option.id }"
+              >
+                <div class="option-radio">
+                  <input 
+                    type="radio" 
+                    :name="`poll-${currentPoll.id}`" 
+                    :value="option.id"
+                    v-model="selectedSingleOption"
+                  >
+                </div>
+                <span class="option-text">{{ option.optionText }}</span>
+              </div>
+              <button 
+                class="btn btn-primary mt-3" 
+                @click="submitSingleChoice(currentPoll.id)"
+                :disabled="!selectedSingleOption"
+              >
+                Submit Vote
+              </button>
+            </div>
+            <div v-else class="poll-results">
+              <div 
+                v-for="option in currentPoll.options" 
+                :key="option.id"
+                class="result-option"
+              >
+                <div class="result-header">
+                  <span class="option-text">{{ option.optionText }}</span>
+                  <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                </div>
+                <div class="progress">
+                  <div 
+                    class="progress-bar" 
+                    :style="{ width: getOptionPercentage(currentPoll.id, option.id) + '%' }"
+                    :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
+                  ></div>
+                </div>
+              </div>
+              <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+            </div>
+          </div>
+
+          <!-- Multiple Choice Multi Selection -->
+          <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection'">
+            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+              <div 
+                v-for="option in currentPoll.options" 
+                :key="option.id"
+                class="poll-option multi-choice"
+                @click="toggleMultiOption(option.id)"
+                :class="{ 'selected': selectedMultiOptions.includes(option.id) }"
+              >
+                <div class="option-checkbox">
+                  <input 
+                    type="checkbox" 
+                    :value="option.id"
+                    v-model="selectedMultiOptions"
+                  >
+                </div>
+                <span class="option-text">{{ option.optionText }}</span>
+              </div>
+              <button 
+                class="btn btn-primary mt-3" 
+                @click="submitMultiChoice(currentPoll.id)"
+                :disabled="selectedMultiOptions.length === 0"
+              >
+                Submit Vote
+              </button>
+            </div>
+            <div v-else class="poll-results">
+              <div 
+                v-for="option in currentPoll.options" 
+                :key="option.id"
+                class="result-option"
+              >
+                <div class="result-header">
+                  <span class="option-text">{{ option.optionText }}</span>
+                  <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                </div>
+                <div class="progress">
+                  <div 
+                    class="progress-bar" 
+                    :style="{ width: getOptionPercentage(currentPoll.id, option.id) + '%' }"
+                    :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
+                  ></div>
+                </div>
+              </div>
+              <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+            </div>
+          </div>
+
+          <!-- Rating Scale -->
+          <div v-if="currentPoll.questionType === 'rating_scale'">
+            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+              <div class="rating-scale">
+                <div class="rating-labels">
+                  <span class="rating-label-left">Strongly Disagree</span>
+                  <span class="rating-label-right">Strongly Agree</span>
+                </div>
+                <div class="rating-options">
+                  <div 
+                    v-for="rating in [1, 2, 3, 4, 5]" 
+                    :key="rating"
+                    class="rating-option"
+                    @click="selectRating(currentPoll.id, rating)"
+                    :class="{ 'selected': selectedRating === rating }"
+                  >
+                    <div class="rating-circle">{{ rating }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="poll-results rating-results">
+              <div class="average-rating">
+                <div class="rating-display">
+                  <span class="rating-number">{{ getAverageRating(currentPoll.id) }}</span>
+                  <span class="rating-scale-text">/5</span>
+                </div>
+                <div class="rating-breakdown">
+                  <div 
+                    v-for="rating in [5, 4, 3, 2, 1]" 
+                    :key="rating"
+                    class="rating-bar"
+                  >
+                    <span class="rating-label">{{ rating }}</span>
+                    <div class="progress">
+                      <div 
+                        class="progress-bar" 
+                        :style="{ width: getRatingPercentage(currentPoll.id, rating) + '%' }"
+                        :class="{ 'user-voted': userRating === rating }"
+                      ></div>
+                    </div>
+                    <span class="rating-count">{{ getRatingCount(currentPoll.id, rating) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Poll Navigation Info -->
+        <div v-if="polls.length > 1" class="poll-navigation-info">
+          <span class="poll-counter">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+        </div>
+      </div>
+
+      <!-- Navigation Arrows -->
+      <button 
+        v-if="polls.length > 1"
+        class="carousel-arrow carousel-arrow-right" 
+        @click="nextPoll"
+        :disabled="currentPollIndex === polls.length - 1"
+      >
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="empty-state">
+      <div class="empty-state-content">
+        <i class="bi bi-bar-chart text-muted"></i>
+        <h5 class="text-muted mt-2">No Polls Available</h5>
+        <p class="text-muted">{{ isCreator ? 'Create your first poll to engage with your audience!' : 'No polls have been created yet.' }}</p>
+      </div>
+    </div>
+
+    <!-- Create Poll Button (for creators) -->
+    <div v-if="isCreator" class="create-poll-section">
+      <button class="btn btn-primary w-100" @click="showCreateModal = true">
+        <i class="bi bi-plus-lg me-2"></i>Create New Poll
+      </button>
+    </div>
+
+    <!-- Create Poll Modal -->
+    <div 
+      v-if="showCreateModal" 
+      class="modal fade show" 
+      style="display: block; background-color: rgba(0,0,0,0.5);"
+      @click.self="closeCreateModal"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New Poll</h5>
+            <button type="button" class="btn-close" @click="closeCreateModal"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="createPoll">
+              <!-- Poll Title -->
+              <div class="mb-3">
+                <label class="form-label">Poll Title</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="newPoll.title"
+                  placeholder="Enter poll title"
+                  required
+                >
+              </div>
+
+              <!-- Poll Question -->
+              <div class="mb-3">
+                <label class="form-label">Question</label>
+                <textarea 
+                  class="form-control" 
+                  v-model="newPoll.questionText"
+                  placeholder="Enter your question"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+
+              <!-- Poll Type -->
+              <div class="mb-3">
+                <label class="form-label">Poll Type</label>
+                <select class="form-select" v-model="newPoll.questionType" @change="resetOptions">
+                  <option value="multiple_choice_single_selection">Single Choice (like Instagram)</option>
+                  <option value="multiple_choice_multi_selection">Multiple Choice</option>
+                  <option value="rating_scale">Rating Scale (1-5)</option>
+                </select>
+              </div>
+
+              <!-- Options for Multiple Choice -->
+              <div v-if="newPoll.questionType.includes('multiple_choice')" class="mb-3">
+                <label class="form-label">Options</label>
+                <div 
+                  v-for="(option, index) in newPoll.options" 
+                  :key="index"
+                  class="input-group mb-2"
+                >
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    v-model="option.text"
+                    :placeholder="`Option ${index + 1}`"
+                    required
+                  >
+                  <button 
+                    v-if="newPoll.options.length > 2"
+                    type="button" 
+                    class="btn btn-outline-danger" 
+                    @click="removeOption(index)"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <button 
+                  v-if="newPoll.options.length < 10"
+                  type="button" 
+                  class="btn btn-outline-secondary btn-sm" 
+                  @click="addOption"
+                >
+                  <i class="bi bi-plus me-1"></i>Add Option
+                </button>
+              </div>
+
+              <!-- Expiration Date -->
+              <div class="mb-3">
+                <label class="form-label">Expiration Date (Optional)</label>
+                <input 
+                  type="datetime-local" 
+                  class="form-control" 
+                  v-model="newPoll.expiresAt"
+                >
+              </div>
+
+              <!-- Visibility -->
+              <div class="mb-3">
+                <div class="form-check">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    v-model="newPoll.isVisible"
+                    id="pollVisible"
+                  >
+                  <label class="form-check-label" for="pollVisible">
+                    Make poll visible to public
+                  </label>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeCreateModal">Cancel</button>
+            <button type="button" class="btn btn-primary" @click="createPoll">Create Poll</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'PollCard',
+  props: {
+    creatorId: {
+      type: Number,
+      required: true
+    },
+    creatorType: {
+      type: String,
+      required: true,
+      validator: value => ['user', 'venue', 'producer'].includes(value)
+    },
+    currentUserId: {
+      type: Number,
+      default: null
+    },
+    isCreator: {
+      type: Boolean,
+      default: false
+    }
+  },
+  data() {
+    return {
+      // Poll data
+      polls: [],
+      pollResponses: [],
+      currentPollIndex: 0,
+      
+      // User selections
+      selectedSingleOption: null,
+      selectedMultiOptions: [],
+      selectedRating: null,
+      userRating: null,
+      
+      // Modal state
+      showCreateModal: false,
+      
+      // New poll form
+      newPoll: {
+        title: '',
+        questionText: '',
+        questionType: 'multiple_choice_single_selection',
+        options: [
+          { text: '' },
+          { text: '' }
+        ],
+        expiresAt: null,
+        isVisible: true
+      }
+    }
+  },
+  computed: {
+    currentPoll() {
+      return this.polls[this.currentPollIndex] || {};
+    },
+    
+    visiblePolls() {
+      if (this.isCreator) {
+        return this.polls; // Creators can see all their polls
+      }
+      return this.polls.filter(poll => poll.isVisible);
+    }
+  },
+  methods: {
+    // Navigation
+    nextPoll() {
+      if (this.currentPollIndex < this.polls.length - 1) {
+        this.currentPollIndex++;
+        this.resetSelections();
+      }
+    },
+    
+    previousPoll() {
+      if (this.currentPollIndex > 0) {
+        this.currentPollIndex--;
+        this.resetSelections();
+      }
+    },
+    
+    resetSelections() {
+      this.selectedSingleOption = null;
+      this.selectedMultiOptions = [];
+      this.selectedRating = null;
+      this.userRating = null;
+    },
+    
+    // Single Choice Voting
+    selectSingleOption(pollId, optionId) {
+      this.selectedSingleOption = optionId;
+    },
+    
+    submitSingleChoice(pollId) {
+      if (this.selectedSingleOption) {
+        this.submitVote(pollId, [this.selectedSingleOption], null);
+      }
+    },
+    
+    // Multi Choice Voting
+    toggleMultiOption(optionId) {
+      const index = this.selectedMultiOptions.indexOf(optionId);
+      if (index > -1) {
+        this.selectedMultiOptions.splice(index, 1);
+      } else {
+        this.selectedMultiOptions.push(optionId);
+      }
+    },
+    
+    submitMultiChoice(pollId) {
+      if (this.selectedMultiOptions.length > 0) {
+        this.submitVote(pollId, this.selectedMultiOptions, null);
+      }
+    },
+    
+    // Rating Scale Voting
+    selectRating(pollId, rating) {
+      this.selectedRating = rating;
+      this.submitVote(pollId, null, rating);
+    },
+    
+    // Submit Vote
+    async submitVote(pollId, selectedOptionIds, ratingValue) {
+      if (!this.currentUserId) {
+        alert('Please log in to vote on polls.');
+        return;
+      }
+      
+      try {
+        const voteData = {
+          pollId,
+          respondentId: this.currentUserId,
+          selectedOptionIds,
+          ratingValue
+        };
+        
+        console.log('Submitting vote:', voteData);
+        
+        // Submit vote to backend endpoint
+        const response = await fetch(`${process.env.VUE_APP_API_URL}/submitPoll/submitResponse`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(voteData)
+        });
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          
+          if (responseData.code === 200) {
+            // Add to local responses for immediate UI update
+            this.pollResponses.push({
+              id: responseData.data.id,
+              pollId,
+              respondentId: this.currentUserId,
+              selectedOptionIds,
+              ratingValue
+            });
+            
+            this.userRating = ratingValue;
+            
+            // Reset selections
+            this.resetSelections();
+            
+            console.log('Vote submitted successfully');
+          } else {
+            console.error('Failed to submit vote:', responseData.message);
+            alert('Failed to submit vote. Please try again.');
+          }
+        } else {
+          console.error('Failed to submit vote:', response.statusText);
+          alert('Failed to submit vote. Please try again.');
+        }
+        
+      } catch (error) {
+        console.error('Error submitting vote:', error);
+        
+        // Fallback for development - add to local responses
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using local fallback for vote submission...');
+          const response = {
+            id: Date.now(), // Temporary ID
+            pollId,
+            respondentId: this.currentUserId,
+            selectedOptionIds,
+            ratingValue
+          };
+          
+          this.pollResponses.push(response);
+          this.userRating = ratingValue;
+          this.resetSelections();
+        } else {
+          alert('Network error. Please check your connection and try again.');
+        }
+      }
+    },
+    
+    // Check if user has answered
+    hasAnswered(pollId) {
+      return this.pollResponses.some(response => 
+        response.pollId === pollId && response.respondentId === this.currentUserId
+      );
+    },
+    
+    // Results calculations
+    getTotalVotes(pollId) {
+      return this.pollResponses.filter(response => response.pollId === pollId).length;
+    },
+    
+    getOptionPercentage(pollId, optionId) {
+      const totalVotes = this.getTotalVotes(pollId);
+      if (totalVotes === 0) return 0;
+      
+      const optionVotes = this.pollResponses.filter(response => 
+        response.pollId === pollId && 
+        response.selectedOptionIds && 
+        response.selectedOptionIds.includes(optionId)
+      ).length;
+      
+      return Math.round((optionVotes / totalVotes) * 100);
+    },
+    
+    userVotedForOption(pollId, optionId) {
+      const userResponse = this.pollResponses.find(response => 
+        response.pollId === pollId && response.respondentId === this.currentUserId
+      );
+      
+      return userResponse && 
+             userResponse.selectedOptionIds && 
+             userResponse.selectedOptionIds.includes(optionId);
+    },
+    
+    getAverageRating(pollId) {
+      const ratingResponses = this.pollResponses.filter(response => 
+        response.pollId === pollId && response.ratingValue
+      );
+      
+      if (ratingResponses.length === 0) return 0;
+      
+      const sum = ratingResponses.reduce((acc, response) => acc + response.ratingValue, 0);
+      return (sum / ratingResponses.length).toFixed(1);
+    },
+    
+    getRatingPercentage(pollId, rating) {
+      const totalVotes = this.getTotalVotes(pollId);
+      if (totalVotes === 0) return 0;
+      
+      const ratingVotes = this.pollResponses.filter(response => 
+        response.pollId === pollId && response.ratingValue === rating
+      ).length;
+      
+      return Math.round((ratingVotes / totalVotes) * 100);
+    },
+    
+    getRatingCount(pollId, rating) {
+      return this.pollResponses.filter(response => 
+        response.pollId === pollId && response.ratingValue === rating
+      ).length;
+    },
+    
+    // Creator Controls
+    async toggleVisibility(poll) {
+      try {
+        // TODO: Implement backend poll visibility update endpoint
+        // const response = await fetch(`/backend/polls/updateVisibility/${poll.id}`, {
+        //   method: 'PUT',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify({ isVisible: !poll.isVisible })
+        // });
+        // 
+        // if (response.ok) {
+        //   const responseData = await response.json();
+        //   if (responseData.code === 200) {
+        //     poll.isVisible = !poll.isVisible;
+        //     console.log('Visibility updated for poll:', poll.id, 'to:', poll.isVisible);
+        //   } else {
+        //     alert('Failed to update poll visibility: ' + responseData.message);
+        //   }
+        // } else {
+        //   alert('Failed to update poll visibility. Please try again.');
+        // }
+        
+        // For now, update locally (development fallback)
+        poll.isVisible = !poll.isVisible;
+        console.log('Toggling visibility for poll:', poll.id, 'to:', poll.isVisible);
+        
+      } catch (error) {
+        console.error('Error updating poll visibility:', error);
+        alert('Failed to update poll visibility. Please try again.');
+      }
+    },
+    
+    async deletePoll(pollId) {
+      if (confirm('Are you sure you want to delete this poll? This action cannot be undone.')) {
+        try {
+          // TODO: Implement backend poll deletion endpoint
+          // const response = await fetch(`/backend/polls/delete/${pollId}`, {
+          //   method: 'DELETE',
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   }
+          // });
+          // 
+          // if (response.ok) {
+          //   const responseData = await response.json();
+          //   if (responseData.code === 200) {
+          //     const index = this.polls.findIndex(poll => poll.id === pollId);
+          //     if (index > -1) {
+          //       this.polls.splice(index, 1);
+          //       // Adjust current index if necessary
+          //       if (this.currentPollIndex >= this.polls.length) {
+          //         this.currentPollIndex = Math.max(0, this.polls.length - 1);
+          //       }
+          //     }
+          //     console.log('Poll deleted:', pollId);
+          //   } else {
+          //     alert('Failed to delete poll: ' + responseData.message);
+          //   }
+          // } else {
+          //   alert('Failed to delete poll. Please try again.');
+          // }
+          
+          // For now, delete locally (development fallback)
+          const index = this.polls.findIndex(poll => poll.id === pollId);
+          if (index > -1) {
+            this.polls.splice(index, 1);
+            // Adjust current index if necessary
+            if (this.currentPollIndex >= this.polls.length) {
+              this.currentPollIndex = Math.max(0, this.polls.length - 1);
+            }
+          }
+          console.log('Deleting poll:', pollId);
+          
+        } catch (error) {
+          console.error('Error deleting poll:', error);
+          alert('Failed to delete poll. Please try again.');
+        }
+      }
+    },
+    
+    // Modal Management
+    closeCreateModal() {
+      this.showCreateModal = false;
+      this.resetNewPollForm();
+    },
+    
+    resetNewPollForm() {
+      this.newPoll = {
+        title: '',
+        questionText: '',
+        questionType: 'multiple_choice_single_selection',
+        options: [
+          { text: '' },
+          { text: '' }
+        ],
+        expiresAt: null,
+        isVisible: true
+      };
+    },
+    
+    resetOptions() {
+      this.newPoll.options = [
+        { text: '' },
+        { text: '' }
+      ];
+    },
+    
+    addOption() {
+      if (this.newPoll.options.length < 10) {
+        this.newPoll.options.push({ text: '' });
+      }
+    },
+    
+    removeOption(index) {
+      if (this.newPoll.options.length > 2) {
+        this.newPoll.options.splice(index, 1);
+      }
+    },
+    
+    async createPoll() {
+      // Validate form
+      if (!this.newPoll.title.trim() || !this.newPoll.questionText.trim()) {
+        alert('Please fill in the title and question.');
+        return;
+      }
+      
+      if (this.newPoll.questionType.includes('multiple_choice')) {
+        const validOptions = this.newPoll.options.filter(option => option.text.trim());
+        if (validOptions.length < 2) {
+          alert('Please provide at least 2 options.');
+          return;
+        }
+      }
+      
+      try {
+        const pollData = {
+          creatorId: this.creatorId,
+          creatorType: this.creatorType,
+          title: this.newPoll.title.trim(),
+          questionText: this.newPoll.questionText.trim(),
+          questionType: this.newPoll.questionType,
+          isVisible: this.newPoll.isVisible,
+          expiresAt: this.newPoll.expiresAt || null,
+          orderIndex: this.polls.length,
+          options: []
+        };
+        
+        // Add options for multiple choice questions
+        if (this.newPoll.questionType.includes('multiple_choice')) {
+          pollData.options = this.newPoll.options
+            .filter(option => option.text.trim())
+            .map((option, index) => ({
+              optionText: option.text.trim(),
+              optionOrder: index
+            }));
+        }
+        
+        console.log('Creating poll:', pollData);
+        
+        // TODO: Implement backend poll creation endpoint
+        // const response = await fetch('/backend/polls/create', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        //   body: JSON.stringify(pollData)
+        // });
+        // 
+        // if (response.ok) {
+        //   const responseData = await response.json();
+        //   if (responseData.code === 200) {
+        //     // Reload polls to get the newly created poll
+        //     await this.loadPolls();
+        //     this.currentPollIndex = this.polls.length - 1;
+        //     this.closeCreateModal();
+        //   } else {
+        //     alert('Failed to create poll: ' + responseData.message);
+        //   }
+        // } else {
+        //   alert('Failed to create poll. Please try again.');
+        // }
+        
+        // For now, add to local polls array (development fallback)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using local fallback for poll creation...');
+          
+          const newPoll = {
+            id: Date.now(), // Temporary ID
+            creatorId: this.creatorId,
+            creatorType: this.creatorType,
+            title: pollData.title,
+            questionText: pollData.questionText,
+            questionType: pollData.questionType,
+            isActive: true,
+            isVisible: pollData.isVisible,
+            expiresAt: pollData.expiresAt,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            orderIndex: pollData.orderIndex,
+            options: pollData.options.map((option, index) => ({
+              id: Date.now() + index, // Temporary ID
+              pollId: Date.now(),
+              optionText: option.optionText,
+              optionOrder: option.optionOrder
+            }))
+          };
+          
+          this.polls.push(newPoll);
+          this.currentPollIndex = this.polls.length - 1;
+          this.closeCreateModal();
+        } else {
+          alert('Poll creation is not yet available. Please check back later.');
+        }
+        
+      } catch (error) {
+        console.error('Error creating poll:', error);
+        alert('Failed to create poll. Please try again.');
+      }
+    },
+    
+    // Utility
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    },
+    
+    // Load data from backend API
+    async loadPolls() {
+      try {
+        // Fetch polls for this creator using the correct backend endpoint
+        const pollsResponse = await fetch(`${process.env.VUE_APP_API_URL}/getData/getPollsByCreator/${this.creatorId}/${this.creatorType}`);
+        
+        if (pollsResponse.ok) {
+          const pollsData = await pollsResponse.json();
+          
+          if (pollsData.code === 200) {
+            // Process polls and their options
+            this.polls = pollsData.data.map(poll => ({
+              ...poll,
+              options: poll.options || [] // Ensure options array exists
+            }));
+            
+            // Filter visible polls for non-creators
+            if (!this.isCreator) {
+              this.polls = this.polls.filter(poll => poll.isVisible);
+            }
+            
+            console.log('Loaded polls:', this.polls);
+          } else {
+            console.error('Error loading polls:', pollsData.message);
+            this.polls = [];
+          }
+        } else {
+          console.error('Failed to load polls:', pollsResponse.statusText);
+          this.polls = [];
+        }
+        
+        // For now, initialize empty poll responses since we don't have the response endpoint yet
+        // TODO: Implement poll responses endpoint
+        this.pollResponses = [];
+        
+      } catch (error) {
+        console.error('Error loading polls:', error);
+        
+        // Fallback to mock data only if there's a network error and we're in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Using mock data as fallback...');
+          this.loadMockData();
+        } else {
+          this.polls = [];
+          this.pollResponses = [];
+        }
+      }
+    },
+    
+    // Mock data for development/testing
+    loadMockData() {
+      this.polls = [
+        {
+          id: 1,
+          creatorId: this.creatorId,
+          creatorType: this.creatorType,
+          title: "What's your favorite drink type?",
+          questionText: "Help us understand your preferences better!",
+          questionType: 'multiple_choice_single_selection',
+          isActive: true,
+          isVisible: true,
+          expiresAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          orderIndex: 0,
+          options: [
+            { id: 1, pollId: 1, optionText: 'Wine', optionOrder: 0 },
+            { id: 2, pollId: 1, optionText: 'Beer', optionOrder: 1 },
+            { id: 3, pollId: 1, optionText: 'Spirits', optionOrder: 2 },
+            { id: 4, pollId: 1, optionText: 'Cocktails', optionOrder: 3 }
+          ]
+        },
+        {
+          id: 2,
+          creatorId: this.creatorId,
+          creatorType: this.creatorType,
+          title: "How often do you visit bars?",
+          questionText: "We'd love to know your visiting frequency!",
+          questionType: 'multiple_choice_single_selection',
+          isActive: true,
+          isVisible: true,
+          expiresAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          orderIndex: 1,
+          options: [
+            { id: 5, pollId: 2, optionText: 'Daily', optionOrder: 0 },
+            { id: 6, pollId: 2, optionText: 'Weekly', optionOrder: 1 },
+            { id: 7, pollId: 2, optionText: 'Monthly', optionOrder: 2 },
+            { id: 8, pollId: 2, optionText: 'Rarely', optionOrder: 3 }
+          ]
+        },
+        {
+          id: 3,
+          creatorId: this.creatorId,
+          creatorType: this.creatorType,
+          title: "Rate our service quality",
+          questionText: "How satisfied are you with our overall service?",
+          questionType: 'rating_scale',
+          isActive: true,
+          isVisible: true,
+          expiresAt: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          orderIndex: 2,
+          options: [] // No options needed for rating scale
+        }
+      ];
+      
+      // Mock responses for demonstration
+      this.pollResponses = [
+        { id: 1, pollId: 1, respondentId: 101, selectedOptionIds: [1], ratingValue: null },
+        { id: 2, pollId: 1, respondentId: 102, selectedOptionIds: [2], ratingValue: null },
+        { id: 3, pollId: 1, respondentId: 103, selectedOptionIds: [1], ratingValue: null },
+        { id: 4, pollId: 2, respondentId: 101, selectedOptionIds: [6], ratingValue: null },
+        { id: 5, pollId: 3, respondentId: 102, selectedOptionIds: null, ratingValue: 4 },
+        { id: 6, pollId: 3, respondentId: 103, selectedOptionIds: null, ratingValue: 5 }
+      ];
+    }
+  },
+  
+  mounted() {
+    this.loadPolls();
+  }
+}
+</script>
+
+<style scoped>
+.poll-card-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.poll-carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 400px;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dee2e6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.carousel-arrow:hover:not(:disabled) {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-arrow:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.carousel-arrow-left {
+  left: 10px;
+}
+
+.carousel-arrow-right {
+  right: 10px;
+}
+
+.poll-card {
+  flex: 1;
+  padding: 20px;
+  margin: 0 60px;
+}
+
+.poll-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.poll-title-section {
+  flex: 1;
+}
+
+.poll-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+}
+
+.poll-question {
+  color: #6c757d;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.poll-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.poll-status {
+  margin-bottom: 15px;
+}
+
+.poll-status .badge {
+  font-size: 0.75rem;
+}
+
+/* Voting Styles */
+.poll-option {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.poll-option:hover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.poll-option.selected {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+}
+
+.option-radio,
+.option-checkbox {
+  margin-right: 12px;
+}
+
+.option-text {
+  flex: 1;
+  font-weight: 500;
+}
+
+/* Rating Scale */
+.rating-scale {
+  text-align: center;
+}
+
+.rating-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.rating-options {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.rating-option {
+  cursor: pointer;
+}
+
+.rating-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.rating-option:hover .rating-circle {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.rating-option.selected .rating-circle {
+  border-color: #007bff;
+  background-color: #007bff;
+  color: white;
+}
+
+/* Results Styles */
+.poll-results {
+  margin-top: 20px;
+}
+
+.result-option {
+  margin-bottom: 12px;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.percentage {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.progress {
+  height: 25px;
+  background-color: #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.progress-bar.user-voted {
+  background-color: #28a745;
+}
+
+.total-votes {
+  text-align: center;
+  margin-top: 15px;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+/* Rating Results */
+.rating-results {
+  text-align: center;
+}
+
+.rating-display {
+  margin-bottom: 20px;
+}
+
+.rating-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #007bff;
+}
+
+.rating-scale-text {
+  font-size: 1.2rem;
+  color: #6c757d;
+}
+
+.rating-breakdown {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.rating-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.rating-label {
+  width: 20px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.rating-bar .progress {
+  flex: 1;
+  height: 20px;
+}
+
+.rating-count {
+  width: 30px;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+/* Navigation Info */
+.poll-navigation-info {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.poll-counter {
+  color: #6c757d;
+  font-size: 0.875rem;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-state-content i {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+/* Create Poll Section */
+.create-poll-section {
+  padding: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .poll-card {
+    margin: 0 50px;
+    padding: 15px;
+  }
+  
+  .carousel-arrow {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .carousel-arrow-left {
+    left: 5px;
+  }
+  
+  .carousel-arrow-right {
+    right: 5px;
+  }
+  
+  .poll-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .poll-controls {
+    align-self: flex-end;
+  }
+  
+  .rating-options {
+    gap: 10px;
+  }
+  
+  .rating-circle {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .rating-breakdown {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .poll-card {
+    margin: 0 40px;
+    padding: 12px;
+  }
+  
+  .poll-title {
+    font-size: 1.1rem;
+  }
+  
+  .poll-option {
+    padding: 10px 12px;
+  }
+  
+  .rating-options {
+    gap: 8px;
+  }
+  
+  .rating-circle {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+}
+</style>

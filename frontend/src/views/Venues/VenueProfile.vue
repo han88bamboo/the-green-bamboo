@@ -1493,7 +1493,19 @@
                 </div>
 
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                XYZ
+                
+                <!-- Poll Card Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <PollCard 
+                            :creator-id="targetVenue.id"
+                            creator-type="venue"
+                            :current-user-id="user_id"
+                            :is-creator="selfView"
+                        />
+                    </div>
+                </div>
+                
                 <!-- ------- END Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 <!-- ------- END Header  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
@@ -3989,6 +4001,7 @@ import VenueMenuTabOriginal from '@/components/VenueMenuTabOriginal.vue';
 import VenueMenuTabFestivals from '@/components/VenueMenuTabFestivals.vue';
 import CommentsModal from '@/components/CommentsModal.vue';
 import SignUpPopup from '@/components/SignUpPopup.vue';
+import PollCard from '@/components/PollCard.vue';
 
 
 // Import Phosphor Icons
@@ -4036,7 +4049,8 @@ export default {
         PhUsersFour,
         PhLaptop,
         CommentsModal,
-        SignUpPopup
+        SignUpPopup,
+        PollCard
     },
   setup() {
     // Create reactive references for meta data

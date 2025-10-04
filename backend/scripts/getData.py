@@ -71,7 +71,10 @@
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
 #           /bottle-listings (GET), /producer-listings (GET), /venue-listings (GET), /user-listings (GET),
 #           /getFoodPairings/<ownerType>/<ownerID> (GET), /getCurrentLocations/<ownerType>/<ownerID> (GET), /getSubLocations/<ownerType>/<ownerID> (GET), /getNoteToSelf/<ownerType>/<ownerID> (GET),
-#           /getCellarItemsChangelog/<ownerType>/<ownerID> (GET), /getPublicLists (GET), /getPublicListDetails/<id> (GET), /getUserUpvotedLists/<id> (GET) 
+#           /getCellarItemsChangelog/<ownerType>/<ownerID> (GET), /getPublicLists (GET), /getPublicListDetails/<id> (GET), /getUserUpvotedLists/<id> (GET)
+
+#           [Polling Feature]
+#           /getPollsByCreator/<creator_id>/<creator_type> (GET)
 # -----------------------------------------------------------------------------------------
 
 # pip install Flask
@@ -10504,3 +10507,192 @@ def get_user_upvoted_lists(user_id):
             "code": 500,
             "message": "An error occurred fetching upvoted lists."
         }), 500
+
+# -----------------------------------------------------------------------------------------
+# [GET] Polling Feature Endpoints
+# -----------------------------------------------------------------------------------------
+
+@blueprint.route('/getPollsByCreator/<int:creator_id>/<creator_type>', methods=['GET'])
+def get_polls_by_creator(creator_id, creator_type):
+    """Get all polls created by a specific creator (user, venue, or producer)"""
+    conn = g.db
+    
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate creator_type
+        if creator_type not in ['user', 'venue', 'producer']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid creator type. Must be 'user', 'venue', or 'producer'."
+            }), 400
+        
+        # Get polls ordered by orderIndex
+        cursor.execute('''
+            SELECT 
+                pq."id",
+                pq."creatorId",
+                pq."creatorType",
+                pq."title",
+                pq."questionText",
+                pq."questionType",
+                pq."isActive",
+                pq."isVisible",
+                pq."expiresAt",
+                pq."createdAt",
+                pq."updatedAt",
+                pq."orderIndex"
+            FROM "pollQuestions" pq
+            WHERE pq."creatorId" = %s AND pq."creatorType" = %s
+            ORDER BY pq."orderIndex" ASC
+        ''', (creator_id, creator_type))
+        
+        polls = cursor.fetchall()
+        
+        # For each poll, get its options if it's a multiple choice type
+        for poll in polls:
+            if poll['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
+                cursor.execute('''
+                    SELECT 
+                        po."id",
+                        po."pollId",
+                        po."optionText",
+                        po."optionOrder"
+                    FROM "pollOptions" po
+                    WHERE po."pollId" = %s
+                    ORDER BY po."optionOrder" ASC
+                ''', (poll['id'],))
+                
+                options = cursor.fetchall()
+                poll['options'] = options
+            else:
+                poll['options'] = []
+        
+        cursor.close()
+        
+        return jsonify({
+            "code": 200,
+            "data": polls
+        }), 200
+        
+    except Exception as e:
+        print("Get polls by creator error:", str(e))
+        print("Traceback:", traceback.format_exc())
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred fetching polls."
+        }), 500
+
+
+@blueprint.route('/getPollResponses/<int:creator_id>/<creator_type>', methods=['GET'])
+def get_poll_responses_by_creator(creator_id, creator_type):
+    """Get all poll responses for polls created by a specific creator (user, venue, or producer)"""
+    conn = g.db
+    
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        
+        # Validate creator_type
+        if creator_type not in ['user', 'venue', 'producer']:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid creator type. Must be 'user', 'venue', or 'producer'."
+            }), 400
+        
+        # Get all poll responses for polls created by this creator
+        cursor.execute('''
+            SELECT 
+                pr."id" as "responseId",
+                pr."pollId",
+                pr."respondentId",
+                pr."selectedOptionIds",
+                pr."ratingValue",
+                pq."creatorId",
+                pq."creatorType",
+                pq."title" as "pollTitle",
+                pq."questionText",
+                pq."questionType",
+                pq."orderIndex",
+                u."username" as "respondentUsername",
+                u."displayName" as "respondentDisplayName"
+            FROM "pollResponses" pr
+            INNER JOIN "pollQuestions" pq ON pr."pollId" = pq."id"
+            LEFT JOIN "users" u ON pr."respondentId" = u."id"
+            WHERE pq."creatorId" = %s AND pq."creatorType" = %s
+            ORDER BY pq."orderIndex" ASC, pr."id" ASC
+        ''', (creator_id, creator_type))
+        
+        responses = cursor.fetchall()
+        
+        # Group responses by poll for better organization
+        polls_with_responses = {}
+        
+        for response in responses:
+            poll_id = response['pollId']
+            
+            # Initialize poll data if not already done
+            if poll_id not in polls_with_responses:
+                polls_with_responses[poll_id] = {
+                    'pollId': poll_id,
+                    'pollTitle': response['pollTitle'],
+                    'questionText': response['questionText'],
+                    'questionType': response['questionType'],
+                    'orderIndex': response['orderIndex'],
+                    'totalResponses': 0,
+                    'responses': []
+                }
+            
+            # Add response data
+            response_data = {
+                'responseId': response['responseId'],
+                'respondentId': response['respondentId'],
+                'respondentUsername': response['respondentUsername'],
+                'respondentDisplayName': response['respondentDisplayName'],
+                'selectedOptionIds': response['selectedOptionIds'],
+                'ratingValue': response['ratingValue']
+            }
+            
+            polls_with_responses[poll_id]['responses'].append(response_data)
+            polls_with_responses[poll_id]['totalResponses'] += 1
+        
+        # For multiple choice polls, also get option text for better readability
+        for poll_id, poll_data in polls_with_responses.items():
+            if poll_data['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
+                cursor.execute('''
+                    SELECT 
+                        po."id",
+                        po."optionText",
+                        po."optionOrder"
+                    FROM "pollOptions" po
+                    WHERE po."pollId" = %s
+                    ORDER BY po."optionOrder" ASC
+                ''', (poll_id,))
+                
+                options = cursor.fetchall()
+                poll_data['options'] = options
+            else:
+                poll_data['options'] = []
+        
+        # Convert to list and sort by orderIndex
+        result = list(polls_with_responses.values())
+        result.sort(key=lambda x: x['orderIndex'])
+        
+        cursor.close()
+        
+        return jsonify({
+            "code": 200,
+            "data": result,
+            "summary": {
+                "totalPolls": len(result),
+                "totalResponses": sum(poll['totalResponses'] for poll in result)
+            }
+        }), 200
+        
+    except Exception as e:
+        print("Get poll responses by creator error:", str(e))
+        print("Traceback:", traceback.format_exc())
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred fetching poll responses."
+        }), 500
+

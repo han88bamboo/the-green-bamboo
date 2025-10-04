@@ -3109,6 +3109,99 @@ VALUES
     'EVENT_FESTIVAL'
 );
 
+-- Insert pollQuestions for venue ID 38 (Whisky Live Singapore)
+
+-- 1. Multiple Choice Single Selection Poll
+INSERT INTO "pollQuestions" (
+    "creatorId", 
+    "creatorType", 
+    "title", 
+    "questionText", 
+    "questionType", 
+    "isActive", 
+    "isVisible", 
+    "expiresAt", 
+    "orderIndex"
+) VALUES (
+    38,
+    'venue',
+    'Favorite Whisky Region',
+    'Which whisky region do you prefer most at our festival?',
+    'multiple_choice_single_selection',
+    true,
+    true,
+    '2025-12-31 23:59:59',
+    1
+);
+
+-- 2. Multiple Choice Multi Selection Poll  
+INSERT INTO "pollQuestions" (
+    "creatorId", 
+    "creatorType", 
+    "title", 
+    "questionText", 
+    "questionType", 
+    "isActive", 
+    "isVisible", 
+    "expiresAt", 
+    "orderIndex"
+) VALUES (
+    38,
+    'venue',
+    'Festival Activities Interest',
+    'Which activities would you like to see at future Whisky Live events? (Select all that apply)',
+    'multiple_choice_multi_selection',
+    true,
+    true,
+    '2025-12-31 23:59:59',
+    2
+);
+
+-- 3. Rating Scale Poll
+INSERT INTO "pollQuestions" (
+    "creatorId", 
+    "creatorType", 
+    "title", 
+    "questionText", 
+    "questionType", 
+    "isActive", 
+    "isVisible", 
+    "expiresAt", 
+    "orderIndex"
+) VALUES (
+    38,
+    'venue',
+    'Overall Event Experience',
+    'How would you rate your overall experience at Whisky Live Singapore?',
+    'rating_scale',
+    true,
+    true,
+    '2025-12-31 23:59:59',
+    3
+);
+
+-- Insert pollOptions for the multiple choice questions
+
+-- Options for Poll 1 (Single Selection - Whisky Regions)
+INSERT INTO "pollOptions" ("pollId", "optionText", "optionOrder") VALUES 
+(1, 'Scottish Highlands', 1),
+(1, 'Speyside', 2),
+(1, 'Islay', 3),
+(1, 'Irish Whiskey', 4),
+(1, 'Japanese Whisky', 5),
+(1, 'American Bourbon', 6);
+
+-- Options for Poll 2 (Multi Selection - Festival Activities)
+INSERT INTO "pollOptions" ("pollId", "optionText", "optionOrder") VALUES 
+(2, 'Master Classes & Educational Sessions', 1),
+(2, 'Live Music & Entertainment', 2),
+(2, 'Food Pairing Workshops', 3),
+(2, 'Meet the Distillers Sessions', 4),
+(2, 'Cocktail Making Demonstrations', 5),
+(2, 'VIP Tasting Experiences', 6),
+(2, 'Whisky Investment Seminars', 7);
+
+
 INSERT INTO "venueReviews" ("userID", "venueID", "rating", "reviewDesc", "createdDate", "photos") VALUES (3, 11, 5.0, 'test review i''ll delete almost immediately i promise', '2025-08-20T19:45:56.344000'::timestamp, '{https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Orh_Gao_Tap_Room_Young_Master_480x480.png?v=1684943445}');
 
 INSERT INTO "producersQuestionAnswers" (

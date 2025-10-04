@@ -1692,7 +1692,7 @@ CREATE TABLE "pollQuestions" (
     "creatorType" VARCHAR(20) NOT NULL CHECK ("creatorType" IN ('user', 'venue', 'producer')), -- Type of creator
     "title" VARCHAR(255) NOT NULL,
     "questionText" TEXT NOT NULL,
-    "questionType" VARCHAR(20) NOT NULL CHECK ("questionType" IN ('multiple_choice_single_selection', 'multiple_choice_multi_selection', 'rating_scale')),
+    "questionType" VARCHAR(50) NOT NULL CHECK ("questionType" IN ('multiple_choice_single_selection', 'multiple_choice_multi_selection', 'rating_scale')),
     "isActive" BOOLEAN DEFAULT TRUE, -- whether poll is active (accepting responses) or closed (not accepting new responses) 
     "isVisible" BOOLEAN DEFAULT TRUE, -- Whether poll is visible (if isActive is true, it's accepting responses and you can see responses and if isActive is false, you can just see the responses) or hidden (whether isActive is true or false, the public cannot see the poll)
     "expiresAt" TIMESTAMP DEFAULT NULL, -- Optional expiration date after which poll will not acccept  responses anymore
@@ -1720,8 +1720,8 @@ CREATE TABLE "pollResponses" (
     "selectedOptionIds" INTEGER[] DEFAULT NULL, -- Array of selected option IDs in pollOptions (only relevant for multiple_choice_single_selection and multiple_choice_multi_selection questions)
     "ratingValue" INTEGER DEFAULT NULL, -- For rating_scale questions from 1 to 5 (only relevant for rating_scale questions)
     CONSTRAINT check_response_data CHECK (
-        (selectedOptionIds IS NOT NULL AND ratingValue IS NULL) OR
-        (selectedOptionIds IS NULL AND ratingValue IS NOT NULL)
+        ("selectedOptionIds" IS NOT NULL AND "ratingValue" IS NULL) OR
+        ("selectedOptionIds" IS NULL AND "ratingValue" IS NOT NULL)
     ),
     UNIQUE ("pollId", "respondentId") -- Ensure each user can only have one response per poll
 );
@@ -1758,6 +1758,5 @@ CREATE INDEX idx_poll_questions_created_at ON "pollQuestions" ("createdAt");
 CREATE INDEX idx_poll_options_poll_order ON "pollOptions" ("pollId", "optionOrder");
 CREATE INDEX idx_poll_responses_poll ON "pollResponses" ("pollId");
 CREATE INDEX idx_poll_responses_user ON "pollResponses" ("respondentId");
-CREATE INDEX idx_poll_responses_date ON "pollResponses" ("responseDate");
 
 
