@@ -132,6 +132,100 @@
                 </div>
               </div>
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+              
+              <!-- Creator-Only Detailed Responses Section -->
+              <div v-if="isCreator" class="creator-responses-section mt-4">
+                <div class="detailed-responses-header">
+                  <button 
+                    class="btn btn-outline-info btn-sm"
+                    @click="toggleDetailedResponses(currentPoll.id)"
+                    :disabled="loadingDetailedResponses"
+                  >
+                    <i class="bi bi-people me-2"></i>
+                    <span v-if="!showDetailedResponses[currentPoll.id]">
+                      View Detailed Responses
+                      <span v-if="loadingDetailedResponses" class="spinner-border spinner-border-sm ms-2"></span>
+                    </span>
+                    <span v-else>Hide Detailed Responses</span>
+                  </button>
+                </div>
+                
+                <div v-if="showDetailedResponses[currentPoll.id]" class="detailed-responses-content mt-3">
+                  <div v-if="detailedResponses[currentPoll.id] && detailedResponses[currentPoll.id].length > 0" class="responses-list">
+                    <h6 class="responses-title">
+                      <i class="bi bi-person-lines-fill me-2"></i>
+                      Individual Responses ({{ detailedResponses[currentPoll.id].length }})
+                    </h6>
+                    
+                    <div 
+                      v-for="response in detailedResponses[currentPoll.id]" 
+                      :key="response.responseId"
+                      class="response-item"
+                    >
+                      <div class="response-header">
+                        <div class="respondent-info">
+                          <span class="respondent-name">{{ response.respondentDisplayName }}</span>
+                          <span class="respondent-username">@{{ response.respondentUsername }}</span>
+                        </div>
+                        <div class="response-timestamp" v-if="response.createdAt">
+                          {{ formatResponseDate(response.createdAt) }}
+                        </div>
+                      </div>
+                      
+                      <div class="response-content">
+                        <!-- For Multiple Choice Single Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_single_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <span class="response-value">{{ getOptionTextById(response.selectedOptionIds[0]) }}</span>
+                        </div>
+                        
+                        <!-- For Multiple Choice Multi Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <div class="multi-selection-response">
+                            <span 
+                              v-for="optionId in response.selectedOptionIds" 
+                              :key="optionId"
+                              class="badge bg-primary me-1"
+                            >
+                              {{ getOptionTextById(optionId) }}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <!-- For Rating Scale -->
+                        <div v-if="currentPoll.questionType === 'rating_scale' && response.ratingValue">
+                          <span class="response-label">Rating:</span>
+                          <span class="response-value rating-response">
+                            {{ response.ratingValue }}/5
+                            <span class="rating-stars ms-2">
+                              <i 
+                                v-for="star in 5" 
+                                :key="star"
+                                :class="star <= response.ratingValue ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'"
+                              ></i>
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div v-else-if="!loadingDetailedResponses" class="no-responses">
+                    <div class="text-center text-muted py-3">
+                      <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
+                      <p class="mb-0">No responses yet for this poll.</p>
+                    </div>
+                  </div>
+                  
+                  <div v-if="loadingDetailedResponses" class="loading-responses text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading responses...</span>
+                    </div>
+                    <p class="text-muted mt-2 mb-0">Loading detailed responses...</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -200,6 +294,100 @@
                 </div>
               </div>
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+              
+              <!-- Creator-Only Detailed Responses Section -->
+              <div v-if="isCreator" class="creator-responses-section mt-4">
+                <div class="detailed-responses-header">
+                  <button 
+                    class="btn btn-outline-info btn-sm"
+                    @click="toggleDetailedResponses(currentPoll.id)"
+                    :disabled="loadingDetailedResponses"
+                  >
+                    <i class="bi bi-people me-2"></i>
+                    <span v-if="!showDetailedResponses[currentPoll.id]">
+                      View Detailed Responses
+                      <span v-if="loadingDetailedResponses" class="spinner-border spinner-border-sm ms-2"></span>
+                    </span>
+                    <span v-else>Hide Detailed Responses</span>
+                  </button>
+                </div>
+                
+                <div v-if="showDetailedResponses[currentPoll.id]" class="detailed-responses-content mt-3">
+                  <div v-if="detailedResponses[currentPoll.id] && detailedResponses[currentPoll.id].length > 0" class="responses-list">
+                    <h6 class="responses-title">
+                      <i class="bi bi-person-lines-fill me-2"></i>
+                      Individual Responses ({{ detailedResponses[currentPoll.id].length }})
+                    </h6>
+                    
+                    <div 
+                      v-for="response in detailedResponses[currentPoll.id]" 
+                      :key="response.responseId"
+                      class="response-item"
+                    >
+                      <div class="response-header">
+                        <div class="respondent-info">
+                          <span class="respondent-name">{{ response.respondentDisplayName }}</span>
+                          <span class="respondent-username">@{{ response.respondentUsername }}</span>
+                        </div>
+                        <div class="response-timestamp" v-if="response.createdAt">
+                          {{ formatResponseDate(response.createdAt) }}
+                        </div>
+                      </div>
+                      
+                      <div class="response-content">
+                        <!-- For Multiple Choice Single Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_single_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <span class="response-value">{{ getOptionTextById(response.selectedOptionIds[0]) }}</span>
+                        </div>
+                        
+                        <!-- For Multiple Choice Multi Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <div class="multi-selection-response">
+                            <span 
+                              v-for="optionId in response.selectedOptionIds" 
+                              :key="optionId"
+                              class="badge bg-primary me-1"
+                            >
+                              {{ getOptionTextById(optionId) }}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <!-- For Rating Scale -->
+                        <div v-if="currentPoll.questionType === 'rating_scale' && response.ratingValue">
+                          <span class="response-label">Rating:</span>
+                          <span class="response-value rating-response">
+                            {{ response.ratingValue }}/5
+                            <span class="rating-stars ms-2">
+                              <i 
+                                v-for="star in 5" 
+                                :key="star"
+                                :class="star <= response.ratingValue ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'"
+                              ></i>
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div v-else-if="!loadingDetailedResponses" class="no-responses">
+                    <div class="text-center text-muted py-3">
+                      <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
+                      <p class="mb-0">No responses yet for this poll.</p>
+                    </div>
+                  </div>
+                  
+                  <div v-if="loadingDetailedResponses" class="loading-responses text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading responses...</span>
+                    </div>
+                    <p class="text-muted mt-2 mb-0">Loading detailed responses...</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -251,7 +439,7 @@
                     <span class="rating-label">
                       {{ rating }}
                       <i v-if="currentUserResponse && currentUserResponse.ratingValue === rating" 
-                         class="bi bi-star-fill text-warning ms-1" 
+                         class="bi bi-check-circle-fill ms-1" 
                          title="Your rating"></i>
                     </span>
                     <div class="progress">
@@ -266,6 +454,100 @@
                 </div>
               </div>
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
+              
+              <!-- Creator-Only Detailed Responses Section -->
+              <div v-if="isCreator" class="creator-responses-section mt-4">
+                <div class="detailed-responses-header">
+                  <button 
+                    class="btn btn-outline-info btn-sm"
+                    @click="toggleDetailedResponses(currentPoll.id)"
+                    :disabled="loadingDetailedResponses"
+                  >
+                    <i class="bi bi-people me-2"></i>
+                    <span v-if="!showDetailedResponses[currentPoll.id]">
+                      View Detailed Responses
+                      <span v-if="loadingDetailedResponses" class="spinner-border spinner-border-sm ms-2"></span>
+                    </span>
+                    <span v-else>Hide Detailed Responses</span>
+                  </button>
+                </div>
+                
+                <div v-if="showDetailedResponses[currentPoll.id]" class="detailed-responses-content mt-3">
+                  <div v-if="detailedResponses[currentPoll.id] && detailedResponses[currentPoll.id].length > 0" class="responses-list">
+                    <h6 class="responses-title">
+                      <i class="bi bi-person-lines-fill me-2"></i>
+                      Individual Responses ({{ detailedResponses[currentPoll.id].length }})
+                    </h6>
+                    
+                    <div 
+                      v-for="response in detailedResponses[currentPoll.id]" 
+                      :key="response.responseId"
+                      class="response-item"
+                    >
+                      <div class="response-header">
+                        <div class="respondent-info">
+                          <span class="respondent-name">{{ response.respondentDisplayName }}</span>
+                          <span class="respondent-username">@{{ response.respondentUsername }}</span>
+                        </div>
+                        <div class="response-timestamp" v-if="response.createdAt">
+                          {{ formatResponseDate(response.createdAt) }}
+                        </div>
+                      </div>
+                      
+                      <div class="response-content">
+                        <!-- For Multiple Choice Single Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_single_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <span class="response-value">{{ getOptionTextById(response.selectedOptionIds[0]) }}</span>
+                        </div>
+                        
+                        <!-- For Multiple Choice Multi Selection -->
+                        <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection' && response.selectedOptionIds">
+                          <span class="response-label">Selected:</span>
+                          <div class="multi-selection-response">
+                            <span 
+                              v-for="optionId in response.selectedOptionIds" 
+                              :key="optionId"
+                              class="badge bg-primary me-1"
+                            >
+                              {{ getOptionTextById(optionId) }}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <!-- For Rating Scale -->
+                        <div v-if="currentPoll.questionType === 'rating_scale' && response.ratingValue">
+                          <span class="response-label">Rating:</span>
+                          <span class="response-value rating-response">
+                            {{ response.ratingValue }}/5
+                            <span class="rating-stars ms-2">
+                              <i 
+                                v-for="star in 5" 
+                                :key="star"
+                                :class="star <= response.ratingValue ? 'bi bi-star-fill text-warning' : 'bi bi-star text-muted'"
+                              ></i>
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div v-else-if="!loadingDetailedResponses" class="no-responses">
+                    <div class="text-center text-muted py-3">
+                      <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
+                      <p class="mb-0">No responses yet for this poll.</p>
+                    </div>
+                  </div>
+                  
+                  <div v-if="loadingDetailedResponses" class="loading-responses text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading responses...</span>
+                    </div>
+                    <p class="text-muted mt-2 mb-0">Loading detailed responses...</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -450,6 +732,11 @@ export default {
       polls: [],
       pollResponses: [],
       currentPollIndex: 0,
+      
+      // Detailed responses for creators
+      detailedResponses: {}, // Store detailed responses by pollId
+      showDetailedResponses: {}, // Track which polls have detailed responses visible
+      loadingDetailedResponses: false,
       
       // User selections
       selectedSingleOption: null,
@@ -965,6 +1252,76 @@ export default {
       if (!dateString) return '';
       const date = new Date(dateString);
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    },
+
+    formatResponseDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    },
+
+    // Detailed Responses Management
+    async toggleDetailedResponses(pollId) {
+      // If already showing, just hide
+      if (this.showDetailedResponses[pollId]) {
+        this.$set(this.showDetailedResponses, pollId, false);
+        return;
+      }
+
+      // If not loaded yet, load the detailed responses
+      if (!this.detailedResponses[pollId]) {
+        await this.loadDetailedResponses(pollId);
+      }
+
+      // Toggle visibility
+      this.$set(this.showDetailedResponses, pollId, !this.showDetailedResponses[pollId]);
+    },
+
+    async loadDetailedResponses(pollId) {
+      this.loadingDetailedResponses = true;
+      
+      try {
+        // Fetch detailed responses for this specific poll
+        const response = await fetch(`${process.env.VUE_APP_API_URL}/getData/getPollResponses/${this.creatorId}/${this.creatorType}`);
+        
+        if (response.ok) {
+          const responseData = await response.json();
+          
+          if (responseData.code === 200) {
+            // Find the specific poll's responses
+            const pollData = responseData.data.find(poll => poll.pollId === pollId);
+            
+            if (pollData && pollData.responses) {
+              // Store the detailed responses for this poll
+              this.$set(this.detailedResponses, pollId, pollData.responses);
+              console.log('Loaded detailed responses for poll', pollId, ':', pollData.responses);
+            } else {
+              // No responses found for this poll
+              this.$set(this.detailedResponses, pollId, []);
+            }
+          } else {
+            console.error('Error loading detailed responses:', responseData.message);
+            this.$set(this.detailedResponses, pollId, []);
+          }
+        } else {
+          console.error('Failed to load detailed responses:', response.statusText);
+          this.$set(this.detailedResponses, pollId, []);
+        }
+        
+      } catch (error) {
+        console.error('Error loading detailed responses:', error);
+        this.$set(this.detailedResponses, pollId, []);
+      } finally {
+        this.loadingDetailedResponses = false;
+      }
+    },
+
+    // Helper method to get option text by ID
+    getOptionTextById(optionId) {
+      if (!this.currentPoll.options) return 'Unknown option';
+      
+      const option = this.currentPoll.options.find(opt => opt.id === optionId);
+      return option ? option.optionText : `Option ${optionId}`;
     },
     
     // Load data from backend API
@@ -1599,6 +1956,182 @@ export default {
     width: 35px;
     height: 35px;
     font-size: 0.9rem;
+  }
+}
+
+/* Creator Detailed Responses Section */
+.creator-responses-section {
+  border-top: 1px solid #e9ecef;
+  padding-top: 15px;
+}
+
+.detailed-responses-header .btn {
+  font-size: 0.875rem;
+  border-radius: 6px;
+}
+
+.detailed-responses-content {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+}
+
+.responses-title {
+  color: #495057;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 8px;
+}
+
+.response-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.response-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.1);
+}
+
+.response-item:last-child {
+  margin-bottom: 0;
+}
+
+.response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.respondent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.respondent-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.respondent-username {
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.response-timestamp {
+  color: #6c757d;
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.response-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.response-label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.875rem;
+}
+
+.response-value {
+  color: #007bff;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.rating-response {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.rating-stars i {
+  font-size: 0.8rem;
+}
+
+.multi-selection-response {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.multi-selection-response .badge {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+.no-responses {
+  text-align: center;
+  color: #6c757d;
+}
+
+.loading-responses {
+  color: #6c757d;
+}
+
+/* Mobile responsive for detailed responses */
+@media (max-width: 768px) {
+  .response-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .response-timestamp {
+    text-align: left;
+    font-size: 0.7rem;
+  }
+  
+  .response-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .rating-stars i {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .detailed-responses-content {
+    padding: 12px;
+  }
+  
+  .response-item {
+    padding: 10px 12px;
+  }
+  
+  .respondent-name {
+    font-size: 0.85rem;
+  }
+  
+  .respondent-username {
+    font-size: 0.75rem;
+  }
+  
+  .multi-selection-response .badge {
+    font-size: 0.7rem;
+    padding: 3px 6px;
   }
 }
 </style>
