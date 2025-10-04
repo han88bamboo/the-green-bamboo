@@ -1500,7 +1500,7 @@
                         <PollCard 
                             :creator-id="targetVenue.id"
                             creator-type="venue"
-                            :current-user-id="user_id"
+                            :current-user-id="user_id === 'defaultUser' ? null : parseInt(user_id)"
                             :is-creator="selfView"
                         />
                     </div>

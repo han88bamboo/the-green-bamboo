@@ -80,13 +80,27 @@
               </button>
             </div>
             <div v-else class="poll-results">
+              <!-- User's Previous Vote Indicator -->
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+                <div class="alert alert-info">
+                  <i class="bi bi-check-circle-fill me-2"></i>
+                  <strong>You voted for:</strong> 
+                  {{ getUserSelectedOptionText(currentUserResponse.selectedOptionIds) }}
+                </div>
+              </div>
+              
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
                 class="result-option"
               >
                 <div class="result-header">
-                  <span class="option-text">{{ option.optionText }}</span>
+                  <span class="option-text">
+                    {{ option.optionText }}
+                    <i v-if="userVotedForOption(currentPoll.id, option.id)" 
+                       class="bi bi-check-circle-fill text-success ms-2" 
+                       title="You voted for this option"></i>
+                  </span>
                   <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
                 </div>
                 <div class="progress">
@@ -130,13 +144,27 @@
               </button>
             </div>
             <div v-else class="poll-results">
+              <!-- User's Previous Vote Indicator -->
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+                <div class="alert alert-info">
+                  <i class="bi bi-check-circle-fill me-2"></i>
+                  <strong>You voted for:</strong> 
+                  {{ getUserSelectedOptionsText(currentUserResponse.selectedOptionIds) }}
+                </div>
+              </div>
+              
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
                 class="result-option"
               >
                 <div class="result-header">
-                  <span class="option-text">{{ option.optionText }}</span>
+                  <span class="option-text">
+                    {{ option.optionText }}
+                    <i v-if="userVotedForOption(currentPoll.id, option.id)" 
+                       class="bi bi-check-circle-fill text-success ms-2" 
+                       title="You voted for this option"></i>
+                  </span>
                   <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
                 </div>
                 <div class="progress">
@@ -169,6 +197,15 @@
               </div>
             </div>
             <div v-else class="poll-results rating-results">
+              <!-- User's Previous Rating Indicator -->
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+                <div class="alert alert-info">
+                  <i class="bi bi-star-fill me-2"></i>
+                  <strong>You rated:</strong> 
+                  {{ currentUserResponse.ratingValue }}/5 stars
+                </div>
+              </div>
+              
               <div class="average-rating">
                 <div class="rating-display">
                   <span class="rating-number">{{ getAverageRating(currentPoll.id) }}</span>
@@ -180,12 +217,17 @@
                     :key="rating"
                     class="rating-bar"
                   >
-                    <span class="rating-label">{{ rating }}</span>
+                    <span class="rating-label">
+                      {{ rating }}
+                      <i v-if="currentUserResponse && currentUserResponse.ratingValue === rating" 
+                         class="bi bi-star-fill text-warning ms-1" 
+                         title="Your rating"></i>
+                    </span>
                     <div class="progress">
                       <div 
                         class="progress-bar" 
                         :style="{ width: getRatingPercentage(currentPoll.id, rating) + '%' }"
-                        :class="{ 'user-voted': userRating === rating }"
+                        :class="{ 'user-voted': currentUserResponse && currentUserResponse.ratingValue === rating }"
                       ></div>
                     </div>
                     <span class="rating-count">{{ getRatingCount(currentPoll.id, rating) }}</span>
@@ -614,6 +656,31 @@ export default {
         response.pollId === pollId && response.ratingValue === rating
       ).length;
     },
+
+    // Get text for user's selected options (for display purposes)
+    getUserSelectedOptionText(selectedOptionIds) {
+      if (!selectedOptionIds || !Array.isArray(selectedOptionIds) || selectedOptionIds.length === 0) {
+        return 'No selection';
+      }
+      
+      // For single selection, return the first (and only) option
+      const optionId = selectedOptionIds[0];
+      const option = this.currentPoll.options?.find(opt => opt.id === optionId);
+      return option ? option.optionText : 'Unknown option';
+    },
+
+    getUserSelectedOptionsText(selectedOptionIds) {
+      if (!selectedOptionIds || !Array.isArray(selectedOptionIds) || selectedOptionIds.length === 0) {
+        return 'No selections';
+      }
+      
+      // For multi-selection, return comma-separated list
+      const selectedOptions = this.currentPoll.options?.filter(opt => 
+        selectedOptionIds.includes(opt.id)
+      ) || [];
+      
+      return selectedOptions.map(opt => opt.optionText).join(', ');
+    },
     
     // Creator Controls
     async toggleVisibility(poll) {
@@ -957,10 +1024,30 @@ export default {
     debugCurrentState() {
       console.log('=== POLL DEBUG INFO ===');
       console.log('Current Poll:', this.currentPoll);
-      console.log('Current User ID:', this.currentUserId);
+      console.log('Current User ID:', this.currentUserId, '(type:', typeof this.currentUserId, ')');
       console.log('All Poll Responses:', this.pollResponses);
+      
+      // Debug respondent IDs and types
+      if (this.pollResponses.length > 0) {
+        console.log('Sample respondent IDs:');
+        this.pollResponses.slice(0, 3).forEach(response => {
+          console.log('- Respondent ID:', response.respondentId, '(type:', typeof response.respondentId, ')');
+        });
+      }
+      
       console.log('Current User Response:', this.currentUserResponse);
       console.log('User Has Voted:', this.currentUserHasVoted);
+      
+      if (this.currentUserResponse) {
+        console.log('User Previous Selection:');
+        if (this.currentUserResponse.selectedOptionIds) {
+          console.log('- Selected Options:', this.getUserSelectedOptionsText(this.currentUserResponse.selectedOptionIds));
+        }
+        if (this.currentUserResponse.ratingValue) {
+          console.log('- Rating:', this.currentUserResponse.ratingValue);
+        }
+      }
+      
       console.log('======================');
     },
     
@@ -1243,6 +1330,17 @@ export default {
 /* Results Styles */
 .poll-results {
   margin-top: 20px;
+}
+
+.user-vote-indicator {
+  border-radius: 8px;
+}
+
+.user-vote-indicator .alert {
+  margin-bottom: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
 }
 
 .result-option {
