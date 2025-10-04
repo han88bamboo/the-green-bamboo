@@ -744,30 +744,28 @@ export default {
     // Creator Controls
     async toggleVisibility(poll) {
       try {
-        // TODO: Implement backend poll visibility update endpoint
-        // const response = await fetch(`/backend/polls/updateVisibility/${poll.id}`, {
-        //   method: 'PUT',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({ isVisible: !poll.isVisible })
-        // });
-        // 
-        // if (response.ok) {
-        //   const responseData = await response.json();
-        //   if (responseData.code === 200) {
-        //     poll.isVisible = !poll.isVisible;
-        //     console.log('Visibility updated for poll:', poll.id, 'to:', poll.isVisible);
-        //   } else {
-        //     alert('Failed to update poll visibility: ' + responseData.message);
-        //   }
-        // } else {
-        //   alert('Failed to update poll visibility. Please try again.');
-        // }
+        // Update poll visibility via backend endpoint
+        const response = await fetch(`${process.env.VUE_APP_API_URL}/editPoll/updatePollVisibility/${poll.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ isVisible: !poll.isVisible })
+        });
         
-        // For now, update locally (development fallback)
-        poll.isVisible = !poll.isVisible;
-        console.log('Toggling visibility for poll:', poll.id, 'to:', poll.isVisible);
+        if (response.ok) {
+          const responseData = await response.json();
+          if (responseData.code === 200) {
+            poll.isVisible = !poll.isVisible;
+            console.log('Visibility updated for poll:', poll.id, 'to:', poll.isVisible);
+          } else {
+            console.error('Failed to update poll visibility:', responseData.message);
+            alert('Failed to update poll visibility: ' + responseData.message);
+          }
+        } else {
+          console.error('Failed to update poll visibility:', response.statusText);
+          alert('Failed to update poll visibility. Please try again.');
+        }
         
       } catch (error) {
         console.error('Error updating poll visibility:', error);
@@ -778,43 +776,34 @@ export default {
     async deletePoll(pollId) {
       if (confirm('Are you sure you want to delete this poll? This action cannot be undone.')) {
         try {
-          // TODO: Implement backend poll deletion endpoint
-          // const response = await fetch(`/backend/polls/delete/${pollId}`, {
-          //   method: 'DELETE',
-          //   headers: {
-          //     'Content-Type': 'application/json',
-          //   }
-          // });
-          // 
-          // if (response.ok) {
-          //   const responseData = await response.json();
-          //   if (responseData.code === 200) {
-          //     const index = this.polls.findIndex(poll => poll.id === pollId);
-          //     if (index > -1) {
-          //       this.polls.splice(index, 1);
-          //       // Adjust current index if necessary
-          //       if (this.currentPollIndex >= this.polls.length) {
-          //         this.currentPollIndex = Math.max(0, this.polls.length - 1);
-          //       }
-          //     }
-          //     console.log('Poll deleted:', pollId);
-          //   } else {
-          //     alert('Failed to delete poll: ' + responseData.message);
-          //   }
-          // } else {
-          //   alert('Failed to delete poll. Please try again.');
-          // }
-          
-          // For now, delete locally (development fallback)
-          const index = this.polls.findIndex(poll => poll.id === pollId);
-          if (index > -1) {
-            this.polls.splice(index, 1);
-            // Adjust current index if necessary
-            if (this.currentPollIndex >= this.polls.length) {
-              this.currentPollIndex = Math.max(0, this.polls.length - 1);
+          // Delete poll via backend endpoint
+          const response = await fetch(`${process.env.VUE_APP_API_URL}/editPoll/deletePoll/${pollId}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
             }
+          });
+          
+          if (response.ok) {
+            const responseData = await response.json();
+            if (responseData.code === 200) {
+              const index = this.polls.findIndex(poll => poll.id === pollId);
+              if (index > -1) {
+                this.polls.splice(index, 1);
+                // Adjust current index if necessary
+                if (this.currentPollIndex >= this.polls.length) {
+                  this.currentPollIndex = Math.max(0, this.polls.length - 1);
+                }
+              }
+              console.log('Poll deleted successfully:', pollId);
+            } else {
+              console.error('Failed to delete poll:', responseData.message);
+              alert('Failed to delete poll: ' + responseData.message);
+            }
+          } else {
+            console.error('Failed to delete poll:', response.statusText);
+            alert('Failed to delete poll. Please try again.');
           }
-          console.log('Deleting poll:', pollId);
           
         } catch (error) {
           console.error('Error deleting poll:', error);
@@ -902,64 +891,74 @@ export default {
         
         console.log('Creating poll:', pollData);
         
-        // TODO: Implement backend poll creation endpoint
-        // const response = await fetch('/backend/polls/create', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify(pollData)
-        // });
-        // 
-        // if (response.ok) {
-        //   const responseData = await response.json();
-        //   if (responseData.code === 200) {
-        //     // Reload polls to get the newly created poll
-        //     await this.loadPolls();
-        //     this.currentPollIndex = this.polls.length - 1;
-        //     this.closeCreateModal();
-        //   } else {
-        //     alert('Failed to create poll: ' + responseData.message);
-        //   }
-        // } else {
-        //   alert('Failed to create poll. Please try again.');
-        // }
+        // Submit poll to backend endpoint
+        const response = await fetch(`${process.env.VUE_APP_API_URL}/editPoll/createPoll`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(pollData)
+        });
         
-        // For now, add to local polls array (development fallback)
+        if (response.ok) {
+          const responseData = await response.json();
+          if (responseData.code === 200) {
+            // Reload polls to get the newly created poll
+            await this.loadPolls();
+            this.currentPollIndex = this.polls.length - 1;
+            this.closeCreateModal();
+            console.log('Poll created successfully:', responseData.data);
+          } else {
+            console.error('Failed to create poll:', responseData.message);
+            alert('Failed to create poll: ' + responseData.message);
+          }
+        } else {
+          console.error('Failed to create poll:', response.statusText);
+          alert('Failed to create poll. Please try again.');
+        }
+        
+      } catch (error) {
+        console.error('Error creating poll:', error);
+        
+        // Fallback to mock data for development when backend is not available
         if (process.env.NODE_ENV === 'development') {
           console.log('Using local fallback for poll creation...');
+          
+          // Recreate the options data for the fallback
+          let fallbackOptions = [];
+          if (this.newPoll.questionType.includes('multiple_choice')) {
+            fallbackOptions = this.newPoll.options
+              .filter(option => option.text.trim())
+              .map((option, index) => ({
+                id: Date.now() + index, // Temporary ID
+                pollId: Date.now(),
+                optionText: option.text.trim(),
+                optionOrder: index
+              }));
+          }
           
           const newPoll = {
             id: Date.now(), // Temporary ID
             creatorId: this.creatorId,
             creatorType: this.creatorType,
-            title: pollData.title,
-            questionText: pollData.questionText,
-            questionType: pollData.questionType,
+            title: this.newPoll.title.trim(),
+            questionText: this.newPoll.questionText.trim(),
+            questionType: this.newPoll.questionType,
             isActive: true,
-            isVisible: pollData.isVisible,
-            expiresAt: pollData.expiresAt,
+            isVisible: this.newPoll.isVisible,
+            expiresAt: this.newPoll.expiresAt || null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            orderIndex: pollData.orderIndex,
-            options: pollData.options.map((option, index) => ({
-              id: Date.now() + index, // Temporary ID
-              pollId: Date.now(),
-              optionText: option.optionText,
-              optionOrder: option.optionOrder
-            }))
+            orderIndex: this.polls.length,
+            options: fallbackOptions
           };
           
           this.polls.push(newPoll);
           this.currentPollIndex = this.polls.length - 1;
           this.closeCreateModal();
         } else {
-          alert('Poll creation is not yet available. Please check back later.');
+          alert('Failed to create poll. Please check your connection and try again.');
         }
-        
-      } catch (error) {
-        console.error('Error creating poll:', error);
-        alert('Failed to create poll. Please try again.');
       }
     },
     
