@@ -52,7 +52,8 @@
         <div class="poll-content mt-3">
           <!-- Multiple Choice Single Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_single_selection'">
-            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+            <h5 class="mb-3">Select one option:</h5>
+            <div v-if="!currentUserHasVoted" class="poll-voting">
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
@@ -102,7 +103,8 @@
 
           <!-- Multiple Choice Multi Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection'">
-            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+             <h5 class="mb-3">Select all that apply:</h5>
+            <div v-if="!currentUserHasVoted" class="poll-voting">
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
@@ -151,12 +153,8 @@
 
           <!-- Rating Scale -->
           <div v-if="currentPoll.questionType === 'rating_scale'">
-            <div v-if="!hasAnswered(currentPoll.id)" class="poll-voting">
+            <div v-if="!currentUserHasVoted" class="poll-voting">
               <div class="rating-scale">
-                <div class="rating-labels">
-                  <span class="rating-label-left">Strongly Disagree</span>
-                  <span class="rating-label-right">Strongly Agree</span>
-                </div>
                 <div class="rating-options">
                   <div 
                     v-for="rating in [1, 2, 3, 4, 5]" 
@@ -413,6 +411,21 @@ export default {
         return this.polls; // Creators can see all their polls
       }
       return this.polls.filter(poll => poll.isVisible);
+    },
+
+    // Get the current user's response for the current poll
+    currentUserResponse() {
+      if (!this.currentPoll.id || !this.currentUserId) return null;
+      
+      return this.pollResponses.find(response => 
+        response.pollId === this.currentPoll.id && 
+        response.respondentId === this.currentUserId
+      );
+    },
+
+    // Check if current user has voted on current poll
+    currentUserHasVoted() {
+      return !!this.currentUserResponse;
     }
   },
   methods: {
@@ -501,16 +514,8 @@ export default {
           const responseData = await response.json();
           
           if (responseData.code === 200) {
-            // Add to local responses for immediate UI update
-            this.pollResponses.push({
-              id: responseData.data.id,
-              pollId,
-              respondentId: this.currentUserId,
-              selectedOptionIds,
-              ratingValue
-            });
-            
-            this.userRating = ratingValue;
+            // Reload poll responses to get the latest data including the new vote
+            await this.loadPollResponses();
             
             // Reset selections
             this.resetSelections();
@@ -540,7 +545,6 @@ export default {
           };
           
           this.pollResponses.push(response);
-          this.userRating = ratingValue;
           this.resetSelections();
         } else {
           alert('Network error. Please check your connection and try again.');
@@ -871,9 +875,8 @@ export default {
           this.polls = [];
         }
         
-        // For now, initialize empty poll responses since we don't have the response endpoint yet
-        // TODO: Implement poll responses endpoint
-        this.pollResponses = [];
+        // Load poll responses
+        await this.loadPollResponses();
         
       } catch (error) {
         console.error('Error loading polls:', error);
@@ -887,6 +890,78 @@ export default {
           this.pollResponses = [];
         }
       }
+    },
+
+    // Load poll responses from backend API
+    async loadPollResponses() {
+      try {
+        // Fetch poll responses for this creator using the correct backend endpoint
+        const responsesResponse = await fetch(`${process.env.VUE_APP_API_URL}/getData/getPollResponses/${this.creatorId}/${this.creatorType}`);
+        
+        if (responsesResponse.ok) {
+          const responsesData = await responsesResponse.json();
+          
+          if (responsesData.code === 200) {
+            // Process the raw response data into the format the component expects
+            this.pollResponses = this.processRawResponseData(responsesData.data);
+            
+            console.log('Loaded poll responses:', this.pollResponses);
+            console.log('Raw response data:', responsesData.data);
+          } else {
+            console.error('Error loading poll responses:', responsesData.message);
+            this.pollResponses = [];
+          }
+        } else {
+          console.error('Failed to load poll responses:', responsesResponse.statusText);
+          this.pollResponses = [];
+        }
+        
+      } catch (error) {
+        console.error('Error loading poll responses:', error);
+        this.pollResponses = [];
+      }
+    },
+
+    // Process raw response data from backend into component-expected format
+    processRawResponseData(rawData) {
+      const processedResponses = [];
+      
+      // Iterate through each poll's response data
+      rawData.forEach(pollData => {
+        const { pollId, responses } = pollData;
+        
+        // Process each individual response
+        responses.forEach(response => {
+          processedResponses.push({
+            id: response.responseId,
+            pollId: pollId,
+            respondentId: response.respondentId,
+            selectedOptionIds: response.selectedOptionIds,
+            ratingValue: response.ratingValue,
+            // Additional data for potential future use
+            respondentUsername: response.respondentUsername,
+            respondentDisplayName: response.respondentDisplayName
+          });
+        });
+      });
+      
+      return processedResponses;
+    },
+
+    // Refresh poll data (useful for real-time updates)
+    async refreshPollData() {
+      await this.loadPollResponses();
+    },
+
+    // Debug helper method
+    debugCurrentState() {
+      console.log('=== POLL DEBUG INFO ===');
+      console.log('Current Poll:', this.currentPoll);
+      console.log('Current User ID:', this.currentUserId);
+      console.log('All Poll Responses:', this.pollResponses);
+      console.log('Current User Response:', this.currentUserResponse);
+      console.log('User Has Voted:', this.currentUserHasVoted);
+      console.log('======================');
     },
     
     // Mock data for development/testing
@@ -916,9 +991,9 @@ export default {
           id: 2,
           creatorId: this.creatorId,
           creatorType: this.creatorType,
-          title: "How often do you visit bars?",
-          questionText: "We'd love to know your visiting frequency!",
-          questionType: 'multiple_choice_single_selection',
+          title: "Which activities would you like to see?",
+          questionText: "Select all that apply for future events!",
+          questionType: 'multiple_choice_multi_selection',
           isActive: true,
           isVisible: true,
           expiresAt: null,
@@ -926,10 +1001,10 @@ export default {
           updatedAt: new Date().toISOString(),
           orderIndex: 1,
           options: [
-            { id: 5, pollId: 2, optionText: 'Daily', optionOrder: 0 },
-            { id: 6, pollId: 2, optionText: 'Weekly', optionOrder: 1 },
-            { id: 7, pollId: 2, optionText: 'Monthly', optionOrder: 2 },
-            { id: 8, pollId: 2, optionText: 'Rarely', optionOrder: 3 }
+            { id: 5, pollId: 2, optionText: 'Live Music', optionOrder: 0 },
+            { id: 6, pollId: 2, optionText: 'Food Pairing', optionOrder: 1 },
+            { id: 7, pollId: 2, optionText: 'Masterclasses', optionOrder: 2 },
+            { id: 8, pollId: 2, optionText: 'Meet & Greet', optionOrder: 3 }
           ]
         },
         {
@@ -949,15 +1024,41 @@ export default {
         }
       ];
       
-      // Mock responses for demonstration
+      // Mock responses for demonstration - more realistic data
       this.pollResponses = [
         { id: 1, pollId: 1, respondentId: 101, selectedOptionIds: [1], ratingValue: null },
         { id: 2, pollId: 1, respondentId: 102, selectedOptionIds: [2], ratingValue: null },
         { id: 3, pollId: 1, respondentId: 103, selectedOptionIds: [1], ratingValue: null },
-        { id: 4, pollId: 2, respondentId: 101, selectedOptionIds: [6], ratingValue: null },
-        { id: 5, pollId: 3, respondentId: 102, selectedOptionIds: null, ratingValue: 4 },
-        { id: 6, pollId: 3, respondentId: 103, selectedOptionIds: null, ratingValue: 5 }
+        { id: 4, pollId: 1, respondentId: 104, selectedOptionIds: [3], ratingValue: null },
+        { id: 5, pollId: 1, respondentId: 105, selectedOptionIds: [1], ratingValue: null },
+        { id: 6, pollId: 2, respondentId: 101, selectedOptionIds: [5, 6], ratingValue: null },
+        { id: 7, pollId: 2, respondentId: 102, selectedOptionIds: [6, 7, 8], ratingValue: null },
+        { id: 8, pollId: 2, respondentId: 103, selectedOptionIds: [5, 7], ratingValue: null },
+        { id: 9, pollId: 3, respondentId: 102, selectedOptionIds: null, ratingValue: 4 },
+        { id: 10, pollId: 3, respondentId: 103, selectedOptionIds: null, ratingValue: 5 },
+        { id: 11, pollId: 3, respondentId: 104, selectedOptionIds: null, ratingValue: 3 },
+        { id: 12, pollId: 3, respondentId: 105, selectedOptionIds: null, ratingValue: 4 }
       ];
+    }
+  },
+
+  watch: {
+    // Debug watcher for development
+    pollResponses: {
+      handler() {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Poll responses updated, current state:');
+          this.debugCurrentState();
+        }
+      },
+      deep: true
+    },
+
+    currentPollIndex() {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Poll changed, current state:');
+        this.debugCurrentState();
+      }
     }
   },
   
