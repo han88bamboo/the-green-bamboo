@@ -5804,6 +5804,7 @@ def getUserFestivalTastedListAggregatedData(venue_id):
         JSON object with:
         - averageItemsPerAttendee: Average number of items tasted by each attendee
         - topItems: Top 5 items with most unique tasters (including item details)
+        - topSections: Top 5 sections with most tasted items (including section metrics)
         - topTasters: Top users with most items tasted
         - tastingVelocity: Daily tasting velocity over the past 6 months
         - totalStats: Overall statistics
@@ -5897,7 +5898,44 @@ def getUserFestivalTastedListAggregatedData(venue_id):
             
             daily_velocity = cursor.fetchall()
             
-            # 5. Get overall statistics
+            # 5. Get top 5 sections with most tasted items (simplified query without date filter for now)
+            cursor.execute("""
+                SELECT 
+                    vm."id" as section_id,
+                    vm."sectionName",
+                    vm."sectionOrder",
+                    vm."isSubSection",
+                    vm."parentSectionId",
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."itemID") as unique_items_tasted,
+                    ROUND(COUNT(*)::DECIMAL / NULLIF(COUNT(DISTINCT uft."userId"), 0), 2) as avg_tastings_per_taster
+                FROM "userFestivalTastedList" uft
+                JOIN "menuItems" mi ON uft."itemID" = mi."itemID" AND mi."sectionId" IN (
+                    SELECT vm_inner."id" FROM "venuesMenu" vm_inner WHERE vm_inner."venueId" = %s
+                )
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                WHERE uft."venueId" = %s
+                GROUP BY vm."id", vm."sectionName", vm."sectionOrder", vm."isSubSection", vm."parentSectionId"
+                HAVING COUNT(*) > 0
+                ORDER BY total_tastings DESC, unique_tasters DESC
+                LIMIT 5
+            """, (venue_id, venue_id))
+            
+            top_sections = cursor.fetchall()
+            
+            # Calculate penetration rates separately
+            total_tasters = 0
+            if top_sections:
+                cursor.execute("""
+                    SELECT COUNT(DISTINCT "userId") as total_tasters
+                    FROM "userFestivalTastedList"
+                    WHERE "venueId" = %s
+                """, (venue_id,))
+                total_tasters_result = cursor.fetchone()
+                total_tasters = total_tasters_result['total_tasters'] if total_tasters_result else 0
+            
+            # 6. Get overall statistics
             cursor.execute(f"""
                 SELECT 
                     COUNT(*) as total_tastings,
@@ -5940,6 +5978,21 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     "totalTastings": item['total_tastings'],
                     "variantsTasted": item['variants_tasted'] or []
                 } for item in top_items],
+                
+                # Top 5 sections with most tasted items
+                "topSections": [{
+                    "sectionId": section['section_id'],
+                    "sectionName": section['sectionName'],
+                    "sectionOrder": section['sectionOrder'],
+                    "isSubSection": section['isSubSection'],
+                    "parentSectionId": section['parentSectionId'],
+                    "uniqueTasters": section['unique_tasters'],
+                    "totalTastings": section['total_tastings'],
+                    "uniqueItemsTasted": section['unique_items_tasted'],
+                    "avgTastingsPerTaster": float(section['avg_tastings_per_taster']) if section['avg_tastings_per_taster'] else 0,
+                    "penetrationRate": round((section['unique_tasters'] / total_tasters * 100), 1) if total_tasters > 0 else 0,
+                    "completionRate": 0  # Will calculate this separately if needed
+                } for section in top_sections],
                 
                 # Top tasters
                 "topTasters": [{

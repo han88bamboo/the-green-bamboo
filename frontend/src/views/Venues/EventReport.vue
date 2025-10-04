@@ -262,9 +262,67 @@
                         <!-- Section Performance Analysis -->
                         <div class="mb-5">
                             <h2 class="mb-3">Section Performance Analysis</h2>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle me-2"></i>
-                                Section-level analytics will be available in the next update. This will include top-performing menu sections and subsection engagement metrics.
+                            <div v-if="analyticsData">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4 class="mb-0">Top 5 Most Popular Sections</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- Debug info -->
+                                        <div v-if="!analyticsData.topSections || analyticsData.topSections.length === 0" class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No section data available. This might indicate that no tasting data exists yet, or there's an issue with the section analytics.
+                                        </div>
+                                        
+                                        <!-- Sections display -->
+                                        <div v-else class="row">
+                                            <div v-for="(section, index) in analyticsData.topSections" :key="section.sectionId" class="col-12 mb-4">
+                                                <div class="card border">
+                                                    <div class="card-body">
+                                                        <div class="row align-items-center">
+                                                            <div class="col-md-1 text-center">
+                                                                <h3 class="text-success mb-0">#{{ index + 1 }}</h3>
+                                                            </div>
+                                                            <div class="col-md-2 text-center">
+                                                                <div class="bg-success bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                                                     style="height: 80px; width: 80px;">
+                                                                    <i class="fas fa-list-ul text-success fa-2x"></i>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <h5 class="mb-1">{{ section.sectionName || 'Unnamed Section' }}</h5>
+                                                                <p class="text-muted mb-1">
+                                                                    <strong>Section Order:</strong> {{ section.sectionOrder || 'N/A' }}
+                                                                    <span v-if="section.isSubSection" class="badge bg-info ms-2">Subsection</span>
+                                                                    <span v-else class="badge bg-primary ms-2">Main Section</span>
+                                                                </p>
+                                                                <p class="mb-0">
+                                                                    <span class="badge bg-secondary me-2">{{ section.uniqueItemsTasted || 0 }} Items Tasted</span>
+                                                                    <span class="text-muted">{{ section.penetrationRate || 0 }}% Taster Penetration</span>
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="row text-center">
+                                                                    <div class="col-6">
+                                                                        <h4 class="text-success mb-0">{{ section.totalTastings || 0 }}</h4>
+                                                                        <small class="text-muted">Total Tastings</small>
+                                                                    </div>
+                                                                    <div class="col-6">
+                                                                        <h4 class="text-info mb-0">{{ section.uniqueTasters || 0 }}</h4>
+                                                                        <small class="text-muted">Unique Tasters</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-else class="text-center py-4">
+                                <p class="text-muted">Loading section performance data...</p>
                             </div>
                         </div>
                         
@@ -381,16 +439,25 @@ export default {
                     `${process.env.VUE_APP_API_URL}/getData/getUserFestivalTastedListAggregatedData/${this.venueID}`
                 );
                 
+                console.log('📊 Raw response:', response);
+                
                 if (response.status === 200 && response.data?.success) {
                     this.analyticsData = response.data.data;
                     this.analyticsLoaded = true;
                     console.log('✅ Analytics data loaded:', this.analyticsData);
+                    console.log('🔍 TopSections data:', this.analyticsData.topSections);
                 } else {
                     console.error('❌ Failed to load analytics data:', response.data);
                     this.analyticsData = null;
                 }
             } catch (error) {
                 console.error('❌ Error loading analytics data:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    response: error.response,
+                    status: error.response?.status,
+                    data: error.response?.data
+                });
                 
                 // Handle specific error cases
                 if (error.response?.status === 500) {
