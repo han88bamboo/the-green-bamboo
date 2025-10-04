@@ -50,10 +50,28 @@
 
         <!-- Poll Content Based on Type -->
         <div class="poll-content mt-3">
+          <!-- User Status Message -->
+          <div v-if="!canUserVote && currentUserId" class="user-status-message mb-3">
+            <div v-if="isCreator" class="alert alert-secondary">
+              <i class="bi bi-person-gear me-2"></i>
+              <strong>Poll Creator:</strong> You created this poll and can view the results.
+            </div>
+            <div v-else-if="currentUserType !== 'user'" class="alert alert-info">
+              <i class="bi bi-building me-2"></i>
+              <strong>Business Account:</strong> Only ordinary users can participate in polls. You can view the results below.
+            </div>
+            <div v-else-if="currentUserHasVoted" class="alert alert-success">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              <strong>Thank you!</strong> You've already voted. Here are the current results.
+            </div>
+          </div>
+          
           <!-- Multiple Choice Single Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_single_selection'">
             <h5 class="mb-3">Select one option:</h5>
-            <div v-if="!currentUserHasVoted" class="poll-voting">
+            
+            <!-- Voting Interface (only for ordinary users who can vote) -->
+            <div v-if="canUserVote" class="poll-voting">
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
@@ -79,7 +97,9 @@
                 Submit Vote
               </button>
             </div>
-            <div v-else class="poll-results">
+            
+            <!-- Results View (for everyone else) -->
+            <div v-if="shouldShowResults" class="poll-results">
               <!-- User's Previous Vote Indicator -->
               <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
                 <div class="alert alert-info">
@@ -118,7 +138,9 @@
           <!-- Multiple Choice Multi Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection'">
              <h5 class="mb-3">Select all that apply:</h5>
-            <div v-if="!currentUserHasVoted" class="poll-voting">
+             
+            <!-- Voting Interface (only for ordinary users who can vote) -->
+            <div v-if="canUserVote" class="poll-voting">
               <div 
                 v-for="option in currentPoll.options" 
                 :key="option.id"
@@ -143,7 +165,9 @@
                 Submit Vote
               </button>
             </div>
-            <div v-else class="poll-results">
+            
+            <!-- Results View (for everyone else) -->
+            <div v-if="shouldShowResults" class="poll-results">
               <!-- User's Previous Vote Indicator -->
               <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
                 <div class="alert alert-info">
@@ -181,8 +205,14 @@
 
           <!-- Rating Scale -->
           <div v-if="currentPoll.questionType === 'rating_scale'">
-            <div v-if="!currentUserHasVoted" class="poll-voting">
+            
+            <!-- Voting Interface (only for ordinary users who can vote) -->
+            <div v-if="canUserVote" class="poll-voting">
               <div class="rating-scale">
+                <div class="rating-labels">
+                  <span class="rating-label-left">Strongly Disagree</span>
+                  <span class="rating-label-right">Strongly Agree</span>
+                </div>
                 <div class="rating-options">
                   <div 
                     v-for="rating in [1, 2, 3, 4, 5]" 
@@ -196,7 +226,9 @@
                 </div>
               </div>
             </div>
-            <div v-else class="poll-results rating-results">
+            
+            <!-- Results View (for everyone else) -->
+            <div v-if="shouldShowResults" class="poll-results rating-results">
               <!-- User's Previous Rating Indicator -->
               <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
                 <div class="alert alert-info">
@@ -408,6 +440,11 @@ export default {
       type: Number,
       default: null
     },
+    currentUserType: {
+      type: String,
+      default: 'user',
+      validator: value => ['user', 'venue', 'producer'].includes(value)
+    },
     isCreator: {
       type: Boolean,
       default: false
@@ -468,6 +505,28 @@ export default {
     // Check if current user has voted on current poll
     currentUserHasVoted() {
       return !!this.currentUserResponse;
+    },
+
+    // Check if current user can vote (only ordinary users who didn't create the poll)
+    canUserVote() {
+      // Must be logged in
+      if (!this.currentUserId) return false;
+      
+      // Must be an ordinary user (not venue or producer)
+      if (this.currentUserType !== 'user') return false;
+      
+      // Must not be the creator of the poll
+      if (this.isCreator) return false;
+      
+      // Must not have already voted
+      if (this.currentUserHasVoted) return false;
+      
+      return true;
+    },
+
+    // Check if user should see results (everyone except those who can vote)
+    shouldShowResults() {
+      return !this.canUserVote;
     }
   },
   methods: {
@@ -935,11 +994,17 @@ export default {
             console.log('Loaded polls:', this.polls);
           } else {
             console.error('Error loading polls:', pollsData.message);
-            this.polls = [];
+            // Use mock data as fallback when API returns error
+            console.log('Using mock data as fallback...');
+            this.loadMockData();
+            return;
           }
         } else {
           console.error('Failed to load polls:', pollsResponse.statusText);
-          this.polls = [];
+          // Use mock data as fallback when API call fails
+          console.log('Using mock data as fallback...');
+          this.loadMockData();
+          return;
         }
         
         // Load poll responses
@@ -948,14 +1013,9 @@ export default {
       } catch (error) {
         console.error('Error loading polls:', error);
         
-        // Fallback to mock data only if there's a network error and we're in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Using mock data as fallback...');
-          this.loadMockData();
-        } else {
-          this.polls = [];
-          this.pollResponses = [];
-        }
+        // Fallback to mock data for any error (network issues, API not available, etc.)
+        console.log('Using mock data as fallback...');
+        this.loadMockData();
       }
     },
 
@@ -976,15 +1036,18 @@ export default {
             console.log('Raw response data:', responsesData.data);
           } else {
             console.error('Error loading poll responses:', responsesData.message);
+            // Use empty responses array when API returns error
             this.pollResponses = [];
           }
         } else {
           console.error('Failed to load poll responses:', responsesResponse.statusText);
+          // Use empty responses array when API call fails
           this.pollResponses = [];
         }
         
       } catch (error) {
         console.error('Error loading poll responses:', error);
+        // Use empty responses array for any error
         this.pollResponses = [];
       }
     },
@@ -1025,6 +1088,10 @@ export default {
       console.log('=== POLL DEBUG INFO ===');
       console.log('Current Poll:', this.currentPoll);
       console.log('Current User ID:', this.currentUserId, '(type:', typeof this.currentUserId, ')');
+      console.log('Current User Type:', this.currentUserType);
+      console.log('Is Creator:', this.isCreator);
+      console.log('Can User Vote:', this.canUserVote);
+      console.log('Should Show Results:', this.shouldShowResults);
       console.log('All Poll Responses:', this.pollResponses);
       
       // Debug respondent IDs and types
@@ -1246,6 +1313,18 @@ export default {
 
 .poll-status .badge {
   font-size: 0.75rem;
+}
+
+/* User Status Message */
+.user-status-message {
+  border-radius: 8px;
+}
+
+.user-status-message .alert {
+  margin-bottom: 0;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
 }
 
 /* Voting Styles */
