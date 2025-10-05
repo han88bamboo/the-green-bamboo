@@ -5898,14 +5898,14 @@ def getUserFestivalTastedListAggregatedData(venue_id):
             
             daily_velocity = cursor.fetchall()
             
-            # 5. Get top 5 sections with most tasted items (simplified query without date filter for now)
+            # 5. Get top 5 main sections with subsection tastings rolled up
             cursor.execute("""
                 SELECT 
-                    vm."id" as section_id,
-                    vm."sectionName",
-                    vm."sectionOrder",
-                    vm."isSubSection",
-                    vm."parentSectionId",
+                    main_section."id" as section_id,
+                    main_section."sectionName",
+                    main_section."sectionOrder",
+                    main_section."isSubSection",
+                    main_section."parentSectionId",
                     COUNT(DISTINCT uft."userId") as unique_tasters,
                     COUNT(*) as total_tastings,
                     COUNT(DISTINCT uft."itemID") as unique_items_tasted,
@@ -5915,8 +5915,15 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     SELECT vm_inner."id" FROM "venuesMenu" vm_inner WHERE vm_inner."venueId" = %s
                 )
                 JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
-                WHERE uft."venueId" = %s
-                GROUP BY vm."id", vm."sectionName", vm."sectionOrder", vm."isSubSection", vm."parentSectionId"
+                JOIN "venuesMenu" main_section ON (
+                    CASE 
+                        WHEN vm."isSubSection" = true THEN vm."parentSectionId"
+                        ELSE vm."id"
+                    END = main_section."id"
+                )
+                WHERE uft."venueId" = %s AND main_section."isSubSection" = false
+                GROUP BY main_section."id", main_section."sectionName", main_section."sectionOrder", 
+                         main_section."isSubSection", main_section."parentSectionId"
                 HAVING COUNT(*) > 0
                 ORDER BY total_tastings DESC, unique_tasters DESC
                 LIMIT 5

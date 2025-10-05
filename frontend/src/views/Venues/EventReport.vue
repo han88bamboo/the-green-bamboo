@@ -272,7 +272,7 @@
                             <div v-if="analyticsData">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h4 class="mb-0">Top 5 Most Popular Sections</h4>
+                                        <h4 class="mb-0">Top 5 Most Popular Main Sections</h4>
                                     </div>
                                     <div class="card-body">
                                         <!-- Debug info -->
@@ -331,6 +331,7 @@
                             <div v-else class="text-center py-4">
                                 <p class="text-muted">Loading section performance data...</p>
                             </div>
+                            XYZ
                         </div>
                         
                         <!-- Poll Results Summary -->
