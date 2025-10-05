@@ -5881,6 +5881,26 @@ def getUserFestivalTastedListAggregatedData(venue_id):
             
             top_countries = cursor.fetchall()
             
+            # 2.6. Get top 5 type categories with most total tastings
+            cursor.execute(f"""
+                SELECT 
+                    l."typeCategory",
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."itemID") as unique_items_from_category
+                FROM "userFestivalTastedList" uft
+                JOIN "listings" l ON uft."itemID" = l."id"
+                WHERE uft."venueId" = %s
+                {date_filter}
+                AND l."typeCategory" IS NOT NULL 
+                AND l."typeCategory" != ''
+                GROUP BY l."typeCategory"
+                ORDER BY total_tastings DESC, unique_tasters DESC
+                LIMIT 5
+            """, (venue_id,))
+            
+            top_categories = cursor.fetchall()
+            
             # 3. Get top tasters (users with most items tasted)
             cursor.execute(f"""
                 SELECT 
@@ -6072,6 +6092,14 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     "totalTastings": country['total_tastings'],
                     "uniqueItemsFromCountry": country['unique_items_from_country']
                 } for country in top_countries],
+                
+                # Top 5 type categories with most total tastings
+                "topCategories": [{
+                    "typeCategory": category['typeCategory'],
+                    "uniqueTasters": category['unique_tasters'],
+                    "totalTastings": category['total_tastings'],
+                    "uniqueItemsFromCategory": category['unique_items_from_category']
+                } for category in top_categories],
                 
                 # Top 5 sections with most tasted items
                 "topSections": [{
