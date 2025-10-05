@@ -331,7 +331,80 @@
                             <div v-else class="text-center py-4">
                                 <p class="text-muted">Loading section performance data...</p>
                             </div>
-                            XYZ
+                            
+                            <!-- Top SubSections -->
+                            <div v-if="analyticsData" class="mt-5">
+                                <h4 class="mb-3">Top 3 Most Popular SubSections (of each Section)</h4>
+                                
+                                <!-- Check if there are any subsections -->
+                                <div v-if="!analyticsData.topSubsectionsBySection || analyticsData.topSubsectionsBySection.length === 0" class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    No subsection data available. This might indicate that no main sections have subsections, or there's no tasting data for subsections yet.
+                                </div>
+                                
+                                <!-- Display subsections grouped by main section -->
+                                <div v-else>
+                                    <div v-for="sectionGroup in analyticsData.topSubsectionsBySection" :key="sectionGroup.mainSectionId" class="mb-4">
+                                        <!-- Main Section Header -->
+                                        <div class="card">
+                                            <div class="card-header bg-primary text-white">
+                                                <h5 class="mb-0">
+                                                    <i class="fas fa-layer-group me-2"></i>
+                                                    {{ sectionGroup.mainSectionName }}
+                                                    <small class="ms-2">({{ sectionGroup.topSubsections.length }} subsection{{ sectionGroup.topSubsections.length !== 1 ? 's' : '' }})</small>
+                                                </h5>
+                                            </div>
+                                            <div class="card-body p-0">
+                                                <!-- Subsections Table -->
+                                                <div class="table-responsive">
+                                                    <table class="table table-striped mb-0">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center" style="width: 80px;">Rank</th>
+                                                                <th>SubSection Name</th>
+                                                                <th class="text-center">Total Tastings</th>
+                                                                <th class="text-center">Unique Tasters</th>
+                                                                <th class="text-center">Items Tasted</th>
+                                                                <th class="text-center">Avg per Taster</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr v-for="subsection in sectionGroup.topSubsections" :key="subsection.subsectionId">
+                                                                <td class="text-center">
+                                                                    <span class="badge fs-6" 
+                                                                          :class="{
+                                                                              'bg-warning text-dark': subsection.rank === 1,
+                                                                              'bg-secondary': subsection.rank === 2,
+                                                                              'bg-info': subsection.rank === 3
+                                                                          }">
+                                                                        #{{ subsection.rank }}
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="fw-medium">{{ subsection.subsectionName || 'Unnamed SubSection' }}</div>
+                                                                    <small class="text-muted">Order: {{ subsection.subsectionOrder || 'N/A' }}</small>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-success fs-6">{{ subsection.totalTastings || 0 }}</span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-info fs-6">{{ subsection.uniqueTasters || 0 }}</span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <span class="badge bg-secondary fs-6">{{ subsection.uniqueItemsTasted || 0 }}</span>
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    <span class="text-muted">{{ subsection.avgTastingsPerTaster || 0 }}</span>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- Poll Results Summary -->

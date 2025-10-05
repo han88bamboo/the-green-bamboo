@@ -5804,7 +5804,8 @@ def getUserFestivalTastedListAggregatedData(venue_id):
         JSON object with:
         - averageItemsPerAttendee: Average number of items tasted by each attendee
         - topItems: Top 5 items with most unique tasters (including item details)
-        - topSections: Top 5 sections with most tasted items (including section metrics)
+        - topSections: Top 5 main sections with most tasted items (including section metrics)
+        - topSubsectionsBySection: Top 3 subsections for each main section (grouped by parent)
         - topTasters: Top users with most items tasted
         - tastingVelocity: Daily tasting velocity over the past 6 months
         - totalStats: Overall statistics
@@ -5942,6 +5943,64 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                 total_tasters_result = cursor.fetchone()
                 total_tasters = total_tasters_result['total_tasters'] if total_tasters_result else 0
             
+            # 5.5. Get top 3 subsections for each main section
+            cursor.execute("""
+                SELECT 
+                    main_section."id" as main_section_id,
+                    main_section."sectionName" as main_section_name,
+                    sub_section."id" as subsection_id,
+                    sub_section."sectionName" as subsection_name,
+                    sub_section."sectionOrder" as subsection_order,
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."itemID") as unique_items_tasted,
+                    ROUND(COUNT(*)::DECIMAL / NULLIF(COUNT(DISTINCT uft."userId"), 0), 2) as avg_tastings_per_taster,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY main_section."id" 
+                        ORDER BY COUNT(*) DESC, COUNT(DISTINCT uft."userId") DESC
+                    ) as rank_within_section
+                FROM "userFestivalTastedList" uft
+                JOIN "menuItems" mi ON uft."itemID" = mi."itemID" AND mi."sectionId" IN (
+                    SELECT vm_inner."id" FROM "venuesMenu" vm_inner WHERE vm_inner."venueId" = %s
+                )
+                JOIN "venuesMenu" sub_section ON mi."sectionId" = sub_section."id"
+                JOIN "venuesMenu" main_section ON sub_section."parentSectionId" = main_section."id"
+                WHERE uft."venueId" = %s 
+                    AND sub_section."isSubSection" = true 
+                    AND main_section."isSubSection" = false
+                GROUP BY main_section."id", main_section."sectionName", 
+                         sub_section."id", sub_section."sectionName", sub_section."sectionOrder"
+                HAVING COUNT(*) > 0
+            """, (venue_id, venue_id))
+            
+            all_subsections = cursor.fetchall()
+            
+            # Filter to get only top 3 subsections per main section
+            top_subsections_by_section = {}
+            for subsection in all_subsections:
+                if subsection['rank_within_section'] <= 3:
+                    main_section_id = subsection['main_section_id']
+                    if main_section_id not in top_subsections_by_section:
+                        top_subsections_by_section[main_section_id] = {
+                            'mainSectionId': main_section_id,
+                            'mainSectionName': subsection['main_section_name'],
+                            'topSubsections': []
+                        }
+                    
+                    top_subsections_by_section[main_section_id]['topSubsections'].append({
+                        'subsectionId': subsection['subsection_id'],
+                        'subsectionName': subsection['subsection_name'],
+                        'subsectionOrder': subsection['subsection_order'],
+                        'uniqueTasters': subsection['unique_tasters'],
+                        'totalTastings': subsection['total_tastings'],
+                        'uniqueItemsTasted': subsection['unique_items_tasted'],
+                        'avgTastingsPerTaster': float(subsection['avg_tastings_per_taster']) if subsection['avg_tastings_per_taster'] else 0,
+                        'rank': subsection['rank_within_section']
+                    })
+            
+            # Convert to list format for easier frontend consumption
+            top_subsections_data = list(top_subsections_by_section.values())
+
             # 6. Get overall statistics
             cursor.execute(f"""
                 SELECT 
@@ -6000,6 +6059,9 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     "penetrationRate": round((section['unique_tasters'] / total_tasters * 100), 1) if total_tasters > 0 else 0,
                     "completionRate": 0  # Will calculate this separately if needed
                 } for section in top_sections],
+                
+                # Top 3 subsections for each main section
+                "topSubsectionsBySection": top_subsections_data,
                 
                 # Top tasters
                 "topTasters": [{
