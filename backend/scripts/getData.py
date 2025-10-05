@@ -5901,6 +5901,26 @@ def getUserFestivalTastedListAggregatedData(venue_id):
             
             top_categories = cursor.fetchall()
             
+            # 2.65. Get top 5 drink types with most total tastings
+            cursor.execute(f"""
+                SELECT 
+                    l."drinkType",
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."itemID") as unique_items_from_drink_type
+                FROM "userFestivalTastedList" uft
+                JOIN "listings" l ON uft."itemID" = l."id"
+                WHERE uft."venueId" = %s
+                {date_filter}
+                AND l."drinkType" IS NOT NULL 
+                AND l."drinkType" != ''
+                GROUP BY l."drinkType"
+                ORDER BY total_tastings DESC, unique_tasters DESC
+                LIMIT 5
+            """, (venue_id,))
+            
+            top_drink_types = cursor.fetchall()
+            
             # 2.7. Get top 5 producers with most total tastings
             cursor.execute(f"""
                 SELECT 
@@ -6121,6 +6141,14 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     "totalTastings": category['total_tastings'],
                     "uniqueItemsFromCategory": category['unique_items_from_category']
                 } for category in top_categories],
+                
+                # Top 5 drink types with most total tastings
+                "topDrinkTypes": [{
+                    "drinkType": drink_type['drinkType'],
+                    "uniqueTasters": drink_type['unique_tasters'],
+                    "totalTastings": drink_type['total_tastings'],
+                    "uniqueItemsFromDrinkType": drink_type['unique_items_from_drink_type']
+                } for drink_type in top_drink_types],
                 
                 # Top 5 producers with most total tastings
                 "topProducers": [{

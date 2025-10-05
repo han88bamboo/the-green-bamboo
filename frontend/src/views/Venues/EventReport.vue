@@ -317,6 +317,57 @@
                             </div>
                         </div>
                         
+                        <!-- Top 5 Most Popular Drink Types -->
+                        <div v-if="analyticsData" class="mt-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="mb-0">Top 5 Most Popular Drink Types</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="analyticsData.topDrinkTypes && analyticsData.topDrinkTypes.length > 0" class="row">
+                                        <div v-for="(drinkType, index) in analyticsData.topDrinkTypes" :key="drinkType.drinkType" class="col-12 mb-4">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-1 text-center">
+                                                            <h3 class="text-purple mb-0">#{{ index + 1 }}</h3>
+                                                        </div>
+                                                        <div class="col-md-2 text-center">
+                                                            <div class="bg-purple bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                                                 style="height: 80px; width: 80px;">
+                                                                <i class="fas fa-wine-glass text-purple fa-2x"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <h5 class="mb-1">{{ drinkType.drinkType || 'Unknown Drink Type' }}</h5>
+                                                            <p class="mb-0">
+                                                                <span class="badge bg-secondary me-2">{{ drinkType.uniqueItemsFromDrinkType || 0 }} Different Items</span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="row text-center">
+                                                                <div class="col-6">
+                                                                    <h4 class="text-purple mb-0">{{ drinkType.totalTastings || 0 }}</h4>
+                                                                    <small class="text-muted">Total Tastings</small>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <h4 class="text-info mb-0">{{ drinkType.uniqueTasters || 0 }}</h4>
+                                                                    <small class="text-muted">Unique Tasters</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="text-center py-4">
+                                        <p class="text-muted">No drink type data available. This might indicate that no items have drink type information or no tastings have occurred yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Top 5 Most Popular Categories -->
                         <div v-if="analyticsData" class="mt-5">
                             <div class="card">
@@ -1032,6 +1083,15 @@ export default {
     .mobile-pt-3 {
         padding-top: 3rem;
     }
+}
+
+/* Custom purple color for drink types */
+.text-purple {
+    color: #6f42c1 !important;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
 }
 </style>
 
