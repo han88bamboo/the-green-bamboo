@@ -5901,6 +5901,27 @@ def getUserFestivalTastedListAggregatedData(venue_id):
             
             top_categories = cursor.fetchall()
             
+            # 2.7. Get top 5 producers with most total tastings
+            cursor.execute(f"""
+                SELECT 
+                    l."producerID",
+                    p."producerName",
+                    COUNT(DISTINCT uft."userId") as unique_tasters,
+                    COUNT(*) as total_tastings,
+                    COUNT(DISTINCT uft."itemID") as unique_items_from_producer
+                FROM "userFestivalTastedList" uft
+                JOIN "listings" l ON uft."itemID" = l."id"
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE uft."venueId" = %s
+                {date_filter}
+                AND l."producerID" IS NOT NULL
+                GROUP BY l."producerID", p."producerName"
+                ORDER BY total_tastings DESC, unique_tasters DESC
+                LIMIT 5
+            """, (venue_id,))
+            
+            top_producers = cursor.fetchall()
+            
             # 3. Get top tasters (users with most items tasted)
             cursor.execute(f"""
                 SELECT 
@@ -6100,6 +6121,15 @@ def getUserFestivalTastedListAggregatedData(venue_id):
                     "totalTastings": category['total_tastings'],
                     "uniqueItemsFromCategory": category['unique_items_from_category']
                 } for category in top_categories],
+                
+                # Top 5 producers with most total tastings
+                "topProducers": [{
+                    "producerId": producer['producerID'],
+                    "producerName": producer['producerName'],
+                    "uniqueTasters": producer['unique_tasters'],
+                    "totalTastings": producer['total_tastings'],
+                    "uniqueItemsFromProducer": producer['unique_items_from_producer']
+                } for producer in top_producers],
                 
                 # Top 5 sections with most tasted items
                 "topSections": [{

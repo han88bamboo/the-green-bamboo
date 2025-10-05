@@ -368,6 +368,57 @@
                             </div>
                         </div>
                         
+                        <!-- Top 5 Most Popular Producers -->
+                        <div v-if="analyticsData" class="mt-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="mb-0">Top 5 Most Popular Producers</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="analyticsData.topProducers && analyticsData.topProducers.length > 0" class="row">
+                                        <div v-for="(producer, index) in analyticsData.topProducers" :key="producer.producerId" class="col-12 mb-4">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-1 text-center">
+                                                            <h3 class="text-dark mb-0">#{{ index + 1 }}</h3>
+                                                        </div>
+                                                        <div class="col-md-2 text-center">
+                                                            <div class="bg-dark bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                                                 style="height: 80px; width: 80px;">
+                                                                <i class="fas fa-industry text-dark fa-2x"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <h5 class="mb-1">{{ producer.producerName || 'Unknown Producer' }}</h5>
+                                                            <p class="mb-0">
+                                                                <span class="badge bg-secondary me-2">{{ producer.uniqueItemsFromProducer || 0 }} Different Items</span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="row text-center">
+                                                                <div class="col-6">
+                                                                    <h4 class="text-dark mb-0">{{ producer.totalTastings || 0 }}</h4>
+                                                                    <small class="text-muted">Total Tastings</small>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <h4 class="text-info mb-0">{{ producer.uniqueTasters || 0 }}</h4>
+                                                                    <small class="text-muted">Unique Tasters</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="text-center py-4">
+                                        <p class="text-muted">No producer data available. This might indicate that no items have producer information or no tastings have occurred yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Section Performance Analysis -->
                         <div class="mb-5">
                             <h2 class="mb-3">Section Performance Analysis</h2>
