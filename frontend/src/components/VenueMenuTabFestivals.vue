@@ -8868,6 +8868,8 @@ export default {
   height: 1.8rem !important;
   font-size: 1.0rem;
   position: relative;
+  border-width: 3px !important;
+  border-color: #14785a !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ebebeb' stroke-linecap='square' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
 }
 
