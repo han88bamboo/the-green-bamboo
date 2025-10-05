@@ -59,6 +59,7 @@
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-moderator">Moderators</button>
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-business">Business Accounts</button>
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-proofpoints">Proof Points</button>
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#nav-merge">Merge Duplicates</button>
         </div>
       </nav>
 
@@ -103,6 +104,9 @@
         <div class="tab-pane fade" id="nav-proofpoints">
           <ProofPointsDashboard :userType="'admin'" />
         </div>
+        <div class="tab-pane fade" id="nav-merge">
+            <EntityMerge />
+        </div>
       </div>
     </div>
   </div>
@@ -121,6 +125,7 @@ import TagManagement from '@/components/admin_dashboard/TagManagement.vue';
 import ModeratorManagement from '@/components/admin_dashboard/ModeratorManagement.vue';
 import BusinessManagement from '@/components/admin_dashboard/BusinessManagement.vue';
 import ProofPointsDashboard from '@/components/ProofPointsDashboard.vue';
+import EntityMerge from '@/components/admin_dashboard/EntityMerge.vue';
 
 export default {
     name: 'AdminDashboard',
@@ -134,6 +139,7 @@ export default {
         ModeratorManagement,
         BusinessManagement,
         ProofPointsDashboard,
+        EntityMerge
     },
     data() {
         const strDate = new Date(new Date().toISOString());
