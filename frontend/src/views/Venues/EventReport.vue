@@ -298,11 +298,11 @@
                                                             </div>
                                                             <div class="col-md-5">
                                                                 <h5 class="mb-1">{{ section.sectionName || 'Unnamed Section' }}</h5>
-                                                                <!--<p class="text-muted mb-1">
-                                                                    <strong>Section Order:</strong> {{ section.sectionOrder || 'N/A' }}
+                                                                <p class="text-muted mb-1">
+                                                                    <!--<strong>Section Order:</strong> {{ section.sectionOrder || 'N/A' }}-->
                                                                     <span v-if="section.isSubSection" class="badge bg-info ms-2">Subsection</span>
                                                                     <span v-else class="badge bg-primary ms-2">Main Section</span>
-                                                                </p>-->
+                                                                </p>
                                                                 <p class="mb-0">
                                                                     <span class="badge bg-secondary me-2">{{ section.uniqueItemsTasted || 0 }} Items Tasted</span>
                                                                     <!--<span class="text-muted">{{ section.penetrationRate || 0 }}% Taster Penetration</span>-->
