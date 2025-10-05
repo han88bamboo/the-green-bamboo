@@ -266,6 +266,57 @@
                             </div>
                         </div>
                         
+                        <!-- Top 5 Most Popular Countries -->
+                        <div v-if="analyticsData" class="mt-5">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="mb-0">Top 5 Most Popular Countries</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div v-if="analyticsData.topCountries && analyticsData.topCountries.length > 0" class="row">
+                                        <div v-for="(country, index) in analyticsData.topCountries" :key="country.originCountry" class="col-12 mb-4">
+                                            <div class="card border">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-md-1 text-center">
+                                                            <h3 class="text-warning mb-0">#{{ index + 1 }}</h3>
+                                                        </div>
+                                                        <div class="col-md-2 text-center">
+                                                            <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                                                 style="height: 80px; width: 80px;">
+                                                                <i class="fas fa-globe text-warning fa-2x"></i>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-5">
+                                                            <h5 class="mb-1">{{ country.originCountry || 'Unknown Country' }}</h5>
+                                                            <p class="mb-0">
+                                                                <span class="badge bg-secondary me-2">{{ country.uniqueItemsFromCountry || 0 }} Different Items</span>
+                                                            </p>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="row text-center">
+                                                                <div class="col-6">
+                                                                    <h4 class="text-warning mb-0">{{ country.totalTastings || 0 }}</h4>
+                                                                    <small class="text-muted">Total Tastings</small>
+                                                                </div>
+                                                                <div class="col-6">
+                                                                    <h4 class="text-info mb-0">{{ country.uniqueTasters || 0 }}</h4>
+                                                                    <small class="text-muted">Unique Tasters</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="text-center py-4">
+                                        <p class="text-muted">No country data available. This might indicate that no items have origin country information or no tastings have occurred yet.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                         <!-- Section Performance Analysis -->
                         <div class="mb-5">
                             <h2 class="mb-3">Section Performance Analysis</h2>
@@ -382,7 +433,7 @@
                                                                 </td>
                                                                 <td>
                                                                     <div class="fw-medium">{{ subsection.subsectionName || 'Unnamed SubSection' }}</div>
-                                                                    <small class="text-muted">Order: {{ subsection.subsectionOrder || 'N/A' }}</small>
+                                                                    <!--<small class="text-muted">Order: {{ subsection.subsectionOrder || 'N/A' }}</small>-->
                                                                 </td>
                                                                 <td class="text-center">
                                                                     <span class="badge bg-success fs-6">{{ subsection.totalTastings || 0 }}</span>
