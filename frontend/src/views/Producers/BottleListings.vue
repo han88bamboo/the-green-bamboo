@@ -7752,13 +7752,9 @@ export default {
           sectionName: this.menuItemForm.targetSection.sectionName,
           sectionOrder: this.menuItemForm.targetSection.sectionOrder,
           isSubSection: this.menuItemForm.targetSection.isSubSection || false,
-          parentSectionId: this.menuItemForm.targetSection.parentSectionId || null
+          parentSectionId: this.menuItemForm.targetSection.parentSectionId || null,
+          itemVintage: this.isVintageApplicable ? this.menuItemForm.vintage : null
         };
-        
-        // Add vintage if applicable
-        if (this.isVintageApplicable && this.menuItemForm.vintage) {
-          menuItemData.itemVintage = this.menuItemForm.vintage;
-        }
         
         console.log('Submitting menu item data:', menuItemData);
         
