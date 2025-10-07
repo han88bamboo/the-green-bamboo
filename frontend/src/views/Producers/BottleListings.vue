@@ -87,9 +87,10 @@
               <!-- drink category -->
               <div class="row">
                 <div class="col-9 mobile-view-hide">
-                  <h5 class="text-body-secondary fst-italic">
+                  <h5 class="text-muted fst-italic" style="overflow-wrap: break-word; white-space: normal;">
                     {{ specified_listing["drinkType"] }} |
-                    {{ specified_listing["originCountry"] }}
+                    {{ specified_listing["originCountry"] }} |
+                    Drink ID: {{ specified_listing["id"] }}
                   </h5>
                 </div>
                 <div v-if="correctProducer" class="col-3">
@@ -648,9 +649,11 @@
             </span>
             <span v-if="specified_listing['abv']" class="text-decoration-none">{{ specified_listing["abv"] }}% |
             </span>
-            <span class="text-decoration-none">{{
+            <span v-if="specified_listing['originCountry']" class="text-decoration-none">{{
               specified_listing["originCountry"]
-            }}</span>
+            }} |
+            </span>
+            <span v-if="specified_listing['id']" class="text-decoration-none">Drink ID: {{ specified_listing["id"] }}</span>
           </p>
           <div class="col-2 d-flex justify-content-end make-bookmark-bigger mobile-view-hide">
             <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="30"
