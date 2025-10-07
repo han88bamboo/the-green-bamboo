@@ -165,8 +165,16 @@
                     <!--mobile only row of buttons (kai-edited)-->
                     <div class="col-12 d-flex align-items-center gap-1 px-2 py-1 mobile-view-show mb-1">
 
-                      <!-- Red Add Review Button -->
-                      <template v-if="userType == 'user'">
+                      <!-- For venue users - show Add To Menu button -->
+                      <template v-if="userType === 'venue' && userID !== 'defaultUser'">
+                        <button class="btn venue-btn-green text-white fw-semibold px-2"
+                          style="border-radius: 0; height: 40px;">
+                          Add To Your Menu
+                        </button>
+                      </template>
+
+                      <!-- Red Add Review Button for regular users -->
+                      <template v-else-if="userType == 'user'">
                         <!-- Logged-In User -->
                         <button class="btn text-white fw-semibold px-2" data-bs-toggle="modal"
                           data-bs-target="#reviewModal"
@@ -176,14 +184,16 @@
                       </template>
 
                       <!-- Red Add Review Button When User Is Logged Out -->
-                      <router-link v-else :to="{ path: '/login' }" class="text-decoration-none">
-                        <button class="btn btn-danger text-white fw-semibold px-2"
-                          style="border-radius: 0; height: 38px;">
-                          Add Review
-                        </button>
-                      </router-link>
+                      <template v-else>
+                        <router-link :to="{ path: '/login' }" class="text-decoration-none">
+                          <button class="btn btn-danger text-white fw-semibold px-2"
+                            style="border-radius: 0; height: 38px;">
+                            Add Review
+                          </button>
+                        </router-link>
+                      </template>
 
-                      <!-- Teal Bookmark Icon -->
+                      <!-- Teal Bookmark Icon for non-venue logged-in users -->
                       <div v-if="userType == 'user'"
                         class="d-flex align-items-center justify-content-center teal-bookmark-icon"
                         style="background-color: #006A50; width: 40px; height: 40px; cursor: pointer;">
@@ -191,8 +201,8 @@
                           @icon-clicked="handleIconClick" />
                       </div>
 
-                      <!-- Teal Bookmark Button When User Is Logged Out -->
-                      <router-link v-else :to="{ path: '/login' }"
+                      <!-- Teal Bookmark Button When User Is Logged Out (not for venue users) -->
+                      <router-link v-else-if="userType !== 'venue'" :to="{ path: '/login' }"
                         class="d-flex align-items-center justify-content-center text-decoration-none"
                         style="background-color: #006A50; width: 38px; height: 38px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#ffffff"
@@ -823,43 +833,52 @@
 
           <!-- ADD YOUR REVIEW & BOOKMARK -->
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
-            <!-- Logged-in users -->
-            <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
-              <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
-                  data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
-                  Add Your Review
-                </button>
-              </div>
-              <!-- Logged-out users -->
-              <div v-else>
-                <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                  style="font-weight: bold;">
-                  Add Your Review
-                </button>
-              </div>
+            <!-- For venue users - show Add To Menu button -->
+            <div v-if="userType === 'venue' && userID !== 'defaultUser'">
+              <button class="btn btn-lg venue-btn-green">
+                Add To Your Menu
+              </button>
             </div>
-            <div v-else>
-              <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
-                  data-bs-target="#reviewModal" style="font-weight: bold;">
-                  Add Your Review
-                </button>
-                <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
-                  Review Added!
-                </button>
+            <!-- For non-venue users - show Add Your Review buttons -->
+            <div v-else-if="userType !== 'venue'">
+              <!-- Logged-in users -->
+              <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
+                <div v-if="userType === 'user' && userID !== 'defaultUser'">
+                  <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
+                    Add Your Review
+                  </button>
+                </div>
+                <!-- Logged-out users -->
+                <div v-else>
+                  <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
+                    style="font-weight: bold;">
+                    Add Your Review
+                  </button>
+                </div>
               </div>
-              <!-- Logged-out users -->
               <div v-else>
-                <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
-                  style="font-weight: bold;">
-                  Add Your Review
-                </button>
+                <div v-if="userType === 'user' && userID !== 'defaultUser'">
+                  <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
+                    data-bs-target="#reviewModal" style="font-weight: bold;">
+                    Add Your Review
+                  </button>
+                  <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
+                    Review Added!
+                  </button>
+                </div>
+                <!-- Logged-out users -->
+                <div v-else>
+                  <button class="btn primary-btn-less-round-blue btn-lg" @click="$router.push('/login')"
+                    style="font-weight: bold;">
+                    Add Your Review
+                  </button>
+                </div>
               </div>
             </div>
 
             <!-- Bookmark icon -->
-            <div class="d-flex align-items-center ms-2 mobile-view-hide">
+            <div v-if="userType !== 'venue'" class="d-flex align-items-center ms-2 mobile-view-hide">
               <button class="btn primary-btn-less-round-blue btn-lg">
                 <BookmarkIcon :user="user" :listing="specified_listing" :overlay="false" size="24"
                   @icon-clicked="handleIconClick" />
@@ -7413,6 +7432,24 @@ export default {
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
+  }
+
+  /* Venue "Add To Menu" button gradient styling similar to cellar button */
+  .venue-btn-green {
+    color: #fff;
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+    font-weight: bold;
+    border-radius: 10px;
+    transition: transform 0.4s ease;
+    border: none;
+  }
+
+  .venue-btn-green:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #1e7e34, #155724);
+    font-weight: bold;
+    border-radius: 10px;
+    transform: scale(1.05);
   }
 
   .venue-item:hover {

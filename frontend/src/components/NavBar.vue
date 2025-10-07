@@ -20,7 +20,7 @@
               For Brands
             </span>
             <span v-else-if="accType === 'venue' && specialStatus === 'EVENT_FESTIVAL'" class="badge rounded-pill ms-2" style="background-color: #28a745; color: white; font-weight: bold; font-size: 0.75rem;">
-              For Events & Festivals
+              For Events
             </span>
             <span v-else-if="accType === 'venue'" class="badge rounded-pill ms-2" style="background-color: #28a745; color: white; font-weight: bold; font-size: 0.75rem;">
               For Venues
