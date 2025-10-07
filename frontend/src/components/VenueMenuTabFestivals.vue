@@ -1907,7 +1907,7 @@
                                     <div class="border rounded p-3 mb-3" style="border: 1px solid #333; background-color: #fafafa;">
                                         <!-- [input] producer search -->
                                         <div class="form-group mb-3">
-                                            <p class="text-start mb-1">Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
+                                            <p class="text-start mb-1">Filter Drinks By Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
                                                     style="font-size: 14px;"> Select a producer to filter drink search</span></p>
 
                                             <input type="text" class="form-control"
@@ -1981,13 +1981,18 @@
                                     </div>
                                     <!-- Add by item ID / URL box -->
                                     <div class="border rounded p-3 mb-3" style="border: 1px solid #333; background-color: #fafafa;">
-                                        <h6 class="mb-3 fw-bold text-dark">Add by drink ID / drink listing URL</h6>
+                                        <h6 class="mb-3 fw-bold text-dark">Add by Drink ID / URL</h6>
                                         
                                         <div class="form-group mb-3">
                                             <div class="input-group">
+
+                                            <p class="text-start mb-1">Drink ID / URL<span class="text-danger">*</span> 
+                                                <span style="color:#ae3e3e; font-size: 14px;">Paste Drink ID or URL, then click 'Select' (e.g. either URL 'drink-x.com/listing/view/894255/yamazaki12yearsold' or Drink ID '894255') </span>
+                                            </p>
+
                                                 <input type="text" class="form-control" 
                                                     v-model="item.idOrUrlInput"
-                                                    placeholder="Enter item ID (e.g., 12345) or URL (e.g. drink-x.com/listing/view/12345/DuffBeer)">
+                                                    placeholder="Enter drink ID (e.g., 894255) or URL (e.g. drink-x.com/listing/view/894255/yamazaki12yearsold)">
                                                 <button class="btn btn-outline-secondary" 
                                                     type="button" 
                                                     @click="handleIdOrUrlInput(itemIndex)"
