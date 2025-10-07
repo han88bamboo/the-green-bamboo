@@ -169,6 +169,7 @@
                       <template v-if="userType === 'venue' && userID !== 'defaultUser'">
                         <button class="btn venue-btn-green text-white fw-semibold px-2"
                           style="border-radius: 0; height: 40px;"
+                          @click="handleAddToMenuClick"
                           data-bs-toggle="modal" data-bs-target="#menuModal">
                           Add To Your Menu
                         </button>
@@ -837,6 +838,7 @@
             <!-- For venue users - show Add To Menu button -->
             <div v-if="userType === 'venue' && userID !== 'defaultUser'">
               <button class="btn btn-lg venue-btn-green"
+                @click="handleAddToMenuClick"
                 data-bs-toggle="modal" data-bs-target="#menuModal">
                 Add To Your Menu
               </button>
@@ -1550,32 +1552,160 @@
             <div class="modal-content">
               <div class="modal-header" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
                 <h5 class="modal-title" id="menuModalLabel" style="color: white; font-weight: bold">
-                  <i class="fas fa-utensils me-2"></i>
+                  
                   Add To Your Menu
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body">
-                <!-- Placeholder content - will be built out later -->
-                <div class="text-center py-5">
-                  <div class="mb-4">
-                    <i class="fas fa-utensils" style="font-size: 3rem; color: #28a745;"></i>
+                
+                <!-- Loading state -->
+                <div v-if="loadingMenuSections" class="text-center py-4">
+                  <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Loading menu data...</span>
                   </div>
-                  <h4 class="mb-3">Add To Your Menu</h4>
-                  <p class="text-muted mb-4">
-                    This feature will allow you to add this drink to your venue's menu.
-                  </p>
-                  <p class="text-muted">
-                    <em>Content will be implemented soon...</em>
-                  </p>
+                  <p class="mt-2 text-muted">Loading menu data...</p>
+                </div>
+                
+                <!-- Success message -->
+                <div v-else-if="menuSubmissionSuccess" class="text-center py-4">
+                  <div class="text-success mb-3">
+                    <i class="fas fa-check-circle fa-3x"></i>
+                  </div>
+                  <h4 class="text-success">Successfully Added to Menu!</h4>
+                  <p class="text-muted">This item has been added to your venue's menu.</p>
+                </div>
+                
+                <!-- Menu form -->
+                <div v-else>
+                  <form @submit.prevent="addToVenueMenu">
+                    
+                    <!-- Target Menu Section -->
+                    <div class="form-group mb-4 p-3 border" style="background-color: #f8f9fa; border-radius: 8px;">
+                      <p class="text-start mb-1 fw-bold">Target Menu Section <span class="text-danger">*</span></p>
+                      
+                      <!-- Show message if no sections exist -->
+                      <div v-if="venueMenuSections.length === 0" class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>No menu sections found.</strong> You'll need to create menu sections first before adding items.
+                        <br>
+                        <small>Please visit your venue profile to set up your menu structure.</small>
+                      </div>
+                      
+                      <!-- Show message if sections exist but have no IDs (not saved to database) -->
+                      <div v-else-if="venueMenuSections.length > 0 && !venueMenuSections.some(s => s.id)" class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Menu sections not saved to database.</strong> You'll need to save your menu structure first.
+                        <br>
+                        <small>Please visit your venue profile and save your menu sections before adding items.</small>
+                      </div>
+                      
+                      <select class="form-select" 
+                              v-model="menuItemForm.targetSection"
+                              @change="updateMenuItemTargetSection"
+                              :disabled="venueMenuSections.length === 0 || !venueMenuSections.some(s => s.id)"
+                              required>
+                        <option :value="{}" disabled>Select a menu section...</option>
+                        <option v-for="sectionOption in menuSectionOptions"
+                                :key="sectionOption.id" 
+                                :value="sectionOption.section"
+                                :disabled="!sectionOption.section.id">
+                          {{ sectionOption.name }}{{ !sectionOption.section.id ? ' (Not Saved)' : '' }}
+                        </option>
+                      </select>
+                      <small class="text-muted">Choose which section of your menu to add this item to.</small>
+                    </div>
+
+                    <!-- Vintage input for wine/sake drink types -->
+                    <div class="form-group mb-3" v-if="isVintageApplicable">
+                      <p class="text-start mb-1">Vintage (Optional)</p>
+                      <input type="number" 
+                             class="form-control"
+                             v-model="menuItemForm.vintage"
+                             placeholder="e.g., 2019"
+                             min="1800"
+                             :max="new Date().getFullYear()">
+                      <small class="text-muted">Enter the vintage year for this {{ specified_listing.drinkType }}.</small>
+                    </div>
+
+                    <!-- Menu item price -->
+                    <div class="form-group mb-3">
+                      <p class="text-start mb-1">Menu Item Price <span class="text-danger">*</span></p>
+                      <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" 
+                               class="form-control"
+                               v-model="menuItemForm.price" 
+                               min="-1" 
+                               step="0.01"
+                               placeholder="0.00"
+                               required>
+                      </div>
+                      <small class="text-muted">Enter -1 if there is no price to display.</small>
+                    </div>
+
+                    <!-- Menu serving type -->
+                    <div class="form-group mb-3">
+                      <p class="text-start mb-1">Menu Item Serving Type <span class="text-danger">*</span></p>
+                      
+                      
+                      <select class="form-select" v-model="menuItemForm.servingType" required>
+                        <option value="" disabled>Select serving type... ({{ servingTypes.length }} available)</option>
+                        <option v-for="servingType in servingTypes"
+                                :key="servingType.id" 
+                                :value="servingType.id">
+                          {{ servingType.servingType }}
+                        </option>
+                      </select>
+                      <small class="text-muted">Choose how this item will be served.</small>
+                    </div>
+                    
+                    <!-- Preview -->
+                    <div v-if="isValidToSubmitMenu" class="mt-4 p-3 border rounded" style="background-color: #f8f9fa;">
+                      <h6 class="fw-bold mb-3"><i class="fas fa-eye me-2"></i>Preview:</h6>
+                      <div class="row align-items-center">
+                        <div class="col-3">
+                          <img :src="specified_listing.photo || defaultPhoto" 
+                               class="img-fluid rounded" 
+                               style="max-height: 80px; object-fit: cover;">
+                        </div>
+                        <div class="col-9">
+                          <h6 class="mb-1">{{ specified_listing.listingName }}</h6>
+                          <small class="text-muted d-block">{{ specified_listing.producerName }}</small>
+                          <small class="text-muted d-block">{{ specified_listing.drinkType }} | {{ specified_listing.originCountry }}</small>
+                          <div class="mt-2">
+                            <span class="badge bg-success">
+                              ${{ menuItemForm.price === -1 ? 'No Price' : menuItemForm.price }} / 
+                              {{ servingTypes.find(s => s.id == menuItemForm.servingType)?.servingType || 'Serving' }}
+                            </span>
+                            <span v-if="isVintageApplicable && menuItemForm.vintage" class="badge bg-info ms-1">
+                              {{ menuItemForm.vintage }} Vintage
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </form>
                 </div>
               </div>
+              
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  Close
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetMenuForm">
+                  Cancel
                 </button>
-                <button type="button" class="btn venue-btn-green" disabled>
-                  Add to Menu (Coming Soon)
+                <button type="button" 
+                        class="btn btn-success"
+                        @click="addToVenueMenu"
+                        :disabled="!isValidToSubmitMenu || addingToMenu || loadingMenuSections"
+                        v-if="!menuSubmissionSuccess">
+                  <span v-if="addingToMenu">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    Adding...
+                  </span>
+                  <span v-else>
+                    <i class="fas fa-plus me-2"></i>Add to Menu
+                  </span>
                 </button>
               </div>
             </div>
@@ -4000,6 +4130,25 @@ export default {
       loadingFoodPairings: false,
       showFoodPairingSuggestions: false,
       activeFoodPairingInput: null,
+
+      // Menu functionality - Add to menu form
+      servingTypes: [],
+      venueMenuSections: [],
+      
+      // Menu item form data (for single item)
+      menuItemForm: {
+        targetSection: {},
+        vintage: null,
+        price: -1,
+        servingType: 1
+      },
+      
+      // Loading states for menu functionality
+      loadingMenuSections: false,
+      addingToMenu: false,
+      menuSubmissionSuccess: false,
+      menuSubmissionError: false,
+      menuErrorMessage: '',
  
     };
   },
@@ -4034,6 +4183,21 @@ export default {
         if (cellarModal) {
           cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
         }
+        
+        // Note: Menu modal event listener will be set up after user data loads
+        console.log('Mounted: User type during initial setup:', this.userType);
+        console.log('Mounted: User ID during initial setup:', this.userID);
+        
+        // For debugging: expose component methods globally
+        if (process.env.NODE_ENV === 'development') {
+          window.debugBottleListings = {
+            testLoadServingTypes: () => this.testLoadServingTypes(),
+            testMenuModal: () => this.testMenuModal(),
+            setupMenuModal: () => this.setupMenuModalEventListener(),
+            component: this
+          };
+          console.log('Debug methods available at window.debugBottleListings');
+        }
       });
     } catch (error) {
       console.error(error);
@@ -4058,6 +4222,12 @@ export default {
     const cellarModal = document.getElementById('cellarModal');
     if (cellarModal) {
       cellarModal.removeEventListener('show.bs.modal', this.onCellarModalOpen);
+    }
+    
+    // Clean up menu modal event listener
+    const menuModal = document.getElementById('menuModal');
+    if (menuModal) {
+      menuModal.removeEventListener('show.bs.modal', this.onMenuModalOpen);
     }
 
     // Clean up location dropdowns
@@ -4183,6 +4353,50 @@ export default {
       
       console.log('defaultFormat: returning', format);
       return format;
+    },
+
+    // Menu functionality computed properties
+    isVintageApplicable() {
+      return this.VARIANT_DRNK_TYP.includes(this.specified_listing?.drinkType);
+    },
+    
+    menuSectionOptions() {
+      const options = [];
+      this.venueMenuSections.forEach(section => {
+        options.push({
+          id: section.id || section.sectionOrder,
+          name: section.sectionName,
+          type: 'section',
+          level: 0,
+          section: section
+        });
+        
+        // Add subsections if they exist
+        if (section.subsections && Array.isArray(section.subsections)) {
+          section.subsections.forEach(subsection => {
+            options.push({
+              id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
+              name: `  ${subsection.sectionName}`,
+              type: 'subsection',
+              level: 1,
+              section: subsection,
+              parentSection: section
+            });
+          });
+        }
+      });
+      return options;
+    },
+    
+    isValidToSubmitMenu() {
+      const hasTargetSection = this.menuItemForm.targetSection && Object.keys(this.menuItemForm.targetSection).length > 0;
+      const sectionHasId = this.menuItemForm.targetSection && this.menuItemForm.targetSection.id;
+      const hasValidPrice = this.menuItemForm.price !== null && this.menuItemForm.price !== '';
+      const hasValidServingType = this.menuItemForm.servingType && this.menuItemForm.servingType > 0;
+      const hasListing = this.specified_listing && this.specified_listing.id;
+      const hasSections = this.venueMenuSections.length > 0;
+      
+      return hasTargetSection && sectionHasId && hasValidPrice && hasValidServingType && hasListing && hasSections;
     }
 
   },
@@ -4275,6 +4489,22 @@ export default {
     selectedLocation: 'cacheReviewForm',
     selectedLocationAddress: 'cacheReviewForm',
     image64: 'cacheReviewForm',
+
+    // Watch for userType changes to set up menu modal event listener
+    userType: {
+      handler(newUserType, oldUserType) {
+        console.log('UserType changed from', oldUserType, 'to', newUserType);
+        
+        if (newUserType === 'venue') {
+          console.log('User is now a venue user, setting up menu modal...');
+          // Use a small delay to ensure the modal is rendered
+          setTimeout(() => {
+            this.setupMenuModalEventListener();
+          }, 100);
+        }
+      },
+      immediate: false
+    },
 
     // Watch for when modal becomes visible
     addingReview(newVal) {
@@ -6330,6 +6560,12 @@ export default {
           if (accType !== null) {
             this.userType = accType;
           }
+          
+          console.log('User data loaded - UserType:', this.userType, 'UserID:', this.userID);
+          
+          // Set up menu modal event listener now that user data is loaded
+          this.setupMenuModalEventListener();
+          
           // this.getCurrentLocation();
         } else {
           this.dataLoaded = null;
@@ -7318,6 +7554,355 @@ export default {
     onImageError(event) {
       console.log('Image failed to load, using default photo');
       event.target.src = this.defaultPhoto;
+    },
+
+    // ===== MENU FUNCTIONALITY METHODS =====
+    
+    // Handle Add to Menu button click
+    async handleAddToMenuClick() {
+      console.log('🎯 Add to Menu button clicked!');
+      console.log('Loading menu data...');
+      
+      try {
+        await this.loadMenuData();
+        console.log('✅ Menu data loaded successfully');
+      } catch (error) {
+        console.error('❌ Failed to load menu data:', error);
+      }
+    },
+
+    // Handle menu modal open event
+    async onMenuModalOpen() {
+      console.log('🎯 onMenuModalOpen called!');
+      console.log('Current user type:', this.userType);
+      console.log('Current user ID:', this.userID);
+      console.log('Is venue user?', this.userType === 'venue' && this.userID !== 'defaultUser');
+      console.log('Current servingTypes before loadMenuData:', this.servingTypes);
+      
+      await this.loadMenuData();
+      
+      console.log('🎯 onMenuModalOpen finished!');
+      console.log('ServingTypes after loadMenuData:', this.servingTypes);
+    },
+    
+    // Load menu sections and serving types
+    async loadMenuData() {
+      console.log('loadMenuData called, current loadingMenuSections:', this.loadingMenuSections);
+      
+      if (this.loadingMenuSections) return;
+      
+      this.loadingMenuSections = true;
+      
+      try {
+        console.log('Starting to load menu data...');
+        
+        // Load serving types
+        console.log('About to load serving types...');
+        await this.loadServingTypes();
+        console.log('Serving types loaded successfully');
+        
+        // Load venue menu sections
+        console.log('About to load venue menu sections...');
+        await this.loadVenueMenuSections();
+        console.log('Venue menu sections loaded successfully');
+        
+        // Initialize form defaults
+        console.log('About to initialize menu form defaults...');
+        this.initializeMenuFormDefaults();
+        console.log('Menu form defaults initialized successfully');
+        
+      } catch (error) {
+        console.error('Error loading menu data:', error);
+        const toast = useToast();
+        toast.error('Failed to load menu data. Please try again.');
+      } finally {
+        this.loadingMenuSections = false;
+        console.log('loadMenuData finished, loadingMenuSections set to false');
+      }
+    },
+    
+    // Load serving types from backend
+    async loadServingTypes() {
+      try {
+        console.log('Starting to load serving types...');
+        console.log('API URL:', `${process.env.VUE_APP_API_URL}/getData/getServingTypes`);
+        
+        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getServingTypes`);
+        
+        console.log('Raw response:', response);
+        console.log('Response data:', response.data);
+        console.log('Response status:', response.status);
+        console.log('Response data type:', typeof response.data);
+        console.log('Is response.data an array?', Array.isArray(response.data));
+        
+        if (Array.isArray(response.data)) {
+          this.servingTypes = response.data;
+          console.log('✅ Successfully assigned serving types:', this.servingTypes);
+          console.log('✅ Number of serving types:', this.servingTypes.length);
+          console.log('✅ First serving type:', this.servingTypes[0]);
+        } else {
+          console.error('❌ Response data is not an array:', response.data);
+          this.servingTypes = [];
+        }
+        
+      } catch (error) {
+        console.error('❌ Error loading serving types:', error);
+        console.error('❌ Error details:', {
+          message: error.message,
+          response: error.response,
+          status: error.response?.status,
+          data: error.response?.data
+        });
+        
+        // Set empty array on error
+        this.servingTypes = [];
+        throw error;
+      }
+    },
+    
+    // Load venue's menu sections (simplified version - you may need to implement hierarchical loading)
+    async loadVenueMenuSections() {
+      try {
+        // Try to get existing menu sections for the venue using the menu API
+        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${this.userID}`);
+        
+        if (response.data && response.data.length > 0) {
+          this.venueMenuSections = response.data;
+          console.log('Loaded existing venue menu sections:', this.venueMenuSections);
+        } else {
+          // No menu exists yet, empty array
+          this.venueMenuSections = [];
+          console.log('No existing menu found, venue needs to create menu sections first');
+        }
+      } catch (error) {
+        console.error('Error loading venue menu sections:', error);
+        // If venue has no menu yet or error occurred, initialize empty
+        this.venueMenuSections = [];
+        console.log('Error loading menu sections, venue needs to create menu sections first');
+      }
+    },
+    
+    // Initialize menu form with default values
+    initializeMenuFormDefaults() {
+      console.log('initializeMenuFormDefaults called');
+      console.log('Available serving types:', this.servingTypes);
+      console.log('Number of serving types:', this.servingTypes?.length);
+      
+      const defaultServingType = this.servingTypes.find(type => type.servingType === "-") || this.servingTypes[0];
+      console.log('Selected default serving type:', defaultServingType);
+      
+      this.menuItemForm = {
+        targetSection: {},
+        vintage: null,
+        price: -1,
+        servingType: defaultServingType ? defaultServingType.id : 1
+      };
+      
+      console.log('Menu item form initialized:', this.menuItemForm);
+      
+      // Set vintage if applicable
+      if (this.isVintageApplicable) {
+        this.menuItemForm.vintage = null;
+        console.log('Vintage is applicable, set to null');
+      }
+    },
+    
+    // Handle target section change
+    updateMenuItemTargetSection() {
+      console.log('Target section updated:', this.menuItemForm.targetSection);
+      
+      // Validate target section
+      if (!this.menuItemForm.targetSection || Object.keys(this.menuItemForm.targetSection).length === 0) {
+        return;
+      }
+      
+      // Ensure target section has sectionMenu array
+      if (!this.menuItemForm.targetSection.sectionMenu) {
+        this.menuItemForm.targetSection.sectionMenu = [];
+      }
+    },
+    
+    // Add current listing to venue menu
+    async addToVenueMenu() {
+      if (!this.isValidToSubmitMenu) {
+        const toast = useToast();
+        toast.error('Please fill in all required fields.');
+        return;
+      }
+      
+      // Check if the selected section has an ID (exists in database)
+      if (!this.menuItemForm.targetSection.id) {
+        const toast = useToast();
+        toast.error('Selected section does not exist in the database. Please create menu sections first by editing your venue profile.');
+        return;
+      }
+      
+      this.addingToMenu = true;
+      this.menuSubmissionSuccess = false;
+      this.menuSubmissionError = false;
+      this.menuErrorMessage = '';
+      
+      try {
+        const menuItemData = {
+          venueID: this.userID,
+          menuOrder: this.menuItemForm.targetSection.sectionMenu ? this.menuItemForm.targetSection.sectionMenu.length : 0,
+          listingID: this.specified_listing.id,
+          itemPrice: this.menuItemForm.price,
+          servingType: this.menuItemForm.servingType,
+          sectionName: this.menuItemForm.targetSection.sectionName,
+          sectionOrder: this.menuItemForm.targetSection.sectionOrder,
+          isSubSection: this.menuItemForm.targetSection.isSubSection || false,
+          parentSectionId: this.menuItemForm.targetSection.parentSectionId || null
+        };
+        
+        // Add vintage if applicable
+        if (this.isVintageApplicable && this.menuItemForm.vintage) {
+          menuItemData.itemVintage = this.menuItemForm.vintage;
+        }
+        
+        console.log('Submitting menu item data:', menuItemData);
+        
+        const response = await this.$axios.post(
+          `${process.env.VUE_APP_API_URL}/editVenueProfile/addListingToMenu`,
+          menuItemData,
+          {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        if (response.status === 201) {
+          this.menuSubmissionSuccess = true;
+          const toast = useToast();
+          toast.success("Successfully added to menu!");
+          
+          // Reset form
+          this.resetMenuForm();
+          
+          // Close modal after short delay
+          setTimeout(() => {
+            const modal = document.getElementById('menuModal');
+            if (modal) {
+              // Try to get bootstrap modal instance, or create new one
+              let bsModal = window.bootstrap?.Modal?.getInstance(modal);
+              if (!bsModal) {
+                bsModal = new window.bootstrap.Modal(modal);
+              }
+              bsModal.hide();
+            }
+          }, 1500);
+        }
+        
+      } catch (error) {
+        console.error('Error adding to menu:', error);
+        this.menuSubmissionError = true;
+        
+        if (error.response && error.response.data && error.response.data.message) {
+          this.menuErrorMessage = error.response.data.message;
+        } else if (error.message) {
+          this.menuErrorMessage = error.message;
+        } else {
+          this.menuErrorMessage = 'An error occurred while adding to menu. Please try again.';
+        }
+        
+        // Check for specific error cases
+        if (this.menuErrorMessage.includes('Menu section not found')) {
+          this.menuErrorMessage = 'Selected menu section not found. Please save your menu sections first by editing your venue profile, then try again.';
+        }
+        
+        const toast = useToast();
+        toast.error(`❌ ${this.menuErrorMessage}`);
+      } finally {
+        this.addingToMenu = false;
+      }
+    },
+    
+    // Reset menu form
+    resetMenuForm() {
+      this.initializeMenuFormDefaults();
+      this.menuSubmissionSuccess = false;
+      this.menuSubmissionError = false;
+      this.menuErrorMessage = '';
+    },
+    
+    // Placeholder methods for compatibility with the copied template (these will be removed)
+    resetMultipleMenuItems() {
+      this.resetMenuForm();
+    },
+    
+    addMultipleMenuItems() {
+      this.addToVenueMenu();
+    },
+    
+    isValidToSubmitMultiple() {
+      return this.isValidToSubmitMenu;
+    },
+    
+    getValidItemsCount() {
+      return this.isValidToSubmitMenu ? 1 : 0;
+    },
+
+    // Test method to manually trigger serving types loading (for debugging)
+    async testLoadServingTypes() {
+      console.log('=== MANUAL SERVING TYPES TEST ===');
+      console.log('Current userType:', this.userType);
+      console.log('Current userID:', this.userID);
+      console.log('Current servingTypes before load:', this.servingTypes);
+      console.log('servingTypes length before:', this.servingTypes.length);
+      
+      try {
+        await this.loadServingTypes();
+        console.log('✅ Manual serving types load completed successfully');
+        console.log('✅ Final servingTypes:', this.servingTypes);
+        console.log('✅ Final servingTypes length:', this.servingTypes.length);
+        
+        // Test the template data
+        console.log('✅ Template test - first 3 items:', this.servingTypes.slice(0, 3));
+        
+        return { success: true, data: this.servingTypes };
+      } catch (error) {
+        console.error('❌ Manual serving types load failed:', error);
+        return { success: false, error: error };
+      }
+    },
+
+    // Set up menu modal event listener after user data is loaded
+    setupMenuModalEventListener() {
+      console.log('Setting up menu modal event listener...');
+      console.log('User type:', this.userType);
+      console.log('User ID:', this.userID);
+      
+      this.$nextTick(() => {
+        const menuModal = document.getElementById('menuModal');
+        console.log('Menu modal element found:', !!menuModal);
+        
+        if (menuModal) {
+          console.log('Adding event listener to menu modal');
+          menuModal.addEventListener('show.bs.modal', this.onMenuModalOpen);
+        } else {
+          console.log('Menu modal not found - likely not a venue user or modal not rendered yet');
+        }
+      });
+    },
+
+    // Test method to manually trigger menu modal open (for debugging)
+    async testMenuModal() {
+      console.log('=== MANUAL MENU MODAL TEST ===');
+      console.log('Current userType:', this.userType);
+      console.log('Current userID:', this.userID);
+      
+      // Check if modal exists
+      const menuModal = document.getElementById('menuModal');
+      console.log('Menu modal element exists:', !!menuModal);
+      
+      if (menuModal) {
+        console.log('Manually triggering onMenuModalOpen...');
+        await this.onMenuModalOpen();
+      } else {
+        console.log('Modal not found. Trying to set up event listener...');
+        this.setupMenuModalEventListener();
+      }
     },
 
     
