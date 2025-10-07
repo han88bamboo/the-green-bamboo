@@ -168,7 +168,8 @@
                       <!-- For venue users - show Add To Menu button -->
                       <template v-if="userType === 'venue' && userID !== 'defaultUser'">
                         <button class="btn venue-btn-green text-white fw-semibold px-2"
-                          style="border-radius: 0; height: 40px;">
+                          style="border-radius: 0; height: 40px;"
+                          data-bs-toggle="modal" data-bs-target="#menuModal">
                           Add To Your Menu
                         </button>
                       </template>
@@ -835,7 +836,8 @@
           <div class="col-4 d-flex align-items-center mobile-view-hide me-0">
             <!-- For venue users - show Add To Menu button -->
             <div v-if="userType === 'venue' && userID !== 'defaultUser'">
-              <button class="btn btn-lg venue-btn-green">
+              <button class="btn btn-lg venue-btn-green"
+                data-bs-toggle="modal" data-bs-target="#menuModal">
                 Add To Your Menu
               </button>
             </div>
@@ -1540,6 +1542,45 @@
           </div>
         </div>
         <!-- Anchor DEF -->
+
+        <!-- Add To Your Menu Modal -->
+        <div v-if="userType === 'venue' && userID !== 'defaultUser'" class="modal fade" id="menuModal" tabindex="-1"
+          aria-labelledby="menuModalLabel" aria-hidden="true" data-bs-backdrop="static">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
+                <h5 class="modal-title" id="menuModalLabel" style="color: white; font-weight: bold">
+                  <i class="fas fa-utensils me-2"></i>
+                  Add To Your Menu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <!-- Placeholder content - will be built out later -->
+                <div class="text-center py-5">
+                  <div class="mb-4">
+                    <i class="fas fa-utensils" style="font-size: 3rem; color: #28a745;"></i>
+                  </div>
+                  <h4 class="mb-3">Add To Your Menu</h4>
+                  <p class="text-muted mb-4">
+                    This feature will allow you to add this drink to your venue's menu.
+                  </p>
+                  <p class="text-muted">
+                    <em>Content will be implemented soon...</em>
+                  </p>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  Close
+                </button>
+                <button type="button" class="btn venue-btn-green" disabled>
+                  Add to Menu (Coming Soon)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- Modal -->
         <div v-if="userID != 'defaultUser'" class="modal fade" id="reviewModal" tabindex="-1"
