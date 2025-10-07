@@ -1869,7 +1869,7 @@
                                 "Save" first before adding a new menu item.</p>
 
                             <!-- Global Target Menu Section -->
-                            <div class="form-group mb-4 p-3"
+                            <div class="form-group mb-4 p-3 border"
                                 style="background-color: #f8f9fa; border-radius: 8px;">
                                 <p class="text-start mb-1 fw-bold"> Target Menu Section (applies to all
                                     items) <span class="text-danger">*</span></p>
@@ -1945,7 +1945,7 @@
                                             <p class="text-start mb-1">Drink Name<span
                                                     class="text-danger">*</span> 
                                                 <span class="text-muted"
-                                                    style="font-size: 14px;">Just begin typing, then select
+                                                    style="font-size: 14px;">  Just begin typing, then select
                                                     from the drop-down suggestions.</span>
                                                 <span v-if="item.selectedProducer && item.selectedProducer.id" 
                                                     class="text-info fw-bold" style="font-size: 14px;">
@@ -1984,15 +1984,13 @@
                                         <h6 class="mb-3 fw-bold text-dark">Add by Drink ID / URL</h6>
                                         
                                         <div class="form-group mb-3">
-                                            <div class="input-group">
-
                                             <p class="text-start mb-1">Drink ID / URL<span class="text-danger">*</span> 
-                                                <span style="color:#ae3e3e; font-size: 14px;">Paste Drink ID or URL, then click 'Select' (e.g. either URL 'drink-x.com/listing/view/894255/yamazaki12yearsold' or Drink ID '894255') </span>
+                                                <span style="color:#ae3e3e; font-size: 14px;">  Paste Drink ID or URL, then click 'Select' (e.g. either URL 'drink-x.com/listing/view/894255/yamazaki12yearsold' or Drink ID '894255') </span>
                                             </p>
-
+                                            <div class="input-group">
                                                 <input type="text" class="form-control" 
                                                     v-model="item.idOrUrlInput"
-                                                    placeholder="Enter drink ID (e.g., 894255) or URL (e.g. drink-x.com/listing/view/894255/yamazaki12yearsold)">
+                                                    placeholder="Paste Drink ID or URL">
                                                 <button class="btn btn-outline-secondary" 
                                                     type="button" 
                                                     @click="handleIdOrUrlInput(itemIndex)"
