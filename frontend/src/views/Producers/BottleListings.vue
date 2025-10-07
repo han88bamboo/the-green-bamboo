@@ -5315,6 +5315,9 @@ export default {
         },
       };
 
+      // Console log to debug the complete review submission payload
+      console.log("Review submission payload:", submitData);
+
       this.writeReview(submitAPI, submitData);
     },
 
