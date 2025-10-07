@@ -7776,16 +7776,11 @@ export default {
           // Reset form
           this.resetMenuForm();
           
-          // Close modal after short delay
+          // Close modal by triggering the close button click (same as cellar modal)
           setTimeout(() => {
-            const modal = document.getElementById('menuModal');
-            if (modal) {
-              // Try to get bootstrap modal instance, or create new one
-              let bsModal = window.bootstrap?.Modal?.getInstance(modal);
-              if (!bsModal) {
-                bsModal = new window.bootstrap.Modal(modal);
-              }
-              bsModal.hide();
+            const closeButton = document.querySelector('#menuModal .btn-close');
+            if (closeButton) {
+              closeButton.click();
             }
           }, 1500);
         }
