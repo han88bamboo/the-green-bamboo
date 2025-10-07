@@ -189,6 +189,31 @@
                                     </router-link>
                                 </div>
                             </div>
+
+                    <div style="
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 16px;
+                        margin-bottom: 16px;
+                        ">
+                                        <img src="/Polling.png" style="
+                            width: 64px;
+                            height: 64px;
+                            object-fit: contain;
+                            border-radius: 4px;
+                        " alt="Create Event" />
+                                        <div class="text-start">
+                                            <p class="mobile-rating-smaller-text-2 mb-2 text-start">
+                                                <strong>Create A Poll </strong> (Have a question for your fans and guests? Engage them with a fun public poll!)
+                                            </p>
+                                            <button class="btn btn-warning btn-sm rounded fw-bold fs-8" 
+                                                    @click="highlightPollAndNavigate">
+                                                Create Poll
+                                            </button>
+                                        </div>
+                                    </div>
+
+                            
                         </div>
 
                         <!-- Second Column -->
@@ -253,7 +278,7 @@
                 gap: 16px;
                 margin-bottom: 16px;
                 ">
-                                <img src="/CreateEvent.png" style="
+                                <img src="/Report.png" style="
                     width: 64px;
                     height: 64px;
                     object-fit: contain;
@@ -1520,7 +1545,7 @@
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 
                 <!-- Poll Card Section (only for logged-in users) -->
-                <div v-if="user_id !== 'defaultUser'" class="row mt-4">
+                <div v-if="user_id !== 'defaultUser'" class="row mt-4" id="poll-section">
                     <div class="col-12">
                         <PollCard 
                             :creator-id="targetVenue.id"
@@ -7573,6 +7598,60 @@ export default {
                 setTimeout(() => {
                     qnaSection.classList.remove('highlight-section');
                 }, 3000);
+            }
+        },
+        
+        highlightPollAndNavigate() {
+            console.log('highlightPollAndNavigate method called');
+            
+            // Find the poll section first
+            const pollSection = document.getElementById('poll-section');
+            console.log('Poll section found:', pollSection);
+            
+            if (pollSection) {
+                // Get the position of the poll section
+                const rect = pollSection.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const pollSectionTop = rect.top + scrollTop;
+                
+                console.log('Poll section position from top:', pollSectionTop);
+                console.log('Current scroll position:', scrollTop);
+                console.log('Viewport height:', window.innerHeight);
+                
+                // Try scrollIntoView with offset
+                pollSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center'  // This will center the element in the viewport
+                });
+                
+                console.log('ScrollIntoView executed with block: center');
+                
+                // Add highlight after scroll
+                setTimeout(() => {
+                    // Try to find the poll-card-container within the PollCard component
+                    const pollCardContainer = pollSection.querySelector('.poll-card-container');
+                    console.log('Poll card container found:', pollCardContainer);
+                    if (pollCardContainer) {
+                        pollCardContainer.classList.add('highlight-section');
+                        console.log('Highlight added to poll card container');
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            pollCardContainer.classList.remove('highlight-section');
+                            console.log('Highlight removed from poll card container');
+                        }, 3000);
+                    } else {
+                        // Fallback: highlight the entire poll section if poll-card-container not found
+                        pollSection.classList.add('highlight-section');
+                        console.log('Highlight added to poll section (fallback)');
+                        setTimeout(() => {
+                            pollSection.classList.remove('highlight-section');
+                            console.log('Highlight removed from poll section (fallback)');
+                        }, 3000);
+                    }
+                }, 600);
+            } else {
+                console.log('Poll section not found!');
             }
         },
         // highlightMenuSection() {
