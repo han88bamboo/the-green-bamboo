@@ -1871,8 +1871,9 @@
                             <!-- Global Target Menu Section -->
                             <div class="form-group mb-4 p-3 border"
                                 style="background-color: #f8f9fa; border-radius: 8px;">
-                                <p class="text-start mb-1 fw-bold"> Target Menu Section (applies to all
-                                    items) <span class="text-danger">*</span></p>
+                                <p class="text-start mb-1 fw-bold"> Target Menu Section (applies to all items) 
+                                    <span class="text-danger">*</span>
+                                </p>
                                 <select class="form-select" aria-label="globalMenuItemTargetSection"
                                     v-model="globalMenuItemTargetSection"
                                     @change="updateGlobalMenuItemTargetSection">
@@ -2037,8 +2038,7 @@
                                     <div v-if="item.newMenuItemTarget && Object.keys(item.newMenuItemTarget).length !== 0"
                                         class="col-12 my-3">
                                         <hr>
-                                        <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item
-                                            Preview:</p>
+                                        <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item Preview:</p>
                                         <!-- DESKTOP -->
                                         <div class="row mobile-view-hide">
 
@@ -2214,8 +2214,7 @@
 
                             <!-- Maximum Items Message -->
                             <div class="text-center mb-3" v-if="multipleMenuItems.length >= 20">
-                                <p class="text-warning fst-italic">Maximum of 20 items can be added at
-                                    once.</p>
+                                <p class="text-warning fst-italic">Maximum of 20 items can be added at once.</p>
                             </div>
 
                         </div>
