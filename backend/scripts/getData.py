@@ -1055,7 +1055,7 @@ def getListingsDetailedByID(id):
             return jsonify({"code": 404, "message": "Listing not found"}), 404
 
         # Fetch the producer details
-        cursor.execute('SELECT "producerName", "photo" FROM "producers" WHERE "id" = %s', (listing_data['producerID'],))
+        cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing_data['producerID'],))
         producer_data = cursor.fetchone()
 
         if producer_data is None:
@@ -1064,8 +1064,7 @@ def getListingsDetailedByID(id):
         # Combine the listing and producer data
         detailed_listing = {
             **listing_data,
-            "producerName": producer_data['producerName'],
-            "photo": producer_data['photo']
+            "producerName": producer_data['producerName']
         }
 
         # Get the average rating for the listing
@@ -1104,7 +1103,7 @@ def getListingNamesDynamicSearch(searchTerm):
         if len(searchTerm.strip()) < 1:
             return jsonify([])
             
-        # Searches for listings by name, starting from the lastID
+        # Enhanced search with accent removal and character normalization for better matching
         cursor.execute(""" 
             SELECT 
                 l."id", 
@@ -1120,7 +1119,9 @@ def getListingNamesDynamicSearch(searchTerm):
                 (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(l."listingName") %% unaccent(%s)
+            WHERE unaccent(l."listingName") ILIKE unaccent(%s)
+               OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+               OR unaccent(l."listingName") %% unaccent(%s)
             
             UNION
             
@@ -1138,11 +1139,14 @@ def getListingNamesDynamicSearch(searchTerm):
                 (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
             FROM "listings" l
             JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(p."producerName") %% unaccent(%s)
+            WHERE unaccent(p."producerName") ILIKE unaccent(%s)
+               OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+               OR unaccent(p."producerName") %% unaccent(%s)
             
-            ORDER BY combined_sim_score DESC
+            ORDER BY combined_sim_score DESC NULLS LAST
             LIMIT 50
-        """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm))
+        """, (searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm, 
+              searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
         listings_data = cursor.fetchall()
 
@@ -1183,8 +1187,8 @@ def getProducerNamesDynamicSearch(searchTerm):
     cursor = conn.cursor()
 
     try:
-        # Searches for producers by name with similarity
-        cursor.execute(""" 
+        # Enhanced search with accent removal and character normalization for better matching
+        cursor.execute("""
             SELECT 
                 p."id", 
                 p."producerName",
@@ -1192,10 +1196,12 @@ def getProducerNamesDynamicSearch(searchTerm):
                 p."photo",
                 similarity(unaccent(p."producerName"), unaccent(%s)) AS sim_score
             FROM "producers" p
-            WHERE unaccent(p."producerName") %% unaccent(%s)
-            ORDER BY sim_score DESC
+            WHERE unaccent(p."producerName") ILIKE unaccent(%s)
+               OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+               OR unaccent(p."producerName") %% unaccent(%s)
+            ORDER BY sim_score DESC NULLS LAST
             LIMIT 20
-        """, (searchTerm, searchTerm))
+        """, (searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
         producers_data = cursor.fetchall()
 
@@ -1261,7 +1267,7 @@ def getListingNamesByProducer(searchTerm, producerId):
             # First, lower the similarity threshold to 0.15 for more permissive matching
             cursor.execute("SET pg_trgm.similarity_threshold = 0.05")
 
-            # Searches for listings by name from a specific producer with trigram matching
+            # Enhanced search with accent removal and character normalization for better matching
             cursor.execute(""" 
                 SELECT 
                     l."id", 
@@ -1278,10 +1284,12 @@ def getListingNamesByProducer(searchTerm, producerId):
                 FROM "listings" l
                 JOIN "producers" p ON l."producerID" = p."id"
                 WHERE l."producerID" = %s
-                AND unaccent(l."listingName") %% unaccent(%s)
-                ORDER BY sim_score DESC
+                AND (unaccent(l."listingName") ILIKE unaccent(%s)
+                     OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                     OR unaccent(l."listingName") %% unaccent(%s))
+                ORDER BY sim_score DESC NULLS LAST
                 LIMIT 30
-            """, (searchTerm, producerId, searchTerm))
+            """, (searchTerm, producerId, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
         listings_data = cursor.fetchall()
 
@@ -1785,12 +1793,17 @@ def getUniqueProducersNamesID(search_term, pid):
                 })
             
         # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
+        # Enhanced search with accent removal and character normalization for better matching
         cursor.execute("""
-            SELECT "id", "producerName", "isIndependentBottler", "originCountry"
+            SELECT "id", "producerName", "isIndependentBottler", "originCountry",
+                   similarity(unaccent("producerName"), unaccent(%s)) as sim_score
             FROM "producers"
-            WHERE "producerName" ILIKE %s
+            WHERE unaccent("producerName") ILIKE unaccent(%s)
+               OR unaccent(regexp_replace("producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+               OR unaccent("producerName") %% unaccent(%s)
+            ORDER BY sim_score DESC NULLS LAST
             LIMIT 30
-        """, ('%' + search_term + '%',))
+        """, (search_term, '%' + search_term + '%', '%' + search_term + '%', search_term))
         
         producers_data = cursor.fetchall()  
 

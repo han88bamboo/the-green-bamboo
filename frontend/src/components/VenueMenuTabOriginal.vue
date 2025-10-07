@@ -1649,82 +1649,107 @@
                                     </button>
                                 </div>
 
-                                <div class="border rounded p-3" style="background-color: #fafafa;">
+                                
+                                <div class="border rounded p-3 mb-3" style="background-color: #fafafa;">
+                                    <!-- Search for item to add box -->
+                                    <div class="border rounded p-3 mb-3" style="border: 1px solid #333; background-color: #fafafa;">
+                                        <h6 class="mb-3 fw-bold text-dark">Search for item to add</h6>
 
-                                    <!-- [input] producer search -->
-                                    <div class="form-group mb-3">
-                                        <p class="text-start mb-1">Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
-                                                style="font-size: 14px;"> Select a producer to filter drink search</span></p>
+                                        <!-- [input] producer search -->
+                                        <div class="form-group mb-3">
+                                            <p class="text-start mb-1">Producer (Distillery, Brewery, Winery, etc.) (Optional)<span class="text-muted"
+                                                    style="font-size: 14px;"> Select a producer to filter drink search</span></p>
 
-                                        <input type="text" class="form-control"
-                                            v-model="item.producerSearchQuery"
-                                            @input="debouncedSearchProducers(itemIndex)"
-                                            :placeholder="'Search for a producer to filter drinks (Item ' + (itemIndex + 1) + ')'" />
+                                            <input type="text" class="form-control"
+                                                v-model="item.producerSearchQuery"
+                                                @input="debouncedSearchProducers(itemIndex)"
+                                                :placeholder="'Search for a producer to filter drinks (Item ' + (itemIndex + 1) + ')'" />
 
-                                        <ul class="list-group"
-                                            v-if="item.producerSearchResults && item.producerSearchResults.length > 0 && item.producerSearchQuery">
-                                            <li v-for="producer in item.producerSearchResults" :key="producer.id"
-                                                class="list-group-item list-group-item-action"
-                                                @click="selectProducer(producer, itemIndex)">
-                                                {{ producer.producerName }}
-                                                <small class="text-muted">
-                                                    ({{ producer.originCountry }})
+                                            <ul class="list-group"
+                                                v-if="item.producerSearchResults && item.producerSearchResults.length > 0 && item.producerSearchQuery">
+                                                <li v-for="producer in item.producerSearchResults" :key="producer.id"
+                                                    class="list-group-item list-group-item-action"
+                                                    @click="selectProducer(producer, itemIndex)">
+                                                    {{ producer.producerName }}
+                                                    <small class="text-muted">
+                                                        ({{ producer.originCountry }})
+                                                    </small>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Show selected producer -->
+                                            <div v-if="item.selectedProducer && item.selectedProducer.id" 
+                                                class="mt-2 p-2 bg-light border rounded">
+                                                <small class="text-success fw-bold">
+                                                    ✓ Producer Selected: {{ item.selectedProducer.producerName }}
+                                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2"
+                                                        @click="item.selectedProducer = {}; item.producerSearchQuery = ''">
+                                                        Clear
+                                                    </button>
                                                 </small>
-                                            </li>
-                                        </ul>
+                                            </div>
+                                        </div>
 
-                                        <!-- Show selected producer -->
-                                        <div v-if="item.selectedProducer && item.selectedProducer.id" 
-                                            class="mt-2 p-2 bg-light border rounded">
-                                            <small class="text-success fw-bold">
-                                                ✓ Producer Selected: {{ item.selectedProducer.producerName }}
-                                                <button type="button" class="btn btn-sm btn-outline-danger ms-2"
-                                                    @click="item.selectedProducer = {}; item.producerSearchQuery = ''">
-                                                    Clear
-                                                </button>
-                                            </small>
+                                        <!-- [input] bottle name -->
+                                        <div class="form-group mb-3">
+                                            <p class="text-start mb-1">Drink Name<span
+                                                    class="text-danger">*</span> 
+                                                <span class="text-muted"
+                                                    style="font-size: 14px;">Just begin typing, then select
+                                                    from the drop-down suggestions.</span>
+                                                <span v-if="item.selectedProducer && item.selectedProducer.id" 
+                                                    class="text-info fw-bold" style="font-size: 14px;">
+                                                    - Filtered by {{ item.selectedProducer.producerName }}
+                                                </span>
+                                            </p>
+
+                                            <input type="text" class="form-control"
+                                                v-model="item.searchQuery"
+                                                @input="debouncedSearchMultiple(itemIndex)"
+                                                :placeholder="item.selectedProducer && item.selectedProducer.id ? 
+                                                    'Search drinks from ' + item.selectedProducer.producerName + ' (Item ' + (itemIndex + 1) + ')' :
+                                                    'Enter a Drink to Add to Menu (Item ' + (itemIndex + 1) + ')'" />
+
+                                            <ul class="list-group"
+                                                v-if="item.searchResults && item.searchResults.length > 0 && item.searchQuery">
+                                                <li v-for="listing in item.searchResults" :key="listing.id"
+                                                    class="list-group-item list-group-item-action"
+                                                    @click="selectListingMultiple(listing, itemIndex)">
+                                                    {{ listing.listingName }}
+                                                    <small class="text-muted">
+                                                        (Producer: {{ listing.producerName }} |
+                                                        Type: {{ listing.drinkType }} |
+                                                        ABV: {{ listing.abv ? listing.abv + '%' : 'N/A' }} |
+                                                        Country: {{ listing.originCountry }})
+                                                    </small>
+                                                </li>
+                                            </ul>
+
+                                            <p v-show="item.newMenuItemID && item.newMenuItemID.length > 0"
+                                                class="text-start mb-1 text-danger"></p>
                                         </div>
                                     </div>
-
-                                    <!-- [input] bottle name -->
-                                    <div class="form-group mb-3">
-                                        <p class="text-start mb-1">Drink Name<span
-                                                class="text-danger">*</span> 
-                                            <span class="text-muted"
-                                                style="font-size: 14px;">Just begin typing, then select
-                                                from the drop-down suggestions.</span>
-                                            <span v-if="item.selectedProducer && item.selectedProducer.id" 
-                                                class="text-info fw-bold" style="font-size: 14px;">
-                                                - Filtered by {{ item.selectedProducer.producerName }}
-                                            </span>
-                                        </p>
-
-                                        <input type="text" class="form-control"
-                                            v-model="item.searchQuery"
-                                            @input="debouncedSearchMultiple(itemIndex)"
-                                            :placeholder="item.selectedProducer && item.selectedProducer.id ? 
-                                                'Search drinks from ' + item.selectedProducer.producerName + ' (Item ' + (itemIndex + 1) + ')' :
-                                                'Enter a Drink to Add to Menu (Item ' + (itemIndex + 1) + ')'" />
-
-                                        <ul class="list-group"
-                                            v-if="item.searchResults && item.searchResults.length > 0 && item.searchQuery">
-                                            <li v-for="listing in item.searchResults" :key="listing.id"
-                                                class="list-group-item list-group-item-action"
-                                                @click="selectListingMultiple(listing, itemIndex)">
-                                                {{ listing.listingName }}
-                                                <small class="text-muted">
-                                                    (Producer: {{ listing.producerName }} |
-                                                    Type: {{ listing.drinkType }} |
-                                                    ABV: {{ listing.abv ? listing.abv + '%' : 'N/A' }} |
-                                                    Country: {{ listing.originCountry }})
-                                                </small>
-                                            </li>
-                                        </ul>
-
-                                        <p v-show="item.newMenuItemID && item.newMenuItemID.length > 0"
-                                            class="text-start mb-1 text-danger"></p>
+                                    <!-- Add by item ID / URL box -->
+                                    <div class="border rounded p-3 mb-3" style="border: 1px solid #333; background-color: #fafafa;">
+                                        <h6 class="mb-3 fw-bold text-dark">Add by drink ID / drink listing URL</h6>
+                                        
+                                        <div class="form-group mb-3">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control" 
+                                                    v-model="item.idOrUrlInput"
+                                                    placeholder="Enter item ID (e.g., 12345) or URL (e.g. drink-x.com/listing/view/12345/DuffBeer)">
+                                                <button class="btn btn-outline-secondary" 
+                                                    type="button" 
+                                                    @click="handleIdOrUrlInput(itemIndex)"
+                                                    :disabled="!item.idOrUrlInput || item.idOrUrlInput.trim().length === 0">
+                                                    Select
+                                                </button>
+                                            </div>
+                                            <div v-if="item.idOrUrlError" class="text-danger mt-1 small">
+                                                {{ item.idOrUrlError }}
+                                            </div>
+                                        </div>
                                     </div>
-
                                     <!-- [input] input vintage for wine drink type -->
                                     <div class="form-group mb-3"
                                         v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(item.newMenuItemTarget.drinkType)"> 
@@ -1758,8 +1783,7 @@
                                     <div v-if="item.newMenuItemTarget && Object.keys(item.newMenuItemTarget).length !== 0"
                                         class="col-12 my-3">
                                         <hr>
-                                        <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item
-                                            Preview:</p>
+                                        <p class="text-secondary-emphasis fw-bold fst-italic">Menu Item Preview:</p>
                                         <!-- DESKTOP -->
                                         <div class="row mobile-view-hide">
 
@@ -2217,7 +2241,15 @@ export default {
                     newMenuItemVintage: null,
                     newMenuItemPrice: -1,
                     newMenuItemServingType: 1, // Will be properly initialized when servingTypes are loaded
-                    debounceTimer: null
+                    debounceTimer: null,
+                    // Producer search functionality
+                    producerSearchQuery: '',
+                    producerSearchResults: [],
+                    selectedProducer: {},
+                    producerDebounceTimer: null,
+                    // ID/URL input functionality
+                    idOrUrlInput: '',
+                    idOrUrlError: ''
                 }
             ],
             globalMenuItemTargetSection: {}, // Can now be a section or subsection
@@ -4961,7 +4993,10 @@ export default {
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
-                    producerDebounceTimer: null
+                    producerDebounceTimer: null,
+                    // ID/URL input functionality
+                    idOrUrlInput: '',
+                    idOrUrlError: ''
                 });
             }
         },
@@ -4990,7 +5025,10 @@ export default {
                     newMenuItemPrice: -1,
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
-                    producerDebounceTimer: null
+                    producerDebounceTimer: null,
+                    // ID/URL input functionality
+                    idOrUrlInput: '',
+                    idOrUrlError: ''
                 }
             ];
             this.globalMenuItemTargetSection = {};
@@ -5099,6 +5137,57 @@ export default {
             item.newMenuItemTarget = listing;
             item.searchQuery = listing.listingName;
             item.searchResults = [];
+        },
+
+        // Handle ID/URL Input - new functionality
+        async handleIdOrUrlInput(itemIndex) {
+            const item = this.multipleMenuItems[itemIndex];
+            const inputValue = item.idOrUrlInput.trim();
+            
+            // Clear previous error
+            item.idOrUrlError = '';
+            
+            if (!inputValue) {
+                item.idOrUrlError = "Please enter drink ID or drink listing URL";
+                return;
+            }
+            
+            // Extract ID from input
+            let listingId = null;
+            
+            // Check if input is a URL with pattern /listing/view/ID/ (flexible matching)
+            const urlMatch = inputValue.match(/\/listing\/view\/(\d+)/);
+            if (urlMatch) {
+                listingId = urlMatch[1];
+            } else if (/^\d+$/.test(inputValue)) {
+                // Direct ID input (only numbers)
+                listingId = inputValue;
+            } else {
+                item.idOrUrlError = "Invalid format. Use ID (e.g., 12345) or listing URL (e.g., drink-x.com/listing/view/12345/DuffBeer)";
+                return;
+            }
+            
+            try {
+                const response = await this.$axios.get(
+                    `${process.env.VUE_APP_API_URL}/getData/getListingsDetailedByID/${listingId}`
+                );
+                
+                if (response.status === 200 && response.data) {
+                    // Use the existing selection logic to populate the preview
+                    this.selectListingMultiple(response.data, itemIndex);
+                    // Clear any error state
+                    item.idOrUrlError = '';
+                } else {
+                    item.idOrUrlError = "Listing not found";
+                }
+            } catch (error) {
+                console.error('Error fetching listing by ID:', error);
+                if (error.response && error.response.status === 404) {
+                    item.idOrUrlError = "Can't find listing with that ID";
+                } else {
+                    item.idOrUrlError = "Error loading listing. Please try again.";
+                }
+            }
         },
 
         // Update Global Menu Item Target Section - moved from parent
