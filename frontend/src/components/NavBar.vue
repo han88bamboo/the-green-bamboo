@@ -316,7 +316,7 @@
                     <router-link :to="'/clubs/view'" class="dropdown-item">Join Clubs</router-link>
                   </li>
                   <li>
-                    <router-link :to="'/find-lists'" class="dropdown-item">Find Lists</router-link>
+                    <router-link :to="'/find-lists'" class="dropdown-item">Lists</router-link>
                   </li>
                   <li>
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
@@ -403,7 +403,7 @@
 
                 <li class="drawer-section-title pt-2 text-start">
                   <router-link to="/find-lists" style="text-decoration: none">
-                    Find Lists
+                    Lists
                   </router-link>
                 </li>
 
@@ -534,15 +534,15 @@
         </router-link>
 
 
-        <router-link :to="dashboardURL">
-          <button class="btn primary-btn border-0 fw-bold" type="button">
-            {{ dashboardWord }} Analytics
-          </button>
+        <router-link v-if="accType === 'producer' || accType === 'venue'" :to="dashboardURL"> 
+          <button class="btn primary-btn border-0 fw-bold" type="button"> 
+            {{ dashboardWord }} Analytics 
+          </button> 
         </router-link>
 
         <router-link :to="'/find-lists'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
-            Find Lists
+            Lists
           </button>
         </router-link>
 
@@ -611,12 +611,12 @@
 
         <!-- Admins & Moderators see "Add a New Drink" -->
         <button @click="forceLoad('/listing/create')" v-if="onCreate && (isAdmin || isModerator)"
-          class="btn primary-btn border-0" style="color:red; font-weight: 900" type="button">
+          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
            + Add a New Drink
         </button>
 
         <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create'">
-          <button class="btn primary-btn border-0" style="color:red; font-weight: 900" type="button">
+          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
             + Add a New Drink
           </button>
         </router-link>
