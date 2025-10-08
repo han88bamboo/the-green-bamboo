@@ -1141,6 +1141,15 @@
                                     @click="editAmenities.catering = !editAmenities.catering">
                                     <i class="bi bi-people-fill me-1"></i>Catering
                                 </span>
+
+                                <span class="badge amenity-badge general-badge" 
+                                      :class="{ 'active': editAmenities.ticketed }"
+                                      @click="editAmenities.ticketed = !editAmenities.ticketed">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
+                                </span>
+
+                                XYZ
+
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.reservationsRequired }"
                                       @click="editAmenities.reservationsRequired = !editAmenities.reservationsRequired">
@@ -1441,6 +1450,12 @@
                                 <span v-if="targetVenue.amenities?.catering" class="badge bg-info me-1 mb-1">
                                     <i class="bi bi-people-fill me-1"></i>Catering
                                 </span>
+                                
+                                <span v-if="targetVenue.amenities?.ticketed" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
+                                </span>
+                                
+                                XYZ
 
                                 <span v-if="targetVenue.amenities?.reservationsRequired" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar-check me-1"></i>Reservations Required
@@ -4464,6 +4479,7 @@ export default {
                 onlineOrdering: false,
                 catering: false,
                 takeaway: false,
+                ticketed: false,
                 otherAmenities: ''
             },
             qaQuestion: '',
@@ -4821,17 +4837,27 @@ export default {
                 : 'Click to Upload PDF Menu (Make sure to Save profile edits first!)';
         },
 
-        // Check if signup popup should be triggered for festival pages with non-logged-in users
+        // Check if signup popup should be triggered - now only for venue ID 99
         shouldTriggerSignUpPopup() {
-            const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
-            const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   //this.userType !== 'user' ||
-            const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
+            // Original logic (commented out for reference):
+            // const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
+            // const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;
+            // const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
+            
+            // New logic: Only trigger for venue ID 99
+            const isTargetVenue = this.targetVenue?.id === 99 || this.targetVenueID === '99';
+            const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   // Keep user sign-in check
+            const result = isTargetVenue && isNotSignedIn && !this.signUpPopupTriggered;
+            
             console.log('🎪 shouldTriggerSignUpPopup computed:', {
-                isFestival: isFestival,
+                // isFestival: isFestival, // Commented out - no longer needed
+                isTargetVenue: isTargetVenue, // New: Check if venue ID is 99
                 isNotSignedIn: isNotSignedIn,
                 signUpPopupTriggered: this.signUpPopupTriggered,
                 result: result,
-                specialStatus: this.targetVenue?.specialStatus,
+                venueId: this.targetVenue?.id, // Added: Show actual venue ID for debugging
+                targetVenueID: this.targetVenueID, // Added: Show route venue ID for debugging
+                // specialStatus: this.targetVenue?.specialStatus, // Commented out - no longer needed
                 userType: this.userType,
                 user_id: this.user_id
             });

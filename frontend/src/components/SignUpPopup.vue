@@ -18,8 +18,8 @@
             <!-- Content -->
             <div class="popup-content">
                 <!-- Header -->
-                <h2 class="popup-title">Track All Your Favourite Drinks on Drink-X. Completely Free!</h2>
-                
+                <!--<h2 class="popup-title">Track All Your Favourite Drinks on Drink-X. Completely Free!</h2>-->
+                <h2 class="popup-title">Welcome to Whisky Live Singapore 2025! Sign In to Drink-X to Unlock Your Digital Guide</h2>
                 <!-- Tagline -->
                 <p class="popup-tagline">
                     See what others say about the event's drinks, rate drinks you've tasted & track them on your personal cellar system!
@@ -30,7 +30,7 @@
                     <input 
                         type="email" 
                         v-model="emailInput"
-                        placeholder="Enter your email address"
+                        placeholder="Enter email address to sign up"
                         class="email-input"
                         @keyup.enter="submitEmail"
                     />
@@ -41,7 +41,7 @@
                         @click="submitEmail"
                         :disabled="!emailInput || !isValidEmail"
                     >
-                        Sign Up for Drink-X!
+                        {{ (!emailInput || !isValidEmail) ? 'Enter Your Email Above' : 'Sign Up for Drink-X!' }}
                     </button>
                 </div>
 

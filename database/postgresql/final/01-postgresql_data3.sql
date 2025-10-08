@@ -372,6 +372,7 @@ CREATE TABLE "venueAmenities" (
     "otherAmenities" TEXT,
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "ticketed" BOOLEAN DEFAULT FALSE,
     UNIQUE("venueId")
 );
 

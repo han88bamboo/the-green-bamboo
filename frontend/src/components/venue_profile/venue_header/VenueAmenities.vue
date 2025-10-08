@@ -207,6 +207,10 @@
             @click="localEditAmenities.inStoreScheduling = !localEditAmenities.inStoreScheduling" style="cursor: pointer;">
             <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
           </span>
+          <span :class="getBadgeClasses('ticketed', localEditAmenities.ticketed)"
+            @click="localEditAmenities.ticketed = !localEditAmenities.ticketed" style="cursor: pointer;">
+            <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
+          </span>
         </div>
       </div>
 
@@ -302,7 +306,8 @@ export default {
         membershipRequired: { label: 'Membership Required', icon: 'bi-person-badge', color: 'light', textClass: 'text-dark' },
         sommelierService: { label: 'Sommelier Service', icon: 'bi-award', color: 'light', textClass: 'text-dark' },
         inStoreScheduling: { label: 'In-Store Scheduling', icon: 'bi-calendar3', color: 'light', textClass: 'text-dark' },
-        lgbtqFriendly: { label: 'LGBTQ+ Friendly', icon: 'bi-rainbow', color: 'light', textClass: 'text-dark' }
+        lgbtqFriendly: { label: 'LGBTQ+ Friendly', icon: 'bi-rainbow', color: 'light', textClass: 'text-dark' },
+        ticketed: { label: 'Tickets Required', icon: 'bi-ticket-perforated', color: 'warning', textClass: 'text-dark' }
       },
 
       localEditAmenities: {
@@ -352,6 +357,7 @@ export default {
         reservationsRequired: false,
         membershipRequired: false,
         inStoreScheduling: false,
+        ticketed: false,
         otherAmenities: ''
       }
 

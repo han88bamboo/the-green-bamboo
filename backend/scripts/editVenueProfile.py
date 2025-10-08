@@ -32,7 +32,13 @@ AMENITIES_FIELDS = [
     'petFriendly', 'childFriendly', 'familyFriendly', 'smokeFriendly',
     'wheelchairAccessibility', 'freeWiFi', 'happyHourDrinks', 'liveMusic',
     'barGames', 'sommelierService', 'deliveryAvailable', 'lgbtqFriendly',
-    'reservationsRequired', 'membershipRequired', 'inStoreScheduling'
+    'reservationsRequired', 'membershipRequired', 'inStoreScheduling',
+    'localNotPartOfChain', 'casualDressing', 'formalDressing', 'vegetarianOptions',
+    'breakfastService', 'lunchService', 'dinnerService', 'nonAlcoholicOptions',
+    'nonSmoking', 'largeGroupsFriendly', 'airConditioning', 'indoorHeating',
+    'coveredOutdoorSeating', 'toiletsAvailable', 'workStudyFriendly', 'driveThru',
+    'streetParking', 'bikeParking', 'tvEntertainment', 'onlineOrdering',
+    'catering', 'takeaway', 'ticketed'
 ]
 
 def process_image_upload(form_data: Dict[str, Any], current_photo: Optional[str]) -> Optional[str]:
