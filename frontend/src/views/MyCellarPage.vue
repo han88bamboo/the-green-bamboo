@@ -739,7 +739,7 @@
                   v-for="group in paginatedItems" 
                   :key="`${group.listingId}_${group.variant || 'no-variant'}`"
                   :class="[
-                    'col-12 mb-4',
+                    'col-6 mb-4',
                     rightSidebarExpanded ? 'col-md-6 col-lg-4' : 'col-md-4 col-lg-custom-5'
                   ]"
                 >
@@ -7043,12 +7043,7 @@ export default {
   flex: 0 0 auto;
 }
 
-/* Mobile: 1 column (handled by col-12) */
-@media (max-width: 767.98px) {
-  .col-lg-custom-5 {
-    width: 100%;
-  }
-}
+
 
 /* Tablet: 2 columns */
 @media (min-width: 768px) and (max-width: 991.98px) {

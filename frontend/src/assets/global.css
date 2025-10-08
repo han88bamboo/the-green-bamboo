@@ -1004,6 +1004,14 @@ html {
   font-size: 14px; /* tzh changed medium to 14px */
 }
 
+/* Make navbar primary dropdown toggle match primary-btn sizing */
+.mobile-view-hide .btn.primary-btn.dropdown-toggle,
+.navbar .btn.primary-btn.dropdown-toggle {
+  font-size: 16px;   /* match other buttons (adjust to your preference) */
+  height: auto;      /* allow padding to control height */
+  padding: 8px 14px; /* approximate to match other primary buttons */
+}
+
 .rounded-circle {
   width: 30px;
   height: 30px;

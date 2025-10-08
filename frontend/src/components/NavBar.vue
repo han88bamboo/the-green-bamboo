@@ -281,6 +281,9 @@
                 </li>
                 <div class="mobile-view-show">
                   <li>
+                    <router-link :to="cellarURL" class="dropdown-item" style="color:#FF3E31;">My Cellar</router-link>
+                  </li>
+                  <li>
                     <router-link :to="'/explore'" class="dropdown-item">Explore</router-link>
                   </li>
                   <li>
@@ -318,9 +321,7 @@
                   <li>
                     <router-link :to="'/events/view'" class="dropdown-item">Find Events</router-link>
                   </li>
-                  <li>
-                    <router-link :to="cellarURL" class="dropdown-item" style="color:#FF3E31;">My Cellar</router-link>
-                  </li>
+
                 </div>
 
                 <li>
@@ -356,6 +357,13 @@
                 <li class="drawer-section-title text-start"><router-link to="/"
                     style="text-decoration: none">Home</router-link></li>
 
+                <!-- My Cellar -->
+                <li class="drawer-section-title pt-2 text-start">
+                  <router-link :to="cellarURL" style="color: #E63946; text-decoration: none;">
+                    My Cellar<span class="badge bg-danger ms-1" style="background-color: #E63946;">NEW!</span>
+                  </router-link>
+                </li>
+
                 <!-- Explore (Collapsible) -->
                 <li class="drawer-section-title mt-2 d-flex align-items-center" @click="toggleExplore">
                   <span>Explore</span>
@@ -367,6 +375,7 @@
                     style="text-decoration: none; font-weight:normal">Best Of</router-link></li>
                 <li v-show="showExplore" class="text-start"><router-link to="/best-of"
                     style="text-decoration: none; font-weight:normal">Latest News</router-link></li>
+                
 
                 <!-- My Stats (Collapsible) -->
                 <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleStats">
@@ -411,13 +420,7 @@
                   </span>
                 </li>
 
-                <!-- My Cellar -->
-                <li class="drawer-section-title pt-2 text-start">
-                  <router-link :to="cellarURL" style="color: black; text-decoration: none;">
-                    My Cellar<span class="badge bg-danger ms-1" style="background-color: #E63946;">NEW!</span>
-                  </router-link>
-                </li>
-
+                
                 <!-- Moderator Controls (Collapsible) -->
                 <li v-if="(accType === isAdmin || isModerator)"
                   class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleAdmin">
@@ -508,6 +511,11 @@
         <AutocompleteSearch @select="handleSelection" />
       </div>
       <div class="mobile-view-hide container-fluid align-items-center col-12 gap-3">
+         <router-link :to="cellarURL">
+          <button class="btn primary-btn border-0 fw-bold" >
+            My Cellar<span class="badge bg-danger ms-1">NEW!</span>
+          </button>
+        </router-link>
         <router-link :to="'/explore'">
           <button class="btn primary-btn border-0 fw-bold" type="button">
             Explore
@@ -538,25 +546,31 @@
           </button>
         </router-link>
 
-        <router-link :to="'/clubs/view'">
-          <button class="btn primary-btn border-0 fw-bold" type="button">
-            {{
-              accType === 'venue' || accType === 'producer'
-                ? 'Create A Club'
-                : 'Find A Club'
-            }}
+        <!-- Combined dropdown for Clubs & Events -->
+        <div class="btn-group" v-bind:class="{ 'show': dropdownOpen }" @mouseleave="dropdownOpen = false">
+          <button
+            type="button"
+            class="btn primary-btn border-0 fw-bold dropdown-toggle"
+            aria-expanded="false"
+            @click="dropdownOpen = !dropdownOpen"
+            @keydown.enter.prevent="dropdownOpen = !dropdownOpen"
+          >
+            Join Clubs & Events
           </button>
-        </router-link>
 
-        <router-link :to="'/events/view'">
-          <button class="btn primary-btn border-0 fw-bold" type="button">
-            {{
-              accType === 'venue' || accType === 'producer'
-                ? 'Create An Event'
-                : 'Find Events'
-            }}
-          </button>
-        </router-link>
+          <ul class="dropdown-menu" :class="{ show: dropdownOpen }">
+            <li>
+              <router-link :to="'/clubs/view'" class="dropdown-item" @click="dropdownOpen = false">
+                {{ accType === 'venue' || accType === 'producer' ? 'Create A Club' : 'Find A Club' }}
+              </router-link>
+            </li>
+            <li>
+              <router-link :to="'/events/view'" class="dropdown-item" @click="dropdownOpen = false">
+                {{ accType === 'venue' || accType === 'producer' ? 'Create An Event' : 'Find Events' }}
+              </router-link>
+            </li>
+          </ul>
+        </div>
 
             <!-- Find Friends option - only for regular users -->
         <button 
@@ -597,13 +611,13 @@
 
         <!-- Admins & Moderators see "Add a New Drink" -->
         <button @click="forceLoad('/listing/create')" v-if="onCreate && (isAdmin || isModerator)"
-          class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-          Add a New Drink
+          class="btn primary-btn border-0" style="color:red; font-weight: 900" type="button">
+           + Add a New Drink
         </button>
 
         <router-link v-if="!onCreate && (isAdmin || isModerator)" :to="'/listing/create'">
-          <button class="btn primary-btn border-0" style="color:#027562; font-weight: 900" type="button">
-            Add a New Drink
+          <button class="btn primary-btn border-0" style="color:red; font-weight: 900" type="button">
+            + Add a New Drink
           </button>
         </router-link>
 
@@ -614,11 +628,7 @@
           </button>
         </router-link>
 
-        <router-link :to="cellarURL">
-          <button class="btn primary-btn border-0 fw-bold">
-            My Cellar<span class="badge bg-danger ms-1">NEW!</span>
-          </button>
-        </router-link>
+       
       </div>
     </div>
 
@@ -718,7 +728,7 @@
             
             <!-- Invite section -->
             <div class="px-5 py-4">
-              <h4>Invite Your Friends to Drink-X</h4>
+              <h5><b>Invite Your Friends to Drink-X</b></h5>
               <p>Don't drink alone! See which of your friends are already pouring it up on Drink-X, and invite other friends to join you!</p>
               <div class="row mt-4">
 
@@ -840,6 +850,7 @@
           showExplore: false,
           showStats: false,
           showAdmin: false,
+          dropdownOpen: false,
 
           notifications: {
             forYou: [],
@@ -1497,6 +1508,8 @@
       color: #027562;
     }
 
+
+
     .cellar-link {
         position: relative;
         color: #E63946; /* striking red */
@@ -1530,4 +1543,12 @@
   }
 }
 
+/* NavBar.vue: push the desktop dropdown slightly lower so it doesn't cover the toggle */
+.mobile-view-hide .btn-group .dropdown-menu {
+  top: calc(100% + 6px) !important;    /* pushes dropdown 6px below the toggle */
+  transform: translateY(0) !important;  /* ensure no conflicting transforms */
+  margin-top: 0 !important;
+  z-index: 1060;                        /* keep it above other content */
+  white-space: nowrap;                  /* optional: prevent wrapping if label is long */
+}
     </style>
