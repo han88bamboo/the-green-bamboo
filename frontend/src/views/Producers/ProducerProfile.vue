@@ -1205,8 +1205,12 @@
             </div>
           </div>
         </div>
+
+
         <!-- main page (hide all listings) -->
         <div v-if="showListings == false && showTours == false && showBrandUpdates == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
+          <!-- [if] account is claimed -->
+        <div v-if="claimStatus" style="color: black">
           <!-- Text Sections -->
           <div class="mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1357,6 +1361,39 @@
               </button>
             </div>
           </div>
+        </div>
+        <!-- [else] account is not claimed -->
+        <div v-else style="color: black">
+          <!-- latest updates -->
+          <div class="row">
+            <!-- header -->
+            <div class="col-12">
+              <p class="text-body-secondary text-start fs-4 fw-bold m-0 mobile-fs-6">
+                About {{ specified_producer.producerName }}
+              </p>
+            </div>
+          </div>
+          <div class="row text-center" style="background-color: #ddc8a9; margin:10px">
+            <p class="fs-5 mobile-fs-6 fw-bold mt-3 mb-2">
+              Do you own this business?
+            </p>
+            <p>
+              Sign up for a producer account to share your latest updates with
+              your fans!
+            </p>
+            <!-- button -->
+            <div class="col-4 mobile-col-2"></div>
+            <button
+              type="submit"
+              class="col-4 mobile-col-8 btn secondary-btn mb-4"
+              style="font-weight:bold"
+              @click="claimProducerAccount"
+            >
+              Claim This Business
+            </button>
+            <div class="col-4 mobile-col-2"></div>
+          </div>
+        </div>
         </div>
 
         <div v-else-if="showBrandUpdates == true" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
