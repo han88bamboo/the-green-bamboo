@@ -119,8 +119,12 @@
                             </h6>
                         </div>
                     </div>
-                    <transition name="guide-collapse">
-                        <div v-show="isGuideExpanded" class="guide-collapse-content" id="guideCollapseContent">
+                    <div class="guide-collapse-content" 
+                         :class="{ 
+                             'expanded': isGuideExpanded,
+                             'transition-enabled': transitionsEnabled 
+                         }" 
+                         id="guideCollapseContent">
                         <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
