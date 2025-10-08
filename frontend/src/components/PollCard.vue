@@ -4,7 +4,10 @@
     <div class="mobile-collapse-header" @click="toggleMobileCollapse">
       <div class="mobile-header-content">
         <div class="mobile-header-info">
-          <h6 class="mobile-poll-title">{{ polls.length > 0 ? currentPoll.title : 'Polls' }}</h6>
+          <h6 class="mobile-poll-title">
+            <i class="bi bi-bar-chart-fill me-2 poll-icon"></i>
+            {{ polls.length > 0 ? 'Poll: ' + currentPoll.title : 'Polls' }}
+          </h6>
           <span class="mobile-poll-count" v-if="polls.length > 0">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
         </div>
         <div class="mobile-collapse-icon">
@@ -36,7 +39,13 @@
       <div class="poll-card">
         <div class="poll-header">
           <div class="poll-title-section">
-            <h4 class="poll-title">{{ currentPoll.title }}</h4>
+            <h4 class="poll-title">
+              <div class="poll-title-content">
+                <span class="poll-title-text">
+                <i class="bi bi-bar-chart-fill poll-icon"></i>
+                <span class="poll-label">Poll:</span> {{ currentPoll.title }}</span>
+              </div>
+            </h4>
             <p class="poll-question">{{ currentPoll.questionText }}</p>
           </div>
           
@@ -1642,6 +1651,8 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
+  display: flex;
+  align-items: center;
 }
 
 .mobile-poll-count {
@@ -1731,6 +1742,31 @@ export default {
   font-weight: 600;
   margin-bottom: 8px;
   color: #2c3e50;
+  display: block;
+  width: 100%;
+}
+
+.poll-title-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.poll-icon {
+  color: #007bff;
+  font-size: 1.1rem;
+  margin-right: 8px;
+}
+
+.poll-label {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.poll-title-text {
+  color: #2c3e50;
+  flex: 1;
 }
 
 .poll-question {
