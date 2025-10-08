@@ -119,12 +119,7 @@
                             </h6>
                         </div>
                     </div>
-                    <div class="guide-collapse-content" 
-                         :class="{ 
-                             'expanded': isGuideExpanded,
-                             'transition-enabled': transitionsEnabled 
-                         }" 
-                         id="guideCollapseContent">
+                    <div class="guide-collapse-content" :class="{ 'expanded': isGuideExpanded }" id="guideCollapseContent">
                         <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
@@ -535,17 +530,17 @@
                         <!-- [POWER] Input: Drink Description -->
                         <div class="form-group mb-3" > <!-- v-if="formType == 'power'"   shifted out to allow ordinary users to submit official descp too-->
                             <p class="text-start mb-1">Official Description</p>
-                            <textarea rows=3 class="form-control auto-resize-textarea" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
+                            <textarea rows=3 class="form-control" v-model="form['officialDesc']" id="officialDesc" placeholder="Enter description of drink"></textarea>
                         </div>
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
-                        <div v-if="formType == 'power'" class="form-group mb-3">
+                        <div class="form-group mb-3">
                             <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
                             <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
                         </div>
 
                         <!-- Input: Link to 88 Bamboo review -->
-                        <div v-if="formType == 'power'" class="form-group mb-3">
+                        <div class="form-group mb-3">
                             <p class="text-start mb-1">Link to 88 Bamboo review</p>
                             <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
@@ -773,7 +768,6 @@
                 requestRemoval: false,
                 showCreateProducerModal: false,
                 isGuideExpanded: false,
-                transitionsEnabled: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -902,7 +896,6 @@
             // Ensure guide collapse is properly initialized
             this.$nextTick(() => {
                 this.initializeGuideCollapse();
-                this.setupAutoResize();
             });
         },
         beforeUnmount() {
@@ -956,48 +949,7 @@
             },
 
             initializeGuideCollapse() {
-                // Enable transitions after initial render to prevent flash
-                this.$nextTick(() => {
-                    setTimeout(() => {
-                        this.transitionsEnabled = true;
-                    }, 50); // Small delay to ensure DOM is ready
-                });
-            },
-
-            // Setup auto-resize functionality for textareas
-            setupAutoResize() {
-                // Use a short delay to ensure DOM is fully rendered
-                setTimeout(() => {
-                    const textareas = document.querySelectorAll('.auto-resize-textarea');
-                    console.log('Found textareas:', textareas.length); // Debug log
-
-                    textareas.forEach(textarea => {
-                        // Remove existing listeners to avoid duplicates
-                        textarea.removeEventListener('input', this.autoResize);
-
-                        // Auto-resize on input
-                        textarea.addEventListener('input', this.autoResize);
-
-                        // Set initial height
-                        this.autoResize({ target: textarea });
-                    });
-                }, 100);
-            },
-
-            // Auto-resize function for textareas
-            autoResize(event) {
-                if (!event || !event.target) return;
-
-                const textarea = event.target;
-
-                // Reset height to auto to get correct scrollHeight
-                textarea.style.height = 'auto';
-
-                // Set new height based on content
-                const newHeight = Math.max(38, textarea.scrollHeight);
-                textarea.style.height = newHeight + 'px';
-
-                console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
+                // No longer needed - Vue handles everything
             },
 
             slugify(text) {
@@ -2358,13 +2310,9 @@
 /* Vue-only collapse animation */
 .guide-collapse-content {
     overflow: hidden;
+    transition: all 0.3s ease;
     max-height: 0;
     opacity: 0;
-    /* Don't add transition here - will be added after mount */
-}
-
-.guide-collapse-content.transition-enabled {
-    transition: all 0.3s ease;
 }
 
 .guide-collapse-content.expanded {
@@ -2394,21 +2342,5 @@
     .country-dropdown-body {
         max-height: 190px;
     }
-}
-
-/* Auto-resizing textarea styles */
-.auto-resize-textarea {
-    resize: vertical;
-    min-height: 38px;
-    transition: height 0.2s ease;
-    word-wrap: break-word;
-    white-space: pre-wrap;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.auto-resize-textarea:focus {
-    border-color: #006A50;
-    box-shadow: 0 0 0 0.2rem rgba(0, 106, 80, 0.25);
 }
 </style>
