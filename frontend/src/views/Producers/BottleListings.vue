@@ -4184,6 +4184,12 @@ export default {
           cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
         }
         
+        // Add event listener for review modal to setup auto-resize when it opens
+        const reviewModal = document.getElementById('reviewModal');
+        if (reviewModal) {
+          reviewModal.addEventListener('show.bs.modal', this.onReviewModalOpen);
+        }
+        
         // Note: Menu modal event listener will be set up after user data loads
         console.log('Mounted: User type during initial setup:', this.userType);
         console.log('Mounted: User ID during initial setup:', this.userID);
@@ -4222,6 +4228,12 @@ export default {
     const cellarModal = document.getElementById('cellarModal');
     if (cellarModal) {
       cellarModal.removeEventListener('show.bs.modal', this.onCellarModalOpen);
+    }
+    
+    // Clean up review modal event listener
+    const reviewModal = document.getElementById('reviewModal');
+    if (reviewModal) {
+      reviewModal.removeEventListener('show.bs.modal', this.onReviewModalOpen);
     }
     
     // Clean up menu modal event listener
@@ -6972,6 +6984,15 @@ export default {
       // Wait a moment for collections to load, then set defaults
       this.$nextTick(() => {
         this.initializeCellarFormDefaults();
+      });
+    },
+
+    // Review modal open handler
+    onReviewModalOpen() {
+      console.log('Review modal opening - setting up auto-resize...');
+      // Setup auto-resize functionality when the modal opens
+      this.$nextTick(() => {
+        this.setupAutoResize();
       });
     },
 
