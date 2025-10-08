@@ -1208,7 +1208,7 @@
         <!-- main page (hide all listings) -->
         <div v-if="showListings == false && showTours == false && showBrandUpdates == false" class="padding-for-latestupdatesNmostpopularcontainer-large-screen">
           <!-- Text Sections -->
-          <div v-if="selfView || textSections.length > 0" class="mt-4">
+          <div class="mt-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h4 class="fw-bold">About {{ specified_producer.producerName }}</h4>
               <button 
@@ -1222,34 +1222,42 @@
 
             <!-- Display Mode -->
             <div v-if="!editingTextSections">
-              <div 
-                v-for="section in textSections" 
-                :key="section.id"
-                class="row mb-2"
-              >
-                <!-- Section Header Button -->
-                <div class="col-12 d-grid mobile-px-0">
-                  <button 
-                    type="button" 
-                    class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
-                    data-bs-toggle="collapse" 
-                    :data-bs-target="'#collapseTextSection' + section.id"
-                    aria-expanded="true" 
-                    :aria-controls="'collapseTextSection' + section.id"
-                    style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
-                  >
-                    {{ section.sectionTitle }} ↓
-                  </button>
-                </div>
+              <div v-if="textSections.length > 0">
+                <div 
+                  v-for="section in textSections" 
+                  :key="section.id"
+                  class="row mb-2"
+                >
+                  <!-- Section Header Button -->
+                  <div class="col-12 d-grid mobile-px-0">
+                    <button 
+                      type="button" 
+                      class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+                      data-bs-toggle="collapse" 
+                      :data-bs-target="'#collapseTextSection' + section.id"
+                      aria-expanded="true" 
+                      :aria-controls="'collapseTextSection' + section.id"
+                      style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;"
+                    >
+                      {{ section.sectionTitle }} ↓
+                    </button>
+                  </div>
 
-                <!-- Section Content (Collapsible) -->
-                <div class="collapse show" :id="'collapseTextSection' + section.id">
-                  <div class="container text-start">
-                    <div class="col-12 my-3">
-                      <div class="text-start text-section-content" v-html="section.richTextContent"></div>
+                  <!-- Section Content (Collapsible) -->
+                  <div class="collapse show" :id="'collapseTextSection' + section.id">
+                    <div class="container text-start">
+                      <div class="col-12 my-3">
+                        <div class="text-start text-section-content" v-html="section.richTextContent"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              <!-- No sections message for visitors -->
+              <div v-else>
+                <p class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">
+                  {{ specified_producer["producerName"] }} has not added any information yet!
+                </p>
               </div>
             </div>
 
@@ -1466,8 +1474,7 @@
             <!-- no other updates -->
             <div v-else>
               <p class="text-start fs-6 mobile-rating-smaller-text-2 fst-italic m-1 pb-2">
-                {{ specified_producer["producerName"] }} has not posted any
-                updates!
+                {{ specified_producer["producerName"] }} has not posted any updates!
               </p>
             </div>
 
