@@ -3146,7 +3146,7 @@ export default {
                 subsections.forEach(subsection => {
                     options.push({
                         id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-                        name: `${subsection.sectionName}`,
+                        name: `  └─ ${subsection.sectionName}`,
                         type: 'subsection',
                         level: 1,
                         section: subsection,

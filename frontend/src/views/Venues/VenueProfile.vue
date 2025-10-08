@@ -3463,7 +3463,9 @@
 
                                 <!-- Section Header -->
                                 <div class="square-inline">
-                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> Reservation Details </h5>
+                                    <h5 class="mr-auto mobile-fs-6 fw-bold"> 
+                                        {{ targetVenue.specialStatus === 'EVENT_FESTIVAL' ? 'Ticketing Details' : 'Reservation Details' }}
+                                    </h5>
                                 </div>
 
                                 <!-- Buttons -->
@@ -3506,7 +3508,7 @@
                                     <div class="text-body-secondary mobile-rating-smaller-text-2">
                                         <div v-if="targetVenue['reservationDetails'] == ''"
                                             class="fst-italic  mobile-rating-smaller-text-2">
-                                            No reservation details available!
+                                            No details available.
                                         </div>
                                         <div v-else>
                                             <a :href="targetVenue['reservationDetails']" 
@@ -3514,7 +3516,7 @@
                                                rel="noopener noreferrer"
                                                class="text-decoration-none fw-bold"
                                                style="color: #006A50; cursor: pointer;">
-                                                To Make a Reservation, Click Here!
+                                                Click Here To Book!
                                             </a>
                                         </div>
                                     </div>

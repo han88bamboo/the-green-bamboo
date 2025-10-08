@@ -2468,7 +2468,7 @@
             <div class="paywall-gradient"></div>
             <div class="paywall-content">
               <button class="btn paywall-signup-btn" @click="$router.push('/signup')">
-                Sign Up to See Reviews or Comments!
+                Sign Up to Read Reviews!
               </button>
             </div>
           </div>
@@ -4376,7 +4376,7 @@ export default {
           section.subsections.forEach(subsection => {
             options.push({
               id: subsection.id || `${section.sectionOrder}-${subsection.sectionOrder}`,
-              name: `  ${subsection.sectionName}`,
+              name: `  └─ ${subsection.sectionName}`,
               type: 'subsection',
               level: 1,
               section: subsection,
@@ -8384,7 +8384,7 @@ export default {
   .paywall-content {
     position: absolute;
     top: 27%;
-    left: 45%;
+    left: 49%;
     transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: all !important;
