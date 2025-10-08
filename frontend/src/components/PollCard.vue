@@ -1,14 +1,16 @@
 <template>
   <div class="poll-card-container" :class="{ 'mobile-collapsed': isMobileCollapsed }">
-    <!-- Mobile Collapse Header (only visible on mobile) -->
-    <div class="mobile-collapse-header" @click="toggleMobileCollapse">
+    <!-- Mobile Collapse Header (only visible on mobile and when polls exist) -->
+    <div v-if="polls.length > 0" class="mobile-collapse-header" @click="toggleMobileCollapse">
       <div class="mobile-header-content">
         <div class="mobile-header-info">
           <h6 class="mobile-poll-title">
-            <i class="bi bi-bar-chart-fill me-2 poll-icon"></i>
-            {{ polls.length > 0 ? 'Poll: ' + currentPoll.title : 'Polls' }}
+            <div class="mobile-poll-title-content">
+              
+              <span class="mobile-poll-text"><i class="bi bi-bar-chart-fill poll-icon"></i><span class="poll-label">Poll:</span> {{ currentPoll.title }}</span>
+            </div>
           </h6>
-          <span class="mobile-poll-count" v-if="polls.length > 0">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+          <span class="mobile-poll-count">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
         </div>
         <div class="mobile-collapse-icon">
           <svg v-if="isMobileCollapsed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
@@ -1651,8 +1653,19 @@ export default {
   font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
+  display: block;
+  width: 100%;
+}
+
+.mobile-poll-title-content {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.mobile-poll-text {
+  color: #2c3e50;
+  flex: 1;
 }
 
 .mobile-poll-count {
@@ -1770,7 +1783,7 @@ export default {
 }
 
 .poll-question {
-  color: #6c757d;
+  font-weight:bold;
   margin-bottom: 10px;
   line-height: 1.5;
 }
@@ -2070,14 +2083,14 @@ export default {
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .poll-card {
-    margin: 0 40px;
+    margin: 0 0px;
     padding: 12px;
   }
   
   .poll-title {
-    font-size: 1.1rem;
+    display:none;
   }
   
   .poll-option {
