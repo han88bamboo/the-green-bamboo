@@ -20,7 +20,7 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # TODO: Create function using BOTO Library to upload images to the S3 bucket
 # TODO: Create function using BOTO Library to delete images from the S3 bucket
 
-# Amenities field mapping for dynamic processing
+# Amenities field mapping for dynamic processing used for  /venueInfo endpoint 
 AMENITIES_FIELDS = [
     'paymentCash', 'paymentVisa', 'paymentMasterCard', 'paymentAmericanExpress',
     'paymentDiscover', 'paymentApplePay', 'paymentPayNow', 'paymentGooglePay',
@@ -356,6 +356,7 @@ def editDetails():
                     amenities.get('onlineOrdering', False),
                     amenities.get('catering', False),
                     amenities.get('takeaway', False),
+                    amenities.get('ticketed', False),
                     amenities.get('otherAmenities', '')
                 )
 
@@ -430,6 +431,7 @@ def editDetails():
                             "onlineOrdering" = %s,
                             "catering" = %s,
                             "takeaway" = %s,
+                            "ticketed" = %s,
                             "otherAmenities" = %s
                         WHERE "venueId" = %s
                         """,
@@ -451,8 +453,8 @@ def editDetails():
                          "casualDressing", "formalDressing", "vegetarianOptions", "breakfastService", "lunchService", "dinnerService",
                          "nonAlcoholicOptions", "nonSmoking", "largeGroupsFriendly", "airConditioning", "indoorHeating",
                          "coveredOutdoorSeating", "toiletsAvailable", "workStudyFriendly", "driveThru", "streetParking",
-                         "bikeParking", "tvEntertainment", "onlineOrdering", "catering", "takeaway", "otherAmenities")
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                         "bikeParking", "tvEntertainment", "onlineOrdering", "catering", "takeaway", "ticketed", "otherAmenities")
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         """,
                         (venueID,) + amenities_data
                     )

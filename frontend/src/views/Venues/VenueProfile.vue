@@ -1148,8 +1148,6 @@
                                     <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
                                 </span>
 
-                                XYZ
-
                                 <span class="badge amenity-badge general-badge" 
                                       :class="{ 'active': editAmenities.reservationsRequired }"
                                       @click="editAmenities.reservationsRequired = !editAmenities.reservationsRequired">
@@ -1454,8 +1452,6 @@
                                 <span v-if="targetVenue.amenities?.ticketed" class="badge bg-warning me-1 mb-1">
                                     <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
                                 </span>
-                                
-                                XYZ
 
                                 <span v-if="targetVenue.amenities?.reservationsRequired" class="badge bg-light text-dark me-1 mb-1">
                                     <i class="bi bi-calendar-check me-1"></i>Reservations Required
