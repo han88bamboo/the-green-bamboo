@@ -1,5 +1,25 @@
 <template>
-  <div class="poll-card-container">
+  <div class="poll-card-container" :class="{ 'mobile-collapsed': isMobileCollapsed }">
+    <!-- Mobile Collapse Header (only visible on mobile) -->
+    <div class="mobile-collapse-header" @click="toggleMobileCollapse">
+      <div class="mobile-header-content">
+        <div class="mobile-header-info">
+          <h6 class="mobile-poll-title">{{ polls.length > 0 ? currentPoll.title : 'Polls' }}</h6>
+          <span class="mobile-poll-count" v-if="polls.length > 0">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+        </div>
+        <div class="mobile-collapse-icon">
+          <svg v-if="isMobileCollapsed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Poll Content Container -->
+    <div class="poll-content-container" :class="{ 'collapsed': isMobileCollapsed }">
     <!-- Poll Cards Carousel -->
     <div class="poll-carousel" v-if="polls.length > 0">
       <!-- Navigation Arrows -->
@@ -696,7 +716,8 @@
         </div>
       </div>
     </div>
-  </div>
+    </div> <!-- Close poll-content-container -->
+  </div> <!-- Close poll-card-container -->
 </template>
 
 <script>
@@ -732,6 +753,9 @@ export default {
       polls: [],
       pollResponses: [],
       currentPollIndex: 0,
+      
+      // Mobile collapse state
+      isMobileCollapsed: true,
       
       // Detailed responses for creators
       detailedResponses: {}, // Store detailed responses by pollId
@@ -831,6 +855,11 @@ export default {
       this.selectedMultiOptions = [];
       this.selectedRating = null;
       this.userRating = null;
+    },
+
+    // Mobile collapse functionality
+    toggleMobileCollapse() {
+      this.isMobileCollapsed = !this.isMobileCollapsed;
     },
     
     // Single Choice Voting
@@ -1584,6 +1613,60 @@ export default {
   overflow: hidden;
 }
 
+/* Mobile Collapse Header - Hidden on desktop */
+.mobile-collapse-header {
+  display: none;
+  padding: 15px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-collapse-header:hover {
+  background-color: #e9ecef;
+}
+
+.mobile-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-header-info {
+  flex: 1;
+}
+
+.mobile-poll-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.mobile-poll-count {
+  font-size: 0.875rem;
+  color: #6c757d;
+}
+
+.mobile-collapse-icon {
+  display: flex;
+  align-items: center;
+  color: #6c757d;
+}
+
+/* Poll Content Container */
+.poll-content-container {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* Desktop: Always show content regardless of collapsed state */
+.poll-content-container {
+  max-height: none;
+  opacity: 1;
+}
+
 .poll-carousel {
   position: relative;
   display: flex;
@@ -1892,6 +1975,23 @@ export default {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  /* Show mobile collapse header only on mobile */
+  .mobile-collapse-header {
+    display: block;
+  }
+
+  /* Mobile-specific: Apply collapsed state only on mobile */
+  .poll-content-container.collapsed {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .poll-content-container:not(.collapsed) {
+    max-height: 2000px;
+    opacity: 1;
+  }
+
   .poll-card {
     margin: 0 50px;
     padding: 15px;
