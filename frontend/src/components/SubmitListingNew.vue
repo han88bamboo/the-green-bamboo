@@ -119,7 +119,12 @@
                             </h6>
                         </div>
                     </div>
-                    <div class="guide-collapse-content" :class="{ 'expanded': isGuideExpanded }" id="guideCollapseContent">
+                    <div class="guide-collapse-content" 
+                         :class="{ 
+                             'expanded': isGuideExpanded,
+                             'transition-enabled': transitionsEnabled 
+                         }" 
+                         id="guideCollapseContent">
                         <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
@@ -768,6 +773,7 @@
                 requestRemoval: false,
                 showCreateProducerModal: false,
                 isGuideExpanded: false,
+                transitionsEnabled: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -949,7 +955,12 @@
             },
 
             initializeGuideCollapse() {
-                // No longer needed - Vue handles everything
+                // Enable transitions after initial render to prevent flash
+                this.$nextTick(() => {
+                    setTimeout(() => {
+                        this.transitionsEnabled = true;
+                    }, 50); // Small delay to ensure DOM is ready
+                });
             },
 
             slugify(text) {
@@ -2310,9 +2321,13 @@
 /* Vue-only collapse animation */
 .guide-collapse-content {
     overflow: hidden;
-    transition: all 0.3s ease;
     max-height: 0;
     opacity: 0;
+    /* Don't add transition here - will be added after mount */
+}
+
+.guide-collapse-content.transition-enabled {
+    transition: all 0.3s ease;
 }
 
 .guide-collapse-content.expanded {
