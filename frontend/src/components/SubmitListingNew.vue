@@ -98,7 +98,7 @@
                 <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
                     <div class="card-header w-100">
                         <!-- Universal clickable header for all screen sizes -->
-                        <div style="cursor: pointer;" @click="toggleGuideCollapse" data-bs-toggle="collapse" data-bs-target="#guideCollapseContent" :aria-expanded="isGuideExpanded.toString()" aria-controls="guideCollapseContent">
+                        <div style="cursor: pointer;" @click="toggleGuideCollapse" :aria-expanded="isGuideExpanded.toString()" aria-controls="guideCollapseContent">
                             <h6 class="mb-0 text-muted fw-bold d-flex justify-content-between align-items-center">
                                 <span class="d-flex align-items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
@@ -119,7 +119,7 @@
                             </h6>
                         </div>
                     </div>
-                    <div class="collapse guide-collapse-content" id="guideCollapseContent" :class="{ 'show': isGuideExpanded }">
+                    <div class="guide-collapse-content" :class="{ 'expanded': isGuideExpanded }" id="guideCollapseContent">
                         <div class="card-body">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
@@ -949,18 +949,7 @@
             },
 
             initializeGuideCollapse() {
-                // Ensure the guide collapse is in the correct initial state
-                const collapseElement = document.getElementById('guideCollapseContent');
-                if (collapseElement && !this.isGuideExpanded) {
-                    // Force hide the collapse if Bootstrap hasn't initialized yet
-                    collapseElement.classList.remove('show');
-                    collapseElement.style.display = 'none';
-                    
-                    // Use setTimeout to ensure this runs after Bootstrap is loaded
-                    setTimeout(() => {
-                        collapseElement.style.display = '';
-                    }, 100);
-                }
+                // No longer needed - Vue handles everything
             },
 
             slugify(text) {
@@ -2318,23 +2307,17 @@
     transition: all 0.2s ease;
 }
 
-/* Ensure guide collapse behavior is consistent */
-.collapse:not(.show) {
-    display: none !important;
-}
-
-.collapse.show {
-    display: block !important;
-}
-
-/* Custom collapse animation to prevent flash */
+/* Vue-only collapse animation */
 .guide-collapse-content {
     overflow: hidden;
-    transition: height 0.35s ease;
+    transition: all 0.3s ease;
+    max-height: 0;
+    opacity: 0;
 }
 
-.guide-collapse-content:not(.show) {
-    height: 0 !important;
+.guide-collapse-content.expanded {
+    max-height: 800px; /* Adjust based on content height */
+    opacity: 1;
 }
 
 .photo-dropzone:hover {
