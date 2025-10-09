@@ -490,9 +490,21 @@
                         <div class="form-group mb-3">
                             <div class=" mb-3">
                                 <p class="text-start mb-1 fw-bold">Country of Origin <span class="text-danger" v-if="formType == 'power'">*</span></p>
+                                <!-- Simple select dropdown -->
+                                <div class="input-group">
+                                    <select class="form-select" v-model="form['originCountry']">
+                                        <option value="">Select country of origin</option>
+                                        <option v-for="country in countries" :key="country" :value="country">
+                                            {{ country }}
+                                        </option>
+                                    </select>
+                                </div>
+                                
+                                <!-- COMMENTED OUT: Sophisticated searchable drawer version -->
+                                <!--
                                 <div style="position: relative;">
                                     <div class="input-group mb-0">
-                                        <!-- Searchable input that opens country dropdown -->
+                                        --Searchable input that opens country dropdown--
                                         <input
                                             ref="countryInput"
                                             type="text"
@@ -503,7 +515,7 @@
                                             @focus="openCountryDrawer"
                                             style="cursor: text; background-color: white;"
                                         />
-                                        <!-- Search icon -->
+                                        --Search icon--
                                         <span class="input-group-text" style="cursor: pointer;" @click="openCountryDrawer">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                                 <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
@@ -511,7 +523,6 @@
                                         </span>
                                     </div>
                                     
-                                    <!-- Country Selection Dropdown - attached directly below input -->
                                     <div v-if="showCountryDrawer" class="country-dropdown">
                                         <div class="country-dropdown-body">
                                             <div 
@@ -531,6 +542,7 @@
                                         </div>
                                     </div>
                                 </div>
+                                -->
                             </div>
                         </div>
 
