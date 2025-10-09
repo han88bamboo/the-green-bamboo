@@ -541,13 +541,13 @@
                         </div>
 
                         <!-- Input: Link to website or source (optional for actual listing, mandatory for request) -->
-                        <div class="form-group mb-3">
+                        <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to website or source </p> <!--<span class="text-danger" v-if="formType == 'req'">*</span>-->
                             <input type="text" class="form-control" v-model="form['sourceLink']" id="sourceLink" placeholder="Enter source link">
                         </div>
 
                         <!-- Input: Link to 88 Bamboo review -->
-                        <div class="form-group mb-3">
+                        <div v-if="formType == 'power'"  class="form-group mb-3">
                             <p class="text-start mb-1">Link to 88 Bamboo review</p>
                             <input type="text" class="form-control" v-model="form['reviewLink']" id="reviewLink" placeholder="Enter review link">
                         </div>
