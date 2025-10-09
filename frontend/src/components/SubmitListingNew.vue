@@ -95,32 +95,41 @@
                 </div>
 
                 <!-- Drink Type Guidance Section -->
-                <div class="card mb-4" style="background-color: #f8f9fa; border: 1px solid #dee2e6;" v-if="formType == 'power' || formMode == 'new'">
-                    <div class="card-header w-100">
-                        <!-- Universal clickable header for all screen sizes -->
-                        <div style="cursor: pointer;" @click="toggleGuideCollapse" :aria-expanded="isGuideExpanded.toString()" aria-controls="guideCollapseContent">
-                            <h6 class="mb-0 text-muted fw-bold d-flex justify-content-between align-items-center">
-                                <span class="d-flex align-items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
-                                        class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
-                                        <path
-                                        d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
-                                    </svg>
-                                    Guide on Filling Information
-                                </span>
-                                <span>
-                                    <svg v-if="!isGuideExpanded" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                    </svg>
-                                    <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
-                                    </svg>
-                                </span>
-                            </h6>
-                        </div>
-                    </div>
-                    <div class="guide-collapse-content" :class="{ 'expanded': isGuideExpanded }" id="guideCollapseContent">
-                        <div class="card-body">
+                <!-- Toggle Button (Outside any card structure) -->
+                <button v-if="formType == 'power' || formMode == 'new'" 
+                    class="mb-3 btn w-100 text-start d-flex justify-content-between align-items-center guide-toggle" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#guideCollapseContent" 
+                    aria-expanded="false" 
+                    aria-controls="guideCollapseContent"
+                    style="
+                        border: 1px solid #dee2e6;
+                        border-radius: 8px;
+                        padding: 16px;
+                        background-color: #f8f9fa;
+                    ">
+                    <h6 class="mb-0 text-muted fw-bold d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#0066cc"
+                            class="bi bi-info-circle-fill me-3" viewBox="0 0 16 16">
+                            <path
+                            d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2" />
+                        </svg>
+                        Guide on Filling Information
+                    </h6>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+
+                <!-- Collapsible Content (Direct collapse without card wrapper) -->
+                <div v-if="formType == 'power' || formMode == 'new'" 
+                    class="collapse mb-4" 
+                    id="guideCollapseContent"
+                    style="
+                        border: 1px solid #dee2e6;
+                        border-radius: 8px;
+                        padding: 16px;
+                        background-color: #ffffff;
+                    ">
                         <!-- Tab Navigation -->
                         <ul class="nav nav-tabs nav-fill mb-3" id="drinkGuideTab" role="tablist">
                             <li class="nav-item" role="presentation">
@@ -185,8 +194,6 @@
                                 </div>
                             </div>
                         </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Search Modal -->
@@ -767,7 +774,6 @@
                 fillForm: false,
                 requestRemoval: false,
                 showCreateProducerModal: false,
-                isGuideExpanded: false,
 
                 // Error-specific flags
                 errorMessage: false,
@@ -892,11 +898,6 @@
                 // Load data
                 await this.loadData();
             }
-
-            // Ensure guide collapse is properly initialized
-            this.$nextTick(() => {
-                this.initializeGuideCollapse();
-            });
         },
         beforeUnmount() {
             // Clean up event listener when component is destroyed
@@ -943,14 +944,6 @@
             },
         },
         methods:{
-
-            toggleGuideCollapse() {
-                this.isGuideExpanded = !this.isGuideExpanded;
-            },
-
-            initializeGuideCollapse() {
-                // No longer needed - Vue handles everything
-            },
 
             slugify(text) {
                 return text
@@ -2305,19 +2298,6 @@
     background: #fafafa; 
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-/* Vue-only collapse animation */
-.guide-collapse-content {
-    overflow: hidden;
-    transition: all 0.3s ease;
-    max-height: 0;
-    opacity: 0;
-}
-
-.guide-collapse-content.expanded {
-    max-height: 800px; /* Adjust based on content height */
-    opacity: 1;
 }
 
 .photo-dropzone:hover {
