@@ -32,8 +32,8 @@ def sanitize_username(producer_name):
     Sanitize producer name for use as username by:
     1. Removing Chinese/Japanese characters (CJK ideographs)
     2. Removing accented characters (converting to ASCII equivalents)
-    3. Removing special characters except alphanumeric, spaces, hyphens, underscores
-    4. Collapsing multiple spaces into single spaces
+    3. Removing special characters including spaces (keep only alphanumeric, hyphens, underscores)
+    4. Converting to lowercase for consistency
     5. Stripping leading/trailing whitespace
     
     WARNING: If the producer name contains ONLY Chinese/Japanese characters with no English letters
@@ -41,6 +41,8 @@ def sanitize_username(producer_name):
     the username may contain special characters that could cause issues with authentication
     or URL handling.
     """
+    print(f"DEBUG: Input producer_name: '{producer_name}' (type: {type(producer_name)})")
+    
     if not producer_name:
         return ""
     
@@ -53,23 +55,29 @@ def sanitize_username(producer_name):
     # U+30A0-U+30FF: Katakana
     cjk_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]+')
     cleaned_name = cjk_pattern.sub('', producer_name)
+    print(f"DEBUG: After CJK removal: '{cleaned_name}'")
     
     # Step 2: Convert accented characters to ASCII equivalents (NFD normalization)
     # This converts characters like Ā, Å, é, ñ to their base ASCII forms
     normalized = unicodedata.normalize('NFD', cleaned_name)
     ascii_name = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    print(f"DEBUG: After ASCII conversion: '{ascii_name}'")
     
-    # Step 3: Remove any remaining non-ASCII characters and special characters
-    # Keep only alphanumeric, spaces, hyphens, and underscores
-    sanitized = re.sub(r'[^a-zA-Z0-9\s\-_]', '', ascii_name)
+    # Step 3: Remove any remaining non-ASCII characters and special characters including spaces
+    # Keep only alphanumeric, hyphens, and underscores
+    sanitized = re.sub(r'[^a-zA-Z0-9\-_]', '', ascii_name)
+    print(f"DEBUG: After special char and space removal: '{sanitized}'")
     
-    # Step 4: Collapse multiple spaces and strip whitespace
-    sanitized = re.sub(r'\s+', ' ', sanitized).strip()
+    # Step 4: Convert to lowercase for consistency
+    sanitized = sanitized.lower()
+    print(f"DEBUG: After lowercase conversion: '{sanitized}'")
     
     # Step 5: If the result is empty (all characters were removed), use original producer name
     if not sanitized:
+        print(f"DEBUG: Result was empty, returning original: '{producer_name}'")
         return producer_name
     
+    print(f"DEBUG: Final result: '{sanitized}'")
     return sanitized
 
 # -----------------------------------------------------------------------------------------
@@ -430,12 +438,14 @@ def updateAccountRequestBusinessID():
 # - Insert entry into the "producers" collection. 
 @blueprint.route("/createProducerAccount", methods=['POST'])
 def createProducerAccount():
+    print("DEBUG: createProducerAccount endpoint called!")
     conn = g.db
     cur = conn.cursor()
     
     try:
         # Validate request data
         data = request.get_json()
+        print(f"DEBUG: Received data: {data}")
         if not data or 'newBusinessData' not in data:
             return jsonify({
                 "code": 400,
@@ -443,6 +453,7 @@ def createProducerAccount():
             }), 400
         
         newBusinessData = data["newBusinessData"]
+        print(f"DEBUG: newBusinessData: {newBusinessData}")
         
         # Validate required fields
         # required_fields = ['producerName', 'producerDesc', 'originCountry', 'mainDrinks', 'hashedPassword']
@@ -473,9 +484,10 @@ def createProducerAccount():
             }), 400
         
         # Prepare producer data with defaults
-        # Sanitize the username if provided, otherwise use sanitized producer name
-        original_username = newBusinessData.get('username', '').strip()
-        sanitized_username = sanitize_username(original_username) if original_username else sanitize_username(producer_name)
+        # Always sanitize the producer name to create username (ignore any provided username)
+        print(f"DEBUG: About to call sanitize_username with producer_name: '{producer_name}'")
+        sanitized_username = sanitize_username(producer_name)
+        print(f"DEBUG: sanitize_username returned: '{sanitized_username}'")
         
         producer_data = {
             'producerName': producer_name,
@@ -588,7 +600,8 @@ def createProducerAccount():
             "code": 201,
             "data": {
                 "producerId": new_producer_id,
-                "producerName": producer_name
+                "producerName": producer_name,
+                "username": sanitized_username
             },
             "message": "Producer account created successfully"
         }
@@ -642,9 +655,8 @@ def createVenueAccount():
             ), 400
 
         # Insert new venue
-        # Sanitize the username if provided, otherwise use sanitized venue name
-        original_username = newBusinessData.get('username', '')
-        sanitized_username = sanitize_username(original_username) if original_username else sanitize_username(newBusinessData['venueName'])
+        # Always sanitize the venue name to create username (ignore any provided username)
+        sanitized_username = sanitize_username(newBusinessData['venueName'])
         
         cur.execute("""
             INSERT INTO venues (
@@ -730,7 +742,11 @@ def createVenueAccount():
         return jsonify( 
             {   
                 "code": 201,
-                "data": newVenueId
+                "data": {
+                    "venueId": newVenueId,
+                    "venueName": newBusinessData['venueName'],
+                    "username": sanitized_username
+                }
             }
         ), 201
 

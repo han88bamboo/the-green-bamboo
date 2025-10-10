@@ -23,8 +23,8 @@ def sanitize_username(producer_name):
     Sanitize producer name for use as username by:
     1. Removing Chinese/Japanese characters (CJK ideographs)
     2. Removing accented characters (converting to ASCII equivalents)
-    3. Removing special characters except alphanumeric, spaces, hyphens, underscores
-    4. Collapsing multiple spaces into single spaces
+    3. Removing special characters including spaces (keep only alphanumeric, hyphens, underscores)
+    4. Converting to lowercase for consistency
     5. Stripping leading/trailing whitespace
     
     WARNING: If the producer name contains ONLY Chinese/Japanese characters with no English letters
@@ -32,6 +32,8 @@ def sanitize_username(producer_name):
     the username may contain special characters that could cause issues with authentication
     or URL handling.
     """
+    print(f"DEBUG: Input producer_name: '{producer_name}' (type: {type(producer_name)})")
+    
     if not producer_name:
         return ""
     
@@ -44,23 +46,29 @@ def sanitize_username(producer_name):
     # U+30A0-U+30FF: Katakana
     cjk_pattern = re.compile(r'[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]+')
     cleaned_name = cjk_pattern.sub('', producer_name)
+    print(f"DEBUG: After CJK removal: '{cleaned_name}'")
     
     # Step 2: Convert accented characters to ASCII equivalents (NFD normalization)
     # This converts characters like Ā, Å, é, ñ to their base ASCII forms
     normalized = unicodedata.normalize('NFD', cleaned_name)
     ascii_name = ''.join(char for char in normalized if unicodedata.category(char) != 'Mn')
+    print(f"DEBUG: After ASCII conversion: '{ascii_name}'")
     
-    # Step 3: Remove any remaining non-ASCII characters and special characters
-    # Keep only alphanumeric, spaces, hyphens, and underscores
-    sanitized = re.sub(r'[^a-zA-Z0-9\s\-_]', '', ascii_name)
+    # Step 3: Remove any remaining non-ASCII characters and special characters including spaces
+    # Keep only alphanumeric, hyphens, and underscores
+    sanitized = re.sub(r'[^a-zA-Z0-9\-_]', '', ascii_name)
+    print(f"DEBUG: After special char and space removal: '{sanitized}'")
     
-    # Step 4: Collapse multiple spaces and strip whitespace
-    sanitized = re.sub(r'\s+', ' ', sanitized).strip()
+    # Step 4: Convert to lowercase for consistency
+    sanitized = sanitized.lower()
+    print(f"DEBUG: After lowercase conversion: '{sanitized}'")
     
     # Step 5: If the result is empty (all characters were removed), use original producer name
     if not sanitized:
+        print(f"DEBUG: Result was empty, returning original: '{producer_name}'")
         return producer_name
     
+    print(f"DEBUG: Final result: '{sanitized}'")
     return sanitized
 
 # -----------------------------------------------------------------------------------------
@@ -71,9 +79,11 @@ def sanitize_username(producer_name):
 @blueprint.route("/createUserProducer", methods=['POST'])
 def create_user_producer():
     """Create a new producer account from user submission"""
+    print("DEBUG: createUserProducer endpoint called!")
     try:
         # Get data from request
         data = request.json
+        print(f"DEBUG: Received data: {data}")
 
         # Check required fields
         if not data.get('producerName') or not data.get('producerDesc') or not data.get('originCountry'):
@@ -84,9 +94,12 @@ def create_user_producer():
         producer_desc = data.get('producerDesc')
         origin_country = data.get('originCountry')
         is_independent_bottler = data.get('isIndependentBottler', False)
+        print(f"DEBUG: producer_name: '{producer_name}'")
 
         # Sanitize the producer name for use as username
+        print(f"DEBUG: About to call sanitize_username with producer_name: '{producer_name}'")
         sanitized_username = sanitize_username(producer_name)
+        print(f"DEBUG: sanitize_username returned: '{sanitized_username}'")
 
         # Check if producer already exists
         cursor = g.db.cursor()

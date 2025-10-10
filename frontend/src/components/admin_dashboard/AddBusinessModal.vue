@@ -15,7 +15,7 @@
               <p class="fw-bold">Business account created successfully!</p>
               <p>Please save the temporary login details below. This is the only time the password will be shown.</p>
               <hr>
-              <p><strong>Username:</strong> {{ createdBusiness.name }}</p>
+              <p><strong>Username:</strong> {{ createdBusiness.username }}</p>
               <p><strong>Password:</strong> {{ createdBusiness.tempPassword }}</p>
               <button type="button" class="btn btn-sm btn-secondary" @click="downloadCSV">Download login details</button>
             </div>
@@ -132,7 +132,8 @@ export default {
             successMessage: false, 
             createdBusiness: {     // Initialize as object instead of null
                 name: '',
-                tempPassword: ''
+                tempPassword: '',
+                username: ''           // Add username field
             },
             tempPassword: "",
             
@@ -175,6 +176,24 @@ export default {
             this.resetForm();
             this.$emit('close');
         },
+        sanitizeUsername(businessName) {
+            if (!businessName) return "";
+            
+            // Step 1: Remove CJK (Chinese, Japanese, Korean) characters
+            let cleaned = businessName.replace(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]+/g, '');
+            
+            // Step 2: Normalize and remove accented characters
+            let normalized = cleaned.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            // Step 3: Remove special characters and spaces, keep only alphanumeric, hyphens, underscores
+            let sanitized = normalized.replace(/[^a-zA-Z0-9\-_]/g, '');
+            
+            // Step 4: Convert to lowercase
+            sanitized = sanitized.toLowerCase();
+            
+            // Step 5: If empty, return original (though this shouldn't happen in normal use)
+            return sanitized || businessName;
+        },
         hashPassword(id, password) {
             const combinedString = id.toString() + password;
             let hash = 0;
@@ -189,12 +208,12 @@ export default {
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += `Username,Password
 `;
-            csvContent += `${this.createdBusiness.name},${this.createdBusiness.tempPassword}
+            csvContent += `${this.createdBusiness.username},${this.createdBusiness.tempPassword}
 `;
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `${this.createdBusiness.name}_login_details.csv`);
+            link.setAttribute("download", `${this.createdBusiness.username}_login_details.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -214,7 +233,9 @@ export default {
             this.error = null;
 
             this.tempPassword = "admin1234"; // Or generate a random one
-            const hashedPassword = this.hashPassword(this.form.name, this.tempPassword);
+            // Use sanitized username for password hashing to match backend
+            const sanitizedUsername = this.sanitizeUsername(this.form.name);
+            const hashedPassword = this.hashPassword(sanitizedUsername, this.tempPassword);
             
             let apiURL = '';
             let newBusinessData = {};
@@ -232,7 +253,6 @@ export default {
                     hashedPassword: hashedPassword,
                     questionsAnswers: [],
                     updates: [],
-                    username: this.form.name,
                     producerLink: "",
                     claimStatus: this.form.claimStatus === "true",
                 };
@@ -241,7 +261,6 @@ export default {
                 newBusinessData = {
                     venueName: this.form.name,
                     venueDesc: this.form.description,
-                    username: this.form.name,
                     originLocation: this.form.country,
                     address: this.form.address,
                     venueType: this.form.venueType,
@@ -266,11 +285,13 @@ export default {
                 console.log('Response Status:', response.status);
                 console.log('Response Data:', response.data);
                 console.log('Response Data Code:', response.data.code);
+                console.log('Response Data Username:', response.data.data?.username);
 
                 if (response.data.code === 201) {
                     this.createdBusiness = {
                         name: this.form.name,
                         tempPassword: this.tempPassword,
+                        username: response.data.data.username || this.form.name // Fallback to name if username not provided
                     };
                     
                     this.successMessage = true;
