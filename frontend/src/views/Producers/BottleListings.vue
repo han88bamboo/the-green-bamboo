@@ -244,7 +244,7 @@
                             '/profile/producer/' +
                             this.producer_id +
                             '/' +
-                            getProducerName(this.producer_id),
+                            this.slugify(getProducerName(this.producer_id)),
                         }" class="default-text-no-background">
                           <span class="mobile-mb-0">
                             {{
@@ -262,7 +262,7 @@
                         <span v-else class="text-body-secondary producer-page mobile-view-show">
                           Bottler:
                           <router-link
-                            :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
+                            :to="{ path: '/profile/producer/' + this.bottler_id + '/' + this.slugify(getBottlerName(specified_listing['bottlerID'])), }"
                             class="default-text-no-background">
                             <u style="color: black">
                               {{ getBottlerName(specified_listing["bottlerID"]) }}
@@ -282,7 +282,7 @@
                       <h6 v-else class="text-body-secondary producer-page">
                         Bottler:
                         <router-link
-                          :to="{ path: '/profile/producer/' + this.bottler_id + '/' + getProducerName(this.producer_id), }"
+                          :to="{ path: '/profile/producer/' + this.bottler_id + '/' + this.slugify(getBottlerName(specified_listing['bottlerID'])), }"
                           class="default-text-no-background">
                           <u style="color: black">
                             {{ getBottlerName(specified_listing["bottlerID"]) }}
@@ -382,7 +382,7 @@
                                 <!-- [function] where to buy -->
                                 <div v-for="producer in producerListings" v-bind:key="producer">
                                   <router-link :to="{
-                                    path: '/profile/producer/' + producer,
+                                    path: '/profile/producer/' + producer + '/' + this.slugify(getProducerName(producer)),
                                   }" class="reverse-clickable-text">
                                     <p>{{ getProducerName(producer) }}</p>
                                   </router-link>
@@ -412,7 +412,7 @@
 
                                 <div v-if="venues.length > 0">
                                   <div v-for="venue in venues" v-bind:key="venue.id">
-                                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
+                                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
                                       class="reverse-clickable-text venue-name">
                                       <span class="location-icon">📍</span>
                                       {{ venue.venueName }}
@@ -3307,7 +3307,7 @@
 
                 <div v-if="venues.length > 0">
                   <div v-for="venue in venues" v-bind:key="venue.id">
-                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + venue.venueName }"
+                    <router-link :to="{ path: '/profile/venue/' + venue.id + '/' + this.slugify(venue.venueName) }"
                       class="reverse-clickable-text venue-name">
                       <span class="location-icon">📍</span>
                       {{ venue.venueName }}
@@ -3378,7 +3378,7 @@
               <div class="text-start pt-2 overflow-auto" style="max-height: 100%">
                 <!-- [function] where to buy -->
                 <div v-for="producer in producerListings" v-bind:key="producer">
-                  <router-link :to="{ path: '/profile/producer/' + producer }" class="reverse-clickable-text">
+                  <router-link :to="{ path: '/profile/producer/' + producer + '/' + this.slugify(getProducerName(producer)) }" class="reverse-clickable-text">
                     <p>{{ getProducerName(producer) }}</p>
                   </router-link>
                 </div>
@@ -5146,6 +5146,18 @@ export default {
         (p) => p.id === bottlerID
       );
       return bottler ? bottler.producerName : "Unknown Bottler";
+    },
+
+    // Standardized slugify function to match other components
+    slugify(text) {
+      if (!text) return '';
+      return text
+        .toString()
+        .toLowerCase()
+        .normalize('NFD') // Decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+        .replace(/\s+/g, '-')                 // Replace spaces with hyphens
+        .replace(/[^\w]/g, ''); // Remove non-word characters (includes CJK)
     },
 
     // get VenueName for a listing based on producerID
