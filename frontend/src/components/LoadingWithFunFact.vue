@@ -3,12 +3,13 @@
   <!-- 1️⃣ Splash screen -->
     <div v-if="showSplash" class="dx-splash">
       <img :src="logoSrc" alt="Drink-X Logo" class="dx-logo" />
-      <div class="dx-ring-wrap">
+      <div class="fw-bold" > Fun Fact: {{currentFunFact}}</div>
+      <!--<div class="dx-ring-wrap">
         <svg class="dx-progress-ring" viewBox="0 0 120 120">
           <circle class="ring-bg" cx="60" cy="60" r="54" />
           <circle class="ring-progress" cx="60" cy="60" r="54" />
         </svg>
-      </div>
+      </div>-->
     </div>
     <!-- 2️⃣ Skeleton screen -->
     <div v-else>
@@ -65,20 +66,41 @@ export default {
     return {
       showSplash: true,
       funFacts: [
-        "The world's oldest known 'cheers' is from Mesopotamia, over 4,000 years ago.",
-        'Champagne pops its cork at about 64 km/h (40 mph).',
-        "IPA originally stood for 'India Pale Ale'...",
-        'The pressure in a bottle of Champagne is ~3× a car tire.',
-        '“Dry” wine just means low residual sugar.',
-        "‘Whisky’ comes from Gaelic “uisge beatha” — water of life.",
-        'Vodka literally means “little water”.',
-        "The angels’ share is the spirit that evaporates from barrels.",
+        'The Guinness World Record for the world’s strongest beer is held by Snake Venom from Scotland, at a whopping 67.5% ABV. 💪🏻',
+        "The angels’ share is the spirit that evaporates from barrels. 😇",
+        "The devil's share refers to the portion of a spirit that is absorbed into the wood during distillation. 😈",
+        "The sake with the lowest rice polishing ratio recorded yet is TATENOKAWA's KOMYO Yamada Nishiki, at a 1% polishing ratio, meaning only 1% of the original rice grain remains and is used to make the sake. 🍚",
         "‘Distillation’ comes from Latin 'destillare' — to drip down.",
-        'Tequila agave can take up to 8 years to mature.',
-        'The Royal Navy issued daily rum rations until 1970.',
-        'Absinthe was banned in many countries for decades.',
-        'The oldest known recipe is for beer on a 3,900-year-old tablet.',
-        'Mezcal “pechuga” is distilled with a suspended poultry breast.',
+        'Tequila agave can take up to 8 years to mature. ',
+        'The Royal Navy issued daily rum rations until 1970. ⚓️',
+        'Absinthe was banned in many countries for decades. 💥',
+        "Sabrage is a technique for opening a champagne or sparkling wine bottle by using a saber or knife, and is believed to be invented by Napoleonic calvary officers while they were celebrating military victories. ⚔️",
+        'The oldest known recipe is for beer on a 3,900-year-old tablet. 🍺',
+        'Mezcal “pechuga” is distilled with a suspended poultry breast. 🍗',
+        "The world's largest cocktail, a margarita, measured 39,746.82 liters and was made by Nick Nicora in Sacramento, California, on July 13, 2012.",
+        "A Negroni is made from equal parts gin, Campari, and sweet vermouth, garnished with an orange peel. 🥃",
+        "A Mojito is made with five key ingredients: white rum, sugar (traditionally sugar cane juice), lime juice, soda water, and mint.",
+        "The Vatican city has the highest per capita wine consumption in the world, with an estimated average of about 79 liters per person per year. ⛪️",
+        "Baijiu is the number one selling spirit globally, outselling whiskey, vodka, and rum combined.",
+        "Baijius can be categorized into four main aroma types: light, strong, sauce, and rice. 🀄️",
+        'In Ratatouille, the feared critic Anton Ego famously orders a glass of Château Cheval Blanc 1947, a legendary and highly-rated wine from Bordeaux. 🍷🐭',
+        'During Prohibition, winemakers would sell "grape bricks" instead of wine. These grape bricks with come with warnings that told you exactly how you might use it to make wine. 🧱🍷',
+        'Alcohol can technically be produced from any type of grain, fruit or vegetable. For example, in South Asia, they make Arrack from Coconut! 🥥',
+        "The bartender's handshake is a ritual where bartenders greet each other by sharing shots of Fernet Branca. 🤝",
+        "Bombay Sapphire Gin is named after the Star of Bombay, a 182-carat sapphire that was once owned by actress Mary Pickford. 💎",
+        "The Singapore Sling was originally created by Hainanese bartender Ngiam Tong Boon in 1915 as a way to allow women to drink alcohol in public at a time when it was considered improper for them to do so. He used juices and grenadine to give the drink a pink, feminine hue. 🌺",
+        "The world's oldest known 'cheers' is from Mesopotamia, over 4,000 years ago. 🥂",
+        'Champagne pops its cork at about 64 km/h (40 mph). 🍾',
+        "IPA originally stood for 'India Pale Ale', which is a reference to a hoppy beer brewed in England and designed to survive the long sea voyage to India in the 18th century. ⚓️",
+        'The pressure in a bottle of Champagne is ~3× a car tire. 🛞🍾',
+        '“Dry” wine just means low residual sugar, a.k.a a wine that is not sweet.',
+        "In Korean, ‘soju’ translates to ‘burned liquor'. 🍚",
+        "In South Korea, you often see drink soju brands sharing the same green soju bottle. This is due to a voluntary agreement between the companies and the Ministry of environment to share a standardsied recycling system for green soju bottles. ♻️ ",
+        "‘Whisky’ comes from Gaelic “uisge beatha” — water of life. 💦",
+        "A popular type of wood used to aged Japanese whiskies is the Mizunara oak, which is known for imparting coconutty, yuzu and sandalwood flavours. 🌳",
+        'Vodka literally means “little water”. 💧',
+        "Chances are, you've probably seen Heisler beer on TV or in movies before. But its actually a fictional beer brand created by a prop supplier company called Independent Studios Services. 🎥🍺",
+
       ],
       currentFunFact: '',
       factIntervalId: null,
@@ -91,7 +113,7 @@ export default {
     // 1-second splash timer
     setTimeout(() => {
       this.showSplash = false;
-    }, 1200);
+    }, 2000);
   },
   beforeUnmount() {
     clearInterval(this.factIntervalId);
