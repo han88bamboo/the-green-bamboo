@@ -4,11 +4,14 @@
 <template>
     <NavBar />
 
+<!-- Display when data is still loading -->
+    <LoadingWithFunFact v-if="dataLoaded === false" />
     <!-- Main Content -->
     <div class="container pt-5 mobile-pt-3">
 
-        <!-- Display when data is still loading -->
-        <LoadingWithFunFact v-if="!venueDataLoaded" />
+          
+
+
 
         <!-- DEBUG: Show current state -->
         <!-- <div class="alert alert-info" style="position: fixed; top: 100px; right: 20px; z-index: 9999; font-size: 12px;">

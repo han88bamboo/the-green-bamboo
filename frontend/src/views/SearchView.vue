@@ -2,18 +2,15 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
 
 <template>
     <NavBar />
-
-    <!-- Display when search is in progress -->
-    <div class="text-info-emphasis fst-italic fw-bold fs-5 pt-5" v-if="!dataLoaded"> 
-        <span>Currently searching, please hold on!</span>
-        <br><br>
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-    </div>
     
-    <!-- Display when searching encounters an error -->
-    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="loadError"> 
+    <!-- Display when search is in progress -->
+    <div class="text-info-emphasis fw-bold fs-6"  v-if="!dataLoaded"> 
+        <LoadingWithFunFact/>
+        <span class="pt-0" style="color: #4a90e2">Currently searching, please hold on!</span>
+    </div>
+
+    <!-- Error -->
+    <div class="text-danger fst-italic fw-bold fs-3 pt-5" v-if="loadError">
         <span>An error occurred while searching, please try refreshing the page!</span>
         <br>
         <button class="btn primary-btn btn-sm" @click="()=>{this.$router.go(0)}">
@@ -143,7 +140,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                 <div class="nav nav-tabs justify-content-center" id="nav-tab" role="tablist">
                     <!-- Listings -->
                     <button class="nav-link active col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-listings-tab" data-bs-toggle="tab" data-bs-target="#nav-listings" type="button" role="tab" aria-controls="nav-listings" aria-selected="true" @click="changeActiveTabStatus('listings')"> 
-                        <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
+                        <span class="d-flex align-items-center justify-content-center mb-0 fw-bold mobile-rating-smaller-text-2">
                             Drinks &nbsp;
                             <span v-if="resultListings.length > 0" class="rounded-circle mobile-mx-0 mx-3 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ resultListings.length }}</p>
@@ -155,7 +152,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     </button>
                     <!-- Producers -->
                     <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-producers-tab" data-bs-toggle="tab" data-bs-target="#nav-producers" type="button" role="tab" aria-controls="nav-producers" aria-selected="false" @click="changeActiveTabStatus('producers')">
-                        <span class="d-flex align-items-center justify-content-center mb-0  fw-bold">
+                        <span class="d-flex align-items-center justify-content-center mb-0 mobile-rating-smaller-text-2 fw-bold">
                             Brands &nbsp;
                             <span v-if="producerListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ producerListings.length }}</p>
@@ -167,7 +164,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     </button>
                     <!-- Venues -->
                     <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-venues-tab" data-bs-toggle="tab" data-bs-target="#nav-venues" type="button" role="tab" aria-controls="nav-venues" aria-selected="false" @click="changeActiveTabStatus('venues')">
-                        <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
+                        <span class="d-flex align-items-center justify-content-center mb-0 mobile-rating-smaller-text-2 fw-bold">
                             Venues &nbsp;
                             <span v-if="venueListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ venueListings.length }}</p>
@@ -179,7 +176,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                     </button>
                     <!-- Users -->
                     <button class="nav-link col-lg-2 mobile-col-3 xcol-12 px-1" id="nav-users-tab" data-bs-toggle="tab" data-bs-target="#nav-users" type="button" role="tab" aria-controls="nav-users" aria-selected="false" @click="changeActiveTabStatus('users')">
-                        <span class="d-flex align-items-center justify-content-center mb-0 fw-bold">
+                        <span class="d-flex align-items-center justify-content-center mobile-rating-smaller-text-2 mb-0 fw-bold">
                             Users &nbsp;
                             <span v-if="userListings.length > 0" class="rounded-circle mx-3 mobile-mx-0 d-flex align-items-center justify-content-center"> 
                                 <p class="m-0">{{ userListings.length }}</p>
@@ -662,13 +659,15 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
     import NavBar from '@/components/NavBar.vue';
     import BookmarkIcon from '@/components/BookmarkIcon.vue';
     import BookmarkModal from '@/components/BookmarkModal.vue';
+    import LoadingWithFunFact from '@/components/LoadingWithFunFact.vue' ;
 
     export default {
         name: "SearchView",
         components: {
             NavBar,
             BookmarkIcon, 
-            BookmarkModal
+            BookmarkModal,
+            LoadingWithFunFact
         },
         data() {
             return {

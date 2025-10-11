@@ -2,7 +2,6 @@
 <template>
   <NavBar />
 
-  <!-- Display when data is still loading -->
   <LoadingWithFunFact v-if="dataLoaded === false" />
 
   <!-- Display when data fails to load-->
@@ -25,65 +24,10 @@
   <div class="container pt-3" v-if="dataLoaded === true">
     <div class="row">
       <!--Left Column (Venue and Events)-->
-      <div class="col-lg-3 col-md-4 col-12 mobile-view-hide">
-        <div class="row">
-          <div class="col-12">
-            <div
-              class="square primary-square-green rounded p-3 mb-3 text-start"
-              style="height: 325px"
-            >
-              <div class="square-inline">
-                <h4
-                  class="square-inline text-start mr-auto reverse-clickable-text"
-                >
-                  Venue
-                </h4>
-              </div>
-
-              <div style="height: 85%">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100;
-                  "
-                >
-                  <h6 class="fst-italic">Add venue</h6>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-12">
-            <div
-              class="square primary-square-green rounded p-3 mb-3 text-start"
-              style="height: 600px"
-            >
-              <!-- header text -->
-              <div class="square-inline">
-                <h4 class="square-inline text-start mr-auto">Events</h4>
-              </div>
-              <!-- body -->
-              <div style="height: 85%">
-                <div
-                  style="
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    height: 100%;
-                  "
-                >
-                  <h6 class="fst-italic">For Events</h6>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="col-1"></div>
 
       <!--Right Column (Articles)-->
-      <div class="col-lg-9 col-md-6 col-12">
+      <div class="col-lg-10">
         <div class="container">
           <div class="row">
             <div class="ps-lg-4 pe-lg-4 mobile-pe-3">
@@ -159,6 +103,8 @@
           </div>
         </div>
       </div>
+
+      <div class="col-1"></div>
     </div>
   </div>
 
