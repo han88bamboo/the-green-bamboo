@@ -1545,7 +1545,7 @@
 
 /* NavBar.vue: push the desktop dropdown slightly lower so it doesn't cover the toggle */
 .mobile-view-hide .btn-group .dropdown-menu {
-  top: calc(100% + 6px) !important;    /* pushes dropdown 6px below the toggle */
+  top: calc(100% + 0px) !important;    /* pushes dropdown 6px below the toggle */
   transform: translateY(0) !important;  /* ensure no conflicting transforms */
   margin-top: 0 !important;
   z-index: 1060;                        /* keep it above other content */
