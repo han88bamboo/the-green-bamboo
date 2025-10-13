@@ -62,9 +62,24 @@
                       New Shelf
                     </button>
                   </li>
+
+                  <li class="nav-item ms-auto">
+                    <button 
+                      class="nav-link folder-tab import-csv-tab"
+                      type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#csvImportModal"
+                      title="Import drinks from CSV file"
+                      style="background-color: #28a745; color: white;"
+                    >
+                      <i class="bi bi-file-earmark-arrow-up me-sm-2"></i>
+                      <span class="mobile-view-hide">Import CSV</span>
+                      <span class="d-sm-none">Import</span>
+                    </button>
+                  </li>
                   
                   <!-- Cellar History Tab -->
-                  <li class="nav-item ms-auto">
+                  <li class="nav-item">
                     <button 
                       class="nav-link folder-tab history-tab"
                       :class="{ active: activeTab === 'history' }"
@@ -2814,6 +2829,12 @@
       </div>
     </div>
     -->
+    <CsvImportModal
+      :owner-type="ownerType"
+      :owner-id="id"
+      :collections="collections"
+      @import-complete="handleImportComplete"
+    />
   </main>
 
   <!-- Mobile Add Drinks Modal -->
@@ -3620,12 +3641,14 @@
 <script>
 import axios from 'axios'
 import NavBar from '@/components/NavBar.vue'
+import CsvImportModal from '@/components/CsvImportModal.vue';
 // import { useToast } from "vue-toastification";
 
 export default {
   name: 'myCellar',
   components: {
-    NavBar
+    NavBar,
+    CsvImportModal
   },
   props: {
     ownerType: {
@@ -6810,6 +6833,17 @@ export default {
         }
       });
     },
+
+    handleImportComplete() {
+      // Reload cellar data after import
+      this.loadCellarData()
+      
+      // Optionally show a success message
+      console.log('CSV import completed successfully')
+      
+      // If you want to switch to the imported collection's tab
+      // this.setActiveTab(this.selectedCollectionId)
+    }
   }
 }
 
