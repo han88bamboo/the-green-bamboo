@@ -4,7 +4,6 @@ import importlib
 import urllib
 import stripe
 from flask import Flask, g
-from flask_pymongo import PyMongo
 from flask import jsonify
 from flask_cors import CORS
 from flask_mail import Mail
