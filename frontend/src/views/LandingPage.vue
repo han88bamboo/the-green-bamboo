@@ -41,16 +41,16 @@
 
         <LookingFor />
 
-    <!-- Whisky Live Paris 2025 Section 
+    <!-- Whisky Live Paris 2025 Section -->
     <section class="festival-section pb-4 festival-hero">
         <div class="container">
 
-            
+            <!-- Hero header -->
             <div class=" rounded-4 p-4 mb-2 position-relative overflow-hidden">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
                 <div>
                 <div class="d-flex flex-column flex-md-row align-items-center align-items-md-end gap-3 mb-2">
-                
+                <!-- Logo -->
                 <img 
                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/wlp25-logo-en.svg?v=1758788335" 
                     alt="Whisky Live Paris 2025 Logo" 
@@ -63,7 +63,7 @@
                 <h2 class="mobile-fs-4 fw-bold mb-1 festival-title">Now Pouring at Whisky Live Paris 2025</h2>
                 <h3 class="mobile-fs-6 fw-bold h5 m-0 festival-subtitle">Explore and review drinks at this event!</h3>
                 </div>
-                
+                <!-- Countdown pill -->
                 <div 
                 class="festival-countdown ms-md-3 mt-md-0 px-3 py-2 rounded-pill 
                         mx-auto mx-md-0 text-center">
@@ -72,15 +72,15 @@
 
             </div>
 
-            
+            <!-- subtle bokeh accents -->
             <div class="festival-bokeh festival-bokeh-1"></div>
             <div class="festival-bokeh festival-bokeh-2"></div>
             <div class="festival-bokeh festival-bokeh-3"></div>
             </div>
 
-            
+            <!-- WLP2025 Listings Grid - Always 5 columns with horizontal scroll -->
             <div class="trending-reviews-container" ref="wlp2025Container">
-             
+                    <!-- Mobile scroll arrow button left -->
                     <button 
                         class="mobile-scroll-arrow mobile-scroll-arrow-left d-md-none"
                         @click="scrollContainer('wlp2025Container', 'left')"
@@ -93,8 +93,8 @@
                     <div class="trending-reviews-grid wlp2025-grid">
                         <div v-for="listing in wlp2025Listings" :key="listing.listingId" class="trending-review-col">
                             <div class="card h-100 review-card border-light" 
-                                style="border: 2px solid #f0b358; cursor: default; ">  
-                                
+                                style="border: 2px solid #f0b358; cursor: default; ">  <!-- cursor: pointer; @click="goToListing(listing)-->
+                                <!-- Image at top -->
                                 <div class="card-img-top-wrapper position-relative">
                                     <img v-if="listing.photo" 
                                         :src="listing.photo" 
@@ -105,28 +105,33 @@
                                         class="card-img-top review-card-img"
                                         alt="Default drink image" />
                                     
-                             
+                                    <!-- Event Tag Overlay 
+                                    <div class="review-overlay position-absolute d-flex align-items-center">
+                                        <span class="overlay-text">
+                                            <span class="overlay-rating">#WLP2025</span>
+                                        </span>
+                                    </div>-->
                                 </div>
                                 
                                 <div class="card-body d-flex flex-column">
-                          
+                                    <!-- Drink name -->
                                     <h6 class="card-title fw-bold" style="color: #223957;  margin-bottom:0px;">
                                         {{ truncateText(listing.listingName, 30) }}
                                     </h6>
                                     
-                        
+                                    <!-- Producer name -->
                                     <p class="text-muted small" v-if="listing.producerName" style="margin-bottom:0px;" >
                                         by {{ truncateText(listing.producerName, 20) }}
                                     </p>
                                     
-                    
+                                    <!-- Category and Country -->
                                     <p class="mb-2 small" style="color: #f0b358;" v-if="listing.drinkType || listing.originCountry">
                                         <span v-if="listing.drinkType">{{ listing.drinkType }}</span>
                                         <span v-if="listing.drinkType && listing.originCountry"> / </span>
                                         <span v-if="listing.originCountry">{{ listing.originCountry }}</span>
                                     </p>
                                     
-                                
+                                    <!-- Official Description -->
                                     <p class="card-text flex-grow-1 small" v-if="listing.officialDesc">
                                         "{{ truncateText(listing.officialDesc, 80) }}"
                                     </p>
@@ -135,7 +140,7 @@
                                     </p>
                                 </div>
                                 
-                         
+                                <!-- Review Button Footer -->
                                 <div class="text-center pb-3">
                                     <button 
                                         class="btn fw-semibold px-4"
@@ -149,7 +154,7 @@
                         </div>
                     </div>
                     
- 
+                    <!-- Mobile scroll arrow button right -->
                     <button 
                         class="mobile-scroll-arrow mobile-scroll-arrow-right d-md-none"
                         @click="scrollContainer('wlp2025Container', 'right')"
@@ -160,7 +165,7 @@
                     </button>
                 </div>
 
-       
+            <!-- Mobile sticky CTA -->
             <div class="festival-sticky-cta ">
             <button class="btn w-100 festival-btn-cta fw-semibold" @click="$router.push('/browse/tag/wlp2025')">
                 View All Whisky Live Paris 2025 Releases 
@@ -169,7 +174,7 @@
 
         </div>
     </section>
-     Whisky Live Paris 2025 End -->
+    <!-- Whisky Live Paris 2025 End -->
 
     <!-- Trending Reviews Section -->
     <section class="recent-reviews-section py-4">
