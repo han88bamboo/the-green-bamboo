@@ -101,6 +101,9 @@ from scripts import pointsHelperFunc
 from scripts import pointsHelperFunc
 from scripts.currencyService import currency_converter
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -406,9 +409,7 @@ def getListingsWithTags():
 # [GET] Listings filtered by #wlp2025 tag, sorted by order column ascending
 @blueprint.route("/getListingsWlp2025", methods=['GET'])
 def getListingsWlp2025():
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('''
             SELECT * FROM "listings" 
             WHERE "tags" IS NOT NULL 
