@@ -349,8 +349,7 @@ def fetch_follow_lists(cursor, user_id):
 # [GET] accountRequests
 @blueprint.route('/getAccountRequests', methods=['GET'])
 def getAccountRequests():
-    conn = g.db
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "accountRequests"')
         allAccountRequests = cursor.fetchall()
 
@@ -363,8 +362,7 @@ def getAccountRequests():
 # [GET] Countries
 @blueprint.route('/getCountries', methods=['GET'])
 def getCountries():
-    conn = g.db
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute("SELECT * FROM countries")
         allCountries = cursor.fetchall()
 
@@ -377,9 +375,7 @@ def getCountries():
 # [GET] Listings
 @blueprint.route("/getListings", methods=['GET'])
 def getListings():
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings"')
         listings_data = cursor.fetchall()
     
@@ -393,9 +389,7 @@ def getListings():
 # [GET] Listings with Tags
 @blueprint.route("/getListingsWithTags", methods=['GET'])
 def getListingsWithTags():
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings" WHERE "tags" IS NOT NULL AND "tags" != \'\'')
         listings_data = cursor.fetchall()
     
@@ -438,9 +432,6 @@ def getListingsWlp2025():
 # Parameters: tag (string), drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int), limit (int)
 @blueprint.route("/getListingsByTag/<tag>", methods=['GET'])
 def getListingsByTag(tag):
-    conn = g.db
-    cursor = conn.cursor()
-    
     # Get filter parameters
     drink_type = request.args.get('drinkType', '').strip()
     type_category = request.args.get('typeCategory', '').strip()
@@ -451,113 +442,114 @@ def getListingsByTag(tag):
     limit = int(request.args.get('limit', 30))
 
     try:
-        # Build WHERE conditions (case-insensitive matching)
-        where_conditions = ['l."tags" IS NOT NULL AND l."tags" LIKE %s']
-        params = [f'%{tag}%']
+        with db_manager.get_cursor() as cursor:
+            # Build WHERE conditions (case-insensitive matching)
+            where_conditions = ['l."tags" IS NOT NULL AND l."tags" LIKE %s']
+            params = [f'%{tag}%']
 
-        if drink_type:
-            where_conditions.append('l."drinkType" ILIKE %s')
-            params.append(drink_type)
-        
-        if type_category:
-            where_conditions.append('l."typeCategory" ILIKE %s')
-            params.append(type_category)
-        
-        if origin_country:
-            where_conditions.append('l."originCountry" ILIKE %s')
-            params.append(origin_country)
+            if drink_type:
+                where_conditions.append('l."drinkType" ILIKE %s')
+                params.append(drink_type)
+            
+            if type_category:
+                where_conditions.append('l."typeCategory" ILIKE %s')
+                params.append(type_category)
+            
+            if origin_country:
+                where_conditions.append('l."originCountry" ILIKE %s')
+                params.append(origin_country)
 
-        # Build rating conditions
-        if min_rating:
-            try:
-                min_rating_val = float(min_rating)
-                where_conditions.append("""l."id" IN (
-                    SELECT "reviewTarget" 
-                    FROM "reviews" 
-                    WHERE "reviewType" = 'Listing'
-                    GROUP BY "reviewTarget"
-                    HAVING AVG("rating") >= %s
-                )""")
-                params.append(min_rating_val)
-            except ValueError:
-                pass
-        
-        if max_rating:
-            try:
-                max_rating_val = float(max_rating)
-                where_conditions.append("""l."id" IN (
-                    SELECT "reviewTarget" 
-                    FROM "reviews" 
-                    WHERE "reviewType" = 'Listing'
-                    GROUP BY "reviewTarget"
-                    HAVING AVG("rating") <= %s
-                )""")
-                params.append(max_rating_val)
-            except ValueError:
-                pass
+            # Build rating conditions
+            if min_rating:
+                try:
+                    min_rating_val = float(min_rating)
+                    where_conditions.append("""l."id" IN (
+                        SELECT "reviewTarget" 
+                        FROM "reviews" 
+                        WHERE "reviewType" = 'Listing'
+                        GROUP BY "reviewTarget"
+                        HAVING AVG("rating") >= %s
+                    )""")
+                    params.append(min_rating_val)
+                except ValueError:
+                    pass
+            
+            if max_rating:
+                try:
+                    max_rating_val = float(max_rating)
+                    where_conditions.append("""l."id" IN (
+                        SELECT "reviewTarget" 
+                        FROM "reviews" 
+                        WHERE "reviewType" = 'Listing'
+                        GROUP BY "reviewTarget"
+                        HAVING AVG("rating") <= %s
+                    )""")
+                    params.append(max_rating_val)
+                except ValueError:
+                    pass
 
-        # Build WHERE clause
-        where_clause = "WHERE " + " AND ".join(where_conditions)
+            # Build WHERE clause
+            where_clause = "WHERE " + " AND ".join(where_conditions)
 
-        # Add pagination parameters
-        params.extend([limit, offset])
+            # Add pagination parameters
+            params.extend([limit, offset])
 
-        # Query with custom order field ordering
-        query = f"""
-            SELECT 
-                l.*,
-                p."producerName",
-                COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            LEFT JOIN (
+            # Query with custom order field ordering
+            query = f"""
                 SELECT 
-                    "reviewTarget",
-                    COUNT(*) AS review_count,
-                    AVG("rating") AS avg_rating
-                FROM "reviews"
-                WHERE "reviewType" = 'Listing'
-                GROUP BY "reviewTarget"
-            ) r ON l."id" = r."reviewTarget"
-            {where_clause}
-            ORDER BY 
-                CASE 
-                    WHEN l."order" IS NULL OR l."order" < 0 THEN 1 
-                    ELSE 0 
-                END,
-                CASE 
-                    WHEN l."order" IS NOT NULL AND l."order" >= 0 THEN l."order" 
-                    ELSE NULL 
-                END ASC NULLS LAST,
-                COALESCE(r.review_count, 0) DESC,
-                COALESCE(r.avg_rating, 0) DESC,
-                l."id" ASC
-            LIMIT %s OFFSET %s
-        """
+                    l.*,
+                    p."producerName",
+                    COALESCE(ROUND(r.avg_rating, 1), 0) AS average_rating
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN (
+                    SELECT 
+                        "reviewTarget",
+                        COUNT(*) AS review_count,
+                        AVG("rating") AS avg_rating
+                    FROM "reviews"
+                    WHERE "reviewType" = 'Listing'
+                    GROUP BY "reviewTarget"
+                ) r ON l."id" = r."reviewTarget"
+                {where_clause}
+                ORDER BY 
+                    CASE 
+                        WHEN l."order" IS NULL OR l."order" < 0 THEN 1 
+                        ELSE 0 
+                    END,
+                    CASE 
+                        WHEN l."order" IS NOT NULL AND l."order" >= 0 THEN l."order" 
+                        ELSE NULL 
+                    END ASC NULLS LAST,
+                    COALESCE(r.review_count, 0) DESC,
+                    COALESCE(r.avg_rating, 0) DESC,
+                    l."id" ASC
+                LIMIT %s OFFSET %s
+            """
 
-        cursor.execute(query, params)
-        listings_data = cursor.fetchall()
+            cursor.execute(query, params)
+            listings_data = cursor.fetchall()
 
-        if not listings_data:
-            return jsonify([])
+            if not listings_data:
+                return jsonify([])
 
-        # Process results to match getListingsBySearch format
-        result = []
-        for listing in listings_data:
-            listing_dict = dict(listing)
-            
-            # Format averageRating to match search endpoint format
-            if listing_dict['average_rating'] == 0:
-                listing_dict['averageRating'] = '-'
-            else:
-                listing_dict['averageRating'] = listing_dict['average_rating']
-            
-            # Remove temporary fields
-            listing_dict.pop('average_rating', None)
-            
-            result.append(listing_dict)
+            # Process results to match getListingsBySearch format
+            result = []
+            for listing in listings_data:
+                listing_dict = dict(listing)
+                
+                # Format averageRating to match search endpoint format
+                if listing_dict['average_rating'] == 0:
+                    listing_dict['averageRating'] = '-'
+                else:
+                    listing_dict['averageRating'] = listing_dict['average_rating']
+                
+                # Remove temporary fields
+                listing_dict.pop('average_rating', None)
+                
+                result.append(listing_dict)
 
-        return jsonify(result)
+            return jsonify(result)
 
     except Exception as e:
         print(f"Error fetching listings by tag: {str(e)}")
@@ -570,9 +562,7 @@ def getListingsByTag(tag):
 # [GET] Recent Listings (Past 48 Hours)
 @blueprint.route("/getRecentListings", methods=['GET'])
 def getRecentListings():
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings" WHERE "addedDate" >= NOW() - INTERVAL \'48 hours\'')
         listings_data = cursor.fetchall()
     
@@ -586,7 +576,7 @@ def getRecentListings():
 # [GET] Listings by user id
 @blueprint.route("/lbListings", methods=['GET'])
 def lbListings():
-    conn = g.db
+    
     try:
         # Get query parameters
         user_id = request.args.get('id', '').strip()
@@ -598,7 +588,7 @@ def lbListings():
             ORDER BY "sort_order" ASC; 
         """
 
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute(sql, (user_id,))
             rows = cursor.fetchall()
 
@@ -667,7 +657,7 @@ def getListingsByIDs():
             WHERE l."id" IN %s;
         """
 
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute(sql, (tuple(listing_ids),))
             rows = cursor.fetchall()
 
@@ -697,12 +687,12 @@ def getListingsByIDs():
 # [GET] Listings from db when filter is applied for next 30 in discovery tab [discover tab]
 @blueprint.route("/getFiltered30/<id>")
 def getFiltered30(id):
-    conn = g.db
+    
     id = int(id)
     drinkType= request.args.get('drinkType')  # e.g. ?age=30
     drinkCategory = request.args.get('drinkCategory')
     
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         if(drinkType and drinkCategory):
             cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
         elif(drinkType):
@@ -720,7 +710,6 @@ def getFiltered30(id):
 # [POST] Get Listings from next in following list for both venue and producer [following tab]
 @blueprint.route("/getNextFollowing30", methods=['POST'])
 def getNextFollowing30():
-    conn = g.db
 
     followedProducers = request.args.get('followedProducers')
     followedVenues = request.args.get('followedVenues')
@@ -734,7 +723,7 @@ def getNextFollowing30():
 
     try:
 
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             if followedProducers and len(followedProducers) > 0:
                 cursor.execute('SELECT * FROM "listings" WHERE "id" < %s  AND "producerID" IN %s ORDER BY "addedDate" DESC LIMIT 15', (lastListingIdP, tuple(followedProducers),))
@@ -804,12 +793,12 @@ def getNextFollowing30():
 # [GET] Listings from db when filter is applied for next 30 in following tab
 @blueprint.route("/getFilteredFollowing30/<id>")
 def getFilteredFollowing30(id):
-    conn = g.db
+    
     id = int(id)
     drinkType= request.args.get('drinkType')  # e.g. ?age=30
     drinkCategory = request.args.get('drinkCategory')
     
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         if(drinkType and drinkCategory):
             cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
         elif(drinkType):
@@ -827,9 +816,8 @@ def getFilteredFollowing30(id):
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
 def getListing(id):
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
         listing_data = cursor.fetchone()
 
@@ -843,68 +831,66 @@ def getListing(id):
 # Parameters: searchTerm (string), lastID (int)
 @blueprint.route("/getListingsBySearch")
 def getListingsBySearch():
-    conn = g.db
-    cursor = conn.cursor()
     searchTerm = request.args.get('searchTerm', '').strip()
     lastID = request.args.get('lastID', '0').strip()
     lastID = int(lastID) if lastID.isdigit() else 0
 
     try:
         search = f'%{searchTerm}%'
-
         offset = int(request.args.get('offset', 0))
-        cursor.execute("""
-            SELECT 
-                l.*, 
-                p."producerName",
-                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(l."listingName") %% unaccent(%s)
-            
-            UNION
-                       
-            SELECT 
-                l.*, 
-                p."producerName",
-                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(p."producerName") %% unaccent(%s)
-
-            ORDER BY combined_sim_score DESC
-            LIMIT 30 OFFSET %s
-        """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, offset))
-                       
-        listings_data = cursor.fetchall()
-
-            
-        if not listings_data:
-            return jsonify([])
         
-        # Loop through the listings to get the average rating for each listing and producer name
-        for listing in listings_data:
-            # Get the average rating for the listing
+        with db_manager.get_cursor() as cursor:
             cursor.execute("""
-                SELECT AVG("rating") AS "averageRating"
-                FROM "reviews"
-                WHERE "reviewTarget" = %s
-            """, (listing['id'],))
+                SELECT 
+                    l.*, 
+                    p."producerName",
+                    (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE unaccent(l."listingName") %% unaccent(%s)
+                
+                UNION
+                           
+                SELECT 
+                    l.*, 
+                    p."producerName",
+                    (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE unaccent(p."producerName") %% unaccent(%s)
 
-            avg_rating = cursor.fetchone()['averageRating']
+                ORDER BY combined_sim_score DESC
+                LIMIT 30 OFFSET %s
+            """, (searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, offset))
+                           
+            listings_data = cursor.fetchall()
 
+                
+            if not listings_data:
+                return jsonify([])
+            
+            # Loop through the listings to get the average rating for each listing and producer name
+            for listing in listings_data:
+                # Get the average rating for the listing
+                cursor.execute("""
+                    SELECT AVG("rating") AS "averageRating"
+                    FROM "reviews"
+                    WHERE "reviewTarget" = %s
+                """, (listing['id'],))
 
-            if avg_rating is not None:
-                listing['averageRating'] = round(avg_rating, 1)
-            else:
-                listing['averageRating'] = '-'
+                avg_rating = cursor.fetchone()['averageRating']
 
-            # Get the producer name
-            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
-            producer_name = cursor.fetchone()
-            listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
-        
-        return jsonify(listings_data)
+                if avg_rating is not None:
+                    listing['averageRating'] = round(avg_rating, 1)
+                else:
+                    listing['averageRating'] = '-'
+
+                # Get the producer name
+                cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing['producerID'],))
+                producer_name = cursor.fetchone()
+                listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
+            
+            return jsonify(listings_data)
 
     except Exception as e:
         print(f"Error fetching listings by search: {str(e)}")
@@ -915,9 +901,6 @@ def getListingsBySearch():
 # Parameters: drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int)
 @blueprint.route("/getListingsByFilters")
 def getListingsByFilters():
-    conn = g.db
-    cursor = conn.cursor()
-    
     # Get filter parameters
     drink_type = request.args.get('drinkType', '').strip()
     type_category = request.args.get('typeCategory', '').strip()
@@ -1010,8 +993,9 @@ def getListingsByFilters():
             LIMIT %s OFFSET %s
         """
 
-        cursor.execute(query, params)
-        listings_data = cursor.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(query, params)
+            listings_data = cursor.fetchall()
 
         if not listings_data:
             return jsonify([])
@@ -1044,45 +1028,43 @@ def getListingsByFilters():
 # [GET] Get detailed listing information by listing ID
 @blueprint.route("/getListingsDetailedByID/<id>")
 def getListingsDetailedByID(id):
-    conn = g.db
-    cursor = conn.cursor()
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Fetch the listing details
+            cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
+            listing_data = cursor.fetchone()
 
-    try: 
-        # Fetch the listing details
-        cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
-        listing_data = cursor.fetchone()
+            if listing_data is None:
+                return jsonify({"code": 404, "message": "Listing not found"}), 404
 
-        if listing_data is None:
-            return jsonify({"code": 404, "message": "Listing not found"}), 404
+            # Fetch the producer details
+            cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing_data['producerID'],))
+            producer_data = cursor.fetchone()
 
-        # Fetch the producer details
-        cursor.execute('SELECT "producerName" FROM "producers" WHERE "id" = %s', (listing_data['producerID'],))
-        producer_data = cursor.fetchone()
+            if producer_data is None:
+                return jsonify({"code": 404, "message": "Producer not found"}), 404
 
-        if producer_data is None:
-            return jsonify({"code": 404, "message": "Producer not found"}), 404
+            # Combine the listing and producer data
+            detailed_listing = {
+                **listing_data,
+                "producerName": producer_data['producerName']
+            }
 
-        # Combine the listing and producer data
-        detailed_listing = {
-            **listing_data,
-            "producerName": producer_data['producerName']
-        }
+            # Get the average rating for the listing
+            cursor.execute("""
+                SELECT AVG("rating") AS "averageRating"
+                FROM "reviews"
+                WHERE "reviewTarget" = %s
+            """, (id,))
 
-        # Get the average rating for the listing
-        cursor.execute("""
-            SELECT AVG("rating") AS "averageRating"
-            FROM "reviews"
-            WHERE "reviewTarget" = %s
-        """, (id,))
+            avg_rating = cursor.fetchone()['averageRating']
 
-        avg_rating = cursor.fetchone()['averageRating']
+            if avg_rating is not None:
+                detailed_listing['avgRating'] = round(avg_rating, 1)
+            else:
+                detailed_listing['avgRating'] = '-'
 
-        if avg_rating is not None:
-            detailed_listing['avgRating'] = round(avg_rating, 1)
-        else:
-            detailed_listing['avgRating'] = '-'
-
-        return jsonify(detailed_listing), 200
+            return jsonify(detailed_listing), 200
 
     except Exception as e:
         print(f"Error fetching detailed listing by ID {id}: {str(e)}")
@@ -1092,9 +1074,6 @@ def getListingsDetailedByID(id):
 # [GET] Get Listing names by dynamic search term
 @blueprint.route("/getListingNamesDynamicSearch/<searchTerm>")
 def getListingNamesDynamicSearch(searchTerm):
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
         # Handle placeholder for empty search from frontend
         if searchTerm == '_EMPTY_SEARCH_':
@@ -1104,52 +1083,53 @@ def getListingNamesDynamicSearch(searchTerm):
         if len(searchTerm.strip()) < 1:
             return jsonify([])
             
-        # Enhanced search with accent removal and character normalization for better matching
-        cursor.execute(""" 
-            SELECT 
-                l."id", 
-                l."listingName", 
-                l."photo",
-                p."producerName",
-                l."drinkType",
-                l."typeCategory",
-                l."abv",
-                l."originCountry",
-                l."officialDesc",
-                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
-                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(l."listingName") ILIKE unaccent(%s)
-               OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
-               OR unaccent(l."listingName") %% unaccent(%s)
-            
-            UNION
-            
-            SELECT 
-                l."id", 
-                l."listingName", 
-                l."photo",
-                p."producerName",
-                l."drinkType",
-                l."typeCategory",
-                l."abv",
-                l."originCountry",
-                l."officialDesc",
-                COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
-                (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
-            FROM "listings" l
-            JOIN "producers" p ON l."producerID" = p."id"
-            WHERE unaccent(p."producerName") ILIKE unaccent(%s)
-               OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
-               OR unaccent(p."producerName") %% unaccent(%s)
-            
-            ORDER BY combined_sim_score DESC NULLS LAST
-            LIMIT 50
-        """, (searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm, 
-              searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
+        with db_manager.get_cursor() as cursor:
+            # Enhanced search with accent removal and character normalization for better matching
+            cursor.execute(""" 
+                SELECT 
+                    l."id", 
+                    l."listingName", 
+                    l."photo",
+                    p."producerName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."abv",
+                    l."originCountry",
+                    l."officialDesc",
+                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                    (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE unaccent(l."listingName") ILIKE unaccent(%s)
+                   OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                   OR unaccent(l."listingName") %% unaccent(%s)
+                
+                UNION
+                
+                SELECT 
+                    l."id", 
+                    l."listingName", 
+                    l."photo",
+                    p."producerName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."abv",
+                    l."originCountry",
+                    l."officialDesc",
+                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                    (similarity(unaccent(l."listingName"), unaccent(%s)) + 3 * similarity(unaccent(p."producerName"), unaccent(%s))) AS combined_sim_score
+                FROM "listings" l
+                JOIN "producers" p ON l."producerID" = p."id"
+                WHERE unaccent(p."producerName") ILIKE unaccent(%s)
+                   OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                   OR unaccent(p."producerName") %% unaccent(%s)
+                
+                ORDER BY combined_sim_score DESC NULLS LAST
+                LIMIT 50
+            """, (searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm, 
+                  searchTerm, searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
-        listings_data = cursor.fetchall()
+            listings_data = cursor.fetchall()
 
         # Convert the fetched data to a list of dictionaries
         for listing in listings_data:
