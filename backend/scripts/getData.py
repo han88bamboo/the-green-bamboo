@@ -1800,11 +1800,9 @@ def getUniqueProducersNamesID(search_term, pid):
 # [GET] List of unique bottlers names and id
 @blueprint.route("/getUniqueBottlersNamesID/<search_term>")
 def getUniqueBottlersNamesID(search_term):
-    conn = g.db
-
     search_term = search_term.strip().lower()
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute("""
             SELECT "id", "producerName"
             FROM "producers"
@@ -1840,8 +1838,7 @@ def getUniqueBottlersNamesID(search_term):
 # [GET] All producers with basic info needed for listings
 @blueprint.route("/getAllProducers")
 def getAllProducers():
-    conn = g.db
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT "id", "producerName" FROM "producers"')
         producers_data = cursor.fetchall()
 
@@ -1853,13 +1850,11 @@ def getAllProducers():
 # [GET] All venues with basic info needed for listings
 @blueprint.route('/getAllVenues', methods=['GET'])
 def getAllVenues():
-    conn = g.db
     try:
-        cursor = conn.cursor()
-        cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username" FROM "venues"')
-        venues = cursor.fetchall()
-        cursor.close()
-        return jsonify(venues), 200
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username" FROM "venues"')
+            venues = cursor.fetchall()
+            return jsonify(venues), 200
     except Exception as e:
         print("Get all venues error:", str(e))
         return jsonify({
@@ -1953,10 +1948,9 @@ def getAllVenues():
 # [GET] Get 5 most recent listing reviews for landing page
 @blueprint.route("/get5MostRecentReviews", methods=['GET'])
 def get5MostRecentReviews():
-    conn = g.db
     
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 WITH recent_reviews AS (
                     SELECT 
@@ -2047,10 +2041,9 @@ def get5MostRecentReviews():
 # [GET] Get 5 most highly rated listing reviews for landing page
 @blueprint.route("/get5MostHighlyRatedReviews", methods=['GET'])
 def get5MostHighlyRatedReviews():
-    conn = g.db
     
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 WITH highly_rated_reviews AS (
                     SELECT 
@@ -2141,10 +2134,9 @@ def get5MostHighlyRatedReviews():
 # [GET] Get 3 most recent venue reviews for landing page
 @blueprint.route("/getMostRecentVenueReviews", methods=['GET'])
 def getMostRecentVenueReviews():
-    conn = g.db
     
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute("""
                 WITH recent_venue_reviews AS (
                     SELECT 
@@ -2234,9 +2226,7 @@ def getMostRecentVenueReviews():
 @blueprint.route("/getRecentListingReviews/<id>")
 def getRecentListingReviews(id):
 
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute("""
             SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
             FROM "reviews"
@@ -2252,16 +2242,15 @@ def getRecentListingReviews(id):
         if not reviews_data:
             reviews_data = []
 
-    for review in reviews_data:
-        review["userVotes"] = {
-            "upvotes": review["upvotes"] if review["upvotes"] else [],
-            "downvotes": review["downvotes"] if review["downvotes"] else []
-        }
-        del review["upvotes"]
-        del review["downvotes"]
+        for review in reviews_data:
+            review["userVotes"] = {
+                "upvotes": review["upvotes"] if review["upvotes"] else [],
+                "downvotes": review["downvotes"] if review["downvotes"] else []
+            }
+            del review["upvotes"]
+            del review["downvotes"]
 
-    # Get top 5 highest rated reviews by the user (changed from just listing IDs)
-    with conn.cursor() as cursor:
+        # Get top 5 highest rated reviews by the user (changed from just listing IDs)
         cursor.execute("""
             SELECT r.*, l."listingName", l."photo" as "listingPhoto", 
                    p."producerName", v."venueName"
@@ -2278,8 +2267,7 @@ def getRecentListingReviews(id):
         
         top_rated_reviews_data = cursor.fetchall()
 
-    # Retrieve the number of reviews done by the user (number of unique listings reviewed)
-    with conn.cursor() as cursor:
+        # Retrieve the number of reviews done by the user (number of unique listings reviewed)
         cursor.execute('SELECT COUNT(DISTINCT "reviewTarget") FROM "reviews" WHERE "userID" = %s', (id,))
         drink_count = cursor.fetchone()
 
