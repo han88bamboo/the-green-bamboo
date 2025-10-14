@@ -631,7 +631,6 @@ def lbListings():
 
 @blueprint.route("/getListingsByIDs", methods=['GET', 'POST'])
 def getListingsByIDs():
-    conn = g.db
 
     try:
         # Handle both GET and POST requests
@@ -2435,12 +2434,11 @@ def get_bottle_listings():
 # [GET] Get all listings names
 @blueprint.route("/getListingsNames/<search_term>")
 def getListingsNames(search_term):
-    conn = g.db
     search_term = search_term.strip()
 
     try:
 
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             # Fetch 20 listings names based on the search term
             cursor.execute("""
                 SELECT "listingName"
@@ -4160,6 +4158,12 @@ def getUser(id):
             if not user_data:
                 return jsonify({}), 404
 
+            # Convert to dict if cursor doesn't return dict-like objects
+            if not isinstance(user_data, dict):
+                columns = [desc[0] for desc in cursor.description]
+                user_data = dict(zip(columns, user_data))
+
+            # Call all helper functions WITHIN the cursor context
             user_data["drinkLists"] = fetch_drink_lists(cursor, id)
             user_data["producerLists"] = fetch_producer_lists(cursor, id)
             user_data["venueLists"] = fetch_venue_lists(cursor, id)
@@ -5577,9 +5581,8 @@ def getRequestEditsByRole(role, id):
 # [GET] Specific Request Edit
 @blueprint.route("/getRequestEdit/<id>")
 def getRequestEdit(id):
-    conn = g.db
     
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "requestEdits" WHERE "id" = %s', (id,))
         request_edit_data = cursor.fetchone()
     
@@ -5592,9 +5595,8 @@ def getRequestEdit(id):
 # [GET] modRequests
 @blueprint.route("/getModRequests")
 def getModRequests():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "modRequests"')
         mod_requests_data = cursor.fetchall()
 
@@ -5622,10 +5624,9 @@ def getFestivalTastings(user_id, venue_id):
         - tastedItems: Array of tracking keys for items the user has tasted
         - count: Total number of items tasted by this user at this venue
     """
-    conn = g.db
     
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             # Query to get all festival tastings for this user at this venue
             sql = '''
                 SELECT "itemID", "variant", "venueId", "tastedDate", "id" as "tastingId"
@@ -9357,13 +9358,13 @@ def getNotifications(acc_type, acc_id):
             'news': []
         }
 
-        with db_manager.get_cursor(cursor_factory=RealDictCursor) as cur:
+        with db_manager.get_cursor() as cursor:
             # Fetch each tab separately with optimized queries
             for result_key, db_tab_name, limit in tab_queries:
                 print(f"DEBUG: Fetching {result_key} with tab_name='{db_tab_name}', limit={limit}")
                 
                 try:
-                    notifications = _fetch_notifications_by_tab(cur, acc_id, db_tab_name, limit)
+                    notifications = _fetch_notifications_by_tab(cursor, acc_id, db_tab_name, limit)
                     # print(f"DEBUG: Fetched {len(notifications)} notifications for {result_key}")
                     
                     # Add time field for consistency with original code
