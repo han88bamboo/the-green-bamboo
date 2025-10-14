@@ -104,6 +104,8 @@ from scripts.currencyService import currency_converter
 # Import the database manager for connection pooling
 from app import db_manager
 
+#import logger from app.py
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
