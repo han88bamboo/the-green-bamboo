@@ -5686,10 +5686,9 @@ def getUserFestivalTastedListAggregatedData(venue_id):
         - tastingVelocity: Daily tasting velocity over the past 6 months
         - totalStats: Overall statistics
     """
-    conn = g.db
     
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Base date filter for past 6 months
             date_filter = "AND uft.\"tastedDate\" >= NOW() - INTERVAL '6 months'"
             
@@ -6104,9 +6103,8 @@ def getUserFestivalTastedListAggregatedData(venue_id):
 # [GET] flavourTags
 @blueprint.route("/getFlavourTags")
 def getFlavourTags():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "flavourTags"')
         flavour_tags_data = cursor.fetchall()
 
@@ -6119,9 +6117,8 @@ def getFlavourTags():
 # [GET] subTags
 @blueprint.route("/getSubTags")
 def getSubTags():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "subTags"')
         allSubTags = cursor.fetchall()
 
@@ -6134,9 +6131,8 @@ def getSubTags():
 # [GET] observationTags
 @blueprint.route("/getObservationTags")
 def getObservationTags():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "observationTags"')
         observation_tags_data = cursor.fetchall()
 
@@ -6149,9 +6145,8 @@ def getObservationTags():
 # [GET] venueMainTypes
 @blueprint.route("/getVenueMainTypes")
 def getVenueMainTypes():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "venueMainTypes" ORDER BY "venueMainType"')
         venue_main_types_data = cursor.fetchall()
 
@@ -6164,9 +6159,8 @@ def getVenueMainTypes():
 # [GET] venueSubTypes  
 @blueprint.route("/getVenueSubTypes")
 def getVenueSubTypes():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "venueSubTypes" ORDER BY "venueSubType"')
         venue_sub_types_data = cursor.fetchall()
 
@@ -6179,9 +6173,8 @@ def getVenueSubTypes():
 # [GET] colours
 @blueprint.route("/getColours")
 def getColours():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "colours"')
         colours_data = cursor.fetchall()
 
@@ -6194,9 +6187,8 @@ def getColours():
 # [GET] moreColours
 @blueprint.route("/getMoreColours")
 def getMoreColours():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "moreColours" ORDER BY "id" ASC')
         more_colours_data = cursor.fetchall()
 
@@ -6209,9 +6201,8 @@ def getMoreColours():
 # [GET] specialColours
 @blueprint.route("/getSpecialColours")
 def getSpecialColours():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "specialColours"')
         allSpecialColours = cursor.fetchall()
 
@@ -6224,9 +6215,8 @@ def getSpecialColours():
 # [GET] languages
 @blueprint.route("/getLanguages")
 def getLanguages():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "languages"')
         languages = cursor.fetchall()
 
@@ -6239,9 +6229,8 @@ def getLanguages():
 # [GET] servingTypes
 @blueprint.route("/getServingTypes")
 def getServingTypes():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "servingTypes"')
         serving_types_data = cursor.fetchall()
 
@@ -6261,17 +6250,15 @@ def getServingTypes():
 # [GET] producersProfileViews
 @blueprint.route("/getProducersProfileViews")
 def getProducersProfileViews():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT * FROM "producersProfileViews"')
-        producers_profile_views_data = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "producersProfileViews"')
+            producers_profile_views_data = cursor.fetchall()
 
-        if not producers_profile_views_data:
-            return jsonify([])
+            if not producers_profile_views_data:
+                return jsonify([])
 
-        return jsonify(producers_profile_views_data), 200
+            return jsonify(producers_profile_views_data), 200
     
     except Exception as e:
         print(str(e))
@@ -6281,9 +6268,6 @@ def getProducersProfileViews():
                 "message": "An error occurred retrieving the profile views."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
