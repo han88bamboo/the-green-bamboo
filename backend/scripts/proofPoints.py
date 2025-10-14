@@ -112,9 +112,6 @@ def updatePointSystemRule():
 @blueprint.route('/deletePointSystemRule', methods=['DELETE'])
 def deletePointSystemRule():
 
-    conn = g.db
-    cursor = conn.cursor()
-
     data = request.json
 
     if 'ruleId' not in data:
@@ -124,17 +121,15 @@ def deletePointSystemRule():
     if data['userType'] != 'admin':
         return jsonify({"message": "Unauthorized"}), 401
     
-    # Check if rule exists
-    cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
+    with db_manager.get_cursor() as cursor:
+        # Check if rule exists
+        cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
 
-    if not cursor.fetchone():
-        return jsonify({"message": "Point system rule not found"}), 404
-    
-    # Delete point system rule
-    cursor.execute('DELETE FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
-    conn.commit()
-
-    cursor.close()
+        if not cursor.fetchone():
+            return jsonify({"message": "Point system rule not found"}), 404
+        
+        # Delete point system rule
+        cursor.execute('DELETE FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
 
     return jsonify({"message": "Point system rule deleted"}), 200
 
@@ -144,25 +139,21 @@ def deletePointSystemRule():
 @blueprint.route('/getPointsForUser/<id>/<userType>', methods=['GET'])
 def getPointsForUser(id, userType):
 
-    conn = g.db
-    cursor = conn.cursor()
-    
-    # Get points for user
-    cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (id, userType,))
-    user_points = cursor.fetchone()
+    with db_manager.get_cursor() as cursor:
+        # Get points for user
+        cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (id, userType,))
+        user_points = cursor.fetchone()
 
-    if not user_points:
-        return jsonify({"message": "User points not found"}), 404
+        if not user_points:
+            return jsonify({"message": "User points not found"}), 404
 
-    
-    # Get total points for user
-    total_points = pointsHelperFunc.get_current_proof_points(id)
+        
+        # Get total points for user
+        total_points = pointsHelperFunc.get_current_proof_points(id)
 
-    # Get max points
-    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 1')
-    max_points = cursor.fetchone()['proofPoints']
-
-    cursor.close()
+        # Get max points
+        cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 1')
+        max_points = cursor.fetchone()['proofPoints']
 
     return jsonify({
         'totalPoints': total_points,
@@ -175,9 +166,6 @@ def getPointsForUser(id, userType):
 @blueprint.route('/createPointsForUser', methods=['POST'])
 def createPointsForUser():
 
-    conn = g.db
-    cursor = conn.cursor()
-
     data = request.json
 
     # Check if all required fields are present
@@ -186,24 +174,19 @@ def createPointsForUser():
         
 
     try: 
-        # Check if user already has points
-        cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (data['user_id'], data['user_type'],))
+        with db_manager.get_cursor() as cursor:
+            # Check if user already has points
+            cursor.execute('SELECT * FROM "pointsRecorder" WHERE "userID" = %s AND "userType" = %s', (data['user_id'], data['user_type'],))
 
-        if cursor.fetchone():
-            return jsonify({"message": "User already has points"}), 409
-        
-        # Create points for user
-        cursor.execute('INSERT INTO "pointsRecorder" ("userID", "userType", "points") VALUES (%s, %s, 0)', (data['user_id'], data['user_type'],))
-        conn.commit()
+            if cursor.fetchone():
+                return jsonify({"message": "User already has points"}), 409
+            
+            # Create points for user
+            cursor.execute('INSERT INTO "pointsRecorder" ("userID", "userType", "points") VALUES (%s, %s, 0)', (data['user_id'], data['user_type'],))
 
         return jsonify({"message": "User points created"}), 201
     
     except Exception as e:
-        # Rollback if error occurs
-        conn.rollback()
         return jsonify({"message": str(e)}), 500
-    
-    finally:
-        cursor.close()
 
     
