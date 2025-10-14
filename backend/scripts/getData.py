@@ -1164,45 +1164,44 @@ def getListingNamesDynamicSearch(searchTerm):
 # [GET] Get producer names by dynamic search term
 @blueprint.route("/getProducerNamesDynamicSearch/<searchTerm>")
 def getProducerNamesDynamicSearch(searchTerm):
-    conn = g.db
-    cursor = conn.cursor()
-
+    
     try:
-        # Enhanced search with accent removal and character normalization for better matching
-        cursor.execute("""
-            SELECT 
-                p."id", 
-                p."producerName",
-                p."originCountry",
-                p."photo",
-                similarity(unaccent(p."producerName"), unaccent(%s)) AS sim_score
-            FROM "producers" p
-            WHERE unaccent(p."producerName") ILIKE unaccent(%s)
-               OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
-               OR unaccent(p."producerName") %% unaccent(%s)
-            ORDER BY sim_score DESC NULLS LAST
-            LIMIT 20
-        """, (searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
+        with db_manager.get_cursor() as cursor:
+            # Enhanced search with accent removal and character normalization for better matching
+            cursor.execute("""
+                SELECT 
+                    p."id", 
+                    p."producerName",
+                    p."originCountry",
+                    p."photo",
+                    similarity(unaccent(p."producerName"), unaccent(%s)) AS sim_score
+                FROM "producers" p
+                WHERE unaccent(p."producerName") ILIKE unaccent(%s)
+                OR unaccent(regexp_replace(p."producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                OR unaccent(p."producerName") %% unaccent(%s)
+                ORDER BY sim_score DESC NULLS LAST
+                LIMIT 20
+            """, (searchTerm, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
-        producers_data = cursor.fetchall()
+            producers_data = cursor.fetchall()
 
-        # Convert the fetched data to a list of dictionaries
-        for producer in producers_data:
-            producer_dict = {
-                "id": producer["id"],
-                "producerName": producer["producerName"],
-                "originCountry": producer["originCountry"],
-                "photo": producer["photo"],
-                "similarity": producer["sim_score"]
-            }
-            # Convert Decimal to float if necessary
-            for key, value in producer_dict.items():
-                if isinstance(value, Decimal):
-                    producer_dict[key] = float(value)
-            producer.update(producer_dict)
+            # Convert the fetched data to a list of dictionaries
+            for producer in producers_data:
+                producer_dict = {
+                    "id": producer["id"],
+                    "producerName": producer["producerName"],
+                    "originCountry": producer["originCountry"],
+                    "photo": producer["photo"],
+                    "similarity": producer["sim_score"]
+                }
+                # Convert Decimal to float if necessary
+                for key, value in producer_dict.items():
+                    if isinstance(value, Decimal):
+                        producer_dict[key] = float(value)
+                producer.update(producer_dict)
 
-        if not producers_data:
-            return jsonify([])
+            if not producers_data:
+                return jsonify([])
 
         return jsonify(producers_data)
 
@@ -1213,110 +1212,111 @@ def getProducerNamesDynamicSearch(searchTerm):
 # [GET] Get Listing names by dynamic search term filtered by producer
 @blueprint.route("/getListingNamesByProducer/<searchTerm>/<int:producerId>")
 def getListingNamesByProducer(searchTerm, producerId):
-    conn = g.db
-    cursor = conn.cursor()
 
     try:
+        with db_manager.get_cursor() as cursor:
+            # Handle placeholder for empty search from frontend
+            if searchTerm == '_EMPTY_SEARCH_':
+                searchTerm = ''
 
-        # Handle placeholder for empty search from frontend
-        if searchTerm == '_EMPTY_SEARCH_':
-            searchTerm = ''
+            threshold_changed = False
 
-        # Check if searchTerm is empty or too short for meaningful trigram matching
-        if len(searchTerm.strip()) < 2:
-            # For empty/very short search terms, return all listings from producer
-            cursor.execute(""" 
-                SELECT 
-                    l."id", 
-                    l."listingName", 
-                    l."photo",
-                    p."producerName",
-                    l."drinkType",
-                    l."typeCategory",
-                    l."abv",
-                    l."originCountry",
-                    l."officialDesc",
-                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
-                    1.0 AS sim_score
-                FROM "listings" l
-                JOIN "producers" p ON l."producerID" = p."id"
-                WHERE l."producerID" = %s
-                ORDER BY l."listingName" ASC
-                LIMIT 30
-            """, (producerId,))
-        else:
-            # First, lower the similarity threshold to 0.15 for more permissive matching
-            cursor.execute("SET pg_trgm.similarity_threshold = 0.05")
+            try:
+                # Check if searchTerm is empty or too short for meaningful trigram matching
+                if len(searchTerm.strip()) < 2:
+                    # For empty/very short search terms, return all listings from producer
+                    cursor.execute(""" 
+                        SELECT 
+                            l."id", 
+                            l."listingName", 
+                            l."photo",
+                            p."producerName",
+                            l."drinkType",
+                            l."typeCategory",
+                            l."abv",
+                            l."originCountry",
+                            l."officialDesc",
+                            COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                            1.0 AS sim_score
+                        FROM "listings" l
+                        JOIN "producers" p ON l."producerID" = p."id"
+                        WHERE l."producerID" = %s
+                        ORDER BY l."listingName" ASC
+                        LIMIT 30
+                    """, (producerId,))
+                else:
+                    # First, lower the similarity threshold to 0.15 for more permissive matching
+                    cursor.execute("SET pg_trgm.similarity_threshold = 0.05")
+                    threshold_changed = True
 
-            # Enhanced search with accent removal and character normalization for better matching
-            cursor.execute(""" 
-                SELECT 
-                    l."id", 
-                    l."listingName", 
-                    l."photo",
-                    p."producerName",
-                    l."drinkType",
-                    l."typeCategory",
-                    l."abv",
-                    l."originCountry",
-                    l."officialDesc",
-                    COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
-                    similarity(unaccent(l."listingName"), unaccent(%s)) AS sim_score
-                FROM "listings" l
-                JOIN "producers" p ON l."producerID" = p."id"
-                WHERE l."producerID" = %s
-                AND (unaccent(l."listingName") ILIKE unaccent(%s)
-                     OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
-                     OR unaccent(l."listingName") %% unaccent(%s))
-                ORDER BY sim_score DESC NULLS LAST
-                LIMIT 30
-            """, (searchTerm, producerId, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
+                    # Enhanced search with accent removal and character normalization for better matching
+                    cursor.execute(""" 
+                        SELECT 
+                            l."id", 
+                            l."listingName", 
+                            l."photo",
+                            p."producerName",
+                            l."drinkType",
+                            l."typeCategory",
+                            l."abv",
+                            l."originCountry",
+                            l."officialDesc",
+                            COALESCE((SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = l."id"), 0) as "avgRating",
+                            similarity(unaccent(l."listingName"), unaccent(%s)) AS sim_score
+                        FROM "listings" l
+                        JOIN "producers" p ON l."producerID" = p."id"
+                        WHERE l."producerID" = %s
+                        AND (unaccent(l."listingName") ILIKE unaccent(%s)
+                            OR unaccent(regexp_replace(l."listingName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                            OR unaccent(l."listingName") %% unaccent(%s))
+                        ORDER BY sim_score DESC NULLS LAST
+                        LIMIT 30
+                    """, (searchTerm, producerId, '%' + searchTerm + '%', '%' + searchTerm + '%', searchTerm))
 
-        listings_data = cursor.fetchall()
+                listings_data = cursor.fetchall()
 
-        # Convert the fetched data to a list of dictionaries
-        for listing in listings_data:
-            listing_dict = {
-                "id": listing["id"],
-                "listingName": listing["listingName"],
-                "producerName": listing["producerName"],
-                "photo": listing["photo"],
-                "drinkType": listing["drinkType"],
-                "typeCategory": listing["typeCategory"],
-                "abv": listing["abv"],
-                "originCountry": listing["originCountry"],
-                "officialDesc": listing["officialDesc"],
-                "avgRating": listing["avgRating"],
-                "similarity": listing["sim_score"]
-            }
-            # Convert Decimal to float if necessary
-            for key, value in listing_dict.items():
-                if isinstance(value, Decimal):
-                    listing_dict[key] = float(value)
-            listing.update(listing_dict)
+                # Convert the fetched data to a list of dictionaries
+                for listing in listings_data:
+                    listing_dict = {
+                        "id": listing["id"],
+                        "listingName": listing["listingName"],
+                        "producerName": listing["producerName"],
+                        "photo": listing["photo"],
+                        "drinkType": listing["drinkType"],
+                        "typeCategory": listing["typeCategory"],
+                        "abv": listing["abv"],
+                        "originCountry": listing["originCountry"],
+                        "officialDesc": listing["officialDesc"],
+                        "avgRating": listing["avgRating"],
+                        "similarity": listing["sim_score"]
+                    }
+                    # Convert Decimal to float if necessary
+                    for key, value in listing_dict.items():
+                        if isinstance(value, Decimal):
+                            listing_dict[key] = float(value)
+                    listing.update(listing_dict)
 
-        if not listings_data:
-            return jsonify([])
+                if not listings_data:
+                    return jsonify([])
 
-        return jsonify(listings_data)
+                return jsonify(listings_data)
+
+            finally:
+                # Reset threshold if it was changed (cursor still available here)
+                if threshold_changed:
+                    try:
+                        cursor.execute("SET pg_trgm.similarity_threshold TO DEFAULT")
+                    except:
+                        pass  # Ignore any errors during cleanup
 
     except Exception as e:
         print(f"Error in getListingNamesByProducer: {str(e)}")
         return jsonify({"code": 500, "message": "An error occurred while searching listings by producer."}), 500
-    finally:
-        # Make sure to reset the threshold back to default (0.3)
-        # This will run even if there's an exception in the try block
-        try:
-            cursor.execute("SET pg_trgm.similarity_threshold TO DEFAULT")
-        except:
-            pass  # Ignore any errors during cleanup
 
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('''
             SELECT * FROM "listings"
             WHERE "producerID" = %s OR "bottlerID" = %s
@@ -1334,9 +1334,7 @@ def getListingByName(listing_name):
     # URL decode the listing name in case there are special characters
     listing_name = unquote(listing_name)
 
-    conn = g.db
-
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings" WHERE "listingName" = %s', (listing_name,))
         listing_data = cursor.fetchone()
 
@@ -1355,7 +1353,7 @@ def getListingByName(listing_name):
 # [GET] Get all listings names test
 @blueprint.route('/producer-listings', methods=['GET'])
 def get_producer_listings():
-    conn = g.db
+    
     """Get producer ttle listings with search functionality"""
     try:
         # Get query parameters
@@ -1376,7 +1374,7 @@ def get_producer_listings():
             LIMIT %s;
         """
 
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             cursor.execute(sql, (query, query, limit))
             rows = cursor.fetchall()
 
@@ -1404,8 +1402,6 @@ def get_producer_listings():
 # [GET] Producers
 @blueprint.route("/getProducers")
 def getProducers():
-    conn = g.db
-    cur = conn.cursor()
 
     try:
         # Query to get producers and related data
@@ -1451,22 +1447,22 @@ def getProducers():
             FROM producers p
             ORDER BY p.id
         """
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(query)
+            producers_data = cursor.fetchall()
 
-        cur.execute(query)
-        producers_data = cur.fetchall()
+            if not producers_data:
+                return jsonify([])
 
-        if not producers_data:
-            return jsonify([])
+            producers_list = []
+            for row in producers_data:
+                producer = dict(row)
+                producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+                producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
+                producer['updates'] = producer['updates'] if producer['updates'] else []
+                producers_list.append(producer)
 
-        producers_list = []
-        for row in producers_data:
-            producer = dict(row)
-            producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-            producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
-            producer['updates'] = producer['updates'] if producer['updates'] else []
-            producers_list.append(producer)
-
-        return jsonify(producers_list), 200
+            return jsonify(producers_list), 200
 
     except Exception as e:
         print(str(e))
@@ -1477,8 +1473,8 @@ def getProducers():
             }
         ), 500
 
-    finally:
-        cur.close()
+    # finally:
+    #     cur.close()  #  No finally block needed - context manager handles cursor cleanup
 
 # [GET] Specific Producer
 @blueprint.route("/getProducer/<int:id>")
