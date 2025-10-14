@@ -17,6 +17,11 @@
 import os
 from flask import Blueprint, g, jsonify, request
 from scripts import pointsHelperFunc, badge_helpers
+from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
+
+# Import the database manager for connection pooling
+from app import db_manager
+
 
 
 file_name = os.path.basename(__file__)
@@ -28,27 +33,20 @@ blueprint = Blueprint(file_name[:-3], __name__)
 @blueprint.route('/getPointSystemRules', methods=['GET'])
 def getPointSystemRules():
 
-    conn = g.db
-    cursor = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('SELECT * FROM "pointSystemRules"')
+        rules = cursor.fetchall()
 
-    cursor.execute('SELECT * FROM "pointSystemRules"')
-    rules = cursor.fetchall()
+        if not rules:
+            return jsonify({"message": "No point system rules found"}), 404
 
-    if not rules:
-        return jsonify({"message": "No point system rules found"}), 404
-
-    cursor.close()
-
-    return jsonify(rules), 200
+        return jsonify(rules), 200
 
 
 # -----------------------------------------------------------------------------------------
 # [POST] /createPointSystemRule
 @blueprint.route('/createPointSystemRule', methods=['POST'])
 def createPointSystemRule():
-
-    conn = g.db
-    cursor = conn.cursor()
 
     data = request.json
 
@@ -61,34 +59,26 @@ def createPointSystemRule():
         return jsonify({"message": "Unauthorized"}), 401
     
     try:
-        # Check if rule already exists (rule_name)
-        cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleName" ILIKE %s', (data['rule_name'],))
+        with db_manager.get_cursor() as cursor:
+            # Check if rule already exists (rule_name)
+            cursor.execute('SELECT * FROM "pointSystemRules" WHERE "ruleName" ILIKE %s', (data['rule_name'],))
 
-        if cursor.fetchone():
-            return jsonify({"message": "Point system rule already exists"}), 409
-        
-        # Create point system rule
-        cursor.execute('INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPoints") VALUES (%s, %s, %s, %s)', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points']))
-        conn.commit()
+            if cursor.fetchone():
+                return jsonify({"message": "Point system rule already exists"}), 409
+            
+            # Create point system rule
+            cursor.execute('INSERT INTO "pointSystemRules" ("ruleName", "ruleDesc", "ruleCategory", "proofPoints") VALUES (%s, %s, %s, %s)', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points']))
 
         return jsonify({"message": "Point system rule created"}), 201
     
     except Exception as e:
-        # Rollback if error occurs
-        conn.rollback()
         return jsonify({"message": str(e)}), 500
-    
-    finally:
-        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [PUT] /updatePointSystemRule/<id>
 @blueprint.route('/updatePointSystemRule', methods=['PUT'])
 def updatePointSystemRule():
-
-    conn = g.db
-    cursor = conn.cursor()
 
     data = request.json
 
@@ -101,25 +91,20 @@ def updatePointSystemRule():
         return jsonify({"message": "Unauthorized"}), 401
     
     try:
-        # Check if rule exists
-        cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
+        with db_manager.get_cursor() as cursor:
+            # Check if rule exists
+            cursor.execute('SELECT * FROM "pointSystemRules" WHERE id = %s', (data['ruleId'],))
 
-        if not cursor.fetchone():
-            return jsonify({"message": "Point system rule not found"}), 404
-        
-        # Update point system rule
-        cursor.execute('UPDATE "pointSystemRules" SET "ruleName" = %s, "ruleDesc" = %s, "ruleCategory" = %s, "proofPoints" = %s WHERE id = %s', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points'], data['ruleId']))
-        conn.commit()
+            if not cursor.fetchone():
+                return jsonify({"message": "Point system rule not found"}), 404
+            
+            # Update point system rule
+            cursor.execute('UPDATE "pointSystemRules" SET "ruleName" = %s, "ruleDesc" = %s, "ruleCategory" = %s, "proofPoints" = %s WHERE id = %s', (data['rule_name'], data['rule_desc'], data['rule_category'], data['proof_points'], data['ruleId']))
 
         return jsonify({"message": "Point system rule updated"}), 201
     
     except Exception as e:
-        # Rollback if error occurs
-        conn.rollback()
         return jsonify({"message": str(e)}), 500
-    
-    finally:
-        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------
