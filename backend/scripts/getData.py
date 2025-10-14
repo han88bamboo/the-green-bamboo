@@ -4517,7 +4517,7 @@ def getVenues():
 # [GET] Get venues by IDs
 @blueprint.route("/getVenuesByIds", methods=['POST'])
 def getVenuesByIds():
-    conn = g.db
+
     venue_ids = request.json.get('venueIDs', [])
 
     if not venue_ids or len(venue_ids) == 0:
@@ -4527,7 +4527,7 @@ def getVenuesByIds():
         }), 404
 
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             # Retrieve venue information based on the provided IDs
             cursor.execute('SELECT * FROM "venues" WHERE "id" IN %s', (tuple(venue_ids),))
             venues_data = cursor.fetchall()
@@ -4560,37 +4560,37 @@ def getVenueMenuItemsCount(venue_id):
     Get the total count of menu items for a specific venue
     Returns the count of all available menu items in the venue's menu
     """
-    conn = g.db
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     
     try:
-        # Count all menu items for the venue where items are available
-        cursor.execute("""
-            SELECT COUNT(mi."id") as "totalMenuItems"
-            FROM "menuItems" mi
-            JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
-            WHERE vm."venueId" = %s
-        """, (venue_id,))
-        
-        result = cursor.fetchone()
-        
-        if result:
-            return jsonify({
-                "code": 200,
-                "data": {
-                    "venueId": venue_id,
-                    "totalMenuItems": result['totalMenuItems']
-                }
-            })
-        else:
-            return jsonify({
-                "code": 404,
-                "data": {
-                    "venueId": venue_id,
-                    "totalMenuItems": 0
-                },
-                "message": "Venue not found or has no menu items"
-            })
+        with db_manager.get_cursor() as cursor:
+            # Count all menu items for the venue where items are available
+            cursor.execute("""
+                SELECT COUNT(mi."id") as "totalMenuItems"
+                FROM "menuItems" mi
+                JOIN "venuesMenu" vm ON mi."sectionId" = vm."id"
+                WHERE vm."venueId" = %s
+            """, (venue_id,))
+            
+            result = cursor.fetchone()
+            
+            if result:
+                return jsonify({
+                    "code": 200,
+                    "data": {
+                        "venueId": venue_id,
+                        "totalMenuItems": result['totalMenuItems']
+                    }
+                })
+            else:
+                return jsonify({
+                    "code": 404,
+                    "data": {
+                        "venueId": venue_id,
+                        "totalMenuItems": 0
+                    },
+                    "message": "Venue not found or has no menu items"
+                })
             
     except Exception as e:
         return jsonify({
@@ -4601,61 +4601,60 @@ def getVenueMenuItemsCount(venue_id):
 # [GET] Specific Venue
 @blueprint.route("/venue/<id>")
 def venue(id):
-    conn = g.db
-    cur = conn.cursor()
 
     try:
-        # Query to get a specific venue and related data
-        query = """
-            SELECT 
-                v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
-                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
-                v.email, v."phoneNumber", v."whatsappNumber",
-                v.username, v."venueType", 
-                -- Build amenities JSON
-                COALESCE((
-                    SELECT row_to_json(va)
-                    FROM "venueAmenities" va
-                    WHERE va."venueId" = v.id
-                ), '{}'::json) AS amenities,
-                -- Build openingHours JSON
-                COALESCE((
-                    SELECT row_to_json(oh)
-                    FROM "venuesOpeningHours" oh
-                    WHERE oh."venueId" = v.id
-                ), '{}'::json) AS "openingHours",
-                -- Build questionsAnswers JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', qa.id,
-                        'question', qa.question,
-                        'answer', qa.answer,
-                        'date', qa.date,
-                        'userId', qa."userId"
-                    ))
-                    FROM "venuesQuestionAnswers" qa
-                    WHERE qa."venueId" = v.id
-                ), '[]') AS "questionsAnswers"
-            FROM venues v
-            WHERE v.id = %s
-            GROUP BY v.id
-        """
+        with db_manager.get_cursor() as cursor:
+            # Query to get a specific venue and related data
+            query = """
+                SELECT 
+                    v.id, v.address, v."claimStatus", v."venueName", v."venueDesc", 
+                    v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                    v."yearOpened", v."openForReservations", v.website, v.instagram, v.facebook, v.tiktok, 
+                    v.email, v."phoneNumber", v."whatsappNumber",
+                    v.username, v."venueType", 
+                    -- Build amenities JSON
+                    COALESCE((
+                        SELECT row_to_json(va)
+                        FROM "venueAmenities" va
+                        WHERE va."venueId" = v.id
+                    ), '{}'::json) AS amenities,
+                    -- Build openingHours JSON
+                    COALESCE((
+                        SELECT row_to_json(oh)
+                        FROM "venuesOpeningHours" oh
+                        WHERE oh."venueId" = v.id
+                    ), '{}'::json) AS "openingHours",
+                    -- Build questionsAnswers JSON
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', qa.id,
+                            'question', qa.question,
+                            'answer', qa.answer,
+                            'date', qa.date,
+                            'userId', qa."userId"
+                        ))
+                        FROM "venuesQuestionAnswers" qa
+                        WHERE qa."venueId" = v.id
+                    ), '[]') AS "questionsAnswers"
+                FROM venues v
+                WHERE v.id = %s
+                GROUP BY v.id
+            """
 
-        cur.execute(query, (id,))
-        venue_data = cur.fetchone()
+            cursor.execute(query, (id,))
+            venue_data = cursor.fetchone()
 
-        if venue_data is None:
-            return jsonify({"message": "Venue not found"}), 404
+            if venue_data is None:
+                return jsonify({"message": "Venue not found"}), 404
 
-        venue = dict(venue_data)
-        # venue['menu'] = venue['menu'] if venue['menu'] else []
-        venue['amenities'] = venue['amenities'] if venue['amenities'] else {}
-        venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
-        venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
-        # venue['updates'] = venue['updates'] if venue['updates'] else []
+            venue = dict(venue_data)
+            # venue['menu'] = venue['menu'] if venue['menu'] else []
+            venue['amenities'] = venue['amenities'] if venue['amenities'] else {}
+            venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+            venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+            # venue['updates'] = venue['updates'] if venue['updates'] else []
 
-        return jsonify(venue), 200
+            return jsonify(venue), 200
 
     except Exception as e:
         import traceback
@@ -4666,9 +4665,6 @@ def venue(id):
                 "message": "An error occurred retrieving the venue."
             }
         ), 500
-
-    finally:
-        cur.close()
 
 
 # [GET] Specific Venue
