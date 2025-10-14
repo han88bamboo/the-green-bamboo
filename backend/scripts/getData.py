@@ -4302,10 +4302,9 @@ def getUsersBySearch():
 # [GET] Get username from email address
 @blueprint.route("/getUsernameFromEmail/<email>")
 def getUsernameFromEmail(email):
-    conn = g.db
     
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             # First, check in users table
             cursor.execute('SELECT "username" FROM "users" WHERE LOWER(REPLACE("email", \' \', \'\')) = LOWER(REPLACE(%s, \' \', \'\'))', (email,))
             user_data = cursor.fetchone()
@@ -4415,96 +4414,95 @@ def getUsernameFromEmail(email):
 # [GET] Venues
 @blueprint.route("/getVenues")
 def getVenues():
-    conn = g.db
-    cur = conn.cursor()
 
     try:
-        # Query to get venues and related data
-        query = """
-            SELECT 
-                v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
-                v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
-                v."yearOpened", v."openForReservations", v.website,
-                v.username, v."venueType", v."stripeCustomerId", v.pin,
-                -- Build the menu JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'sectionOrder',vm."sectionOrder",
-                        'sectionName', vm."sectionName",
-                        'sectionId', vm.id,
-                        'parentSectionId', vm."parentSectionId",
-                        'isSubSection', vm."isSubSection",
-                        'isVisible', vm."isVisible",
-                        'sectionMenu', COALESCE((
-                            SELECT json_agg(json_build_object(
-                                'itemOrder', mi."itemOrder",
-                                'itemPrice', mi."itemPrice",
-                                'itemAvailability', mi."itemAvailability",
-                                'itemID', mi."itemID",
-                                'itemServingType', mi."itemServingType"
-                            ) ORDER BY mi."itemOrder")
-                            FROM "menuItems" mi
-                            WHERE mi."sectionId" = vm.id
-                        ), '[]')
-                    ) ORDER BY vm."sectionOrder")
-                    FROM "venuesMenu" vm
-                    WHERE vm."venueId" = v.id
-                ), '[]') AS menu,
-                -- Build openingHours JSON
-                COALESCE((
-                    SELECT row_to_json(oh)
-                    FROM "venuesOpeningHours" oh
-                    WHERE oh."venueId" = v.id
-                ), '{}'::json) AS "openingHours",
-                -- Build questionsAnswers JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', qa.id,
-                        'question', qa.question,
-                        'answer', qa.answer,
-                        'date', qa.date,
-                        'userId', qa."userId"
-                    ))
-                    FROM "venuesQuestionAnswers" qa
-                    WHERE qa."venueId" = v.id
-                ), '[]') AS "questionsAnswers",
-                -- Build updates JSON
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', u.id,
-                        'date', u.date,
-                        'text', u.text,
-                        'photo', u.photo,
-                        'venueId', u."venueId",
-                        'likes', COALESCE((
-                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
-                            FROM "venueUpdateLikes" l
-                            WHERE l."updateId" = u.id
-                        ), '[]')
-                    ) ORDER BY u.date DESC)
-                    FROM "venuesUpdates" u
-                    WHERE u."venueId" = v.id
-                ), '[]') AS updates
-            FROM venues v
-            ORDER BY v.id
-        """
+        with db_manager.get_cursor() as cursor:
+            # Query to get venues and related data
+            query = """
+                SELECT 
+                    v.id, v.address, v."claimStatus", v."hashedPassword", v."venueName", v."venueDesc", 
+                    v."originLocation", v.photo, v."publicHolidays", v."reservationDetails", v."claimStatusCheckDate",
+                    v."yearOpened", v."openForReservations", v.website,
+                    v.username, v."venueType", v."stripeCustomerId", v.pin,
+                    -- Build the menu JSON
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'sectionOrder',vm."sectionOrder",
+                            'sectionName', vm."sectionName",
+                            'sectionId', vm.id,
+                            'parentSectionId', vm."parentSectionId",
+                            'isSubSection', vm."isSubSection",
+                            'isVisible', vm."isVisible",
+                            'sectionMenu', COALESCE((
+                                SELECT json_agg(json_build_object(
+                                    'itemOrder', mi."itemOrder",
+                                    'itemPrice', mi."itemPrice",
+                                    'itemAvailability', mi."itemAvailability",
+                                    'itemID', mi."itemID",
+                                    'itemServingType', mi."itemServingType"
+                                ) ORDER BY mi."itemOrder")
+                                FROM "menuItems" mi
+                                WHERE mi."sectionId" = vm.id
+                            ), '[]')
+                        ) ORDER BY vm."sectionOrder")
+                        FROM "venuesMenu" vm
+                        WHERE vm."venueId" = v.id
+                    ), '[]') AS menu,
+                    -- Build openingHours JSON
+                    COALESCE((
+                        SELECT row_to_json(oh)
+                        FROM "venuesOpeningHours" oh
+                        WHERE oh."venueId" = v.id
+                    ), '{}'::json) AS "openingHours",
+                    -- Build questionsAnswers JSON
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', qa.id,
+                            'question', qa.question,
+                            'answer', qa.answer,
+                            'date', qa.date,
+                            'userId', qa."userId"
+                        ))
+                        FROM "venuesQuestionAnswers" qa
+                        WHERE qa."venueId" = v.id
+                    ), '[]') AS "questionsAnswers",
+                    -- Build updates JSON
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', u.id,
+                            'date', u.date,
+                            'text', u.text,
+                            'photo', u.photo,
+                            'venueId', u."venueId",
+                            'likes', COALESCE((
+                                SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+                                FROM "venueUpdateLikes" l
+                                WHERE l."updateId" = u.id
+                            ), '[]')
+                        ) ORDER BY u.date DESC)
+                        FROM "venuesUpdates" u
+                        WHERE u."venueId" = v.id
+                    ), '[]') AS updates
+                FROM venues v
+                ORDER BY v.id
+            """
 
-        cur.execute(query)
-        venues_data = cur.fetchall()
+            cursor.execute(query)
+            venues_data = cursor.fetchall()
 
-        if not venues_data:
-            return jsonify([])
+            if not venues_data:
+                return jsonify([])
 
-        venues_list = []
-        for row in venues_data:
-            venue = dict(row)
-            venue['menu'] = venue['menu'] if venue['menu'] else []
-            venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
-            venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
-            venue['updates'] = venue['updates'] if venue['updates'] else []
-            venues_list.append(venue)
+            venues_list = []
+            for row in venues_data:
+                venue = dict(row)
+                venue['menu'] = venue['menu'] if venue['menu'] else []
+                venue['openingHours'] = venue['openingHours'] if venue['openingHours'] else {}
+                venue['questionsAnswers'] = venue['questionsAnswers'] if venue['questionsAnswers'] else []
+                venue['updates'] = venue['updates'] if venue['updates'] else []
+                venues_list.append(venue)
 
-        return jsonify(venues_list), 200
+            return jsonify(venues_list), 200
 
     except Exception as e:
         print(str(e))
@@ -4514,9 +4512,6 @@ def getVenues():
                 "message": "An error occurred retrieving venues."
             }
         ), 500
-
-    finally:
-        cur.close()
 
 
 # [GET] Get venues by IDs
