@@ -1,5 +1,6 @@
 import os
 import importlib
+from datetime import datetime
 
 import urllib
 import stripe
@@ -71,7 +72,7 @@ class DatabaseManager:
         # This is NOT an ORM feature, it's pure psycopg2 connection management
         self.pool = pool.ThreadedConnectionPool(
             minconn=5,      # POOL PARAMETER: Minimum connections always kept alive
-            maxconn=90,     # POOL PARAMETER: Maximum connections allowed in pool
+            maxconn=80,     # POOL PARAMETER: Maximum connections allowed in pool
             host=config['POSTGRES_HOST'],
             port=config['POSTGRES_PORT'],
             database=config['POSTGRES_DB'],
@@ -80,9 +81,87 @@ class DatabaseManager:
             cursor_factory=RealDictCursor  # Makes query results return as dicts instead of tuples
         )
         
+        # Log successful pool initialization
+        logger.info(f"Database connection pool initialized successfully")
+        self.log_pool_status("INIT")
+        
         # Store reference to the manager in the Flask app for global access
         app.db_manager = self
     
+    def check_pool_health(self):
+        """
+        Check pool health and log warnings if needed.
+        Returns True if healthy, False if issues detected.
+        """
+        pool_status = self.get_pool_status()
+        
+        if 'error' in pool_status:
+            logger.error(f"Pool health check failed: {pool_status}")
+            return False
+        
+        used = pool_status.get('used', 0)
+        maxconn = pool_status.get('maxconn', 0)
+        
+        if isinstance(maxconn, int) and maxconn > 0:
+            utilization = used / maxconn
+            
+            if utilization >= 0.9:
+                logger.warning(f"High pool utilization: {utilization:.1%} ({used}/{maxconn})")
+                return False
+            elif utilization >= 0.75:
+                logger.info(f"Moderate pool utilization: {utilization:.1%} ({used}/{maxconn})")
+        
+        return True
+
+    def log_pool_status(self, context=""):
+        """
+        Log current pool status for monitoring and debugging.
+        """
+        pool_status = self.get_pool_status()
+        if context:
+            context = f"[{context}] "
+        
+        if 'error' in pool_status:
+            logger.warning(f"{context}Pool monitoring error: {pool_status}")
+        else:
+            logger.info(
+                f"{context}Pool Status - "
+                f"Available: {pool_status.get('available', 'N/A')}, "
+                f"Used: {pool_status.get('used', 'N/A')}, "
+                f"Utilization: {pool_status.get('pool_utilization', 'N/A')}"
+            )
+
+    def get_pool_status(self):
+        """
+        Get current connection pool status for monitoring.
+        Returns dict with pool statistics.
+        """
+        if not self.pool:
+            return {"status": "Pool not initialized"}
+        
+        # Access pool internals for monitoring
+        # Note: These are internal psycopg2 attributes, handle carefully
+        try:
+            minconn = getattr(self.pool, 'minconn', 'Unknown')
+            maxconn = getattr(self.pool, 'maxconn', 'Unknown')
+            
+            # Get current pool state
+            with self.pool._lock:  # Thread-safe access to pool state
+                available = len(self.pool._pool)
+                used = len(self.pool._used)
+            
+            return {
+                "minconn": minconn,
+                "maxconn": maxconn,
+                "available": available,
+                "used": used,
+                "total_created": available + used,
+                "pool_utilization": f"{(used / maxconn * 100):.1f}%" if maxconn != 'Unknown' else 'Unknown'
+            }
+        except Exception as e:
+            logger.warning(f"Could not get pool status: {e}")
+            return {"status": "Pool status unavailable", "error": str(e)}
+
     @contextmanager
     def get_connection(self):
         """
@@ -94,15 +173,33 @@ class DatabaseManager:
         
         The connection is reused by other requests after being returned to the pool.
         """
-        conn = self.pool.getconn()  # CHECK OUT: Get connection from pool
+        # Log pool status before getting connection
+        pool_status = self.get_pool_status()
+        logger.debug(f"Pool status before checkout: {pool_status}")
+        
+        try:
+            conn = self.pool.getconn()  # CHECK OUT: Get connection from pool
+            logger.debug("Successfully checked out connection from pool")
+        except Exception as e:
+            logger.error(f"Failed to get connection from pool: {type(e).__name__}: {e}")
+            logger.error(f"Pool status during failure: {self.get_pool_status()}")
+            raise
+        
         try:
             yield conn  # Provide connection to calling code
         except Exception as e:
             conn.rollback()  # ROLLBACK: Undo any uncommitted changes on error
-            logger.error(f"Database error: {e}")
+            logger.error(f"Database error - Type: {type(e).__name__}, Message: {str(e)}")
+            logger.error(f"Pool status during error: {self.get_pool_status()}")
             raise
         finally:
-            self.pool.putconn(conn)  # RELEASE: Return connection to pool for reuse
+            try:
+                self.pool.putconn(conn)  # RELEASE: Return connection to pool for reuse
+                logger.debug("Successfully returned connection to pool")
+            except Exception as e:
+                logger.error(f"Failed to return connection to pool: {type(e).__name__}: {e}")
+                logger.error(f"Pool status after putconn failure: {self.get_pool_status()}")
+                # Don't re-raise here as it would mask the original exception
     
     @contextmanager
     def get_cursor(self, commit=True):
@@ -135,6 +232,18 @@ class DatabaseManager:
 # SINGLETON PATTERN: Single global instance shared across all modules
 # This instance will be initialized with the Flask app during startup
 db_manager = DatabaseManager()
+
+# Pool monitoring middleware
+def monitor_pool_on_request():
+    """
+    Optional middleware to monitor pool status on each request.
+    Only logs warnings/errors to avoid performance impact.
+    """
+    import random
+    
+    # Only check pool health on 1% of requests to avoid overhead
+    if random.random() < 0.01:
+        db_manager.check_pool_health()
 
 # OLD CONNECTOR -----------------------------------------------------------------
 # Connect to MongoDB
@@ -178,6 +287,42 @@ def before_request():
     # NEW: No longer needed - connection pooling handles database connections
     # Database connections are now managed by db_manager.get_cursor() context manager
     # print("before_request: Mail loaded into g")
+
+# Add database pool monitoring endpoint
+@app.route('/health/db-pool', methods=['GET'])
+def db_pool_health():
+    """
+    Database pool health check endpoint.
+    Returns current pool status and health metrics.
+    """
+    try:
+        pool_status = db_manager.get_pool_status()
+        
+        # Determine health status
+        if pool_status.get('status') == 'Pool not initialized':
+            health_status = 'unhealthy'
+        elif pool_status.get('error'):
+            health_status = 'degraded'
+        else:
+            used = pool_status.get('used', 0)
+            maxconn = pool_status.get('maxconn', 0)
+            if isinstance(maxconn, int) and used / maxconn > 0.9:
+                health_status = 'warning'  # Pool utilization > 90%
+            else:
+                health_status = 'healthy'
+        
+        return jsonify({
+            'status': health_status,
+            'pool_stats': pool_status,
+            'timestamp': str(datetime.now())
+        })
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': str(datetime.now())
+        }), 500
 
 
 # Function to dynamically register Blueprints from each script
