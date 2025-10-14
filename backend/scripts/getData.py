@@ -1479,66 +1479,64 @@ def getProducers():
 # [GET] Specific Producer
 @blueprint.route("/getProducer/<int:id>")
 def getProducer(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Query to get a specific producer and related data
-        query = """
-            SELECT 
-                p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
-                p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', qa.id,
-                        'question', qa.question,
-                        'answer', qa.answer,
-                        'date', qa.date,
-                        'userId', qa."userId",
-                        'producerId', qa."producerId"
-                    ))
-                    FROM "producersQuestionAnswers" qa
-                    WHERE qa."producerId" = p.id
-                ), '[]') AS "questionsAnswers",
-                COALESCE((
-                    SELECT row_to_json(oh)
-                    FROM "producersOpeningHours" oh
-                    WHERE oh."producerId" = p.id
-                ), '{}'::json) AS "openingHours",
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', u.id,
-                        'date', u.date,
-                        'text', u.text,
-                        'photo', u.photo,
-                        'producerId', u."producerId",
-                        'likes', COALESCE((
-                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
-                            FROM "producerUpdateLikes" l
-                            WHERE l."updateId" = u.id
-                        ), '[]')
-                    ))
-                    FROM "producersUpdates" u
-                    WHERE u."producerId" = p.id
-                ), '[]') AS updates
-            FROM producers p
-            WHERE p.id = %s
-        """
+        with db_manager.get_cursor() as cursor:
+            # Query to get a specific producer and related data
+            query = """
+                SELECT 
+                    p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+                    p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                    p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
+                    p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', qa.id,
+                            'question', qa.question,
+                            'answer', qa.answer,
+                            'date', qa.date,
+                            'userId', qa."userId",
+                            'producerId', qa."producerId"
+                        ))
+                        FROM "producersQuestionAnswers" qa
+                        WHERE qa."producerId" = p.id
+                    ), '[]') AS "questionsAnswers",
+                    COALESCE((
+                        SELECT row_to_json(oh)
+                        FROM "producersOpeningHours" oh
+                        WHERE oh."producerId" = p.id
+                    ), '{}'::json) AS "openingHours",
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', u.id,
+                            'date', u.date,
+                            'text', u.text,
+                            'photo', u.photo,
+                            'producerId', u."producerId",
+                            'likes', COALESCE((
+                                SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+                                FROM "producerUpdateLikes" l
+                                WHERE l."updateId" = u.id
+                            ), '[]')
+                        ))
+                        FROM "producersUpdates" u
+                        WHERE u."producerId" = p.id
+                    ), '[]') AS updates
+                FROM producers p
+                WHERE p.id = %s
+            """
 
-        cur.execute(query, (id,))
-        producer_data = cur.fetchone()
+            cursor.execute(query, (id,))
+            producer_data = cursor.fetchone()
 
-        if producer_data is None:
-            return jsonify({"message": "Producer not found"}), 404
+            if producer_data is None:
+                return jsonify({"message": "Producer not found"}), 404
 
-        producer = dict(producer_data)
-        producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
-        producer['updates'] = producer['updates'] if producer['updates'] else []
+            producer = dict(producer_data)
+            producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+            producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
+            producer['updates'] = producer['updates'] if producer['updates'] else []
 
-        return jsonify(producer), 200
+            return jsonify(producer), 200
 
     except Exception as e:
         print(str(e))
@@ -1549,16 +1547,10 @@ def getProducer(id):
             }
         ), 500
 
-    finally:
-        cur.close()
-
 
 # [GET] Producers by IDs
 @blueprint.route("/getProducersByIDs", methods=['POST'])
 def getProducersByIDs():
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
         producer_ids = request.json.get('producerIDs', [])
 
@@ -1570,30 +1562,31 @@ def getProducersByIDs():
                 }
             ]), 404
         
-        producers_data = []
-        for id in producer_ids:
-            cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (id,))
-            producer_data = cursor.fetchone()
+        with db_manager.get_cursor() as cursor:
+            producers_data = []
+            for id in producer_ids:
+                cursor.execute('SELECT "id", "producerName" FROM "producers" WHERE "id" = %s', (id,))
+                producer_data = cursor.fetchone()
 
-            if producer_data:
-                producers_data.append({
-                    "id": producer_data["id"],
-                    "producerName": producer_data["producerName"]
-                })
+                if producer_data:
+                    producers_data.append({
+                        "id": producer_data["id"],
+                        "producerName": producer_data["producerName"]
+                    })
 
-        if not producers_data:
-            return jsonify([
-                {
-                    "code": 404,
-                    "message": "No producers found for the provided IDs."
-                }
-            ]), 404
+            if not producers_data:
+                return jsonify([
+                    {
+                        "code": 404,
+                        "message": "No producers found for the provided IDs."
+                    }
+                ]), 404
 
-        return jsonify({
-            "code": 200,
-            "message": "Producers fetched successfully.",
-            "data": producers_data
-        }), 200
+            return jsonify({
+                "code": 200,
+                "message": "Producers fetched successfully.",
+                "data": producers_data
+            }), 200
     
     except Exception as e:
         print(str(e))
@@ -1605,66 +1598,64 @@ def getProducersByIDs():
 # [GET] Producers by search term
 @blueprint.route("/getProducersBySearch", methods=['GET'])
 def getProducersBySearch():
-    conn = g.db
     searchTerm = request.args.get('searchTerm', '').strip()
     lastID = request.args.get('lastID', '0').strip()
     lastID = int(lastID) if lastID.isdigit() else 0
 
     try:
-        cursor = conn.cursor()
-
-        # Searches for producers by name or origin country, starting from the lastID
-        cursor.execute("""
-            SELECT * FROM "producers"
-            WHERE ("producerName" ILIKE %s OR "originCountry" ILIKE %s)
-            AND "id" > %s
-            ORDER BY "id" ASC
-            LIMIT 30
-        """, ('%' + searchTerm + '%', '%' + searchTerm + '%', lastID))
-
-        producers_data = cursor.fetchall()
-
-        if not producers_data:
-            return jsonify([])
-        
-        # Loop through the producers to get both ratings for each producer
-        for producer in producers_data:
-            # Get the average Tour & Experience rating for the producer (from producerReviews)
+        with db_manager.get_cursor() as cursor:
+            # Searches for producers by name or origin country, starting from the lastID
             cursor.execute("""
-                SELECT AVG("rating") AS "averageRating"
-                FROM "producerReviews"
-                WHERE "producerID" = %s 
-            """, (producer['id'],))
+                SELECT * FROM "producers"
+                WHERE ("producerName" ILIKE %s OR "originCountry" ILIKE %s)
+                AND "id" > %s
+                ORDER BY "id" ASC
+                LIMIT 30
+            """, ('%' + searchTerm + '%', '%' + searchTerm + '%', lastID))
 
-            # Check if the producer has tour & experience reviews
-            avg_tour_rating = cursor.fetchone()['averageRating']
-            if avg_tour_rating is not None:
-                producer['averageTourRating'] = round(avg_tour_rating, 1)
-            else:
-                producer['averageTourRating'] = '-'
+            producers_data = cursor.fetchall()
 
-            # Get the average Drink rating for the producer (from reviews of their listings)
-            cursor.execute("""
-                SELECT AVG(r."rating") AS "averageDrinkRating"
-                FROM "reviews" r
-                INNER JOIN "listings" l ON r."reviewTarget" = l."id"
-                WHERE l."producerID" = %s
-            """, (producer['id'],))
+            if not producers_data:
+                return jsonify([])
+            
+            # Loop through the producers to get both ratings for each producer
+            for producer in producers_data:
+                # Get the average Tour & Experience rating for the producer (from producerReviews)
+                cursor.execute("""
+                    SELECT AVG("rating") AS "averageRating"
+                    FROM "producerReviews"
+                    WHERE "producerID" = %s 
+                """, (producer['id'],))
 
-            # Check if the producer has drink reviews
-            avg_drink_rating = cursor.fetchone()['averageDrinkRating']
-            if avg_drink_rating is not None:
-                producer['averageDrinkRating'] = round(avg_drink_rating, 1)
-            else:
-                producer['averageDrinkRating'] = '-'
+                # Check if the producer has tour & experience reviews
+                avg_tour_rating = cursor.fetchone()['averageRating']
+                if avg_tour_rating is not None:
+                    producer['averageTourRating'] = round(avg_tour_rating, 1)
+                else:
+                    producer['averageTourRating'] = '-'
 
-            # Keep the old 'averageRating' field for backward compatibility (use tour rating)
-            producer['averageRating'] = producer['averageTourRating']
+                # Get the average Drink rating for the producer (from reviews of their listings)
+                cursor.execute("""
+                    SELECT AVG(r."rating") AS "averageDrinkRating"
+                    FROM "reviews" r
+                    INNER JOIN "listings" l ON r."reviewTarget" = l."id"
+                    WHERE l."producerID" = %s
+                """, (producer['id'],))
 
-            # Remove the hashed password and other sensitive fields
-            producer.pop('hashedPassword', None)
+                # Check if the producer has drink reviews
+                avg_drink_rating = cursor.fetchone()['averageDrinkRating']
+                if avg_drink_rating is not None:
+                    producer['averageDrinkRating'] = round(avg_drink_rating, 1)
+                else:
+                    producer['averageDrinkRating'] = '-'
 
-        return jsonify(producers_data)
+                # Keep the old 'averageRating' field for backward compatibility (use tour rating)
+                producer['averageRating'] = producer['averageTourRating']
+
+                # Remove the hashed password and other sensitive fields
+                producer.pop('hashedPassword', None)
+
+            return jsonify(producers_data)
 
     except Exception as e:
         print(f"Error fetching producers by search: {str(e)}")
