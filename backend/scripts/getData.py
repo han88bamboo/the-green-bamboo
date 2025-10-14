@@ -7063,38 +7063,36 @@ def getCellarDashboard(ownerType, ownerID):
 # [GET] Get best rated expressions for a producer
 @blueprint.route("/getBestRatedExpressions/<producerID>")
 def getBestRatedExpressions(producerID):
-    conn = g.db
-    cur = conn.cursor()
-
     bestRatedExpressions = []
 
     try:
-        # Query to get best rated expressions for a producer
-        query = """
-            SELECT 
-                l."listingName", 
-                l."photo",
-                l.id, 
-                AVG(r."rating") AS "rating"
-            FROM 
-                "listings" l
-            JOIN 
-                "reviews" r ON l.id = r."reviewTarget"
-            WHERE 
-                l."producerID" = %s
-            GROUP BY 
-                l.id, l."listingName"
-            ORDER BY 
-                "rating" DESC
-            LIMIT 5;
-        """
-        cur.execute(query, (producerID,))
-        best_rated_expressions = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Query to get best rated expressions for a producer
+            query = """
+                SELECT 
+                    l."listingName", 
+                    l."photo",
+                    l.id, 
+                    AVG(r."rating") AS "rating"
+                FROM 
+                    "listings" l
+                JOIN 
+                    "reviews" r ON l.id = r."reviewTarget"
+                WHERE 
+                    l."producerID" = %s
+                GROUP BY 
+                    l.id, l."listingName"
+                ORDER BY 
+                    "rating" DESC
+                LIMIT 5;
+            """
+            cursor.execute(query, (producerID,))
+            best_rated_expressions = cursor.fetchall()
 
-        # Loop through the best rated expressions to round ratings to 1 decimal place
-        for expression in best_rated_expressions:
-            expression['rating'] = round(expression['rating'], 1)
-            bestRatedExpressions.append(expression)
+            # Loop through the best rated expressions to round ratings to 1 decimal place
+            for expression in best_rated_expressions:
+                expression['rating'] = round(expression['rating'], 1)
+                bestRatedExpressions.append(expression)
 
         return jsonify(best_rated_expressions), 200
     
@@ -7106,45 +7104,40 @@ def getBestRatedExpressions(producerID):
                 "message": "An error occurred retrieving the best rated expressions."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get most reviewed expressions for a producer
 @blueprint.route("/getMostReviewedExpressions/<producerID>")
 def getMostReviewedExpressions(producerID):
-    conn = g.db
-    cur = conn.cursor()
-
     mostReviewedExpressions = []
 
     try:
-        # Query to get most reviewed expressions for a producer
-        query = """
-            SELECT 
-                l."listingName",
-                l."photo", 
-                l.id, 
-                COUNT(*) AS "reviewCount"
-            FROM 
-                listings l
-            JOIN 
-                reviews r ON l.id = r."reviewTarget"
-            WHERE 
-                l."producerID" = %s
-            GROUP BY 
-                l.id, l."listingName"
-            ORDER BY 
-                "reviewCount" DESC
-            LIMIT 5;
-        """
-        cur.execute(query, (producerID,))
-        most_reviewed_expressions = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Query to get most reviewed expressions for a producer
+            query = """
+                SELECT 
+                    l."listingName",
+                    l."photo", 
+                    l.id, 
+                    COUNT(*) AS "reviewCount"
+                FROM 
+                    listings l
+                JOIN 
+                    reviews r ON l.id = r."reviewTarget"
+                WHERE 
+                    l."producerID" = %s
+                GROUP BY 
+                    l.id, l."listingName"
+                ORDER BY 
+                    "reviewCount" DESC
+                LIMIT 5;
+            """
+            cursor.execute(query, (producerID,))
+            most_reviewed_expressions = cursor.fetchall()
 
-        for expression in most_reviewed_expressions:
-            mostReviewedExpressions.append(expression)
+            for expression in most_reviewed_expressions:
+                mostReviewedExpressions.append(expression)
 
         return jsonify(mostReviewedExpressions), 200
     
@@ -7156,76 +7149,70 @@ def getMostReviewedExpressions(producerID):
                 "message": "An error occurred retrieving the most reviewed expressions."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get producer dashboard data
 @blueprint.route("/getProducerDashBoardData/<producerID>")
 def getProducerDashBoardData(producerID):
-    conn = g.db
-    cursor = conn.cursor()
-
     topCategories = []
     roundedRatingsCount = {}
     numReviewsSpread = {}
 
     try:
-        # Get the top 5 most reviewed categories 
-        cursor.execute("""
-            SELECT l."drinkType", COUNT(r.*) as "count"
-            FROM "listings" l
-            JOIN "reviews" r ON l.id = r."reviewTarget"
-            WHERE l."producerID" = %s
-            GROUP BY l."drinkType"
-            ORDER BY "count" DESC
-            LIMIT 5
-        """, (producerID,))
-        top_categories_data = cursor.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Get the top 5 most reviewed categories 
+            cursor.execute("""
+                SELECT l."drinkType", COUNT(r.*) as "count"
+                FROM "listings" l
+                JOIN "reviews" r ON l.id = r."reviewTarget"
+                WHERE l."producerID" = %s
+                GROUP BY l."drinkType"
+                ORDER BY "count" DESC
+                LIMIT 5
+            """, (producerID,))
+            top_categories_data = cursor.fetchall()
 
-        for category in top_categories_data:
-            # Category as key and count as value
-            topCategories.append({ category['drinkType']: category['count'] })
-    
+            for category in top_categories_data:
+                # Category as key and count as value
+                topCategories.append({ category['drinkType']: category['count'] })
+        
 
-        # Get rounded ratings and the corresponding count based on the reviews on listings by a specific producer
-        cursor.execute("""
-            SELECT ROUND(r."rating", 0) as "roundedRating", COUNT(*) as "count"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l.id
-            WHERE l."producerID" = %s
-            GROUP BY "roundedRating"
-        """, (producerID,))
-        rounded_ratings_data = cursor.fetchall()
+            # Get rounded ratings and the corresponding count based on the reviews on listings by a specific producer
+            cursor.execute("""
+                SELECT ROUND(r."rating", 0) as "roundedRating", COUNT(*) as "count"
+                FROM "reviews" r
+                JOIN "listings" l ON r."reviewTarget" = l.id
+                WHERE l."producerID" = %s
+                GROUP BY "roundedRating"
+            """, (producerID,))
+            rounded_ratings_data = cursor.fetchall()
 
-        for rating in rounded_ratings_data:
-            # Rounded rating as key and count as value
-            roundedRatingsCount[int(round(rating['roundedRating'], 0))] = rating['count']
+            for rating in rounded_ratings_data:
+                # Rounded rating as key and count as value
+                roundedRatingsCount[int(round(rating['roundedRating'], 0))] = rating['count']
 
-        # Get the number of reviews spread by month
-        cursor.execute("""
-            SELECT DATE_TRUNC('month', r."createdDate") as "month", COUNT(*) as "count"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l.id
-            WHERE l."producerID" = %s
-            GROUP BY "month"
-            ORDER BY "month"
-        """, (producerID,))
-        num_reviews_spread_data = cursor.fetchall()
+            # Get the number of reviews spread by month
+            cursor.execute("""
+                SELECT DATE_TRUNC('month', r."createdDate") as "month", COUNT(*) as "count"
+                FROM "reviews" r
+                JOIN "listings" l ON r."reviewTarget" = l.id
+                WHERE l."producerID" = %s
+                GROUP BY "month"
+                ORDER BY "month"
+            """, (producerID,))
+            num_reviews_spread_data = cursor.fetchall()
 
-        for review in num_reviews_spread_data:
-            # Month as key and count as value
-            month_str = review['month'].strftime('%Y-%m')
-            numReviewsSpread[month_str] = review['count']
+            for review in num_reviews_spread_data:
+                # Month as key and count as value
+                month_str = review['month'].strftime('%Y-%m')
+                numReviewsSpread[month_str] = review['count']
 
         return jsonify({
             "topCategories": topCategories,
             "roundedRatingsCount": roundedRatingsCount,
             "numReviewsSpread": numReviewsSpread
         }), 200
-    
     
     except Exception as e:
         print(str(e))
@@ -7235,35 +7222,31 @@ def getProducerDashBoardData(producerID):
                 "message": "An error occurred retrieving the producer dashboard data."
             }
         ), 500
-    finally:
-        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get producer latest reviews from users on listings that are owned by the producer 
 @blueprint.route("/getProducerLatestReviews/<producerID>")
 def getProducerLatestReviews(producerID):
-    conn = g.db
-    cursor = conn.cursor()
-
     latestReviews = []
 
     try:
-        # Query to get the latest reviews for listings owned by the producer
-        query = """
-            SELECT r.id, r."userID", l."listingName", l.id as "listingID", u."username", r."rating"
-            FROM "reviews" r
-            JOIN "listings" l ON r."reviewTarget" = l.id
-            JOIN "users" u ON r."userID" = u.id
-            WHERE l."producerID" = %s
-            ORDER BY r."createdDate" DESC
-            LIMIT 5
-        """
-        cursor.execute(query, (producerID,))
-        latest_reviews_data = cursor.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Query to get the latest reviews for listings owned by the producer
+            query = """
+                SELECT r.id, r."userID", l."listingName", l.id as "listingID", u."username", r."rating"
+                FROM "reviews" r
+                JOIN "listings" l ON r."reviewTarget" = l.id
+                JOIN "users" u ON r."userID" = u.id
+                WHERE l."producerID" = %s
+                ORDER BY r."createdDate" DESC
+                LIMIT 5
+            """
+            cursor.execute(query, (producerID,))
+            latest_reviews_data = cursor.fetchall()
 
-        for review in latest_reviews_data:
-            latestReviews.append(review)
+            for review in latest_reviews_data:
+                latestReviews.append(review)
 
         return jsonify(latestReviews), 200
     
@@ -7275,9 +7258,6 @@ def getProducerLatestReviews(producerID):
                 "message": "An error occurred retrieving the producer's latest reviews."
             }
         ), 500
-    
-    finally:
-        cursor.close()
 
 
 
@@ -7328,17 +7308,15 @@ def getProducerLatestReviews(producerID):
 # [GET] venuesProfileViews
 @blueprint.route("/getVenuesProfileViews")
 def getVenuesProfileViews():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT * FROM "venuesProfileViews"')
-        profile_views_data = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "venuesProfileViews"')
+            profile_views_data = cursor.fetchall()
 
-        if not profile_views_data:
-            return jsonify([])
+            if not profile_views_data:
+                return jsonify([])
 
-        return jsonify(profile_views_data), 200
+            return jsonify(profile_views_data), 200
     
     except Exception as e:
         print(str(e))
@@ -7348,24 +7326,19 @@ def getVenuesProfileViews():
                 "message": "An error occurred retrieving the profile views."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # [GET] venuesProfileViews by venueID
 @blueprint.route("/getVenuesProfileViewsByVenue/<id>")
 def getVenuesProfileViewsByVenue(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT * FROM "venuesProfileViews" WHERE "venueId" = %s', (id,))
-        profile_views_data = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "venuesProfileViews" WHERE "venueId" = %s', (id,))
+            profile_views_data = cursor.fetchall()
 
-        if not profile_views_data:
-            return jsonify([])
+            if not profile_views_data:
+                return jsonify([])
 
-        return jsonify(profile_views_data), 200
+            return jsonify(profile_views_data), 200
     
     except Exception as e:
         print(str(e))
@@ -7375,9 +7348,6 @@ def getVenuesProfileViewsByVenue(id):
                 "message": "An error occurred retrieving the profile views."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # ----------------------
 # [NEW] TO BE ADDED:
@@ -7420,17 +7390,15 @@ def getVenuesProfileViewsByVenue(id):
 @blueprint.route("/getRequestInaccuracyByVenue/<id>")
 def getRequestInaccuracyByVenue(id):
     # only get requestInaccuracy that has reviewStatus = False
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT * FROM "requestInaccuracy" WHERE "venueId" = %s AND "reviewStatus" = FALSE', (id,))
-        request_inaccuracy_data = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "requestInaccuracy" WHERE "venueId" = %s AND "reviewStatus" = FALSE', (id,))
+            request_inaccuracy_data = cursor.fetchall()
 
-        if not request_inaccuracy_data:
-            return jsonify([])
+            if not request_inaccuracy_data:
+                return jsonify([])
 
-        return jsonify(request_inaccuracy_data), 200
+            return jsonify(request_inaccuracy_data), 200
     
     except Exception as e:
         print(str(e))
@@ -7440,16 +7408,13 @@ def getRequestInaccuracyByVenue(id):
                 "message": "An error occurred retrieving the request inaccuracy."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Badges
 @blueprint.route("/getBadges")
 def getBadges():
-    conn = g.db
-    with conn.cursor() as cursor:
+
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "badges"')
         badges_data = cursor.fetchall()
 
@@ -7461,8 +7426,8 @@ def getBadges():
 # [GET] User Badges
 @blueprint.route("/getUserBadges/<int:user_id>")
 def getUserBadges(user_id):
-    conn = g.db
-    with conn.cursor() as cursor:
+
+    with db_manager.get_cursor() as cursor:
         # Get user badges with details
         cursor.execute('''
             SELECT ub.*, b.*, 
@@ -7488,47 +7453,45 @@ def getUserBadges(user_id):
 # [GET] Specific Token
 @blueprint.route("/getToken/<token>")
 def getToken(token):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute("""
-            SELECT * FROM "tokens" WHERE "token" = %s
-        """, (token,))
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM "tokens" WHERE "token" = %s
+            """, (token,))
 
-        token_data = cur.fetchone()
+            token_data = cursor.fetchone()
 
-        if token_data is None:
+            if token_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "Token not found."
+                }), 404
+            
+            if token_data['userId'] is not None:
+                user_id = token_data['userId']
+            elif token_data['producerId'] is not None:
+                user_id = token_data['producerId']
+            elif token_data['venueId'] is not None:
+                user_id = token_data['venueId']
+            else:
+                return jsonify({
+                    "code": 500,
+                    "message": "Token does not have a valid associated user."
+                }), 500
+            
+            response_data = {
+                "id": token_data['id'],
+                "token": token_data['token'],
+                "requestId": token_data['requestId'],
+                "expiry": token_data['expiry'],
+                "userId": user_id
+            }
+
+            
             return jsonify({
-                "code": 404,
-                "message": "Token not found."
-            }), 404
-        
-        if token_data['userId'] is not None:
-            user_id = token_data['userId']
-        elif token_data['producerId'] is not None:
-            user_id = token_data['producerId']
-        elif token_data['venueId'] is not None:
-            user_id = token_data['venueId']
-        else:
-            return jsonify({
-                "code": 500,
-                "message": "Token does not have a valid associated user."
-            }), 500
-        
-        response_data = {
-            "id": token_data['id'],
-            "token": token_data['token'],
-            "requestId": token_data['requestId'],
-            "expiry": token_data['expiry'],
-            "userId": user_id
-        }
-
-        
-        return jsonify({
-            "code": 200,
-            "data": response_data
-        }), 200
+                "code": 200,
+                "data": response_data
+            }), 200
     
     except Exception as e:
         print(str(e))
@@ -7538,51 +7501,46 @@ def getToken(token):
                 "message": "An error occurred retrieving the token."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 @blueprint.route("/getTokenByRequestId/<requestId>")
 def getTokenByRequestId(requestId):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute("""
-            SELECT * FROM "tokens" WHERE "requestId" = %s
-        """, (requestId,))
-        token_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM "tokens" WHERE "requestId" = %s
+            """, (requestId,))
+            token_data = cursor.fetchone()
 
-        if token_data is None:
-            return jsonify({
-                "code": 404,
-                "message": "Token not found."
-            }), 404
-        
-        if token_data['userId'] is not None:
-            user_id = token_data['userId']
-        elif token_data['producerId'] is not None:
-            user_id = token_data['producerId']
-        elif token_data['venueId'] is not None:
-            user_id = token_data['venueId']
-        else:
-            return jsonify({
-                "code": 500,
-                "message": "Token does not have a valid associated user."
-            }), 500
-        
-        response_data = {
-            "id": token_data['id'],
-            "token": token_data['token'],
-            "requestId": token_data['requestId'],
-            "expiry": token_data['expiry'],
-            "userId": user_id
-        }
+            if token_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "Token not found."
+                }), 404
+            
+            if token_data['userId'] is not None:
+                user_id = token_data['userId']
+            elif token_data['producerId'] is not None:
+                user_id = token_data['producerId']
+            elif token_data['venueId'] is not None:
+                user_id = token_data['venueId']
+            else:
+                return jsonify({
+                    "code": 500,
+                    "message": "Token does not have a valid associated user."
+                }), 500
+            
+            response_data = {
+                "id": token_data['id'],
+                "token": token_data['token'],
+                "requestId": token_data['requestId'],
+                "expiry": token_data['expiry'],
+                "userId": user_id
+            }
 
-        return jsonify({
-            "code": 200,
-            "data": response_data
-        }), 200
+            return jsonify({
+                "code": 200,
+                "data": response_data
+            }), 200
     
     except Exception as e:
         print(str(e))
@@ -7592,36 +7550,32 @@ def getTokenByRequestId(requestId):
                 "message": "An error occurred retrieving the token."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Request
 @blueprint.route("/getAccountRequest/<id>")
 def getAccountRequest(id):
-    conn = g.db
-    cur = conn.cursor()
     try:
-        # check if theres parameters, only for profile + profile settings, will it send this
-        if request.args:
-            businessType = request.args.get('businessType')  # e.g. ?businessType=venue
+        with db_manager.get_cursor() as cursor:
+            # check if theres parameters, only for profile + profile settings, will it send this
+            if request.args:
+                businessType = request.args.get('businessType')  # e.g. ?businessType=venue
 
-            cur.execute("""
-                SELECT * FROM "accountRequests" WHERE "businessId" = %s AND "businessType" = %s
-            """, (id, businessType,))
+                cursor.execute("""
+                    SELECT * FROM "accountRequests" WHERE "businessId" = %s AND "businessType" = %s
+                """, (id, businessType,))
 
-        else:
-            cur.execute("""
-                SELECT * FROM "accountRequests" WHERE "id" = %s
-            """, (id,))
+            else:
+                cursor.execute("""
+                    SELECT * FROM "accountRequests" WHERE "id" = %s
+                """, (id,))
 
-        request_data = cur.fetchone()
+            request_data = cursor.fetchone()
 
-        if request_data is None:
-            return jsonify([]), 200
-        
-        return jsonify(request_data), 200
+            if request_data is None:
+                return jsonify([]), 200
+            
+            return jsonify(request_data), 200
     
     except Exception as e:
         print(str(e))
@@ -7631,36 +7585,30 @@ def getAccountRequest(id):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Producers
 @blueprint.route("/getUsernames")
 def getUsernames():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
+        with db_manager.get_cursor() as cursor:
+            # Add query for users table
+            cursor.execute('SELECT "username" FROM "users"')
+            user_usernames = cursor.fetchall()
 
-        # Add query for users table
-        cur.execute('SELECT "username" FROM "users"')
-        user_usernames = cur.fetchall()
+            cursor.execute('SELECT "username" FROM "producers"')
+            producer_usernames = cursor.fetchall()
 
-        cur.execute('SELECT "username" FROM "producers"')
-        producer_usernames = cur.fetchall()
+            cursor.execute('SELECT "username" FROM "venues"')
+            venue_usernames = cursor.fetchall()
 
-        cur.execute('SELECT "username" FROM "venues"')
-        venue_usernames = cur.fetchall()
-
-        # Combine and filter usernames
-        usernames = (
-            [username['username'] for username in user_usernames] +
-            [username['username'] for username in producer_usernames] +
-            [username['username'] for username in venue_usernames]
-        )
-        usernames = [username for username in usernames if username]  # Filter out any None values
+            # Combine and filter usernames
+            usernames = (
+                [username['username'] for username in user_usernames] +
+                [username['username'] for username in producer_usernames] +
+                [username['username'] for username in venue_usernames]
+            )
+            usernames = [username for username in usernames if username]  # Filter out any None values
 
         return jsonify(usernames), 200
     
@@ -7672,55 +7620,50 @@ def getUsernames():
                 "message": "An error occurred retrieving usernames."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Any User Regardless of Type by Email
 @blueprint.route("/getUserByEmail/<email>")
 def getUserByEmail(email):
-    conn = g.db
-    cur = conn.cursor()
-
     # Define return data
     return_data = None
 
     try:
-        # Check if user is a user and retrieve the id 
-        cur.execute('SELECT * FROM "users" WHERE "email" = %s', (email,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if user is a user and retrieve the id 
+            cursor.execute('SELECT * FROM "users" WHERE "email" = %s', (email,))
+            user_data = cursor.fetchone()
 
-        if user_data is not None:
-            return_data = {'id': user_data['id'], 'type': 'user', 'username': user_data['username']}
+            if user_data is not None:
+                return_data = {'id': user_data['id'], 'type': 'user', 'username': user_data['username']}
+                
+                return jsonify(return_data), 200
             
-            return jsonify(return_data), 200
-        
-        # Check if user is a producer and retrieve the id
-        cur.execute('SELECT * FROM "producers" WHERE "email" = %s', (email,))
-        producer_data = cur.fetchone()
+            # Check if user is a producer and retrieve the id
+            cursor.execute('SELECT * FROM "producers" WHERE "email" = %s', (email,))
+            producer_data = cursor.fetchone()
 
-        if producer_data is not None:
-            return_data = {'id': producer_data['id'], 'type': 'producer', 'username': producer_data['username']}
+            if producer_data is not None:
+                return_data = {'id': producer_data['id'], 'type': 'producer', 'username': producer_data['username']}
+                
+                return jsonify(return_data), 200
             
-            return jsonify(return_data), 200
-        
-        # Check if user is a venue and retrieve the id
-        cur.execute('SELECT * FROM "venues" WHERE "email" = %s', (email,))
-        venue_data = cur.fetchone()
+            # Check if user is a venue and retrieve the id
+            cursor.execute('SELECT * FROM "venues" WHERE "email" = %s', (email,))
+            venue_data = cursor.fetchone()
 
-        if venue_data is not None:
-            return_data = {'id': venue_data['id'], 'type': 'venue', 'username': venue_data['username']}
+            if venue_data is not None:
+                return_data = {'id': venue_data['id'], 'type': 'venue', 'username': venue_data['username']}
+                
+                return jsonify(return_data), 200
             
-            return jsonify(return_data), 200
-        
-        return jsonify(
-            {
-                "code": 404,
-                "message": "Email not found."
-            }
-        ), 404
+            return jsonify(
+                {
+                    "code": 404,
+                    "message": "Email not found."
+                }
+            ), 404
     
     except Exception as e:
         print(str(e))
@@ -7730,9 +7673,6 @@ def getUserByEmail(email):
                 "message": str(e)
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -7742,36 +7682,33 @@ def getUserByEmail(email):
 # Used: CreateClub.vue (frontend/src/views/Users/CreateClub.vue)
 @blueprint.route("/getUserFollowList/<id>")
 def getUserFollowList(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Check if id is a valid user in the table based on userType
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if id is a valid user in the table based on userType
+            cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+            user_data = cursor.fetchone()
 
-        if user_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "User not found."
-                }
-            ), 404
-        
-        # Step 2: Retrieve the follow list using the fetch_user_follow_list function
-        follow_list = fetch_follow_lists(cur, id)
+            if user_data is None:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "User not found."
+                    }
+                ), 404
+            
+            # Step 2: Retrieve the follow list using the fetch_user_follow_list function
+            follow_list = fetch_follow_lists(cursor, id)
 
+            return_data = {
+                'users': {}, # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
+            }
 
-        return_data = {
-            'users': {}, # A dictionary of objects containing the id, displayName, and photo of the users in the follow list
-        }
+            # Step 3: Get the id, displayName and photo of the users in the follow list
+            for user in follow_list['users']:
+                cursor.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" = %s', (user,))
+                user = cursor.fetchone()
 
-        # Step 3: Get the id, displayName and photo of the users in the follow list
-        for user in follow_list['users']:
-            cur.execute('SELECT "id", "displayName", "photo" FROM "users" WHERE "id" = %s', (user,))
-            user = cur.fetchone()
-
-            return_data['users'][user['id']] = { 'displayName': user['displayName'], 'photo': user['photo'] }
+                return_data['users'][user['id']] = { 'displayName': user['displayName'], 'photo': user['photo'] }
 
         return jsonify({
             'followList': return_data
@@ -7785,40 +7722,35 @@ def getUserFollowList(id):
                 "message": "An error occurred retrieving the follow list."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get all the IDs for all the 3 user types whom the user is following
 @blueprint.route("/getAllUserFollowingsIDs/<id>")
 def getAllUserFollowingsIDs(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Check if id is a valid user in the table based on userType
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if id is a valid user in the table based on userType
+            cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+            user_data = cursor.fetchone()
 
-        if user_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "User not found."
-                }
-            ), 404
-        
-        # Step 2: Retrieve the follow list using the fetch_user_follow_list function
-        cur.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
-        follow_list = fetch_follow_lists(cur, id)
+            if user_data is None:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "User not found."
+                    }
+                ), 404
+            
+            # Step 2: Retrieve the follow list using the fetch_user_follow_list function
+            cursor.execute('SELECT "users", "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
+            follow_list = fetch_follow_lists(cursor, id)
 
-        return jsonify({
-            'users': follow_list['users'],
-            'producers': follow_list['producers'],
-            'venues': follow_list['venues']
-        }), 200
+            return jsonify({
+                'users': follow_list['users'],
+                'producers': follow_list['producers'],
+                'venues': follow_list['venues']
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -7828,9 +7760,6 @@ def getAllUserFollowingsIDs(id):
                 "message": "An error occurred retrieving the followings IDs."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get user dashboard data
@@ -7844,10 +7773,8 @@ def getAllUserFollowingsIDs(id):
 #   - total number of followers the user has
 @blueprint.route("/getUserDashBoardData/<id>")
 def getUserDashBoardData(id):
-    conn = g.db
-
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor(commit=False) as cursor:
             # Single query to get all dashboard data at once
             cursor.execute("""
                 WITH user_check AS (
@@ -7981,10 +7908,8 @@ def getUserDashBoardData(id):
 @blueprint.route('/getRecentFollowersActivity/<id>', methods=['GET'])
 def recent_follower_activity(id):
 
-    conn = g.db
-
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # 2. Reviews where user was tagged
             cursor.execute("""
                 SELECT r."userID", r."reviewTarget", r."createdDate"
@@ -8043,10 +7968,9 @@ def recent_follower_activity(id):
 # [GET] Get recent reviews activity for a user
 @blueprint.route('/getRecentReviewsActivity/<id>', methods=['GET'])
 def recent_review_activity_optimized(id):
-    conn = g.db
     
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor: 
+        with db_manager.get_cursor() as cursor:
             # Single query that extracts and flattens all vote activities
             cursor.execute("""
                 WITH recent_reviews AS (
@@ -8127,52 +8051,46 @@ def recent_review_activity_optimized(id):
 # [GET] Get the listing details for listings that user has recently reviewed - lastest 5
 @blueprint.route('/getLatestReviewsDrinks/<id>', methods=['GET'])
 def get_latest_reviews_drinks(id):
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
-        # Step 1: Get the latest 3 reviews by the user
-        cursor.execute("""
-            SELECT r."reviewTarget", r."rating", r."createdDate", l."listingName", l."photo"
-            FROM reviews r
-            JOIN listings l ON r."reviewTarget" = l."id"
-            WHERE r."userID" = %s
-            ORDER BY r."createdDate" DESC
-            LIMIT 5
-        """, (id,))
-        reviews = cursor.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the latest 3 reviews by the user
+            cursor.execute("""
+                SELECT r."reviewTarget", r."rating", r."createdDate", l."listingName", l."photo"
+                FROM reviews r
+                JOIN listings l ON r."reviewTarget" = l."id"
+                WHERE r."userID" = %s
+                ORDER BY r."createdDate" DESC
+                LIMIT 5
+            """, (id,))
+            reviews = cursor.fetchall()
 
-        if not reviews:
-            return jsonify([])
+            if not reviews:
+                return jsonify([])
 
-        # Step 2: Prepare the response data
-        response_data = []
-        for review in reviews:
-            response_data.append({
-                'id': review['reviewTarget'],
-                'listingName': review['listingName'],
-                'createdDate': review['createdDate'],
-                'photo': review['photo']
-            })
+            # Step 2: Prepare the response data
+            response_data = []
+            for review in reviews:
+                response_data.append({
+                    'id': review['reviewTarget'],
+                    'listingName': review['listingName'],
+                    'createdDate': review['createdDate'],
+                    'photo': review['photo']
+                })
 
-        return jsonify(response_data)
+            return jsonify(response_data)
     
     except Exception as e:
         print(f"Error in get_latest_reviews_drinks: {str(e)}")
         return jsonify({"error": "An error occurred while fetching latest reviews drinks."}), 500
-    
-    finally:
-        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get recent user activity for a user
 @blueprint.route('/getRecentUserActivity/<id>', methods=['GET'])
 def recent_user_activity(id):
-    conn = g.db
     
     try:
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor: 
+        with db_manager.get_cursor() as cursor: 
             # Single query using UNION ALL to combine all activities
             cursor.execute("""
                 WITH user_reviews AS (
@@ -8272,103 +8190,97 @@ def recent_user_activity(id):
 # [GET] All the usernames in the database [users only]
 @blueprint.route("/getAllUsernames")
 def getAllUsernames():
-    conn = g.db
-    cur = conn.cursor(cursor_factory=RealDictCursor)  # Use RealDictCursor for dictionaries
-
     try:
-        # Get all the required user fields
-        cur.execute('SELECT "id", "username", "displayName", "photo" FROM "users"')
-        users_data = cur.fetchall()
-        
-        if not users_data:
-            return jsonify([]), 404
+        with db_manager.get_cursor() as cursor:
+            # Get all the required user fields
+            cursor.execute('SELECT "id", "username", "displayName", "photo" FROM "users"')
+            users_data = cursor.fetchall()
             
-        return jsonify(users_data)
+            if not users_data:
+                return jsonify([]), 404
+                
+            return jsonify(users_data)
     except Exception as e:
         print(str(e))
         return jsonify([])
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Check if a user is in the follow list of another user
 @blueprint.route("/checkUserInFollowList/<userId>/<userType>/<followId>/<followType>")
 def checkUserInFollowList(userId, userType, followId, followType):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Check if userId and followId are valid users in the table based on userType and followType
-        if userType == 'user':
-            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (userId,))
-        elif userType == 'producer':
-            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (userId,))
-        else:
-            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (userId,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if userId and followId are valid users in the table based on userType and followType
+            if userType == 'user':
+                cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (userId,))
+            elif userType == 'producer':
+                cursor.execute('SELECT * FROM "producers" WHERE "id" = %s', (userId,))
+            else:
+                cursor.execute('SELECT * FROM "venues" WHERE "id" = %s', (userId,))
+            user_data = cursor.fetchone()
 
-        if user_data is None:
+            if user_data is None:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "User not found."
+                    }
+                ), 404
+
+            if followType == 'user':
+                cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (followId,))
+            elif followType == 'producer':
+                cursor.execute('SELECT * FROM "producers" WHERE "id" = %s', (followId,))
+            else:
+                cursor.execute('SELECT * FROM "venues" WHERE "id" = %s', (followId,))
+            follow_data = cursor.fetchone()
+            
+            if follow_data is None:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Follow user not found."
+                    }
+                ), 404
+            
+            key = None
+            
+            # Step 2: Retrieve the follow list of the user
+            if followType == 'venue':
+                key = 'venues'
+                cursor.execute('SELECT venues FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+            elif followType == 'producer':
+                key = 'producers'
+                cursor.execute('SELECT producers FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+            else:
+                key = 'users'
+                cursor.execute('SELECT users FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
+            follow_list = cursor.fetchone()
+
+            if follow_list is None:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Follow list not found."
+                    }
+                ), 404
+            
+            # Step 3: Check if the followId is in the follow list of the userId
+            if followId in follow_list[key]:
+                return jsonify(
+                    {
+                        "code": 200,
+                        "following": True
+                    }
+                ), 200
+            
             return jsonify(
                 {
                     "code": 404,
-                    "message": "User not found."
+                    "following": False
                 }
             ), 404
-
-        if followType == 'user':
-            cur.execute('SELECT * FROM "users" WHERE "id" = %s', (followId,))
-        elif followType == 'producer':
-            cur.execute('SELECT * FROM "producers" WHERE "id" = %s', (followId,))
-        else:
-            cur.execute('SELECT * FROM "venues" WHERE "id" = %s', (followId,))
-        follow_data = cur.fetchone()
-        
-        if follow_data is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Follow user not found."
-                }
-            ), 404
-        
-        key = None
-        
-        # Step 2: Retrieve the follow list of the user
-        if followType == 'venue':
-            key = 'venues'
-            cur.execute('SELECT venues FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        elif followType == 'producer':
-            key = 'producers'
-            cur.execute('SELECT producers FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        else:
-            key = 'users'
-            cur.execute('SELECT users FROM "usersFollowLists" WHERE "userId" = %s', (userId,))
-        follow_list = cur.fetchone()
-
-        if follow_list is None:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Follow list not found."
-                }
-            ), 404
-        
-        # Step 3: Check if the followId is in the follow list of the userId
-        if followId in follow_list[key]:
-            return jsonify(
-                {
-                    "code": 200,
-                    "following": True
-                }
-            ), 200
-        
-        return jsonify(
-            {
-                "code": 404,
-                "following": False
-            }
-        ), 404
 
     except Exception as e:
         print(str(e))
@@ -8378,9 +8290,6 @@ def checkUserInFollowList(userId, userType, followId, followType):
                 "message": "An error occurred checking the follow list."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -8412,10 +8321,8 @@ def get_listings_by_observation_tag(tag):
     if not selected_tag:
         return jsonify({"error": "Tag is required"}), 400
 
-    conn = g.db  
-
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             query = """
             SELECT DISTINCT l.*
             FROM "listings" l
@@ -8429,7 +8336,6 @@ def get_listings_by_observation_tag(tag):
             # Convert the dictionary rows into a list of dictionaries
             listing_dicts = [dict(row) for row in listings]
 
-
         # Return the result as JSON
         return jsonify(listing_dicts)
 
@@ -8442,9 +8348,8 @@ def get_listings_by_observation_tag(tag):
 # [GET] Top 8 Trending Observation Tags -- ADDED BY SMU GROUP 3
 @blueprint.route("/getTop8")
 def getTop8():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         query = """
             SELECT TRIM(BOTH '"' FROM tag_name_clean) AS tag_name, SUM(tag_count) AS tag_count
             FROM (
@@ -8490,9 +8395,7 @@ def getTop8():
 # The function ensures that listings with reviews are prioritized while filling the remaining slots with newly added listings.
 @blueprint.route("/getTopListings")
 def getTopListings():
-    conn = g.db  # Get database connection from Flask's global object
-    
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         # Query to get listings that have reviews, ordered by review count (most reviewed first)
         query = """
             SELECT l.*, COUNT(r."reviewTarget") AS review_count
@@ -8548,9 +8451,8 @@ def getTopListings():
 #  [GET] ALL Listing Names in Listing Table -- ADDED BY SMU GROUP 3
 @blueprint.route("/getListingsName")
 def getListingsName():
-    conn = g.db
 
-    with conn.cursor() as cursor:
+    with db_manager.get_cursor() as cursor:
         cursor.execute('SELECT * FROM "listings"')
         listingsName_data = cursor.fetchall()
     
@@ -9360,6 +9262,7 @@ def getListingsName():
 
 #     finally:
 #         cur.close()
+
 def _fetch_notifications_by_tab(cursor, user_id, tab_name, limit):
     """
     Helper function to fetch notifications for a specific tab with database-level limiting
