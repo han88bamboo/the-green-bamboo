@@ -6274,17 +6274,15 @@ def getProducersProfileViews():
 # [GET] producersProfileViews by producerID
 @blueprint.route("/getProducersProfileViewsByProducer/<id>")
 def getProducersProfileViewsByProducer(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (id,))
-        producers_profile_views_data = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (id,))
+            producers_profile_views_data = cursor.fetchall()
 
-        if not producers_profile_views_data:
-            return jsonify([]), 404
+            if not producers_profile_views_data:
+                return jsonify([]), 404
 
-        return jsonify(producers_profile_views_data), 200
+            return jsonify(producers_profile_views_data), 200
     
     except Exception as e:
         print(str(e))
@@ -6294,9 +6292,6 @@ def getProducersProfileViewsByProducer(id):
                 "message": "An error occurred retrieving the profile views."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -6335,218 +6330,216 @@ def convert_price_to_usd(amount, currency):
 @blueprint.route("/getCellarData/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCellarData(ownerType, ownerID):
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Validate ownerType
-        if ownerType not in ['user', 'producer', 'venue']:
-            return jsonify({
-                "code": 400,
-                "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
-            }), 400
-        
-        # Get query parameters
-        collection_id = request.args.get('collectionId')
-        status_filter = request.args.get('status')
-        drink_type = request.args.get('drinkType')
-        include_consumed = request.args.get('includeConsumed', 'false').lower() == 'true'
-        include_archived = request.args.get('includeArchived', 'false').lower() == 'true'
-        sort_by = request.args.get('sortBy', 'addedDate')
-        
-        # Validate sort_by parameter
-        valid_sort_fields = ['addedDate', 'listingName', 'quantityVariantID', 'drinkByDate', 'purchaseDate']
-        if sort_by not in valid_sort_fields:
-            sort_by = 'addedDate'
-        
-        # Build dynamic WHERE clause
-        where_conditions = ['cc."ownerID" = %s', 'cc."ownerType" = %s']
-        params = [ownerID, ownerType]
-        
-        # By default, exclude archived items unless specifically requested
-        if not include_archived:
-            where_conditions.append('ci."archiveStatus" = %s')
-            params.append(False)
-        
-        if collection_id:
-            where_conditions.append('cc."id" = %s')
-            params.append(collection_id)
-        
-        if not include_consumed:
-            where_conditions.append('ci."status" != %s')
-            params.append('Consumed')
-        
-        if status_filter:
-            where_conditions.append('ci."status" = %s')
-            params.append(status_filter)
-        
-        if drink_type:
-            where_conditions.append('l."drinkType" = %s')
-            params.append(drink_type)
-        
-        where_clause = ' AND '.join(where_conditions)
-        
-        # Main query to get cellar items with all related data
-        # Updated to join with master records for shared properties
-        items_query = f"""
-            SELECT 
-                -- Individual Bottle Details
-                ci."id" as "cellarItemId",
-                ci."quantityVariantID",
-                ci."variantGroupID",
-                ci."status",
-                ci."consumption",
-                ci."currentLocation",
-                ci."subLocation",
-                ci."purchasePrice",
-                ci."purchaseCurrency",
-                ci."purchaseDate",
-                ci."deliveryDate",
-                ci."noteToSelf",
-                ci."variant",
-                ci."addedDate",
-                ci."updatedDate",
-                ci."archiveStatus",
-                
-                -- Shared Properties from Master Record (or current item if it's the master)
-                COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
-                COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
-                COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
-                COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
-                COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
-                COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
-                COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
-                COALESCE(master."suggestedFoodPairing", ci."suggestedFoodPairing") as "suggestedFoodPairing",
-                
-                -- Collection Info
-                cc."collectionName",
-                cc."id" as "collectionId",
-                cc."isDefault",
-                cc."isPublic",
-                
-                -- Listing Details
-                l."id" as "listingId",
-                l."listingName",
-                l."drinkType",
-                l."typeCategory",
-                l."drinkStyle",
-                l."originCountry",
-                l."abv",
-                l."age",
-                l."photo" as "drinkPhoto",
-                l."officialDesc",
-                
-                -- Producer Info
-                p."producerName",
-                
-                -- Bottler Info (if different from producer)
-                bp."producerName" as "bottlerName",
-                
-                -- Purchase Venue Info
-                pv."venueName" as "purchaseVenueName",
-                ci."purchasePlaceName",
-                ci."purchaseAddress",
-                
-                -- Average Rating
-                COALESCE(AVG(r."rating"), 0) as averageRating,
-                COUNT(r."id") as reviewCount
-                
-            FROM "myCellarItems" ci
-            -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
-            LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
-            LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            LEFT JOIN "listings" l ON ci."listingID" = l."id"
-            LEFT JOIN "producers" p ON l."producerID" = p."id"
-            LEFT JOIN "producers" bp ON l."bottlerID" = bp."id"
-            LEFT JOIN "venues" pv ON ci."purchaseVenueID" = pv."id"
-            LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE {where_clause}
-            GROUP BY ci."id", master."id", cc."id", l."id", p."id", bp."id", pv."id"
-            ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
-        """
-        
-        cur.execute(items_query, params)
-        items = cur.fetchall()
-        
-        # Get collections summary for this owner
-        collections_query = """
-            SELECT 
-                cc."id",
-                cc."collectionName",
-                cc."isDefault",
-                cc."isPublic",
-                cc."createdDate",
-                cc."updatedDate",
-                COUNT(ci."id") as itemCount,
-                COUNT(ci."id") as totalBottles,
-                SUM(CASE WHEN ci."status" = 'Consumed' THEN 1 ELSE 0 END) as consumedBottles,
-                SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
-                SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
-            FROM "myCellarCollections" cc
-            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
-            WHERE cc."ownerID" = %s AND cc."ownerType" = %s
-            GROUP BY cc."id"
-            ORDER BY cc."isDefault" DESC, cc."collectionName"
-        """
-        
-        cur.execute(collections_query, [ownerID, ownerType])
-        collections = cur.fetchall()
-        
-        # Calculate summary statistics
-        total_items = len(items)
-        total_bottles = len(items)  # Now each item represents one bottle/item
-        total_collections = len(collections)
-        
-        # Status breakdown
-        status_summary = {}
-        for item in items:
-            status = item['status']
-            if status not in status_summary:
-                status_summary[status] = {'count': 0, 'bottles': 0}
-            status_summary[status]['count'] += 1
-            status_summary[status]['bottles'] += 1  # Each item is one bottle now
-        
-        # Drink type breakdown
-        drink_type_summary = {}
-        for item in items:
-            dt = item['drinkType'] or 'Unknown'
-            if dt not in drink_type_summary:
-                drink_type_summary[dt] = {'count': 0, 'bottles': 0}
-            drink_type_summary[dt]['count'] += 1
-            drink_type_summary[dt]['bottles'] += 1  # Each item is one bottle now
-        
-        # Financial summary with currency conversion
-        total_purchase_value = 0
-        total_current_value = 0
-        
-        for item in items:
-            # Convert purchase price to USD
-            if item.get('purchasePrice'):
-                purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item.get('purchaseCurrency'))
-                if purchase_price_usd:
-                    total_purchase_value += purchase_price_usd
+        with db_manager.get_cursor() as cursor:
+            # Validate ownerType
+            if ownerType not in ['user', 'producer', 'venue']:
+                return jsonify({
+                    "code": 400,
+                    "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+                }), 400
             
-            # Convert current value to USD  
-            if item.get('currentValueEstimation'):
-                current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item.get('currentValueCurrency'))
-                if current_value_usd:
-                    total_current_value += current_value_usd
-        
-        # Convert Decimal objects to float for JSON serialization
-        for item in items:
-            if item.get('purchasePrice'):
-                item['purchasePrice'] = float(item['purchasePrice'])
-            if item.get('currentValueEstimation'):
-                item['currentValueEstimation'] = float(item['currentValueEstimation'])
-            if item.get('averageRating') is not None:
-                item['averageRating'] = float(item['averageRating'])
-            if item.get('abv'):
-                item['abv'] = float(item['abv'])
-        
-        for collection in collections:
-            if collection.get('totalPurchaseValue'):
-                collection['totalPurchaseValue'] = float(collection['totalPurchaseValue'])
-            if collection.get('totalCurrentValue'):
-                collection['totalCurrentValue'] = float(collection['totalCurrentValue'])
+            # Get query parameters
+            collection_id = request.args.get('collectionId')
+            status_filter = request.args.get('status')
+            drink_type = request.args.get('drinkType')
+            include_consumed = request.args.get('includeConsumed', 'false').lower() == 'true'
+            include_archived = request.args.get('includeArchived', 'false').lower() == 'true'
+            sort_by = request.args.get('sortBy', 'addedDate')
+            
+            # Validate sort_by parameter
+            valid_sort_fields = ['addedDate', 'listingName', 'quantityVariantID', 'drinkByDate', 'purchaseDate']
+            if sort_by not in valid_sort_fields:
+                sort_by = 'addedDate'
+            
+            # Build dynamic WHERE clause
+            where_conditions = ['cc."ownerID" = %s', 'cc."ownerType" = %s']
+            params = [ownerID, ownerType]
+            
+            # By default, exclude archived items unless specifically requested
+            if not include_archived:
+                where_conditions.append('ci."archiveStatus" = %s')
+                params.append(False)
+            
+            if collection_id:
+                where_conditions.append('cc."id" = %s')
+                params.append(collection_id)
+            
+            if not include_consumed:
+                where_conditions.append('ci."status" != %s')
+                params.append('Consumed')
+            
+            if status_filter:
+                where_conditions.append('ci."status" = %s')
+                params.append(status_filter)
+            
+            if drink_type:
+                where_conditions.append('l."drinkType" = %s')
+                params.append(drink_type)
+            
+            where_clause = ' AND '.join(where_conditions)
+            
+            # Main query to get cellar items with all related data
+            # Updated to join with master records for shared properties
+            items_query = f"""
+                SELECT 
+                    -- Individual Bottle Details
+                    ci."id" as "cellarItemId",
+                    ci."quantityVariantID",
+                    ci."variantGroupID",
+                    ci."status",
+                    ci."consumption",
+                    ci."currentLocation",
+                    ci."subLocation",
+                    ci."purchasePrice",
+                    ci."purchaseCurrency",
+                    ci."purchaseDate",
+                    ci."deliveryDate",
+                    ci."noteToSelf",
+                    ci."variant",
+                    ci."addedDate",
+                    ci."updatedDate",
+                    ci."archiveStatus",
+                    
+                    -- Shared Properties from Master Record (or current item if it's the master)
+                    COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
+                    COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
+                    COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
+                    COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
+                    COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
+                    COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
+                    COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
+                    COALESCE(master."suggestedFoodPairing", ci."suggestedFoodPairing") as "suggestedFoodPairing",
+                    
+                    -- Collection Info
+                    cc."collectionName",
+                    cc."id" as "collectionId",
+                    cc."isDefault",
+                    cc."isPublic",
+                    
+                    -- Listing Details
+                    l."id" as "listingId",
+                    l."listingName",
+                    l."drinkType",
+                    l."typeCategory",
+                    l."drinkStyle",
+                    l."originCountry",
+                    l."abv",
+                    l."age",
+                    l."photo" as "drinkPhoto",
+                    l."officialDesc",
+                    
+                    -- Producer Info
+                    p."producerName",
+                    
+                    -- Bottler Info (if different from producer)
+                    bp."producerName" as "bottlerName",
+                    
+                    -- Purchase Venue Info
+                    pv."venueName" as "purchaseVenueName",
+                    ci."purchasePlaceName",
+                    ci."purchaseAddress",
+                    
+                    -- Average Rating
+                    COALESCE(AVG(r."rating"), 0) as averageRating,
+                    COUNT(r."id") as reviewCount
+                    
+                FROM "myCellarItems" ci
+                -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
+                LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
+                LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                LEFT JOIN "listings" l ON ci."listingID" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN "producers" bp ON l."bottlerID" = bp."id"
+                LEFT JOIN "venues" pv ON ci."purchaseVenueID" = pv."id"
+                LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+                WHERE {where_clause}
+                GROUP BY ci."id", master."id", cc."id", l."id", p."id", bp."id", pv."id"
+                ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
+            """
+            
+            cursor.execute(items_query, params)
+            items = cursor.fetchall()
+            
+            # Get collections summary for this owner
+            collections_query = """
+                SELECT 
+                    cc."id",
+                    cc."collectionName",
+                    cc."isDefault",
+                    cc."isPublic",
+                    cc."createdDate",
+                    cc."updatedDate",
+                    COUNT(ci."id") as itemCount,
+                    COUNT(ci."id") as totalBottles,
+                    SUM(CASE WHEN ci."status" = 'Consumed' THEN 1 ELSE 0 END) as consumedBottles,
+                    SUM(CASE WHEN ci."purchasePrice" IS NOT NULL THEN ci."purchasePrice" ELSE 0 END) as totalPurchaseValue,
+                    SUM(CASE WHEN ci."currentValueEstimation" IS NOT NULL THEN ci."currentValueEstimation" ELSE 0 END) as totalCurrentValue
+                FROM "myCellarCollections" cc
+                LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
+                WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+                GROUP BY cc."id"
+                ORDER BY cc."isDefault" DESC, cc."collectionName"
+            """
+            
+            cursor.execute(collections_query, [ownerID, ownerType])
+            collections = cursor.fetchall()
+            
+            # Calculate summary statistics
+            total_items = len(items)
+            total_bottles = len(items)  # Now each item represents one bottle/item
+            total_collections = len(collections)
+            
+            # Status breakdown
+            status_summary = {}
+            for item in items:
+                status = item['status']
+                if status not in status_summary:
+                    status_summary[status] = {'count': 0, 'bottles': 0}
+                status_summary[status]['count'] += 1
+                status_summary[status]['bottles'] += 1  # Each item is one bottle now
+            
+            # Drink type breakdown
+            drink_type_summary = {}
+            for item in items:
+                dt = item['drinkType'] or 'Unknown'
+                if dt not in drink_type_summary:
+                    drink_type_summary[dt] = {'count': 0, 'bottles': 0}
+                drink_type_summary[dt]['count'] += 1
+                drink_type_summary[dt]['bottles'] += 1  # Each item is one bottle now
+            
+            # Financial summary with currency conversion
+            total_purchase_value = 0
+            total_current_value = 0
+            
+            for item in items:
+                # Convert purchase price to USD
+                if item.get('purchasePrice'):
+                    purchase_price_usd = convert_price_to_usd(item['purchasePrice'], item.get('purchaseCurrency'))
+                    if purchase_price_usd:
+                        total_purchase_value += purchase_price_usd
+                
+                # Convert current value to USD  
+                if item.get('currentValueEstimation'):
+                    current_value_usd = convert_price_to_usd(item['currentValueEstimation'], item.get('currentValueCurrency'))
+                    if current_value_usd:
+                        total_current_value += current_value_usd
+            
+            # Convert Decimal objects to float for JSON serialization
+            for item in items:
+                if item.get('purchasePrice'):
+                    item['purchasePrice'] = float(item['purchasePrice'])
+                if item.get('currentValueEstimation'):
+                    item['currentValueEstimation'] = float(item['currentValueEstimation'])
+                if item.get('averageRating') is not None:
+                    item['averageRating'] = float(item['averageRating'])
+                if item.get('abv'):
+                    item['abv'] = float(item['abv'])
+            
+            for collection in collections:
+                if collection.get('totalPurchaseValue'):
+                    collection['totalPurchaseValue'] = float(collection['totalPurchaseValue'])
+                if collection.get('totalCurrentValue'):
+                    collection['totalCurrentValue'] = float(collection['totalCurrentValue'])
         
         return jsonify({
             "code": 200,
@@ -6601,53 +6594,51 @@ def testGetCellarData(ownerType, ownerID):
     Returns all rows for the specified owner with basic listing information.
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
-        # Simple query to get all raw cellar data with basic listing info
-        query = """
-        SELECT 
-            mci."id" as "myCellarItemID",
-            mci."listingID",
-            mci."collectionID",
-            mci."quantityVariantID",
-            mci."variantGroupID",
-            mci."drinkFormat",
-            mci."volumeNumber",
-            mci."volumeUnit",
-            mci."variant",
-            mci."status",
-            mci."consumption",
-            mci."currentValueEstimation",
-            mci."purchaseDate",
-            mci."purchasePrice",
-            mci."archiveStatus",
-            mci."addedDate",
-            mci."currentLocation",
-            mci."subLocation",
-            mci."noteToSelf",
-            cc."ownerID",
-            cc."ownerType",
-            cc."collectionName",
-            l."listingName" as "listingTitle",
-            l."producerID",
-            l."drinkType"
-        FROM "myCellarItems" mci
-        LEFT JOIN "myCellarCollections" cc ON mci."collectionID" = cc."id"
-        LEFT JOIN "listings" l ON mci."listingID" = l."id"
-        WHERE cc."ownerType" = %s 
-        AND cc."ownerID" = %s
-        AND mci."archiveStatus" = FALSE
-        ORDER BY mci."listingID", mci."variant", mci."drinkFormat", mci."volumeNumber", mci."volumeUnit", mci."quantityVariantID"
-        """
-        
-        cur.execute(query, (ownerType, ownerID))
-        raw_items = cur.fetchall()
-        
-        # Convert to list of dictionaries for JSON serialization
-        items_list = []
-        for item in raw_items:
-            items_list.append(dict(item))
+        with db_manager.get_cursor() as cursor:
+            # Simple query to get all raw cellar data with basic listing info
+            query = """
+            SELECT 
+                mci."id" as "myCellarItemID",
+                mci."listingID",
+                mci."collectionID",
+                mci."quantityVariantID",
+                mci."variantGroupID",
+                mci."drinkFormat",
+                mci."volumeNumber",
+                mci."volumeUnit",
+                mci."variant",
+                mci."status",
+                mci."consumption",
+                mci."currentValueEstimation",
+                mci."purchaseDate",
+                mci."purchasePrice",
+                mci."archiveStatus",
+                mci."addedDate",
+                mci."currentLocation",
+                mci."subLocation",
+                mci."noteToSelf",
+                cc."ownerID",
+                cc."ownerType",
+                cc."collectionName",
+                l."listingName" as "listingTitle",
+                l."producerID",
+                l."drinkType"
+            FROM "myCellarItems" mci
+            LEFT JOIN "myCellarCollections" cc ON mci."collectionID" = cc."id"
+            LEFT JOIN "listings" l ON mci."listingID" = l."id"
+            WHERE cc."ownerType" = %s 
+            AND cc."ownerID" = %s
+            AND mci."archiveStatus" = FALSE
+            ORDER BY mci."listingID", mci."variant", mci."drinkFormat", mci."volumeNumber", mci."volumeUnit", mci."quantityVariantID"
+            """
+            
+            cursor.execute(query, (ownerType, ownerID))
+            raw_items = cursor.fetchall()
+            
+            # Convert to list of dictionaries for JSON serialization
+            items_list = []
+            for item in raw_items:
+                items_list.append(dict(item))
         
         return jsonify({
             "code": 200,
@@ -6682,9 +6673,6 @@ def getCellarDashboard(ownerType, ownerID):
     Archived items are excluded from all calculations and breakdowns.
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -6692,375 +6680,376 @@ def getCellarDashboard(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Main query to get all cellar items with related data
-        # Updated to join with master records for shared properties
-        cellar_query = """
-        SELECT 
-            -- Individual Bottle Details
-            ci."id",
-            ci."quantityVariantID",
-            ci."variantGroupID",
-            ci."purchasePrice",
-            ci."purchaseCurrency",
-            ci."status",
-            ci."consumption",
-            ci."currentLocation",
-            ci."subLocation",
-            ci."addedDate",
-            ci."updatedDate",
-            ci."variant",
-            ci."listingID",
-            ci."archiveStatus",
-            ci."purchaseDate",
-            ci."deliveryDate",
-            ci."purchaseVenueID",
-            ci."purchasePlaceName",
-            ci."purchaseAddress",
-            ci."noteToSelf",
-            
-            -- Shared Properties from Master Record (or current item if it's the master)
-            COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
-            COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
-            COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
-            COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
-            COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
-            COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
-            COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
-            
-            -- Collection and Listing Data
-            cc."collectionName",
-            cc."id" as "collectionID",
-            l."listingName",
-            l."originCountry",
-            l."drinkType",
-            l."typeCategory",
-            l."abv",
-            l."producerID",
-            p."producerName",
-            
-            -- Purchase Venue Data
-            v."venueName" as "purchaseVenueName"
-        FROM "myCellarItems" ci
-        -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
-        LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
-        LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-        LEFT JOIN "listings" l ON ci."listingID" = l."id"
-        LEFT JOIN "producers" p ON l."producerID" = p."id"
-        LEFT JOIN "venues" v ON ci."purchaseVenueID" = v."id"
-        WHERE cc."ownerID" = %s AND cc."ownerType" = %s AND ci."archiveStatus" = FALSE
-        ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
-        """
-        
-        cur.execute(cellar_query, (ownerID, ownerType))
-        items = cur.fetchall()
-        
-        print(f"DEBUG: Found {len(items)} cellar items for {ownerType} {ownerID}")
-        
-        if not items:
-            return jsonify({
-                "code": 404,
-                "message": "No cellar items found for this owner."
-            }), 404
-        
-        # Initialize counters and totals
-        total_items = 0
-        total_purchase_cost_usd = 0
-        total_current_value_usd = 0
-        items_without_purchase_price = 0
-        items_without_current_value = 0
-        
-        # Breakdown dictionaries
-        breakdown_by_country = {}
-        breakdown_by_drink_type = {}
-        breakdown_by_category = {}
-        breakdown_by_format = {}
-        breakdown_by_consumption = {}
-        breakdown_by_location = {}
-        breakdown_by_sub_location = {}
-        breakdown_by_collection = {}
-        breakdown_by_listing_variant = {}  # Track unique listing+variant combinations
-        breakdown_by_status = {}  # Item status breakdown
-        breakdown_by_volume_size = {}  # Volume-based breakdown
-        breakdown_by_purchase_year = {}  # Purchase year breakdown
-        breakdown_by_producer = {}  # Producer breakdown
-        breakdown_by_purchase_address = {}  # Purchase address breakdown
-        
-        # Process each item
-        for item in items:
-            # Each item represents one physical bottle/item
-            quantity = 1  # Each record = 1 bottle in new schema
-            total_items += quantity
-            
-            # Get financial data - purchase price is per bottle, current value from master
-            purchase_price = item.get('purchasePrice')
-            purchase_currency = item.get('purchaseCurrency') or 'USD'
-            current_value = item.get('currentValueEstimation')  # From master record
-            current_value_currency = item.get('currentValueCurrency') or 'USD'  # From master record
-            
-            # Convert to USD using currency service (only for non-USD currencies)
-            if purchase_price is not None:
-                purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
-                if purchase_price_usd is not None:
-                    total_purchase_cost_usd += purchase_price_usd * quantity
-                else:
-                    items_without_purchase_price += quantity
-            else:
-                items_without_purchase_price += quantity
+        with db_manager.get_cursor() as cursor:
+            # Main query to get all cellar items with related data
+            # Updated to join with master records for shared properties
+            cellar_query = """
+            SELECT 
+                -- Individual Bottle Details
+                ci."id",
+                ci."quantityVariantID",
+                ci."variantGroupID",
+                ci."purchasePrice",
+                ci."purchaseCurrency",
+                ci."status",
+                ci."consumption",
+                ci."currentLocation",
+                ci."subLocation",
+                ci."addedDate",
+                ci."updatedDate",
+                ci."variant",
+                ci."listingID",
+                ci."archiveStatus",
+                ci."purchaseDate",
+                ci."deliveryDate",
+                ci."purchaseVenueID",
+                ci."purchasePlaceName",
+                ci."purchaseAddress",
+                ci."noteToSelf",
                 
-            if current_value is not None:
-                current_value_usd = convert_price_to_usd(current_value, current_value_currency)
-                if current_value_usd is not None:
-                    total_current_value_usd += current_value_usd * quantity
-                else:
-                    items_without_current_value += quantity
-            else:
-                items_without_current_value += quantity
-            
-            # Extract breakdown data
-            country = item.get('originCountry') or 'Unknown'
-            drink_type = item.get('drinkType') or 'Unknown'
-            category = item.get('typeCategory') or 'Unknown'
-            drink_format = item.get('drinkFormat') or 'Bottle'  # From master record
-            consumption = item.get('consumption') or 'Unknown'
-            location = item.get('currentLocation') or 'Unknown'
-            sub_location = item.get('subLocation') or 'Not Specified'
-            collection = item.get('collectionName') or 'Default'
-            status = item.get('status') or 'Unknown'
-            producer_name = item.get('producerName') or 'Unknown Producer'
-            
-            # Volume breakdown
-            volume_number = item.get('volumeNumber')
-            volume_unit = item.get('volumeUnit')
-            if volume_number and volume_unit:
-                volume_size = f"{volume_number} {volume_unit}"
-            else:
-                volume_size = 'Unknown Size'
-            
-            # Purchase year breakdown
-            purchase_date = item.get('purchaseDate')
-            if purchase_date:
-                purchase_year = str(purchase_date.year) if hasattr(purchase_date, 'year') else 'Unknown Year'
-            else:
-                purchase_year = 'Unknown Year'
-            
-            # Purchase address breakdown
-            purchase_address = item.get('purchaseAddress')
-            purchase_venue_name = item.get('purchaseVenueName')
-            purchase_place_name = item.get('purchasePlaceName')
-            
-            # Prioritize venue name, then place name, then address
-            if purchase_venue_name:
-                purchase_location = purchase_venue_name
-            elif purchase_place_name:
-                purchase_location = purchase_place_name
-            elif purchase_address:
-                purchase_location = purchase_address
-            else:
-                purchase_location = 'Unknown Purchase Location'
-            
-            # Create unique listing+variant identifier for tracking
-            listing_id = item.get('listingID')
-            variant = item.get('variant') or 'No Variant'
-            listing_name = item.get('listingName') or 'Unknown Listing'
-            listing_variant_key = f"{listing_name} - Variant: {variant}" if variant != 'No Variant' else listing_name
-            
-            # Helper function to update breakdown with currency conversion
-            def update_breakdown(breakdown_dict, key, purchase_price, current_value, purchase_currency, current_value_currency):
-                """Updated to work with individual items (quantity always = 1)"""
-                if key not in breakdown_dict:
-                    breakdown_dict[key] = {
-                        'count': 0,
-                        'totalPurchaseCost': 0,
-                        'totalCurrentValue': 0,
-                        'itemsWithoutPurchasePrice': 0,
-                        'itemsWithoutCurrentValue': 0
-                    }
+                -- Shared Properties from Master Record (or current item if it's the master)
+                COALESCE(master."drinkFormat", ci."drinkFormat") as "drinkFormat",
+                COALESCE(master."currentValueEstimation", ci."currentValueEstimation") as "currentValueEstimation",
+                COALESCE(master."currentValueCurrency", ci."currentValueCurrency") as "currentValueCurrency",
+                COALESCE(master."volumeNumber", ci."volumeNumber") as "volumeNumber",
+                COALESCE(master."volumeUnit", ci."volumeUnit") as "volumeUnit",
+                COALESCE(master."drinkByDate", ci."drinkByDate") as "drinkByDate",
+                COALESCE(master."drinkOnwardsDate", ci."drinkOnwardsDate") as "drinkOnwardsDate",
                 
-                breakdown_dict[key]['count'] += 1  # Each item counts as 1
+                -- Collection and Listing Data
+                cc."collectionName",
+                cc."id" as "collectionID",
+                l."listingName",
+                l."originCountry",
+                l."drinkType",
+                l."typeCategory",
+                l."abv",
+                l."producerID",
+                p."producerName",
                 
+                -- Purchase Venue Data
+                v."venueName" as "purchaseVenueName"
+            FROM "myCellarItems" ci
+            -- Join with master record for shared properties using variantGroupID and quantityVariantID = 1
+            LEFT JOIN "myCellarItems" master ON master."variantGroupID" = ci."variantGroupID" AND master."quantityVariantID" = 1
+            LEFT JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            LEFT JOIN "listings" l ON ci."listingID" = l."id"
+            LEFT JOIN "producers" p ON l."producerID" = p."id"
+            LEFT JOIN "venues" v ON ci."purchaseVenueID" = v."id"
+            WHERE cc."ownerID" = %s AND cc."ownerType" = %s AND ci."archiveStatus" = FALSE
+            ORDER BY ci."listingID", ci."variant", ci."quantityVariantID" ASC
+            """
+            
+            cursor.execute(cellar_query, (ownerID, ownerType))
+            items = cursor.fetchall()
+            
+            print(f"DEBUG: Found {len(items)} cellar items for {ownerType} {ownerID}")
+            
+            if not items:
+                return jsonify({
+                    "code": 404,
+                    "message": "No cellar items found for this owner."
+                }), 404
+            
+            # Initialize counters and totals
+            total_items = 0
+            total_purchase_cost_usd = 0
+            total_current_value_usd = 0
+            items_without_purchase_price = 0
+            items_without_current_value = 0
+            
+            # Breakdown dictionaries
+            breakdown_by_country = {}
+            breakdown_by_drink_type = {}
+            breakdown_by_category = {}
+            breakdown_by_format = {}
+            breakdown_by_consumption = {}
+            breakdown_by_location = {}
+            breakdown_by_sub_location = {}
+            breakdown_by_collection = {}
+            breakdown_by_listing_variant = {}  # Track unique listing+variant combinations
+            breakdown_by_status = {}  # Item status breakdown
+            breakdown_by_volume_size = {}  # Volume-based breakdown
+            breakdown_by_purchase_year = {}  # Purchase year breakdown
+            breakdown_by_producer = {}  # Producer breakdown
+            breakdown_by_purchase_address = {}  # Purchase address breakdown
+            
+            # Process each item
+            for item in items:
+                # Each item represents one physical bottle/item
+                quantity = 1  # Each record = 1 bottle in new schema
+                total_items += quantity
+                
+                # Get financial data - purchase price is per bottle, current value from master
+                purchase_price = item.get('purchasePrice')
+                purchase_currency = item.get('purchaseCurrency') or 'USD'
+                current_value = item.get('currentValueEstimation')  # From master record
+                current_value_currency = item.get('currentValueCurrency') or 'USD'  # From master record
+                
+                # Convert to USD using currency service (only for non-USD currencies)
                 if purchase_price is not None:
                     purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
                     if purchase_price_usd is not None:
-                        breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd  # No quantity multiplication
+                        total_purchase_cost_usd += purchase_price_usd * quantity
                     else:
-                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                        items_without_purchase_price += quantity
                 else:
-                    breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                    items_without_purchase_price += quantity
                     
                 if current_value is not None:
                     current_value_usd = convert_price_to_usd(current_value, current_value_currency)
                     if current_value_usd is not None:
-                        breakdown_dict[key]['totalCurrentValue'] += current_value_usd  # No quantity multiplication
+                        total_current_value_usd += current_value_usd * quantity
+                    else:
+                        items_without_current_value += quantity
+                else:
+                    items_without_current_value += quantity
+                
+                # Extract breakdown data
+                country = item.get('originCountry') or 'Unknown'
+                drink_type = item.get('drinkType') or 'Unknown'
+                category = item.get('typeCategory') or 'Unknown'
+                drink_format = item.get('drinkFormat') or 'Bottle'  # From master record
+                consumption = item.get('consumption') or 'Unknown'
+                location = item.get('currentLocation') or 'Unknown'
+                sub_location = item.get('subLocation') or 'Not Specified'
+                collection = item.get('collectionName') or 'Default'
+                status = item.get('status') or 'Unknown'
+                producer_name = item.get('producerName') or 'Unknown Producer'
+                
+                # Volume breakdown
+                volume_number = item.get('volumeNumber')
+                volume_unit = item.get('volumeUnit')
+                if volume_number and volume_unit:
+                    volume_size = f"{volume_number} {volume_unit}"
+                else:
+                    volume_size = 'Unknown Size'
+                
+                # Purchase year breakdown
+                purchase_date = item.get('purchaseDate')
+                if purchase_date:
+                    purchase_year = str(purchase_date.year) if hasattr(purchase_date, 'year') else 'Unknown Year'
+                else:
+                    purchase_year = 'Unknown Year'
+                
+                # Purchase address breakdown
+                purchase_address = item.get('purchaseAddress')
+                purchase_venue_name = item.get('purchaseVenueName')
+                purchase_place_name = item.get('purchasePlaceName')
+                
+                # Prioritize venue name, then place name, then address
+                if purchase_venue_name:
+                    purchase_location = purchase_venue_name
+                elif purchase_place_name:
+                    purchase_location = purchase_place_name
+                elif purchase_address:
+                    purchase_location = purchase_address
+                else:
+                    purchase_location = 'Unknown Purchase Location'
+                
+                # Create unique listing+variant identifier for tracking
+                listing_id = item.get('listingID')
+                variant = item.get('variant') or 'No Variant'
+                listing_name = item.get('listingName') or 'Unknown Listing'
+                listing_variant_key = f"{listing_name} - Variant: {variant}" if variant != 'No Variant' else listing_name
+                
+                # Helper function to update breakdown with currency conversion
+                def update_breakdown(breakdown_dict, key, purchase_price, current_value, purchase_currency, current_value_currency):
+                    """Updated to work with individual items (quantity always = 1)"""
+                    if key not in breakdown_dict:
+                        breakdown_dict[key] = {
+                            'count': 0,
+                            'totalPurchaseCost': 0,
+                            'totalCurrentValue': 0,
+                            'itemsWithoutPurchasePrice': 0,
+                            'itemsWithoutCurrentValue': 0
+                        }
+                    
+                    breakdown_dict[key]['count'] += 1  # Each item counts as 1
+                    
+                    if purchase_price is not None:
+                        purchase_price_usd = convert_price_to_usd(purchase_price, purchase_currency)
+                        if purchase_price_usd is not None:
+                            breakdown_dict[key]['totalPurchaseCost'] += purchase_price_usd  # No quantity multiplication
+                        else:
+                            breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                    else:
+                        breakdown_dict[key]['itemsWithoutPurchasePrice'] += 1
+                        
+                    if current_value is not None:
+                        current_value_usd = convert_price_to_usd(current_value, current_value_currency)
+                        if current_value_usd is not None:
+                            breakdown_dict[key]['totalCurrentValue'] += current_value_usd  # No quantity multiplication
+                        else:
+                            breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
                     else:
                         breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
-                else:
-                    breakdown_dict[key]['itemsWithoutCurrentValue'] += 1
+                
+                # Update all breakdowns
+                update_breakdown(breakdown_by_country, country, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_drink_type, drink_type, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_category, category, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_format, drink_format, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_consumption, consumption, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_location, location, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_sub_location, sub_location, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_collection, collection, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_listing_variant, listing_variant_key, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_status, status, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_volume_size, volume_size, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_purchase_year, purchase_year, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_producer, producer_name, purchase_price, current_value, purchase_currency, current_value_currency)
+                update_breakdown(breakdown_by_purchase_address, purchase_location, purchase_price, current_value, purchase_currency, current_value_currency)
             
-            # Update all breakdowns
-            update_breakdown(breakdown_by_country, country, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_drink_type, drink_type, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_category, category, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_format, drink_format, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_consumption, consumption, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_location, location, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_sub_location, sub_location, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_collection, collection, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_listing_variant, listing_variant_key, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_status, status, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_volume_size, volume_size, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_purchase_year, purchase_year, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_producer, producer_name, purchase_price, current_value, purchase_currency, current_value_currency)
-            update_breakdown(breakdown_by_purchase_address, purchase_location, purchase_price, current_value, purchase_currency, current_value_currency)
-        
-        # Generate qualifiers for financial data
-        purchase_cost_qualifier = None
-        if items_without_purchase_price > 0:
-            purchase_cost_qualifier = f"This is an estimate only - you have not entered the purchase price of {items_without_purchase_price} bottles in your cellar"
-        
-        current_value_qualifier = None
-        if items_without_current_value > 0:
-            current_value_qualifier = f"This is an estimate only - you have not entered the current market value of {items_without_current_value} bottles in your cellar"
-        
-        # Get historical data for graphs
-        historical_query = """
-        SELECT 
-            DATE_TRUNC('month', cl."changeDate") as month,
-            cl."changeType",
-            cl."quantityDelta",
-            cl."newValue",
-            cl."fieldName"
-        FROM "myCellarItemsChangelog" cl
-        JOIN "myCellarItems" ci ON cl."cellarItemID" = ci.id
-        JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
-        WHERE cc."ownerID" = %s AND cc."ownerType" = %s
-        AND ci."archiveStatus" = FALSE
-        AND cl."changeDate" >= NOW() - INTERVAL '12 months'
-        ORDER BY cl."changeDate" ASC
-        """
-        
-        cur.execute(historical_query, (ownerID, ownerType))
-        changelog_items = cur.fetchall()
-        
-        # Process historical data
-        monthly_data = {}
-        
-        for log_item in changelog_items:
-            month = log_item.get('month').strftime('%Y-%m') if log_item.get('month') else None
-            change_type = log_item.get('changeType')
-            quantity_delta = log_item.get('quantityDelta') or 0
-            new_value = log_item.get('newValue')
-            field_name = log_item.get('fieldName')
+            # Generate qualifiers for financial data
+            purchase_cost_qualifier = None
+            if items_without_purchase_price > 0:
+                purchase_cost_qualifier = f"This is an estimate only - you have not entered the purchase price of {items_without_purchase_price} bottles in your cellar"
             
-            if month not in monthly_data:
-                monthly_data[month] = {
-                    'totalItems': 0,
-                    'itemsAdded': 0,
-                    'itemsRemoved': 0,
-                    'valueChanges': 0
-                }
+            current_value_qualifier = None
+            if items_without_current_value > 0:
+                current_value_qualifier = f"This is an estimate only - you have not entered the current market value of {items_without_current_value} bottles in your cellar"
             
-            if change_type == 'CREATED':
-                monthly_data[month]['itemsAdded'] += 1
-                monthly_data[month]['totalItems'] += 1
-            elif change_type == 'DELETED':
-                monthly_data[month]['itemsRemoved'] += 1
-                monthly_data[month]['totalItems'] -= 1
-            elif change_type == 'STATUS_CHANGED' and new_value == 'Consumed':
-                # Don't count as removed from cellar, just status change
-                pass
-            elif change_type == 'FINANCIAL_UPDATED' and field_name == 'currentValueEstimation':
-                try:
-                    value = float(new_value) if new_value else 0
-                    monthly_data[month]['valueChanges'] += value
-                except (ValueError, TypeError):
+            # Get historical data for graphs
+            historical_query = """
+            SELECT 
+                DATE_TRUNC('month', cl."changeDate") as month,
+                cl."changeType",
+                cl."quantityDelta",
+                cl."newValue",
+                cl."fieldName"
+            FROM "myCellarItemsChangelog" cl
+            JOIN "myCellarItems" ci ON cl."cellarItemID" = ci.id
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc.id
+            WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+            AND ci."archiveStatus" = FALSE
+            AND cl."changeDate" >= NOW() - INTERVAL '12 months'
+            ORDER BY cl."changeDate" ASC
+            """
+            
+            cursor.execute(historical_query, (ownerID, ownerType))
+            changelog_items = cursor.fetchall()
+            
+            # Process historical data
+            monthly_data = {}
+            
+            for log_item in changelog_items:
+                month = log_item.get('month').strftime('%Y-%m') if log_item.get('month') else None
+                change_type = log_item.get('changeType')
+                quantity_delta = log_item.get('quantityDelta') or 0
+                new_value = log_item.get('newValue')
+                field_name = log_item.get('fieldName')
+                
+                if month not in monthly_data:
+                    monthly_data[month] = {
+                        'totalItems': 0,
+                        'itemsAdded': 0,
+                        'itemsRemoved': 0,
+                        'valueChanges': 0
+                    }
+                
+                if change_type == 'CREATED':
+                    monthly_data[month]['itemsAdded'] += 1
+                    monthly_data[month]['totalItems'] += 1
+                elif change_type == 'DELETED':
+                    monthly_data[month]['itemsRemoved'] += 1
+                    monthly_data[month]['totalItems'] -= 1
+                elif change_type == 'STATUS_CHANGED' and new_value == 'Consumed':
+                    # Don't count as removed from cellar, just status change
                     pass
-        
-        # Convert monthly data to list for frontend consumption
-        historical_timeline = []
-        for month, data in sorted(monthly_data.items()):
-            historical_timeline.append({
-                'month': month,
-                'totalItems': data['totalItems'],
-                'itemsAdded': data['itemsAdded'],
-                'itemsRemoved': data['itemsRemoved'],
-                'valueChanges': round(data['valueChanges'], 2)
-            })
-        
-        # Generate top 5 lists for dashboard insights
-        def get_top_5_breakdown(breakdown_dict, sort_by='count', include_unknown=False):
-            """Get top 5 items from a breakdown dictionary, sorted by count or value"""
-            items = []
-            for key, data in breakdown_dict.items():
-                # Include unknown categories for producers to help debug
-                if include_unknown or key not in ['Unknown', 'Unknown Producer']:
-                    items.append({
-                        'name': key,
-                        'count': data['count'],
-                        'totalPurchaseCost': round(data['totalPurchaseCost'], 2),
-                        'totalCurrentValue': round(data['totalCurrentValue'], 2),
-                        'percentage': round((data['count'] / total_items) * 100, 1) if total_items > 0 else 0
-                    })
+                elif change_type == 'FINANCIAL_UPDATED' and field_name == 'currentValueEstimation':
+                    try:
+                        value = float(new_value) if new_value else 0
+                        monthly_data[month]['valueChanges'] += value
+                    except (ValueError, TypeError):
+                        pass
             
-            # Sort by count (most common) and return top 5
-            items.sort(key=lambda x: x['count'], reverse=True)
-            return items[:5]
-        
-        # Generate top 5 summaries
-        top_5_drink_types = get_top_5_breakdown(breakdown_by_drink_type)
-        top_5_countries = get_top_5_breakdown(breakdown_by_country)
-        top_5_producers = get_top_5_breakdown(breakdown_by_producer)  # Back to normal filtering
-        top_5_collections = get_top_5_breakdown(breakdown_by_collection)
-        top_5_categories = get_top_5_breakdown(breakdown_by_category)
-        top_5_purchase_locations = get_top_5_breakdown(breakdown_by_purchase_address)
-        
-        # Prepare final response
-        dashboard_data = {
-            'summary': {
-                'totalItems': total_items,
-                'totalPurchaseCost': round(total_purchase_cost_usd, 2),
-                'totalCurrentValue': round(total_current_value_usd, 2),
-                'itemsWithoutPurchasePrice': items_without_purchase_price,
-                'itemsWithoutCurrentValue': items_without_current_value,
-                'purchaseCostQualifier': purchase_cost_qualifier,
-                'currentValueQualifier': current_value_qualifier,
-                'displayCurrency': 'USD',
-                'currencyNote': 'All values converted to USD using current exchange rates'
-            },
-            'topInsights': {
-                'topDrinkTypes': top_5_drink_types,
-                'topCountries': top_5_countries,
-                'topProducers': top_5_producers,
-                'topCollections': top_5_collections,
-                'topCategories': top_5_categories,
-                'topPurchaseLocations': top_5_purchase_locations
-            },
-            'breakdowns': {
-                'byCountry': breakdown_by_country,
-                'byDrinkType': breakdown_by_drink_type,
-                'byCategory': breakdown_by_category,
-                'byFormat': breakdown_by_format,
-                'byConsumption': breakdown_by_consumption,
-                'byLocation': breakdown_by_location,
-                'bySubLocation': breakdown_by_sub_location,
-                'byCollection': breakdown_by_collection,
-                'byListingVariant': breakdown_by_listing_variant,
-                'byStatus': breakdown_by_status,
-                'byVolumeSize': breakdown_by_volume_size,
-                'byPurchaseYear': breakdown_by_purchase_year,
-                'byProducer': breakdown_by_producer,
-                'byPurchaseAddress': breakdown_by_purchase_address
-            },
-            'historicalData': {
-                'timeline': historical_timeline,
-                'dataPoints': len(historical_timeline)
+            # Convert monthly data to list for frontend consumption
+            historical_timeline = []
+            for month, data in sorted(monthly_data.items()):
+                historical_timeline.append({
+                    'month': month,
+                    'totalItems': data['totalItems'],
+                    'itemsAdded': data['itemsAdded'],
+                    'itemsRemoved': data['itemsRemoved'],
+                    'valueChanges': round(data['valueChanges'], 2)
+                })
+            
+            # Generate top 5 lists for dashboard insights
+            def get_top_5_breakdown(breakdown_dict, sort_by='count', include_unknown=False):
+                """Get top 5 items from a breakdown dictionary, sorted by count or value"""
+                items = []
+                for key, data in breakdown_dict.items():
+                    # Include unknown categories for producers to help debug
+                    if include_unknown or key not in ['Unknown', 'Unknown Producer']:
+                        items.append({
+                            'name': key,
+                            'count': data['count'],
+                            'totalPurchaseCost': round(data['totalPurchaseCost'], 2),
+                            'totalCurrentValue': round(data['totalCurrentValue'], 2),
+                            'percentage': round((data['count'] / total_items) * 100, 1) if total_items > 0 else 0
+                        })
+                
+                # Sort by count (most common) and return top 5
+                items.sort(key=lambda x: x['count'], reverse=True)
+                return items[:5]
+            
+            # Generate top 5 summaries
+            top_5_drink_types = get_top_5_breakdown(breakdown_by_drink_type)
+            top_5_countries = get_top_5_breakdown(breakdown_by_country)
+            top_5_producers = get_top_5_breakdown(breakdown_by_producer)  # Back to normal filtering
+            top_5_collections = get_top_5_breakdown(breakdown_by_collection)
+            top_5_categories = get_top_5_breakdown(breakdown_by_category)
+            top_5_purchase_locations = get_top_5_breakdown(breakdown_by_purchase_address)
+            
+            # Prepare final response
+            dashboard_data = {
+                'summary': {
+                    'totalItems': total_items,
+                    'totalPurchaseCost': round(total_purchase_cost_usd, 2),
+                    'totalCurrentValue': round(total_current_value_usd, 2),
+                    'itemsWithoutPurchasePrice': items_without_purchase_price,
+                    'itemsWithoutCurrentValue': items_without_current_value,
+                    'purchaseCostQualifier': purchase_cost_qualifier,
+                    'currentValueQualifier': current_value_qualifier,
+                    'displayCurrency': 'USD',
+                    'currencyNote': 'All values converted to USD using current exchange rates'
+                },
+                'topInsights': {
+                    'topDrinkTypes': top_5_drink_types,
+                    'topCountries': top_5_countries,
+                    'topProducers': top_5_producers,
+                    'topCollections': top_5_collections,
+                    'topCategories': top_5_categories,
+                    'topPurchaseLocations': top_5_purchase_locations
+                },
+                'breakdowns': {
+                    'byCountry': breakdown_by_country,
+                    'byDrinkType': breakdown_by_drink_type,
+                    'byCategory': breakdown_by_category,
+                    'byFormat': breakdown_by_format,
+                    'byConsumption': breakdown_by_consumption,
+                    'byLocation': breakdown_by_location,
+                    'bySubLocation': breakdown_by_sub_location,
+                    'byCollection': breakdown_by_collection,
+                    'byListingVariant': breakdown_by_listing_variant,
+                    'byStatus': breakdown_by_status,
+                    'byVolumeSize': breakdown_by_volume_size,
+                    'byPurchaseYear': breakdown_by_purchase_year,
+                    'byProducer': breakdown_by_producer,
+                    'byPurchaseAddress': breakdown_by_purchase_address
+                },
+                'historicalData': {
+                    'timeline': historical_timeline,
+                    'dataPoints': len(historical_timeline)
+                }
             }
-        }
-        
-        return jsonify({
-            "code": 200,
-            "data": dashboard_data,
-            "message": f"Successfully retrieved cellar dashboard data for {ownerType} {ownerID}."
-        })
+            
+            return jsonify({
+                "code": 200,
+                "data": dashboard_data,
+                "message": f"Successfully retrieved cellar dashboard data for {ownerType} {ownerID}."
+            })
         
     except Exception as e:
         print(f"Error in getCellarDashboard: {str(e)}")
@@ -7069,9 +7058,6 @@ def getCellarDashboard(ownerType, ownerID):
             "code": 500,
             "message": f"Error retrieving cellar dashboard data: {str(e)}"
         }), 500
-    finally:
-        if 'cur' in locals():
-            cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get best rated expressions for a producer
