@@ -1664,65 +1664,63 @@ def getProducersBySearch():
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
 def getProducerByRequestId(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        query = """
-            SELECT 
-                p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
-                p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
-                p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
-                p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', qa.id,
-                        'question', qa.question,
-                        'answer', qa.answer,
-                        'date', qa.date,
-                        'userId', qa."userId",
-                        'producerId', qa."producerId"
-                    ))
-                    FROM "producersQuestionAnswers" qa
-                    WHERE qa."producerId" = p.id
-                ), '[]') AS "questionsAnswers",
-                COALESCE((
-                    SELECT row_to_json(oh)
-                    FROM "producersOpeningHours" oh
-                    WHERE oh."producerId" = p.id
-                ), '{}'::json) AS "openingHours",
-                COALESCE((
-                    SELECT json_agg(json_build_object(
-                        'id', u.id,
-                        'date', u.date,
-                        'text', u.text,
-                        'photo', u.photo,
-                        'producerId', u."producerId",
-                        'likes', COALESCE((
-                            SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
-                            FROM "producerUpdateLikes" l
-                            WHERE l."updateId" = u.id
-                        ), '[]')
-                    ))
-                    FROM "producersUpdates" u
-                    WHERE u."producerId" = p.id
-                ), '[]') AS updates
-            FROM "producers" p
-            WHERE p.id = %s
-        """
+        with db_manager.get_cursor() as cursor:
+            query = """
+                SELECT 
+                    p.id, p."producerName", p."producerDesc", p."originCountry", p."mainDrinks", p.photo, 
+                    p."hashedPassword", p."claimStatus", p."statusOB", p.username, p."producerLink", 
+                    p."yearFounded", p."activeStatus", p.owner, p.location, p."openForTours", p.website,
+                    p."stripeCustomerId", p."claimStatusCheckDate", p."isIndependentBottler",
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', qa.id,
+                            'question', qa.question,
+                            'answer', qa.answer,
+                            'date', qa.date,
+                            'userId', qa."userId",
+                            'producerId', qa."producerId"
+                        ))
+                        FROM "producersQuestionAnswers" qa
+                        WHERE qa."producerId" = p.id
+                    ), '[]') AS "questionsAnswers",
+                    COALESCE((
+                        SELECT row_to_json(oh)
+                        FROM "producersOpeningHours" oh
+                        WHERE oh."producerId" = p.id
+                    ), '{}'::json) AS "openingHours",
+                    COALESCE((
+                        SELECT json_agg(json_build_object(
+                            'id', u.id,
+                            'date', u.date,
+                            'text', u.text,
+                            'photo', u.photo,
+                            'producerId', u."producerId",
+                            'likes', COALESCE((
+                                SELECT json_agg(json_build_object('userId', l."userId", 'userType', l."userType"))
+                                FROM "producerUpdateLikes" l
+                                WHERE l."updateId" = u.id
+                            ), '[]')
+                        ))
+                        FROM "producersUpdates" u
+                        WHERE u."producerId" = p.id
+                    ), '[]') AS updates
+                FROM "producers" p
+                WHERE p.id = %s
+            """
 
-        cur.execute(query, (id,))
-        producer_data = cur.fetchone()
+            cursor.execute(query, (id,))
+            producer_data = cursor.fetchone()
 
-        if producer_data is None:
-            return jsonify({"message": "Producer not found"}), 404
+            if producer_data is None:
+                return jsonify({"message": "Producer not found"}), 404
 
-        producer = dict(producer_data)
-        producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
-        producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
-        producer['updates'] = producer['updates'] if producer['updates'] else []
+            producer = dict(producer_data)
+            producer['questionsAnswers'] = producer['questionsAnswers'] if producer['questionsAnswers'] else []
+            producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
+            producer['updates'] = producer['updates'] if producer['updates'] else []
 
-        return jsonify(producer), 200
+            return jsonify(producer), 200
     
     except Exception as e:
         print(str(e))
@@ -1732,78 +1730,71 @@ def getProducerByRequestId(id):
                 "message": "An error occurred retrieving the producer."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # [GET] List of unique producers names and id
 @blueprint.route("/getUniqueProducersNamesID/<search_term>/<pid>")
 def getUniqueProducersNamesID(search_term, pid):
-    conn = g.db
-    cursor = conn.cursor()
-
     search_term = search_term.strip().lower()
 
     try:
-        # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
-        if pid != '0':
-            cursor.execute('SELECT "id", "producerName", "originCountry" FROM "producers" WHERE "id" = %s', (int(pid),))
-            producer_data = cursor.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Retrieve producer name and ID is pid is not '0' - stop here since we only want to return this one
+            if pid != '0':
+                cursor.execute('SELECT "id", "producerName", "originCountry" FROM "producers" WHERE "id" = %s', (int(pid),))
+                producer_data = cursor.fetchone()
+                
+                if producer_data:
+                    return jsonify({
+                        "code": 200,
+                        "message": "Producer fetched successfully.",
+                        "id": producer_data["id"],
+                        "producerName": producer_data["producerName"],
+                        "originCountry": producer_data["originCountry"]
+                    })
+                
+            # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
+            # Enhanced search with accent removal and character normalization for better matching
+            cursor.execute("""
+                SELECT "id", "producerName", "isIndependentBottler", "originCountry",
+                       similarity(unaccent("producerName"), unaccent(%s)) as sim_score
+                FROM "producers"
+                WHERE unaccent("producerName") ILIKE unaccent(%s)
+                   OR unaccent(regexp_replace("producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
+                   OR unaccent("producerName") %% unaccent(%s)
+                ORDER BY sim_score DESC NULLS LAST
+                LIMIT 30
+            """, (search_term, '%' + search_term + '%', '%' + search_term + '%', search_term))
             
-            if producer_data:
+            producers_data = cursor.fetchall()  
 
+            if not producers_data:
                 return jsonify({
-                    "code": 200,
-                    "message": "Producer fetched successfully.",
-                    "id": producer_data["id"],
-                    "producerName": producer_data["producerName"],
-                    "originCountry": producer_data["originCountry"]
+                    "code": 404,
+                    "message": "No producers found."
                 })
-            
-        # If pid is '0', search for producers by name to populate into the input field for suggestions [SubmitListingNew.vue]
-        # Enhanced search with accent removal and character normalization for better matching
-        cursor.execute("""
-            SELECT "id", "producerName", "isIndependentBottler", "originCountry",
-                   similarity(unaccent("producerName"), unaccent(%s)) as sim_score
-            FROM "producers"
-            WHERE unaccent("producerName") ILIKE unaccent(%s)
-               OR unaccent(regexp_replace("producerName", '[^a-zA-Z0-9\s]', '', 'g')) ILIKE unaccent(regexp_replace(%s, '[^a-zA-Z0-9\s]', '', 'g'))
-               OR unaccent("producerName") %% unaccent(%s)
-            ORDER BY sim_score DESC NULLS LAST
-            LIMIT 30
-        """, (search_term, '%' + search_term + '%', '%' + search_term + '%', search_term))
-        
-        producers_data = cursor.fetchall()  
 
-        if not producers_data:
+            # Convert the data to a list of dictionaries
+            producers_list = []
+            for producer in producers_data:
+                if producer["producerName"] == None:
+                    continue
+                producer_dict = {
+                    "producerName": producer["producerName"],
+                    "isIndependentBottler": producer["isIndependentBottler"],
+                    "originCountry": producer["originCountry"],
+                    "id": producer["id"]
+                }
+                producers_list.append(producer_dict)
+
             return jsonify({
-                "code": 404,
-                "message": "No producers found."
+                "code": 200,
+                "message": "Producers fetched successfully.",
+                "data": producers_list
             })
 
     except Exception as e:
         print(f"Error fetching producers by search: {str(e)}")
         return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
-    
-    # Convert the data to a list of dictionaries
-
-    producers_list = []
-    for producer in producers_data:
-        if producer["producerName"] == None:
-            continue
-        producer_dict = {
-            "producerName": producer["producerName"],
-            "isIndependentBottler": producer["isIndependentBottler"],
-            "originCountry": producer["originCountry"],
-            "id": producer["id"]
-        }
-        producers_list.append(producer_dict)
-
-    return jsonify({
-        "code": 200,
-        "message": "Producers fetched successfully.",
-        "data": producers_list
-    })
 
 
 # [GET] List of unique bottlers names and id
