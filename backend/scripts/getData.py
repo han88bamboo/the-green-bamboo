@@ -9309,8 +9309,6 @@ def getNotifications(acc_type, acc_id):
     """
     Debug version with detailed error logging to identify the 500 error
     """
-    conn = g.db
-    cur = conn.cursor(cursor_factory=RealDictCursor)
     
     try:
         # print(f"DEBUG: Received acc_type={acc_type}, acc_id={acc_id}")
@@ -9357,24 +9355,25 @@ def getNotifications(acc_type, acc_id):
             'news': []
         }
 
-        # Fetch each tab separately with optimized queries
-        for result_key, db_tab_name, limit in tab_queries:
-            print(f"DEBUG: Fetching {result_key} with tab_name='{db_tab_name}', limit={limit}")
-            
-            try:
-                notifications = _fetch_notifications_by_tab(cur, acc_id, db_tab_name, limit)
-                # print(f"DEBUG: Fetched {len(notifications)} notifications for {result_key}")
+        with db_manager.get_cursor(cursor_factory=RealDictCursor) as cur:
+            # Fetch each tab separately with optimized queries
+            for result_key, db_tab_name, limit in tab_queries:
+                print(f"DEBUG: Fetching {result_key} with tab_name='{db_tab_name}', limit={limit}")
                 
-                # Add time field for consistency with original code
-                for notif in notifications:
-                    notif['time'] = notif.get('createdAt')
-                
-                result[result_key] = notifications
-                
-            except Exception as tab_error:
-                print(f"DEBUG: Error fetching {result_key}: {tab_error}")
-                # Continue with empty list for this tab
-                result[result_key] = []
+                try:
+                    notifications = _fetch_notifications_by_tab(cur, acc_id, db_tab_name, limit)
+                    # print(f"DEBUG: Fetched {len(notifications)} notifications for {result_key}")
+                    
+                    # Add time field for consistency with original code
+                    for notif in notifications:
+                        notif['time'] = notif.get('createdAt')
+                    
+                    result[result_key] = notifications
+                    
+                except Exception as tab_error:
+                    print(f"DEBUG: Error fetching {result_key}: {tab_error}")
+                    # Continue with empty list for this tab
+                    result[result_key] = []
 
         # print(f"DEBUG: Final result keys: {list(result.keys())}")
         # print(f"DEBUG: Result counts - forYou: {len(result['forYou'])}, venues: {len(result['venues'])}, news: {len(result['news'])}")
@@ -9390,9 +9389,6 @@ def getNotifications(acc_type, acc_id):
             'code': 500,
             'message': f'An error occurred fetching notifications: {str(e)}'
         }), 500
-    finally:
-        if cur:
-            cur.close()
 
 
 # ------------------------------------------------------------------------------------------
@@ -9401,104 +9397,102 @@ def getNotifications(acc_type, acc_id):
 @blueprint.route('/getQuestionsUpdates/<user_id>', methods=['GET'])
 def get_questions_updates(user_id):
 
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
-        # Get the list of producers and venues the user follows
-        cursor.execute("""
-            SELECT "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s
-        """, (user_id,))
-        follow_data = cursor.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Get the list of producers and venues the user follows
+            cursor.execute("""
+                SELECT "producers", "venues" FROM "usersFollowLists" WHERE "userId" = %s
+            """, (user_id,))
+            follow_data = cursor.fetchone()
 
-        producers = follow_data['producers']
-        venues = follow_data['venues']
+            producers = follow_data['producers']
+            venues = follow_data['venues']
 
-        producer_questions = []
-        producer_updates = []
-        venue_questions = []
-        venue_updates = []
+            producer_questions = []
+            producer_updates = []
+            venue_questions = []
+            venue_updates = []
 
-        # Loop through producers 
-        if producers:
+            # Loop through producers 
+            if producers:
 
-            for pid in producers:
+                for pid in producers:
 
-                # Get producer questions with answers
-                cursor.execute("""
-                    SELECT pqa.id, pqa.question, pqa.answer, pqa.date,
-                           p.id AS "producerID", p."producerName", p.photo
-                    FROM "producersQuestionAnswers" pqa
-                    JOIN producers p ON pqa."producerId" = p.id
-                    WHERE p.id = %s AND pqa.answer IS NOT NULL
-                    ORDER BY pqa.date DESC
-                    LIMIT 5
-                """, (pid,))
-                producer_questions = cursor.fetchall()
-                # Add type to each question
-                for question in producer_questions:
-                    question['type'] = 'producerQuestion'
-
-
-                # Get producer updates
-                cursor.execute("""
-                    SELECT pu.id, pu.date, pu.text,
-                           p.id AS "producerID", p."producerName", p.photo
-                    FROM "producersUpdates" pu
-                    JOIN producers p ON pu."producerId" = p.id
-                    WHERE p.id = %s
-                    ORDER BY pu.date DESC
-                    LIMIT 3
-                """, (pid,))
-                producer_updates = cursor.fetchall()
-
-                # Add type to each update
-                for update in producer_updates:
-                    update['type'] = 'producerUpdate'
-
-        # Loop through venues 
-        if venues:
-
-            for vid in venues:
-
-                # Get venue questions with answers
-                cursor.execute("""
-                    SELECT vqa.id, vqa.question, vqa.answer, vqa.date,
-                           v.id AS "venueID", v."venueName", v.photo
-                    FROM "venuesQuestionAnswers" vqa
-                    JOIN venues v ON vqa."venueId" = v.id
-                    WHERE v.id = %s AND vqa.answer IS NOT NULL
-                    ORDER BY vqa.date DESC
-                    LIMIT 5
-                """, (vid,))
-                venue_questions = cursor.fetchall()
-                # Add type to each question
-                for question in venue_questions:
-                    question['type'] = 'venueQuestion'
-
-                # Get venue updates
-                cursor.execute("""
-                    SELECT vu.id, vu.date, vu.text,
-                           v.id AS "venueID", v."venueName", v.photo
-                    FROM "venuesUpdates" vu
-                    JOIN venues v ON vu."venueId" = v.id
-                    WHERE v.id = %s
-                    ORDER BY vu.date DESC
-                    LIMIT 3
-                """, (vid,))
-                venue_updates = cursor.fetchall()
-                # Add type to each update
-                for update in venue_updates:
-                    update['type'] = 'venueUpdate'
+                    # Get producer questions with answers
+                    cursor.execute("""
+                        SELECT pqa.id, pqa.question, pqa.answer, pqa.date,
+                               p.id AS "producerID", p."producerName", p.photo
+                        FROM "producersQuestionAnswers" pqa
+                        JOIN producers p ON pqa."producerId" = p.id
+                        WHERE p.id = %s AND pqa.answer IS NOT NULL
+                        ORDER BY pqa.date DESC
+                        LIMIT 5
+                    """, (pid,))
+                    producer_questions = cursor.fetchall()
+                    # Add type to each question
+                    for question in producer_questions:
+                        question['type'] = 'producerQuestion'
 
 
-        # Prepare the response
-        response = {
-            'producerQuestion': producer_questions if producer_questions else [],
-            'producerUpdate': producer_updates if producer_updates else [],
-            'venueQuestion': venue_questions if venue_questions else [],
-            'venueUpdate': venue_updates if venue_updates else []
-        }
+                    # Get producer updates
+                    cursor.execute("""
+                        SELECT pu.id, pu.date, pu.text,
+                               p.id AS "producerID", p."producerName", p.photo
+                        FROM "producersUpdates" pu
+                        JOIN producers p ON pu."producerId" = p.id
+                        WHERE p.id = %s
+                        ORDER BY pu.date DESC
+                        LIMIT 3
+                    """, (pid,))
+                    producer_updates = cursor.fetchall()
+
+                    # Add type to each update
+                    for update in producer_updates:
+                        update['type'] = 'producerUpdate'
+
+            # Loop through venues 
+            if venues:
+
+                for vid in venues:
+
+                    # Get venue questions with answers
+                    cursor.execute("""
+                        SELECT vqa.id, vqa.question, vqa.answer, vqa.date,
+                               v.id AS "venueID", v."venueName", v.photo
+                        FROM "venuesQuestionAnswers" vqa
+                        JOIN venues v ON vqa."venueId" = v.id
+                        WHERE v.id = %s AND vqa.answer IS NOT NULL
+                        ORDER BY vqa.date DESC
+                        LIMIT 5
+                    """, (vid,))
+                    venue_questions = cursor.fetchall()
+                    # Add type to each question
+                    for question in venue_questions:
+                        question['type'] = 'venueQuestion'
+
+                    # Get venue updates
+                    cursor.execute("""
+                        SELECT vu.id, vu.date, vu.text,
+                               v.id AS "venueID", v."venueName", v.photo
+                        FROM "venuesUpdates" vu
+                        JOIN venues v ON vu."venueId" = v.id
+                        WHERE v.id = %s
+                        ORDER BY vu.date DESC
+                        LIMIT 3
+                    """, (vid,))
+                    venue_updates = cursor.fetchall()
+                    # Add type to each update
+                    for update in venue_updates:
+                        update['type'] = 'venueUpdate'
+
+            # Prepare the response
+            response = {
+                'producerQuestion': producer_questions if producer_questions else [],
+                'producerUpdate': producer_updates if producer_updates else [],
+                'venueQuestion': venue_questions if venue_questions else [],
+                'venueUpdate': venue_updates if venue_updates else []
+            }
+
         return jsonify(response), 200
 
     except Exception as e:
@@ -9507,17 +9501,12 @@ def get_questions_updates(user_id):
             'code': 500,
             'message': 'An error occurred fetching questions and updates.'
         }), 500
-    finally:
-        cursor.close()
 
 # ------------------------------------------------------------------------------------------
 # [POST] Get the number of requests for a specific user, specifically the number of listing requests, listing edits requests, and duplicate requests
 # Post data: user_id, user_type, is_admin, drink_types
 @blueprint.route('/getRequestsCount', methods=['POST'])
 def get_requests_count():
-    conn = g.db
-    cur = conn.cursor()
-
     data = request.get_json()
     user_id = data.get('user_id')
     if not user_id:
@@ -9531,105 +9520,106 @@ def get_requests_count():
     drink_types = data.get('drink_types', [])
 
     try:
-        # Check user type
-        if user_type == 'user':
+        with db_manager.get_cursor() as cursor:
+            # Check user type
+            if user_type == 'user':
 
-            # Check if user is admin 
-            if is_admin:
+                # Check if user is admin 
+                if is_admin:
 
-                # Get all requests for admin user
-                cur.execute("""
+                    # Get all requests for admin user
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count FROM "requestListings"
+                        WHERE "reviewStatus" = FALSE
+                    """)
+                    listing_requests_count = cursor.fetchone()['count']
+
+                    # Get all listing edits requests for admin user
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count FROM "requestEdits"
+                        WHERE "reviewStatus" = FALSE
+                        AND "duplicateLink" IS NULL
+                    """)
+                    listing_edits_requests_count = cursor.fetchone()['count']
+
+                    # Get all duplicate requests for admin user
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count FROM "requestEdits"
+                        WHERE "reviewStatus" = FALSE
+                        AND "duplicateLink" IS NOT NULL
+                    """)
+                    duplicate_requests_count = cursor.fetchone()['count']
+                else:
+                    # Get requests raised by the user or request is part of the user's drink types (moderator)
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count FROM "requestListings"
+                        WHERE "userID" = %s OR "drinkType" = ANY(%s)
+                        AND "reviewStatus" = FALSE
+                    """, (user_id, drink_types))
+                    listing_requests_count = cursor.fetchone()['count']
+
+                    # Get listing edits requests raised by the user or request is part of the user's drink types (moderator)
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count
+                        FROM "requestEdits" re
+                        JOIN listings l ON re."listingID" = l.id
+                        WHERE (
+                            re."userID" = %s OR l."drinkType" = ANY(%s)
+                        )
+                        AND re."reviewStatus" = FALSE
+                        AND re."duplicateLink" IS NULL
+                    """, (user_id, drink_types))
+                    listing_edits_requests_count = cursor.fetchone()['count']
+
+
+                    # Get duplicate requests raised by the user or request is part of the user's drink types (moderator)
+                    cursor.execute("""
+                        SELECT COUNT(*) AS count 
+                        FROM "requestEdits" re
+                        JOIN listings l ON re."listingID" = l.id
+                        WHERE (
+                                re."userID" = %s OR l."drinkType" = ANY(%s)
+                            )
+                        AND re."reviewStatus" = FALSE
+                        AND re."duplicateLink" IS NOT NULL
+                    """, (user_id, drink_types))
+                    duplicate_requests_count = cursor.fetchone()['count']
+
+            elif user_type == 'producer':
+                # Get requests related to the producer
+                cursor.execute("""
                     SELECT COUNT(*) AS count FROM "requestListings"
-                    WHERE "reviewStatus" = FALSE
-                """)
-                listing_requests_count = cur.fetchone()['count']
-
-                # Get all listing edits requests for admin user
-                cur.execute("""
-                    SELECT COUNT(*) AS count FROM "requestEdits"
-                    WHERE "reviewStatus" = FALSE
-                    AND "duplicateLink" IS NULL
-                """)
-                listing_edits_requests_count = cur.fetchone()['count']
-
-                # Get all duplicate requests for admin user
-                cur.execute("""
-                    SELECT COUNT(*) AS count FROM "requestEdits"
-                    WHERE "reviewStatus" = FALSE
-                    AND "duplicateLink" IS NOT NULL
-                """)
-                duplicate_requests_count = cur.fetchone()['count']
-            else:
-                # Get requests raised by the user or request is part of the user's drink types (moderator)
-                cur.execute("""
-                    SELECT COUNT(*) AS count FROM "requestListings"
-                    WHERE "userID" = %s OR "drinkType" = ANY(%s)
+                    WHERE "producerID" = %s
                     AND "reviewStatus" = FALSE
-                """, (user_id, drink_types))
-                listing_requests_count = cur.fetchone()['count']
+                """, (user_id,))
+                listing_requests_count = cursor.fetchone()['count']
 
-                # Get listing edits requests raised by the user or request is part of the user's drink types (moderator)
-                cur.execute("""
-                    SELECT COUNT(*) AS count
-                    FROM "requestEdits" re
-                    JOIN listings l ON re."listingID" = l.id
-                    WHERE (
-                        re."userID" = %s OR l."drinkType" = ANY(%s)
-                    )
-                    AND re."reviewStatus" = FALSE
-                    AND re."duplicateLink" IS NULL
-                """, (user_id, drink_types))
-                listing_edits_requests_count = cur.fetchone()['count']
-
-
-                # Get duplicate requests raised by the user or request is part of the user's drink types (moderator)
-                cur.execute("""
+                # Get listing edits requests related to the producer
+                cursor.execute("""
                     SELECT COUNT(*) AS count 
                     FROM "requestEdits" re
                     JOIN listings l ON re."listingID" = l.id
-                    WHERE (
-                            re."userID" = %s OR l."drinkType" = ANY(%s)
-                        )
+                    WHERE l."producerID" = %s
                     AND re."reviewStatus" = FALSE
-                    AND re."duplicateLink" IS NOT NULL
-                """, (user_id, drink_types))
-                duplicate_requests_count = cur.fetchone()['count']
+                    AND re."duplicateLink" IS NULL
+                """, (user_id,))
+                listing_edits_requests_count = cursor.fetchone()['count']
 
-        elif user_type == 'producer':
-            # Get requests related to the producer
-            cur.execute("""
-                SELECT COUNT(*) AS count FROM "requestListings"
-                WHERE "producerID" = %s
-                AND "reviewStatus" = FALSE
-            """, (user_id,))
-            listing_requests_count = cur.fetchone()['count']
-
-            # Get listing edits requests related to the producer
-            cur.execute("""
-                SELECT COUNT(*) AS count 
-                FROM "requestEdits" re
-                JOIN listings l ON re."listingID" = l.id
-                WHERE l."producerID" = %s
-                AND re."reviewStatus" = FALSE
-                AND re."duplicateLink" IS NULL
-            """, (user_id,))
-            listing_edits_requests_count = cur.fetchone()['count']
-
-            # Get duplicate requests related to the producer
-            cur.execute("""
-                SELECT COUNT(*) AS count 
-                FROM "requestEdits" re
-                JOIN listings l ON re."listingID" = l.id
-                WHERE l."producerID" = %s
-                AND "reviewStatus" = FALSE
-                AND "duplicateLink" IS NOT NULL
-            """, (user_id,))
-            duplicate_requests_count = cur.fetchone()['count']
-        else:
-            return jsonify({
-                'code': 400,
-                'message': 'Invalid user type.'
-            }), 400
+                # Get duplicate requests related to the producer
+                cursor.execute("""
+                    SELECT COUNT(*) AS count 
+                    FROM "requestEdits" re
+                    JOIN listings l ON re."listingID" = l.id
+                    WHERE l."producerID" = %s
+                    AND "reviewStatus" = FALSE
+                    AND "duplicateLink" IS NOT NULL
+                """, (user_id,))
+                duplicate_requests_count = cursor.fetchone()['count']
+            else:
+                return jsonify({
+                    'code': 400,
+                    'message': 'Invalid user type.'
+                }), 400
 
         return jsonify({
             'listingRequests': listing_requests_count,
@@ -9644,32 +9634,27 @@ def get_requests_count():
             'message': 'An error occurred fetching requests count.'
         }), 500
 
-    finally:
-        cur.close()
-
 # ------------------------------------------------------------------------------------------
 # [GET] Get User Names Dynamic
 # Purpose: Get user names dynamically based on search term
 @blueprint.route('/getUserNamesDynamic/<search_term>', methods=['GET'])
 def getUserNamesDynamic(search_term):
 
-    conn = g.db
-    cur = conn.cursor()
     try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT id, username, photo, "displayName"
+                FROM users
+                WHERE username ILIKE %s
+                ORDER BY username
+                LIMIT 15
+            """, ('%' + search_term + '%',))
+            user_names = cursor.fetchall()
 
-        cur.execute("""
-            SELECT id, username, photo, "displayName"
-            FROM users
-            WHERE username ILIKE %s
-            ORDER BY username
-            LIMIT 15
-        """, ('%' + search_term + '%',))
-        user_names = cur.fetchall()
+            if not user_names:
+                return jsonify({}), 200
 
-        if not user_names:
-            return jsonify({}), 200
-
-        return jsonify(user_names), 200
+            return jsonify(user_names), 200
 
     except Exception as e:
         print(str(e))
@@ -9678,38 +9663,33 @@ def getUserNamesDynamic(search_term):
             'message': 'An error occurred fetching requests count.'
         }), 500
 
-    finally:
-        cur.close()
-
 
 # [GET] Get a specific system setting by name
 @blueprint.route("/getSystemSetting/<setting_name>", methods=['GET'])
 def getSystemSetting(setting_name):
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
-        cursor.execute(
-            'SELECT * FROM "systemSettings" WHERE "settingName" = %s',
-            (setting_name,)
-        )
-        
-        setting = cursor.fetchone()
-        
-        if not setting:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                'SELECT * FROM "systemSettings" WHERE "settingName" = %s',
+                (setting_name,)
+            )
+            
+            setting = cursor.fetchone()
+            
+            if not setting:
+                return jsonify({
+                    "code": 404,
+                    "message": f"System setting '{setting_name}' not found."
+                }), 404
+            
             return jsonify({
-                "code": 404,
-                "message": f"System setting '{setting_name}' not found."
-            }), 404
-        
-        return jsonify({
-            "code": 200,
-            "message": "System setting fetched successfully.",
-            "settingName": setting["settingName"],
-            "settingValue": setting["settingValue"],
-            "settingDescription": setting["settingDescription"],
-            "lastUpdated": setting["lastUpdated"]
-        })
+                "code": 200,
+                "message": "System setting fetched successfully.",
+                "settingName": setting["settingName"],
+                "settingValue": setting["settingValue"],
+                "settingDescription": setting["settingDescription"],
+                "lastUpdated": setting["lastUpdated"]
+            })
         
     except Exception as e:
         print(f"Error fetching system setting: {str(e)}")
@@ -9717,54 +9697,48 @@ def getSystemSetting(setting_name):
             "code": 500,
             "message": "An error occurred while fetching the system setting."
         }), 500
-    
-    finally:
-        cursor.close()
 
 # to get canonical username for login
-
 @blueprint.route("/getCanonicalUsername/<username>", methods=['GET'])
 def getCanonicalUsername(username):
     try:
-        conn = g.db
-        cur = conn.cursor()
-        
-        # Check all three tables for the username
-        # First check users table
-        cur.execute('SELECT username FROM users WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
-        user = cur.fetchone()
-        
-        if user is not None:
-            return jsonify({
-                "code": 200,
-                "username": user['username']
-            }), 200
+        with db_manager.get_cursor() as cursor:
+            # Check all three tables for the username
+            # First check users table
+            cursor.execute('SELECT username FROM users WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+            user = cursor.fetchone()
             
-        # Check producers table
-        cur.execute('SELECT username FROM producers WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
-        producer = cur.fetchone()
-        
-        if producer is not None:
-            return jsonify({
-                "code": 200,
-                "username": producer['username']
-            }), 200
+            if user is not None:
+                return jsonify({
+                    "code": 200,
+                    "username": user['username']
+                }), 200
+                
+            # Check producers table
+            cursor.execute('SELECT username FROM producers WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+            producer = cursor.fetchone()
             
-        # Check venues table
-        cur.execute('SELECT username FROM venues WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
-        venue = cur.fetchone()
-        
-        if venue is not None:
-            return jsonify({
-                "code": 200,
-                "username": venue['username']
-            }), 200
+            if producer is not None:
+                return jsonify({
+                    "code": 200,
+                    "username": producer['username']
+                }), 200
+                
+            # Check venues table
+            cursor.execute('SELECT username FROM venues WHERE REPLACE(LOWER(username), \' \', \'\') = REPLACE(LOWER(%s), \' \', \'\')', (username,))
+            venue = cursor.fetchone()
             
-        # No user found
-        return jsonify({
-            "code": 404,
-            "message": "Username not found"
-        }), 404
+            if venue is not None:
+                return jsonify({
+                    "code": 200,
+                    "username": venue['username']
+                }), 200
+                
+            # No user found
+            return jsonify({
+                "code": 404,
+                "message": "Username not found"
+            }), 404
         
     except Exception as e:
         return jsonify({
@@ -9778,79 +9752,78 @@ def getCanonicalUsername(username):
 @blueprint.route("/getAllUserFollowing/<id>")
 def getAllUserFollowing(id):
     """Get detailed info of all users that a specific user is following"""
-    conn = g.db
-    cur = conn.cursor()
-
+    
     try:
-        # Step 1: Check if id is a valid user
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if id is a valid user
+            cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+            user_data = cursor.fetchone()
 
-        if user_data is None:
-            return jsonify({
-                "code": 404,
-                "message": "User not found."
-            }), 404
-        
-        # Step 2: Get the list of user IDs this user is following
-        cur.execute('SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
-        follow_data = cur.fetchone()
-        
-        if not follow_data or not follow_data['users']:
-            return jsonify({
-                "following": []
-            }), 200
-        
-        user_ids = follow_data['users']
-        if not user_ids:
-            return jsonify({
-                "following": []
-            }), 200
-        
-        # Step 3: Get detailed info for each user being followed
-        placeholders = ','.join(['%s'] * len(user_ids))
-        query = f'''
-            SELECT 
-                u."id", u."username", u."displayName", u."photo", u."joinDate",
-                u."firstName", u."lastName", u."ambassador", u."categoryExpert",
-                u."choiceDrinks", u."choiceFlavours",
-                COUNT(r."id") as "reviewCount"
-            FROM "users" u
-            LEFT JOIN "reviews" r ON u."id" = r."userID"
-            WHERE u."id" IN ({placeholders})
-            GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
-                     u."firstName", u."lastName", u."ambassador", u."categoryExpert",
-                     u."choiceDrinks", u."choiceFlavours"
-            ORDER BY u."displayName", u."username"
-        '''
-        
-        cur.execute(query, user_ids)
-        following_users = cur.fetchall()
-        
-        # Step 4: Add follower count, current points, and rank for each user
-        for user in following_users:
-            # Count how many people follow this user
-            cur.execute('''
-                SELECT COUNT(*) as follower_count
-                FROM "usersFollowLists" 
-                WHERE %s = ANY("users")
-            ''', (str(user['id']),))
+            if user_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "User not found."
+                }), 404
             
-            follower_result = cur.fetchone()
-            user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+            # Step 2: Get the list of user IDs this user is following
+            cursor.execute('SELECT "users" FROM "usersFollowLists" WHERE "userId" = %s', (id,))
+            follow_data = cursor.fetchone()
             
-            # Get current points from pointsRecorder table
-            cur.execute('''
-                SELECT "currentPoints" 
-                FROM "pointsRecorder" 
-                WHERE "userID" = %s AND "userType" = %s
-            ''', (user['id'], 'user'))
+            if not follow_data or not follow_data['users']:
+                return jsonify({
+                    "following": []
+                }), 200
             
-            points_result = cur.fetchone()
-            user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+            user_ids = follow_data['users']
+            if not user_ids:
+                return jsonify({
+                    "following": []
+                }), 200
             
-            # Get user rank based on proof points
-            user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
+            # Step 3: Get detailed info for each user being followed
+            placeholders = ','.join(['%s'] * len(user_ids))
+            query = f'''
+                SELECT 
+                    u."id", u."username", u."displayName", u."photo", u."joinDate",
+                    u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                    u."choiceDrinks", u."choiceFlavours",
+                    COUNT(r."id") as "reviewCount"
+                FROM "users" u
+                LEFT JOIN "reviews" r ON u."id" = r."userID"
+                WHERE u."id" IN ({placeholders})
+                GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
+                         u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                         u."choiceDrinks", u."choiceFlavours"
+                ORDER BY u."displayName", u."username"
+            '''
+            
+            cursor.execute(query, user_ids)
+            following_users = cursor.fetchall()
+            
+            # Step 4: Add follower count, current points, and rank for each user
+            for user in following_users:
+                # Count how many people follow this user
+                cursor.execute('''
+                    SELECT COUNT(*) as follower_count
+                    FROM "usersFollowLists" 
+                    WHERE %s = ANY("users")
+                ''', (str(user['id']),))
+                
+                follower_result = cursor.fetchone()
+                user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+                
+                # Get current points from pointsRecorder table
+                cursor.execute('''
+                    SELECT "currentPoints" 
+                    FROM "pointsRecorder" 
+                    WHERE "userID" = %s AND "userType" = %s
+                ''', (user['id'], 'user'))
+                
+                points_result = cursor.fetchone()
+                user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+                
+                # Get user rank based on proof points
+                user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
 
         return jsonify({
             "following": following_users
@@ -9862,9 +9835,6 @@ def getAllUserFollowing(id):
             "code": 500,
             "message": "An error occurred retrieving the following users."
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -9872,79 +9842,78 @@ def getAllUserFollowing(id):
 @blueprint.route("/getAllUserFollowers/<id>")
 def getAllUserFollowers(id):
     """Get detailed info of all users that are following a specific user"""
-    conn = g.db
-    cur = conn.cursor()
-
+    
     try:
-        # Step 1: Check if id is a valid user
-        cur.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
-        user_data = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if id is a valid user
+            cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (id,))
+            user_data = cursor.fetchone()
 
-        if user_data is None:
-            return jsonify({
-                "code": 404,
-                "message": "User not found."
-            }), 404
-        
-        # Step 2: Find all users who have this user in their follow lists
-        cur.execute('''
-            SELECT "userId" FROM "usersFollowLists" 
-            WHERE %s = ANY("users")
-        ''', (str(id),))
-        
-        follower_data = cur.fetchall()
-        
-        if not follower_data:
-            return jsonify({
-                "followers": []
-            }), 200
-        
-        follower_user_ids = [row['userId'] for row in follower_data]
-        
-        # Step 3: Get detailed info for each follower
-        placeholders = ','.join(['%s'] * len(follower_user_ids))
-        query = f'''
-            SELECT 
-                u."id", u."username", u."displayName", u."photo", u."joinDate",
-                u."firstName", u."lastName", u."ambassador", u."categoryExpert",
-                u."choiceDrinks", u."choiceFlavours",
-                COUNT(r."id") as "reviewCount"
-            FROM "users" u
-            LEFT JOIN "reviews" r ON u."id" = r."userID"
-            WHERE u."id" IN ({placeholders})
-            GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
-                     u."firstName", u."lastName", u."ambassador", u."categoryExpert",
-                     u."choiceDrinks", u."choiceFlavours"
-            ORDER BY u."displayName", u."username"
-        '''
-        
-        cur.execute(query, follower_user_ids)
-        follower_users = cur.fetchall()
-        
-        # Step 4: Add follower count, current points, and rank for each user
-        for user in follower_users:
-            # Count how many people follow this user
-            cur.execute('''
-                SELECT COUNT(*) as follower_count
-                FROM "usersFollowLists" 
+            if user_data is None:
+                return jsonify({
+                    "code": 404,
+                    "message": "User not found."
+                }), 404
+            
+            # Step 2: Find all users who have this user in their follow lists
+            cursor.execute('''
+                SELECT "userId" FROM "usersFollowLists" 
                 WHERE %s = ANY("users")
-            ''', (str(user['id']),))
+            ''', (str(id),))
             
-            follower_result = cur.fetchone()
-            user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+            follower_data = cursor.fetchall()
             
-            # Get current points from pointsRecorder table
-            cur.execute('''
-                SELECT "currentPoints" 
-                FROM "pointsRecorder" 
-                WHERE "userID" = %s AND "userType" = %s
-            ''', (user['id'], 'user'))
+            if not follower_data:
+                return jsonify({
+                    "followers": []
+                }), 200
             
-            points_result = cur.fetchone()
-            user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+            follower_user_ids = [row['userId'] for row in follower_data]
             
-            # Get user rank based on proof points
-            user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
+            # Step 3: Get detailed info for each follower
+            placeholders = ','.join(['%s'] * len(follower_user_ids))
+            query = f'''
+                SELECT 
+                    u."id", u."username", u."displayName", u."photo", u."joinDate",
+                    u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                    u."choiceDrinks", u."choiceFlavours",
+                    COUNT(r."id") as "reviewCount"
+                FROM "users" u
+                LEFT JOIN "reviews" r ON u."id" = r."userID"
+                WHERE u."id" IN ({placeholders})
+                GROUP BY u."id", u."username", u."displayName", u."photo", u."joinDate",
+                         u."firstName", u."lastName", u."ambassador", u."categoryExpert",
+                         u."choiceDrinks", u."choiceFlavours"
+                ORDER BY u."displayName", u."username"
+            '''
+            
+            cursor.execute(query, follower_user_ids)
+            follower_users = cursor.fetchall()
+            
+            # Step 4: Add follower count, current points, and rank for each user
+            for user in follower_users:
+                # Count how many people follow this user
+                cursor.execute('''
+                    SELECT COUNT(*) as follower_count
+                    FROM "usersFollowLists" 
+                    WHERE %s = ANY("users")
+                ''', (str(user['id']),))
+                
+                follower_result = cursor.fetchone()
+                user['followerCount'] = follower_result['follower_count'] if follower_result else 0
+                
+                # Get current points from pointsRecorder table
+                cursor.execute('''
+                    SELECT "currentPoints" 
+                    FROM "pointsRecorder" 
+                    WHERE "userID" = %s AND "userType" = %s
+                ''', (user['id'], 'user'))
+                
+                points_result = cursor.fetchone()
+                user['currentPoints'] = points_result['currentPoints'] if points_result else 0
+                
+                # Get user rank based on proof points
+                user['proofRank'] = pointsHelperFunc.get_rank(user['currentPoints']) if user['currentPoints'] else pointsHelperFunc.get_rank(0)
 
         return jsonify({
             "followers": follower_users
@@ -9956,19 +9925,14 @@ def getAllUserFollowers(id):
             "code": 500,
             "message": "An error occurred retrieving the followers."
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Get random menu items from a specific venue for "What's On Menu" section
 @blueprint.route("/getWhatsOnMenu/<int:venue_id>", methods=['GET'])
 def getWhatsOnMenu(venue_id):
-    conn = g.db
-    
     try:
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
             # First, verify the venue exists and has menu items with photos
             cursor.execute("""
                 SELECT v."id", v."venueName", v."photo" as "venuePhoto", 
@@ -10071,9 +10035,6 @@ def getFoodPairings(ownerType, ownerID):
         JSON response with list of unique food pairing suggestions
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -10081,24 +10042,25 @@ def getFoodPairings(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Query to get all unique suggestedFoodPairing values for the user
-        query = """
-            SELECT DISTINCT ci."suggestedFoodPairing"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-            AND ci."suggestedFoodPairing" IS NOT NULL 
-            AND ci."suggestedFoodPairing" != ''
-            AND ci."archiveStatus" = FALSE
-            ORDER BY ci."suggestedFoodPairing" ASC;
-        """
-        
-        cur.execute(query, (ownerID, ownerType))
-        results = cur.fetchall()
-        
-        # Extract the food pairing values into a simple list
-        food_pairings = [row['suggestedFoodPairing'] for row in results]
+        with db_manager.get_cursor() as cursor:
+            # Query to get all unique suggestedFoodPairing values for the user
+            query = """
+                SELECT DISTINCT ci."suggestedFoodPairing"
+                FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE cc."ownerID" = %s 
+                AND cc."ownerType" = %s
+                AND ci."suggestedFoodPairing" IS NOT NULL 
+                AND ci."suggestedFoodPairing" != ''
+                AND ci."archiveStatus" = FALSE
+                ORDER BY ci."suggestedFoodPairing" ASC;
+            """
+            
+            cursor.execute(query, (ownerID, ownerType))
+            results = cursor.fetchall()
+            
+            # Extract the food pairing values into a simple list
+            food_pairings = [row['suggestedFoodPairing'] for row in results]
         
         return jsonify({
             "code": 200,
@@ -10131,9 +10093,6 @@ def getCurrentLocations(ownerType, ownerID):
         JSON response with list of unique current location values
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -10141,24 +10100,25 @@ def getCurrentLocations(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Query to get all unique currentLocation values for the user
-        query = """
-            SELECT DISTINCT ci."currentLocation"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-            AND ci."currentLocation" IS NOT NULL 
-            AND ci."currentLocation" != ''
-            AND ci."archiveStatus" = FALSE
-            ORDER BY ci."currentLocation" ASC;
-        """
-        
-        cur.execute(query, (ownerID, ownerType))
-        results = cur.fetchall()
-        
-        # Extract the current location values into a simple list
-        current_locations = [row['currentLocation'] for row in results]
+        with db_manager.get_cursor() as cursor:
+            # Query to get all unique currentLocation values for the user
+            query = """
+                SELECT DISTINCT ci."currentLocation"
+                FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE cc."ownerID" = %s 
+                AND cc."ownerType" = %s
+                AND ci."currentLocation" IS NOT NULL 
+                AND ci."currentLocation" != ''
+                AND ci."archiveStatus" = FALSE
+                ORDER BY ci."currentLocation" ASC;
+            """
+            
+            cursor.execute(query, (ownerID, ownerType))
+            results = cursor.fetchall()
+            
+            # Extract the current location values into a simple list
+            current_locations = [row['currentLocation'] for row in results]
         
         return jsonify({
             "code": 200,
@@ -10191,9 +10151,6 @@ def getSubLocations(ownerType, ownerID):
         JSON response with list of unique sub location values
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -10201,24 +10158,25 @@ def getSubLocations(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Query to get all unique subLocation values for the user
-        query = """
-            SELECT DISTINCT ci."subLocation"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-            AND ci."subLocation" IS NOT NULL 
-            AND ci."subLocation" != ''
-            AND ci."archiveStatus" = FALSE
-            ORDER BY ci."subLocation" ASC;
-        """
-        
-        cur.execute(query, (ownerID, ownerType))
-        results = cur.fetchall()
-        
-        # Extract the sub location values into a simple list
-        sub_locations = [row['subLocation'] for row in results]
+        with db_manager.get_cursor() as cursor:
+            # Query to get all unique subLocation values for the user
+            query = """
+                SELECT DISTINCT ci."subLocation"
+                FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE cc."ownerID" = %s 
+                AND cc."ownerType" = %s
+                AND ci."subLocation" IS NOT NULL 
+                AND ci."subLocation" != ''
+                AND ci."archiveStatus" = FALSE
+                ORDER BY ci."subLocation" ASC;
+            """
+            
+            cursor.execute(query, (ownerID, ownerType))
+            results = cursor.fetchall()
+            
+            # Extract the sub location values into a simple list
+            sub_locations = [row['subLocation'] for row in results]
         
         return jsonify({
             "code": 200,
@@ -10251,9 +10209,6 @@ def getNoteToSelf(ownerType, ownerID):
         JSON response with list of unique note to self values
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -10261,24 +10216,25 @@ def getNoteToSelf(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Query to get all unique noteToSelf values for the user
-        query = """
-            SELECT DISTINCT ci."noteToSelf"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-            AND ci."noteToSelf" IS NOT NULL 
-            AND ci."noteToSelf" != ''
-            AND ci."archiveStatus" = FALSE
-            ORDER BY ci."noteToSelf" ASC;
-        """
-        
-        cur.execute(query, (ownerID, ownerType))
-        results = cur.fetchall()
-        
-        # Extract the note to self values into a simple list
-        note_to_self = [row['noteToSelf'] for row in results]
+        with db_manager.get_cursor() as cursor:
+            # Query to get all unique noteToSelf values for the user
+            query = """
+                SELECT DISTINCT ci."noteToSelf"
+                FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE cc."ownerID" = %s 
+                AND cc."ownerType" = %s
+                AND ci."noteToSelf" IS NOT NULL 
+                AND ci."noteToSelf" != ''
+                AND ci."archiveStatus" = FALSE
+                ORDER BY ci."noteToSelf" ASC;
+            """
+            
+            cursor.execute(query, (ownerID, ownerType))
+            results = cursor.fetchall()
+            
+            # Extract the note to self values into a simple list
+            note_to_self = [row['noteToSelf'] for row in results]
         
         return jsonify({
             "code": 200,
@@ -10318,9 +10274,6 @@ def getCellarItemsChangelog(ownerType, ownerID):
         JSON response with changelog entries for the user's cellar items
     """
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -10334,176 +10287,177 @@ def getCellarItemsChangelog(ownerType, ownerID):
         offset = request.args.get('offset', default=0, type=int)
         detailed = request.args.get('detailed', 'false').lower() == 'true'
         
-        # Build base query parts
-        base_from = """
-            FROM "myCellarItemsChangelog" cl
-            JOIN "myCellarItems" ci ON cl."cellarItemID" = ci."id"
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            LEFT JOIN "listings" l ON ci."listingID" = l."id"
-            LEFT JOIN "producers" p ON l."producerID" = p."id"
-            WHERE cc."ownerID" = %s 
-            AND cc."ownerType" = %s
-        """
-        
-        # Build WHERE conditions
-        params = [ownerID, ownerType]
-        
-        if change_type:
-            base_from += ' AND cl."changeType" = %s'
-            params.append(change_type)
-        
-        if detailed:
-            # Detailed view: Return individual entries with full information
-            query = """
-                SELECT 
-                    cl."id",
-                    cl."changeType",
-                    cl."fieldName",
-                    cl."oldValue",
-                    cl."newValue",
-                    cl."changeDescription",
-                    cl."quantityDelta",
-                    cl."triggeredBy",
-                    cl."changeDate",
-                    l."listingName",
-                    l."id" as "listingID",
-                    p."producerName",
-                    p."id" as "producerID",
-                    ci."variant",
-                    ci."drinkFormat",
-                    ci."volumeNumber",
-                    ci."volumeUnit",
-                    ci."quantityVariantID",
-                    ci."variantGroupID"
-            """ + base_from + """
-                ORDER BY cl."changeDate" DESC, cl."id" DESC
-                LIMIT %s OFFSET %s
+        with db_manager.get_cursor() as cursor:
+            # Build base query parts
+            base_from = """
+                FROM "myCellarItemsChangelog" cl
+                JOIN "myCellarItems" ci ON cl."cellarItemID" = ci."id"
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                LEFT JOIN "listings" l ON ci."listingID" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                WHERE cc."ownerID" = %s 
+                AND cc."ownerType" = %s
             """
-        else:
-            # Aggregated view: Group similar changes by date and listing
-            query = """
-                SELECT 
-                    MIN(cl."id") as "id",
-                    cl."changeType",
-                    cl."fieldName",
-                    STRING_AGG(DISTINCT cl."changeDescription", '; ') as "changeDescription",
-                    SUM(cl."quantityDelta") as "quantityDelta",
-                    DATE(cl."changeDate") as "changeDate",
-                    l."listingName",
-                    l."id" as "listingID",
-                    p."producerName", 
-                    p."id" as "producerID",
-                    ci."variant",
-                    COUNT(DISTINCT cl."id") as "entryCount",
-                    -- Aggregate status/consumption information
-                    STRING_AGG(DISTINCT 
-                        CASE WHEN cl."fieldName" = 'status' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
-                        '; '
-                    ) as "statusTransitions",
-                    STRING_AGG(DISTINCT 
-                        CASE WHEN cl."fieldName" = 'consumption' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
-                        '; '
-                    ) as "consumptionTransitions",
-                    -- Count specific change types for this group
-                    COUNT(CASE WHEN cl."changeType" = 'STATUS_CHANGED' THEN 1 END) as "statusChangeCount",
-                    COUNT(CASE WHEN cl."changeType" = 'CONSUMPTION_CHANGED' THEN 1 END) as "consumptionChangeCount",
-                    COUNT(CASE WHEN cl."changeType" = 'LOCATION_CHANGED' THEN 1 END) as "locationChangeCount",
-                    COUNT(CASE WHEN cl."changeType" = 'NOTES_UPDATED' THEN 1 END) as "notesUpdateCount",
-                    COUNT(CASE WHEN cl."changeType" = 'FINANCIAL_UPDATED' THEN 1 END) as "financialUpdateCount",
-                    COUNT(CASE WHEN cl."changeType" = 'PURCHASE_UPDATED' THEN 1 END) as "purchaseUpdateCount"
-            """ + base_from + """
-                GROUP BY 
-                    DATE(cl."changeDate"),
-                    l."id",
-                    l."listingName",
-                    p."id",
-                    p."producerName", 
-                    ci."variant",
-                    cl."changeType",
-                    cl."fieldName"
-                ORDER BY DATE(cl."changeDate") DESC, MIN(cl."id") DESC
-                LIMIT %s OFFSET %s
-            """
-        
-        params.extend([limit, offset])
-        
-        cur.execute(query, params)
-        results = cur.fetchall()
-        
-        # Convert results to list of dictionaries
-        changelog_data = []
-        for row in results:
-            if detailed:
-                # Detailed entry format
-                changelog_entry = {
-                    "id": row['id'],
-                    "listingID": row['listingID'],
-                    "listingName": row['listingName'],
-                    "producerID": row['producerID'],
-                    "producerName": row['producerName'],
-                    "variant": row['variant'],
-                    "drinkFormat": row['drinkFormat'],
-                    "volumeInfo": {
-                        "volumeNumber": float(row['volumeNumber']) if row['volumeNumber'] else None,
-                        "volumeUnit": row['volumeUnit']
-                    },
-                    "changeType": row['changeType'],
-                    "fieldName": row['fieldName'],
-                    "oldValue": row['oldValue'],
-                    "newValue": row['newValue'],
-                    "changeDescription": row['changeDescription'],
-                    "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
-                    "triggeredBy": row['triggeredBy'],
-                    "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
-                    "quantityVariantID": row['quantityVariantID'],
-                    "variantGroupID": row['variantGroupID']
-                }
-            else:
-                # Aggregated entry format  
-                changelog_entry = {
-                    "id": row['id'],
-                    "listingID": row['listingID'],
-                    "listingName": row['listingName'],
-                    "producerID": row['producerID'],
-                    "producerName": row['producerName'],
-                    "variant": row['variant'],
-                    "changeType": row['changeType'],
-                    "fieldName": row['fieldName'],
-                    "changeDescription": row['changeDescription'],
-                    "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
-                    "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
-                    "entryCount": row['entryCount'],  # Number of individual entries aggregated
-                    "transitions": {
-                        "status": row['statusTransitions'] if row['statusTransitions'] else None,
-                        "consumption": row['consumptionTransitions'] if row['consumptionTransitions'] else None
-                    },
-                    "changeCounts": {
-                        "statusChanges": row['statusChangeCount'],
-                        "consumptionChanges": row['consumptionChangeCount'], 
-                        "locationChanges": row['locationChangeCount'],
-                        "notesUpdates": row['notesUpdateCount'],
-                        "financialUpdates": row['financialUpdateCount'],
-                        "purchaseUpdates": row['purchaseUpdateCount']
-                    }
-                }
             
-            changelog_data.append(changelog_entry)
-        
-        # Get total count for pagination
-        if detailed:
-            # For detailed view: count individual entries
-            count_query = """
-                SELECT COUNT(cl."id") as total_count
-            """ + base_from
-        else:
-            # For aggregated view: count unique groups
-            count_query = """
-                SELECT COUNT(DISTINCT CONCAT(DATE(cl."changeDate"), '-', l."id", '-', cl."changeType", '-', cl."fieldName")) as total_count
-            """ + base_from
-        
-        count_params = params[:-2]  # Remove limit and offset
-        cur.execute(count_query, count_params)
-        total_count = cur.fetchone()['total_count']
+            # Build WHERE conditions
+            params = [ownerID, ownerType]
+            
+            if change_type:
+                base_from += ' AND cl."changeType" = %s'
+                params.append(change_type)
+            
+            if detailed:
+                # Detailed view: Return individual entries with full information
+                query = """
+                    SELECT 
+                        cl."id",
+                        cl."changeType",
+                        cl."fieldName",
+                        cl."oldValue",
+                        cl."newValue",
+                        cl."changeDescription",
+                        cl."quantityDelta",
+                        cl."triggeredBy",
+                        cl."changeDate",
+                        l."listingName",
+                        l."id" as "listingID",
+                        p."producerName",
+                        p."id" as "producerID",
+                        ci."variant",
+                        ci."drinkFormat",
+                        ci."volumeNumber",
+                        ci."volumeUnit",
+                        ci."quantityVariantID",
+                        ci."variantGroupID"
+                """ + base_from + """
+                    ORDER BY cl."changeDate" DESC, cl."id" DESC
+                    LIMIT %s OFFSET %s
+                """
+            else:
+                # Aggregated view: Group similar changes by date and listing
+                query = """
+                    SELECT 
+                        MIN(cl."id") as "id",
+                        cl."changeType",
+                        cl."fieldName",
+                        STRING_AGG(DISTINCT cl."changeDescription", '; ') as "changeDescription",
+                        SUM(cl."quantityDelta") as "quantityDelta",
+                        DATE(cl."changeDate") as "changeDate",
+                        l."listingName",
+                        l."id" as "listingID",
+                        p."producerName", 
+                        p."id" as "producerID",
+                        ci."variant",
+                        COUNT(DISTINCT cl."id") as "entryCount",
+                        -- Aggregate status/consumption information
+                        STRING_AGG(DISTINCT 
+                            CASE WHEN cl."fieldName" = 'status' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
+                            '; '
+                        ) as "statusTransitions",
+                        STRING_AGG(DISTINCT 
+                            CASE WHEN cl."fieldName" = 'consumption' THEN cl."oldValue" || ' → ' || cl."newValue" END, 
+                            '; '
+                        ) as "consumptionTransitions",
+                        -- Count specific change types for this group
+                        COUNT(CASE WHEN cl."changeType" = 'STATUS_CHANGED' THEN 1 END) as "statusChangeCount",
+                        COUNT(CASE WHEN cl."changeType" = 'CONSUMPTION_CHANGED' THEN 1 END) as "consumptionChangeCount",
+                        COUNT(CASE WHEN cl."changeType" = 'LOCATION_CHANGED' THEN 1 END) as "locationChangeCount",
+                        COUNT(CASE WHEN cl."changeType" = 'NOTES_UPDATED' THEN 1 END) as "notesUpdateCount",
+                        COUNT(CASE WHEN cl."changeType" = 'FINANCIAL_UPDATED' THEN 1 END) as "financialUpdateCount",
+                        COUNT(CASE WHEN cl."changeType" = 'PURCHASE_UPDATED' THEN 1 END) as "purchaseUpdateCount"
+                """ + base_from + """
+                    GROUP BY 
+                        DATE(cl."changeDate"),
+                        l."id",
+                        l."listingName",
+                        p."id",
+                        p."producerName", 
+                        ci."variant",
+                        cl."changeType",
+                        cl."fieldName"
+                    ORDER BY DATE(cl."changeDate") DESC, MIN(cl."id") DESC
+                    LIMIT %s OFFSET %s
+                """
+            
+            params.extend([limit, offset])
+            
+            cursor.execute(query, params)
+            results = cursor.fetchall()
+            
+            # Convert results to list of dictionaries
+            changelog_data = []
+            for row in results:
+                if detailed:
+                    # Detailed entry format
+                    changelog_entry = {
+                        "id": row['id'],
+                        "listingID": row['listingID'],
+                        "listingName": row['listingName'],
+                        "producerID": row['producerID'],
+                        "producerName": row['producerName'],
+                        "variant": row['variant'],
+                        "drinkFormat": row['drinkFormat'],
+                        "volumeInfo": {
+                            "volumeNumber": float(row['volumeNumber']) if row['volumeNumber'] else None,
+                            "volumeUnit": row['volumeUnit']
+                        },
+                        "changeType": row['changeType'],
+                        "fieldName": row['fieldName'],
+                        "oldValue": row['oldValue'],
+                        "newValue": row['newValue'],
+                        "changeDescription": row['changeDescription'],
+                        "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
+                        "triggeredBy": row['triggeredBy'],
+                        "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
+                        "quantityVariantID": row['quantityVariantID'],
+                        "variantGroupID": row['variantGroupID']
+                    }
+                else:
+                    # Aggregated entry format  
+                    changelog_entry = {
+                        "id": row['id'],
+                        "listingID": row['listingID'],
+                        "listingName": row['listingName'],
+                        "producerID": row['producerID'],
+                        "producerName": row['producerName'],
+                        "variant": row['variant'],
+                        "changeType": row['changeType'],
+                        "fieldName": row['fieldName'],
+                        "changeDescription": row['changeDescription'],
+                        "quantityDelta": int(row['quantityDelta']) if row['quantityDelta'] else None,
+                        "changeDate": row['changeDate'].isoformat() if row['changeDate'] else None,
+                        "entryCount": row['entryCount'],  # Number of individual entries aggregated
+                        "transitions": {
+                            "status": row['statusTransitions'] if row['statusTransitions'] else None,
+                            "consumption": row['consumptionTransitions'] if row['consumptionTransitions'] else None
+                        },
+                        "changeCounts": {
+                            "statusChanges": row['statusChangeCount'],
+                            "consumptionChanges": row['consumptionChangeCount'], 
+                            "locationChanges": row['locationChangeCount'],
+                            "notesUpdates": row['notesUpdateCount'],
+                            "financialUpdates": row['financialUpdateCount'],
+                            "purchaseUpdates": row['purchaseUpdateCount']
+                        }
+                    }
+                
+                changelog_data.append(changelog_entry)
+            
+            # Get total count for pagination
+            if detailed:
+                # For detailed view: count individual entries
+                count_query = """
+                    SELECT COUNT(cl."id") as total_count
+                """ + base_from
+            else:
+                # For aggregated view: count unique groups
+                count_query = """
+                    SELECT COUNT(DISTINCT CONCAT(DATE(cl."changeDate"), '-', l."id", '-', cl."changeType", '-', cl."fieldName")) as total_count
+                """ + base_from
+            
+            count_params = params[:-2]  # Remove limit and offset
+            cursor.execute(count_query, count_params)
+            total_count = cursor.fetchone()['total_count']
         
         return jsonify({
             "code": 200,
@@ -10541,56 +10495,52 @@ def getCellarItemsChangelog(ownerType, ownerID):
 @blueprint.route('/getPublicLists', methods=['GET'])
 def get_public_lists():
     """Get all public lists for the Find Lists page"""
-    conn = g.db
     
     try:
-        cursor = conn.cursor()
-        
-        # Get public lists with user information and item counts
-        # Fixed: Moved COUNT condition from WHERE to HAVING clause
-        cursor.execute('''
-            SELECT 
-                dl."id",
-                dl."listName",
-                dl."listDesc",
-                dl."createdAt",
-                dl."updatedAt",
-                COALESCE(dl."upvotes", 0) as "upvotes",
-                u."id" as "userId",
-                u."username",
-                u."displayName",
-                u."photo" as "userPhoto",
-                COUNT(dli."drinkId") as "itemCount"
-            FROM "usersDrinkLists" dl
-            JOIN "users" u ON dl."userId" = u."id"
-            LEFT JOIN "usersDrinkListItems" dli ON dl."id" = dli."listId"
-            WHERE dl."isPublic" = true
-            GROUP BY dl."id", u."id", u."username", u."displayName", u."photo"
-            HAVING COUNT(dli."drinkId") > 0
-            ORDER BY dl."updatedAt" DESC, dl."upvotes" DESC
-            LIMIT 100
-        ''')
-        
-        lists = cursor.fetchall()
-        
-        # Get preview items for each list (first 3 items)
-        for list_item in lists:
+        with db_manager.get_cursor() as cursor:
+            # Get public lists with user information and item counts
+            # Fixed: Moved COUNT condition from WHERE to HAVING clause
             cursor.execute('''
                 SELECT 
-                    dli."drinkId",
-                    l."listingName",
-                    l."photo"
-                FROM "usersDrinkListItems" dli
-                JOIN "listings" l ON dli."drinkId" = l."id"
-                WHERE dli."listId" = %s
-                ORDER BY dli."addedDate" DESC
-                LIMIT 3
-            ''', (list_item['id'],))
+                    dl."id",
+                    dl."listName",
+                    dl."listDesc",
+                    dl."createdAt",
+                    dl."updatedAt",
+                    COALESCE(dl."upvotes", 0) as "upvotes",
+                    u."id" as "userId",
+                    u."username",
+                    u."displayName",
+                    u."photo" as "userPhoto",
+                    COUNT(dli."drinkId") as "itemCount"
+                FROM "usersDrinkLists" dl
+                JOIN "users" u ON dl."userId" = u."id"
+                LEFT JOIN "usersDrinkListItems" dli ON dl."id" = dli."listId"
+                WHERE dl."isPublic" = true
+                GROUP BY dl."id", u."id", u."username", u."displayName", u."photo"
+                HAVING COUNT(dli."drinkId") > 0
+                ORDER BY dl."updatedAt" DESC, dl."upvotes" DESC
+                LIMIT 100
+            ''')
             
-            preview_items = cursor.fetchall()
-            list_item['previewItems'] = preview_items
-        
-        cursor.close()
+            lists = cursor.fetchall()
+            
+            # Get preview items for each list (first 3 items)
+            for list_item in lists:
+                cursor.execute('''
+                    SELECT 
+                        dli."drinkId",
+                        l."listingName",
+                        l."photo"
+                    FROM "usersDrinkListItems" dli
+                    JOIN "listings" l ON dli."drinkId" = l."id"
+                    WHERE dli."listId" = %s
+                    ORDER BY dli."addedDate" DESC
+                    LIMIT 3
+                ''', (list_item['id'],))
+                
+                preview_items = cursor.fetchall()
+                list_item['previewItems'] = preview_items
         
         return jsonify({
             "code": 200,
@@ -10609,46 +10559,43 @@ def get_public_lists():
 @blueprint.route('/getPublicListDetails/<int:list_id>', methods=['GET'])
 def get_public_list_details(list_id):
     """Get detailed items for a specific public list"""
-    conn = g.db
     
     try:
-        cursor = conn.cursor()
-        
-        # First verify the list is public
-        cursor.execute('''
-            SELECT "isPublic" FROM "usersDrinkLists" 
-            WHERE "id" = %s
-        ''', (list_id,))
-        
-        list_check = cursor.fetchone()
-        if not list_check or not list_check['isPublic']:
-            return jsonify({
-                "code": 404,
-                "message": "List not found or not public."
-            }), 404
-        
-        # Get all items in the list with drink details and calculated avg rating
-        cursor.execute('''
-            SELECT 
-                dli."drinkId",
-                dli."note",
-                dli."addedDate",
-                l."listingName",
-                l."photo",
-                l."drinkType",
-                l."originCountry",
-                AVG(r."rating") as "avgRating"
-            FROM "usersDrinkListItems" dli
-            JOIN "listings" l ON dli."drinkId" = l."id"
-            LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
-            WHERE dli."listId" = %s
-            GROUP BY dli."drinkId", dli."note", dli."addedDate", 
-                     l."listingName", l."photo", l."drinkType", l."originCountry"
-            ORDER BY dli."addedDate" DESC
-        ''', (list_id,))
-        
-        items = cursor.fetchall()
-        cursor.close()
+        with db_manager.get_cursor() as cursor:
+            # First verify the list is public
+            cursor.execute('''
+                SELECT "isPublic" FROM "usersDrinkLists" 
+                WHERE "id" = %s
+            ''', (list_id,))
+            
+            list_check = cursor.fetchone()
+            if not list_check or not list_check['isPublic']:
+                return jsonify({
+                    "code": 404,
+                    "message": "List not found or not public."
+                }), 404
+            
+            # Get all items in the list with drink details and calculated avg rating
+            cursor.execute('''
+                SELECT 
+                    dli."drinkId",
+                    dli."note",
+                    dli."addedDate",
+                    l."listingName",
+                    l."photo",
+                    l."drinkType",
+                    l."originCountry",
+                    AVG(r."rating") as "avgRating"
+                FROM "usersDrinkListItems" dli
+                JOIN "listings" l ON dli."drinkId" = l."id"
+                LEFT JOIN "reviews" r ON l."id" = r."reviewTarget"
+                WHERE dli."listId" = %s
+                GROUP BY dli."drinkId", dli."note", dli."addedDate", 
+                         l."listingName", l."photo", l."drinkType", l."originCountry"
+                ORDER BY dli."addedDate" DESC
+            ''', (list_id,))
+            
+            items = cursor.fetchall()
         
         return jsonify({
             "code": 200,
@@ -10667,23 +10614,20 @@ def get_public_list_details(list_id):
 @blueprint.route('/getUserUpvotedLists/<int:user_id>', methods=['GET'])
 def get_user_upvoted_lists(user_id):
     """Get lists that a user has upvoted"""
-    conn = g.db
     
     try:
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            SELECT "listId" FROM "usersDrinkListUpvotes" 
-            WHERE "userId" = %s
-        ''', (user_id,))
-        
-        upvoted_lists = cursor.fetchall()
-        cursor.close()
-        
-        return jsonify({
-            "code": 200,
-            "data": upvoted_lists
-        }), 200
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT "listId" FROM "usersDrinkListUpvotes" 
+                WHERE "userId" = %s
+            ''', (user_id,))
+            
+            upvoted_lists = cursor.fetchall()
+            
+            return jsonify({
+                "code": 200,
+                "data": upvoted_lists
+            }), 200
         
     except Exception as e:
         print("Get user upvoted lists error:", str(e))
@@ -10699,11 +10643,8 @@ def get_user_upvoted_lists(user_id):
 @blueprint.route('/getPollsByCreator/<int:creator_id>/<creator_type>', methods=['GET'])
 def get_polls_by_creator(creator_id, creator_type):
     """Get all polls created by a specific creator (user, venue, or producer)"""
-    conn = g.db
     
     try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate creator_type
         if creator_type not in ['user', 'venue', 'producer']:
             return jsonify({
@@ -10711,48 +10652,47 @@ def get_polls_by_creator(creator_id, creator_type):
                 "message": "Invalid creator type. Must be 'user', 'venue', or 'producer'."
             }), 400
         
-        # Get polls ordered by orderIndex
-        cursor.execute('''
-            SELECT 
-                pq."id",
-                pq."creatorId",
-                pq."creatorType",
-                pq."title",
-                pq."questionText",
-                pq."questionType",
-                pq."isActive",
-                pq."isVisible",
-                pq."expiresAt",
-                pq."createdAt",
-                pq."updatedAt",
-                pq."orderIndex"
-            FROM "pollQuestions" pq
-            WHERE pq."creatorId" = %s AND pq."creatorType" = %s
-            ORDER BY pq."orderIndex" ASC
-        ''', (creator_id, creator_type))
-        
-        polls = cursor.fetchall()
-        
-        # For each poll, get its options if it's a multiple choice type
-        for poll in polls:
-            if poll['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
-                cursor.execute('''
-                    SELECT 
-                        po."id",
-                        po."pollId",
-                        po."optionText",
-                        po."optionOrder"
-                    FROM "pollOptions" po
-                    WHERE po."pollId" = %s
-                    ORDER BY po."optionOrder" ASC
-                ''', (poll['id'],))
-                
-                options = cursor.fetchall()
-                poll['options'] = options
-            else:
-                poll['options'] = []
-        
-        cursor.close()
+        with db_manager.get_cursor() as cursor:
+            # Get polls ordered by orderIndex
+            cursor.execute('''
+                SELECT 
+                    pq."id",
+                    pq."creatorId",
+                    pq."creatorType",
+                    pq."title",
+                    pq."questionText",
+                    pq."questionType",
+                    pq."isActive",
+                    pq."isVisible",
+                    pq."expiresAt",
+                    pq."createdAt",
+                    pq."updatedAt",
+                    pq."orderIndex"
+                FROM "pollQuestions" pq
+                WHERE pq."creatorId" = %s AND pq."creatorType" = %s
+                ORDER BY pq."orderIndex" ASC
+            ''', (creator_id, creator_type))
+            
+            polls = cursor.fetchall()
+            
+            # For each poll, get its options if it's a multiple choice type
+            for poll in polls:
+                if poll['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
+                    cursor.execute('''
+                        SELECT 
+                            po."id",
+                            po."pollId",
+                            po."optionText",
+                            po."optionOrder"
+                        FROM "pollOptions" po
+                        WHERE po."pollId" = %s
+                        ORDER BY po."optionOrder" ASC
+                    ''', (poll['id'],))
+                    
+                    options = cursor.fetchall()
+                    poll['options'] = options
+                else:
+                    poll['options'] = []
         
         return jsonify({
             "code": 200,
@@ -10771,11 +10711,8 @@ def get_polls_by_creator(creator_id, creator_type):
 @blueprint.route('/getPollResponses/<int:creator_id>/<creator_type>', methods=['GET'])
 def get_poll_responses_by_creator(creator_id, creator_type):
     """Get all poll responses for polls created by a specific creator (user, venue, or producer)"""
-    conn = g.db
     
     try:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate creator_type
         if creator_type not in ['user', 'venue', 'producer']:
             return jsonify({
@@ -10783,85 +10720,84 @@ def get_poll_responses_by_creator(creator_id, creator_type):
                 "message": "Invalid creator type. Must be 'user', 'venue', or 'producer'."
             }), 400
         
-        # Get all poll responses for polls created by this creator
-        cursor.execute('''
-            SELECT 
-                pr."id" as "responseId",
-                pr."pollId",
-                pr."respondentId",
-                pr."selectedOptionIds",
-                pr."ratingValue",
-                pq."creatorId",
-                pq."creatorType",
-                pq."title" as "pollTitle",
-                pq."questionText",
-                pq."questionType",
-                pq."orderIndex",
-                u."username" as "respondentUsername",
-                u."displayName" as "respondentDisplayName"
-            FROM "pollResponses" pr
-            INNER JOIN "pollQuestions" pq ON pr."pollId" = pq."id"
-            LEFT JOIN "users" u ON pr."respondentId" = u."id"
-            WHERE pq."creatorId" = %s AND pq."creatorType" = %s
-            ORDER BY pq."orderIndex" ASC, pr."id" ASC
-        ''', (creator_id, creator_type))
-        
-        responses = cursor.fetchall()
-        
-        # Group responses by poll for better organization
-        polls_with_responses = {}
-        
-        for response in responses:
-            poll_id = response['pollId']
+        with db_manager.get_cursor() as cursor:
+            # Get all poll responses for polls created by this creator
+            cursor.execute('''
+                SELECT 
+                    pr."id" as "responseId",
+                    pr."pollId",
+                    pr."respondentId",
+                    pr."selectedOptionIds",
+                    pr."ratingValue",
+                    pq."creatorId",
+                    pq."creatorType",
+                    pq."title" as "pollTitle",
+                    pq."questionText",
+                    pq."questionType",
+                    pq."orderIndex",
+                    u."username" as "respondentUsername",
+                    u."displayName" as "respondentDisplayName"
+                FROM "pollResponses" pr
+                INNER JOIN "pollQuestions" pq ON pr."pollId" = pq."id"
+                LEFT JOIN "users" u ON pr."respondentId" = u."id"
+                WHERE pq."creatorId" = %s AND pq."creatorType" = %s
+                ORDER BY pq."orderIndex" ASC, pr."id" ASC
+            ''', (creator_id, creator_type))
             
-            # Initialize poll data if not already done
-            if poll_id not in polls_with_responses:
-                polls_with_responses[poll_id] = {
-                    'pollId': poll_id,
-                    'pollTitle': response['pollTitle'],
-                    'questionText': response['questionText'],
-                    'questionType': response['questionType'],
-                    'orderIndex': response['orderIndex'],
-                    'totalResponses': 0,
-                    'responses': []
-                }
+            responses = cursor.fetchall()
             
-            # Add response data
-            response_data = {
-                'responseId': response['responseId'],
-                'respondentId': response['respondentId'],
-                'respondentUsername': response['respondentUsername'],
-                'respondentDisplayName': response['respondentDisplayName'],
-                'selectedOptionIds': response['selectedOptionIds'],
-                'ratingValue': response['ratingValue']
-            }
+            # Group responses by poll for better organization
+            polls_with_responses = {}
             
-            polls_with_responses[poll_id]['responses'].append(response_data)
-            polls_with_responses[poll_id]['totalResponses'] += 1
-        
-        # For multiple choice polls, also get option text for better readability
-        for poll_id, poll_data in polls_with_responses.items():
-            if poll_data['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
-                cursor.execute('''
-                    SELECT 
-                        po."id",
-                        po."optionText",
-                        po."optionOrder"
-                    FROM "pollOptions" po
-                    WHERE po."pollId" = %s
-                    ORDER BY po."optionOrder" ASC
-                ''', (poll_id,))
+            for response in responses:
+                poll_id = response['pollId']
                 
-                options = cursor.fetchall()
-                poll_data['options'] = options
-            else:
-                poll_data['options'] = []
-        
-        # Convert to list and sort by orderIndex
-        result = list(polls_with_responses.values())
-        result.sort(key=lambda x: x['orderIndex'])
-        
-        cursor.close()
+                # Initialize poll data if not already done
+                if poll_id not in polls_with_responses:
+                    polls_with_responses[poll_id] = {
+                        'pollId': poll_id,
+                        'pollTitle': response['pollTitle'],
+                        'questionText': response['questionText'],
+                        'questionType': response['questionType'],
+                        'orderIndex': response['orderIndex'],
+                        'totalResponses': 0,
+                        'responses': []
+                    }
+                
+                # Add response data
+                response_data = {
+                    'responseId': response['responseId'],
+                    'respondentId': response['respondentId'],
+                    'respondentUsername': response['respondentUsername'],
+                    'respondentDisplayName': response['respondentDisplayName'],
+                    'selectedOptionIds': response['selectedOptionIds'],
+                    'ratingValue': response['ratingValue']
+                }
+                
+                polls_with_responses[poll_id]['responses'].append(response_data)
+                polls_with_responses[poll_id]['totalResponses'] += 1
+            
+            # For multiple choice polls, also get option text for better readability
+            for poll_id, poll_data in polls_with_responses.items():
+                if poll_data['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
+                    cursor.execute('''
+                        SELECT 
+                            po."id",
+                            po."optionText",
+                            po."optionOrder"
+                        FROM "pollOptions" po
+                        WHERE po."pollId" = %s
+                        ORDER BY po."optionOrder" ASC
+                    ''', (poll_id,))
+                    
+                    options = cursor.fetchall()
+                    poll_data['options'] = options
+                else:
+                    poll_data['options'] = []
+            
+            # Convert to list and sort by orderIndex
+            result = list(polls_with_responses.values())
+            result.sort(key=lambda x: x['orderIndex'])
         
         return jsonify({
             "code": 200,
