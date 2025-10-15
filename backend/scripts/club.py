@@ -1473,9 +1473,6 @@ def joinClub():
 # Output: Possible return codes [201 - Post added successfully, 400 - Missing required data, 500 - An error occurred adding the post]
 @blueprint.route('/addPost', methods=['POST'])
 def addPost():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -1514,65 +1511,64 @@ def addPost():
         else:
             post_photos = '{}'
 
-        # Step 3: Insert the new post into the database
-        cur.execute(
-            'INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id',
-            (club_id, post_date, post_content, post_photos, poster_id)
-        )
-        post_id = cur.fetchone()['id']
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            # Step 3: Insert the new post into the database
+            cursor.execute(
+                'INSERT INTO "clubPosts" ("clubID", "postDate", "postContent", "postPhotos", "posterID") VALUES (%s, %s, %s, %s, %s) RETURNING id',
+                (club_id, post_date, post_content, post_photos, poster_id)
+            )
+            post_id = cursor.fetchone()['id']
 
-        # Get user information from club member
-        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (poster_id,))
-        user = cur.fetchone()
-        
-        points_earned = 0
-        badge_result = None
+            # Get user information from club member
+            cursor.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (poster_id,))
+            user = cursor.fetchone()
+            
+            points_earned = 0
+            badge_result = None
 
-        # Only award points and badges for regular users
-        if user and user['userType'] == 'user':
-            user_id = user['userID']
-            
-            # Check if user has reached maximum proof points
-            if not pointsHelperFunc.check_max_proof_points(user_id):
-                # Award points for the post
-                cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (7,))
-                points_rule = cur.fetchone()
+            # Only award points and badges for regular users
+            if user and user['userType'] == 'user':
+                user_id = user['userID']
                 
-                if points_rule:
-                    points_earned = points_rule['proofPoints']
+                # Check if user has reached maximum proof points
+                if not pointsHelperFunc.check_max_proof_points(user_id):
+                    # Award points for the post
+                    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (7,))
+                    points_rule = cursor.fetchone()
                     
-                    # Update user's points
-                    cur.execute(
-                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
-                        (points_earned, user_id, 'user')
-                    )
-                    conn.commit()
+                    if points_rule:
+                        points_earned = points_rule['proofPoints']
+                        
+                        # Update user's points
+                        cursor.execute(
+                            'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
+                            (points_earned, user_id, 'user')
+                        )
+                        
+                        print(f"Added {points_earned} points to user {user_id} for adding a post")
                     
-                    print(f"Added {points_earned} points to user {user_id} for adding a post")
+                    # 🚨 Note: badge_helpers.process_club_post_badge may need connection pooling migration too
+                    badge_result = badge_helpers.process_club_post_badge(cursor.connection, cursor, user_id)
+                    
+                    # Send badge notification 
+                    if badge_result:
+                        # fetch username
+                        cursor.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                        row = cursor.fetchone()
+                        member_username = row['username'] if row else 'Someone'
                 
-                # Process the ClubPost badge
-                badge_result = badge_helpers.process_club_post_badge(conn, cur, user_id)
-                
-                # Send badge notification 
-                if badge_result:
-                    # fetch username
-                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
-                    row = cur.fetchone()
-                    member_username = row['username'] if row else 'Someone'
-            
-                    notification_data = {
-                        "userId":   user_id,
-                        "userType": "user",
-                        "notiTabs": "forYou",
-                        "notiType": "badge_earned",
-                        "image":    None,
-                        "link":     f"/profile/user/{user_id}/{member_username}",
-                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
-                        "createdAt": current_time
-                    }
-                    print("Badge notification data:", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+                        notification_data = {
+                            "userId":   user_id,
+                            "userType": "user",
+                            "notiTabs": "forYou",
+                            "notiType": "badge_earned",
+                            "image":    None,
+                            "link":     f"/profile/user/{user_id}/{member_username}",
+                            "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                            "createdAt": current_time
+                        }
+                        print("Badge notification data:", notification_data)
+                        notifications.add_notification_to_db(notification_data)
 
         # Prepare the response
         response_data = {
@@ -1591,14 +1587,10 @@ def addPost():
 
     except Exception as e:
         print(f"Error adding post: {str(e)}")
-        conn.rollback()
         return jsonify({
             "code": 500,
             "message": "An error occurred adding the post."
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
