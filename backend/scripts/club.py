@@ -1604,9 +1604,6 @@ def addPost():
 # Output: Possible return codes [201 - Comment added successfully, 400 - Missing required data, 404 - No such post exist, 500 - An error occurred adding the comment]
 @blueprint.route('/addComment', methods=['POST'])
 def addComment():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -1627,37 +1624,37 @@ def addComment():
         # Step 1: Get today's date
         comment_date = datetime.now()
 
-        # Step 2: Check if the post exists
-        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
-        post = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 2: Check if the post exists
+            cursor.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
+            post = cursor.fetchone()
 
-        if not post:
-            return jsonify({
-                'code': 404,
-                'message': 'No such post exists'
-            }), 404
+            if not post:
+                return jsonify({
+                    'code': 404,
+                    'message': 'No such post exists'
+                }), 404
 
-        # Step 3: Insert the new comment into the database
-        cur.execute('INSERT INTO "clubPostComments" ("postID", "commentDate", "commentContent", "commenterID") VALUES (%s, %s, %s, %s) RETURNING id', 
-                    (post_id, comment_date, comment_content, commenter_id,))
-        comment_id = cur.fetchone()['id']
-        conn.commit()
+            # Step 3: Insert the new comment into the database
+            cursor.execute('INSERT INTO "clubPostComments" ("postID", "commentDate", "commentContent", "commenterID") VALUES (%s, %s, %s, %s) RETURNING id', 
+                        (post_id, comment_date, comment_content, commenter_id,))
+            comment_id = cursor.fetchone()['id']
 
-        # Step 4: Notify the post owner if the commenter is not the poster
-        cur.execute('SELECT "posterID" FROM "clubPosts" WHERE id = %s', (post_id,))
-        row = cur.fetchone()
-        if row:
-            poster_member_id = row['posterID']
+            # Step 4: Notify the post owner if the commenter is not the poster
+            cursor.execute('SELECT "posterID" FROM "clubPosts" WHERE id = %s', (post_id,))
+            row = cursor.fetchone()
+            if row:
+                poster_member_id = row['posterID']
             # 2) fetch poster’s account
-            cur.execute(
+            cursor.execute(
                 'SELECT "userID","userType" FROM "clubMembers" WHERE id = %s',
                 (poster_member_id,)
             )
-            owner = cur.fetchone()
+            owner = cursor.fetchone()
             # 3) only notify if commenter != poster
             if owner and poster_member_id != commenter_id:
                 # get commenter's display name
-                commenter_info = getUserInfo(cur, commenter_id)
+                commenter_info = getUserInfo(cursor, commenter_id)
                 if commenter_info:
                     if commenter_info['userType']=='user':
                         name_key = 'displayName'
@@ -1684,91 +1681,86 @@ def addComment():
                 print("Notification data:", notification_data)
                 notifications.add_notification_to_db(notification_data)
 
-        # Step 5: Get the commenter's information
-        commenter_info = getUserInfo(cur, commenter_id)
+            # Step 5: Get the commenter's information
+            commenter_info = getUserInfo(cursor, commenter_id)
 
-        # Step 6: Get user info and process points and badges
-        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
-        user = cur.fetchone()
-        
-        points_earned = 0
-        badge_result = None
-
-        if user and user['userType'] == 'user':
-            user_id = user['userID']
+            # Step 6: Get user info and process points and badges
+            cursor.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+            user = cursor.fetchone()
             
-            # Check if user has reached maximum proof points
-            if not pointsHelperFunc.check_max_proof_points(user_id):
-                # Award points for the comment
-                cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (10,))
-                points_rule = cur.fetchone()
-                
-                if points_rule:
-                    points_earned = points_rule['proofPoints']
-                    
-                    # Update user's points
-                    cur.execute(
-                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
-                        (points_earned, user_id, 'user')
-                    )
-                    conn.commit()
-                    
-                    print(f"Added {points_earned} points to user {user_id} for adding a comment")
-                
-                # Process the Comment badge
-                badge_result = badge_helpers.process_comment_badge(conn, cur, user_id)
-                
-                if badge_result:
-                    cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
-                    row = cur.fetchone()
-                    commenter_username = row['username'] if row else 'Someone'
-                    notification_data = {
-                        "userId":   user_id,
-                        "userType": "user",
-                        "notiTabs": "forYou",
-                        "notiType": "badge_earned",
-                        "image":    None,
-                        "link":     f"/profile/user/{user_id}/{commenter_username}",
-                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
-                        "createdAt": current_time
-                    }
-                    print("Badge notification data:", notification_data)
-                    notifications.add_notification_to_db(notification_data)
+            points_earned = 0
+            badge_result = None
 
-        # Prepare the response
-        response_data = {
-            'code': 201,
-            'message': 'Comment added successfully',
-            'comment_obj': {
-                "commentContent": comment_content,
-                "commentDate": comment_date,
-                "commenterID": commenter_id,
-                "commenterInfo": commenter_info,
-                "id": comment_id,
-                "likedMembers": [],
-                "dislikedMembers": [],
-                "postID": post_id
+            if user and user['userType'] == 'user':
+                user_id = user['userID']
+                
+                # Check if user has reached maximum proof points
+                if not pointsHelperFunc.check_max_proof_points(user_id):
+                    # Award points for the comment
+                    cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (10,))
+                    points_rule = cursor.fetchone()
+                    
+                    if points_rule:
+                        points_earned = points_rule['proofPoints']
+                        
+                        # Update user's points
+                        cursor.execute(
+                            'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s AND "userType" = %s',
+                            (points_earned, user_id, 'user')
+                        )
+                        
+                        print(f"Added {points_earned} points to user {user_id} for adding a comment")
+                    
+                    # Process the Comment badge
+                    badge_result = badge_helpers.process_comment_badge(cursor.connection, cursor, user_id)
+                    
+                    if badge_result:
+                        cursor.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                        row = cursor.fetchone()
+                        commenter_username = row['username'] if row else 'Someone'
+                        notification_data = {
+                            "userId":   user_id,
+                            "userType": "user",
+                            "notiTabs": "forYou",
+                            "notiType": "badge_earned",
+                            "image":    None,
+                            "link":     f"/profile/user/{user_id}/{commenter_username}",
+                            "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                            "createdAt": current_time
+                        }
+                        print("Badge notification data:", notification_data)
+                        notifications.add_notification_to_db(notification_data)
+
+            # Prepare the response
+            response_data = {
+                'code': 201,
+                'message': 'Comment added successfully',
+                'comment_obj': {
+                    "commentContent": comment_content,
+                    "commentDate": comment_date,
+                    "commenterID": commenter_id,
+                    "commenterInfo": commenter_info,
+                    "id": comment_id,
+                    "likedMembers": [],
+                    "dislikedMembers": [],
+                    "postID": post_id
+                }
             }
-        }
-        
-        if points_earned > 0:
-            response_data['pointsEarned'] = points_earned
             
-        if badge_result:
-            response_data['badgeAwarded'] = badge_result
-            
-        return jsonify(response_data), 201
+            if points_earned > 0:
+                response_data['pointsEarned'] = points_earned
+                
+            if badge_result:
+                response_data['badgeAwarded'] = badge_result
+                
+            return jsonify(response_data), 201
 
     except Exception as e:
         print(f"Error adding comment: {str(e)}")
-        conn.rollback()
         return jsonify({
             "code": 500,
             "message": "An error occurred adding the comment."
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
