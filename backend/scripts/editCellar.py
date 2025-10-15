@@ -11,6 +11,9 @@ from psycopg2.extras import RealDictCursor
 from decimal import Decimal, InvalidOperation
 import psycopg2
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -29,425 +32,471 @@ def addToCellar():
     print("TZHBackendLog: Starting addToCellar endpoint")
     
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        print("TZHBackendLog: Database connection established")
-        
-        data = request.get_json()
-        print("TZHBackendLog: Raw request data received:")
-        print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
-        print(f"TZHBackendLog: Request method: {request.method}")
-        print(f"TZHBackendLog: Request headers: {dict(request.headers)}")
-        print(f"TZHBackendLog: Request content type: {request.content_type}")
-        
-        # Validate required fields
-        required_fields = ['listingId', 'ownerType', 'ownerId', 'quantity']
-        print(f"TZHBackendLog: Validating required fields: {required_fields}")
-        
-        for field in required_fields:
-            if field not in data or data[field] is None:
-                error_msg = f"Missing required field: {field}"
-                print(f"TZHBackendLog: Validation failed - {error_msg}")
-                return jsonify({
-                    "code": 400,
-                    "message": error_msg
-                }), 400
-        
-        print("TZHBackendLog: All required fields present")
-        
-        # Validate owner type
-        print(f"TZHBackendLog: Validating ownerType: {data['ownerType']}")
-        if data['ownerType'] not in ['user', 'producer', 'venue']:
-            error_msg = "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        print("TZHBackendLog: ownerType validation passed")
-        
-        # Validate quantity
-        print(f"TZHBackendLog: Validating quantity: {data['quantity']}")
-        try:
-            quantity = int(data['quantity'])
-            if quantity < 1:
-                raise ValueError("Quantity must be positive")
-            print(f"TZHBackendLog: Quantity validation passed: {quantity}")
-        except (ValueError, TypeError) as e:
-            error_msg = "Quantity must be a positive integer"
-            print(f"TZHBackendLog: Quantity validation failed: {e}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        # Validate listing exists
-        print(f"TZHBackendLog: Validating listing exists with ID: {data['listingId']}")
-        cur.execute('SELECT "id", "listingName" FROM "listings" WHERE "id" = %s', (data['listingId'],))
-        listing = cur.fetchone()
-        if not listing:
-            error_msg = f"Listing with ID {data['listingId']} not found"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Listing found: {dict(listing)}")
-        
-        # Validate owner exists
-        owner_table = f'"{data["ownerType"]}s"'  # users, producers, venues
-        owner_id_field = '"id"'
-        print(f"TZHBackendLog: Validating owner in table {owner_table} with ID: {data['ownerId']}")
-        
-        cur.execute(f'SELECT {owner_id_field} FROM {owner_table} WHERE {owner_id_field} = %s', (data['ownerId'],))
-        owner = cur.fetchone()
-        if not owner:
-            error_msg = f"Owner with ID {data['ownerId']} not found in {data['ownerType']}s table"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Owner found: {dict(owner)}")
-        
-        # Handle collection - get or create default collection
-        collection_id = data.get('collectionId')
-        print(f"TZHBackendLog: Processing collection ID: {collection_id}")
-        
-        if not collection_id:
-            print("TZHBackendLog: No collection ID provided, finding or creating default collection")
-            # Find or create default collection for this owner
-            cur.execute("""
-                SELECT "id" FROM "myCellarCollections" 
-                WHERE "ownerID" = %s AND "ownerType" = %s AND "isDefault" = TRUE
-            """, (data['ownerId'], data['ownerType']))
+        with db_manager.get_cursor() as cursor:
+            print("TZHBackendLog: Database connection established")
             
-            default_collection = cur.fetchone()
+            data = request.get_json()
+            print("TZHBackendLog: Raw request data received:")
+            print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
+            print(f"TZHBackendLog: Request method: {request.method}")
+            print(f"TZHBackendLog: Request headers: {dict(request.headers)}")
+            print(f"TZHBackendLog: Request content type: {request.content_type}")
             
-            if not default_collection:
-                print("TZHBackendLog: No default collection found, creating one")
-                # Create default collection
-                cur.execute("""
-                    INSERT INTO "myCellarCollections" 
-                    ("ownerID", "ownerType", "collectionName", "isDefault", "createdDate", "updatedDate")
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING "id"
-                """, (
-                    data['ownerId'], 
-                    data['ownerType'], 
-                    'General Collection',
-                    True,
-                    datetime.now(),
-                    datetime.now()
-                ))
-                collection_id = cur.fetchone()['id']
-                conn.commit()
-                print(f"TZHBackendLog: Created new default collection with ID: {collection_id}")
-            else:
-                collection_id = default_collection['id']
-                print(f"TZHBackendLog: Found existing default collection with ID: {collection_id}")
-        else:
-            print(f"TZHBackendLog: Validating provided collection {collection_id} belongs to owner")
-            # Validate provided collection belongs to the owner
-            cur.execute("""
-                SELECT "id" FROM "myCellarCollections" 
-                WHERE "id" = %s AND "ownerID" = %s AND "ownerType" = %s
-            """, (collection_id, data['ownerId'], data['ownerType']))
+            # Validate required fields
+            required_fields = ['listingId', 'ownerType', 'ownerId', 'quantity']
+            print(f"TZHBackendLog: Validating required fields: {required_fields}")
             
-            if not cur.fetchone():
-                error_msg = "Collection does not belong to the specified owner"
+            for field in required_fields:
+                if field not in data or data[field] is None:
+                    error_msg = f"Missing required field: {field}"
+                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                    return jsonify({
+                        "code": 400,
+                        "message": error_msg
+                    }), 400
+            
+            print("TZHBackendLog: All required fields present")
+            
+            # Validate owner type
+            print(f"TZHBackendLog: Validating ownerType: {data['ownerType']}")
+            if data['ownerType'] not in ['user', 'producer', 'venue']:
+                error_msg = "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
                 print(f"TZHBackendLog: {error_msg}")
                 return jsonify({
                     "code": 400,
                     "message": error_msg
                 }), 400
-            print(f"TZHBackendLog: Collection validation passed for ID: {collection_id}")
-        
-        # Parse and validate dates
-        def parse_date(date_str):
-            if not date_str:
-                return None
+            
+            print("TZHBackendLog: ownerType validation passed")
+            
+            # Validate quantity
+            print(f"TZHBackendLog: Validating quantity: {data['quantity']}")
             try:
-                return datetime.strptime(date_str, '%Y-%m-%d').date()
-            except ValueError:
-                try:
-                    return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ').date()
-                except ValueError:
-                    return None
-        
-        print("TZHBackendLog: Parsing dates...")
-        purchase_date = parse_date(data.get('purchaseDate'))
-        delivery_date = parse_date(data.get('deliveryDate'))
-        drink_onwards_date = parse_date(data.get('drinkOnwardsDate'))
-        drink_by_date = parse_date(data.get('drinkByDate'))
-        
-        print(f"TZHBackendLog: Parsed dates - purchase: {purchase_date}, delivery: {delivery_date}, drink_onwards: {drink_onwards_date}, drink_by: {drink_by_date}")
-        
-        # Parse and validate prices
-        def parse_price(price_str):
-            if not price_str:
-                return None
-            try:
-                return Decimal(str(price_str))
-            except (InvalidOperation, TypeError, ValueError):
-                return None
-        
-        print("TZHBackendLog: Parsing prices...")
-        purchase_price = parse_price(data.get('purchasePrice'))
-        current_value_estimation = parse_price(data.get('currentValueEstimation'))
-        
-        print(f"TZHBackendLog: Parsed prices - purchase: {purchase_price}, current_value: {current_value_estimation}")
-        
-        # Parse volume - normalize for better matching (no unit conversion)
-        volume_number = None
-        volume_unit = None
-        print(f"TZHBackendLog: Parsing volume - raw volumeNumber: {data.get('volumeNumber')}")
-        if data.get('volumeNumber'):  # Frontend now sends volumeNumber
-            try:
-                # Normalize to 2 decimal places for consistent matching
-                volume_number = round(float(data['volumeNumber']), 2)
-                # Normalize volume unit to lowercase for case-insensitive matching
-                volume_unit = data.get('volumeUnit', 'ml').lower().strip()
-                print(f"TZHBackendLog: Parsed and normalized volume: {volume_number} {volume_unit}")
+                quantity = int(data['quantity'])
+                if quantity < 1:
+                    raise ValueError("Quantity must be positive")
+                print(f"TZHBackendLog: Quantity validation passed: {quantity}")
             except (ValueError, TypeError) as e:
-                print(f"TZHBackendLog: Volume parsing failed: {e}")
-                volume_number = None
-                volume_unit = None
-        
-        # Parse variant (vintage)  
-        variant = None
-        print(f"TZHBackendLog: Parsing variant - raw variant: {data.get('variant')}")
-        if data.get('variant'):
-            try:
-                variant = int(data['variant'])
-                print(f"TZHBackendLog: Parsed variant: {variant}")
-            except (ValueError, TypeError) as e:
-                print(f"TZHBackendLog: Variant parsing failed: {e}")
-                variant = None
-        
-        # Validate format, volume combination consistency
-        format_value = data.get('format', 'Bottle')
-        if not format_value:
-            format_value = 'Bottle'  # Default format
-        # Normalize format to proper case for consistent matching
-        format_value = format_value.strip().title()  # "bottle" -> "Bottle", "CAN" -> "Can"
-        print(f"TZHBackendLog: Normalized format value: {format_value}")
-        
-        # Ensure volume information is consistent
-        if volume_number is not None and not volume_unit:
-            error_msg = "Volume unit is required when volume number is provided"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        # Check if master record already exists for this listing+variant+format+volume combination FOR THIS OWNER
-        print("TZHBackendLog: Checking for existing master record...")
-        print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']}")
-        
-        # Look for existing master record (quantityVariantID = 1) across all user's collections
-        # This will be the group leader for items with identical properties
-        # Use normalized values and case-insensitive matching for better grouping
-        cur.execute("""
-            SELECT ci."id", ci."collectionID", ci."variantGroupID" FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE ci."listingID" = %s 
-            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
-            AND ci."quantityVariantID" = 1
-            AND UPPER(ci."drinkFormat") = UPPER(%s)
-            AND ROUND(CAST(ci."volumeNumber" AS NUMERIC), 2) = %s
-            AND LOWER(ci."volumeUnit") = %s
-            AND cc."ownerID" = %s
-            AND cc."ownerType" = %s
-        """, (
-            data['listingId'], 
-            variant, 
-            variant,  # For the NULL check
-            format_value,  # Case-insensitive comparison via UPPER()
-            volume_number,  # Already normalized to 2 decimal places
-            volume_unit,   # Already normalized to lowercase
-            data['ownerId'],
-            data['ownerType']
-        ))
-        
-        master_record = cur.fetchone()
-        existing_master_collection_id = None
-        group_variant_id = None
-        
-        if master_record:
-            existing_master_collection_id = master_record['collectionID']
-            group_variant_id = master_record['variantGroupID']
-            print(f"TZHBackendLog: Found existing master record with ID: {master_record['id']} in collection {existing_master_collection_id}")
-            print(f"TZHBackendLog: Existing group variantGroupID: {group_variant_id}")
+                error_msg = "Quantity must be a positive integer"
+                print(f"TZHBackendLog: Quantity validation failed: {e}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
             
-            # Check if the master record is in a different collection than the requested one
-            if existing_master_collection_id != collection_id:
-                print(f"TZHBackendLog: Master record is in collection {existing_master_collection_id}, but new bottles requested for collection {collection_id}")
-                print(f"TZHBackendLog: Will add bottles to the existing master's collection ({existing_master_collection_id}) to keep them grouped")
-                # Use the existing master's collection to keep bottles grouped together
-                collection_id = existing_master_collection_id
-        else:
-            print(f"TZHBackendLog: No existing master record found for listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit}")
-        
-        if not master_record:
-            print("TZHBackendLog: No existing master record found, creating new master record")
-            # Create master record (quantityVariantID = 1) with shared properties AND first bottle's individual properties
-            master_insert_data = (
-                data['listingId'],
-                collection_id,
-                variant,
-                1,  # Master record
-                format_value,
-                volume_number,
-                volume_unit,
-                drink_by_date,
-                drink_onwards_date,
-                current_value_estimation,
-                data.get('currentValueCurrency', 'USD'),
-                data.get('suggestedFoodPairing', '').strip() or None,
-                # Individual properties for the first bottle (not defaults!)
-                purchase_date,
-                delivery_date,
-                purchase_price,
-                data.get('purchaseCurrency', 'USD'),
-                data.get('purchaseVenueId'),
-                data.get('purchasePlaceName', '').strip() or None,
-                data.get('purchaseAddress', '').strip() or None,
-                data.get('status', 'In Possession'),
-                data.get('consumption', 'Unopened'),
-                data.get('currentLocation', 'At Home'),
-                data.get('subLocation', '').strip() or None,
-                data.get('personalNotes', '').strip() or None,
-                False,  # Not archived
-                datetime.now(),
-                datetime.now()
-            )
+            # Validate listing exists
+            print(f"TZHBackendLog: Validating listing exists with ID: {data['listingId']}")
+            cursor.execute('SELECT "id", "listingName" FROM "listings" WHERE "id" = %s', (data['listingId'],))
+            listing = cursor.fetchone()
+            if not listing:
+                error_msg = f"Listing with ID {data['listingId']} not found"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
             
-            print(f"TZHBackendLog: Master record insert data: {master_insert_data}")
+            print(f"TZHBackendLog: Listing found: {dict(listing)}")
             
-            cur.execute("""
-                INSERT INTO "myCellarItems" (
-                    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                    "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
-                    "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
-                    "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
-                    "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
-                    "status", "consumption", "currentLocation", "subLocation",
-                    "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
-                ) VALUES (
-                    %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                ) RETURNING "id"
-            """, master_insert_data)
-            master_id = cur.fetchone()['id']
-            print(f"TZHBackendLog: Created master record with ID: {master_id}")
+            # Validate owner exists
+            owner_table = f'"{data["ownerType"]}s"'  # users, producers, venues
+            owner_id_field = '"id"'
+            print(f"TZHBackendLog: Validating owner in table {owner_table} with ID: {data['ownerId']}")
             
-            # Update the variantGroupID to point to itself (self-reference for group leader)
-            cur.execute("""
-                UPDATE "myCellarItems" 
-                SET "variantGroupID" = %s 
-                WHERE "id" = %s
-            """, (master_id, master_id))
-            print(f"TZHBackendLog: Updated master record variantGroupID to self-reference: {master_id}")
+            cursor.execute(f'SELECT {owner_id_field} FROM {owner_table} WHERE {owner_id_field} = %s', (data['ownerId'],))
+            owner = cursor.fetchone()
+            if not owner:
+                error_msg = f"Owner with ID {data['ownerId']} not found in {data['ownerType']}s table"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
             
-            # Set group_variant_id for subsequent bottle creation
-            group_variant_id = master_id
+            print(f"TZHBackendLog: Owner found: {dict(owner)}")
             
-            # Add master ID to created bottles list since it represents the first bottle
-            created_bottle_ids = [master_id]
-        else:
-            master_id = master_record['id']
-            print(f"TZHBackendLog: Found existing master record with ID: {master_id} in collection {collection_id}")
+            # Handle collection - get or create default collection
+            collection_id = data.get('collectionId')
+            print(f"TZHBackendLog: Processing collection ID: {collection_id}")
             
-            # For existing master record, we need to create a new individual bottle record for the first bottle
-            # since the existing master already represents someone else's first bottle
-            created_bottle_ids = []
-            
-            # Update master record with new shared properties if provided
-            # Note: drinkFormat, volumeNumber, volumeUnit are now part of the key and won't be updated
-            update_fields = []
-            update_values = []
-            
-            if drink_by_date is not None:
-                update_fields.append('"drinkByDate" = %s')
-                update_values.append(drink_by_date)
-            
-            if drink_onwards_date is not None:
-                update_fields.append('"drinkOnwardsDate" = %s')
-                update_values.append(drink_onwards_date)
-            
-            if current_value_estimation is not None:
-                update_fields.append('"currentValueEstimation" = %s')
-                update_values.append(current_value_estimation)
-                update_fields.append('"currentValueCurrency" = %s')
-                update_values.append(data.get('currentValueCurrency', 'USD'))
-            
-            if data.get('suggestedFoodPairing', '').strip():
-                update_fields.append('"suggestedFoodPairing" = %s')
-                update_values.append(data['suggestedFoodPairing'].strip())
-            
-            if update_fields:
-                update_fields.append('"updatedDate" = %s')
-                update_values.append(datetime.now())
-                update_values.append(master_id)
+            if not collection_id:
+                print("TZHBackendLog: No collection ID provided, finding or creating default collection")
+                # Find or create default collection for this owner
+                cursor.execute("""
+                    SELECT "id" FROM "myCellarCollections" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND "isDefault" = TRUE
+                """, (data['ownerId'], data['ownerType']))
                 
-                update_query = f"""
-                    UPDATE "myCellarItems" 
-                    SET {', '.join(update_fields)}
-                    WHERE "id" = %s
-                """
-                print(f"TZHBackendLog: Updating master record with query: {update_query}")
-                print(f"TZHBackendLog: Update values: {update_values}")
-                cur.execute(update_query, update_values)
-                print("TZHBackendLog: Master record updated")
-        
-        # Get next quantityVariantID - SIMPLIFIED APPROACH
-        print("TZHBackendLog: Getting next quantityVariantID...")
-        
-        if not master_record:
-            # New master record case
-            next_variant_id = 2  # Master is 1, so next individual bottle is 2
-            print(f"TZHBackendLog: New master record created, next quantityVariantID will be: {next_variant_id}")
-        else:
-            # Existing master record case
-            # Find the absolute maximum quantityVariantID for this listing+variant in this collection
-            # This ensures we never have conflicts, even if there are multiple volume groups
-            cur.execute("""
-                SELECT MAX("quantityVariantID") as max_id
-                FROM "myCellarItems"
-                WHERE "listingID" = %s 
-                AND "variant" = %s
-                AND "collectionID" = %s
+                default_collection = cursor.fetchone()
+                
+                if not default_collection:
+                    print("TZHBackendLog: No default collection found, creating one")
+                    # Create default collection
+                    cursor.execute("""
+                        INSERT INTO "myCellarCollections" 
+                        ("ownerID", "ownerType", "collectionName", "isDefault", "createdDate", "updatedDate")
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        RETURNING "id"
+                    """, (
+                        data['ownerId'], 
+                        data['ownerType'], 
+                        'General Collection',
+                        True,
+                        datetime.now(),
+                        datetime.now()
+                    ))
+                    collection_id = cursor.fetchone()['id']
+                    print(f"TZHBackendLog: Created new default collection with ID: {collection_id}")
+                else:
+                    collection_id = default_collection['id']
+                    print(f"TZHBackendLog: Found existing default collection with ID: {collection_id}")
+            else:
+                print(f"TZHBackendLog: Validating provided collection {collection_id} belongs to owner")
+                # Validate provided collection belongs to the owner
+                cursor.execute("""
+                    SELECT "id" FROM "myCellarCollections" 
+                    WHERE "id" = %s AND "ownerID" = %s AND "ownerType" = %s
+                """, (collection_id, data['ownerId'], data['ownerType']))
+                
+                if not cursor.fetchone():
+                    error_msg = "Collection does not belong to the specified owner"
+                    print(f"TZHBackendLog: {error_msg}")
+                    return jsonify({
+                        "code": 400,
+                        "message": error_msg
+                    }), 400
+                print(f"TZHBackendLog: Collection validation passed for ID: {collection_id}")
+            
+            # Parse and validate dates
+            def parse_date(date_str):
+                if not date_str:
+                    return None
+                try:
+                    return datetime.strptime(date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    try:
+                        return datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S.%fZ').date()
+                    except ValueError:
+                        return None
+            
+            print("TZHBackendLog: Parsing dates...")
+            purchase_date = parse_date(data.get('purchaseDate'))
+            delivery_date = parse_date(data.get('deliveryDate'))
+            drink_onwards_date = parse_date(data.get('drinkOnwardsDate'))
+            drink_by_date = parse_date(data.get('drinkByDate'))
+            
+            print(f"TZHBackendLog: Parsed dates - purchase: {purchase_date}, delivery: {delivery_date}, drink_onwards: {drink_onwards_date}, drink_by: {drink_by_date}")
+            
+            # Parse and validate prices
+            def parse_price(price_str):
+                if not price_str:
+                    return None
+                try:
+                    return Decimal(str(price_str))
+                except (InvalidOperation, TypeError, ValueError):
+                    return None
+            
+            print("TZHBackendLog: Parsing prices...")
+            purchase_price = parse_price(data.get('purchasePrice'))
+            current_value_estimation = parse_price(data.get('currentValueEstimation'))
+            
+            print(f"TZHBackendLog: Parsed prices - purchase: {purchase_price}, current_value: {current_value_estimation}")
+            
+            # Parse volume - normalize for better matching (no unit conversion)
+            volume_number = None
+            volume_unit = None
+            print(f"TZHBackendLog: Parsing volume - raw volumeNumber: {data.get('volumeNumber')}")
+            if data.get('volumeNumber'):  # Frontend now sends volumeNumber
+                try:
+                    # Normalize to 2 decimal places for consistent matching
+                    volume_number = round(float(data['volumeNumber']), 2)
+                    # Normalize volume unit to lowercase for case-insensitive matching
+                    volume_unit = data.get('volumeUnit', 'ml').lower().strip()
+                    print(f"TZHBackendLog: Parsed and normalized volume: {volume_number} {volume_unit}")
+                except (ValueError, TypeError) as e:
+                    print(f"TZHBackendLog: Volume parsing failed: {e}")
+                    volume_number = None
+                    volume_unit = None
+            
+            # Parse variant (vintage)  
+            variant = None
+            print(f"TZHBackendLog: Parsing variant - raw variant: {data.get('variant')}")
+            if data.get('variant'):
+                try:
+                    variant = int(data['variant'])
+                    print(f"TZHBackendLog: Parsed variant: {variant}")
+                except (ValueError, TypeError) as e:
+                    print(f"TZHBackendLog: Variant parsing failed: {e}")
+                    variant = None
+            
+            # Validate format, volume combination consistency
+            format_value = data.get('format', 'Bottle')
+            if not format_value:
+                format_value = 'Bottle'  # Default format
+            # Normalize format to proper case for consistent matching
+            format_value = format_value.strip().title()  # "bottle" -> "Bottle", "CAN" -> "Can"
+            print(f"TZHBackendLog: Normalized format value: {format_value}")
+            
+            # Ensure volume information is consistent
+            if volume_number is not None and not volume_unit:
+                error_msg = "Volume unit is required when volume number is provided"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
+            
+            # Check if master record already exists for this listing+variant+format+volume combination FOR THIS OWNER
+            print("TZHBackendLog: Checking for existing master record...")
+            print(f"TZHBackendLog: Looking for master with: listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit} for owner {data['ownerType']} {data['ownerId']}")
+            
+            # Look for existing master record (quantityVariantID = 1) across all user's collections
+            # This will be the group leader for items with identical properties
+            # Use normalized values and case-insensitive matching for better grouping
+            cursor.execute("""
+                SELECT ci."id", ci."collectionID", ci."variantGroupID" FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE ci."listingID" = %s 
+                AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+                AND ci."quantityVariantID" = 1
+                AND UPPER(ci."drinkFormat") = UPPER(%s)
+                AND ROUND(CAST(ci."volumeNumber" AS NUMERIC), 2) = %s
+                AND LOWER(ci."volumeUnit") = %s
+                AND cc."ownerID" = %s
+                AND cc."ownerType" = %s
             """, (
                 data['listingId'], 
-                variant,
-                existing_master_collection_id
+                variant, 
+                variant,  # For the NULL check
+                format_value,  # Case-insensitive comparison via UPPER()
+                volume_number,  # Already normalized to 2 decimal places
+                volume_unit,   # Already normalized to lowercase
+                data['ownerId'],
+                data['ownerType']
             ))
             
-            result = cur.fetchone()
-            max_existing_id = result['max_id'] or 1
-            next_variant_id = max_existing_id + 1
-            print(f"TZHBackendLog: Found max quantityVariantID {max_existing_id} for listing+variant, next will be: {next_variant_id}")
+            master_record = cursor.fetchone()
+            existing_master_collection_id = None
+            group_variant_id = None
             
-            # IMPORTANT: This means different volume groups will have non-consecutive quantityVariantIDs
-            # But that's OK - the grouping is determined by the master record's format+volume, not by sequence
-        
-        # Create individual bottle records
-        print(f"TZHBackendLog: Creating {quantity} individual bottle records...")
-        
-        if not master_record:
-            # New master record case: master record IS the first bottle
-            if quantity == 1:
-                print("TZHBackendLog: Quantity is 1, only master record needed (already created)")
-            else:
-                # Create additional bottle records for quantities 2 and beyond
-                print(f"TZHBackendLog: Creating {quantity - 1} additional individual bottle records...")
+            if master_record:
+                existing_master_collection_id = master_record['collectionID']
+                group_variant_id = master_record['variantGroupID']
+                print(f"TZHBackendLog: Found existing master record with ID: {master_record['id']} in collection {existing_master_collection_id}")
+                print(f"TZHBackendLog: Existing group variantGroupID: {group_variant_id}")
                 
-                for i in range(1, quantity):  # Start from 1 (second bottle) since master is first bottle
-                    current_variant_id = next_variant_id + i - 1  # Adjust indexing
+                # Check if the master record is in a different collection than the requested one
+                if existing_master_collection_id != collection_id:
+                    print(f"TZHBackendLog: Master record is in collection {existing_master_collection_id}, but new bottles requested for collection {collection_id}")
+                    print(f"TZHBackendLog: Will add bottles to the existing master's collection ({existing_master_collection_id}) to keep them grouped")
+                    # Use the existing master's collection to keep bottles grouped together
+                    collection_id = existing_master_collection_id
+            else:
+                print(f"TZHBackendLog: No existing master record found for listingID={data['listingId']}, variant={variant}, format={format_value}, volume={volume_number} {volume_unit}")
+            
+            if not master_record:
+                print("TZHBackendLog: No existing master record found, creating new master record")
+                # Create master record (quantityVariantID = 1) with shared properties AND first bottle's individual properties
+                master_insert_data = (
+                    data['listingId'],
+                    collection_id,
+                    variant,
+                    1,  # Master record
+                    format_value,
+                    volume_number,
+                    volume_unit,
+                    drink_by_date,
+                    drink_onwards_date,
+                    current_value_estimation,
+                    data.get('currentValueCurrency', 'USD'),
+                    data.get('suggestedFoodPairing', '').strip() or None,
+                    # Individual properties for the first bottle (not defaults!)
+                    purchase_date,
+                    delivery_date,
+                    purchase_price,
+                    data.get('purchaseCurrency', 'USD'),
+                    data.get('purchaseVenueId'),
+                    data.get('purchasePlaceName', '').strip() or None,
+                    data.get('purchaseAddress', '').strip() or None,
+                    data.get('status', 'In Possession'),
+                    data.get('consumption', 'Unopened'),
+                    data.get('currentLocation', 'At Home'),
+                    data.get('subLocation', '').strip() or None,
+                    data.get('personalNotes', '').strip() or None,
+                    False,  # Not archived
+                    datetime.now(),
+                    datetime.now()
+                )
+                
+                print(f"TZHBackendLog: Master record insert data: {master_insert_data}")
+                
+                cursor.execute("""
+                    INSERT INTO "myCellarItems" (
+                        "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
+                        "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
+                        "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
+                        "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                        "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+                        "status", "consumption", "currentLocation", "subLocation",
+                        "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                    ) VALUES (
+                        %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    ) RETURNING "id"
+                """, master_insert_data)
+                master_id = cursor.fetchone()['id']
+                print(f"TZHBackendLog: Created master record with ID: {master_id}")
+                
+                # Update the variantGroupID to point to itself (self-reference for group leader)
+                cursor.execute("""
+                    UPDATE "myCellarItems" 
+                    SET "variantGroupID" = %s 
+                    WHERE "id" = %s
+                """, (master_id, master_id))
+                print(f"TZHBackendLog: Updated master record variantGroupID to self-reference: {master_id}")
+                
+                # Set group_variant_id for subsequent bottle creation
+                group_variant_id = master_id
+                
+                # Add master ID to created bottles list since it represents the first bottle
+                created_bottle_ids = [master_id]
+            else:
+                master_id = master_record['id']
+                print(f"TZHBackendLog: Found existing master record with ID: {master_id} in collection {collection_id}")
+                
+                # For existing master record, we need to create a new individual bottle record for the first bottle
+                # since the existing master already represents someone else's first bottle
+                created_bottle_ids = []
+                
+                # Update master record with new shared properties if provided
+                # Note: drinkFormat, volumeNumber, volumeUnit are now part of the key and won't be updated
+                update_fields = []
+                update_values = []
+                
+                if drink_by_date is not None:
+                    update_fields.append('"drinkByDate" = %s')
+                    update_values.append(drink_by_date)
+                
+                if drink_onwards_date is not None:
+                    update_fields.append('"drinkOnwardsDate" = %s')
+                    update_values.append(drink_onwards_date)
+                
+                if current_value_estimation is not None:
+                    update_fields.append('"currentValueEstimation" = %s')
+                    update_values.append(current_value_estimation)
+                    update_fields.append('"currentValueCurrency" = %s')
+                    update_values.append(data.get('currentValueCurrency', 'USD'))
+                
+                if data.get('suggestedFoodPairing', '').strip():
+                    update_fields.append('"suggestedFoodPairing" = %s')
+                    update_values.append(data['suggestedFoodPairing'].strip())
+                
+                if update_fields:
+                    update_fields.append('"updatedDate" = %s')
+                    update_values.append(datetime.now())
+                    update_values.append(master_id)
+                    
+                    update_query = f"""
+                        UPDATE "myCellarItems" 
+                        SET {', '.join(update_fields)}
+                        WHERE "id" = %s
+                    """
+                    print(f"TZHBackendLog: Updating master record with query: {update_query}")
+                    print(f"TZHBackendLog: Update values: {update_values}")
+                    cursor.execute(update_query, update_values)
+                    print("TZHBackendLog: Master record updated")
+            
+            # Get next quantityVariantID - SIMPLIFIED APPROACH
+            print("TZHBackendLog: Getting next quantityVariantID...")
+            
+            if not master_record:
+                # New master record case
+                next_variant_id = 2  # Master is 1, so next individual bottle is 2
+                print(f"TZHBackendLog: New master record created, next quantityVariantID will be: {next_variant_id}")
+            else:
+                # Existing master record case
+                # Find the absolute maximum quantityVariantID for this listing+variant in this collection
+                # This ensures we never have conflicts, even if there are multiple volume groups
+                cursor.execute("""
+                    SELECT MAX("quantityVariantID") as max_id
+                    FROM "myCellarItems"
+                    WHERE "listingID" = %s 
+                    AND "variant" = %s
+                    AND "collectionID" = %s
+                """, (
+                    data['listingId'], 
+                    variant,
+                    existing_master_collection_id
+                ))
+                
+                result = cursor.fetchone()
+                max_existing_id = result['max_id'] or 1
+                next_variant_id = max_existing_id + 1
+                print(f"TZHBackendLog: Found max quantityVariantID {max_existing_id} for listing+variant, next will be: {next_variant_id}")
+                
+                # IMPORTANT: This means different volume groups will have non-consecutive quantityVariantIDs
+                # But that's OK - the grouping is determined by the master record's format+volume, not by sequence
+            
+            # Create individual bottle records
+            print(f"TZHBackendLog: Creating {quantity} individual bottle records...")
+            
+            if not master_record:
+                # New master record case: master record IS the first bottle
+                if quantity == 1:
+                    print("TZHBackendLog: Quantity is 1, only master record needed (already created)")
+                else:
+                    # Create additional bottle records for quantities 2 and beyond
+                    print(f"TZHBackendLog: Creating {quantity - 1} additional individual bottle records...")
+                    
+                    for i in range(1, quantity):  # Start from 1 (second bottle) since master is first bottle
+                        current_variant_id = next_variant_id + i - 1  # Adjust indexing
+                        print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
+                        
+                        bottle_insert_data = (
+                            data['listingId'],
+                            collection_id,
+                            variant,
+                            current_variant_id,  # Individual bottle ID
+                            group_variant_id,  # Reference to master record's ID
+                            purchase_date,
+                            delivery_date,
+                            purchase_price,
+                            data.get('purchaseCurrency', 'USD'),
+                            data.get('purchaseVenueId'),  # If provided
+                            data.get('purchasePlaceName', '').strip() or None,
+                            data.get('purchaseAddress', '').strip() or None,
+                            data.get('status', 'In Possession'),
+                            data.get('consumption', 'Unopened'),
+                            data.get('currentLocation', 'At Home'),  # Database field: currentLocation
+                            data.get('subLocation', '').strip() or None,
+                            data.get('personalNotes', '').strip() or None,
+                            False,  # Not archived
+                            datetime.now(),
+                            datetime.now()
+                        )
+                        
+                        print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
+                        
+                        cursor.execute("""
+                            INSERT INTO "myCellarItems" (
+                                "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
+                                "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                                "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
+                                "status", "consumption", "currentLocation", "subLocation",
+                                "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                            ) VALUES (
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            ) RETURNING "id"
+                        """, bottle_insert_data)
+                        
+                        bottle_id = cursor.fetchone()['id']
+                        created_bottle_ids.append(bottle_id)
+                        print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
+            else:
+                # Existing master record case: need to create ALL bottles as individual records
+                print(f"TZHBackendLog: Master record exists, creating {quantity} individual bottle records...")
+                
+                for i in range(quantity):
+                    current_variant_id = next_variant_id + i
                     print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
                     
                     bottle_insert_data = (
@@ -475,7 +524,7 @@ def addToCellar():
                     
                     print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
                     
-                    cur.execute("""
+                    cursor.execute("""
                         INSERT INTO "myCellarItems" (
                             "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                             "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
@@ -487,136 +536,86 @@ def addToCellar():
                         ) RETURNING "id"
                     """, bottle_insert_data)
                     
-                    bottle_id = cur.fetchone()['id']
+                    bottle_id = cursor.fetchone()['id']
                     created_bottle_ids.append(bottle_id)
                     print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
-        else:
-            # Existing master record case: need to create ALL bottles as individual records
-            print(f"TZHBackendLog: Master record exists, creating {quantity} individual bottle records...")
             
-            for i in range(quantity):
-                current_variant_id = next_variant_id + i
-                print(f"TZHBackendLog: Creating bottle {i+1}/{quantity} with quantityVariantID: {current_variant_id}")
-                
-                bottle_insert_data = (
-                    data['listingId'],
-                    collection_id,
-                    variant,
-                    current_variant_id,  # Individual bottle ID
-                    group_variant_id,  # Reference to master record's ID
-                    purchase_date,
-                    delivery_date,
-                    purchase_price,
-                    data.get('purchaseCurrency', 'USD'),
-                    data.get('purchaseVenueId'),  # If provided
-                    data.get('purchasePlaceName', '').strip() or None,
-                    data.get('purchaseAddress', '').strip() or None,
-                    data.get('status', 'In Possession'),
-                    data.get('consumption', 'Unopened'),
-                    data.get('currentLocation', 'At Home'),  # Database field: currentLocation
-                    data.get('subLocation', '').strip() or None,
-                    data.get('personalNotes', '').strip() or None,
-                    False,  # Not archived
-                    datetime.now(),
-                    datetime.now()
-                )
-                
-                print(f"TZHBackendLog: Bottle {i+1} insert data: {bottle_insert_data}")
-                
-                cur.execute("""
-                    INSERT INTO "myCellarItems" (
-                        "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                        "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
-                        "purchaseVenueID", "purchasePlaceName", "purchaseAddress",
-                        "status", "consumption", "currentLocation", "subLocation",
-                        "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
-                    ) VALUES (
-                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                    ) RETURNING "id"
-                """, bottle_insert_data)
-                
-                bottle_id = cur.fetchone()['id']
-                created_bottle_ids.append(bottle_id)
-                print(f"TZHBackendLog: Created bottle {i+1} with ID: {bottle_id}")
-        
-        # Commit the transaction
-        print("TZHBackendLog: Committing transaction...")
-        conn.commit()
-        print("TZHBackendLog: Transaction committed successfully")
-        
-        # Verify what was actually inserted into the database
-        print("TZHBackendLog: Verifying inserted data...")
-        
-        # Query the master record
-        cur.execute("""
-            SELECT * FROM "myCellarItems" 
-            WHERE "id" = %s
-        """, (master_id,))
-        master_data = cur.fetchone()
-        print(f"TZHBackendLog: Master record in database: {dict(master_data) if master_data else 'NOT FOUND'}")
-        
-        # Query all individual bottle records
-        for bottle_id in created_bottle_ids:
-            cur.execute("""
+            # Transaction will be automatically committed by context manager
+            print("TZHBackendLog: Transaction will be committed by context manager")
+            
+            # Verify what was actually inserted into the database
+            print("TZHBackendLog: Verifying inserted data...")
+            
+            # Query the master record
+            cursor.execute("""
                 SELECT * FROM "myCellarItems" 
                 WHERE "id" = %s
-            """, (bottle_id,))
-            bottle_data = cur.fetchone()
-            print(f"TZHBackendLog: Bottle record {bottle_id} in database: {dict(bottle_data) if bottle_data else 'NOT FOUND'}")
-        
-        # Query all records for this specific drink group (same listing+variant+format+volume) for this owner
-        cur.execute("""
-            SELECT ci."id", ci."quantityVariantID", ci."status", ci."consumption", ci."currentLocation", 
-                   ci."purchasePrice", ci."drinkFormat", ci."volumeNumber", ci."volumeUnit",
-                   ci."variant", ci."noteToSelf", ci."subLocation", ci."purchasePlaceName", ci."collectionID"
-            FROM "myCellarItems" ci
-            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-            WHERE ci."listingID" = %s 
-            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
-            AND (
-                (ci."quantityVariantID" = 1 AND ci."drinkFormat" = %s AND ci."volumeNumber" = %s AND ci."volumeUnit" = %s)
-                OR 
-                (ci."quantityVariantID" > 1 AND ci."drinkFormat" IS NULL AND ci."volumeNumber" IS NULL AND ci."volumeUnit" IS NULL)
-            )
-            AND cc."ownerID" = %s
-            AND cc."ownerType" = %s
-            ORDER BY ci."quantityVariantID"
-        """, (data['listingId'], variant, variant, format_value, volume_number, volume_unit, data['ownerId'], data['ownerType']))
-        all_records = cur.fetchall()
-        print(f"TZHBackendLog: All records for this listing+variant:")
-        for record in all_records:
-            print(f"TZHBackendLog:   Record: {dict(record)}")
-        
-        response_data = {
-            "code": 201,
-            "message": f"Successfully added {quantity} bottle(s) to cellar",
-            "data": {
-                "masterId": master_id,
-                "bottleIds": created_bottle_ids,
-                "collectionId": collection_id,
-                "listingId": data['listingId'],
-                "listingName": listing['listingName'],
-                "variant": variant,
-                "drinkFormat": format_value,
-                "volumeNumber": volume_number,
-                "volumeUnit": volume_unit,
-                "quantity": quantity,
-                "addedDate": datetime.now().isoformat()
+            """, (master_id,))
+            master_data = cursor.fetchone()
+            print(f"TZHBackendLog: Master record in database: {dict(master_data) if master_data else 'NOT FOUND'}")
+            
+            # Query all individual bottle records
+            for bottle_id in created_bottle_ids:
+                cursor.execute("""
+                    SELECT * FROM "myCellarItems" 
+                    WHERE "id" = %s
+                """, (bottle_id,))
+                bottle_data = cursor.fetchone()
+                print(f"TZHBackendLog: Bottle record {bottle_id} in database: {dict(bottle_data) if bottle_data else 'NOT FOUND'}")
+            
+            # Query all records for this specific drink group (same listing+variant+format+volume) for this owner
+            cursor.execute("""
+                SELECT ci."id", ci."quantityVariantID", ci."status", ci."consumption", ci."currentLocation", 
+                       ci."purchasePrice", ci."drinkFormat", ci."volumeNumber", ci."volumeUnit",
+                       ci."variant", ci."noteToSelf", ci."subLocation", ci."purchasePlaceName", ci."collectionID"
+                FROM "myCellarItems" ci
+                JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+                WHERE ci."listingID" = %s 
+                AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+                AND (
+                    (ci."quantityVariantID" = 1 AND ci."drinkFormat" = %s AND ci."volumeNumber" = %s AND ci."volumeUnit" = %s)
+                    OR 
+                    (ci."quantityVariantID" > 1 AND ci."drinkFormat" IS NULL AND ci."volumeNumber" IS NULL AND ci."volumeUnit" IS NULL)
+                )
+                AND cc."ownerID" = %s
+                AND cc."ownerType" = %s
+                ORDER BY ci."quantityVariantID"
+            """, (data['listingId'], variant, variant, format_value, volume_number, volume_unit, data['ownerId'], data['ownerType']))
+            all_records = cursor.fetchall()
+            print(f"TZHBackendLog: All records for this listing+variant:")
+            for record in all_records:
+                print(f"TZHBackendLog:   Record: {dict(record)}")
+            
+            response_data = {
+                "code": 201,
+                "message": f"Successfully added {quantity} bottle(s) to cellar",
+                "data": {
+                    "masterId": master_id,
+                    "bottleIds": created_bottle_ids,
+                    "collectionId": collection_id,
+                    "listingId": data['listingId'],
+                    "listingName": listing['listingName'],
+                    "variant": variant,
+                    "drinkFormat": format_value,
+                    "volumeNumber": volume_number,
+                    "volumeUnit": volume_unit,
+                    "quantity": quantity,
+                    "addedDate": datetime.now().isoformat()
+                }
             }
-        }
-        
-        print(f"TZHBackendLog: Final response summary:")
-        print(f"TZHBackendLog:   - Requested quantity: {quantity}")
-        print(f"TZHBackendLog:   - Master record ID: {master_id}")
-        print(f"TZHBackendLog:   - Created bottle IDs: {created_bottle_ids}")
-        print(f"TZHBackendLog:   - Total bottles created: {len(created_bottle_ids)}")
-        print(f"TZHBackendLog:   - Collection ID: {collection_id}")
-        
-        print(f"TZHBackendLog: Preparing response: {json.dumps(response_data, indent=2, default=str)}")
-        print("TZHBackendLog: Returning success response")
-        print("TZHBackendLog: ===========================================")
-        
-        return jsonify(response_data), 201
+            
+            print(f"TZHBackendLog: Final response summary:")
+            print(f"TZHBackendLog:   - Requested quantity: {quantity}")
+            print(f"TZHBackendLog:   - Master record ID: {master_id}")
+            print(f"TZHBackendLog:   - Created bottle IDs: {created_bottle_ids}")
+            print(f"TZHBackendLog:   - Total bottles created: {len(created_bottle_ids)}")
+            print(f"TZHBackendLog:   - Collection ID: {collection_id}")
+            
+            print(f"TZHBackendLog: Preparing response: {json.dumps(response_data, indent=2, default=str)}")
+            print("TZHBackendLog: Returning success response")
+            print("TZHBackendLog: ===========================================")
+            
+            return jsonify(response_data), 201
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error occurred: {str(e)}")
@@ -624,10 +623,6 @@ def addToCellar():
         print(f"TZHBackendLog: Database error code: {getattr(e, 'pgcode', 'N/A')}")
         print(f"TZHBackendLog: Database error detail: {getattr(e, 'pgerror', 'N/A')}")
         
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to database error")
-            conn.rollback()
-            
         print(f"TZHBackendLog: Database error in addToCellar: {str(e)}")
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
@@ -642,10 +637,6 @@ def addToCellar():
         print(f"TZHBackendLog: Exception type: {type(e).__name__}")
         print(f"TZHBackendLog: Exception args: {e.args}")
         
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to general exception")
-            conn.rollback()
-            
         print(f"TZHBackendLog: Error in addToCellar: {str(e)}")
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
