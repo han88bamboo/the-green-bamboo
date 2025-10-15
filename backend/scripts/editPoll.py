@@ -270,7 +270,6 @@ def updatePollStatus(poll_id):
     }
     """
     try:
-        conn = g.db
         data = request.get_json()
         
         if 'isActive' not in data:
@@ -279,7 +278,7 @@ def updatePollStatus(poll_id):
                 "message": "Missing required field: isActive"
             }), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Update the poll status
             cursor.execute("""
                 UPDATE "pollQuestions" 
@@ -296,8 +295,6 @@ def updatePollStatus(poll_id):
                     "message": "Poll not found"
                 }), 404
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": f"Poll {'activated' if data['isActive'] else 'deactivated'} successfully",
@@ -309,9 +306,6 @@ def updatePollStatus(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error updating poll status: {str(e)}")
         return jsonify({
             "code": 500,
