@@ -1868,86 +1868,85 @@ def search_duplicates(entity_type):
 @blueprint.route('/getEntityById/<entity_type>/<int:entity_id>', methods=['GET'])
 def get_entity_by_id(entity_type, entity_id):
     """Get a specific entity by its ID"""
-    conn = g.db
-    cursor = conn.cursor()
     
     try:
         result = None
         
-        if entity_type == 'producers':
-            cursor.execute('''
-                SELECT id, "producerName", "originCountry", "yearFounded"
-                FROM producers 
-                WHERE id = %s
-            ''', (entity_id,))
-            
-            row = cursor.fetchone()
-            if row:
-                if hasattr(row, 'keys'):
-                    result = {
-                        'id': row['id'],
-                        'name': row['producerName'],
-                        'country': row['originCountry'],
-                        'year': row['yearFounded']
-                    }
-                else:
-                    result = {
-                        'id': row[0],
-                        'name': row[1],
-                        'country': row[2],
-                        'year': row[3]
-                    }
-                    
-        elif entity_type == 'listings':
-            cursor.execute('''
-                SELECT l.id, l."listingName", p."producerName", l."drinkType", l."typeCategory"
-                FROM listings l
-                LEFT JOIN producers p ON l."producerID" = p.id
-                WHERE l.id = %s
-            ''', (entity_id,))
-            
-            row = cursor.fetchone()
-            if row:
-                if hasattr(row, 'keys'):
-                    result = {
-                        'id': row['id'],
-                        'name': row['listingName'],
-                        'producer': row['producerName'],
-                        'type': row['drinkType'],
-                        'category': row['typeCategory']
-                    }
-                else:
-                    result = {
-                        'id': row[0],
-                        'name': row[1],
-                        'producer': row[2],
-                        'type': row[3],
-                        'category': row[4]
-                    }
-                    
-        elif entity_type == 'venues':
-            cursor.execute('''
-                SELECT id, "venueName", address, "venueType"
-                FROM venues 
-                WHERE id = %s
-            ''', (entity_id,))
-            
-            row = cursor.fetchone()
-            if row:
-                if hasattr(row, 'keys'):
-                    result = {
-                        'id': row['id'],
-                        'name': row['venueName'],
-                        'address': row['address'],
-                        'type': row['venueType']
-                    }
-                else:
-                    result = {
-                        'id': row[0],
-                        'name': row[1],
-                        'address': row[2],
-                        'type': row[3]
-                    }
+        with db_manager.get_cursor() as cursor:
+            if entity_type == 'producers':
+                cursor.execute('''
+                    SELECT id, "producerName", "originCountry", "yearFounded"
+                    FROM producers 
+                    WHERE id = %s
+                ''', (entity_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    if hasattr(row, 'keys'):
+                        result = {
+                            'id': row['id'],
+                            'name': row['producerName'],
+                            'country': row['originCountry'],
+                            'year': row['yearFounded']
+                        }
+                    else:
+                        result = {
+                            'id': row[0],
+                            'name': row[1],
+                            'country': row[2],
+                            'year': row[3]
+                        }
+                        
+            elif entity_type == 'listings':
+                cursor.execute('''
+                    SELECT l.id, l."listingName", p."producerName", l."drinkType", l."typeCategory"
+                    FROM listings l
+                    LEFT JOIN producers p ON l."producerID" = p.id
+                    WHERE l.id = %s
+                ''', (entity_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    if hasattr(row, 'keys'):
+                        result = {
+                            'id': row['id'],
+                            'name': row['listingName'],
+                            'producer': row['producerName'],
+                            'type': row['drinkType'],
+                            'category': row['typeCategory']
+                        }
+                    else:
+                        result = {
+                            'id': row[0],
+                            'name': row[1],
+                            'producer': row[2],
+                            'type': row[3],
+                            'category': row[4]
+                        }
+                        
+            elif entity_type == 'venues':
+                cursor.execute('''
+                    SELECT id, "venueName", address, "venueType"
+                    FROM venues 
+                    WHERE id = %s
+                ''', (entity_id,))
+                
+                row = cursor.fetchone()
+                if row:
+                    if hasattr(row, 'keys'):
+                        result = {
+                            'id': row['id'],
+                            'name': row['venueName'],
+                            'address': row['address'],
+                            'type': row['venueType']
+                        }
+                    else:
+                        result = {
+                            'id': row[0],
+                            'name': row[1],
+                            'address': row[2],
+                            'type': row[3]
+                        }
         
         if result:
             return jsonify({"code": 200, "data": result}), 200
@@ -1957,5 +1956,3 @@ def get_entity_by_id(entity_type, entity_id):
     except Exception as e:
         logger.error(f"Error getting entity by ID: {str(e)}")
         return jsonify({"code": 500, "message": str(e)}), 500
-    finally:
-        cursor.close()
