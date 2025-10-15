@@ -224,9 +224,7 @@ def deletePoll(poll_id):
     - Poll responses (via CASCADE)
     """
     try:
-        conn = g.db
-        
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Check if poll exists before deletion
             cursor.execute("""
                 SELECT "id", "title" FROM "pollQuestions" WHERE "id" = %s
@@ -245,8 +243,6 @@ def deletePoll(poll_id):
                 DELETE FROM "pollQuestions" WHERE "id" = %s
             """, (poll_id,))
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": f"Poll '{poll['title']}' deleted successfully",
@@ -256,9 +252,6 @@ def deletePoll(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error deleting poll: {str(e)}")
         return jsonify({
             "code": 500,
