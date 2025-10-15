@@ -3059,9 +3059,6 @@ def removePost():
 # Output: Possible return codes [200 - Comment removed successfully, 400 - Missing required data, 403 - No permission to remove comment, 404 - No such comment exist, 500 - An error occurred removing the comment]
 @blueprint.route('/removeComment', methods=['DELETE'])
 def removeComment():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         # Get all the required data
         data = request.get_json()
@@ -3075,71 +3072,65 @@ def removeComment():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the remover is the creator of the comment
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s AND "commenterID" = %s', (comment_id, remover_id,))
-        isCreator = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the remover is the creator of the comment
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s AND "commenterID" = %s', (comment_id, remover_id,))
+            isCreator = cursor.fetchone()
 
-        if not isCreator:
-            # Step 2: Check if the remover is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, remover_id,))
-            isAdmin = cur.fetchone()
+            if not isCreator:
+                # Step 2: Check if the remover is an admin of the club
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, remover_id,))
+                isAdmin = cursor.fetchone()
 
-            if not isAdmin:
+                if not isAdmin:
+                    return jsonify({
+                        'error': 'You do not have the permission to remove this comment'
+                    }), 403
+
+            # Step 3: Check if the comment exist
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
+            comment = cursor.fetchone()
+
+            if not comment:
                 return jsonify({
-                    'error': 'You do not have the permission to remove this comment'
-                }), 403
+                    'error': 'No such comment exist'
+                }), 404
+            
+            # Step 4: Remove all the likes for the comment
+            cursor.execute('DELETE FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment_id,))
 
-        # Step 3: Check if the comment exist
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
-        comment = cur.fetchone()
+            # Step 5: Remove the comment
+            cursor.execute('DELETE FROM "clubPostComments" WHERE id = %s', (comment_id,))
 
-        if not comment:
+            # Step 6: Deduct points for removing the comment
+            # get user id and user type from the remover id
+            cursor.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (remover_id,))
+            user = cursor.fetchone()
+
+            if user['userType'] == 'user':
+                # get current points for creating a comment
+                cursor.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
+                points = cursor.fetchone()
+
+                # deduct points from the user
+                cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
+
+                print(f"Deducted {points['proofPoints']} points from user {user['userID']} for removing the comment.")
+
             return jsonify({
-                'error': 'No such comment exist'
-            }), 404
-        
-        # Step 4: Remove all the likes for the comment
-        cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment_id,))
-
-        # Step 5: Remove the comment
-        cur.execute('DELETE FROM "clubPostComments" WHERE id = %s', (comment_id,))
-        conn.commit()
-
-        # Step 6: Deduct points for removing the comment
-        # get user id and user type from the remover id
-        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (remover_id,))
-        user = cur.fetchone()
-
-        if user['userType'] == 'user':
-            # get current points for creating a comment
-            cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (10,))
-            points = cur.fetchone()
-
-            # deduct points from the user
-            cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE id = %s', (points['proofPoints'], user['userID'],))
-            conn.commit()
-
-            print(f"Deducted {points['proofPoints']} points from user {user['userID']} for removing the comment.")
-
-        return jsonify({
-            'message': 'Comment removed successfully',
-            'pointsDeducted': points['proofPoints'],
-            'rule': points['ruleName']
-        }), 200
+                'message': 'Comment removed successfully',
+                'pointsDeducted': points['proofPoints'],
+                'rule': points['ruleName']
+            }), 200
     
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred removing the comment."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -3152,71 +3143,67 @@ def removeComment():
 # Output: Possible return codes [200 - Member left the club successfully, 400 - Missing required data, 404 - No such club/member exist, 500 - An error occurred leaving the club]
 @blueprint.route('/leaveClub', methods=['DELETE'])
 def leaveClub():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor(commit=False) as cursor:
 
-    try:
-        data = request.get_json()
+        try:
+            data = request.get_json()
 
-        # Get all the required data
-        member_id = data['memberID']
-        club_id = data['clubID']
+            # Get all the required data
+            member_id = data['memberID']
+            club_id = data['clubID']
 
-        # Check if all the required data is provided
-        if not member_id or not club_id:
+            # Check if all the required data is provided
+            if not member_id or not club_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
+
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
+
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+
+            # Step 2: Check if the member exist
+            cursor.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'error': 'No such member exist'
+                }), 404
+
+            # Step 3: Remove comments, likes and posts of the member
+            cursor.execute('DELETE FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (member_id,))
+            cursor.execute('DELETE FROM "clubPostComments" WHERE "commenterID" = %s', (member_id,))
+            cursor.execute('DELETE FROM "clubPostsLikes" WHERE "memberID" = %s', (member_id,))
+            cursor.execute('DELETE FROM "clubPosts" WHERE "posterID" = %s', (member_id,))
+
+            # Step 4: Leave the club
+            cursor.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
+
+            # Step 5: Update the totalMembers in the clubs table
+            cursor.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" - 1 WHERE id = %s', (club_id,))
+
+            # Commit all changes as one atomic transaction
+            cursor.connection.commit()
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
+                'message': 'Member left the club successfully'
+            }), 200
 
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
-
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
-
-        # Step 2: Check if the member exist
-        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'error': 'No such member exist'
-            }), 404
-        
-        # Step 3: Remove comments, likes and posts of the member
-        cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "memberID" = %s', (member_id,))
-        cur.execute('DELETE FROM "clubPostComments" WHERE "commenterID" = %s', (member_id,))
-        cur.execute('DELETE FROM "clubPostsLikes" WHERE "memberID" = %s', (member_id,))
-        cur.execute('DELETE FROM "clubPosts" WHERE "posterID" = %s', (member_id,))
-        
-        # Step 4: Leave the club
-        cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s AND id = %s', (club_id, member_id,))
-        conn.commit()
-
-        # Step 5: Update the totalMembers in the clubs table
-        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" - 1 WHERE id = %s', (club_id,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Member left the club successfully'
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred leaving the club."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            # Rollback the transaction if an error occurred (handled automatically by context manager)
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred leaving the club."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -3229,72 +3216,65 @@ def leaveClub():
 # Output: Possible return codes [200 - Club deleted successfully, 400 - Missing required data, 403 - No permission to delete club, 404 - No such club exist, 500 - An error occurred deleting the club]
 @blueprint.route('/deleteClub', methods=['DELETE'])
 def deleteClub():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
 
-    try:
-        data = request.get_json()
+        try:
+            data = request.get_json()
 
-        # Get all the required data
-        club_id = data['clubID']
-        remover_id = data['removerID']
+            # Get all the required data
+            club_id = data['clubID']
+            remover_id = data['removerID']
 
-        # Check if all the required data is provided
-        if not club_id or not remover_id:
+            # Check if all the required data is provided
+            if not club_id or not remover_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
+
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
+
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+
+            # Step 2: Check if the remover is an admin of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, remover_id,))
+            isAdmin = cursor.fetchone()
+
+            if not isAdmin:
+                return jsonify({
+                    'error': 'You do not have the permission to delete this club'
+                }), 403
+
+            # Step 3: Remove all the club members
+            cursor.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s', (club_id,))
+
+            # Step 4: Remove all the post in the club
+            cursor.execute('DELETE FROM "clubPosts" WHERE "clubID" = %s', (club_id,))
+
+            # Step 5: Remove all the likes for the post, comments for deleted posts and likes for the comments where the post ID is null
+            cursor.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s', (club_id,))
+            cursor.execute('DELETE FROM "clubPostComments" WHERE "postID" IS NULL')
+            cursor.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" IS NULL')
+
+            # Step 6: Remove the club
+            cursor.execute('DELETE FROM "clubs" WHERE id = %s', (club_id,))
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
+                'message': 'Club deleted successfully'
+            }), 200
 
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
-
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
-        
-        # Step 2: Check if the remover is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, remover_id,))
-        isAdmin = cur.fetchone()
-        
-        if not isAdmin:
-            return jsonify({
-                'error': 'You do not have the permission to delete this club'
-            }), 403
-        
-        # Step 3: Remove all the club members
-        cur.execute('DELETE FROM "clubMembers" WHERE "clubID" = %s', (club_id,))
-
-        # Step 4: Remove all the post in the club
-        cur.execute('DELETE FROM "clubPosts" WHERE "clubID" = %s', (club_id,))
-
-        # Step 5: Remove all the likes for the post, comments for deleted posts and likes for the comments where the post ID is null
-        cur.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s', (club_id,))
-        cur.execute('DELETE FROM "clubPostComments" WHERE "postID" IS NULL')
-        cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" IS NULL')
-
-        # Step 6: Remove the club
-        cur.execute('DELETE FROM "clubs" WHERE id = %s', (club_id,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Club deleted successfully'
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred deleting the club."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred deleting the club."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -3309,60 +3289,55 @@ def deleteClub():
 # Output: Possible return codes [200 - Request rejected successfully, 400 - Missing required data, 403 - No permission to reject request, 404 - No such requester exist, 500 - An error occurred rejecting the request]
 @blueprint.route('/rejectClubRequests', methods=['DELETE'])
 def rejectClubRequests():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            data = request.get_json()
 
-    try:
-        data = request.get_json()
+            # Get all the required data
+            club_id = data['clubID']
+            requester_id = data['requesterID']
+            user_type = data['userType']
+            admin_id = data['adminID']
 
-        # Get all the required data
-        club_id = data['clubID']
-        requester_id = data['requesterID']
-        user_type = data['userType']
-        admin_id = data['adminID']
+            # Check if all the required data is provided
+            if not club_id or not requester_id or not user_type or not admin_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
 
-        # Check if all the required data is provided
-        if not club_id or not requester_id or not user_type or not admin_id:
+            # Step 1: Check if the admin is an admin of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
+            isAdmin = cursor.fetchone()
+
+            if not isAdmin:
+                return jsonify({
+                    'error': 'You do not have the permission to reject the request'
+                }), 403
+
+            # Step 2: Check if the requester exist
+            cursor.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
+            requester = cursor.fetchone()
+
+            if not requester:
+                return jsonify({
+                    'error': 'No such requester exist'
+                }), 404
+
+            # Step 3: Remove the request from the clubRequests table
+            cursor.execute('DELETE FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
+                'message': 'Request rejected successfully'
+            }), 200
 
-        # Step 1: Check if the admin is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
-        isAdmin = cur.fetchone()
-
-        if not isAdmin:
-            return jsonify({
-                'error': 'You do not have the permission to reject the request'
-            }), 403
-
-        # Step 2: Check if the requester exist
-        cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
-        requester = cur.fetchone()
-
-        if not requester:
-            return jsonify({
-                'error': 'No such requester exist'
-            }), 404
-
-        # Step 3: Remove the request from the clubRequests table
-        cur.execute('DELETE FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Request rejected successfully'
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred rejecting the request."
-            }
-        ), 500
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred rejecting the request."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
