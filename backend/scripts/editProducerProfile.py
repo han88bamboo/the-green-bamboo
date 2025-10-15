@@ -734,8 +734,6 @@ def editOpeningHours():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteUpdate', methods=['POST'])
 def deleteUpdate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -743,35 +741,34 @@ def deleteUpdate():
     updateID = int(data['updateID'])
 
     try:
-        # Find existing producer and see if photo exists, if it does delete it from S3 bucket
-        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Find existing producer and see if photo exists, if it does delete it from S3 bucket
+            cursor.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+            existingUpdate = cursor.fetchone()
 
-        if existingUpdate:
-            if existingUpdate['photo']:
-                s3Images.deleteImageFromS3(existingUpdate['photo'])
+            if existingUpdate:
+                if existingUpdate['photo']:
+                    s3Images.deleteImageFromS3(existingUpdate['photo'])
 
-            # Delete the producer's update from the database
-            cur.execute('DELETE FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-            conn.commit()
+                # Delete the producer's update from the database
+                cursor.execute('DELETE FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
 
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Deleted producer's update!"
-                }
-            ), 201
-        
-        else:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
+                return jsonify(
+                    {
+                        "code": 201,
+                        "message": "Deleted producer's update!"
+                    }
+                ), 201
+            
+            else:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
         
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -780,9 +777,6 @@ def deleteUpdate():
                 "message": "An error occurred deleting producer's update!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -791,8 +785,6 @@ def deleteUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editQA', methods=['POST'])
 def editQA():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -801,18 +793,17 @@ def editQA():
     answer = data['answer']
 
     try:
-        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated producer's Q&A!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated producer's Q&A!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -821,9 +812,6 @@ def editQA():
                 "message": "An error occurred updating producer's Q&A!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -833,8 +821,6 @@ def editQA():
 @blueprint.route('/deleteQA', methods=['POST'])
 def deleteQA():
     print("deleteQA")
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -842,36 +828,34 @@ def deleteQA():
     questionsAnswersID = int(data['questionsAnswersID'])
 
     try:
-        # Get user id from the question
-        cur.execute('SELECT "userId" FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
-        userID = cur.fetchone()
-        
-        cur.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            # Get user id from the question
+            cursor.execute('SELECT "userId" FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
+            userID = cursor.fetchone()
+            
+            cursor.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
 
-        # Deduct points from user for deleting a question
-         
-        # get points for asking a question
-        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
-        points = cur.fetchone()
+            # Deduct points from user for deleting a question
+             
+            # get points for asking a question
+            cursor.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+            points = cursor.fetchone()
 
-        # Update user's points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userID['userId'],))
-        conn.commit()
+            # Update user's points
+            cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userID['userId'],))
 
-        print(f"Points deducted from user {userID} for deleting a question")
-        
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Deleted producer's Q&A!",
-                 "pointsDeducted": points['proofPoints'],
-                 "rule": points['ruleName']
-            }
-        ), 201
+            print(f"Points deducted from user {userID} for deleting a question")
+            
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Deleted producer's Q&A!",
+                     "pointsDeducted": points['proofPoints'],
+                     "rule": points['ruleName']
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -881,9 +865,6 @@ def deleteQA():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile claim status
@@ -891,8 +872,6 @@ def deleteQA():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatus', methods=['POST'])
 def updateProducerClaimStatus():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -900,18 +879,17 @@ def updateProducerClaimStatus():
     claimStatus = data["claimStatus"]
 
     try:
-        cur.execute('UPDATE producers SET "claimStatus" = %s WHERE id = %s', (claimStatus, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE producers SET "claimStatus" = %s WHERE id = %s', (claimStatus, producerID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated claim status successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated claim status successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -921,17 +899,12 @@ def updateProducerClaimStatus():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile last check claim status date
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
 def updateProducerClaimStatusCheckDate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -939,18 +912,17 @@ def updateProducerClaimStatusCheckDate():
     claimStatusCheckDate = datetime.strptime(data["claimStatusCheckDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
-        cur.execute('UPDATE producers SET "claimStatusCheckDate" = %s WHERE id = %s', (claimStatusCheckDate, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE producers SET "claimStatusCheckDate" = %s WHERE id = %s', (claimStatusCheckDate, producerID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated claim status check date successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated claim status check date successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -959,6 +931,3 @@ def updateProducerClaimStatusCheckDate():
                 "message": "An error occurred updating claim status check date!"
             }
         ), 500
-    
-    finally:
-        cur.close()
