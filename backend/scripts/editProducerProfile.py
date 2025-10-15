@@ -9,6 +9,9 @@ from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -18,8 +21,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
 def editDetails():  
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -35,9 +36,9 @@ def editDetails():
     openForTours = data.get('openForTours', False)
     website = data.get('website', None)
 
-    try:
-        cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
-        existingProducer = cur.fetchone()
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
+        existingProducer = cursor.fetchone()
 
         if existingProducer:
             if data['image64']:
@@ -48,7 +49,7 @@ def editDetails():
                 image64 = s3Images.uploadBase64ImageToS3(base64_string)
             else:
                 image64 = existingProducer['photo']
-            cur.execute(
+            cursor.execute(
                 """
                 UPDATE producers 
                 SET 
@@ -67,7 +68,6 @@ def editDetails():
                 """,
                 (image64, producerName, producerDesc, isIndependentBottler, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
             )
-            conn.commit()
 
             return jsonify(
                 {
@@ -83,20 +83,6 @@ def editDetails():
                     "message": "Producer not found."
                 }
             ), 404
-        
-    except Exception as e:
-        print(str(e))
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred updating profile!"
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add updates to producer profile
@@ -104,8 +90,6 @@ def editDetails():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addUpdates', methods=['POST'])
 def addUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -119,21 +103,20 @@ def addUpdates():
         base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
         image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
-    try:
-        cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
-        conn.commit()
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
 
         # Fetch producer name
-        cur.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
-        producer_row = cur.fetchone()
+        cursor.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
+        producer_row = cursor.fetchone()
         producerName = producer_row['producerName'] if producer_row else "This producer"
 
         # Notify all users who follow this producer
-        cur.execute(
+        cursor.execute(
             'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("producers")',
             (str(producerID),)
         )
-        followers = cur.fetchall()
+        followers = cursor.fetchall()
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -157,20 +140,6 @@ def addUpdates():
                 "message": "Update added successfully!"
             }
         ), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred creating the update!"
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send questions to producer
@@ -178,9 +147,6 @@ def addUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendQuestions', methods=['POST'])
 def sendQuestions():
-    conn = g.db
-    cur = conn.cursor()
-
     data = request.get_json()
     print(data)
 
@@ -191,105 +157,100 @@ def sendQuestions():
     userID = int(data['userID'])
 
     try:
-        cur.execute(
-            """
-                INSERT INTO "producersQuestionAnswers" (question, answer, date, "userId", "producerId")
-                VALUES (%s, %s, %s, %s, %s)
-            """,
-            (question, answer, date, userID, producerID)
-        )
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                    INSERT INTO "producersQuestionAnswers" (question, answer, date, "userId", "producerId")
+                    VALUES (%s, %s, %s, %s, %s)
+                """,
+                (question, answer, date, userID, producerID)
+            )
 
-        # Send a notification to the producer
-        # Fetch the asking user's username
-        cur.execute('SELECT username FROM users WHERE id = %s', (userID,))
-        user_row = cur.fetchone()
-        user_username = user_row['username'] if user_row else "Someone"
+            # Send a notification to the producer
+            # Fetch the asking user's username
+            cursor.execute('SELECT username FROM users WHERE id = %s', (userID,))
+            user_row = cursor.fetchone()
+            user_username = user_row['username'] if user_row else "Someone"
 
-        # # Fetch the producer's username
-        # cur.execute('SELECT username FROM producers WHERE id = %s', (producerID,))
-        # producer_row = cur.fetchone()
-        # producer_username = producer_row['username'] if producer_row else ""
+            # # Fetch the producer's username
+            # cursor.execute('SELECT username FROM producers WHERE id = %s', (producerID,))
+            # producer_row = cursor.fetchone()
+            # producer_username = producer_row['username'] if producer_row else ""
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        notification_data = {
-            "userId":   producerID,
-            "userType": "producer",
-            "notiTabs": "forYou",
-            "notiType": "producer_question",
-            "image":    None,
-            "link":     f"/Producers/ProducersQA/{producerID}",
-            "message":  f"@{user_username} asked you a question",
-            "createdAt": current_time
-        }
-        notifications.add_notification_to_db(notification_data)
-
-        # Initialize variables for points and badge processing
-        points_earned = 0
-        badge_result = None
-
-        # Award points to user for asking a question
-        if not pointsHelperFunc.check_max_proof_points(userID):
-            # Get points for asking a question
-            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
-            points_rule = cur.fetchone()
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            if points_rule:
-                points_earned = points_rule['proofPoints']
-                
-                # Update user's points
-                cur.execute(
-                    'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s',
-                    (points_earned, userID)
-                )
-                conn.commit()
-                
-                print(f"{points_earned} points awarded to user {userID} for asking a question")
-            
-            # Process the Question badge
-            badge_result = badge_helpers.process_question_badge(conn, cur, userID)
-        
-        # If badge earned, send notification
-        if badge_result:
             notification_data = {
-                "userId":   userID,
-                "userType": "user",
+                "userId":   producerID,
+                "userType": "producer",
                 "notiTabs": "forYou",
-                "notiType": "badge_earned",
+                "notiType": "producer_question",
                 "image":    None,
-                "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "link":     f"/Producers/ProducersQA/{producerID}",
+                "message":  f"@{user_username} asked you a question",
                 "createdAt": current_time
             }
-            print("Sending badge notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
-        
-        # Prepare the response
-        response_data = {
-            "code": 201,
-            "message": "Question sent successfully!"
-        }
-        
-        if points_earned > 0:
-            response_data["pointsEarned"] = points_earned
+
+            # Initialize variables for points and badge processing
+            points_earned = 0
+            badge_result = None
+
+            # Award points to user for asking a question
+            if not pointsHelperFunc.check_max_proof_points(userID):
+                # Get points for asking a question
+                cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
+                points_rule = cursor.fetchone()
+                
+                if points_rule:
+                    points_earned = points_rule['proofPoints']
+                    
+                    # Update user's points
+                    cursor.execute(
+                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s',
+                        (points_earned, userID)
+                    )
+                    
+                    print(f"{points_earned} points awarded to user {userID} for asking a question")
+                
+                # Process the Question badge
+                badge_result = badge_helpers.process_question_badge(cursor.connection, cursor, userID)
             
-        if badge_result:
-            response_data["badgeAwarded"] = badge_result
+            # If badge earned, send notification
+            if badge_result:
+                notification_data = {
+                    "userId":   userID,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{userID}/{user_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Sending badge notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
             
-        return jsonify(response_data), 201
+            # Prepare the response
+            response_data = {
+                "code": 201,
+                "message": "Question sent successfully!"
+            }
+            
+            if points_earned > 0:
+                response_data["pointsEarned"] = points_earned
+                
+            if badge_result:
+                response_data["badgeAwarded"] = badge_result
+                
+            return jsonify(response_data), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify({
             "code": 500,
             "data": data,
             "message": "An error occurred sending the question!"
         }), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send answers to questions
