@@ -15,6 +15,9 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv # ADDED BY SMU GROUP 3
 import psycopg2 # ADDED BY SMU GROUP 3
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 import secrets
 
 from psycopg2 import sql
@@ -610,126 +613,122 @@ def createProducerAccount():
 # - Insert entry into the "venues" collection.
 @blueprint.route("/createVenueAccount", methods= ['POST'])
 def createVenueAccount():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
     newBusinessData = data["newBusinessData"]
 
     try:
-        # Check if venueName already exists
-        cur.execute('SELECT id FROM venues WHERE "venueName" = %s', (newBusinessData['venueName'],))
-        existingAccount = cur.fetchone()
+        with db_manager.get_cursor(commit=False) as cursor:
+            # Check if venueName already exists
+            cursor.execute('SELECT id FROM venues WHERE "venueName" = %s', (newBusinessData['venueName'],))
+            existingAccount = cursor.fetchone()
 
-        if existingAccount:
-            return jsonify(
-                {
-                    "code": 400,
+            if existingAccount:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "venueName": newBusinessData['venueName']
+                        },
+                        "message": "Venue Name already exists."
+                    }
+                ), 400
+
+            # Insert new venue
+            # Always sanitize the venue name to create username (ignore any provided username)
+            sanitized_username = sanitize_username(newBusinessData['venueName'])
+            
+            cursor.execute("""
+                INSERT INTO venues (
+                    "venueName", "address", "venueType", "originLocation", "venueDesc", 
+                    "hashedPassword", "photo", "claimStatus", "reservationDetails", "username", 
+                    "publicHolidays", "stripeCustomerId", "pin"
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
+            """, (
+                newBusinessData['venueName'], newBusinessData['address'], newBusinessData['venueType'],
+                newBusinessData['originLocation'], newBusinessData['venueDesc'], newBusinessData['hashedPassword'],
+                newBusinessData['photo'], newBusinessData['claimStatus'], newBusinessData['reservationDetails'],
+                sanitized_username, newBusinessData.get('publicHolidays', None),
+                newBusinessData.get('stripeCustomerId', None), newBusinessData.get('pin', None)
+            ))
+
+            # Extract the new venue ID
+            result = cursor.fetchone()
+            
+            if result is None:
+                raise Exception("Failed to retrieve new venue ID")
+
+            newVenueId = result['id']
+
+            # Handle related data: menu
+            menu = newBusinessData.get('menu', [])
+            for section in menu:
+                cursor.execute(
+                    """
+                    INSERT INTO "venuesMenu" (
+                        "sectionName", "sectionOrder", "sectionMenu", "venueId", "isVisible"
+                    ) 
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (section.get('sectionName', None), section.get('sectionOrder', None), section.get('sectionMenu', []), newVenueId, section.get('isVisible', True))
+                )
+
+            # Handle related data: openingHours
+            opening_hours = newBusinessData.get('openingHours', {})
+            cursor.execute(
+                """
+                INSERT INTO "venuesOpeningHours" (
+                    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "venueId"
+                ) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (opening_hours.get('Monday', []), opening_hours.get('Tuesday', []), opening_hours.get('Wednesday', []),
+                 opening_hours.get('Thursday', []), opening_hours.get('Friday', []), opening_hours.get('Saturday', []),
+                 opening_hours.get('Sunday', []), newVenueId)
+            )
+
+            # Handle related data: questionsAnswers
+            questions_answers = newBusinessData.get('questionsAnswers', [])
+            for qa in questions_answers:
+                cursor.execute(
+                    """
+                    INSERT INTO "venuesQuestionAnswers" (
+                        "question", "answer", "date", "userId", "venueId"
+                    ) 
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (qa['question'], qa['answer'], qa['date'], qa.get('userId', None), newVenueId)
+                )
+
+            # Handle related data: updates
+            updates = newBusinessData.get('updates', [])
+            for update in updates:
+                cursor.execute(
+                    """
+                    INSERT INTO "venuesUpdates" (
+                        "date", "text", "photo", "venueId"
+                    ) 
+                    VALUES (%s, %s, %s, %s)
+                    """,
+                    (update['date'], update['text'], update['photo'], newVenueId)
+                )
+
+            # Manually commit all operations as one atomic transaction
+            cursor.connection.commit()
+
+            return jsonify( 
+                {   
+                    "code": 201,
                     "data": {
-                        "venueName": newBusinessData['venueName']
-                    },
-                    "message": "Venue Name already exists."
+                        "venueId": newVenueId,
+                        "venueName": newBusinessData['venueName'],
+                        "username": sanitized_username
+                    }
                 }
-            ), 400
-
-        # Insert new venue
-        # Always sanitize the venue name to create username (ignore any provided username)
-        sanitized_username = sanitize_username(newBusinessData['venueName'])
-        
-        cur.execute("""
-            INSERT INTO venues (
-                "venueName", "address", "venueType", "originLocation", "venueDesc", 
-                "hashedPassword", "photo", "claimStatus", "reservationDetails", "username", 
-                "publicHolidays", "stripeCustomerId", "pin"
-            )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
-        """, (
-            newBusinessData['venueName'], newBusinessData['address'], newBusinessData['venueType'],
-            newBusinessData['originLocation'], newBusinessData['venueDesc'], newBusinessData['hashedPassword'],
-            newBusinessData['photo'], newBusinessData['claimStatus'], newBusinessData['reservationDetails'],
-            sanitized_username, newBusinessData.get('publicHolidays', None),
-            newBusinessData.get('stripeCustomerId', None), newBusinessData.get('pin', None)
-        ))
-
-        # Extract the new venue ID
-        result = cur.fetchone()
-        
-        if result is None:
-            raise Exception("Failed to retrieve new venue ID")
-
-        newVenueId = result['id']
-        conn.commit()
-
-        # Handle related data: menu
-        menu = newBusinessData.get('menu', [])
-        for section in menu:
-            cur.execute(
-                """
-                INSERT INTO "venuesMenu" (
-                    "sectionName", "sectionOrder", "sectionMenu", "venueId", "isVisible"
-                ) 
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (section.get('sectionName', None), section.get('sectionOrder', None), section.get('sectionMenu', []), newVenueId, section.get('isVisible', True))
-            )
-        conn.commit()
-
-        # Handle related data: openingHours
-        opening_hours = newBusinessData.get('openingHours', {})
-        cur.execute(
-            """
-            INSERT INTO "venuesOpeningHours" (
-                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday", "venueId"
-            ) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            (opening_hours.get('Monday', []), opening_hours.get('Tuesday', []), opening_hours.get('Wednesday', []),
-             opening_hours.get('Thursday', []), opening_hours.get('Friday', []), opening_hours.get('Saturday', []),
-             opening_hours.get('Sunday', []), newVenueId)
-        )
-        conn.commit()
-
-        # Handle related data: questionsAnswers
-        questions_answers = newBusinessData.get('questionsAnswers', [])
-        for qa in questions_answers:
-            cur.execute(
-                """
-                INSERT INTO "venuesQuestionAnswers" (
-                    "question", "answer", "date", "userId", "venueId"
-                ) 
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (qa['question'], qa['answer'], qa['date'], qa.get('userId', None), newVenueId)
-            )
-        conn.commit()
-
-        # Handle related data: updates
-        updates = newBusinessData.get('updates', [])
-        for update in updates:
-            cur.execute(
-                """
-                INSERT INTO "venuesUpdates" (
-                    "date", "text", "photo", "venueId"
-                ) 
-                VALUES (%s, %s, %s, %s)
-                """,
-                (update['date'], update['text'], update['photo'], newVenueId)
-            )
-        conn.commit()
-
-        return jsonify( 
-            {   
-                "code": 201,
-                "data": {
-                    "venueId": newVenueId,
-                    "venueName": newBusinessData['venueName'],
-                    "username": sanitized_username
-                }
-            }
-        ), 201
+            ), 201
 
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -740,9 +739,6 @@ def createVenueAccount():
                 "message": "An error occurred creating the venue account."
             }
         ), 500
-
-    finally:
-        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a Token for new accounts
