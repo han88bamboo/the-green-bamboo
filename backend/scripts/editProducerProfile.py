@@ -526,24 +526,21 @@ def addProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addNewProfileCount', methods=['POST'])
 def addNewProfileCount():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
     producerID = int(data['producerID'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
-        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (producerID,))
-        existingProfileView = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (producerID,))
+            existingProfileView = cursor.fetchone()
 
-        if existingProfileView:
-            cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
-            conn.commit()
+            if existingProfileView:
+                cursor.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
 
-        else:
-            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
-            conn.commit()
+            else:
+                cursor.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
 
         return jsonify(
             {   
@@ -553,7 +550,6 @@ def addNewProfileCount():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -561,9 +557,6 @@ def addNewProfileCount():
                 "message": "An error occurred updating the new profile view count."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -572,8 +565,6 @@ def addNewProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editUpdate', methods=['POST'])
 def editUpdate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -583,49 +574,48 @@ def editUpdate():
     image64 = data.get('image64', '')
 
     try:
-        # Find existing producer and check for the existing update
-        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Find existing producer and check for the existing update
+            cursor.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+            existingUpdate = cursor.fetchone()
 
-        if existingUpdate:
-            # Delete old photo from S3 if it exists
-            if existingUpdate['photo']:
-                s3Images.deleteImageFromS3(existingUpdate['photo'])
+            if existingUpdate:
+                # Delete old photo from S3 if it exists
+                if existingUpdate['photo']:
+                    s3Images.deleteImageFromS3(existingUpdate['photo'])
 
-            # Upload new image to S3 if it exists
-            if image64:
-                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
-                image64 = s3Images.uploadBase64ImageToS3(base64_string)
+                # Upload new image to S3 if it exists
+                if image64:
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                    image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
-            # Update the producer's update in the database
-            cur.execute(
-                """
-                UPDATE "producersUpdates"
-                SET 
-                    "text" = %s,
-                    "photo" = %s
-                WHERE "producerId" = %s AND id = %s
-                """,
-                (update, image64, producerID, updateID)
-            )
-            conn.commit()
+                # Update the producer's update in the database
+                cursor.execute(
+                    """
+                    UPDATE "producersUpdates"
+                    SET 
+                        "text" = %s,
+                        "photo" = %s
+                    WHERE "producerId" = %s AND id = %s
+                    """,
+                    (update, image64, producerID, updateID)
+                )
 
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Updated producer's update!"
-                }
-            ), 201
-        else:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
+                return jsonify(
+                    {
+                        "code": 201,
+                        "message": "Updated producer's update!"
+                    }
+                ), 201
+            else:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
         
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -634,9 +624,6 @@ def editUpdate():
                 "message": "An error occurred updating producer's update!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
