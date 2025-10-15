@@ -2189,9 +2189,6 @@ def editPost():
 # Output: Possible return codes [200 - Comment edited successfully, 400 - Missing required data, 403 - No permission to edit comment, 404 - No such comment exist, 500 - An error occurred editing the comment]
 @blueprint.route('/editComment', methods=['PUT'])
 def editComment():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -2206,32 +2203,32 @@ def editComment():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the editor is the creator of the comment
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s AND "commenterID" = %s', (comment_id, editor_id,))
-        isCreator = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the editor is the creator of the comment
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s AND "commenterID" = %s', (comment_id, editor_id,))
+            isCreator = cursor.fetchone()
 
-        if not isCreator:
-            # Step 2: Check if the editor is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, editor_id,))
-            isAdmin = cur.fetchone()
+            if not isCreator:
+                # Step 2: Check if the editor is an admin of the club
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPostComments" WHERE id = %s) AND "id" = %s AND "isAdmin" = TRUE', (comment_id, editor_id,))
+                isAdmin = cursor.fetchone()
 
-            if not isAdmin:
+                if not isAdmin:
+                    return jsonify({
+                        'error': 'You do not have the permission to edit this comment'
+                    }), 403
+
+            # Step 3: Check if the comment exist
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
+            comment = cursor.fetchone()
+
+            if not comment:
                 return jsonify({
-                    'error': 'You do not have the permission to edit this comment'
-                }), 403
-
-        # Step 3: Check if the comment exist
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
-        comment = cur.fetchone()
-
-        if not comment:
-            return jsonify({
-                'error': 'No such comment exist'
-            }), 404
-        
-        # Step 4: Update the comment content
-        cur.execute('UPDATE "clubPostComments" SET "commentContent" = %s WHERE id = %s', (comment_content, comment_id,))
-        conn.commit()
+                    'error': 'No such comment exist'
+                }), 404
+            
+            # Step 4: Update the comment content
+            cursor.execute('UPDATE "clubPostComments" SET "commentContent" = %s WHERE id = %s', (comment_content, comment_id,))
 
         return jsonify({
             'message': 'Comment edited successfully'
@@ -2239,17 +2236,12 @@ def editComment():
     
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred editing the comment."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
