@@ -1487,89 +1487,83 @@ def updateCollectionPublicStatus(collection_id):
     print(f"TZHBackendLog: Starting updateCollectionPublicStatus endpoint for collection {collection_id}")
     
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        print("TZHBackendLog: Database connection established")
-        
-        data = request.get_json()
-        print("TZHBackendLog: Raw request data received:")
-        print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
-        
-        # Validate required fields
-        if 'isPublic' not in data:
-            error_msg = "Missing required field: isPublic"
-            print(f"TZHBackendLog: Validation failed - {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        is_public = bool(data.get('isPublic'))
-        print(f"TZHBackendLog: Setting isPublic to: {is_public}")
-        
-        # First, verify the collection exists and get owner info for validation
-        print(f"TZHBackendLog: Checking if collection {collection_id} exists")
-        cur.execute("""
-            SELECT id, "ownerID", "ownerType", "collectionName", "isPublic"
-            FROM "myCellarCollections" 
-            WHERE id = %s
-        """, (collection_id,))
-        
-        collection = cur.fetchone()
-        if not collection:
-            error_msg = f"Collection with ID {collection_id} not found"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Found collection: {collection['collectionName']} (Owner: {collection['ownerType']} {collection['ownerID']})")
-        
-        # Update the collection's public status
-        print(f"TZHBackendLog: Updating collection {collection_id} isPublic to {is_public}")
-        cur.execute("""
-            UPDATE "myCellarCollections" 
-            SET "isPublic" = %s, "updatedDate" = CURRENT_TIMESTAMP
-            WHERE id = %s
-        """, (is_public, collection_id))
-        
-        if cur.rowcount == 0:
-            error_msg = f"Failed to update collection {collection_id}"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 500,
-                "message": error_msg
-            }), 500
-        
-        conn.commit()
-        print(f"TZHBackendLog: Successfully updated collection {collection_id} public status to {is_public}")
-        
-        # Return success response
-        response_data = {
-            "code": 200,
-            "message": "Collection public status updated successfully",
-            "data": {
-                "collectionId": collection_id,
-                "isPublic": is_public,
-                "collectionName": collection['collectionName']
+        with db_manager.get_cursor() as cursor:
+            print("TZHBackendLog: Database connection established")
+            
+            data = request.get_json()
+            print("TZHBackendLog: Raw request data received:")
+            print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
+            
+            # Validate required fields
+            if 'isPublic' not in data:
+                error_msg = "Missing required field: isPublic"
+                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
+            
+            is_public = bool(data.get('isPublic'))
+            print(f"TZHBackendLog: Setting isPublic to: {is_public}")
+            
+            # First, verify the collection exists and get owner info for validation
+            print(f"TZHBackendLog: Checking if collection {collection_id} exists")
+            cursor.execute("""
+                SELECT id, "ownerID", "ownerType", "collectionName", "isPublic"
+                FROM "myCellarCollections" 
+                WHERE id = %s
+            """, (collection_id,))
+            
+            collection = cursor.fetchone()
+            if not collection:
+                error_msg = f"Collection with ID {collection_id} not found"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
+            
+            print(f"TZHBackendLog: Found collection: {collection['collectionName']} (Owner: {collection['ownerType']} {collection['ownerID']})")
+            
+            # Update the collection's public status
+            print(f"TZHBackendLog: Updating collection {collection_id} isPublic to {is_public}")
+            cursor.execute("""
+                UPDATE "myCellarCollections" 
+                SET "isPublic" = %s, "updatedDate" = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """, (is_public, collection_id))
+            
+            if cursor.rowcount == 0:
+                error_msg = f"Failed to update collection {collection_id}"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 500,
+                    "message": error_msg
+                }), 500
+            
+            print(f"TZHBackendLog: Successfully updated collection {collection_id} public status to {is_public}")
+            
+            # Return success response
+            response_data = {
+                "code": 200,
+                "message": "Collection public status updated successfully",
+                "data": {
+                    "collectionId": collection_id,
+                    "isPublic": is_public,
+                    "collectionName": collection['collectionName']
+                }
             }
-        }
-        
-        print("TZHBackendLog: Returning success response:")
-        print(f"TZHBackendLog: {json.dumps(response_data, indent=2, default=str)}")
-        print("TZHBackendLog: ===========================================")
-        
-        return jsonify(response_data), 200
+            
+            print("TZHBackendLog: Returning success response:")
+            print(f"TZHBackendLog: {json.dumps(response_data, indent=2, default=str)}")
+            print("TZHBackendLog: ===========================================")
+            
+            return jsonify(response_data), 200
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error occurred: {str(e)}")
         print(f"TZHBackendLog: Database error type: {type(e).__name__}")
         print(f"TZHBackendLog: Database error code: {getattr(e, 'pgcode', 'N/A')}")
-        
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to database error")
-            conn.rollback()
         
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
@@ -1582,10 +1576,6 @@ def updateCollectionPublicStatus(collection_id):
     except Exception as e:
         print(f"TZHBackendLog: General exception occurred: {str(e)}")
         print(f"TZHBackendLog: Exception type: {type(e).__name__}")
-        
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to general exception")
-            conn.rollback()
         
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
@@ -1608,174 +1598,167 @@ def deleteCollection(collection_id):
     print(f"TZHBackendLog: Starting deleteCollection endpoint for collection ID: {collection_id}")
     
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        print("TZHBackendLog: Database connection established")
-        
-        data = request.get_json()
-        print("TZHBackendLog: Raw request data received:")
-        print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
-        
-        # Validate required fields for authentication
-        required_fields = ['ownerType', 'ownerId']
-        print(f"TZHBackendLog: Validating required fields: {required_fields}")
-        
-        for field in required_fields:
-            if field not in data or data[field] is None:
-                error_msg = f"Missing required field: {field}"
-                print(f"TZHBackendLog: Validation failed - {error_msg}")
+        with db_manager.get_cursor() as cursor:
+            print("TZHBackendLog: Database connection established")
+            
+            data = request.get_json()
+            print("TZHBackendLog: Raw request data received:")
+            print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
+            
+            # Validate required fields for authentication
+            required_fields = ['ownerType', 'ownerId']
+            print(f"TZHBackendLog: Validating required fields: {required_fields}")
+            
+            for field in required_fields:
+                if field not in data or data[field] is None:
+                    error_msg = f"Missing required field: {field}"
+                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                    return jsonify({
+                        "code": 400,
+                        "message": error_msg
+                    }), 400
+            
+            print("TZHBackendLog: All required fields present")
+            
+            # Validate owner type
+            print(f"TZHBackendLog: Validating ownerType: {data['ownerType']}")
+            if data['ownerType'] not in ['user', 'producer', 'venue']:
+                error_msg = "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
+                print(f"TZHBackendLog: {error_msg}")
                 return jsonify({
                     "code": 400,
                     "message": error_msg
                 }), 400
-        
-        print("TZHBackendLog: All required fields present")
-        
-        # Validate owner type
-        print(f"TZHBackendLog: Validating ownerType: {data['ownerType']}")
-        if data['ownerType'] not in ['user', 'producer', 'venue']:
-            error_msg = "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        print("TZHBackendLog: ownerType validation passed")
-        
-        # First, verify that the authenticated owner exists in their respective table
-        owner_table = f'"{data["ownerType"]}s"'  # users, producers, venues
-        owner_id_field = '"id"'
-        print(f"TZHBackendLog: Validating owner exists in table {owner_table} with ID: {data['ownerId']}")
-        
-        cur.execute(f'SELECT {owner_id_field} FROM {owner_table} WHERE {owner_id_field} = %s', (data['ownerId'],))
-        owner = cur.fetchone()
-        if not owner:
-            error_msg = f"Owner with ID {data['ownerId']} not found in {data['ownerType']}s table"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Owner found: {dict(owner)}")
-        
-        # Now verify that the collection exists and get its details
-        print(f"TZHBackendLog: Fetching collection details for ID: {collection_id}")
-        cur.execute("""
-            SELECT "id", "ownerID", "ownerType", "collectionName", "isDefault"
-            FROM "myCellarCollections" 
-            WHERE "id" = %s
-        """, (collection_id,))
-        
-        collection = cur.fetchone()
-        if not collection:
-            error_msg = f"Collection with ID {collection_id} not found"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Collection found: {dict(collection)}")
-        
-        # DEBUG: Log data types and values for comparison
-        print(f"TZHBackendLog: DEBUGGING OWNERSHIP VERIFICATION:")
-        print(f"TZHBackendLog: collection['ownerID'] = {collection['ownerID']} (type: {type(collection['ownerID'])})")
-        print(f"TZHBackendLog: data['ownerId'] = {data['ownerId']} (type: {type(data['ownerId'])})")
-        print(f"TZHBackendLog: collection['ownerType'] = {collection['ownerType']} (type: {type(collection['ownerType'])})")
-        print(f"TZHBackendLog: data['ownerType'] = {data['ownerType']} (type: {type(data['ownerType'])})")
-        print(f"TZHBackendLog: ownerID comparison: {collection['ownerID']} != {data['ownerId']} = {collection['ownerID'] != data['ownerId']}")
-        print(f"TZHBackendLog: ownerType comparison: {collection['ownerType']} != {data['ownerType']} = {collection['ownerType'] != data['ownerType']}")
-        
-        # Verify ownership: the collection's ownerID and ownerType must match the authenticated user
-        # Convert both to int to handle potential string/int mismatches
-        collection_owner_id = int(collection['ownerID'])
-        request_owner_id = int(data['ownerId'])
-        
-        if collection_owner_id != request_owner_id or collection['ownerType'] != data['ownerType']:
-            error_msg = f"Access denied. Collection belongs to different owner (Collection owner: {collection['ownerType']} ID {collection_owner_id}, Authenticated user: {data['ownerType']} ID {request_owner_id})"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 403,
-                "message": "You do not have permission to delete this collection"
-            }), 403
-        
-        print("TZHBackendLog: Ownership verification passed")
-        
-        # Prevent deletion of default collections to maintain data integrity
-        if collection['isDefault']:
-            error_msg = f"Cannot delete default collection '{collection['collectionName']}'"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": "Default collections cannot be deleted. Please set another collection as default first."
-            }), 400
-        
-        print("TZHBackendLog: Collection is not default, proceeding with deletion")
-        
-        # Count items that will be archived (not deleted due to new archival system)
-        cur.execute("""
-            SELECT COUNT(*) as item_count
-            FROM "myCellarItems" 
-            WHERE "collectionID" = %s AND "archiveStatus" = FALSE
-        """, (collection_id,))
-        
-        item_count_result = cur.fetchone()
-        item_count = item_count_result['item_count'] if item_count_result else 0
-        print(f"TZHBackendLog: Collection contains {item_count} active items that will be archived")
-        
-        # Delete the collection (trigger will automatically archive related items)
-        print(f"TZHBackendLog: Deleting collection '{collection['collectionName']}' (ID: {collection_id})")
-        print("TZHBackendLog: Items will be archived automatically by database trigger")
-        
-        cur.execute("""
-            DELETE FROM "myCellarCollections" 
-            WHERE "id" = %s
-        """, (collection_id,))
-        
-        deleted_rows = cur.rowcount
-        if deleted_rows == 0:
-            error_msg = f"Failed to delete collection {collection_id}"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 500,
-                "message": "Failed to delete collection"
-            }), 500
-        
-        print(f"TZHBackendLog: Successfully deleted {deleted_rows} collection record")
-        print(f"TZHBackendLog: Database trigger archived {item_count} related items")
-        
-        # Commit the transaction
-        conn.commit()
-        print("TZHBackendLog: Transaction committed successfully")
-        
-        # Prepare success response
-        response_data = {
-            "code": 200,
-            "message": f"Collection '{collection['collectionName']}' deleted successfully",
-            "data": {
-                "deletedCollectionId": collection_id,
-                "collectionName": collection['collectionName'],
-                "archivedItemCount": item_count,  # Changed from deletedItemCount
-                "ownerId": collection['ownerID'],
-                "ownerType": collection['ownerType']
+            
+            print("TZHBackendLog: ownerType validation passed")
+            
+            # First, verify that the authenticated owner exists in their respective table
+            owner_table = f'"{data["ownerType"]}s"'  # users, producers, venues
+            owner_id_field = '"id"'
+            print(f"TZHBackendLog: Validating owner exists in table {owner_table} with ID: {data['ownerId']}")
+            
+            cursor.execute(f'SELECT {owner_id_field} FROM {owner_table} WHERE {owner_id_field} = %s', (data['ownerId'],))
+            owner = cursor.fetchone()
+            if not owner:
+                error_msg = f"Owner with ID {data['ownerId']} not found in {data['ownerType']}s table"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
+            
+            print(f"TZHBackendLog: Owner found: {dict(owner)}")
+            
+            # Now verify that the collection exists and get its details
+            print(f"TZHBackendLog: Fetching collection details for ID: {collection_id}")
+            cursor.execute("""
+                SELECT "id", "ownerID", "ownerType", "collectionName", "isDefault"
+                FROM "myCellarCollections" 
+                WHERE "id" = %s
+            """, (collection_id,))
+            
+            collection = cursor.fetchone()
+            if not collection:
+                error_msg = f"Collection with ID {collection_id} not found"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
+            
+            print(f"TZHBackendLog: Collection found: {dict(collection)}")
+            
+            # DEBUG: Log data types and values for comparison
+            print(f"TZHBackendLog: DEBUGGING OWNERSHIP VERIFICATION:")
+            print(f"TZHBackendLog: collection['ownerID'] = {collection['ownerID']} (type: {type(collection['ownerID'])})")
+            print(f"TZHBackendLog: data['ownerId'] = {data['ownerId']} (type: {type(data['ownerId'])})")
+            print(f"TZHBackendLog: collection['ownerType'] = {collection['ownerType']} (type: {type(collection['ownerType'])})")
+            print(f"TZHBackendLog: data['ownerType'] = {data['ownerType']} (type: {type(data['ownerType'])})")
+            print(f"TZHBackendLog: ownerID comparison: {collection['ownerID']} != {data['ownerId']} = {collection['ownerID'] != data['ownerId']}")
+            print(f"TZHBackendLog: ownerType comparison: {collection['ownerType']} != {data['ownerType']} = {collection['ownerType'] != data['ownerType']}")
+            
+            # Verify ownership: the collection's ownerID and ownerType must match the authenticated user
+            # Convert both to int to handle potential string/int mismatches
+            collection_owner_id = int(collection['ownerID'])
+            request_owner_id = int(data['ownerId'])
+            
+            if collection_owner_id != request_owner_id or collection['ownerType'] != data['ownerType']:
+                error_msg = f"Access denied. Collection belongs to different owner (Collection owner: {collection['ownerType']} ID {collection_owner_id}, Authenticated user: {data['ownerType']} ID {request_owner_id})"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 403,
+                    "message": "You do not have permission to delete this collection"
+                }), 403
+            
+            print("TZHBackendLog: Ownership verification passed")
+            
+            # Prevent deletion of default collections to maintain data integrity
+            if collection['isDefault']:
+                error_msg = f"Cannot delete default collection '{collection['collectionName']}'"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": "Default collections cannot be deleted. Please set another collection as default first."
+                }), 400
+            
+            print("TZHBackendLog: Collection is not default, proceeding with deletion")
+            
+            # Count items that will be archived (not deleted due to new archival system)
+            cursor.execute("""
+                SELECT COUNT(*) as item_count
+                FROM "myCellarItems" 
+                WHERE "collectionID" = %s AND "archiveStatus" = FALSE
+            """, (collection_id,))
+            
+            item_count_result = cursor.fetchone()
+            item_count = item_count_result['item_count'] if item_count_result else 0
+            print(f"TZHBackendLog: Collection contains {item_count} active items that will be archived")
+            
+            # Delete the collection (trigger will automatically archive related items)
+            print(f"TZHBackendLog: Deleting collection '{collection['collectionName']}' (ID: {collection_id})")
+            print("TZHBackendLog: Items will be archived automatically by database trigger")
+            
+            cursor.execute("""
+                DELETE FROM "myCellarCollections" 
+                WHERE "id" = %s
+            """, (collection_id,))
+            
+            deleted_rows = cursor.rowcount
+            if deleted_rows == 0:
+                error_msg = f"Failed to delete collection {collection_id}"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 500,
+                    "message": "Failed to delete collection"
+                }), 500
+            
+            print(f"TZHBackendLog: Successfully deleted {deleted_rows} collection record")
+            print(f"TZHBackendLog: Database trigger archived {item_count} related items")
+            
+            print("TZHBackendLog: Transaction committed successfully")
+            
+            # Prepare success response
+            response_data = {
+                "code": 200,
+                "message": f"Collection '{collection['collectionName']}' deleted successfully",
+                "data": {
+                    "deletedCollectionId": collection_id,
+                    "collectionName": collection['collectionName'],
+                    "archivedItemCount": item_count,  # Changed from deletedItemCount
+                    "ownerId": collection['ownerID'],
+                    "ownerType": collection['ownerType']
+                }
             }
-        }
-        
-        print(f"TZHBackendLog: Returning success response: {json.dumps(response_data, indent=2, default=str)}")
-        print("TZHBackendLog: ===========================================")
-        
-        return jsonify(response_data), 200
+            
+            print(f"TZHBackendLog: Returning success response: {json.dumps(response_data, indent=2, default=str)}")
+            print("TZHBackendLog: ===========================================")
+            
+            return jsonify(response_data), 200
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error occurred: {str(e)}")
         print(f"TZHBackendLog: Error code: {e.pgcode}")
         print(f"TZHBackendLog: Error message: {e.pgerror}")
-        
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to database error")
-            conn.rollback()
         
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
@@ -1788,10 +1771,6 @@ def deleteCollection(collection_id):
     except Exception as e:
         print(f"TZHBackendLog: General exception occurred: {str(e)}")
         print(f"TZHBackendLog: Exception type: {type(e).__name__}")
-        
-        if conn:
-            print("TZHBackendLog: Rolling back transaction due to general exception")
-            conn.rollback()
         
         print("TZHBackendLog: Returning 500 error response")
         print("TZHBackendLog: ===========================================")
