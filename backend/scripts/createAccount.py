@@ -745,8 +745,6 @@ def createVenueAccount():
 
 @blueprint.route("/createToken", methods= ['POST'])
 def createToken():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -755,44 +753,43 @@ def createToken():
     businessType = data['businessType']
 
     try:
-        # Determine the correct ID field and table based on businessType
-        if businessType == 'producer':
-            id_field = 'producerId'
-        elif businessType == 'venue':
-            id_field = 'venueId'
-        else:
-            id_field = 'userId' # Default to 'userId'
+        with db_manager.get_cursor() as cursor:
+            # Determine the correct ID field and table based on businessType
+            if businessType == 'producer':
+                id_field = 'producerId'
+            elif businessType == 'venue':
+                id_field = 'venueId'
+            else:
+                id_field = 'userId' # Default to 'userId'
 
-        # Check for existing token
-        cur.execute(f'SELECT * FROM "tokens" WHERE "{id_field}" = %s', (businessId,))
-        existingToken = cur.fetchone()
+            # Check for existing token
+            cursor.execute(f'SELECT * FROM "tokens" WHERE "{id_field}" = %s', (businessId,))
+            existingToken = cursor.fetchone()
 
-        if existingToken is not None:
-            cur.execute('DELETE FROM "tokens" WHERE "token" = %s', (existingToken['token'],))
+            if existingToken is not None:
+                cursor.execute('DELETE FROM "tokens" WHERE "token" = %s', (existingToken['token'],))
 
-        token = secrets.token_urlsafe(16)
-        expiry = datetime.now() + timedelta(days=3)
+            token = secrets.token_urlsafe(16)
+            expiry = datetime.now() + timedelta(days=3)
 
-        # Insert new token
-        query = f"""
-            INSERT INTO "tokens" ("token", "{id_field}", "requestId", "expiry")
-            VALUES (%s, %s, %s, %s)
-        """
-        cur.execute(query, (token, businessId, requestId, expiry))
-        conn.commit()
+            # Insert new token
+            query = f"""
+                INSERT INTO "tokens" ("token", "{id_field}", "requestId", "expiry")
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(query, (token, businessId, requestId, expiry))
 
-        return jsonify(
-            {
-                "code": 201,
-                "data": {
-                    "userId": businessId,
-                    "token": token
+            return jsonify(
+                {
+                    "code": 201,
+                    "data": {
+                        "userId": businessId,
+                        "token": token
+                    }
                 }
-            }
-        ), 201
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -804,15 +801,10 @@ def createToken():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 # [POST] Update customerId
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateCustomerId', methods=['POST'])
 def updateCustomerId():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -821,15 +813,15 @@ def updateCustomerId():
     businessType = data['businessType']
 
     try:
-        cur.execute(
-            f"""
-            UPDATE "{businessType}s"
-            SET "stripeCustomerId" = %s
-            WHERE "id" = %s
-            """,
-            (customerId, businessId)
-        )
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                f"""
+                UPDATE "{businessType}s"
+                SET "stripeCustomerId" = %s
+                WHERE "id" = %s
+                """,
+                (customerId, businessId)
+            )
 
         return jsonify(
             {
@@ -842,7 +834,6 @@ def updateCustomerId():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -851,25 +842,20 @@ def updateCustomerId():
                 "message": "An error occurred updating the profile."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Delete Token
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteToken', methods=['POST'])
 def deleteToken():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
     token = data['token']
 
     try:
-        cur.execute('DELETE FROM "tokens" WHERE "token" = %s', (token,))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('DELETE FROM "tokens" WHERE "token" = %s', (token,))
 
         return jsonify(
             {
@@ -881,7 +867,6 @@ def deleteToken():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -893,15 +878,10 @@ def deleteToken():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 # [POST] Update business username and password
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateUsernamePassword', methods=['POST'])
 def updateUsernamePassword():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -910,8 +890,8 @@ def updateUsernamePassword():
     hashedPassword = data['hashedPassword']
     businessType = data['businessType']
 
-    try:
-        cur.execute(
+    with db_manager.get_cursor() as cursor:
+        cursor.execute(
             f"""
             UPDATE "{businessType}s"
             SET "username" = %s, "hashedPassword" = %s
@@ -919,7 +899,6 @@ def updateUsernamePassword():
             """,
             (username, hashedPassword, businessId)
         )
-        conn.commit()
 
         return jsonify(
             {
@@ -930,20 +909,6 @@ def updateUsernamePassword():
                 }
             }
         ), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred updating the profile."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 @blueprint.route('/sendEmail', methods=['POST'])
 def sendEmail():
@@ -966,17 +931,15 @@ def sendEmail():
 # [POST] Updates User Preferences from Onboarding Form -- ADDED BY SMU GROUP 3
 @blueprint.route("/addPreferences/<username>", methods=['POST'])
 def add_preferences(username):
-    conn = g.db
-    cur = conn.cursor()
     rawAccount = request.get_json()
 
-    try:
+    with db_manager.get_cursor() as cursor:
         # Print the incoming request data for debugging
         print(f"Received data to update preferences for user: {username}")
         print(f"Request data: {rawAccount}")
 
         # Update user preferences in the database
-        cur.execute("""
+        cursor.execute("""
                     UPDATE "users"
                     SET "choiceDrinks" = %s,
                     "choiceFlavours" = %s,
@@ -988,8 +951,6 @@ def add_preferences(username):
                     rawAccount['preferences'],
                     username
                 ))
-
-        conn.commit()
 
         # Print success message
         print(f"Preferences updated successfully for user: {username}")
@@ -1006,32 +967,6 @@ def add_preferences(username):
                 }
             }
         ), 201
-
-    except Exception as e:
-        # Print error message and details
-        print(f"Error occurred while updating preferences for user: {username}")
-        print(f"Error details: {str(e)}")
-
-        # Rollback in case of error
-        conn.rollback()
-
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred while updating the user preferences.",
-                "error": str(e),
-                "data": {
-                    "username": username,
-                    "choiceDrinks": rawAccount.get('choiceDrinks', 'N/A'),
-                    "choiceFlavours": rawAccount.get('choiceFlavours', 'N/A'),
-                    "preferences": rawAccount.get('preferences', 'N/A')
-                }
-            }
-        ), 500
-
-    finally:
-        # Clean up database cursor
-        cur.close()
 
 ##### POSTGRESQL migration code
 # # ======================================================
