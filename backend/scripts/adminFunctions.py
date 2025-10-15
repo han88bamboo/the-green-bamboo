@@ -881,49 +881,41 @@ def detect_encoding(file):
 # - Possible return codes: 200 (Updated), 404 (Setting not found), 500 (Error during update)
 @blueprint.route("/updateSystemSetting", methods=['POST'])
 def updateSystemSetting():
-    conn = g.db
-    cursor = conn.cursor()
-    
     try:
-        data = request.get_json()
-        setting_name = data.get('settingName')
-        setting_value = data.get('settingValue')
-        
-        if not setting_name or setting_value is None:
-            return jsonify({
-                "code": 400,
-                "message": "Missing required fields: settingName and settingValue."
-            }), 400
+        with db_manager.get_cursor() as cursor:
+            data = request.get_json()
+            setting_name = data.get('settingName')
+            setting_value = data.get('settingValue')
             
-        # Update the setting value and timestamp
-        cursor.execute(
-            'UPDATE "systemSettings" SET "settingValue" = %s, "lastUpdated" = CURRENT_TIMESTAMP WHERE "settingName" = %s',
-            (setting_value, setting_name)
-        )
-        
-        conn.commit()
-        
-        if cursor.rowcount == 0:
-            return jsonify({
-                "code": 404,
-                "message": f"System setting '{setting_name}' not found."
-            }), 404
+            if not setting_name or setting_value is None:
+                return jsonify({
+                    "code": 400,
+                    "message": "Missing required fields: settingName and settingValue."
+                }), 400
+                
+            # Update the setting value and timestamp
+            cursor.execute(
+                'UPDATE "systemSettings" SET "settingValue" = %s, "lastUpdated" = CURRENT_TIMESTAMP WHERE "settingName" = %s',
+                (setting_value, setting_name)
+            )
             
-        return jsonify({
-            "code": 200,
-            "message": "System setting updated successfully."
-        })
+            if cursor.rowcount == 0:
+                return jsonify({
+                    "code": 404,
+                    "message": f"System setting '{setting_name}' not found."
+                }), 404
+                
+            return jsonify({
+                "code": 200,
+                "message": "System setting updated successfully."
+            })
         
     except Exception as e:
-        conn.rollback()
         print(f"Error updating system setting: {str(e)}")
         return jsonify({
             "code": 500,
             "message": f"An error occurred while updating the system setting: {str(e)}"
         }), 500
-        
-    finally:
-        cursor.close()
 
 # ==================== PRODUCERS MERGE ====================
 
