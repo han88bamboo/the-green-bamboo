@@ -2088,9 +2088,6 @@ def acceptClubInvite():
 # Output: Possible return codes [200 - Post edited successfully, 400 - Missing required data, 403 - No permission to edit post, 404 - No such post exist, 500 - An error occurred editing the post]
 @blueprint.route('/editPost', methods=['PUT'])
 def editPost():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -2105,85 +2102,80 @@ def editPost():
                 'error': 'Missing required data'
             }), 400
 
-        # List to store the image urls
-        image_urls = []
+        with db_manager.get_cursor() as cursor:
+            # List to store the image urls
+            image_urls = []
 
-        # Step 1: Check if the editor is the creator of the post
-        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s AND "posterID" = %s', (post_id, editor_id,))
-        isCreator = cur.fetchone()
+            # Step 1: Check if the editor is the creator of the post
+            cursor.execute('SELECT * FROM "clubPosts" WHERE id = %s AND "posterID" = %s', (post_id, editor_id,))
+            isCreator = cursor.fetchone()
 
-        if not isCreator:
-            # Step 2: Check if the editor is an admin of the club
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND id = %s AND "isAdmin" = TRUE', (post_id, editor_id,))
-            isAdmin = cur.fetchone()
+            if not isCreator:
+                # Step 2: Check if the editor is an admin of the club
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = (SELECT "clubID" FROM "clubPosts" WHERE id = %s) AND id = %s AND "isAdmin" = TRUE', (post_id, editor_id,))
+                isAdmin = cursor.fetchone()
 
-            if not isAdmin:
+                if not isAdmin:
+                    return jsonify({
+                        'error': 'You do not have the permission to edit this post'
+                    }), 403
+
+            # Step 3: Check if the post exist
+            cursor.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
+            post = cursor.fetchone()
+
+            if not post:
                 return jsonify({
-                    'error': 'You do not have the permission to edit this post'
-                }), 403
-
-        # Step 3: Check if the post exist
-        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
-        post = cur.fetchone()
-
-        if not post:
-            return jsonify({
-                'error': 'No such post exist'
-            }), 404
-        
-        # Check if post photo that is already in S3 is still in the post photos
-        # If not, delete it from S3
-        if 'postPhotos' in post and post['postPhotos'] != '{}':
-            post_photos = post['postPhotos']
-
-            for url in post_photos:
-                if url not in data['images']:
-                    # Delete the image from S3
-                    s3Images.deleteImageFromS3(url)
-        
-        # Step 4: Check if the post photo is provided
-        if len(data['images']) > 0:
-
-            # Loop through the images and upload them to S3
-            for image in data['images']:
-                if not image:
-                    continue
-
-                # Check if the image is already in S3
-                if 's3' in image:
-                    image_urls.append(image)
-                    continue
-                else:
-                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
-                    image64 = s3Images.uploadBase64ImageToS3(base64_string)
-                    image_urls.append(image64)
-
-            # Make the postPhotos as a text string starting with { and ending with }
-            post_photos = '{' + ','.join(f'"{url}"' for url in image_urls) + '}'
-        else:
-            post_photos = '{}'
+                    'error': 'No such post exist'
+                }), 404
             
-        # Step 5: Update the post content and post photos
-        cur.execute('UPDATE "clubPosts" SET "postContent" = %s, "postPhotos" = %s WHERE id = %s', (post_content, post_photos, post_id,))
-        conn.commit()
+            # Check if post photo that is already in S3 is still in the post photos
+            # If not, delete it from S3
+            if 'postPhotos' in post and post['postPhotos'] != '{}':
+                post_photos = post['postPhotos']
 
-        return jsonify({
-            'message': 'Post edited successfully'
-        }), 200
+                for url in post_photos:
+                    if url not in data['images']:
+                        # Delete the image from S3
+                        s3Images.deleteImageFromS3(url)
+            
+            # Step 4: Check if the post photo is provided
+            if len(data['images']) > 0:
+
+                # Loop through the images and upload them to S3
+                for image in data['images']:
+                    if not image:
+                        continue
+
+                    # Check if the image is already in S3
+                    if 's3' in image:
+                        image_urls.append(image)
+                        continue
+                    else:
+                        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image)
+                        image64 = s3Images.uploadBase64ImageToS3(base64_string)
+                        image_urls.append(image64)
+
+                # Make the postPhotos as a text string starting with { and ending with }
+                post_photos = '{' + ','.join(f'"{url}"' for url in image_urls) + '}'
+            else:
+                post_photos = '{}'
+                
+            # Step 5: Update the post content and post photos
+            cursor.execute('UPDATE "clubPosts" SET "postContent" = %s, "postPhotos" = %s WHERE id = %s', (post_content, post_photos, post_id,))
+
+            return jsonify({
+                'message': 'Post edited successfully'
+            }), 200
     
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred editing the post."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
