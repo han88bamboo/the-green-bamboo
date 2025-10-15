@@ -2256,77 +2256,68 @@ def editComment():
 # Output: Possible return codes [200 - Post disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/post exist, 500 - An error occurred disliking the post]
 @blueprint.route('/dislikeUndislikePost', methods=['PUT'])
 def dislikeUndislikePost():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            data = request.get_json()
 
-    try:
-        data = request.get_json()
+            # Get all the required data
+            member_id = data['memberID']
+            post_id = data['postID']
+            club_id = data['clubID']
 
-        # Get all the required data
-        member_id = data['memberID']
-        post_id = data['postID']
-        club_id = data['clubID']
+            # Check if all the required data is provided
+            if not member_id or not post_id or not club_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
 
-        # Check if all the required data is provided
-        if not member_id or not post_id or not club_id:
+            # Step 1: Check if the member exist
+            cursor.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'error': 'No such member exist'
+                }), 404
+
+            # Step 2: Check if the post exist
+            cursor.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
+            post = cursor.fetchone()
+
+            if not post:
+                return jsonify({
+                    'error': 'No such post exist'
+                }), 404
+            
+            # Step 3: Check if the member has already disliked the post
+            cursor.execute('SELECT * FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+            disliked = cursor.fetchone()
+
+            if disliked:
+                # Un-dislike the post
+                cursor.execute('DELETE FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+
+                return jsonify({
+                    'message': 'Post un-disliked successfully',
+                    "disliked": False
+                }), 200
+            
+            # Step 4: Insert the dislike into the clubPostsDislikes table
+            cursor.execute('INSERT INTO "clubPostsDislikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
-
-        # Step 1: Check if the member exist
-        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'error': 'No such member exist'
-            }), 404
-
-        # Step 2: Check if the post exist
-        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
-        post = cur.fetchone()
-
-        if not post:
-            return jsonify({
-                'error': 'No such post exist'
-            }), 404
-        
-        # Step 3: Check if the member has already disliked the post
-        cur.execute('SELECT * FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
-        disliked = cur.fetchone()
-
-        if disliked:
-            # Un-dislike the post
-            cur.execute('DELETE FROM "clubPostsDislikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
-            conn.commit()
-
-            return jsonify({
-                'message': 'Post un-disliked successfully',
-                "disliked": False
+                'message': 'Post disliked successfully',
+                "disliked": True
             }), 200
         
-        # Step 4: Insert the dislike into the clubPostsDislikes table
-        cur.execute('INSERT INTO "clubPostsDislikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
-        conn.commit()
-    
-        return jsonify({
-            'message': 'Post disliked successfully',
-            "disliked": True
-        }), 200
-    
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred disliking the post."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred disliking the post."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -2340,76 +2331,67 @@ def dislikeUndislikePost():
 # Output: Possible return codes [200 - Comment disliked/un-disliked successfully, 400 - Missing required data, 404 - No such user/comment exist, 500 - An error occurred disliking the comment]
 @blueprint.route('/dislikeUndislikeComment', methods=['PUT'])
 def dislikeUndislikeComment():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            # Get all the required data
+            data = request.get_json()
+            post_id = data['postID']
+            comment_id = data['commentID']
+            member_id = data['memberID']
 
-    try:
-        # Get all the required data
-        data = request.get_json()
-        post_id = data['postID']
-        comment_id = data['commentID']
-        member_id = data['memberID']
+            # Check if all the required data is provided
+            if not post_id or not comment_id or not member_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
 
-        # Check if all the required data is provided
-        if not post_id or not comment_id or not member_id:
+            # Step 1: Check if the member exist
+            cursor.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'error': 'No such member exist'
+                }), 404
+
+            # Step 2: Check if the comment exist
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
+            comment = cursor.fetchone()
+
+            if not comment:
+                return jsonify({
+                    'error': 'No such comment exist'
+                }), 404
+
+            # Step 3: Check if the member has already disliked the comment
+            cursor.execute('SELECT * FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+            disliked = cursor.fetchone()
+
+            if disliked:
+                # Un-dislike the comment
+                cursor.execute('DELETE FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
+
+                return jsonify({
+                    'message': 'Comment un-disliked successfully',
+                    'disliked': False
+                }), 200
+
+            # Step 4: Insert the dislike into the clubPostCommentsDislikes table
+            cursor.execute('INSERT INTO "clubPostCommentsDislikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', (post_id, member_id, comment_id,))
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
-
-        # Step 1: Check if the member exist
-        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'error': 'No such member exist'
-            }), 404
-
-        # Step 2: Check if the comment exist
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
-        comment = cur.fetchone()
-
-        if not comment:
-            return jsonify({
-                'error': 'No such comment exist'
-            }), 404
-        
-        # Step 3: Check if the member has already disliked the comment
-        cur.execute('SELECT * FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
-        disliked = cur.fetchone()
-
-        if disliked:
-            # Un-dislike the comment
-            cur.execute('DELETE FROM "clubPostCommentsDislikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', (post_id, member_id, comment_id,))
-            conn.commit()
-
-            return jsonify({
-                'message': 'Comment un-disliked successfully',
-                'disliked': False
+                'message': 'Comment disliked successfully',
+                'disliked': True
             }), 200
 
-        # Step 4: Insert the dislike into the clubPostCommentsDislikes table
-        cur.execute('INSERT INTO "clubPostCommentsDislikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', (post_id, member_id, comment_id,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Comment disliked successfully',
-            'disliked': True
-        }), 200
-    
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred disliking the comment."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred disliking the comment."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
