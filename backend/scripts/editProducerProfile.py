@@ -632,8 +632,6 @@ def editUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editAddress', methods=['POST'])
 def editAddress():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -641,12 +639,12 @@ def editAddress():
     updatedLocation = data['updatedLocation']
 
     try:
-        cur.execute("""
-            UPDATE producers
-            SET "location" = %s
-            WHERE "id" = %s
-        """, (updatedLocation, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE producers
+                SET "location" = %s
+                WHERE "id" = %s
+            """, (updatedLocation, producerID))
 
         return jsonify(
             {
@@ -654,9 +652,8 @@ def editAddress():
                 "message": "Updated address successfully!"
             }
         ), 201
-    
+
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -664,9 +661,6 @@ def editAddress():
                 "message": "An error occurred updating address!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -675,8 +669,6 @@ def editAddress():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editOpeningHours', methods=['POST'])
 def editOpeningHours():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -695,29 +687,29 @@ def editOpeningHours():
     )
 
     try:
-        # Check if opening hours entry already exists
-        cur.execute('SELECT id FROM "producersOpeningHours" WHERE "producerId" = %s', (producerID,))
-        existing_entry = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if opening hours entry already exists
+            cursor.execute('SELECT id FROM "producersOpeningHours" WHERE "producerId" = %s', (producerID,))
+            existing_entry = cursor.fetchone()
 
-        if existing_entry:
-            cur.execute("""
-                UPDATE "producersOpeningHours" 
-                SET "Monday" = %s, "Tuesday" = %s, "Wednesday" = %s, 
-                    "Thursday" = %s, "Friday" = %s, "Saturday" = %s, 
-                    "Sunday" = %s 
-                WHERE "producerId" = %s
-            """, (*opening_hours, producerID))
+            if existing_entry:
+                cursor.execute("""
+                    UPDATE "producersOpeningHours" 
+                    SET "Monday" = %s, "Tuesday" = %s, "Wednesday" = %s, 
+                        "Thursday" = %s, "Friday" = %s, "Saturday" = %s, 
+                        "Sunday" = %s 
+                    WHERE "producerId" = %s
+                """, (*opening_hours, producerID))
 
-        else:
-            cur.execute(
-                """
-                    INSERT INTO "producersOpeningHours" ("Monday", "Tuesday", "Wednesday", 
-                    "Thursday", "Friday", "Saturday", "Sunday", "producerId") 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (*opening_hours, producerID)
-            )
-        conn.commit()
+            else:
+                cursor.execute(
+                    """
+                        INSERT INTO "producersOpeningHours" ("Monday", "Tuesday", "Wednesday", 
+                        "Thursday", "Friday", "Saturday", "Sunday", "producerId") 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (*opening_hours, producerID)
+                )
 
         return jsonify(
             {
@@ -727,7 +719,6 @@ def editOpeningHours():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -735,9 +726,6 @@ def editOpeningHours():
                 "message": "An error occurred updating opening hours!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
