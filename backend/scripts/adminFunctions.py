@@ -541,7 +541,7 @@ def hash_password(id, password):
 @blueprint.route('/importListings', methods=['POST'])
 def importListings():
     try:
-        with db_manager.get_cursor(commit=False) as cursor:
+        with db_manager.get_cursor() as cursor:
             file = request.files['file']
 
             # Detect encoding of CSV file
@@ -636,7 +636,6 @@ def importListings():
                     )
                     for profile in all_new_profiles
                 ])
-                cursor.connection.commit()
                 new_profiles_with_ids = cursor.fetchall()
                 producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
 
@@ -765,7 +764,6 @@ def importListings():
                 # Update the sequence to ensure future inserts don't conflict
                 cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
                 
-                cursor.connection.commit()
                 print(f"Successfully inserted {len(listings_to_insert)} listings")
 
             return jsonify({
@@ -924,95 +922,94 @@ def updateSystemSetting():
 @blueprint.route('/getProducerMergePreview', methods=['POST'])
 def get_producer_merge_preview():
     """Get preview data for merging producers"""
-    conn = g.db
-    cursor = conn.cursor()
     
     try:
-        data = request.get_json()
-        master_id = data.get('masterId')
-        duplicate_ids = data.get('duplicateIds', [])
-        
-        if not master_id or not duplicate_ids:
-            return jsonify({"code": 400, "message": "Missing required fields"}), 400
-        
-        # Get all producer records
-        all_ids = [master_id] + duplicate_ids
-        cursor.execute('''
-            SELECT id, "producerName", "producerDesc", "originCountry", 
-                   "isIndependentBottler", "yearFounded", "activeStatus",
-                   "owner", "location", "website", "claimStatus"
-            FROM producers 
-            WHERE id = ANY(%s)
-            ORDER BY id = %s DESC
-        ''', (all_ids, master_id))
-        
-        producers = []
-        rows = cursor.fetchall()
-        for row in rows:
-            if hasattr(row, 'keys'):  # RealDictRow
-                producers.append({
-                    'id': row['id'],
-                    'producerName': row['producerName'],
-                    'producerDesc': row['producerDesc'],
-                    'originCountry': row['originCountry'],
-                    'isIndependentBottler': row['isIndependentBottler'],
-                    'yearFounded': row['yearFounded'],
-                    'activeStatus': row['activeStatus'],
-                    'owner': row['owner'],
-                    'location': row['location'],
-                    'website': row['website'],
-                    'claimStatus': row['claimStatus']
-                })
-            else:  # Tuple
-                producers.append({
-                    'id': row[0],
-                    'producerName': row[1],
-                    'producerDesc': row[2],
-                    'originCountry': row[3],
-                    'isIndependentBottler': row[4],
-                    'yearFounded': row[5],
-                    'activeStatus': row[6],
-                    'owner': row[7],
-                    'location': row[8],
-                    'website': row[9],
-                    'claimStatus': row[10]
-                })
-        
-        # Helper function for safe counts
-        def safe_count(query, pid):
-            cursor.execute(query, (pid,))
-            row = cursor.fetchone()
-            if not row:
-                return 0
-            # Handle both RealDictRow and tuple
-            if hasattr(row, 'keys'):
-                return row['count']
-            else:
-                return row[0]
-        
-        # Get related data counts
-        related_counts = {}
-        for pid in all_ids:
-            counts = {
-                'listings': safe_count('SELECT COUNT(*) FROM listings WHERE "producerID" = %s', pid),
-                'bottlerListings': safe_count('SELECT COUNT(*) FROM listings WHERE "bottlerID" = %s', pid),
-                'reviews': safe_count('SELECT COUNT(*) FROM "producerReviews" WHERE "producerID" = %s', pid),
-                'qa': safe_count('SELECT COUNT(*) FROM "producersQuestionAnswers" WHERE "producerId" = %s', pid),
-                'updates': safe_count('SELECT COUNT(*) FROM "producersUpdates" WHERE "producerId" = %s', pid)
-            }
+        with db_manager.get_cursor() as cursor:
+            data = request.get_json()
+            master_id = data.get('masterId')
+            duplicate_ids = data.get('duplicateIds', [])
             
-            # Special case for followers (different query pattern)
+            if not master_id or not duplicate_ids:
+                return jsonify({"code": 400, "message": "Missing required fields"}), 400
+            
+            # Get all producer records
+            all_ids = [master_id] + duplicate_ids
             cursor.execute('''
-                SELECT COUNT(*) FROM "usersFollowLists" 
-                WHERE %s::text = ANY(producers)
-            ''', (str(pid),))
-            row = cursor.fetchone()
-            if hasattr(row, 'keys'):
-                counts['followers'] = row['count']
-            else:
-                counts['followers'] = row[0] if row else 0
+                SELECT id, "producerName", "producerDesc", "originCountry", 
+                       "isIndependentBottler", "yearFounded", "activeStatus",
+                       "owner", "location", "website", "claimStatus"
+                FROM producers 
+                WHERE id = ANY(%s)
+                ORDER BY id = %s DESC
+            ''', (all_ids, master_id))
             
-            related_counts[pid] = counts
+            producers = []
+            rows = cursor.fetchall()
+            for row in rows:
+                if hasattr(row, 'keys'):  # RealDictRow
+                    producers.append({
+                        'id': row['id'],
+                        'producerName': row['producerName'],
+                        'producerDesc': row['producerDesc'],
+                        'originCountry': row['originCountry'],
+                        'isIndependentBottler': row['isIndependentBottler'],
+                        'yearFounded': row['yearFounded'],
+                        'activeStatus': row['activeStatus'],
+                        'owner': row['owner'],
+                        'location': row['location'],
+                        'website': row['website'],
+                        'claimStatus': row['claimStatus']
+                    })
+                else:  # Tuple
+                    producers.append({
+                        'id': row[0],
+                        'producerName': row[1],
+                        'producerDesc': row[2],
+                        'originCountry': row[3],
+                        'isIndependentBottler': row[4],
+                        'yearFounded': row[5],
+                        'activeStatus': row[6],
+                        'owner': row[7],
+                        'location': row[8],
+                        'website': row[9],
+                        'claimStatus': row[10]
+                    })
+            
+            # Helper function for safe counts
+            def safe_count(query, pid):
+                cursor.execute(query, (pid,))
+                row = cursor.fetchone()
+                if not row:
+                    return 0
+                # Handle both RealDictRow and tuple
+                if hasattr(row, 'keys'):
+                    return row['count']
+                else:
+                    return row[0]
+            
+            # Get related data counts
+            related_counts = {}
+            for pid in all_ids:
+                counts = {
+                    'listings': safe_count('SELECT COUNT(*) FROM listings WHERE "producerID" = %s', pid),
+                    'bottlerListings': safe_count('SELECT COUNT(*) FROM listings WHERE "bottlerID" = %s', pid),
+                    'reviews': safe_count('SELECT COUNT(*) FROM "producerReviews" WHERE "producerID" = %s', pid),
+                    'qa': safe_count('SELECT COUNT(*) FROM "producersQuestionAnswers" WHERE "producerId" = %s', pid),
+                    'updates': safe_count('SELECT COUNT(*) FROM "producersUpdates" WHERE "producerId" = %s', pid)
+                }
+                
+                # Special case for followers (different query pattern)
+                cursor.execute('''
+                    SELECT COUNT(*) FROM "usersFollowLists" 
+                    WHERE %s::text = ANY(producers)
+                ''', (str(pid),))
+                row = cursor.fetchone()
+                if hasattr(row, 'keys'):
+                    counts['followers'] = row['count']
+                else:
+                    counts['followers'] = row[0] if row else 0
+                
+                related_counts[pid] = counts
         
         return jsonify({
             "code": 200,
@@ -1035,16 +1032,12 @@ def get_producer_merge_preview():
         traceback.print_exc()
         logger.error(f"Error getting producer merge preview: {str(e)}")
         return jsonify({"code": 500, "message": str(e)}), 500
-    finally:
-        cursor.close()
 
 # [POST] Merge producers
 # - Merge duplicate producers into a master producer
 @blueprint.route('/mergeProducers', methods=['POST'])
 def merge_producers():
     """Merge duplicate producers into a master producer"""
-    conn = g.db
-    cursor = conn.cursor()
     
     try:
         data = request.get_json()
@@ -1054,86 +1047,85 @@ def merge_producers():
         if not master_id or not duplicate_ids:
             return jsonify({"code": 400, "message": "Missing required fields"}), 400
         
-        # Update all foreign key references
-        for dup_id in duplicate_ids:
-            # Update listings where producer
-            cursor.execute('''
-                UPDATE listings SET "producerID" = %s 
-                WHERE "producerID" = %s
-            ''', (master_id, dup_id))
+        with db_manager.get_cursor() as cursor:
+            # Update all foreign key references
+            for dup_id in duplicate_ids:
+                # Update listings where producer
+                cursor.execute('''
+                    UPDATE listings SET "producerID" = %s 
+                    WHERE "producerID" = %s
+                ''', (master_id, dup_id))
+                
+                # Update listings where bottler
+                cursor.execute('''
+                    UPDATE listings SET "bottlerID" = %s 
+                    WHERE "bottlerID" = %s
+                ''', (master_id, dup_id))
+                
+                # Update producer reviews
+                cursor.execute('''
+                    UPDATE "producerReviews" SET "producerID" = %s 
+                    WHERE "producerID" = %s
+                ''', (master_id, dup_id))
+                
+                # Update Q&A
+                cursor.execute('''
+                    UPDATE "producersQuestionAnswers" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update producer updates
+                cursor.execute('''
+                    UPDATE "producersUpdates" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update opening hours
+                cursor.execute('''
+                    UPDATE "producersOpeningHours" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update profile views
+                cursor.execute('''
+                    UPDATE "producersProfileViews" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update text sections
+                cursor.execute('''
+                    UPDATE "producerTextSections" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update user follow lists (stored as text array)
+                cursor.execute('''
+                    UPDATE "usersFollowLists" 
+                    SET producers = array_replace(producers, %s::text, %s::text)
+                    WHERE %s::text = ANY(producers)
+                ''', (str(dup_id), str(master_id), str(dup_id)))
+                
+                # Update user producer list items
+                cursor.execute('''
+                    UPDATE "userProducerListItems" SET "producerId" = %s 
+                    WHERE "producerId" = %s
+                ''', (master_id, dup_id))
+                
+                # Update request listings
+                cursor.execute('''
+                    UPDATE "requestListings" SET "producerID" = %s 
+                    WHERE "producerID" = %s
+                ''', (master_id, dup_id))
+                
+                cursor.execute('''
+                    UPDATE "requestListings" SET "bottlerID" = %s 
+                    WHERE "bottlerID" = %s
+                ''', (master_id, dup_id))
             
-            # Update listings where bottler
+            # Delete duplicate producers
             cursor.execute('''
-                UPDATE listings SET "bottlerID" = %s 
-                WHERE "bottlerID" = %s
-            ''', (master_id, dup_id))
-            
-            # Update producer reviews
-            cursor.execute('''
-                UPDATE "producerReviews" SET "producerID" = %s 
-                WHERE "producerID" = %s
-            ''', (master_id, dup_id))
-            
-            # Update Q&A
-            cursor.execute('''
-                UPDATE "producersQuestionAnswers" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update producer updates
-            cursor.execute('''
-                UPDATE "producersUpdates" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update opening hours
-            cursor.execute('''
-                UPDATE "producersOpeningHours" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update profile views
-            cursor.execute('''
-                UPDATE "producersProfileViews" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update text sections
-            cursor.execute('''
-                UPDATE "producerTextSections" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update user follow lists (stored as text array)
-            cursor.execute('''
-                UPDATE "usersFollowLists" 
-                SET producers = array_replace(producers, %s::text, %s::text)
-                WHERE %s::text = ANY(producers)
-            ''', (str(dup_id), str(master_id), str(dup_id)))
-            
-            # Update user producer list items
-            cursor.execute('''
-                UPDATE "userProducerListItems" SET "producerId" = %s 
-                WHERE "producerId" = %s
-            ''', (master_id, dup_id))
-            
-            # Update request listings
-            cursor.execute('''
-                UPDATE "requestListings" SET "producerID" = %s 
-                WHERE "producerID" = %s
-            ''', (master_id, dup_id))
-            
-            cursor.execute('''
-                UPDATE "requestListings" SET "bottlerID" = %s 
-                WHERE "bottlerID" = %s
-            ''', (master_id, dup_id))
-        
-        # Delete duplicate producers
-        cursor.execute('''
-            DELETE FROM producers WHERE id = ANY(%s)
-        ''', (duplicate_ids,))
-        
-        conn.commit()
+                DELETE FROM producers WHERE id = ANY(%s)
+            ''', (duplicate_ids,))
         
         return jsonify({
             "code": 200,
@@ -1141,13 +1133,10 @@ def merge_producers():
         }), 200
         
     except Exception as e:
-        conn.rollback()
         import traceback
         traceback.print_exc()
         logger.error(f"Error merging producers: {str(e)}")
         return jsonify({"code": 500, "message": str(e)}), 500
-    finally:
-        cursor.close()
 
 
 # ==================== LISTING MERGE ====================
