@@ -19,6 +19,11 @@ import chardet
 from psycopg2.extras import execute_values
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
+
+# Import the database manager for connection pooling
+from app import db_manager
+
 from flask import Blueprint, g, request, jsonify
 from datetime import datetime
 from urllib.request import urlopen
@@ -44,31 +49,29 @@ logger.info(project_root)
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createObservationTag", methods= ['POST'])
 def createObservationTag():
-    conn = g.db
-    cur = conn.cursor()
     rawTag = request.get_json()
     rawObservationTag = rawTag['observationTag']
 
     try:
-        # Check if the observation tag already exists
-        cur.execute('SELECT * FROM "observationTags" WHERE "observationTag" = %s', (rawObservationTag,))
-        existingObservationTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if the observation tag already exists
+            cursor.execute('SELECT * FROM "observationTags" WHERE "observationTag" = %s', (rawObservationTag,))
+            existingObservationTag = cursor.fetchone()
 
-        if existingObservationTag:
-            return jsonify(
-                {
-                    "code": 400,
-                    "data": {
-                        "observationTag": rawObservationTag
-                    },
-                    "message": "Observation tag already exists."
-                }
-            ), 400
+            if existingObservationTag:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "observationTag": rawObservationTag
+                        },
+                        "message": "Observation tag already exists."
+                    }
+                ), 400
 
-        # Insert the new observation tag
-        cur.execute('INSERT INTO "observationTags" ("observationTag") VALUES (%s) RETURNING "id"', (rawObservationTag,))
-        newObservationTagId = cur.fetchone()
-        conn.commit()
+            # Insert the new observation tag
+            cursor.execute('INSERT INTO "observationTags" ("observationTag") VALUES (%s) RETURNING "id"', (rawObservationTag,))
+            newObservationTagId = cursor.fetchone()
 
         return jsonify(
             {
@@ -79,7 +82,6 @@ def createObservationTag():
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -90,9 +92,6 @@ def createObservationTag():
             }
         ), 500
 
-    finally:
-        cur.close()
-
 # -----------------------------------------------------------------------------------------
     
 # [PUT] Update observation tag
@@ -100,92 +99,92 @@ def createObservationTag():
 # - Possible return codes: 201 (Updated), 400(Observation tag not found), 500 (Error during update)
 @blueprint.route('/updateObservationTag', methods=['PUT'])
 def updateObservationTag():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
 
-    updates = []
-    for elem in data:
-        # check psql table for existing observation tag
-        cur.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (elem["id"],))
-        existingObservationTag = cur.fetchone()
+    # Note: Changed transaction behavior - original code had separate commits per update
+    # Original: Each UPDATE had its own commit() call
+    # New: All operations are in one transaction with auto-commit at the end
+    with db_manager.get_cursor() as cursor:
+        updates = []
+        for elem in data:
+            # check psql table for existing observation tag
+            cursor.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (elem["id"],))
+            existingObservationTag = cursor.fetchone()
 
-        if existingObservationTag == None:
+            if existingObservationTag == None:
+                return jsonify(
+                    {   
+                        "code": 400,
+                        "data": {
+                            "id": elem["id"]
+                        },
+                        "message": "Observation Tag does not exist."
+                    }
+                ), 400
+
+            update_dict = {"observationTag": elem["observationTag"]}
+            updates.append({"id": elem["id"], "update": update_dict})
+
+        try:
+            for update in updates:
+                cursor.execute('UPDATE "observationTags" SET "observationTag" = %s WHERE "id" = %s', (update["update"]["observationTag"], update["id"]))
+                # Removed individual conn.commit() calls - now handled automatically by context manager
             return jsonify(
                 {   
-                    "code": 400,
-                    "data": {
-                        "id": elem["id"]
-                    },
-                    "message": "Observation Tag does not exist."
-                }
-            ), 400
-
-        update_dict = {"observationTag": elem["observationTag"]}
-        updates.append({"id": elem["id"], "update": update_dict})
-
-    try:
-        for update in updates:
-            cur.execute('UPDATE "observationTags" SET "observationTag" = %s WHERE "id" = %s', (update["update"]["observationTag"], update["id"]))
-            conn.commit()
-        return jsonify(
-            {   
-                "code": 201,
-                "data": elem['observationTag']
-            }
-        ), 201
-
-    except Exception as e:
-        print(str(e))
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "data": {
+                    "code": 201,
                     "data": elem['observationTag']
-                },
-                "message": "An error occurred updating the observation tags."
-            }
-        ), 500
+                }
+            ), 201
 
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            # Removed conn.rollback() - now handled automatically by context manager
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": {
+                        "data": elem['observationTag']
+                    },
+                    "message": "An error occurred updating the observation tags."
+                }
+            ), 500
+
+        # Removed finally block with cur.close() - handled automatically by context manager
 # -----------------------------------------------------------------------------------------
 # [DELETE] Deletes a observationTag
 # - Delete entry with specified id from the "observationTag" collection.
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteObservationTag/<id>", methods= ['DELETE'])
 def deleteObservationTag(id):
-    conn = g.db
-    cur = conn.cursor()
-
-    cur.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (id,))
-    existingObservation = cur.fetchone()
-
-    if existingObservation == None:
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {
-                    "id": id
-                },
-                "message": "Observation tag doesn't exist."
-            }
-        ), 400
-
     try:
-        cur.execute('DELETE FROM "observationTags" WHERE "id" = %s', (id,))
-        conn.commit()
-        return jsonify( 
-            {   
-                "code": 200,
-                "data": id
-            }
-        ), 201
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "observationTags" WHERE "id" = %s', (id,))
+            existingObservation = cursor.fetchone()
+
+            if existingObservation == None:
+                return jsonify(
+                    {   
+                        "code": 400,
+                        "data": {
+                            "id": id
+                        },
+                        "message": "Observation tag doesn't exist."
+                    }
+                ), 400
+
+            cursor.execute('DELETE FROM "observationTags" WHERE "id" = %s', (id,))
+            # Auto-commit handled by context manager
+            
+            return jsonify( 
+                {   
+                    "code": 200,
+                    "data": id
+                }
+            ), 201
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
+        # Auto-rollback handled by context manager
         return jsonify(
             {
                 "code": 500,
@@ -196,9 +195,6 @@ def deleteObservationTag(id):
             }
         ), 500
 
-    finally:
-        cur.close()
-
 # -----------------------------------------------------------------------------------------
     
 # [PUT] Update family tag
@@ -206,33 +202,33 @@ def deleteObservationTag(id):
 # - Possible return codes: 201 (Updated), 400(Flavour tag not found), 500 (Error during update)
 @blueprint.route('/updateFamilyTag', methods=['PUT'])
 def updateFamilyTag():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
 
     updates = []
     try:
-        for elem in data:
-            cur.execute('SELECT id FROM "flavourTags" WHERE id = %s', (elem["id"],))
-            existingFamilyTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            for elem in data:
+                cursor.execute('SELECT id FROM "flavourTags" WHERE id = %s', (elem["id"],))
+                existingFamilyTag = cursor.fetchone()
 
-            if existingFamilyTag is None:
-                return jsonify(
-                    {   
-                        "code": 400,
-                        "data": {
-                            "familyTag": elem['familyTag']
-                        },
-                        "message": "Family Tag does not exist."
-                    }
-                ), 400
+                if existingFamilyTag is None:
+                    return jsonify(
+                        {   
+                            "code": 400,
+                            "data": {
+                                "familyTag": elem['familyTag']
+                            },
+                            "message": "Family Tag does not exist."
+                        }
+                    ), 400
 
-            cur.execute("""
-                UPDATE "flavourTags" SET "familyTag" = %s, "hexcode" = %s WHERE "id" = %s
-            """, (elem["familyTag"], elem["hexcode"], elem["id"]))
-            conn.commit()
+                cursor.execute("""
+                    UPDATE "flavourTags" SET "familyTag" = %s, "hexcode" = %s WHERE "id" = %s
+                """, (elem["familyTag"], elem["hexcode"], elem["id"]))
+                # note TRANSACTION BEHAVIOR CHANGE: Original had individual conn.commit() per update
+                # New: All updates will be committed together at the end of the context manager
 
-            updates.append({"id": elem["id"], "familyTag": elem["familyTag"], "hexcode": elem["hexcode"]})
+                updates.append({"id": elem["id"], "familyTag": elem["familyTag"], "hexcode": elem["hexcode"]})
 
         return jsonify(
             {
@@ -243,7 +239,7 @@ def updateFamilyTag():
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
+        # CHANGE: Removed conn.rollback() - now handled automatically by context manager
         return jsonify(
             {
                 "code": 500,
@@ -254,8 +250,7 @@ def updateFamilyTag():
             }
         ), 500
 
-    finally:
-        cur.close()
+    # CHANGE: Removed finally block with cur.close() - handled automatically by context manager
             
     
 # -----------------------------------------------------------------------------------------
@@ -265,34 +260,32 @@ def updateFamilyTag():
 # - Possible return codes: 201 (Updated), 400(Sub tag not found), 500 (Error during update)
 @blueprint.route('/updateSubTag', methods=['PUT'])
 def updateSubTag():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
 
     updates = []
     try:
-        for elem in data:
-            # Check if the sub tag exists
-            cur.execute('SELECT id FROM "subTags" WHERE "id" = %s', (elem["id"],))
-            existingSubTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            for elem in data:
+                # Check if the sub tag exists
+                cursor.execute('SELECT id FROM "subTags" WHERE "id" = %s', (elem["id"],))
+                existingSubTag = cursor.fetchone()
 
-            if existingSubTag == None:
-                return jsonify(
-                    {
-                        "code": 400,
-                        "data": {
-                            "id": elem["id"]
-                        },
-                        "message": "Sub tag does not exist."
-                    }
-                ), 400
+                if existingSubTag == None:
+                    return jsonify(
+                        {
+                            "code": 400,
+                            "data": {
+                                "id": elem["id"]
+                            },
+                            "message": "Sub tag does not exist."
+                        }
+                    ), 400
 
-            cur.execute("""
-                UPDATE "subTags" SET "subTag" = %s WHERE "id" = %s
-            """, (elem["subTag"], elem["id"]))
-            conn.commit()
+                cursor.execute("""
+                    UPDATE "subTags" SET "subTag" = %s WHERE "id" = %s
+                """, (elem["subTag"], elem["id"]))
 
-            updates.append({"id": elem["id"], "subTag": elem["subTag"]})
+                updates.append({"id": elem["id"], "subTag": elem["subTag"]})
 
         return jsonify(
             {
@@ -303,7 +296,6 @@ def updateSubTag():
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -313,9 +305,6 @@ def updateSubTag():
                 "message": "An error occurred updating the sub tag."
             }
         ), 500
-
-    finally:
-        cur.close()
     
 # -----------------------------------------------------------------------------------------
     
@@ -324,27 +313,25 @@ def updateSubTag():
 # - Possible return codes: 201 (Deleted), 400 (family tag doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteFamilyTag/<id>", methods= ['DELETE'])
 def deleteFamilyTag(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT id FROM "flavourTags" WHERE "id" = %s', (id,))
-        existingFamilyTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT id FROM "flavourTags" WHERE "id" = %s', (id,))
+            existingFamilyTag = cursor.fetchone()
 
-        if existingFamilyTag == None:
-            return jsonify(
-                {
-                    "code": 400,
-                    "data": {
-                        "id": id
-                    },
-                    "message": "Family tag doesn't exist."
-                }
-            ), 400
+            if existingFamilyTag == None:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "id": id
+                        },
+                        "message": "Family tag doesn't exist."
+                    }
+                ), 400
 
-        cur.execute('DELETE FROM "subTags" WHERE "familyTagId" = %s', (id,))
-        cur.execute('DELETE FROM "flavourTags" WHERE "id" = %s', (id,))
-        conn.commit()
+            cursor.execute('DELETE FROM "subTags" WHERE "familyTagId" = %s', (id,))
+            cursor.execute('DELETE FROM "flavourTags" WHERE "id" = %s', (id,))
+            # Auto-commit handled by context manager
 
         return jsonify(
             {
@@ -355,7 +342,7 @@ def deleteFamilyTag(id):
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
+        # Auto-rollback handled by context manager
         return jsonify(
             {
                 "code": 500,
@@ -373,38 +360,34 @@ def deleteFamilyTag(id):
 # - Possible return codes: 201 (Deleted), 400 (Subtag doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteSubTag/<id>", methods= ['DELETE'])
 def deleteSubTag(id):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Check if the sub tag exists
-        cur.execute('SELECT id FROM "subTags" WHERE "id" = %s', (id,))
-        existingSubTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if the sub tag exists
+            cursor.execute('SELECT id FROM "subTags" WHERE "id" = %s', (id,))
+            existingSubTag = cursor.fetchone()
 
-        if existingSubTag == None:
+            if existingSubTag == None:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "id": id
+                        },
+                        "message": "Sub tag doesn't exist."
+                    }
+                ), 400
+
+            cursor.execute('DELETE FROM "subTags" WHERE "id" = %s', (id,))
+
             return jsonify(
                 {
-                    "code": 400,
-                    "data": {
-                        "id": id
-                    },
-                    "message": "Sub tag doesn't exist."
+                    "code": 201,
+                    "data": id
                 }
-            ), 400
-
-        cur.execute('DELETE FROM "subTags" WHERE "id" = %s', (id,))
-        conn.commit()
-
-        return jsonify(
-            {
-                "code": 201,
-                "data": id
-            }
-        ), 201
+            ), 201
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -414,9 +397,6 @@ def deleteSubTag(id):
                 "message": "An error occurred deleting the sub tag."
             }
         ), 500
-
-    finally:
-        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a flavour family tag
@@ -425,33 +405,31 @@ def deleteSubTag(id):
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createFamilyTag", methods= ['POST'])
 def createFamilyTag():
-    conn = g.db
-    cur = conn.cursor()
     rawTag = request.get_json()
     rawFamily= rawTag['familyTag']
 
     try:
-        # Duplicate listing check: Reject if a subTag with the same name exists in the database
-        cur.execute('SELECT id FROM "flavourTags" WHERE "familyTag" = %s', (rawFamily,))
-        existingTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Duplicate listing check: Reject if a subTag with the same name exists in the database
+            cursor.execute('SELECT id FROM "flavourTags" WHERE "familyTag" = %s', (rawFamily,))
+            existingTag = cursor.fetchone()
 
-        if existingTag is not None:
-            return jsonify(
-                {
-                    "code": 400,
-                    "data": {
-                        "familyTag": rawFamily
-                    },
-                    "message": "Family tag already exists."
-                }
-            ), 400
+            if existingTag is not None:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "familyTag": rawFamily
+                        },
+                        "message": "Family tag already exists."
+                    }
+                ), 400
 
-        # Insert the new family tag
-        cur.execute("""
-            INSERT INTO "flavourTags" ("familyTag", "hexcode") VALUES (%s, %s) RETURNING "id"
-        """, (rawFamily, rawTag['hexcode']))
-        newFamilyTagId = cur.fetchone()
-        conn.commit()
+            # Insert the new family tag
+            cursor.execute("""
+                INSERT INTO "flavourTags" ("familyTag", "hexcode") VALUES (%s, %s) RETURNING "id"
+            """, (rawFamily, rawTag['hexcode']))
+            newFamilyTagId = cursor.fetchone()
 
         return jsonify(
             {
@@ -462,7 +440,6 @@ def createFamilyTag():
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -472,9 +449,6 @@ def createFamilyTag():
                 "message": "An error occurred creating the family tag."
             }
         ), 500
-
-    finally:
-        cur.close()
 # -----------------------------------------------------------------------------------------
 # [POST] Creates a flavour sub tag
 # - Insert entry into the "subTags" collection. Follows subTag dataclass requirements.
@@ -482,33 +456,31 @@ def createFamilyTag():
 # - Possible return codes: 201 (Created), 400 (Duplicate Detected), 500 (Error during creation)
 @blueprint.route("/createSubTag", methods= ['POST'])
 def createSubTag():
-    conn = g.db
-    cur = conn.cursor()
     rawTag = request.get_json()
     rawSub= rawTag['subTag']
 
     # Duplicate listing check: Reject if review with the same observation exists in the database
     try:
-        cur.execute('SELECT id FROM "subTags" WHERE "subTag" = %s', (rawSub,))
-        existingTag = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT id FROM "subTags" WHERE "subTag" = %s', (rawSub,))
+            existingTag = cursor.fetchone()
 
-        if existingTag:
-            return jsonify(
-                {
-                    "code": 400,
-                    "data": {
-                        "subTag": rawSub
-                    },
-                    "message": "Sub tag already exists."
-                }
-            ), 400
+            if existingTag:
+                return jsonify(
+                    {
+                        "code": 400,
+                        "data": {
+                            "subTag": rawSub
+                        },
+                        "message": "Sub tag already exists."
+                    }
+                ), 400
 
-        # Insert the new sub tag
-        cur.execute("""
-            INSERT INTO "subTags" ("familyTagId", "subTag") VALUES (%s, %s) RETURNING "id"
-        """, (rawTag['familyTagId'], rawSub))
-        newSubTagId = cur.fetchone()
-        conn.commit()
+            # Insert the new sub tag
+            cursor.execute("""
+                INSERT INTO "subTags" ("familyTagId", "subTag") VALUES (%s, %s) RETURNING "id"
+            """, (rawTag['familyTagId'], rawSub))
+            newSubTagId = cursor.fetchone()
 
         return jsonify(
             {
@@ -519,7 +491,6 @@ def createSubTag():
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -529,9 +500,6 @@ def createSubTag():
                 "message": "An error occurred creating the sub tag."
             }
         ), 500
-
-    finally:
-        cur.close()
 # -----------------------------------------------------------------------------------------
     
 # To convert image URL to base64    
@@ -573,244 +541,240 @@ def hash_password(id, password):
 @blueprint.route('/importListings', methods=['POST'])
 def importListings():
     try:
-        conn = g.db
-        conn.autocommit = False  # Ensure we're in transaction mode
-        cur = conn.cursor()
-        file = request.files['file']
+        with db_manager.get_cursor(commit=False) as cursor:
+            file = request.files['file']
 
-        # Detect encoding of CSV file
-        file_encoding = detect_encoding(file)
+            # Detect encoding of CSV file
+            file_encoding = detect_encoding(file)
 
-        # Define column data types
-        column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
+            # Define column data types
+            column_data_types = [str, str, str, str, str, str, str, str, float, str, str, str, str]
 
-        # Read all rows from CSV
-        with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
-            csv_data = csv.reader(csv_file)
-            for _ in range(4):  # Skip header rows
-                next(csv_data)
+            # Read all rows from CSV
+            with io.TextIOWrapper(file, encoding=file_encoding, errors='replace') as csv_file:
+                csv_data = csv.reader(csv_file)
+                for _ in range(4):  # Skip header rows
+                    next(csv_data)
+                
+                rows = list(csv_data)
+
+            # Fetch existing producers
+            cursor.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
+            producers = cursor.fetchall()
+            producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
             
-            rows = list(csv_data)
-
-        # Fetch existing producers
-        cur.execute('SELECT "producerName", "id", "isIndependentBottler" FROM "producers"')
-        producers = cur.fetchall()
-        producer_name_id_dict = {row['producerName']: row['id'] for row in producers}
-        
-        csv_producers = set(row[1] for row in rows if row[1])
-        
-        # Collect bottler names from CSV (column 2) that are not "OB" or "Original Bottling"
-        csv_bottlers = set(row[2] for row in rows if row[2] and row[2] not in ["OB", "Original Bottling"])
-        
-        # Determine new producers to insert
-        new_producers = csv_producers - set(producer_name_id_dict.keys())
-        
-        # Determine new bottlers to insert (excluding any already in producers table)
-        new_bottlers = csv_bottlers - set(producer_name_id_dict.keys())
-        
-        # Prepare data for new producers
-        new_producer_data = [
-            {
-                "producerName": name,
-                "producerDesc": "",
-                "originCountry": "",
-                "mainDrinks": [],
-                "photo": "",
-                "hashedPassword": hash_password(name, "admin1234"),
-                "claimStatus": False,
-                "statusOB": "",
-                "username": None,
-                "producerLink": "",
-                "stripeCustomerId": None,
-                "claimStatusCheckDate": None,
-                "isIndependentBottler": False
-            }
-            for name in new_producers
-        ]
-        
-        # Prepare data for new bottlers (mark them as independent bottlers)
-        new_bottler_data = [
-            {
-                "producerName": name,
-                "producerDesc": "",
-                "originCountry": "",
-                "mainDrinks": [],
-                "photo": "",
-                "hashedPassword": hash_password(name, "admin1234"),
-                "claimStatus": False,
-                "statusOB": "",
-                "username": None,
-                "producerLink": "",
-                "stripeCustomerId": None,
-                "claimStatusCheckDate": None,
-                "isIndependentBottler": True
-            }
-            for name in new_bottlers
-        ]
-        
-        # Combine new producers and bottlers for bulk insert
-        all_new_profiles = new_producer_data + new_bottler_data
-
-        # Bulk insert new producers and bottlers and fetch their IDs
-        if all_new_profiles:
-            insert_query = """
-                INSERT INTO producers (
-                    "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
-                    "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
-                    "isIndependentBottler"
-                ) VALUES %s RETURNING "producerName", "id"
-            """
-            execute_values(cur, insert_query, [
-                (
-                    profile["producerName"], profile["producerDesc"], profile["originCountry"],
-                    profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
-                    profile["claimStatus"], profile["statusOB"], profile["username"],
-                    profile["producerLink"], profile["stripeCustomerId"], profile["claimStatusCheckDate"],
-                    profile["isIndependentBottler"]
-                )
-                for profile in all_new_profiles
-            ])
-            conn.commit()
-            new_profiles_with_ids = cur.fetchall()
-            producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
-
-        # # Fetch existing listings to avoid duplicates - TZH commented out because this duplicate detection system is faulty
-        # cur.execute('SELECT "listingName", "producerID" FROM "listings"')
-        # existing_listings = {(row['listingName'], row['producerID']) for row in cur.fetchall()}
-
-        listings_to_insert = []
-        image_urls = []
-
-        for row in rows:
-            if len(row) < len(column_data_types):
-                print(f"Skipping row with missing columns: {row}")
-                continue
+            csv_producers = set(row[1] for row in rows if row[1])
             
-            converted_row = []
-            for i, (data_type, value) in enumerate(zip(column_data_types, row)):
-                if data_type is float:
-                    value = value.replace('%', '').strip()
-                    try:
-                        # Handle 'NAS', 'N/A', empty strings or any other non-numeric values
-                        if value and value.lower() not in ['n/a', 'na', 'nas']:
-                            converted_value = float(value)
-                        else:
+            # Collect bottler names from CSV (column 2) that are not "OB" or "Original Bottling"
+            csv_bottlers = set(row[2] for row in rows if row[2] and row[2] not in ["OB", "Original Bottling"])
+            
+            # Determine new producers to insert
+            new_producers = csv_producers - set(producer_name_id_dict.keys())
+            
+            # Determine new bottlers to insert (excluding any already in producers table)
+            new_bottlers = csv_bottlers - set(producer_name_id_dict.keys())
+            
+            # Prepare data for new producers
+            new_producer_data = [
+                {
+                    "producerName": name,
+                    "producerDesc": "",
+                    "originCountry": "",
+                    "mainDrinks": [],
+                    "photo": "",
+                    "hashedPassword": hash_password(name, "admin1234"),
+                    "claimStatus": False,
+                    "statusOB": "",
+                    "username": None,
+                    "producerLink": "",
+                    "stripeCustomerId": None,
+                    "claimStatusCheckDate": None,
+                    "isIndependentBottler": False
+                }
+                for name in new_producers
+            ]
+            
+            # Prepare data for new bottlers (mark them as independent bottlers)
+            new_bottler_data = [
+                {
+                    "producerName": name,
+                    "producerDesc": "",
+                    "originCountry": "",
+                    "mainDrinks": [],
+                    "photo": "",
+                    "hashedPassword": hash_password(name, "admin1234"),
+                    "claimStatus": False,
+                    "statusOB": "",
+                    "username": None,
+                    "producerLink": "",
+                    "stripeCustomerId": None,
+                    "claimStatusCheckDate": None,
+                    "isIndependentBottler": True
+                }
+                for name in new_bottlers
+            ]
+            
+            # Combine new producers and bottlers for bulk insert
+            all_new_profiles = new_producer_data + new_bottler_data
+
+            # Bulk insert new producers and bottlers and fetch their IDs
+            if all_new_profiles:
+                insert_query = """
+                    INSERT INTO producers (
+                        "producerName", "producerDesc", "originCountry", "mainDrinks", "photo", "hashedPassword",
+                        "claimStatus", "statusOB", "username", "producerLink", "stripeCustomerId", "claimStatusCheckDate",
+                        "isIndependentBottler"
+                    ) VALUES %s RETURNING "producerName", "id"
+                """
+                execute_values(cursor, insert_query, [
+                    (
+                        profile["producerName"], profile["producerDesc"], profile["originCountry"],
+                        profile["mainDrinks"], profile["photo"], profile["hashedPassword"],
+                        profile["claimStatus"], profile["statusOB"], profile["username"],
+                        profile["producerLink"], profile["stripeCustomerId"], profile["claimStatusCheckDate"],
+                        profile["isIndependentBottler"]
+                    )
+                    for profile in all_new_profiles
+                ])
+                cursor.connection.commit()
+                new_profiles_with_ids = cursor.fetchall()
+                producer_name_id_dict.update({row["producerName"]: row["id"] for row in new_profiles_with_ids})
+
+            # # Fetch existing listings to avoid duplicates - TZH commented out because this duplicate detection system is faulty
+            # cursor.execute('SELECT "listingName", "producerID" FROM "listings"')
+            # existing_listings = {(row['listingName'], row['producerID']) for row in cursor.fetchall()}
+
+            listings_to_insert = []
+            image_urls = []
+
+            for row in rows:
+                if len(row) < len(column_data_types):
+                    print(f"Skipping row with missing columns: {row}")
+                    continue
+                
+                converted_row = []
+                for i, (data_type, value) in enumerate(zip(column_data_types, row)):
+                    if data_type is float:
+                        value = value.replace('%', '').strip()
+                        try:
+                            # Handle 'NAS', 'N/A', empty strings or any other non-numeric values
+                            if value and value.lower() not in ['n/a', 'na', 'nas']:
+                                converted_value = float(value)
+                            else:
+                                converted_value = None
+                        except ValueError:
+                            # If conversion fails, set to None and log the error
+                            print(f"Could not convert value '{value}' to float in column {i}. Setting to None.")
                             converted_value = None
-                    except ValueError:
-                        # If conversion fails, set to None and log the error
-                        print(f"Could not convert value '{value}' to float in column {i}. Setting to None.")
-                        converted_value = None
+                    else:
+                        converted_value = data_type(value) if value else None
+                    converted_row.append(converted_value)
+
+                producer_name = converted_row[1]
+                producer_id = producer_name_id_dict.get(producer_name)
+                listing_name = converted_row[0]
+
+                # tzh commented out the duplicate detection system because it was faulty
+                # if (listing_name, producer_id) in existing_listings:
+                #     print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
+                #     image_urls.append(None)  # Add None to maintain alignment with listings
+                #     continue
+
+                # Handle bottler scenarios
+                bottler_name = converted_row[2]
+                
+                # Scenario A: Bottler is "OB" or "Original Bottling"
+                if bottler_name in ["OB", "Original Bottling"]:
+                    bottler_id = None
+                    bottler_name = "OB"
+                # Scenario B: Any other bottler
                 else:
-                    converted_value = data_type(value) if value else None
-                converted_row.append(converted_value)
+                    # Get the bottler ID from the producers dictionary (it will be there now 
+                    # whether it was pre-existing or newly created)
+                    bottler_id = producer_name_id_dict.get(bottler_name) if bottler_name else None
 
-            producer_name = converted_row[1]
-            producer_id = producer_name_id_dict.get(producer_name)
-            listing_name = converted_row[0]
+                image_urls.append(converted_row[12])
 
-            # tzh commented out the duplicate detection system because it was faulty
-            # if (listing_name, producer_id) in existing_listings:
-            #     print(f"Skipping duplicate listing: {listing_name} from {producer_name}")
-            #     image_urls.append(None)  # Add None to maintain alignment with listings
-            #     continue
+                listings_to_insert.append({
+                    'listingName': converted_row[0],
+                    'producerID': producer_id,
+                    'bottler': bottler_name,
+                    'bottlerID': bottler_id,
+                    'originCountry': converted_row[3],
+                    'drinkType': converted_row[4],
+                    'typeCategory': converted_row[5],
+                    'drinkStyle': converted_row[6],
+                    'age': converted_row[7],
+                    'abv': converted_row[8],
+                    'reviewLink': converted_row[9],
+                    'officialDesc': converted_row[10],
+                    'sourceLink': converted_row[11],
+                    'photo': None,
+                    'allowMod': True,
+                    'addedDate': datetime.now()
+                })
 
-            # Handle bottler scenarios
-            bottler_name = converted_row[2]
-            
-            # Scenario A: Bottler is "OB" or "Original Bottling"
-            if bottler_name in ["OB", "Original Bottling"]:
-                bottler_id = None
-                bottler_name = "OB"
-            # Scenario B: Any other bottler
-            else:
-                # Get the bottler ID from the producers dictionary (it will be there now 
-                # whether it was pre-existing or newly created)
-                bottler_id = producer_name_id_dict.get(bottler_name) if bottler_name else None
+            # FIXED: Parallelize S3 image uploads while maintaining order
+            def upload_image_with_index(indexed_data):
+                index, image_url = indexed_data
+                s3_url = s3Images.uploadURLtoS3(image_url) if image_url else None
+                return index, s3_url
 
-            image_urls.append(converted_row[12])
+            # Create indexed data to maintain order
+            indexed_image_urls = list(enumerate(image_urls))
+            s3_urls = [None] * len(image_urls)
 
-            listings_to_insert.append({
-                'listingName': converted_row[0],
-                'producerID': producer_id,
-                'bottler': bottler_name,
-                'bottlerID': bottler_id,
-                'originCountry': converted_row[3],
-                'drinkType': converted_row[4],
-                'typeCategory': converted_row[5],
-                'drinkStyle': converted_row[6],
-                'age': converted_row[7],
-                'abv': converted_row[8],
-                'reviewLink': converted_row[9],
-                'officialDesc': converted_row[10],
-                'sourceLink': converted_row[11],
-                'photo': None,
-                'allowMod': True,
-                'addedDate': datetime.now()
-            })
+            with ThreadPoolExecutor() as executor:
+                # Submit all tasks
+                future_to_index = {
+                    executor.submit(upload_image_with_index, indexed_data): indexed_data[0] 
+                    for indexed_data in indexed_image_urls
+                }
+                
+                # Process completed tasks and maintain order
+                for future in as_completed(future_to_index):
+                    index, s3_url = future.result()
+                    s3_urls[index] = s3_url
 
-        # FIXED: Parallelize S3 image uploads while maintaining order
-        def upload_image_with_index(indexed_data):
-            index, image_url = indexed_data
-            s3_url = s3Images.uploadURLtoS3(image_url) if image_url else None
-            return index, s3_url
+            print("S3 URLs:", s3_urls)
 
-        # Create indexed data to maintain order
-        indexed_image_urls = list(enumerate(image_urls))
-        s3_urls = [None] * len(image_urls)
+            # Update photo URLs in listings
+            for listing, s3_url in zip(listings_to_insert, s3_urls):
+                listing['photo'] = s3_url
 
-        with ThreadPoolExecutor() as executor:
-            # Submit all tasks
-            future_to_index = {
-                executor.submit(upload_image_with_index, indexed_data): indexed_data[0] 
-                for indexed_data in indexed_image_urls
-            }
-            
-            # Process completed tasks and maintain order
-            for future in as_completed(future_to_index):
-                index, s3_url = future.result()
-                s3_urls[index] = s3_url
+            print(f"Total rows in CSV: {len(rows)}")
+            print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
+            print(f"Skipped duplicate listings: {len(rows) - len(listings_to_insert)}")
 
-        print("S3 URLs:", s3_urls)
+            # Bulk insert listings - now excluding the 'id' column and using RETURNING
+            if listings_to_insert:
+                # Make sure we're not trying to specify the 'id' field
+                for listing in listings_to_insert:
+                    if 'id' in listing:
+                        del listing['id']
+                
+                listing_columns = listings_to_insert[0].keys()
+                listing_query = "INSERT INTO listings ({}) VALUES %s RETURNING id".format(
+                    ', '.join(f'"{col}"' for col in listing_columns)
+                )
+                listing_values = [tuple(listing.values()) for listing in listings_to_insert]
+                execute_values(cursor, listing_query, listing_values)
+                inserted_ids = cursor.fetchall()  # Get all returned IDs
+                print(f"Inserted IDs: {inserted_ids}")
+                
+                # Update the sequence to ensure future inserts don't conflict
+                cursor.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
+                
+                cursor.connection.commit()
+                print(f"Successfully inserted {len(listings_to_insert)} listings")
 
-        # Update photo URLs in listings
-        for listing, s3_url in zip(listings_to_insert, s3_urls):
-            listing['photo'] = s3_url
-
-        print(f"Total rows in CSV: {len(rows)}")
-        print(f"Total listings prepared for insertion: {len(listings_to_insert)}")
-        print(f"Skipped duplicate listings: {len(rows) - len(listings_to_insert)}")
-
-        # Bulk insert listings - now excluding the 'id' column and using RETURNING
-        if listings_to_insert:
-            # Make sure we're not trying to specify the 'id' field
-            for listing in listings_to_insert:
-                if 'id' in listing:
-                    del listing['id']
-            
-            listing_columns = listings_to_insert[0].keys()
-            listing_query = "INSERT INTO listings ({}) VALUES %s RETURNING id".format(
-                ', '.join(f'"{col}"' for col in listing_columns)
-            )
-            listing_values = [tuple(listing.values()) for listing in listings_to_insert]
-            execute_values(cur, listing_query, listing_values)
-            inserted_ids = cur.fetchall()  # Get all returned IDs
-            print(f"Inserted IDs: {inserted_ids}")
-            
-            # Update the sequence to ensure future inserts don't conflict
-            cur.execute("SELECT setval('listings_id_seq', COALESCE((SELECT MAX(id) FROM listings), 1), true)")
-            
-            conn.commit()
-            print(f"Successfully inserted {len(listings_to_insert)} listings")
-
-        return jsonify({
-            "code": 201,
-            "message": f"{file.filename} has been fully uploaded!"
-        }), 201
+            return jsonify({
+                "code": 201,
+                "message": f"{file.filename} has been fully uploaded!"
+            }), 201
     
     except Exception as e:
         print(f"Error in importListings: {str(e)}")
-        if 'conn' in locals():
-            conn.rollback()
         return jsonify({
             "code": 500,
             "message": f"Error uploading file: {str(e)}"
