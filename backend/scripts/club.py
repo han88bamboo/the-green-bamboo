@@ -1776,103 +1776,95 @@ def addComment():
 # Output: Possible return codes [201 - Request to join the club sent successfully, 400 - Missing required data, 404 - No such club exist, 500 - An error occurred sending the request]
 @blueprint.route('/requestToJoinClub', methods=['POST'])
 def requestToJoinClub():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        data = request.get_json()
+        with db_manager.get_cursor() as cursor:
+            data = request.get_json()
 
-        # Get all the required data
-        club_id = data['clubID']
-        user_id = data['userID']
-        user_type = data['userType']
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Get all the required data
+            club_id = data['clubID']
+            user_id = data['userID']
+            user_type = data['userType']
+            
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Check if all the required data is provided
-        if not club_id or not user_id or not user_type:
+            # Check if all the required data is provided
+            if not club_id or not user_id or not user_type:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
+
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
+
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+            
+            # Step 2: Check if user exist 
+            user = getUserInfoByID(cursor, user_id, user_type)
+
+            if not user:
+                return jsonify({
+                    'error': 'No such user exist'
+                }), 404
+            
+
+            # Step 3: Insert the user into the clubRequests table
+            request_date = datetime.now()
+            cursor.execute('INSERT INTO "clubRequests" ("clubID", "userID", "userType", "requestDate") VALUES (%s, %s, %s, %s)', (club_id, user_id, user_type, request_date,))
+
+            # Step 4: Get the club admins
+            cursor.execute('''SELECT "userID"
+                        FROM "clubMembers"
+                        WHERE "clubID" = %s
+                        AND "isAdmin" = TRUE;
+                        ''', (club_id,))
+            
+            club_admins = cursor.fetchall()
+
+            if club_admins:
+                # Build notification data for each admin
+                club_name = club['clubName']
+
+                # Get the requester's username
+                if user_type == 'user':
+                    username = user.get('username', 'Someone')
+                elif user_type == 'producer':
+                    username = user.get('producerName', 'Someone')
+                else:  # user_type == 'venue'
+                    username = user.get('venueName', 'Someone')
+
+                for admin in club_admins:
+                    user_id = admin['userID']
+                    user_type = 'user'  # Assuming all admins are users, adjust if needed
+
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": user_type,
+                        "notiTabs": "forYou",
+                        "notiType": "club_request",
+                        "image":    None,
+                        "link":     f"/club/view/{club_id}/{club_name}",
+                        "message":  f"{username} have requested to join '{club_name}'",
+                        "createdAt": current_time
+                    }
+            
+                    notifications.add_notification_to_db(notification_data)
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
-
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
-
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
-        
-        # Step 2: Check if user exist 
-        user = getUserInfoByID(cur, user_id, user_type)
-
-        if not user:
-            return jsonify({
-                'error': 'No such user exist'
-            }), 404
-        
-
-        # Step 3: Insert the user into the clubRequests table
-        request_date = datetime.now()
-        cur.execute('INSERT INTO "clubRequests" ("clubID", "userID", "userType", "requestDate") VALUES (%s, %s, %s, %s)', (club_id, user_id, user_type, request_date,))
-        conn.commit()
-
-        # Step 4: Get the club admins
-        cur.execute('''SELECT "userID"
-                    FROM "clubMembers"
-                    WHERE "clubID" = %s
-                    AND "isAdmin" = TRUE;
-                    ''', (club_id,))
-        
-        club_admins = cur.fetchall()
-
-        if club_admins:
-            # Build notification data for each admin
-            club_name = club['clubName']
-
-            # Get the requester's username
-            if user_type == 'user':
-                username = user.get('username', 'Someone')
-            elif user_type == 'producer':
-                username = user.get('producerName', 'Someone')
-            else:  # user_type == 'venue'
-                username = user.get('venueName', 'Someone')
-
-            for admin in club_admins:
-                user_id = admin['userID']
-                user_type = 'user'  # Assuming all admins are users, adjust if needed
-
-                notification_data = {
-                    "userId":   user_id,
-                    "userType": user_type,
-                    "notiTabs": "forYou",
-                    "notiType": "club_request",
-                    "image":    None,
-                    "link":     f"/club/view/{club_id}/{club_name}",
-                    "message":  f"{username} have requested to join '{club_name}'",
-                    "createdAt": current_time
-                }
-        
-                notifications.add_notification_to_db(notification_data)
-
-        return jsonify({
-            'message': 'Request to join the club sent successfully'
-        }), 201
+                'message': 'Request to join the club sent successfully'
+            }), 201
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred sending the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -1887,9 +1879,6 @@ def requestToJoinClub():
 # Output: Possible return codes [200 - User accepted successfully, 400 - Missing required data, 403 - No permission to accept the request, 404 - No such club/requester, 500 - An error occurred accepting the request]
 @blueprint.route('/acceptClubRequest', methods=['POST'])
 def acceptClubRequest():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -1907,69 +1896,66 @@ def acceptClubRequest():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
 
-        if not club:
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+
+            # Step 2: Check if the user who is accepting the request is an admin of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
+            isAdmin = cursor.fetchone()
+
+            if not isAdmin:
+                return jsonify({
+                    'error': 'You do not have the permission to accept the request'
+                }), 403
+
+            # Step 3: Check if the user who requested to join the club exist and has a valid request
+            cursor.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
+            user_request = cursor.fetchone()
+
+            if not user_request:
+                return jsonify({
+                    'error': 'No such requester'
+                }), 404
+
+            # Step 4: Remove the request from the clubRequests table
+            cursor.execute('DELETE FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
+
+            # Step 5: Insert the user into the clubMembers table
+            join_date = datetime.now()
+            cursor.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, requester_id, user_type, join_date,))
+
+            # Step 6: Append 1 to the totalMembers in the clubs table
+            cursor.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
+
+            # Step 7: Build and insert the notification
+            club_name  = club['clubName']
+
+            # Might be wrong because this should be for the person who requested to join the club
+            notification_data = {
+                "userId":   requester_id,
+                "userType": user_type,
+                "notiTabs": "forYou",
+                "notiType": "club_join",
+                "image":    None,
+                "link":     f"/club/view/{club_id}/{club_name}",
+                "message":  f"You have been accepted to join {club_name} club",
+                "createdAt": current_time
+            }
+            notifications.add_notification_to_db(notification_data)
+
             return jsonify({
-                'error': 'No such club exist'
-            }), 404
-
-        # Step 2: Check if the user who is accepting the request is an admin of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" = %s AND "isAdmin" = TRUE', (club_id, admin_id,))
-        isAdmin = cur.fetchone()
-
-        if not isAdmin:
-            return jsonify({
-                'error': 'You do not have the permission to accept the request'
-            }), 403
-
-        # Step 3: Check if the user who requested to join the club exist and has a valid request
-        cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
-        user_request = cur.fetchone()
-
-        if not user_request:
-            return jsonify({
-                'error': 'No such requester'
-            }), 404
-
-        # Step 4: Remove the request from the clubRequests table
-        cur.execute('DELETE FROM "clubRequests" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, requester_id, user_type,))
-
-        # Step 5: Insert the user into the clubMembers table
-        join_date = datetime.now()
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, requester_id, user_type, join_date,))
-        conn.commit()
-
-        # Step 6: Append 1 to the totalMembers in the clubs table
-        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
-        conn.commit()
-
-        # Step 7: Build and insert the notification
-        club_name  = club['clubName']
-
-        # Might be wrong because this should be for the person who requested to join the club
-        notification_data = {
-            "userId":   requester_id,
-            "userType": user_type,
-            "notiTabs": "forYou",
-            "notiType": "club_join",
-            "image":    None,
-            "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"You have been accepted to join {club_name} club",
-            "createdAt": current_time
-        }
-        notifications.add_notification_to_db(notification_data)
-
-        return jsonify({
-            'message': 'User accepted successfully'
-        }), 200
+                'message': 'User accepted successfully'
+            }), 200
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1990,9 +1976,6 @@ def acceptClubRequest():
 # Output: Possible return codes [201 - User joined the club successfully, 400 - Missing required data, 404 - No such club/user exist or user not yet invited to the club, 500 - An error occurred joining the club]
 @blueprint.route('/acceptClubInvite', methods=['POST'])
 def acceptClubInvite():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -2009,96 +1992,88 @@ def acceptClubInvite():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
 
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
 
-        # Step 2: Check if the user exist 
-        user = getUserInfoByID(cur, user_id, user_type)
+            # Step 2: Check if the user exist 
+            user = getUserInfoByID(cursor, user_id, user_type)
 
-        if not user:
-            return jsonify({
-                'error': 'No such user exist'
-            }), 404
-        
-        # Step 3: Check if the user has been invited to the club
-        cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
-        member = cur.fetchone()
+            if not user:
+                return jsonify({
+                    'error': 'No such user exist'
+                }), 404
+            
+            # Step 3: Check if the user has been invited to the club
+            cursor.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
+            member = cursor.fetchone()
 
-        if not member:
-            return jsonify({
-                'error': 'User has not been invited to the club'
-            }), 404
-        
-        # Get today's date
-        join_date = datetime.now()
+            if not member:
+                return jsonify({
+                    'error': 'User has not been invited to the club'
+                }), 404
+            
+            # Get today's date
+            join_date = datetime.now()
 
-        # Step 4: Remove club invite from the clubInvites table
-        cur.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
-        conn.commit()
+            # Step 4: Remove club invite from the clubInvites table
+            cursor.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, user_id, user_type,))
 
-        # Step 5: Insert the user into the clubMembers table
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
-        conn.commit()
+            # Step 5: Insert the user into the clubMembers table
+            cursor.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
 
-        # Step 6: Append 1 to the totalMembers in the clubs table
-        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
-        conn.commit()
+            # Step 6: Append 1 to the totalMembers in the clubs table
+            cursor.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
 
-        # Step 7: Build and insert the notification
-        owner_id   = club['createdByID']
-        owner_type = club['createdByType']
-        club_name  = club['clubName']
-
+            # Step 7: Build and insert the notification
+            owner_id   = club['createdByID']
+            owner_type = club['createdByType']
+            club_name  = club['clubName']        
         # Look up the new member’s username
         if user_type == 'user':
-            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
+            cursor.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+            row = cursor.fetchone()
             member_username = row['username'] if row else 'Someone'
         elif user_type == 'producer':
-            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
+            cursor.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+            row = cursor.fetchone()
             member_username = row['username'] if row else 'Someone'
         else:  # 'venue'
-            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
+            cursor.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+            row = cursor.fetchone()
             member_username = row['username'] if row else 'Someone'
 
-        notification_data = {
-            "userId":   owner_id,
-            "userType": owner_type,
-            "notiTabs": "forYou",
-            "notiType": "club_join",
-            "image":    None,
-            "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}",
-            "createdAt": current_time
-        }
-        print("Notification data:", notification_data)
-        notifications.add_notification_to_db(notification_data)
+            notification_data = {
+                "userId":   owner_id,
+                "userType": owner_type,
+                "notiTabs": "forYou",
+                "notiType": "club_join",
+                "image":    None,
+                "link":     f"/club/view/{club_id}/{club_name}",
+                "message":  f"@{member_username} joined your club: {club_name}",
+                "createdAt": current_time
+            }
+            print("Notification data:", notification_data)
+            notifications.add_notification_to_db(notification_data)
 
-        return jsonify({
-            'message': 'User joined the club successfully'
-        }), 201
+            return jsonify({
+                'message': 'User joined the club successfully'
+            }), 201
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred joining the club."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 #   -----------------------------------------------------------------------------------------
