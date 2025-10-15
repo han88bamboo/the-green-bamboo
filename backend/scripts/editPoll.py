@@ -171,7 +171,6 @@ def updatePollVisibility(poll_id):
     }
     """
     try:
-        conn = g.db
         data = request.get_json()
         
         if 'isVisible' not in data:
@@ -180,7 +179,7 @@ def updatePollVisibility(poll_id):
                 "message": "Missing required field: isVisible"
             }), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Update the poll visibility
             cursor.execute("""
                 UPDATE "pollQuestions" 
@@ -197,8 +196,6 @@ def updatePollVisibility(poll_id):
                     "message": "Poll not found"
                 }), 404
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": "Poll visibility updated successfully",
@@ -210,9 +207,6 @@ def updatePollVisibility(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error updating poll visibility: {str(e)}")
         return jsonify({
             "code": 500,
