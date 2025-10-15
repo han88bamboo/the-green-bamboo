@@ -464,67 +464,63 @@ def deleteReview(id):
 # - Possible return codes: 201 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteProducerReview/<id>", methods=['DELETE'])
 def deleteProducerReview(id):
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
 
-    cur.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
-    exists = cur.fetchone()['exists']
+        cursor.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
+        exists = cursor.fetchone()['exists']
 
-    if not exists:
-        return jsonify(
-            {   
-                "code": 400,
-                "data": {"id": id},
-                "message": "Review doesn't exist."
-            }
-        ), 400
+        if not exists:
+            return jsonify(
+                {   
+                    "code": 400,
+                    "data": {"id": id},
+                    "message": "Review doesn't exist."
+                }
+            ), 400
 
-    try:
-        # Fetch the points for simple review
-        cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 2')
-        points = cur.fetchone()['proofPoints']
+        try:
+            # Fetch the points for simple review
+            cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 2')
+            points = cursor.fetchone()['proofPoints']
 
-        # Fetch only the photos instead of the entire review
-        cur.execute("""SELECT "userID", photos FROM "producerReviews" WHERE id = %s""", (id,))
-        results = cur.fetchone()
-        photos = results['photos']
-        userID = results['userID']
+            # Fetch only the photos instead of the entire review
+            cursor.execute("""SELECT "userID", photos FROM "producerReviews" WHERE id = %s""", (id,))
+            results = cursor.fetchone()
+            photos = results['photos']
+            userID = results['userID']
 
-        if photos:
+            if photos:
 
-            # Get points for image upload
-            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 4')
-            points += cur.fetchone()['proofPoints']
+                # Get points for image upload
+                cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = 4')
+                points += cursor.fetchone()['proofPoints']
 
-            from threading import Thread
-            def async_delete_images(photo_list):
-                for photo in photo_list:
-                    s3Images.deleteImageFromS3(photo)
+                from threading import Thread
+                def async_delete_images(photo_list):
+                    for photo in photo_list:
+                        s3Images.deleteImageFromS3(photo)
 
-            Thread(target=async_delete_images, args=(photos,)).start()
+                Thread(target=async_delete_images, args=(photos,)).start()
 
-        cur.execute("DELETE FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
-        cur.execute("DELETE FROM \"producerReviews\" WHERE id = %s RETURNING id", (id,))
-        
-        conn.commit()
+            cursor.execute("DELETE FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
+            cursor.execute("DELETE FROM \"producerReviews\" WHERE id = %s RETURNING id", (id,))
 
-        # Update user points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s AND "userType" = %s', (points, userID, 'user',))
-        conn.commit()
+            # Update user points
+            cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s AND "userType" = %s', (points, userID, 'user',))
 
-        print(f"Deducted {points} points from user {userID} for deleting review {id}.")
+            print(f"Deducted {points} points from user {userID} for deleting review {id}.")
 
-        return jsonify({"code": 200, "data": id}), 200
+            return jsonify({"code": 200, "data": id}), 200
 
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {"id": id},
-                "message": "An error occurred deleting the listing."
-            }
-        ), 500
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": {"id": id},
+                    "message": "An error occurred deleting the listing."
+                }
+            ), 500
     
 # -----------------------------------------------------------------------------------------
 # [DELETE] Deletes a venue review
@@ -532,46 +528,43 @@ def deleteProducerReview(id):
 # - Possible return codes: 200 (Deleted), 400 (Review doesn't exist), 500 (Error during deletion)
 @blueprint.route("/deleteVenueReview/<id>", methods=['DELETE'])
 def deleteVenueReview(id):
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
 
-    cur.execute("""SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE id = %s)""", (id,))
-    exists = cur.fetchone()['exists']
+        cursor.execute("""SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE id = %s)""", (id,))
+        exists = cursor.fetchone()['exists']
 
-    if not exists:
-        return jsonify(
-            {
-                "code": 400,
-                "data": {"id": id},
-                "message": "Review doesn't exist."
-            }
-        ), 400
+        if not exists:
+            return jsonify(
+                {
+                    "code": 400,
+                    "data": {"id": id},
+                    "message": "Review doesn't exist."
+                }
+            ), 400
 
-    try:
-        # Fetch only the photos instead of the entire review
-        cur.execute("""SELECT photos FROM "venueReviews" WHERE id = %s""", (id,))
-        photos = cur.fetchone()['photos']
+        try:
+            # Fetch only the photos instead of the entire review
+            cursor.execute("""SELECT photos FROM "venueReviews" WHERE id = %s""", (id,))
+            photos = cursor.fetchone()['photos']
 
-        if photos:
-            from threading import Thread
-            def async_delete_images(photo_list):
-                for photo in photo_list:
-                    s3Images.deleteImageFromS3(photo)
-            Thread(target=async_delete_images, args=(photos,)).start()
+            if photos:
+                from threading import Thread
+                def async_delete_images(photo_list):
+                    for photo in photo_list:
+                        s3Images.deleteImageFromS3(photo)
+                Thread(target=async_delete_images, args=(photos,)).start()
 
-        cur.execute("DELETE FROM \"venueReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
-        cur.execute("DELETE FROM \"venueReviews\" WHERE id = %s RETURNING id", (id,))
+            cursor.execute("DELETE FROM \"venueReviewsUserVotes\" WHERE \"reviewId\" = %s", (id,))
+            cursor.execute("DELETE FROM \"venueReviews\" WHERE id = %s RETURNING id", (id,))
 
-        conn.commit()
+            return jsonify({"code": 200, "data": id}), 200
 
-        return jsonify({"code": 200, "data": id}), 200
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": {"id": id},
-                "message": "An error occurred deleting the review."
-            }
-        ), 500
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "data": {"id": id},
+                    "message": "An error occurred deleting the review."
+                }
+            ), 500
