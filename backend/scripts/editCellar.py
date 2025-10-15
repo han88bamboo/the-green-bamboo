@@ -661,324 +661,210 @@ def editCellar():
     print("TZHBackendLog: Starting editCellar endpoint")
     
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        print("TZHBackendLog: Database connection established")
-        
-        data = request.get_json()
-        print("TZHBackendLog: Raw request data received:")
-        print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
-        
-        # Validate required fields
-        if not data or 'variantGroupID' not in data or 'changes' not in data:
-            error_msg = "Missing required fields: variantGroupID and changes"
-            print(f"TZHBackendLog: Validation failed - {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        variant_group_id = data['variantGroupID']
-        changes = data['changes']
-        
-        # Validate variantGroupID is numeric
-        try:
-            variant_group_id = int(variant_group_id)
-        except (ValueError, TypeError):
-            error_msg = "variantGroupID must be a valid integer"
-            print(f"TZHBackendLog: Validation failed - {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        print(f"TZHBackendLog: Processing changes for variantGroupID: {variant_group_id}")
-        
-        # Validate changes structure
-        if not isinstance(changes, dict):
-            error_msg = "changes must be an object"
-            print(f"TZHBackendLog: Validation failed - {error_msg}")
-            return jsonify({
-                "code": 400,
-                "message": error_msg
-            }), 400
-        
-        # Get all items in this variant group
-        cur.execute("""
-            SELECT * FROM "myCellarItems" 
-            WHERE "variantGroupID" = %s OR "id" = %s
-            ORDER BY "quantityVariantID"
-        """, (variant_group_id, variant_group_id))
-        
-        existing_items = cur.fetchall()
-        if not existing_items:
-            error_msg = f"No items found for variantGroupID: {variant_group_id}"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Found {len(existing_items)} existing items in group")
-        
-        # Find master record (quantityVariantID = 1)
-        master_record = None
-        for item in existing_items:
-            if item['quantityVariantID'] == 1:
-                master_record = item
-                break
-        
-        if not master_record:
-            error_msg = f"Master record not found for variantGroupID: {variant_group_id}"
-            print(f"TZHBackendLog: {error_msg}")
-            return jsonify({
-                "code": 404,
-                "message": error_msg
-            }), 404
-        
-        print(f"TZHBackendLog: Found master record with ID: {master_record['id']}")
-        
-        # Track changes for response
-        changes_made = {
-            "master_updated": False,
-            "bottles_updated": 0,
-            "bottles_archived": 0,
-            "bottles_added": 0,
-            "collection_changed": False
-        }
-        
-        # 1. Handle Collection Changes
-        collection_change = changes.get('collectionChange', {})
-        print(f"TZHBackendLog: Collection change data: {collection_change}")
-        
-        if collection_change and collection_change.get('from') != collection_change.get('to'):
-            new_collection_id = collection_change.get('to')
-            print(f"TZHBackendLog: Collection change detected - from: {collection_change.get('from')} to: {new_collection_id}")
+        with db_manager.get_cursor() as cursor:
+            print("TZHBackendLog: Database connection established")
             
-            if new_collection_id:
-                # Convert to integer for database comparison
-                try:
-                    new_collection_id = int(new_collection_id)
-                    print(f"TZHBackendLog: Changing collection to: {new_collection_id}")
-                except (ValueError, TypeError):
-                    error_msg = f"Invalid collection ID: {new_collection_id}"
-                    print(f"TZHBackendLog: {error_msg}")
-                    return jsonify({
-                        "code": 400,
-                        "message": error_msg
-                    }), 400
-                
-                # Verify new collection exists and belongs to same owner
-                cur.execute("""
-                    SELECT cc."ownerID", cc."ownerType"
-                    FROM "myCellarCollections" cc
-                    WHERE cc."id" = %s
-                """, (new_collection_id,))
-                
-                new_collection = cur.fetchone()
-                if not new_collection:
-                    error_msg = f"Target collection {new_collection_id} not found"
-                    print(f"TZHBackendLog: {error_msg}")
-                    return jsonify({
-                        "code": 404,
-                        "message": error_msg
-                    }), 404
-                
-                # Get current collection owner info
-                cur.execute("""
-                    SELECT cc."ownerID", cc."ownerType"
-                    FROM "myCellarCollections" cc
-                    INNER JOIN "myCellarItems" ci ON cc."id" = ci."collectionID"
-                    WHERE ci."id" = %s
-                """, (master_record['id'],))
-                
-                current_collection = cur.fetchone()
-                if not current_collection:
-                    error_msg = f"Current collection not found for master record"
-                    print(f"TZHBackendLog: {error_msg}")
-                    return jsonify({
-                        "code": 404,
-                        "message": error_msg
-                    }), 404
-                
-                # Ensure new collection belongs to same owner
-                if (new_collection['ownerID'] != current_collection['ownerID'] or 
-                    new_collection['ownerType'] != current_collection['ownerType']):
-                    error_msg = f"Cannot move items to collection owned by different user"
-                    print(f"TZHBackendLog: {error_msg}")
-                    return jsonify({
-                        "code": 403,
-                        "message": error_msg
-                    }), 403
-                
-                # Update collection for all items in the group
-                cur.execute("""
-                    UPDATE "myCellarItems" 
-                    SET "collectionID" = %s, "updatedDate" = CURRENT_TIMESTAMP
-                    WHERE "variantGroupID" = %s OR "id" = %s
-                """, (new_collection_id, variant_group_id, variant_group_id))
-                
-                affected_rows = cur.rowcount
-                print(f"TZHBackendLog: Updated collection for {affected_rows} items")
-                changes_made["collection_changed"] = True
-        else:
-            print(f"TZHBackendLog: No collection change needed - from: {collection_change.get('from')} to: {collection_change.get('to')}")
-        
-        # 2. Handle Master Data Updates (shared properties)
-        master_data = changes.get('masterData', {})
-        if master_data:
-            print(f"TZHBackendLog: Processing master data updates: {master_data}")
+            data = request.get_json()
+            print("TZHBackendLog: Raw request data received:")
+            print(f"TZHBackendLog: {json.dumps(data, indent=2, default=str)}")
             
-            # Build update query for master record shared properties
-            update_fields = []
-            update_values = []
+            # Validate required fields
+            if not data or 'variantGroupID' not in data or 'changes' not in data:
+                error_msg = "Missing required fields: variantGroupID and changes"
+                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
             
-            # Shared properties (only for quantityVariantID = 1)
-            shared_fields = {
-                'drinkFormat': 'drinkFormat',
-                'volumeNumber': 'volumeNumber', 
-                'volumeUnit': 'volumeUnit',
-                'drinkByDate': 'drinkByDate',
-                'drinkOnwardsDate': 'drinkOnwardsDate',
-                'currentValueEstimation': 'currentValueEstimation',
-                'currentValueCurrency': 'currentValueCurrency',
-                'suggestedFoodPairing': 'suggestedFoodPairing'
+            variant_group_id = data['variantGroupID']
+            changes = data['changes']
+            
+            # Validate variantGroupID is numeric
+            try:
+                variant_group_id = int(variant_group_id)
+            except (ValueError, TypeError):
+                error_msg = "variantGroupID must be a valid integer"
+                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
+            
+            print(f"TZHBackendLog: Processing changes for variantGroupID: {variant_group_id}")
+            
+            # Validate changes structure
+            if not isinstance(changes, dict):
+                error_msg = "changes must be an object"
+                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                return jsonify({
+                    "code": 400,
+                    "message": error_msg
+                }), 400
+            
+            # Get all items in this variant group
+            cursor.execute("""
+                SELECT * FROM "myCellarItems" 
+                WHERE "variantGroupID" = %s OR "id" = %s
+                ORDER BY "quantityVariantID"
+            """, (variant_group_id, variant_group_id))
+            
+            existing_items = cursor.fetchall()
+            if not existing_items:
+                error_msg = f"No items found for variantGroupID: {variant_group_id}"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
+            
+            print(f"TZHBackendLog: Found {len(existing_items)} existing items in group")
+            
+            # Find master record (quantityVariantID = 1)
+            master_record = None
+            for item in existing_items:
+                if item['quantityVariantID'] == 1:
+                    master_record = item
+                    break
+            
+            if not master_record:
+                error_msg = f"Master record not found for variantGroupID: {variant_group_id}"
+                print(f"TZHBackendLog: {error_msg}")
+                return jsonify({
+                    "code": 404,
+                    "message": error_msg
+                }), 404
+            
+            print(f"TZHBackendLog: Found master record with ID: {master_record['id']}")
+            
+            # Track changes for response
+            changes_made = {
+                "master_updated": False,
+                "bottles_updated": 0,
+                "bottles_archived": 0,
+                "bottles_added": 0,
+                "collection_changed": False
             }
             
-            for field_key, db_field in shared_fields.items():
-                if field_key in master_data:
-                    value = master_data[field_key]
-                    
-                    # Handle empty strings as NULL for optional fields
-                    if value == '':
-                        value = None
-                    
-                    # Special validation for numeric fields
-                    if field_key in ['volumeNumber', 'currentValueEstimation'] and value is not None:
-                        try:
-                            value = float(value) if value != '' else None
-                            if value is not None and value <= 0:
-                                error_msg = f"{field_key} must be positive"
-                                print(f"TZHBackendLog: Validation failed - {error_msg}")
-                                return jsonify({
-                                    "code": 400,
-                                    "message": error_msg
-                                }), 400
-                        except (ValueError, TypeError):
-                            error_msg = f"{field_key} must be a valid number"
-                            print(f"TZHBackendLog: Validation failed - {error_msg}")
-                            return jsonify({
-                                "code": 400,
-                                "message": error_msg
-                            }), 400
-                    
-                    # Validate date fields
-                    if field_key in ['drinkByDate', 'drinkOnwardsDate'] and value is not None:
-                        try:
-                            if isinstance(value, str) and value.strip():
-                                # Validate date format YYYY-MM-DD
-                                datetime.strptime(value, '%Y-%m-%d').date()
-                        except ValueError:
-                            error_msg = f"{field_key} must be in YYYY-MM-DD format"
-                            print(f"TZHBackendLog: Validation failed - {error_msg}")
-                            return jsonify({
-                                "code": 400,
-                                "message": error_msg
-                            }), 400
-                    
-                    update_fields.append(f'"{db_field}" = %s')
-                    update_values.append(value)
+            # 1. Handle Collection Changes
+            collection_change = changes.get('collectionChange', {})
+            print(f"TZHBackendLog: Collection change data: {collection_change}")
             
-            if update_fields:
-                update_values.append(master_record['id'])
-                update_query = f"""
-                    UPDATE "myCellarItems" 
-                    SET {', '.join(update_fields)}, "updatedDate" = CURRENT_TIMESTAMP
-                    WHERE "id" = %s
-                """
+            if collection_change and collection_change.get('from') != collection_change.get('to'):
+                new_collection_id = collection_change.get('to')
+                print(f"TZHBackendLog: Collection change detected - from: {collection_change.get('from')} to: {new_collection_id}")
                 
-                print(f"TZHBackendLog: Executing master update query: {update_query}")
-                print(f"TZHBackendLog: With values: {update_values}")
-                
-                cur.execute(update_query, update_values)
-                if cur.rowcount > 0:
-                    changes_made["master_updated"] = True
-                    print(f"TZHBackendLog: Updated master record")
-        
-        # 3. Handle Individual Bottle Changes
-        bottle_changes = changes.get('bottleChanges', {})
-        if bottle_changes:
-            print(f"TZHBackendLog: Processing bottle changes for {len(bottle_changes)} bottles")
+                if new_collection_id:
+                    # Convert to integer for database comparison
+                    try:
+                        new_collection_id = int(new_collection_id)
+                        print(f"TZHBackendLog: Changing collection to: {new_collection_id}")
+                    except (ValueError, TypeError):
+                        error_msg = f"Invalid collection ID: {new_collection_id}"
+                        print(f"TZHBackendLog: {error_msg}")
+                        return jsonify({
+                            "code": 400,
+                            "message": error_msg
+                        }), 400
+                    
+                    # Verify new collection exists and belongs to same owner
+                    cursor.execute("""
+                        SELECT cc."ownerID", cc."ownerType"
+                        FROM "myCellarCollections" cc
+                        WHERE cc."id" = %s
+                    """, (new_collection_id,))
+                    
+                    new_collection = cursor.fetchone()
+                    if not new_collection:
+                        error_msg = f"Target collection {new_collection_id} not found"
+                        print(f"TZHBackendLog: {error_msg}")
+                        return jsonify({
+                            "code": 404,
+                            "message": error_msg
+                        }), 404
+                    
+                    # Get current collection owner info
+                    cursor.execute("""
+                        SELECT cc."ownerID", cc."ownerType"
+                        FROM "myCellarCollections" cc
+                        INNER JOIN "myCellarItems" ci ON cc."id" = ci."collectionID"
+                        WHERE ci."id" = %s
+                    """, (master_record['id'],))
+                    
+                    current_collection = cursor.fetchone()
+                    if not current_collection:
+                        error_msg = f"Current collection not found for master record"
+                        print(f"TZHBackendLog: {error_msg}")
+                        return jsonify({
+                            "code": 404,
+                            "message": error_msg
+                        }), 404
+                    
+                    # Ensure new collection belongs to same owner
+                    if (new_collection['ownerID'] != current_collection['ownerID'] or 
+                        new_collection['ownerType'] != current_collection['ownerType']):
+                        error_msg = f"Cannot move items to collection owned by different user"
+                        print(f"TZHBackendLog: {error_msg}")
+                        return jsonify({
+                            "code": 403,
+                            "message": error_msg
+                        }), 403
+                    
+                    # Update collection for all items in the group
+                    cursor.execute("""
+                        UPDATE "myCellarItems" 
+                        SET "collectionID" = %s, "updatedDate" = CURRENT_TIMESTAMP
+                        WHERE "variantGroupID" = %s OR "id" = %s
+                    """, (new_collection_id, variant_group_id, variant_group_id))
+                    
+                    affected_rows = cursor.rowcount
+                    print(f"TZHBackendLog: Updated collection for {affected_rows} items")
+                    changes_made["collection_changed"] = True
+            else:
+                print(f"TZHBackendLog: No collection change needed - from: {collection_change.get('from')} to: {collection_change.get('to')}")
             
-            for cellar_item_id, bottle_data in bottle_changes.items():
-                # Skip if this is a temporary ID (new bottle)
-                if str(cellar_item_id).startswith('temp_'):
-                    print(f"TZHBackendLog: Skipping temporary ID: {cellar_item_id}")
-                    continue
+            # 2. Handle Master Data Updates (shared properties)
+            master_data = changes.get('masterData', {})
+            if master_data:
+                print(f"TZHBackendLog: Processing master data updates: {master_data}")
                 
-                print(f"TZHBackendLog: Updating bottle {cellar_item_id}: {bottle_data}")
-                
-                # Build update query for individual bottle properties
+                # Build update query for master record shared properties
                 update_fields = []
                 update_values = []
                 
-                # Individual bottle properties (can be updated for any bottle)
-                bottle_fields = {
-                    'status': 'status',
-                    'consumption': 'consumption',
-                    'currentLocation': 'currentLocation',
-                    'subLocation': 'subLocation',
-                    'noteToSelf': 'noteToSelf',
-                    'purchasePlaceName': 'purchasePlaceName',
-                    'purchaseAddress': 'purchaseAddress',
-                    'purchaseDate': 'purchaseDate',
-                    'deliveryDate': 'deliveryDate',
-                    'purchasePrice': 'purchasePrice',
-                    'purchaseCurrency': 'purchaseCurrency'
+                # Shared properties (only for quantityVariantID = 1)
+                shared_fields = {
+                    'drinkFormat': 'drinkFormat',
+                    'volumeNumber': 'volumeNumber', 
+                    'volumeUnit': 'volumeUnit',
+                    'drinkByDate': 'drinkByDate',
+                    'drinkOnwardsDate': 'drinkOnwardsDate',
+                    'currentValueEstimation': 'currentValueEstimation',
+                    'currentValueCurrency': 'currentValueCurrency',
+                    'suggestedFoodPairing': 'suggestedFoodPairing'
                 }
                 
-                for field_key, db_field in bottle_fields.items():
-                    if field_key in bottle_data:
-                        value = bottle_data[field_key]
+                for field_key, db_field in shared_fields.items():
+                    if field_key in master_data:
+                        value = master_data[field_key]
                         
                         # Handle empty strings as NULL for optional fields
                         if value == '':
                             value = None
                         
-                        # Validate constraint fields
-                        if field_key == 'status' and value is not None:
-                            valid_statuses = ['In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed']
-                            if value not in valid_statuses:
-                                error_msg = f"Invalid status: {value}. Must be one of: {', '.join(valid_statuses)}"
-                                print(f"TZHBackendLog: Validation failed - {error_msg}")
-                                return jsonify({
-                                    "code": 400,
-                                    "message": error_msg
-                                }), 400
-                        
-                        if field_key == 'consumption' and value is not None:
-                            valid_consumption = ['Opened', 'Unopened', 'Empty']
-                            if value not in valid_consumption:
-                                error_msg = f"Invalid consumption: {value}. Must be one of: {', '.join(valid_consumption)}"
-                                print(f"TZHBackendLog: Validation failed - {error_msg}")
-                                return jsonify({
-                                    "code": 400,
-                                    "message": error_msg
-                                }), 400
-                        
-                        # Validate numeric fields
-                        if field_key == 'purchasePrice' and value is not None:
+                        # Special validation for numeric fields
+                        if field_key in ['volumeNumber', 'currentValueEstimation'] and value is not None:
                             try:
                                 value = float(value) if value != '' else None
-                                if value is not None and value < 0:
-                                    error_msg = f"purchasePrice must be non-negative"
+                                if value is not None and value <= 0:
+                                    error_msg = f"{field_key} must be positive"
                                     print(f"TZHBackendLog: Validation failed - {error_msg}")
                                     return jsonify({
                                         "code": 400,
                                         "message": error_msg
                                     }), 400
                             except (ValueError, TypeError):
-                                error_msg = f"purchasePrice must be a valid number"
+                                error_msg = f"{field_key} must be a valid number"
                                 print(f"TZHBackendLog: Validation failed - {error_msg}")
                                 return jsonify({
                                     "code": 400,
@@ -986,7 +872,7 @@ def editCellar():
                                 }), 400
                         
                         # Validate date fields
-                        if field_key in ['purchaseDate', 'deliveryDate'] and value is not None:
+                        if field_key in ['drinkByDate', 'drinkOnwardsDate'] and value is not None:
                             try:
                                 if isinstance(value, str) and value.strip():
                                     # Validate date format YYYY-MM-DD
@@ -1003,193 +889,300 @@ def editCellar():
                         update_values.append(value)
                 
                 if update_fields:
-                    update_values.append(int(cellar_item_id))
+                    update_values.append(master_record['id'])
                     update_query = f"""
                         UPDATE "myCellarItems" 
                         SET {', '.join(update_fields)}, "updatedDate" = CURRENT_TIMESTAMP
                         WHERE "id" = %s
                     """
                     
-                    print(f"TZHBackendLog: Executing bottle update query: {update_query}")
+                    print(f"TZHBackendLog: Executing master update query: {update_query}")
                     print(f"TZHBackendLog: With values: {update_values}")
                     
-                    cur.execute(update_query, update_values)
-                    if cur.rowcount > 0:
-                        changes_made["bottles_updated"] += 1
-                        print(f"TZHBackendLog: Updated bottle {cellar_item_id}")
-        
-        # 4. Handle Archived Bottles
-        archived_bottles = changes.get('archivedBottles', [])
-        if archived_bottles:
-            print(f"TZHBackendLog: Archiving {len(archived_bottles)} bottles")
+                    cursor.execute(update_query, update_values)
+                    if cursor.rowcount > 0:
+                        changes_made["master_updated"] = True
+                        print(f"TZHBackendLog: Updated master record")
             
-            for cellar_item_id in archived_bottles:
-                # Skip temporary IDs
-                if str(cellar_item_id).startswith('temp_'):
-                    continue
+            # 3. Handle Individual Bottle Changes
+            bottle_changes = changes.get('bottleChanges', {})
+            if bottle_changes:
+                print(f"TZHBackendLog: Processing bottle changes for {len(bottle_changes)} bottles")
                 
-                print(f"TZHBackendLog: Archiving bottle {cellar_item_id}")
-                
-                cur.execute("""
-                    UPDATE "myCellarItems" 
-                    SET "archiveStatus" = TRUE, "updatedDate" = CURRENT_TIMESTAMP
-                    WHERE "id" = %s
-                """, (int(cellar_item_id),))
-                
-                if cur.rowcount > 0:
-                    changes_made["bottles_archived"] += 1
-                    print(f"TZHBackendLog: Archived bottle {cellar_item_id}")
-        
-        # 5. Handle New Bottles
-        new_bottles = changes.get('newBottles', [])
-        if new_bottles:
-            print(f"TZHBackendLog: Adding {len(new_bottles)} new bottles")
-            
-            # Find the maximum quantityVariantID for this group
-            max_quantity_variant_id = max(item['quantityVariantID'] for item in existing_items)
-            print(f"TZHBackendLog: Current max quantityVariantID: {max_quantity_variant_id}")
-            
-            for i, new_bottle in enumerate(new_bottles):
-                next_quantity_variant_id = max_quantity_variant_id + i + 1
-                print(f"TZHBackendLog: Creating new bottle with quantityVariantID: {next_quantity_variant_id}")
-                
-                # Validate new bottle data
-                if not isinstance(new_bottle, dict):
-                    error_msg = f"New bottle {i+1} must be an object"
-                    print(f"TZHBackendLog: Validation failed - {error_msg}")
-                    return jsonify({
-                        "code": 400,
-                        "message": error_msg
-                    }), 400
-                
-                # Validate status and consumption if provided
-                status = new_bottle.get('status', 'In Possession')
-                consumption = new_bottle.get('consumption', 'Unopened')
-                
-                valid_statuses = ['In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed']
-                if status not in valid_statuses:
-                    error_msg = f"Invalid status for new bottle: {status}"
-                    print(f"TZHBackendLog: Validation failed - {error_msg}")
-                    return jsonify({
-                        "code": 400,
-                        "message": error_msg
-                    }), 400
-                
-                valid_consumption = ['Opened', 'Unopened', 'Empty']
-                if consumption not in valid_consumption:
-                    error_msg = f"Invalid consumption for new bottle: {consumption}"
-                    print(f"TZHBackendLog: Validation failed - {error_msg}")
-                    return jsonify({
-                        "code": 400,
-                        "message": error_msg
-                    }), 400
-                
-                # Use master record properties for required fields
-                insert_data = {
-                    'listingID': master_record['listingID'],
-                    'collectionID': master_record['collectionID'], 
-                    'variant': master_record['variant'],
-                    'quantityVariantID': next_quantity_variant_id,
-                    'variantGroupID': master_record['id'],  # Reference master record
+                for cellar_item_id, bottle_data in bottle_changes.items():
+                    # Skip if this is a temporary ID (new bottle)
+                    if str(cellar_item_id).startswith('temp_'):
+                        print(f"TZHBackendLog: Skipping temporary ID: {cellar_item_id}")
+                        continue
                     
-                    # Individual bottle properties from new bottle data
-                    'status': status,
-                    'consumption': consumption,
-                    'currentLocation': new_bottle.get('currentLocation', 'At Home'),
-                    'subLocation': new_bottle.get('subLocation'),
-                    'noteToSelf': new_bottle.get('noteToSelf'),
-                    'purchasePlaceName': new_bottle.get('purchasePlaceName'),
-                    'purchaseDate': new_bottle.get('purchaseDate'),
-                    'deliveryDate': new_bottle.get('deliveryDate'),
-                    'purchasePrice': new_bottle.get('purchasePrice'),
-                    'purchaseCurrency': new_bottle.get('purchaseCurrency', 'USD'),
-                    'archiveStatus': False
-                }
+                    print(f"TZHBackendLog: Updating bottle {cellar_item_id}: {bottle_data}")
+                    
+                    # Build update query for individual bottle properties
+                    update_fields = []
+                    update_values = []
+                    
+                    # Individual bottle properties (can be updated for any bottle)
+                    bottle_fields = {
+                        'status': 'status',
+                        'consumption': 'consumption',
+                        'currentLocation': 'currentLocation',
+                        'subLocation': 'subLocation',
+                        'noteToSelf': 'noteToSelf',
+                        'purchasePlaceName': 'purchasePlaceName',
+                        'purchaseAddress': 'purchaseAddress',
+                        'purchaseDate': 'purchaseDate',
+                        'deliveryDate': 'deliveryDate',
+                        'purchasePrice': 'purchasePrice',
+                        'purchaseCurrency': 'purchaseCurrency'
+                    }
+                    
+                    for field_key, db_field in bottle_fields.items():
+                        if field_key in bottle_data:
+                            value = bottle_data[field_key]
+                            
+                            # Handle empty strings as NULL for optional fields
+                            if value == '':
+                                value = None
+                            
+                            # Validate constraint fields
+                            if field_key == 'status' and value is not None:
+                                valid_statuses = ['In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed']
+                                if value not in valid_statuses:
+                                    error_msg = f"Invalid status: {value}. Must be one of: {', '.join(valid_statuses)}"
+                                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                    return jsonify({
+                                        "code": 400,
+                                        "message": error_msg
+                                    }), 400
+                            
+                            if field_key == 'consumption' and value is not None:
+                                valid_consumption = ['Opened', 'Unopened', 'Empty']
+                                if value not in valid_consumption:
+                                    error_msg = f"Invalid consumption: {value}. Must be one of: {', '.join(valid_consumption)}"
+                                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                    return jsonify({
+                                        "code": 400,
+                                        "message": error_msg
+                                    }), 400
+                            
+                            # Validate numeric fields
+                            if field_key == 'purchasePrice' and value is not None:
+                                try:
+                                    value = float(value) if value != '' else None
+                                    if value is not None and value < 0:
+                                        error_msg = f"purchasePrice must be non-negative"
+                                        print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                        return jsonify({
+                                            "code": 400,
+                                            "message": error_msg
+                                        }), 400
+                                except (ValueError, TypeError):
+                                    error_msg = f"purchasePrice must be a valid number"
+                                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                    return jsonify({
+                                        "code": 400,
+                                        "message": error_msg
+                                    }), 400
+                            
+                            # Validate date fields
+                            if field_key in ['purchaseDate', 'deliveryDate'] and value is not None:
+                                try:
+                                    if isinstance(value, str) and value.strip():
+                                        # Validate date format YYYY-MM-DD
+                                        datetime.strptime(value, '%Y-%m-%d').date()
+                                except ValueError:
+                                    error_msg = f"{field_key} must be in YYYY-MM-DD format"
+                                    print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                    return jsonify({
+                                        "code": 400,
+                                        "message": error_msg
+                                    }), 400
+                            
+                            update_fields.append(f'"{db_field}" = %s')
+                            update_values.append(value)
+                    
+                    if update_fields:
+                        update_values.append(int(cellar_item_id))
+                        update_query = f"""
+                            UPDATE "myCellarItems" 
+                            SET {', '.join(update_fields)}, "updatedDate" = CURRENT_TIMESTAMP
+                            WHERE "id" = %s
+                        """
+                        
+                        print(f"TZHBackendLog: Executing bottle update query: {update_query}")
+                        print(f"TZHBackendLog: With values: {update_values}")
+                        
+                        cursor.execute(update_query, update_values)
+                        if cursor.rowcount > 0:
+                            changes_made["bottles_updated"] += 1
+                            print(f"TZHBackendLog: Updated bottle {cellar_item_id}")
+            
+            # 4. Handle Archived Bottles
+            archived_bottles = changes.get('archivedBottles', [])
+            if archived_bottles:
+                print(f"TZHBackendLog: Archiving {len(archived_bottles)} bottles")
                 
-                # Validate and convert numeric/date fields
-                if insert_data['purchasePrice']:
-                    try:
-                        insert_data['purchasePrice'] = float(insert_data['purchasePrice'])
-                        if insert_data['purchasePrice'] < 0:
-                            error_msg = f"Purchase price for new bottle must be non-negative"
-                            print(f"TZHBackendLog: Validation failed - {error_msg}")
-                            return jsonify({
-                                "code": 400,
-                                "message": error_msg
-                            }), 400
-                    except (ValueError, TypeError):
-                        error_msg = f"Purchase price for new bottle must be a valid number"
+                for cellar_item_id in archived_bottles:
+                    # Skip temporary IDs
+                    if str(cellar_item_id).startswith('temp_'):
+                        continue
+                    
+                    print(f"TZHBackendLog: Archiving bottle {cellar_item_id}")
+                    
+                    cursor.execute("""
+                        UPDATE "myCellarItems" 
+                        SET "archiveStatus" = TRUE, "updatedDate" = CURRENT_TIMESTAMP
+                        WHERE "id" = %s
+                    """, (int(cellar_item_id),))
+                    
+                    if cursor.rowcount > 0:
+                        changes_made["bottles_archived"] += 1
+                        print(f"TZHBackendLog: Archived bottle {cellar_item_id}")
+            
+            # 5. Handle New Bottles
+            new_bottles = changes.get('newBottles', [])
+            if new_bottles:
+                print(f"TZHBackendLog: Adding {len(new_bottles)} new bottles")
+                
+                # Find the maximum quantityVariantID for this group
+                max_quantity_variant_id = max(item['quantityVariantID'] for item in existing_items)
+                print(f"TZHBackendLog: Current max quantityVariantID: {max_quantity_variant_id}")
+                
+                for i, new_bottle in enumerate(new_bottles):
+                    next_quantity_variant_id = max_quantity_variant_id + i + 1
+                    print(f"TZHBackendLog: Creating new bottle with quantityVariantID: {next_quantity_variant_id}")
+                    
+                    # Validate new bottle data
+                    if not isinstance(new_bottle, dict):
+                        error_msg = f"New bottle {i+1} must be an object"
                         print(f"TZHBackendLog: Validation failed - {error_msg}")
                         return jsonify({
                             "code": 400,
                             "message": error_msg
                         }), 400
-                
-                # Validate date fields
-                for date_field in ['purchaseDate', 'deliveryDate']:
-                    if insert_data[date_field]:
+                    
+                    # Validate status and consumption if provided
+                    status = new_bottle.get('status', 'In Possession')
+                    consumption = new_bottle.get('consumption', 'Unopened')
+                    
+                    valid_statuses = ['In Possession', 'On Its Way', 'Purchased', 'Held Elsewhere', 'Wishlisted', 'Consumed']
+                    if status not in valid_statuses:
+                        error_msg = f"Invalid status for new bottle: {status}"
+                        print(f"TZHBackendLog: Validation failed - {error_msg}")
+                        return jsonify({
+                            "code": 400,
+                            "message": error_msg
+                        }), 400
+                    
+                    valid_consumption = ['Opened', 'Unopened', 'Empty']
+                    if consumption not in valid_consumption:
+                        error_msg = f"Invalid consumption for new bottle: {consumption}"
+                        print(f"TZHBackendLog: Validation failed - {error_msg}")
+                        return jsonify({
+                            "code": 400,
+                            "message": error_msg
+                        }), 400
+                    
+                    # Use master record properties for required fields
+                    insert_data = {
+                        'listingID': master_record['listingID'],
+                        'collectionID': master_record['collectionID'], 
+                        'variant': master_record['variant'],
+                        'quantityVariantID': next_quantity_variant_id,
+                        'variantGroupID': master_record['id'],  # Reference master record
+                        
+                        # Individual bottle properties from new bottle data
+                        'status': status,
+                        'consumption': consumption,
+                        'currentLocation': new_bottle.get('currentLocation', 'At Home'),
+                        'subLocation': new_bottle.get('subLocation'),
+                        'noteToSelf': new_bottle.get('noteToSelf'),
+                        'purchasePlaceName': new_bottle.get('purchasePlaceName'),
+                        'purchaseDate': new_bottle.get('purchaseDate'),
+                        'deliveryDate': new_bottle.get('deliveryDate'),
+                        'purchasePrice': new_bottle.get('purchasePrice'),
+                        'purchaseCurrency': new_bottle.get('purchaseCurrency', 'USD'),
+                        'archiveStatus': False
+                    }
+                    
+                    # Validate and convert numeric/date fields
+                    if insert_data['purchasePrice']:
                         try:
-                            if isinstance(insert_data[date_field], str) and insert_data[date_field].strip():
-                                datetime.strptime(insert_data[date_field], '%Y-%m-%d').date()
-                        except ValueError:
-                            error_msg = f"{date_field} for new bottle must be in YYYY-MM-DD format"
+                            insert_data['purchasePrice'] = float(insert_data['purchasePrice'])
+                            if insert_data['purchasePrice'] < 0:
+                                error_msg = f"Purchase price for new bottle must be non-negative"
+                                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                return jsonify({
+                                    "code": 400,
+                                    "message": error_msg
+                                }), 400
+                        except (ValueError, TypeError):
+                            error_msg = f"Purchase price for new bottle must be a valid number"
                             print(f"TZHBackendLog: Validation failed - {error_msg}")
                             return jsonify({
                                 "code": 400,
                                 "message": error_msg
                             }), 400
-                
-                # Convert empty strings to None for database NULL handling
-                for key, value in insert_data.items():
-                    if value == '':
-                        insert_data[key] = None
-                
-                print(f"TZHBackendLog: Inserting new bottle: {insert_data}")
-                
-                cur.execute("""
-                    INSERT INTO "myCellarItems" (
-                        "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                        "status", "consumption", "currentLocation", "subLocation", "noteToSelf",
-                        "purchasePlaceName", "purchaseDate", "deliveryDate", "purchasePrice", 
-                        "purchaseCurrency", "archiveStatus"
-                    ) VALUES (
-                        %(listingID)s, %(collectionID)s, %(variant)s, %(quantityVariantID)s, %(variantGroupID)s,
-                        %(status)s, %(consumption)s, %(currentLocation)s, %(subLocation)s, %(noteToSelf)s,
-                        %(purchasePlaceName)s, %(purchaseDate)s, %(deliveryDate)s, %(purchasePrice)s,
-                        %(purchaseCurrency)s, %(archiveStatus)s
-                    )
-                """, insert_data)
-                
-                changes_made["bottles_added"] += 1
-                print(f"TZHBackendLog: Successfully added new bottle with quantityVariantID: {next_quantity_variant_id}")
-        
-        # Commit all changes
-        conn.commit()
-        print("TZHBackendLog: All changes committed successfully")
-        
-        print(f"TZHBackendLog: Changes summary: {changes_made}")
-        print("TZHBackendLog: editCellar completed successfully")
-        
-        # Prepare successful response
-        success_response = {
-            "code": 200,
-            "success": True,
-            "message": "Cellar items updated successfully",
-            "data": {
-                "variantGroupID": int(variant_group_id) if variant_group_id else None,
-                "changesSummary": changes_made
+                    
+                    # Validate date fields
+                    for date_field in ['purchaseDate', 'deliveryDate']:
+                        if insert_data[date_field]:
+                            try:
+                                if isinstance(insert_data[date_field], str) and insert_data[date_field].strip():
+                                    datetime.strptime(insert_data[date_field], '%Y-%m-%d').date()
+                            except ValueError:
+                                error_msg = f"{date_field} for new bottle must be in YYYY-MM-DD format"
+                                print(f"TZHBackendLog: Validation failed - {error_msg}")
+                                return jsonify({
+                                    "code": 400,
+                                    "message": error_msg
+                                }), 400
+                    
+                    # Convert empty strings to None for database NULL handling
+                    for key, value in insert_data.items():
+                        if value == '':
+                            insert_data[key] = None
+                    
+                    print(f"TZHBackendLog: Inserting new bottle: {insert_data}")
+                    
+                    cursor.execute("""
+                        INSERT INTO "myCellarItems" (
+                            "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
+                            "status", "consumption", "currentLocation", "subLocation", "noteToSelf",
+                            "purchasePlaceName", "purchaseDate", "deliveryDate", "purchasePrice", 
+                            "purchaseCurrency", "archiveStatus"
+                        ) VALUES (
+                            %(listingID)s, %(collectionID)s, %(variant)s, %(quantityVariantID)s, %(variantGroupID)s,
+                            %(status)s, %(consumption)s, %(currentLocation)s, %(subLocation)s, %(noteToSelf)s,
+                            %(purchasePlaceName)s, %(purchaseDate)s, %(deliveryDate)s, %(purchasePrice)s,
+                            %(purchaseCurrency)s, %(archiveStatus)s
+                        )
+                    """, insert_data)
+                    
+                    changes_made["bottles_added"] += 1
+                    print(f"TZHBackendLog: Successfully added new bottle with quantityVariantID: {next_quantity_variant_id}")
+            
+            print(f"TZHBackendLog: Changes summary: {changes_made}")
+            print("TZHBackendLog: editCellar completed successfully")
+            
+            # Prepare successful response
+            success_response = {
+                "code": 200,
+                "success": True,
+                "message": "Cellar items updated successfully",
+                "data": {
+                    "variantGroupID": int(variant_group_id) if variant_group_id else None,
+                    "changesSummary": changes_made
+                }
             }
-        }
-        
-        print(f"TZHBackendLog: About to return success response: {success_response}")
-        print("TZHBackendLog: ===========================================")
-        
-        return jsonify(success_response)
+            
+            print(f"TZHBackendLog: About to return success response: {success_response}")
+            print("TZHBackendLog: ===========================================")
+            
+            return jsonify(success_response)
         
     except psycopg2.Error as e:
         print(f"TZHBackendLog: Database error in editCellar: {str(e)}")
-        conn.rollback()
-        print("TZHBackendLog: Transaction rolled back")
         print("TZHBackendLog: ===========================================")
         
         return jsonify({
@@ -1199,8 +1192,6 @@ def editCellar():
         
     except Exception as e:
         print(f"TZHBackendLog: General error in editCellar: {str(e)}")
-        conn.rollback()
-        print("TZHBackendLog: Transaction rolled back")
         print("TZHBackendLog: ===========================================")
         
         return jsonify({
