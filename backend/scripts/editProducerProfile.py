@@ -496,15 +496,13 @@ def updateProducerStatus():
 # );
 @blueprint.route('/addProfileCount', methods=['POST'])
 def addProfileCount():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     producerID = int(data['businessId'])
     viewsID = int(data['viewsId'])
 
     try:
-        cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s AND id = %s', (producerID, viewsID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s AND id = %s', (producerID, viewsID))
 
         return jsonify(
             {   
@@ -514,7 +512,6 @@ def addProfileCount():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -522,9 +519,6 @@ def addProfileCount():
                 "message": "An error occurred updating the profile view count."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add new profile view count
