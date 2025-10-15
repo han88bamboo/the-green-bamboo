@@ -3351,9 +3351,6 @@ def rejectClubRequests():
 # Output: Possible return codes [200 - Invite rejected successfully, 400 - Missing required data, 404 - No such invitee exist, 500 - An error occurred rejecting the invite]
 @blueprint.route('/declineClubInvites', methods=['DELETE'])
 def declineClubInvites():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -3368,18 +3365,18 @@ def declineClubInvites():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the invitee exist
-        cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
-        invitee = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the invitee exist
+            cursor.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
+            invitee = cursor.fetchone()
 
-        if not invitee:
-            return jsonify({
-                'error': 'No such invitee exist'
-            }), 404
+            if not invitee:
+                return jsonify({
+                    'error': 'No such invitee exist'
+                }), 404
 
-        # Step 2: Remove the invite from the clubInvites table
-        cur.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
-        conn.commit()
+            # Step 2: Remove the invite from the clubInvites table
+            cursor.execute('DELETE FROM "clubInvites" WHERE "clubID" = %s AND "inviteeID" = %s AND "inviteeUserType" = %s', (club_id, invitee_id, user_type,))
 
         return jsonify({
             'message': 'Invite rejected successfully'
@@ -3387,8 +3384,6 @@ def declineClubInvites():
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
