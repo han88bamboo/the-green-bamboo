@@ -258,8 +258,6 @@ def sendQuestions():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendAnswers', methods=['POST'])
 def sendAnswers():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -268,51 +266,50 @@ def sendAnswers():
     answer = data['answer']
 
     try:
-        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
 
-        # Fetch the original asker
-        cur.execute(
-            'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
-            (questionsAnswersID,)
-        )
-        asker_row = cur.fetchone()
-        asker_id = asker_row['userId'] if asker_row else None
+            # Fetch the original asker
+            cursor.execute(
+                'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
+                (questionsAnswersID,)
+            )
+            asker_row = cursor.fetchone()
+            asker_id = asker_row['userId'] if asker_row else None
 
-        # Fetch producer's username for the notification message
-        cur.execute(
-            'SELECT username FROM producers WHERE id = %s',
-            (producerID,)
-        )
-        producer_row = cur.fetchone()
-        producer_username = producer_row['username'] if producer_row else ''
+            # Fetch producer's username for the notification message
+            cursor.execute(
+                'SELECT username FROM producers WHERE id = %s',
+                (producerID,)
+            )
+            producer_row = cursor.fetchone()
+            producer_username = producer_row['username'] if producer_row else ''
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Send notification back to the user who asked
-        if asker_id:
-            notification_data = {
-                "userId":   asker_id,
-                "userType": "user",
-                "notiTabs": "venues & producers",
-                "notiType": "producer_answer",
-                "image":    None,
-                "link":     f"/profile/producer/{producerID}/{producer_username}",
-                "message":  f"@{producer_username} answered your question",
-                "createdAt": current_time
-            }
-            print("Sending answer notification:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            # Send notification back to the user who asked
+            if asker_id:
+                notification_data = {
+                    "userId":   asker_id,
+                    "userType": "user",
+                    "notiTabs": "venues & producers",
+                    "notiType": "producer_answer",
+                    "image":    None,
+                    "link":     f"/profile/producer/{producerID}/{producer_username}",
+                    "message":  f"@{producer_username} answered your question",
+                    "createdAt": current_time
+                }
+                print("Sending answer notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Answer sent successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Answer sent successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -320,9 +317,6 @@ def sendAnswers():
                 "message": "An error occurred sending the answer!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Like updates
@@ -330,8 +324,6 @@ def sendAnswers():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/likeUpdates', methods=['POST'])
 def likeUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -340,10 +332,10 @@ def likeUpdates():
     userID = int(data['userID'])
     userType = data['userType']
 
-    try:
+    with db_manager.get_cursor() as cursor:
         # Verify that the update exists and belongs to the producer
-        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
-        existingUpdate = cur.fetchone()
+        cursor.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+        existingUpdate = cursor.fetchone()
 
         if not existingUpdate or existingUpdate['producerId'] != producerID:
             return jsonify(
@@ -354,11 +346,10 @@ def likeUpdates():
             ), 404
         
         # Insert into the likes table
-        cur.execute("""
+        cursor.execute("""
             INSERT INTO "producerUpdateLikes" ("updateId", "userId", "userType")
             VALUES (%s, %s, %s)
         """, (updateID, userID, userType))
-        conn.commit()
 
         return jsonify(
             {
@@ -366,20 +357,6 @@ def likeUpdates():
                 "message": "Update liked successfully!"
             }
         ), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred liking the update."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Unlike updates
@@ -387,8 +364,6 @@ def likeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/unlikeUpdates', methods=['POST'])
 def unlikeUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -398,21 +373,21 @@ def unlikeUpdates():
     userType = data['userType']
 
     try:
-        # Verify that the update exists and belongs to the producer
-        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Verify that the update exists and belongs to the producer
+            cursor.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+            existingUpdate = cursor.fetchone()
 
-        if not existingUpdate or existingUpdate['producerId'] != producerID:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
-        
-        # Remove from the likes table
-        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
-        conn.commit()
+            if not existingUpdate or existingUpdate['producerId'] != producerID:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
+            
+            # Remove from the likes table
+            cursor.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
 
         return jsonify(
             {
@@ -422,7 +397,6 @@ def unlikeUpdates():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -431,9 +405,6 @@ def unlikeUpdates():
                 "message": "An error occurred unliking the update."
             }
         ), 500
-
-    finally:
-        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile
@@ -441,8 +412,6 @@ def unlikeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerStatus', methods=['POST'])
 def updateProducerStatus():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -455,37 +424,37 @@ def updateProducerStatus():
     claimStatus = data['newBusinessData']["claimStatus"]
 
     try:
-        cur.execute(
-            """
-                UPDATE producers
-                SET
-                    "producerName" = %s,
-                    "producerDesc" = %s,
-                    "originCountry" = %s,
-                    "hashedPassword" = %s,
-                    "claimStatus" = %s
-                WHERE id = %s
-            """,
-            (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
-        )
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                    UPDATE producers
+                    SET
+                        "producerName" = %s,
+                        "producerDesc" = %s,
+                        "originCountry" = %s,
+                        "hashedPassword" = %s,
+                        "claimStatus" = %s
+                    WHERE id = %s
+                """,
+                (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
+            )
 
-        # Find all users who follow this producer
-        cur.execute(
-            '''
-            SELECT "userId"
-            FROM "usersFollowLists"
-            WHERE %s = ANY("producers")
-            ''',
-            (str(producerID),)
-        )
-        followers = cur.fetchall()
+            # Find all users who follow this producer
+            cursor.execute(
+                '''
+                SELECT "userId"
+                FROM "usersFollowLists"
+                WHERE %s = ANY("producers")
+                ''',
+                (str(producerID),)
+            )
+            followers = cursor.fetchall()
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Send each of them a notification
-        for row in followers:
-            notification_data = {
+            # Send each of them a notification
+            for row in followers:
+                notification_data = {
                 "userId":   row['userId'],        # the follower’s user ID
                 "userType": "user",
                 "notiTabs":"venues & producers",
@@ -494,9 +463,9 @@ def updateProducerStatus():
                 "link":    f"/profile/producer/{producerID}/{producerName}",
                 "message": f"{producerName} updated their status.",
                 "createdAt": current_time
-            }
-            print("Sending notification:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+                }
+                print("Sending notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             "code": 201,
@@ -504,7 +473,6 @@ def updateProducerStatus():
         }), 201
     
     except Exception as e:
-        conn.rollback()
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -512,9 +480,6 @@ def updateProducerStatus():
             "data": data,
             "message": "An error occurred updating claim status!"
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
