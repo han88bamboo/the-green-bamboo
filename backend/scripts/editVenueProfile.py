@@ -14,6 +14,9 @@ from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 from typing import Dict, Any, Optional, Tuple
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -155,51 +158,44 @@ def upsert_venue_amenities(cursor, amenities: Dict[str, Any], venue_id: int):
 @blueprint.route('/venueInfo', methods=['POST'])
 def updateVenueInformation():
     """Main endpoint for updating venue details."""
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
-        # Validate input data
-        form_data = request.form.to_dict()
-        is_valid, error_message = validate_venue_data(form_data)
-        if not is_valid:
-            return jsonify({"code": 400, "message": error_message}), 400
-        
-        venue_id = int(form_data['venueId'])
-        
-        # Check if venue exists
-        existing_venue = get_venue_by_id(cursor, venue_id)
-        if not existing_venue:
-            return jsonify({"code": 404, "message": "Venue not found."}), 404
-        
-        # Extract and process data
-        venue_data = extract_venue_data(form_data)
-        amenities_data = extract_amenities_data(form_data)
-        
-        # Handle image upload
-        photo_url = process_image_upload(form_data, existing_venue.get('photo'))
-        
-        # Update venue details
-        update_venue_details(cursor, venue_data, photo_url, venue_id)
-        
-        # Update amenities if provided
-        if amenities_data:
-            upsert_venue_amenities(cursor, amenities_data, venue_id)
-        
-        # Commit transaction
-        conn.commit()
-        
-        return jsonify({
-            "code": 201,
-            "message": "Updated profile successfully!"
-        }), 201
-        
+        with db_manager.get_cursor() as cursor:
+            # Validate input data
+            form_data = request.form.to_dict()
+            is_valid, error_message = validate_venue_data(form_data)
+            if not is_valid:
+                return jsonify({"code": 400, "message": error_message}), 400
+            
+            venue_id = int(form_data['venueId'])
+            
+            # Check if venue exists
+            existing_venue = get_venue_by_id(cursor, venue_id)
+            if not existing_venue:
+                return jsonify({"code": 404, "message": "Venue not found."}), 404
+            
+            # Extract and process data
+            venue_data = extract_venue_data(form_data)
+            amenities_data = extract_amenities_data(form_data)
+            
+            # Handle image upload
+            photo_url = process_image_upload(form_data, existing_venue.get('photo'))
+            
+            # Update venue details
+            update_venue_details(cursor, venue_data, photo_url, venue_id)
+            
+            # Update amenities if provided
+            if amenities_data:
+                upsert_venue_amenities(cursor, amenities_data, venue_id)
+            
+            return jsonify({
+                "code": 201,
+                "message": "Updated profile successfully!"
+            }), 201
+            
     except ValueError as e:
-        conn.rollback()
         return jsonify({"code": 400, "message": f"Invalid data: {str(e)}"}), 400
     
     except Exception as e:
-        conn.rollback()
         print(f"Error updating venue: {e}")
         import traceback
         traceback.print_exc()
@@ -208,9 +204,6 @@ def updateVenueInformation():
             "code": 500,
             "message": "An error occurred updating profile!"
         }), 500
-    
-    finally:
-        cursor.close()
 
 
 # -----------------------------------------------------------------------------------------
