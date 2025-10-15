@@ -1206,9 +1206,6 @@ def editCellar():
 @blueprint.route("/getCollections/<ownerType>/<int:ownerID>", methods=['GET'])
 def getCollections(ownerType, ownerID):
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Validate ownerType
         if ownerType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -1216,45 +1213,46 @@ def getCollections(ownerType, ownerID):
                 "message": "Invalid ownerType. Must be 'user', 'producer', or 'venue'."
             }), 400
         
-        # Get collections for this owner
-        cur.execute("""
-            SELECT 
-                cc."id",
-                cc."collectionName",
-                cc."isDefault",
-                cc."isPublic",
-                cc."createdDate",
-                cc."updatedDate",
-                COUNT(ci."id") as itemCount
-            FROM "myCellarCollections" cc
-            LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
-            WHERE cc."ownerID" = %s AND cc."ownerType" = %s
-            GROUP BY cc."id"
-            ORDER BY cc."isDefault" DESC, cc."collectionName"
-        """, (ownerID, ownerType))
-        
-        collections = cur.fetchall()
-        
-        # Convert to list of dicts for JSON serialization
-        collections_list = []
-        for collection in collections:
-            collections_list.append({
-                "id": collection["id"],
-                "collectionName": collection["collectionName"],
-                "isDefault": collection["isDefault"],
-                "isPublic": collection["isPublic"],
-                "createdDate": collection["createdDate"].isoformat() if collection["createdDate"] else None,
-                "updatedDate": collection["updatedDate"].isoformat() if collection["updatedDate"] else None,
-                "itemCount": collection["itemCount"]
+        with db_manager.get_cursor() as cursor:
+            # Get collections for this owner
+            cursor.execute("""
+                SELECT 
+                    cc."id",
+                    cc."collectionName",
+                    cc."isDefault",
+                    cc."isPublic",
+                    cc."createdDate",
+                    cc."updatedDate",
+                    COUNT(ci."id") as itemCount
+                FROM "myCellarCollections" cc
+                LEFT JOIN "myCellarItems" ci ON cc."id" = ci."collectionID" AND ci."archiveStatus" = FALSE
+                WHERE cc."ownerID" = %s AND cc."ownerType" = %s
+                GROUP BY cc."id"
+                ORDER BY cc."isDefault" DESC, cc."collectionName"
+            """, (ownerID, ownerType))
+            
+            collections = cursor.fetchall()
+            
+            # Convert to list of dicts for JSON serialization
+            collections_list = []
+            for collection in collections:
+                collections_list.append({
+                    "id": collection["id"],
+                    "collectionName": collection["collectionName"],
+                    "isDefault": collection["isDefault"],
+                    "isPublic": collection["isPublic"],
+                    "createdDate": collection["createdDate"].isoformat() if collection["createdDate"] else None,
+                    "updatedDate": collection["updatedDate"].isoformat() if collection["updatedDate"] else None,
+                    "itemCount": collection["itemCount"]
+                })
+            
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "collections": collections_list,
+                    "totalCollections": len(collections_list)
+                }
             })
-        
-        return jsonify({
-            "code": 200,
-            "data": {
-                "collections": collections_list,
-                "totalCollections": len(collections_list)
-            }
-        })
         
     except Exception as e:
         print(f"Error in getCollections: {str(e)}")
