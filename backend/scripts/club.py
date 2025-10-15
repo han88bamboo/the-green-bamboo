@@ -2406,77 +2406,68 @@ def dislikeUndislikeComment():
 # Output: Possible return codes [200 - Post liked/unliked successfully, 400 - Missing required data, 404 - No such user/post exist, 500 - An error occurred liking the post]
 @blueprint.route('/likeUnlikePost', methods=['PUT'])
 def likePost():
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            data = request.get_json()
 
-    try:
-        data = request.get_json()
+            # Get all the required data
+            member_id = data['memberID']
+            post_id = data['postID']
+            club_id = data['clubID']
 
-        # Get all the required data
-        member_id = data['memberID']
-        post_id = data['postID']
-        club_id = data['clubID']
+            # Check if all the required data is provided
+            if not member_id or not post_id or not club_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
 
-        # Check if all the required data is provided
-        if not member_id or not post_id or not club_id:
+            # Step 1: Check if the member exist
+            cursor.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'error': 'No such member exist'
+                }), 404
+
+            # Step 2: Check if the post exist
+            cursor.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
+            post = cursor.fetchone()
+
+            if not post:
+                return jsonify({
+                    'error': 'No such post exist'
+                }), 404
+
+            # Step 3: Check if the member has already liked the post
+            cursor.execute('SELECT * FROM "clubPostsLikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+            liked = cursor.fetchone()
+
+            if liked:
+                # Unlike the post
+                cursor.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
+
+                return jsonify({
+                    'message': 'Post unliked successfully',
+                    "liked": False
+                }), 200
+
+            # Step 4: Insert the like into the clubPostsLikes table
+            cursor.execute('INSERT INTO "clubPostsLikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
+
             return jsonify({
-                'error': 'Missing required data'
-            }), 400
-
-        # Step 1: Check if the member exist
-        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'error': 'No such member exist'
-            }), 404
-
-        # Step 2: Check if the post exist
-        cur.execute('SELECT * FROM "clubPosts" WHERE id = %s', (post_id,))
-        post = cur.fetchone()
-
-        if not post:
-            return jsonify({
-                'error': 'No such post exist'
-            }), 404
-        
-        # Step 3: Check if the member has already liked the post
-        cur.execute('SELECT * FROM "clubPostsLikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
-        liked = cur.fetchone()
-
-        if liked:
-            # Unlike the post
-            cur.execute('DELETE FROM "clubPostsLikes" WHERE "clubID" = %s AND "memberID" = %s AND "postID" = %s', (club_id, member_id, post_id,))
-            conn.commit()
-
-            return jsonify({
-                'message': 'Post unliked successfully',
-                "liked": False
+                'message': 'Post liked successfully',
+                "liked": True
             }), 200
 
-        # Step 4: Insert the like into the clubPostsLikes table
-        cur.execute('INSERT INTO "clubPostsLikes" ("clubID", "memberID", "postID") VALUES (%s, %s, %s)', (club_id, member_id, post_id,))
-        conn.commit()
-
-        return jsonify({
-            'message': 'Post liked successfully',
-            "liked": True
-        }), 200
-    
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred liking the post."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred liking the post."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -2490,182 +2481,177 @@ def likePost():
 # Output: Possible return codes [200 - Comment liked/unliked successfully, 400 - Missing required data, 404 - No such user/comment exist, 500 - An error occurred liking the comment]
 @blueprint.route('/likeUnlikeComment', methods=['PUT'])
 def likeUnlikeComment():
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        # Get all the required data
-        data = request.get_json()
-        post_id = data['postID']
-        comment_id = data['commentID']
-        member_id = data['memberID']
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        # Check if all the required data is provided
-        if not post_id or not comment_id or not member_id:
-            return jsonify({
-                'code': 400,
-                'message': 'Missing required data'
-            }), 400
-
-        # Step 1: Check if the member exists
-        cur.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'code': 404,
-                'message': 'No such member exists'
-            }), 404
-
-        # Step 2: Check if the comment exists
-        cur.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
-        comment = cur.fetchone()
-
-        if not comment:
-            return jsonify({
-                'code': 404,
-                'message': 'No such comment exists'
-            }), 404
-        
-        # Get the comment owner and creation date before processing the like action
-        commenter_id = comment['commenterID']
-        comment_date = comment['commentDate']
-        
-        # Step 3: Check if the member has already liked the comment
-        cur.execute('SELECT * FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
-                   (post_id, member_id, comment_id))
-        liked = cur.fetchone()
-
-        # Track badge-related changes
-        is_new_like = False
-        is_removed_like = False
-        badge_result = None
-        
-        if liked:
-            # Unlike the comment
-            cur.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
-                       (post_id, member_id, comment_id))
-            conn.commit()
-            is_removed_like = True
-            action_result = {'liked': False, 'message': 'Comment unliked successfully'}
-        else:
-            # Like the comment
-            cur.execute('INSERT INTO "clubPostCommentsLikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', 
-                       (post_id, member_id, comment_id))
-            conn.commit()
-            is_new_like = True
-            action_result = {'liked': True, 'message': 'Comment liked successfully'}
-        
-        # Get user ID from commenter_id (club member ID)
-        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
-        commenter_info = cur.fetchone()
-        
-        if commenter_info and commenter_info['userType'] == 'user':
-            user_id = commenter_info['userID']
+    with db_manager.get_cursor(commit=False) as cursor:
+        try:
+            # Get all the required data
+            data = request.get_json()
+            post_id = data['postID']
+            comment_id = data['commentID']
+            member_id = data['memberID']
             
-            # Check if the like/unlike is within one week of the comment posting
-            current_time = datetime.now()
-            within_one_week = (comment_date and (current_time - comment_date) <= timedelta(weeks=1))
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            # Check if all the required data is provided
+            if not post_id or not comment_id or not member_id:
+                return jsonify({
+                    'code': 400,
+                    'message': 'Missing required data'
+                }), 400
+
+            # Step 1: Check if the member exists
+            cursor.execute('SELECT * FROM "clubMembers" WHERE id = %s', (member_id,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'code': 404,
+                    'message': 'No such member exists'
+                }), 404
+
+            # Step 2: Check if the comment exists
+            cursor.execute('SELECT * FROM "clubPostComments" WHERE id = %s', (comment_id,))
+            comment = cursor.fetchone()
+
+            if not comment:
+                return jsonify({
+                    'code': 404,
+                    'message': 'No such comment exists'
+                }), 404
             
-            # Process badge only if within one week
-            if (is_new_like and within_one_week) or is_removed_like:
-                badge_result = badge_helpers.process_upvote_badge(
-                    conn, cur, user_id, 
-                    is_new_upvote=is_new_like, 
-                    is_removed_upvote=is_removed_like
-                )
+            # Get the comment owner and creation date before processing the like action
+            commenter_id = comment['commenterID']
+            comment_date = comment['commentDate']
+            
+            # Step 3: Check if the member has already liked the comment
+            cursor.execute('SELECT * FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
+                           (post_id, member_id, comment_id))
+            liked = cursor.fetchone()
+
+            # Track badge-related changes
+            is_new_like = False
+            is_removed_like = False
+            badge_result = None
+            
+            if liked:
+                # Unlike the comment
+                cursor.execute('DELETE FROM "clubPostCommentsLikes" WHERE "postID" = %s AND "memberID" = %s AND "commentID" = %s', 
+                               (post_id, member_id, comment_id))
+                cursor.connection.commit()
+                is_removed_like = True
+                action_result = {'liked': False, 'message': 'Comment unliked successfully'}
+            else:
+                # Like the comment
+                cursor.execute('INSERT INTO "clubPostCommentsLikes" ("postID", "memberID", "commentID") VALUES (%s, %s, %s)', 
+                               (post_id, member_id, comment_id))
+                cursor.connection.commit()
+                is_new_like = True
+                action_result = {'liked': True, 'message': 'Comment liked successfully'}
+            
+            # Get user ID from commenter_id (club member ID)
+            cursor.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+            commenter_info = cursor.fetchone()
+            
+            if commenter_info and commenter_info['userType'] == 'user':
+                user_id = commenter_info['userID']
                 
-        if badge_result:
-            # badge goes to the comment-owner:
-            cur.execute('SELECT "userID" FROM "clubMembers" WHERE id = %s', (commenter_id,))
-            owner = cur.fetchone()
-            if owner and owner['userID']:
-                user_id = owner['userID']
-                cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
-                row = cur.fetchone()
-                owner_username = row['username'] if row else 'Someone'
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                notification_data = {
-                    "userId":   user_id,
-                    "userType": "user",
-                    "notiTabs": "forYou",
-                    "notiType": "badge_earned",
-                    "image":    None,
-                    "link":     f"/profile/user/{user_id}/{owner_username}",
-                    "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
-                    "createdAt": current_time
-                }
-                print("Badge notification data:", notification_data)
-                notifications.add_notification_to_db(notification_data)
-
-        # Fetch club_id for notification link
-        cur.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
-        club_row = cur.fetchone()
-        club_id = club_row['clubID'] if club_row else None
-        
-        if is_new_like:
-            cur.execute(
-                'SELECT COUNT(*) AS cnt FROM "clubPostCommentsLikes" WHERE "commentID" = %s',
-                (comment_id,)
-            )
-            count = cur.fetchone()['cnt']
-            if count <= 3:
-                owner_member_id = comment['commenterID']
-                cur.execute(
-                    'SELECT "userID","userType" FROM "clubMembers" WHERE id = %s',
-                    (owner_member_id,)
-                )
-                owner = cur.fetchone()
-                if owner and owner_member_id != member_id:
-                    upvoter_info = getUserInfo(cur, member_id)
-                    if upvoter_info:
-                        if upvoter_info['userType'] == 'user':
-                            name_key = 'displayName'
-                        elif upvoter_info['userType'] == 'producer':
-                            name_key = 'producerName'
-                        else:
-                            name_key = 'venueName'
-                        upvoter_name = upvoter_info.get(name_key, 'Someone')
-                    else:
-                        upvoter_name = 'Someone'
-
+                # Check if the like/unlike is within one week of the comment posting
+                current_time = datetime.now()
+                within_one_week = (comment_date and (current_time - comment_date) <= timedelta(weeks=1))
+                
+                # Process badge only if within one week
+                if (is_new_like and within_one_week) or is_removed_like:
+                    badge_result = badge_helpers.process_upvote_badge(
+                        cursor.connection, cursor, user_id, 
+                        is_new_upvote=is_new_like, 
+                        is_removed_upvote=is_removed_like
+                    )
+                    
+            if badge_result:
+                # badge goes to the comment-owner:
+                cursor.execute('SELECT "userID" FROM "clubMembers" WHERE id = %s', (commenter_id,))
+                owner = cursor.fetchone()
+                if owner and owner['userID']:
+                    user_id = owner['userID']
+                    cursor.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                    row = cursor.fetchone()
+                    owner_username = row['username'] if row else 'Someone'
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     notification_data = {
-                        "userId":   owner['userID'],
-                        "userType": owner['userType'],
+                        "userId":   user_id,
+                        "userType": "user",
                         "notiTabs": "forYou",
-                        "notiType": "club_comment_upvote",
+                        "notiType": "badge_earned",
                         "image":    None,
-                        "link":     f"/club/{club_id}/post/{post_id}",
-                        "message":  f"{upvoter_name} upvoted your comment",
+                        "link":     f"/profile/user/{user_id}/{owner_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
                         "createdAt": current_time
                     }
-                    print("Notification data:", notification_data)
+                    print("Badge notification data:", notification_data)
                     notifications.add_notification_to_db(notification_data)
-        
-        # Prepare the response
-        response_data = {
-            'code': 200,
-            'message': action_result['message'],
-            'liked': action_result['liked']
-        }
-        
-        if badge_result:
-            response_data['badgeUpdate'] = badge_result
-            
-        return jsonify(response_data), 200
 
-    except Exception as e:
-        print(f"Error in likeUnlikeComment: {str(e)}")
-        conn.rollback()
-        return jsonify({
-            "code": 500,
-            "message": "An error occurred processing the comment like/unlike action."
-        }), 500
-    
-    finally:
-        cur.close()
+            # Fetch club_id for notification link
+            cursor.execute('SELECT "clubID" FROM "clubPosts" WHERE id = %s', (post_id,))
+            club_row = cursor.fetchone()
+            club_id = club_row['clubID'] if club_row else None
+            
+            if is_new_like:
+                cursor.execute(
+                    'SELECT COUNT(*) AS cnt FROM "clubPostCommentsLikes" WHERE "commentID" = %s',
+                    (comment_id,)
+                )
+                count = cursor.fetchone()['cnt']
+                if count <= 3:
+                    owner_member_id = comment['commenterID']
+                    cursor.execute(
+                        'SELECT "userID","userType" FROM "clubMembers" WHERE id = %s',
+                        (owner_member_id,)
+                    )
+                    owner = cursor.fetchone()
+                    if owner and owner_member_id != member_id:
+                        upvoter_info = getUserInfo(cursor, member_id)
+                        if upvoter_info:
+                            if upvoter_info['userType'] == 'user':
+                                name_key = 'displayName'
+                            elif upvoter_info['userType'] == 'producer':
+                                name_key = 'producerName'
+                            else:
+                                name_key = 'venueName'
+                            upvoter_name = upvoter_info.get(name_key, 'Someone')
+                        else:
+                            upvoter_name = 'Someone'
+
+                        notification_data = {
+                            "userId":   owner['userID'],
+                            "userType": owner['userType'],
+                            "notiTabs": "forYou",
+                            "notiType": "club_comment_upvote",
+                            "image":    None,
+                            "link":     f"/club/{club_id}/post/{post_id}",
+                            "message":  f"{upvoter_name} upvoted your comment",
+                            "createdAt": current_time
+                        }
+                        print("Notification data:", notification_data)
+                        notifications.add_notification_to_db(notification_data)
+            
+            # Prepare the response
+            response_data = {
+                'code': 200,
+                'message': action_result['message'],
+                'liked': action_result['liked']
+            }
+            
+            if badge_result:
+                response_data['badgeUpdate'] = badge_result
+                
+            return jsonify(response_data), 200
+
+        except Exception as e:
+            print(f"Error in likeUnlikeComment: {str(e)}")
+            cursor.connection.rollback()
+            return jsonify({
+                "code": 500,
+                "message": "An error occurred processing the comment like/unlike action."
+            }), 500
 
 
 # -----------------------------------------------------------------------------------------
