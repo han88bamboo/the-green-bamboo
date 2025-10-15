@@ -26,6 +26,9 @@ from datetime import datetime, timedelta
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 # Use to upload image to S3
 import s3Images
 
@@ -111,25 +114,23 @@ def getUserInfoByID(cur, user_id, user_type):
 # Output: Possible return codes [200 - Retrieval success, 404 - No clubs found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubs/<offset>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
 def getClubs(offset):
-    conn = g.db
-    cur = conn.cursor()
     return_data = {}
 
     try:
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the 20 clubs
+            # ID: Used to define the starting ID to retrieve from
+            cursor.execute('SELECT * FROM "clubs" ORDER BY "totalMembers" DESC LIMIT 20 OFFSET %s', (offset,))
+            clubs_info = cursor.fetchall()
 
-        # Step 1: Get the 20 clubs
-        # ID: Used to define the starting ID to retrieve from
-        cur.execute('SELECT * FROM "clubs" ORDER BY "totalMembers" DESC LIMIT 20 OFFSET %s', (offset,))
-        clubs_info = cur.fetchall()
+            if not clubs_info:
+                return jsonify({
+                    'error': 'No clubs found in database'
+                }), 404
 
-        if not clubs_info:
             return jsonify({
-                'error': 'No clubs found in database'
-            }), 404
-
-        return jsonify({
-            'clubs_info': clubs_info
-        }), 200
+                'clubs_info': clubs_info
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -139,9 +140,6 @@ def getClubs(offset):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -151,32 +149,30 @@ def getClubs(offset):
 # Output: Possible return codes [200 - Retrieval success, 404 - No clubs found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubwSearch/<id>/<search>', methods=['GET']) # id is the starting ID to retrieve from (inclusive)
 def getClubwSearch(id, search):
-    conn = g.db
-    cur = conn.cursor()
     return_data = {}
 
     try:
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the 20 clubs
+            # ID: Used to define the starting ID to retrieve from
+            cursor.execute('''
+                SELECT * FROM "clubs"
+                WHERE ("clubName" ILIKE %s OR "clubDesc" ILIKE %s)
+                AND id >= %s
+                ORDER BY ("clubName" ILIKE %s OR "clubDesc" ILIKE %s) DESC, "id" ASC
+                LIMIT 20
+                ''', (f'%{search}%', f'%{search}%', id, f'%{search}%', f'%{search}%'))
 
-        # Step 1: Get the 20 clubs
-        # ID: Used to define the starting ID to retrieve from
-        cur.execute('''
-            SELECT * FROM "clubs"
-            WHERE ("clubName" ILIKE %s OR "clubDesc" ILIKE %s)
-            AND id >= %s
-            ORDER BY ("clubName" ILIKE %s OR "clubDesc" ILIKE %s) DESC, "id" ASC
-            LIMIT 20
-            ''', (f'%{search}%', f'%{search}%', id, f'%{search}%', f'%{search}%'))
+            clubs_info = cursor.fetchall()
 
-        clubs_info = cur.fetchall()
+            if not clubs_info:
+                return jsonify({
+                    'error': 'No clubs found in database'
+                }), 404
 
-        if not clubs_info:
             return jsonify({
-                'error': 'No clubs found in database'
-            }), 404
-
-        return jsonify({
-            'clubs_info': clubs_info
-        }), 200
+                'clubs_info': clubs_info
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -186,9 +182,6 @@ def getClubwSearch(id, search):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -198,38 +191,36 @@ def getClubwSearch(id, search):
 # Output: Possible return codes [200 - Retrieval success, 404 - No such club found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getSpecificClubInfo/<clubID>', methods=['GET'])
 def getSpecificClubInfo(clubID):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Get the club information
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (clubID,))
-        club_info = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the club information
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (clubID,))
+            club_info = cursor.fetchone()
 
-        if not club_info:
+            if not club_info:
+                return jsonify({
+                    'error': f'No such club found for club id: {clubID}'
+                }), 404
+
+            # Step 3: Get the admin details of the club
+            cursor.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE "clubID" = %s AND "isAdmin" = TRUE', (clubID,))
+            admins = cursor.fetchall()
+
+            # Step 4: Get the admin information from the respective table (users, producers or venues)
+            admin_data = []
+            for admin in admins:
+
+                # Get the user information for each admin
+                admin_details = getUserInfoByID(cursor, admin['userID'], admin['userType'])
+                
+                # Add the admin details into admin_data list
+                if admin_details:
+                    admin_data.append(admin_details)
+
             return jsonify({
-                'error': f'No such club found for club id: {clubID}'
-            }), 404
-
-        # Step 3: Get the admin details of the club
-        cur.execute('SELECT "userID", "userType" FROM "clubMembers" WHERE "clubID" = %s AND "isAdmin" = TRUE', (clubID,))
-        admins = cur.fetchall()
-
-        # Step 4: Get the admin information from the respective table (users, producers or venues)
-        admin_data = []
-        for admin in admins:
-
-            # Get the user information for each admin
-            admin_details = getUserInfoByID(cur, admin['userID'], admin['userType'])
-            
-            # Add the admin details into admin_data list
-            if admin_details:
-                admin_data.append(admin_details)
-
-        return jsonify({
-            'club_info': club_info,
-            'admins': admin_data
-        }), 200
+                'club_info': club_info,
+                'admins': admin_data
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -239,9 +230,6 @@ def getSpecificClubInfo(clubID):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -254,9 +242,6 @@ def getSpecificClubInfo(clubID):
 # Output: Possible return codes [200 - Retrieval success, 404 - No post/club found in database, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubPosts/<clubID>/<last_seen_id>', methods=['GET'])
 def getClubPosts(clubID, last_seen_id):
-    conn = g.db
-    cur = conn.cursor()
-
     # Dictionary to track if user information has been retrieved (reason being, a single user can post multiple post, this may help to reduce data being sent over to the frontend)
     users_retrieved_list = {}
 
@@ -264,80 +249,80 @@ def getClubPosts(clubID, last_seen_id):
     filtered_post_list = []
 
     try:
+        with db_manager.get_cursor() as cursor:
+            # check if club exists
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (clubID,))
+            club = cursor.fetchone()
 
-        # check if club exists
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (clubID,))
-        club = cur.fetchone()
+            if not club:
+                return jsonify({
+                    'error': f'No such club exist for club id: {clubID}'
+                }), 404
+            
+            # Set the limit here
+            limit = 10
 
-        if not club:
-            return jsonify({
-                'error': f'No such club exist for club id: {clubID}'
-            }), 404
-        
-        # Set the limit here
-        limit = 10
+            # Step 1: Get the top 10 latest post in that club
+            if last_seen_id == '0':
+                cursor.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s ORDER BY "postDate" DESC LIMIT %s', (clubID, limit,))
+            elif last_seen_id == '1':
+                cursor.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND id = 1', (clubID,))
+            else:
+                cursor.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND "id" < %s ORDER BY "postDate" DESC LIMIT %s', (clubID, last_seen_id, limit,))    
+            post_info = cursor.fetchall() # returns empty list if no result found
 
-        # Step 1: Get the top 10 latest post in that club
-        if last_seen_id == '0':
-            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s ORDER BY "postDate" DESC LIMIT %s', (clubID, limit,))
-        elif last_seen_id == '1':
-            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND id = 1', (clubID,))
-        else:
-            cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" = %s AND "id" < %s ORDER BY "postDate" DESC LIMIT %s', (clubID, last_seen_id, limit,))    
-        post_info = cur.fetchall() # returns empty list if no result found
+            if not post_info:
+                return jsonify({
+                    'error': 'No post yet'
+                }), 404
+            
+            # Step 2: Get the number of likes/dislikes and number of comments for each post and the poster's id, displayName, photo
+            for post in post_info:
+                posterID = post['posterID'] # This is the club member's ID
+                postID = post['id']
 
-        if not post_info:
-            return jsonify({
-                'error': 'No post yet'
-            }), 404
-        
-        # Step 2: Get the number of likes/dislikes and number of comments for each post and the poster's id, displayName, photo
-        for post in post_info:
-            posterID = post['posterID'] # This is the club member's ID
-            postID = post['id']
-
-            # Check if posterID is null
-            if not posterID:
-                # Move to the next post if the posterID is null
-                continue
-
-            # Get the poster's user ID and user type from the clubMembers table
-            if posterID not in users_retrieved_list:
-                poster_info = getUserInfo(cur, posterID)
-
-                if not poster_info:
-                    # Skip to the next post if the poster info is not found
+                # Check if posterID is null
+                if not posterID:
+                    # Move to the next post if the posterID is null
                     continue
 
-                users_retrieved_list[posterID] = poster_info
-                # Add poster info into post
-                post['posterInfo'] = poster_info
-            else:
-                post['posterInfo'] = users_retrieved_list[posterID]
+                # Get the poster's user ID and user type from the clubMembers table
+                if posterID not in users_retrieved_list:
+                    poster_info = getUserInfo(cursor, posterID)
 
-            # Get the total number of likes for each post
-            cur.execute('SELECT COUNT(*) AS "totalLikes" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
-            total_likes = cur.fetchone()
+                    if not poster_info:
+                        # Skip to the next post if the poster info is not found
+                        continue
 
-            # Add total likes into post
-            post['totalLikes'] = total_likes['totalLikes']
+                    users_retrieved_list[posterID] = poster_info
+                    # Add poster info into post
+                    post['posterInfo'] = poster_info
+                else:
+                    post['posterInfo'] = users_retrieved_list[posterID]
 
-            # Get the total number of dislikes for each post
-            cur.execute('SELECT COUNT(*) AS "totalDislikes" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
-            total_dislikes = cur.fetchone()
+                # Get the total number of likes for each post
+                cursor.execute('SELECT COUNT(*) AS "totalLikes" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
+                total_likes = cursor.fetchone()
 
-            # Add total dislikes into post
-            post['totalDislikes'] = total_dislikes['totalDislikes']
+                # Add total likes into post
+                post['totalLikes'] = total_likes['totalLikes']
 
-            # Get the total number of comments for each post
-            cur.execute('SELECT COUNT(*) AS "totalComments" FROM "clubPostComments" WHERE "postID" = %s', (postID,))
-            total_comments = cur.fetchone()
+                # Get the total number of dislikes for each post
+                cursor.execute('SELECT COUNT(*) AS "totalDislikes" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
+                total_dislikes = cursor.fetchone()
 
-            # Add total comments into post
-            post['totalComments'] = total_comments['totalComments']
+                # Add total dislikes into post
+                post['totalDislikes'] = total_dislikes['totalDislikes']
 
-            # Add post into filtered_post_list
-            filtered_post_list.append(post)
+                # Get the total number of comments for each post
+                cursor.execute('SELECT COUNT(*) AS "totalComments" FROM "clubPostComments" WHERE "postID" = %s', (postID,))
+                total_comments = cursor.fetchone()
+
+                # Add total comments into post
+                post['totalComments'] = total_comments['totalComments']
+
+                # Add post into filtered_post_list
+                filtered_post_list.append(post)
 
         return jsonify({
             'data': filtered_post_list
@@ -352,9 +337,6 @@ def getClubPosts(clubID, last_seen_id):
             }
         ), 500
 
-    finally:
-        cur.close()
-
 
 # -----------------------------------------------------------------------------------------
 # [GET] getClubPostDetails
@@ -363,9 +345,6 @@ def getClubPosts(clubID, last_seen_id):
 # Output: Possible return codes [200 - Retrieval success (with or without comments), 404 - No such post exist, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubPostDetails/<postID>/<last_seen_id>', methods=['GET']) 
 def getClubPostDetails(postID, last_seen_id):
-    conn = g.db
-    cur = conn.cursor()
-
     # Dictionary to track if user information has been retrieved (reason being, a single user can post multiple post, this may help to reduce data being sent over to the frontend)
     users_retrieved_list = {}
 
@@ -373,110 +352,111 @@ def getClubPostDetails(postID, last_seen_id):
     filtered_comment_list = []
 
     try:
-        # check if post exist
-        cur.execute('SELECT * FROM "clubPosts" WHERE "id" = %s', (postID,))
-        post = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # check if post exist
+            cursor.execute('SELECT * FROM "clubPosts" WHERE "id" = %s', (postID,))
+            post = cursor.fetchone()
 
-        if not post:
-            return jsonify({
-                'error': f"No such post for this post id {postID}"
-            }), 404
-        
-        # Step 1: Get the poster information
-        posterID = post['posterID']
+            if not post:
+                return jsonify({
+                    'error': f"No such post for this post id {postID}"
+                }), 404
+            
+            # Step 1: Get the poster information
+            posterID = post['posterID']
 
-        # Check if posterID is null
-        if not posterID:
-            return jsonify({
-                'error': 'No poster ID found for this post'
-            }), 404
-        
-        poster_info = getUserInfo(cur, posterID)
+            # Check if posterID is null
+            if not posterID:
+                return jsonify({
+                    'error': 'No poster ID found for this post'
+                }), 404
+            
+            poster_info = getUserInfo(cursor, posterID)
 
-        if not poster_info:
-            return jsonify({
-                'error': 'No such user for the given poster ID'
-            }), 404
+            if not poster_info:
+                return jsonify({
+                    'error': 'No such user for the given poster ID'
+                }), 404
 
-        # Step 2: Get a list of members who liked and disliked the post
-        cur.execute('SELECT "memberID" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
-        liked_members = cur.fetchall()
+            # Step 2: Get a list of members who liked and disliked the post
+            cursor.execute('SELECT "memberID" FROM "clubPostsLikes" WHERE "postID" = %s', (postID,))
+            liked_members = cursor.fetchall()
 
-        # Format the liked_members into a list of memberID
-        liked_members_list = [member['memberID'] for member in liked_members]
-        post['likedMembers'] = liked_members_list
+            # Format the liked_members into a list of memberID
+            liked_members_list = [member['memberID'] for member in liked_members]
+            post['likedMembers'] = liked_members_list
 
-        # Get a list of members who disliked the post
-        cur.execute('SELECT "memberID" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
-        disliked_members = cur.fetchall()
+            # Get a list of members who disliked the post
+            cursor.execute('SELECT "memberID" FROM "clubPostsDislikes" WHERE "postID" = %s', (postID,))
+            disliked_members = cursor.fetchall()
 
-        # Format the disliked_members into a list of memberID
-        disliked_members_list = [member['memberID'] for member in disliked_members]
-        post['dislikedMembers'] = disliked_members_list
+            # Format the disliked_members into a list of memberID
+            disliked_members_list = [member['memberID'] for member in disliked_members]
+            post['dislikedMembers'] = disliked_members_list
 
-        # Step 4: Get the latest 20 comments for the specific post
-        # Step the limit here 
-        limit = 20
-        if last_seen_id == '0':
-            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s ORDER BY "commentDate" DESC LIMIT %s', (postID, limit,))
-        elif last_seen_id == '1':
-            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND id = 1', (postID,))
-        else:
-            cur.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND "id" < %s ORDER BY "commentDate" DESC LIMIT %s', (postID, last_seen_id, limit,))
-        comments_info = cur.fetchall()
+            # Step 4: Get the latest 20 comments for the specific post
+            # Step the limit here 
+            limit = 20
+            if last_seen_id == '0':
+                cursor.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s ORDER BY "commentDate" DESC LIMIT %s', (postID, limit,))
+            elif last_seen_id == '1':
+                cursor.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND id = 1', (postID,))
+            else:
+                cursor.execute('SELECT * FROM "clubPostComments" WHERE "postID" = %s AND "id" < %s ORDER BY "commentDate" DESC LIMIT %s', (postID, last_seen_id, limit,))
+            comments_info = cursor.fetchall()
 
-        if not comments_info:
-            return jsonify({
-                'post_info': post,
-                'poster_info': poster_info,
-                'comments': []
-            }), 200
-        
-        # Step 4: Get the total likes, commenter's id, displayName and photo
-        for comment in comments_info:
-            commenterID = comment['commenterID']
+            if not comments_info:
+                return jsonify({
+                    'post_info': post,
+                    'poster_info': poster_info,
+                    'comments': []
+                }), 200
+            
+            # Step 4: Get the total likes, commenter's id, displayName and photo
+            for comment in comments_info:
+                commenterID = comment['commenterID']
 
-            # Check if commenterID is null
-            if not commenterID:
-                # Skip to the next comment if commenterID is null
-                continue
-
-            # Get the commenter's user ID and user type from the clubMembers table
-            if commenterID not in users_retrieved_list:
-                commenter_info = getUserInfo(cur, commenterID)
-
-                if not commenter_info:
-                    # Skip to the next comment if the commenter info is not found
+                # Check if commenterID is null
+                if not commenterID:
+                    # Skip to the next comment if commenterID is null
                     continue
 
-                users_retrieved_list[commenterID] = commenter_info
-                # Add commenter info into comment
-                comment['commenterInfo'] = commenter_info
-            else:
-                comment['commenterInfo'] = users_retrieved_list[commenterID]
+                # Get the commenter's user ID and user type from the clubMembers table
+                if commenterID not in users_retrieved_list:
+                    commenter_info = getUserInfo(cursor, commenterID)
 
-            # Get a list of members who liked the comment
-            cur.execute('SELECT "memberID" FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment['id'],))
-            comments_liked_members = cur.fetchall()
+                    if not commenter_info:
+                        # Skip to the next comment if the commenter info is not found
+                        continue
 
-            # Format the comments_liked_members into a list of memberID
-            comments_liked_members_list = [member['memberID'] for member in comments_liked_members]
+                    users_retrieved_list[commenterID] = commenter_info
+                    # Add commenter info into comment
+                    comment['commenterInfo'] = commenter_info
+                else:
+                    comment['commenterInfo'] = users_retrieved_list[commenterID]
 
-            # Add comments_liked_members into comment
-            comment['likedMembers'] = comments_liked_members_list
+                # Get a list of members who liked the comment
+                cursor.execute('SELECT "memberID" FROM "clubPostCommentsLikes" WHERE "commentID" = %s', (comment['id'],))
+                comments_liked_members = cursor.fetchall()
 
-            # Get a list of members who disliked the comment
-            cur.execute('SELECT "memberID" FROM "clubPostCommentsDislikes" WHERE "commentID" = %s', (comment['id'],))
-            comments_disliked_members = cur.fetchall()
+                # Format the comments_liked_members into a list of memberID
+                comments_liked_members_list = [member['memberID'] for member in comments_liked_members]
 
-            # Format the comments_disliked_members into a list of memberID
-            comments_disliked_members_list = [member['memberID'] for member in comments_disliked_members]
+                # Add comments_liked_members into comment
+                comment['likedMembers'] = comments_liked_members_list
 
-            # Add comments_disliked_members into comment
-            comment['dislikedMembers'] = comments_disliked_members_list
+                # Get a list of members who disliked the comment
+                cursor.execute('SELECT "memberID" FROM "clubPostCommentsDislikes" WHERE "commentID" = %s', (comment['id'],))
+                comments_disliked_members = cursor.fetchall()
 
-            # Add comment into filtered_comment_list
-            filtered_comment_list.append(comment)
+                # Format the comments_disliked_members into a list of memberID
+                comments_disliked_members_list = [member['memberID'] for member in comments_disliked_members]
+
+                # Add comments_disliked_members into comment
+                comment['dislikedMembers'] = comments_disliked_members_list
+
+                # Add comment into filtered_comment_list
+                filtered_comment_list.append(comment)
 
         return jsonify({
             'post_info': post,
@@ -493,9 +473,6 @@ def getClubPostDetails(postID, last_seen_id):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -507,42 +484,40 @@ def getClubPostDetails(postID, last_seen_id):
 # Output: Possible return codes [200 - User has requested to join / User is a member, 404 - User is not a member, 500 - An error occurred retrieving the request]
 @blueprint.route('/checkUserMembership/<userID>/<userType>/<clubID>', methods=['GET'])
 def checkUserMembership(userID, userType, clubID):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Check if user has requested to join the club
-        cur.execute('SELECT * FROM "clubRequests" WHERE "userID" = %s AND "userType" = %s AND "clubID" = %s', (userID, userType, clubID,))
-        request = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if user has requested to join the club
+            cursor.execute('SELECT * FROM "clubRequests" WHERE "userID" = %s AND "userType" = %s AND "clubID" = %s', (userID, userType, clubID,))
+            request = cursor.fetchone()
 
-        if request:
+            if request:
+                return jsonify({
+                    'isRequested': True
+                }), 200
+            
+            # Step 2: Check if the user has been invited to join the club
+            cursor.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s AND "clubID" = %s' , (userID, userType, clubID,))
+            invite = cursor.fetchone()
+
+            if invite:
+                return jsonify({
+                    'isInvited': True
+                }), 200
+
+            # Step 3: Check if the user is already a member of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (clubID, userID, userType,))
+            member = cursor.fetchone()
+
+            if not member:
+                return jsonify({
+                    'error': 'User is not a member'
+                }), 404
+            
             return jsonify({
-                'isRequested': True
+                'isMember': True,
+                'isAdmin': member.get('isAdmin'),
+                'memberID': member.get('id')
             }), 200
-        
-        # Step 2: Check if the user has been invited to join the club
-        cur.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s AND "clubID" = %s' , (userID, userType, clubID,))
-        invite = cur.fetchone()
-
-        if invite:
-            return jsonify({
-                'isInvited': True
-            }), 200
-
-        # Step 3: Check if the user is already a member of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (clubID, userID, userType,))
-        member = cur.fetchone()
-
-        if not member:
-            return jsonify({
-                'error': 'User is not a member'
-            }), 404
-        
-        return jsonify({
-            'isMember': True,
-            'isAdmin': member.get('isAdmin'),
-            'memberID': member.get('id')
-        }), 200
 
     except Exception as e:
         print(str(e))
@@ -552,9 +527,6 @@ def checkUserMembership(userID, userType, clubID):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -564,29 +536,27 @@ def checkUserMembership(userID, userType, clubID):
 # Output: Possible return codes [200 - Retrieval success, 404 - No liked posts found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserLikesDislikesPost/<memberID>/<clubID>', methods=['GET'])
 def getUserLikesDislikesPost(memberID, clubID):
-    conn = g.db
-    cur = conn.cursor()
-
     try: 
-        cur.execute('SELECT "postID" FROM "clubPostsLikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
-        liked_posts = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT "postID" FROM "clubPostsLikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
+            liked_posts = cursor.fetchall()
 
-        cur.execute('SELECT "postID" FROM "clubPostsDislikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
-        disliked_posts = cur.fetchall()
+            cursor.execute('SELECT "postID" FROM "clubPostsDislikes" WHERE "memberID" = %s AND "clubID" = %s' , (memberID, clubID,))
+            disliked_posts = cursor.fetchall()
 
+            
+            # Format the liked_posts into a list of postID
+            if liked_posts:
+                liked_posts = [post['postID'] for post in liked_posts]
+
+            # Format the disliked_posts into a list of postID
+            if disliked_posts:
+                disliked_posts = [post['postID'] for post in disliked_posts]
         
-        # Format the liked_posts into a list of postID
-        if liked_posts:
-            liked_posts = [post['postID'] for post in liked_posts]
-
-        # Format the disliked_posts into a list of postID
-        if disliked_posts:
-            disliked_posts = [post['postID'] for post in disliked_posts]
-    
-        return jsonify({
-            'liked_posts': liked_posts,
-            'disliked_posts': disliked_posts
-        }), 200
+            return jsonify({
+                'liked_posts': liked_posts,
+                'disliked_posts': disliked_posts
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -596,9 +566,6 @@ def getUserLikesDislikesPost(memberID, clubID):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -608,28 +575,26 @@ def getUserLikesDislikesPost(memberID, clubID):
 # Output: Possible return codes [200 - Retrieval success, 404 - No liked comments found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserLikesDislikesComments/<memberID>/<postID>', methods=['GET'])
 def getUserLikesDislikesComments(memberID, postID):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT "commentID" FROM "clubPostCommentsLikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
-        liked_comments = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT "commentID" FROM "clubPostCommentsLikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
+            liked_comments = cursor.fetchall()
 
-        cur.execute('SELECT "commentID" FROM "clubPostCommentsDislikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
-        disliked_comments = cur.fetchall()
-       
-        # Format the liked_comments into a list of commentID
-        if liked_comments:
-            liked_comments_list = [comment['commentID'] for comment in liked_comments]
+            cursor.execute('SELECT "commentID" FROM "clubPostCommentsDislikes" WHERE "memberID" = %s AND "postID" = %s', (memberID, postID,))
+            disliked_comments = cursor.fetchall()
+           
+            # Format the liked_comments into a list of commentID
+            if liked_comments:
+                liked_comments_list = [comment['commentID'] for comment in liked_comments]
 
-        # Format the disliked_comments into a list of commentID
-        if disliked_comments:
-            disliked_comments_list = [comment['commentID'] for comment in disliked_comments]
+            # Format the disliked_comments into a list of commentID
+            if disliked_comments:
+                disliked_comments_list = [comment['commentID'] for comment in disliked_comments]
 
-        return jsonify({
-            'liked_comments': liked_comments_list,
-            'disliked_comments': disliked_comments_list
-        }), 200
+            return jsonify({
+                'liked_comments': liked_comments_list,
+                'disliked_comments': disliked_comments_list
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -639,9 +604,6 @@ def getUserLikesDislikesComments(memberID, postID):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -651,46 +613,44 @@ def getUserLikesDislikesComments(memberID, postID):
 # Output: Possible return codes [200 - Retrieval success, 404 - No clubs found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserClubs/<userID>/<userType>', methods=['GET'])
 def getUserClubs(userID, userType):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        cur.execute('SELECT "clubID", "isAdmin" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
-        user_clubs = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT "clubID", "isAdmin" FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
+            user_clubs = cursor.fetchall()
 
-        if not user_clubs:
-            return jsonify({
-                'error': 'No clubs found'
-            }), 404
-        
-        # Loop through all the user clubs and add them into 3 list (user_clubs_ids, user_club_member, user_club_admin)
-        user_clubs_ids = []
-        user_club_member = []
-        user_club_admin = []
+            if not user_clubs:
+                return jsonify({
+                    'error': 'No clubs found'
+                }), 404
+            
+            # Loop through all the user clubs and add them into 3 list (user_clubs_ids, user_club_member, user_club_admin)
+            user_clubs_ids = []
+            user_club_member = []
+            user_club_admin = []
 
-        for club in user_clubs:
-            user_clubs_ids.append(club['clubID'])
+            for club in user_clubs:
+                user_clubs_ids.append(club['clubID'])
 
-            # Get the club id, clubName, clubBanner
-            cur.execute('SELECT "id", "clubName", "clubBanner", "isInviteOnly" FROM "clubs" WHERE id = %s', (club['clubID'],))
-            club_info = cur.fetchone()
+                # Get the club id, clubName, clubBanner
+                cursor.execute('SELECT "id", "clubName", "clubBanner", "isInviteOnly" FROM "clubs" WHERE id = %s', (club['clubID'],))
+                club_info = cursor.fetchone()
 
-            if not club_info:
-                # Skip to the next club if the club info is not found
-                continue
+                if not club_info:
+                    # Skip to the next club if the club info is not found
+                    continue
 
-            # Add club info into club
-            club['clubInfo'] = club_info
+                # Add club info into club
+                club['clubInfo'] = club_info
 
-            # Get the club's total members
-            cur.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s', (club['clubID'],))
-            total_members = cur.fetchone()
-            club['totalMembers'] = total_members['totalMembers']
+                # Get the club's total members
+                cursor.execute('SELECT COUNT(*) AS "totalMembers" FROM "clubMembers" WHERE "clubID" = %s', (club['clubID'],))
+                total_members = cursor.fetchone()
+                club['totalMembers'] = total_members['totalMembers']
 
-            if club['isAdmin']:
-                user_club_admin.append(club)
-            else:
-                user_club_member.append(club)
+                if club['isAdmin']:
+                    user_club_admin.append(club)
+                else:
+                    user_club_member.append(club)
 
         return jsonify({
             'user_clubs': user_clubs_ids,
@@ -706,9 +666,6 @@ def getUserClubs(userID, userType):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -718,45 +675,44 @@ def getUserClubs(userID, userType):
 # Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubMembers/<clubID>/<last_seen_id>', methods=['GET'])
 def getClubMembers(clubID, last_seen_id):
-    conn = g.db
-    cur = conn.cursor()
 
     # Set the limit here 
     limit = 1
 
     try:
-        # Step 1: Get the members of the club
-        if last_seen_id == '0':
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
-        elif last_seen_id == '1':
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
-        else:
-            cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
-        members = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the members of the club
+            if last_seen_id == '0':
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+            elif last_seen_id == '1':
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+            else:
+                cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
+            members = cursor.fetchall()
 
-        if not members:
-            return jsonify({
-                'error': 'No members found'
-            }), 404
-        
-        # Step 2: Get the user information for each member
-        for member in members:
-            member_id = member['id']
-            member_info = getUserInfo(cur, member_id)
+            if not members:
+                return jsonify({
+                    'error': 'No members found'
+                }), 404
+            
+            # Step 2: Get the user information for each member
+            for member in members:
+                member_id = member['id']
+                member_info = getUserInfo(cursor, member_id)
 
-            if not member_info:
-                # Skip to the next member if the member info is not found
-                continue
+                if not member_info:
+                    # Skip to the next member if the member info is not found
+                    continue
 
-            member_info['isAdmin'] = member['isAdmin']
-            member_info['memberID'] = member_id
-            member_info['joinDate'] = member['joinDate']
+                member_info['isAdmin'] = member['isAdmin']
+                member_info['memberID'] = member_id
+                member_info['joinDate'] = member['joinDate']
 
-            # Add member info into members
-            member.update(member_info)
+                # Add member info into members
+                member.update(member_info)
 
-            # Remove the id from the member
-            member.pop('clubID')
+                # Remove the id from the member
+                member.pop('clubID')
 
         return jsonify({
             'members': members
@@ -770,9 +726,6 @@ def getClubMembers(clubID, last_seen_id):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -782,41 +735,39 @@ def getClubMembers(clubID, last_seen_id):
 # Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getFirstFewClubMembers/<clubID>', methods=['GET'])
 def getFirstFewClubMembers(clubID):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Get the first few members of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" ASC LIMIT 4', (clubID,))
-        members = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the first few members of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s ORDER BY "id" ASC LIMIT 4', (clubID,))
+            members = cursor.fetchall()
 
-        if not members:
+            if not members:
+                return jsonify({
+                    'error': 'No members found'
+                }), 404
+            
+            # Step 2: Get the user information for each member
+            for member in members:
+                member_id = member['id']
+                member_info = getUserInfo(cursor, member_id)
+
+                if not member_info:
+                    # Skip to the next member if the member info is not found
+                    continue
+
+                member_info['isAdmin'] = member['isAdmin']
+                member_info['memberID'] = member_id
+                member_info['joinDate'] = member['joinDate']
+
+                # Add member info into members
+                member.update(member_info)
+
+                # Remove the id from the member
+                member.pop('clubID')
+
             return jsonify({
-                'error': 'No members found'
-            }), 404
-        
-        # Step 2: Get the user information for each member
-        for member in members:
-            member_id = member['id']
-            member_info = getUserInfo(cur, member_id)
-
-            if not member_info:
-                # Skip to the next member if the member info is not found
-                continue
-
-            member_info['isAdmin'] = member['isAdmin']
-            member_info['memberID'] = member_id
-            member_info['joinDate'] = member['joinDate']
-
-            # Add member info into members
-            member.update(member_info)
-
-            # Remove the id from the member
-            member.pop('clubID')
-
-        return jsonify({
-            'members': members
-        }), 200
+                'members': members
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -826,9 +777,6 @@ def getFirstFewClubMembers(clubID):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -838,53 +786,48 @@ def getFirstFewClubMembers(clubID):
 # Output: Possible return codes [200 - Retrieval success, 404 - No members found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getAllClubMembers/<clubID>', methods=['GET'])
 def getAllClubMembers(clubID): 
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            # Step 1: Get all the members of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s', (clubID,))
+            members = cursor.fetchall()
 
-    try:
-        # Step 1: Get all the members of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s', (clubID,))
-        members = cur.fetchall()
+            if not members:
+                return jsonify({
+                    'error': 'No members found'
+                }), 404
+            
+            # Step 2: Get the user information for each member
+            for member in members:
+                member_id = member['id']
+                member_info = getUserInfo(cursor, member_id)
 
-        if not members:
+                if not member_info:
+                    # Skip to the next member if the member info is not found
+                    continue
+
+                member_info['isAdmin'] = member['isAdmin']
+                member_info['memberID'] = member_id
+                member_info['joinDate'] = member['joinDate']
+
+                # Add member info into members
+                member.update(member_info)
+
+                # Remove the id from the member
+                member.pop('clubID')
+
             return jsonify({
-                'error': 'No members found'
-            }), 404
-        
-        # Step 2: Get the user information for each member
-        for member in members:
-            member_id = member['id']
-            member_info = getUserInfo(cur, member_id)
+                'members': members
+            }), 200
 
-            if not member_info:
-                # Skip to the next member if the member info is not found
-                continue
-
-            member_info['isAdmin'] = member['isAdmin']
-            member_info['memberID'] = member_id
-            member_info['joinDate'] = member['joinDate']
-
-            # Add member info into members
-            member.update(member_info)
-
-            # Remove the id from the member
-            member.pop('clubID')
-
-        return jsonify({
-            'members': members
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving the request."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred retrieving the request."
+                }
+            ), 500
 
 
 
@@ -899,59 +842,54 @@ def getInvitedMembers(clubID, last_seen_id):
     # Set the limit here
     limit = 1
 
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            # Step 1: Get the requests of the club
+            if last_seen_id == '0':
+                cursor.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+            elif last_seen_id == '1':
+                cursor.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+            else:
+                cursor.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
+            invitees = cursor.fetchall()
 
-    try:
-        # Step 1: Get the requests of the club
-        if last_seen_id == '0':
-            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
-        elif last_seen_id == '1':
-            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
-        else:
-            cur.execute('SELECT * FROM "clubInvites" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
-        invitees = cur.fetchall()
-
-        if not invitees:
-            return jsonify({
-                'error': 'No invites found'
-            }), 404
-        
-        # Step 2: Get the user information for each member
-        for member in invitees:
-
-            user_id = member['inviteeID']
-            user_type = member['inviteeUserType']
+            if not invitees:
+                return jsonify({
+                    'error': 'No invites found'
+                }), 404
             
-            user_info = getUserInfoByID(cur, user_id, user_type)
+            # Step 2: Get the user information for each member
+            for member in invitees:
 
-            if not user_info:
-                # Skip to the next member if the member info is not found
-                continue
+                user_id = member['inviteeID']
+                user_type = member['inviteeUserType']
+                
+                user_info = getUserInfoByID(cursor, user_id, user_type)
 
-            # Add member info into members
-            member.update(user_info)
+                if not user_info:
+                    # Skip to the next member if the member info is not found
+                    continue
 
-            # Remove the id from the member
-            member.pop('clubID')
-            member.pop('inviterID')
-            member.pop('inviterUserType')
+                # Add member info into members
+                member.update(user_info)
 
-        return jsonify({
-            'invitees': invitees
-        }), 200
+                # Remove the id from the member
+                member.pop('clubID')
+                member.pop('inviterID')
+                member.pop('inviterUserType')
 
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving the request."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+            return jsonify({
+                'invitees': invitees
+            }), 200
+
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred retrieving the request."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -961,74 +899,69 @@ def getInvitedMembers(clubID, last_seen_id):
 # Output: Possible return codes [200 - Retrieval success, 404 - No requests found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getClubRequests/<clubID>/<last_seen_id>', methods=['GET'])
 def getClubRequests(clubID, last_seen_id):
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        # Set the limit here
+        limit = 1
 
-    # Set the limit here
-    limit = 1
+        try:
+            # Step 1: Get the requests of the club
+            if last_seen_id == '0':
+                cursor.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
+            elif last_seen_id == '1':
+                cursor.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
+            else:
+                cursor.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
+            requests = cursor.fetchall()
 
-    try:
-        # Step 1: Get the requests of the club
-        if last_seen_id == '0':
-            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s ORDER BY "id" DESC LIMIT %s', (clubID, limit,))
-        elif last_seen_id == '1':
-            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s LIMIT %s', (clubID, limit,))
-        else:
-            cur.execute('SELECT * FROM "clubRequests" WHERE "clubID" = %s AND "id" < %s ORDER BY "id" DESC LIMIT %s', (clubID, last_seen_id, limit,))
-        requests = cur.fetchall()
+            if not requests:
+                return jsonify({
+                    'error': 'No requests found'
+                }), 404
+            
+            # Step 2: Get the user information for each request
+            for request in requests:
 
-        if not requests:
+                # Get the user information for each request
+                user_id = request['userID']
+                user_type = request['userType']
+
+                if not user_id:
+                    # Skip to the next request if the user id is null
+                    continue
+
+                user_info = getUserInfoByID(cursor, user_id, user_type)
+
+                # Remove the user id from user_info as the user id is already in the request
+                user_info.pop('id')
+
+                # Add user info into requests
+                request.update(user_info)
+
+                # Remove the club id from the request
+                request.pop('clubID')
+
+                # Rename the id to requestID
+                request['requestID'] = request.pop('id')
+
+            # Get the total number of requests in the club
+            cursor.execute('SELECT COUNT(*) AS "totalRequests" FROM "clubRequests" WHERE "clubID" = %s', (clubID,))
+            total_requests = cursor.fetchone()
+
+            total_requests = total_requests['totalRequests']
+
             return jsonify({
-                'error': 'No requests found'
-            }), 404
-        
-        # Step 2: Get the user information for each request
-        for request in requests:
+                'requests': requests,
+                'totalRequests': total_requests
+            }), 200
 
-            # Get the user information for each request
-            user_id = request['userID']
-            user_type = request['userType']
-
-            if not user_id:
-                # Skip to the next request if the user id is null
-                continue
-
-            user_info = getUserInfoByID(cur, user_id, user_type)
-
-            # Remove the user id from user_info as the user id is already in the request
-            user_info.pop('id')
-
-            # Add user info into requests
-            request.update(user_info)
-
-            # Remove the club id from the request
-            request.pop('clubID')
-
-            # Rename the id to requestID
-            request['requestID'] = request.pop('id')
-
-        # Get the total number of requests in the club
-        cur.execute('SELECT COUNT(*) AS "totalRequests" FROM "clubRequests" WHERE "clubID" = %s', (clubID,))
-        total_requests = cur.fetchone()
-
-        total_requests = total_requests['totalRequests']
-
-        return jsonify({
-            'requests': requests,
-            'totalRequests': total_requests
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred retrieving the request."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred retrieving the request."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1038,32 +971,28 @@ def getClubRequests(clubID, last_seen_id):
 # Output: Possible return codes [200 - Retrieval success, 404 - No requests found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserClubRequests/<userID>/<userType>', methods=['GET'])
 def getUserClubRequests(userID, userType):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Check if user has any requests
-        cur.execute('SELECT * FROM "clubRequests" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
-        requests = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Check if user has any requests
+            cursor.execute('SELECT * FROM "clubRequests" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
+            requests = cursor.fetchall()
 
-        if not requests:
+            if not requests:
+                return jsonify({
+                    'error': 'No requests found'
+                }), 404
+
+            club_request_list = []
+            # Convert the requests into a list of clubID
+            for request in requests:
+                club_request_list.append(request['clubID'])
+
             return jsonify({
-                'error': 'No requests found'
-            }), 404
-
-        club_request_list = []
-        # Convert the requests into a list of clubID
-        for request in requests:
-            club_request_list.append(request['clubID'])
-
-        return jsonify({
-            'club_request_list': club_request_list
-        }), 200
+                'club_request_list': club_request_list
+            }), 200
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
@@ -1079,48 +1008,45 @@ def getUserClubRequests(userID, userType):
 # Output: Possible return codes [200 - Retrieval success, 404 - No invites found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getUserInvitedClubs/<userID>/<userType>', methods=['GET'])
 def getUserInvitedClubs(userID, userType):
-    conn = g.db
-    cur = conn.cursor()
+    with db_manager.get_cursor() as cursor:
+        try:
+            # Check if user has any invites
+            cursor.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s', (userID, userType,))
+            invites = cursor.fetchall()
 
-    try:
-        # Check if user has any invites
-        cur.execute('SELECT * FROM "clubInvites" WHERE "inviteeID" = %s AND "inviteeUserType" = %s', (userID, userType,))
-        invites = cur.fetchall()
+            if not invites:
+                return jsonify({
+                    'error': 'No invites found'
+                }), 404
+            
+            # Get the club name for each invite
+            for invite in invites:
+                clubID = invite['clubID']
+                cursor.execute('SELECT "clubName" FROM "clubs" WHERE "id" = %s', (clubID,))
+                club_name = cursor.fetchone()
 
-        if not invites:
+                # Get the user information for each invite
+                user_info = getUserInfoByID(cursor, invite['inviterID'], invite['inviterUserType'])
+
+                # Add club name into invite
+                invite['clubName'] = club_name['clubName']
+
+                # Add user info into invite
+                invite['inviterInfo'] = user_info
+
             return jsonify({
-                'error': 'No invites found'
-            }), 404
-        
-        # Get the club name for each invite
-        for invite in invites:
-            clubID = invite['clubID']
-            cur.execute('SELECT "clubName" FROM "clubs" WHERE "id" = %s', (clubID,))
-            club_name = cur.fetchone()
+                'club_invite_list': invites
+            }), 200
 
-            # Get the user information for each invite
-            user_info = getUserInfoByID(cur, invite['inviterID'], invite['inviterUserType'])
-
-            # Add club name into invite
-            invite['clubName'] = club_name['clubName']
-
-            # Add user info into invite
-            invite['inviterInfo'] = user_info
-
-        return jsonify({
-            'club_invite_list': invites
-        }), 200
-
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred creating the club."
-            }
-        ), 500
+        except Exception as e:
+            print(str(e))
+            # Connection pooling handles rollback automatically on exceptions
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred creating the club."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1130,62 +1056,60 @@ def getUserInvitedClubs(userID, userType):
 # Output: Possible return codes [200 - Retrieval success, 404 - No recent activities found, 500 - An error occurred retrieving the request]
 @blueprint.route('/getRecentActivity/<userID>/<userType>', methods=['GET'])
 def getRecentActivity(userID, userType):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        # Step 1: Get all the clubs that the user is a member of
-        cur.execute('SELECT "clubID", id FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
-        user_clubs = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get all the clubs that the user is a member of
+            cursor.execute('SELECT "clubID", id FROM "clubMembers" WHERE "userID" = %s AND "userType" = %s', (userID, userType,))
+            user_clubs = cursor.fetchall()
 
-        if not user_clubs:
+            if not user_clubs:
+                return jsonify({
+                    'error': 'No clubs found'
+                }), 404
+            
+            # Convert the user_clubs into a tuple
+            user_clubs_tuple = tuple([club['clubID'] for club in user_clubs])
+            
+            # Step 2: Get the 5 most recent activities in any club that the user is a member of
+            cursor.execute('SELECT * FROM "clubPosts" WHERE "clubID" IN %s ORDER BY "postDate" DESC LIMIT 5', (user_clubs_tuple,))
+            recent_activities = cursor.fetchall()
+
+            if not recent_activities:
+                return jsonify({
+                    'error': 'No recent activities found'
+                }), 404
+
+            
+            # Step 3: Get the poster information for each activity and club name
+            for activity in recent_activities:
+                poster_id = activity['posterID']
+
+                # Get the user information for each poster
+                poster_info = getUserInfo(cursor, poster_id)
+
+                # Add poster info into activity
+                activity['posterInfo'] = poster_info
+
+                # Get the club name for each activity
+                clubID = activity['clubID']
+                cursor.execute('SELECT "clubName", "clubBanner" FROM "clubs" WHERE "id" = %s', (clubID,))
+                club_name = cursor.fetchone()
+
+                # Get the user's memberID in the club from user_clubs
+                memberID = None
+                for club in user_clubs:
+                    if club['clubID'] == clubID:
+                        memberID = club['id']
+                        break
+
+                # Add club name, member ID and club banner into activity
+                activity['clubName'] = club_name['clubName']
+                activity['memberID'] = memberID
+                activity['clubBanner'] = club_name['clubBanner']
+
             return jsonify({
-                'error': 'No clubs found'
-            }), 404
-        
-        # Convert the user_clubs into a tuple
-        user_clubs_tuple = tuple([club['clubID'] for club in user_clubs])
-        
-        # Step 2: Get the 5 most recent activities in any club that the user is a member of
-        cur.execute('SELECT * FROM "clubPosts" WHERE "clubID" IN %s ORDER BY "postDate" DESC LIMIT 5', (user_clubs_tuple,))
-        recent_activities = cur.fetchall()
-
-        if not recent_activities:
-            return jsonify({
-                'error': 'No recent activities found'
-            }), 404
-
-        
-        # Step 3: Get the poster information for each activity and club name
-        for activity in recent_activities:
-            poster_id = activity['posterID']
-
-            # Get the user information for each poster
-            poster_info = getUserInfo(cur, poster_id)
-
-            # Add poster info into activity
-            activity['posterInfo'] = poster_info
-
-            # Get the club name for each activity
-            clubID = activity['clubID']
-            cur.execute('SELECT "clubName", "clubBanner" FROM "clubs" WHERE "id" = %s', (clubID,))
-            club_name = cur.fetchone()
-
-            # Get the user's memberID in the club from user_clubs
-            memberID = None
-            for club in user_clubs:
-                if club['clubID'] == clubID:
-                    memberID = club['id']
-                    break
-
-            # Add club name, member ID and club banner into activity
-            activity['clubName'] = club_name['clubName']
-            activity['memberID'] = memberID
-            activity['clubBanner'] = club_name['clubBanner']
-
-        return jsonify({
-            'recent_activities': recent_activities
-        }), 200
+                'recent_activities': recent_activities
+            }), 200
 
     except Exception as e:
         print(str(e))
@@ -1195,9 +1119,6 @@ def getRecentActivity(userID, userType):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -1207,11 +1128,7 @@ def getRecentActivity(userID, userType):
 # Output: Possible return codes [200 - User can create a club, 400 - User cannot create a club, 500 - An error occurred retrieving the request]
 @blueprint.route('/canCreate/<userID>/<userType>', methods=['GET'])
 def canCreate(userID, userType):
-    conn = g.db
-    cur = conn.cursor()
-
     try:
-        
         # Step 1: Check if the user is a valid type user
         if userType not in ['user', 'producer', 'venue']:
             return jsonify({
@@ -1250,8 +1167,9 @@ def canCreate(userID, userType):
         # Check for user type: producer or venue
         max_num_clubs = 2 # Max club for producer and venue is 2
 
-        cur.execute('SELECT * FROM "clubs" WHERE "createdByID" = %s AND "createdByType" = %s', (userID, userType,))
-        club = cur.fetchall()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "clubs" WHERE "createdByID" = %s AND "createdByType" = %s', (userID, userType,))
+            club = cursor.fetchall()
 
         if club and len(club) == max_num_clubs:
             return jsonify({
@@ -1274,9 +1192,6 @@ def canCreate(userID, userType):
                 "message": "An error occurred retrieving the request."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -1293,9 +1208,6 @@ def canCreate(userID, userType):
 # Output: Possible return codes [201 - Club created successfully, 400 - Missing required data, 500 - An error occurred creating the club]
 @blueprint.route('/createClubs', methods=['POST'])
 def createClub():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -1322,15 +1234,15 @@ def createClub():
         else:
             image64 = None
 
-        # Step 3: Insert the new club into the database
-        cur.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers", "createdByID", "createdByType") VALUES (%s, %s, %s, %s, %s, %s, 1, %s, %s) RETURNING id', 
-                    (club_name, club_desc, is_invite_only, '', image64, date_created, creator_id, creator_type,))
-        club_id = cur.fetchone()['id']
+        with db_manager.get_cursor() as cursor:
+            # Step 3: Insert the new club into the database
+            cursor.execute('INSERT INTO "clubs" ("clubName", "clubDesc", "isInviteOnly", "clubLink", "clubBanner", "dateCreated", "totalMembers", "createdByID", "createdByType") VALUES (%s, %s, %s, %s, %s, %s, 1, %s, %s) RETURNING id', 
+                        (club_name, club_desc, is_invite_only, '', image64, date_created, creator_id, creator_type,))
+            club_id = cursor.fetchone()['id']
 
-        # Step 4: Insert the club admin into the clubMembers table
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, TRUE)', 
-                    (club_id, creator_id, creator_type, date_created,))
-        conn.commit()
+            # Step 4: Insert the club admin into the clubMembers table
+            cursor.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, TRUE)', 
+                        (club_id, creator_id, creator_type, date_created,))
 
         return jsonify({
             'message': 'Club created successfully',
@@ -1339,17 +1251,12 @@ def createClub():
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred creating the club."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -1362,95 +1269,87 @@ def createClub():
 # Output: Possible return codes [201 - New member added successfully, 400 - Missing required data, 404 - No such club exist, 500 - An error occurred adding the new member]
 @blueprint.route('/addClubMembers', methods=['POST'])
 def addClubMembers():
-    conn = g.db
-    cur = conn.cursor()
-
-    try:
-        data = request.get_json()
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        # Get all the required data
-        club_id = data['clubID']
-
-        if not club_id:
-            return jsonify({
-                'error': 'Missing required data'
-            }), 400
-        
-        inviter_id = data['inviterID']
-        inviter_user_type = data['inviterUserType']
-
-        # List of members to be added to the club
-        new_members_list = data['new_members']
-
-        if len(new_members_list) == 0:
-            return jsonify({
-                'error': 'No new members to be added'
-            }), 400
-
-        join_date = datetime.now()
-
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
-
-        if not club:
-            return jsonify({
-                'error': 'No such club exist'
-            }), 404
+    with db_manager.get_cursor() as cursor:
+        try:
+            data = request.get_json()
             
-        club_name = club['clubName']
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Step 2: Insert the new member into the clubMembers table
-        for user in new_members_list:
-            user_id = user['userID']
-            user_type = user['userType']
+            # Get all the required data
+            club_id = data['clubID']
 
-            # Skip to the next member if the user id is null
-            if not user_id:
-                continue
-
-            user = getUserInfoByID(cur, user_id, user_type)
+            if not club_id:
+                return jsonify({
+                    'error': 'Missing required data'
+                }), 400
             
-            # Skip to the next member if the user does not exist
-            if not user:
-                continue
+            inviter_id = data['inviterID']
+            inviter_user_type = data['inviterUserType']
 
-            cur.execute('INSERT INTO "clubInvites" ("clubID", "inviteeID", "inviteeUserType", "inviterID", "inviterUserType", "inviteDate") VALUES (%s, %s, %s, %s, %s, %s)', (club_id, user_id, user_type, inviter_id, inviter_user_type, join_date,))
-            conn.commit()
+            # List of members to be added to the club
+            new_members_list = data['new_members']
 
-            # Build and send notification
-            notification_data = {
-                "userId":   user_id,
-                "userType": user_type,
-                "notiTabs": "forYou",
-                "notiType": "club_invite",
-                "image":    None,
-                "link":     f"/club/view/{club_id}/{club_name}",
-                "message":  f"You have been invited to join '{club_name}' club",
-                "createdAt": current_time
-            }
-            print("Notification data:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            if len(new_members_list) == 0:
+                return jsonify({
+                    'error': 'No new members to be added'
+                }), 400
 
-        return jsonify({
-            'message': 'New member added to the club'
-        }), 201
+            join_date = datetime.now()
 
-    except Exception as e:
-        print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred adding the new member."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
+
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+                
+            club_name = club['clubName']
+
+            # Step 2: Insert the new member into the clubMembers table
+            for user in new_members_list:
+                user_id = user['userID']
+                user_type = user['userType']
+
+                # Skip to the next member if the user id is null
+                if not user_id:
+                    continue
+
+                user = getUserInfoByID(cursor, user_id, user_type)
+                
+                # Skip to the next member if the user does not exist
+                if not user:
+                    continue
+
+                cursor.execute('INSERT INTO "clubInvites" ("clubID", "inviteeID", "inviteeUserType", "inviterID", "inviterUserType", "inviteDate") VALUES (%s, %s, %s, %s, %s, %s)', (club_id, user_id, user_type, inviter_id, inviter_user_type, join_date,))
+
+                # Build and send notification
+                notification_data = {
+                    "userId":   user_id,
+                    "userType": user_type,
+                    "notiTabs": "forYou",
+                    "notiType": "club_invite",
+                    "image":    None,
+                    "link":     f"/club/view/{club_id}/{club_name}",
+                    "message":  f"You have been invited to join '{club_name}' club",
+                    "createdAt": current_time
+                }
+                print("Notification data:", notification_data)
+                notifications.add_notification_to_db(notification_data)
+
+            return jsonify({
+                'message': 'New member added to the club'
+            }), 201
+
+        except Exception as e:
+            print(str(e))
+            return jsonify(
+                {
+                    "code": 500,
+                    "message": "An error occurred adding the new member."
+                }
+            ), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -1466,9 +1365,6 @@ def addClubMembers():
 # Output: Possible return codes [201 - User joined the club successfully, 400 - Missing required data, 404 - No such club exist, 409 - User is already a member, 500 - An error occurred joining the club]
 @blueprint.route('/joinClub', methods=['POST'])
 def joinClub():
-    conn = g.db
-    cur = conn.cursor()
-
     try:
         data = request.get_json()
 
@@ -1485,90 +1381,84 @@ def joinClub():
                 'error': 'Missing required data'
             }), 400
 
-        # Step 1: Check if the club exist
-        cur.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
-        club = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Check if the club exist
+            cursor.execute('SELECT * FROM "clubs" WHERE id = %s', (club_id,))
+            club = cursor.fetchone()
 
-        if not club:
+            if not club:
+                return jsonify({
+                    'error': 'No such club exist'
+                }), 404
+            
+            # Step 2: Check if the user is already a member of the club
+            cursor.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+            member = cursor.fetchone()
+
+            if member:
+                return jsonify({
+                    'error': 'User is already a member of the club'
+                }), 409
+
+            # Step 3: Insert the user into the clubMembers table
+            join_date = datetime.now()
+            cursor.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
+
+            # Step 4: Append 1 to the totalMembers in the clubs table
+            cursor.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
+
+            # Get the member's ID in the clubMembers table
+            cursor.execute('SELECT id FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
+            
+            member_id = cursor.fetchone()['id']
+
+            # Build and insert the notification
+            owner_id = club['createdByID']
+            owner_type = club['createdByType']
+
+            club_name = club['clubName']
+            
+            print("Club name:", club_name)
+            print("Owner ID:", owner_id, "Owner Type:", owner_type)
+
+            if user_type == 'user':
+                cursor.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
+                row = cursor.fetchone()
+                member_username = row['username'] if row else 'Someone'
+            elif user_type == 'producer':
+                cursor.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
+                row = cursor.fetchone()
+                member_username = row['username'] if row else 'Someone'
+            else:  # user_type == 'venue'
+                cursor.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
+                row = cursor.fetchone()
+                member_username = row['username'] if row else 'Someone'
+
+            notification_data = {
+                "userId":   owner_id,
+                "userType": owner_type,         # 'producer' or 'venue'
+                "notiTabs": "forYou",
+                "notiType": "club_join",
+                "image":    None,
+                "link":     f"/club/view/{club_id}/{club_name}",
+                "message":  f"@{member_username} joined your club: {club_name}",
+                "createdAt": current_time
+            }
+            notifications.add_notification_to_db(notification_data)
+            
             return jsonify({
-                'error': 'No such club exist'
-            }), 404
-        
-        # Step 2: Check if the user is already a member of the club
-        cur.execute('SELECT * FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
-        member = cur.fetchone()
-
-        if member:
-            return jsonify({
-                'error': 'User is already a member of the club'
-            }), 409
-
-        # Step 3: Insert the user into the clubMembers table
-        join_date = datetime.now()
-        cur.execute('INSERT INTO "clubMembers" ("clubID", "userID", "userType", "joinDate", "isAdmin") VALUES (%s, %s, %s, %s, FALSE)', (club_id, user_id, user_type, join_date,))
-        conn.commit()
-
-        # Step 4: Append 1 to the totalMembers in the clubs table
-        cur.execute('UPDATE "clubs" SET "totalMembers" = "totalMembers" + 1 WHERE id = %s', (club_id,))
-        conn.commit()
-
-        # Get the member's ID in the clubMembers table
-        cur.execute('SELECT id FROM "clubMembers" WHERE "clubID" = %s AND "userID" = %s AND "userType" = %s', (club_id, user_id, user_type,))
-        
-        member_id = cur.fetchone()['id']
-
-        # Build and insert the notification
-        owner_id = club['createdByID']
-        owner_type = club['createdByType']
-
-        club_name = club['clubName']
-        
-        print("Club name:", club_name)
-        print("Owner ID:", owner_id, "Owner Type:", owner_type)
-
-        if user_type == 'user':
-            cur.execute('SELECT username FROM "users" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        elif user_type == 'producer':
-            cur.execute('SELECT username FROM "producers" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-        else:  # user_type == 'venue'
-            cur.execute('SELECT username FROM "venues" WHERE id = %s', (user_id,))
-            row = cur.fetchone()
-            member_username = row['username'] if row else 'Someone'
-
-        notification_data = {
-            "userId":   owner_id,
-            "userType": owner_type,         # 'producer' or 'venue'
-            "notiTabs": "forYou",
-            "notiType": "club_join",
-            "image":    None,
-            "link":     f"/club/view/{club_id}/{club_name}",
-            "message":  f"@{member_username} joined your club: {club_name}",
-            "createdAt": current_time
-        }
-        notifications.add_notification_to_db(notification_data)
-        
-        return jsonify({
-            'message': 'User joined the club successfully',
-            'memberID': member_id
-        }), 201
+                'message': 'User joined the club successfully',
+                'memberID': member_id
+            }), 201
 
     except Exception as e:
         print(str(e))
-        # Rollback the transaction if an error occurred
-        conn.rollback()
         return jsonify(
             {
                 "code": 500,
                 "message": "An error occurred joining the club."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
