@@ -1239,49 +1239,42 @@ def addAttendee():
 @blueprint.route('/removeAttendee', methods=['DELETE'])
 def removeAttendee():
 
-    conn = g.db
-    cursor = conn.cursor()
-
     try:
-        # Step 1: Get the input data
-        data = request.json
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the input data
+            data = request.json
 
-        required_fields = ['eventID', 'userID', 'userType']
+            required_fields = ['eventID', 'userID', 'userType']
 
-        # Check if the required fields are present and not empty
-        for field in required_fields:
-            if field not in data or not data[field]:
-                return jsonify({'error': f'Missing or empty required field: {field}'}), 400
+            # Check if the required fields are present and not empty
+            for field in required_fields:
+                if field not in data or not data[field]:
+                    return jsonify({'error': f'Missing or empty required field: {field}'}), 400
 
-        # Step 2: Check if the event exist
-        cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
-        event = cursor.fetchone()
+            # Step 2: Check if the event exist
+            cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
+            event = cursor.fetchone()
 
-        if not event:
-            return jsonify({'error': 'No such event'}), 400
+            if not event:
+                return jsonify({'error': 'No such event'}), 400
 
-        # Step 3: Check if the user exist
-        user_info = getUserInfoByID(cursor, data['userID'], data['userType'])
+            # Step 3: Check if the user exist
+            user_info = getUserInfoByID(cursor, data['userID'], data['userType'])
 
-        if not user_info:
-            return jsonify({'error': 'User not found'}), 400
+            if not user_info:
+                return jsonify({'error': 'User not found'}), 400
 
-        # Step 4: Remove the attendee from the event
-        cursor.execute('DELETE FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
-        conn.commit()
+            # Step 4: Remove the attendee from the event
+            cursor.execute('DELETE FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
 
-        # Step 5: Update the number of attendees in the event
-        cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" - 1 WHERE id = %s', (data['eventID'],))
-        conn.commit()
+            # Step 5: Update the number of attendees in the event
+            cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" - 1 WHERE id = %s', (data['eventID'],))
 
-        return jsonify({'message': 'Attendee removed successfully'}), 200
+            return jsonify({'message': 'Attendee removed successfully'}), 200
 
     except Exception as e:
         print(str(e))
-        conn.rollback()
         return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
 
 @blueprint.route('/updateAttendeeStatus', methods=['PUT'])
 def updateAttendeeStatus():
@@ -1295,214 +1288,201 @@ def updateAttendeeStatus():
     
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
-    conn = g.db
-    cursor = conn.cursor()
-    
-    try:
-        # Verify the requester is the event owner
-        cursor.execute('''
-            SELECT e.* FROM events e 
-            JOIN "eventAttendees" ea ON e.id = ea."eventID" 
-            WHERE ea.id = %s AND e."eventOwnerID" = %s AND e."eventOwnerType" = %s
-        ''', (attendee_id, event_owner_id, event_owner_type))
-        
-        if not cursor.fetchone():
-            return jsonify({'error': 'Unauthorized'}), 403
-        
-        cursor.execute('''
-            SELECT ea.*, e."eventName"
-            FROM "eventAttendees" ea
-            JOIN events e ON ea."eventID" = e.id
-            WHERE ea.id = %s
-        ''', (attendee_id,))
-        
-        attendee_info = cursor.fetchone()
-        if not attendee_info:
-            return jsonify({'error': 'Attendee not found'}), 404
-        
-        previous_attendance_status = attendee_info.get('attendanceStatus')
-        
-        update_fields = []
-        update_values = []
-        
-        if has_paid is not None:
-            update_fields.append('"hasPaid" = %s')
-            update_values.append(has_paid)
+    with db_manager.get_cursor(commit=False) as cursor:
+        try:
+            # Verify the requester is the event owner
+            cursor.execute('''
+                SELECT e.* FROM events e 
+                JOIN "eventAttendees" ea ON e.id = ea."eventID" 
+                WHERE ea.id = %s AND e."eventOwnerID" = %s AND e."eventOwnerType" = %s
+            ''', (attendee_id, event_owner_id, event_owner_type))
             
-        if attendance_status is not None:
-            update_fields.append('"attendanceStatus" = %s')
-            update_values.append(attendance_status)
-        
-        badge_result = None
-        
-        if update_fields:
-            update_values.append(attendee_id)
-            cursor.execute(f'''
-                UPDATE "eventAttendees" 
-                SET {", ".join(update_fields)}
-                WHERE id = %s
-            ''', update_values)
+            if not cursor.fetchone():
+                return jsonify({'error': 'Unauthorized'}), 403
             
-            conn.commit()
+            cursor.execute('''
+                SELECT ea.*, e."eventName"
+                FROM "eventAttendees" ea
+                JOIN events e ON ea."eventID" = e.id
+                WHERE ea.id = %s
+            ''', (attendee_id,))
             
-            # Process badge if attendance status changed to "Checked In"
-            if (attendance_status == "Checked In" and 
-                previous_attendance_status != "Checked In" and
-                attendee_info.get('attendeeType') == 'user'):
+            attendee_info = cursor.fetchone()
+            if not attendee_info:
+                return jsonify({'error': 'Attendee not found'}), 404
+            
+            previous_attendance_status = attendee_info.get('attendanceStatus')
+            
+            update_fields = []
+            update_values = []
+            
+            if has_paid is not None:
+                update_fields.append('"hasPaid" = %s')
+                update_values.append(has_paid)
                 
-                user_id = attendee_info.get('userID')
-                if user_id:
-                    badge_result = badge_helpers.process_event_attendance_badge(conn, cursor, user_id)
-
-                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
-                user_row = cursor.fetchone()
-                if user_row:
-                    # Get the username of the user
-                    user_username = user_row['username'] if user_row else "Someone"
-                            
-                # Notify user of badge
-                if badge_result:
-                    notification_data = {
-                        "userId":   user_id,
-                        "userType": "user",
-                        "notiTabs": "forYou",
-                        "notiType": "badge_earned",
-                        "image":    None,
-                        "link":     f"/profile/user/{user_id}/{user_username}",
-                        "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
-                        "createdAt": current_time
-                    }
-                    print("notification data for badge: ", notification_data)
-                    notifications.add_notification_to_db(notification_data)
-        
-        response_data = {'message': 'Attendee status updated successfully'}
-        
-        if badge_result:
-            response_data['badgeAwarded'] = badge_result
+            if attendance_status is not None:
+                update_fields.append('"attendanceStatus" = %s')
+                update_values.append(attendance_status)
             
-        return jsonify(response_data), 200
-        
-    except Exception as e:
-        print(f"Error updating attendee status: {str(e)}")
-        conn.rollback()
-        return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
+            badge_result = None
+            
+            if update_fields:
+                update_values.append(attendee_id)
+                cursor.execute(f'''
+                    UPDATE "eventAttendees" 
+                    SET {", ".join(update_fields)}
+                    WHERE id = %s
+                ''', update_values)
+                
+                cursor.connection.commit()
+                
+                # Process badge if attendance status changed to "Checked In"
+                if (attendance_status == "Checked In" and 
+                    previous_attendance_status != "Checked In" and
+                    attendee_info.get('attendeeType') == 'user'):
+                    
+                    user_id = attendee_info.get('userID')
+                    if user_id:
+                        badge_result = badge_helpers.process_event_attendance_badge(cursor.connection, cursor, user_id)
+
+                    cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                    user_row = cursor.fetchone()
+                    if user_row:
+                        # Get the username of the user
+                        user_username = user_row['username'] if user_row else "Someone"
+                                
+                    # Notify user of badge
+                    if badge_result:
+                        notification_data = {
+                            "userId":   user_id,
+                            "userType": "user",
+                            "notiTabs": "forYou",
+                            "notiType": "badge_earned",
+                            "image":    None,
+                            "link":     f"/profile/user/{user_id}/{user_username}",
+                            "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                            "createdAt": current_time
+                        }
+                        print("notification data for badge: ", notification_data)
+                        notifications.add_notification_to_db(notification_data)
+            
+            response_data = {'message': 'Attendee status updated successfully'}
+            
+            if badge_result:
+                response_data['badgeAwarded'] = badge_result
+                
+            return jsonify(response_data), 200
+            
+        except Exception as e:
+            print(f"Error updating attendee status: {str(e)}")
+            return jsonify({'error': str(e)}), 500
 
 @blueprint.route('/getUserOrganisingEvents/<user_id>/<user_type>', methods=['GET'])
 def getUserOrganisingEvents(user_id, user_type):
-    conn = g.db
-    cursor = conn.cursor()
-
     return_data = []
 
     try:
-        # Query to get all events that the user is organizing (both upcoming and past)
-        query = '''
-            SELECT e.*
-            FROM "events" e
-            WHERE e."eventOwnerID" = %s
-            AND e."eventOwnerType" = %s
-            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
-        '''
+        with db_manager.get_cursor() as cursor:
+            # Query to get all events that the user is organizing (both upcoming and past)
+            query = '''
+                SELECT e.*
+                FROM "events" e
+                WHERE e."eventOwnerID" = %s
+                AND e."eventOwnerType" = %s
+                ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+            '''
 
-        cursor.execute(query, (user_id, user_type))
-        events = cursor.fetchall()
+            cursor.execute(query, (user_id, user_type))
+            events = cursor.fetchall()
 
-        if not events:
-            return jsonify({'error': 'No events found'}), 404
-        
-        for event in events:
-            ev = {}
-            ev['eventID'] = event['id']
-            ev['eventName'] = event['eventName']
-            ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '')
+            if not events:
+                return jsonify({'error': 'No events found'}), 404
+            
+            for event in events:
+                ev = {}
+                ev['eventID'] = event['id']
+                ev['eventName'] = event['eventName']
+                ev['eventDesc'] = event['eventDesc'].replace('<p>', '').replace('</p>', '')
 
-            ev['eventType'] = event['eventType']
-            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+                ev['eventType'] = event['eventType']
+                ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
 
-            if event['eventEndDate'] is not None:
-                ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+                if event['eventEndDate'] is not None:
+                    ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
 
-            if event['eventStartTime'] is not None:
-                ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+                if event['eventStartTime'] is not None:
+                    ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
 
-            if event['eventEndTime'] is not None:
-                ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
-            ev['eventBanners'] = event['eventBanners']
-            ev['eventLocation'] = event['eventLocation']
-            ev['numAttendees'] = event['numAttendees']
+                if event['eventEndTime'] is not None:
+                    ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+                ev['eventBanners'] = event['eventBanners']
+                ev['eventLocation'] = event['eventLocation']
+                ev['numAttendees'] = event['numAttendees']
 
-            return_data.append(ev)
+                return_data.append(ev)
 
-        return jsonify({
-            'events': return_data
-        }), 200
+            return jsonify({
+                'events': return_data
+            }), 200
 
     except Exception as e:
         print(str(e))
         return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
 
 
 @blueprint.route('/getUserAttendingEvents/<user_id>/<user_type>', methods=['GET'])
 def getUserAttendingEvents(user_id, user_type):
-    conn = g.db
-    cursor = conn.cursor()
-
     return_data = []
 
     try:
-        # Query to get all events that the user is attending (both upcoming and past)
-        # Only include events where attendeeStatus is True (confirmed attendance)
-        query = '''
-            SELECT 
-                e.*,
-                ea."attendeeStatus",
-                ea."hasPaid",
-                ea."attendanceStatus",
-                ea."rsvpTimestamp"
-            FROM "eventAttendees" ea
-            JOIN "events" e ON ea."eventID" = e."id"
-            WHERE ea."userID" = %s 
-            AND ea."attendeeType" = %s
-            AND ea."attendeeStatus" = TRUE
-            ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
-        '''
+        with db_manager.get_cursor() as cursor:
+            # Query to get all events that the user is attending (both upcoming and past)
+            # Only include events where attendeeStatus is True (confirmed attendance)
+            query = '''
+                SELECT 
+                    e.*,
+                    ea."attendeeStatus",
+                    ea."hasPaid",
+                    ea."attendanceStatus",
+                    ea."rsvpTimestamp"
+                FROM "eventAttendees" ea
+                JOIN "events" e ON ea."eventID" = e."id"
+                WHERE ea."userID" = %s 
+                AND ea."attendeeType" = %s
+                AND ea."attendeeStatus" = TRUE
+                ORDER BY e."eventStartDate" DESC, e."eventStartTime" DESC
+            '''
 
-        cursor.execute(query, (user_id, user_type))
-        events = cursor.fetchall()
+            cursor.execute(query, (user_id, user_type))
+            events = cursor.fetchall()
 
-        if not events:
-            return jsonify({'error': 'No events found'}), 404
-        
-        for event in events:
-            ev = {}
-            ev['eventID'] = event['id']
-            ev['eventName'] = event['eventName']
-            ev['eventDesc'] = event['eventDesc']
-            ev['eventType'] = event['eventType']
-            ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
-            ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
-            ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
-            ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
-            ev['eventBanners'] = event['eventBanners']
-            ev['eventLocation'] = event['eventLocation']
-            ev['numAttendees'] = event['numAttendees']
-            ev['attendeeStatus'] = event['attendeeStatus']
-            ev['hasPaid'] = event['hasPaid']
-            ev['attendanceStatus'] = event['attendanceStatus']
-            ev['rsvpTimestamp'] = event['rsvpTimestamp'].strftime('%Y-%m-%d %H:%M:%S') if event['rsvpTimestamp'] else None
+            if not events:
+                return jsonify({'error': 'No events found'}), 404
+            
+            for event in events:
+                ev = {}
+                ev['eventID'] = event['id']
+                ev['eventName'] = event['eventName']
+                ev['eventDesc'] = event['eventDesc']
+                ev['eventType'] = event['eventType']
+                ev['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+                ev['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+                ev['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+                ev['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+                ev['eventBanners'] = event['eventBanners']
+                ev['eventLocation'] = event['eventLocation']
+                ev['numAttendees'] = event['numAttendees']
+                ev['attendeeStatus'] = event['attendeeStatus']
+                ev['hasPaid'] = event['hasPaid']
+                ev['attendanceStatus'] = event['attendanceStatus']
+                ev['rsvpTimestamp'] = event['rsvpTimestamp'].strftime('%Y-%m-%d %H:%M:%S') if event['rsvpTimestamp'] else None
 
-            return_data.append(ev)
+                return_data.append(ev)
 
-        return jsonify({
-            'events': return_data
-        }), 200
+            return jsonify({
+                'events': return_data
+            }), 200
 
     except Exception as e:
         print(str(e))
         return jsonify({'error': str(e)}), 500
-    finally:
-        cursor.close()
