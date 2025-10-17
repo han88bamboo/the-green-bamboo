@@ -93,7 +93,7 @@
             </div>
             <div v-else-if="currentUserHasVoted" class="alert alert-success">
               <i class="bi bi-check-circle-fill me-2"></i>
-              <strong>Thank you!</strong> You've already voted. Here are the current results.
+              <strong>Thank you!</strong> Here's what you voted.
             </div>
           </div>
           
@@ -152,8 +152,21 @@
                        class="bi bi-check-circle-fill text-success ms-2" 
                        title="You voted for this option"></i>
                   </span>
+                  <!-- Show percentage only for creators -->
+                  <span v-if="isCreator" class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                  <!-- Commented out: Regular users don't see percentages
                   <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                  -->
                 </div>
+                <!-- Show progress bars only for creators -->
+                <div v-if="isCreator" class="progress">
+                  <div 
+                    class="progress-bar" 
+                    :style="{ width: getOptionPercentage(currentPoll.id, option.id) + '%' }"
+                    :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
+                  ></div>
+                </div>
+                <!-- Commented out: Regular users don't see progress bars
                 <div class="progress">
                   <div 
                     class="progress-bar" 
@@ -161,6 +174,7 @@
                     :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
                   ></div>
                 </div>
+                -->
               </div>
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
               
@@ -314,8 +328,21 @@
                        class="bi bi-check-circle-fill text-success ms-2" 
                        title="You voted for this option"></i>
                   </span>
+                  <!-- Show percentage only for creators -->
+                  <span v-if="isCreator" class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                  <!-- Commented out: Regular users don't see percentages
                   <span class="percentage">{{ getOptionPercentage(currentPoll.id, option.id) }}%</span>
+                  -->
                 </div>
+                <!-- Show progress bars only for creators -->
+                <div v-if="isCreator" class="progress">
+                  <div 
+                    class="progress-bar" 
+                    :style="{ width: getOptionPercentage(currentPoll.id, option.id) + '%' }"
+                    :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
+                  ></div>
+                </div>
+                <!-- Commented out: Regular users don't see progress bars
                 <div class="progress">
                   <div 
                     class="progress-bar" 
@@ -323,6 +350,7 @@
                     :class="{ 'user-voted': userVotedForOption(currentPoll.id, option.id) }"
                   ></div>
                 </div>
+                -->
               </div>
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
               
@@ -456,6 +484,36 @@
                 </div>
               </div>
               
+              <!-- Show aggregate rating data only for creators -->
+              <div v-if="isCreator" class="average-rating">
+                <div class="rating-display">
+                  <span class="rating-number">{{ getAverageRating(currentPoll.id) }}</span>
+                  <span class="rating-scale-text">/5</span>
+                </div>
+                <div class="rating-breakdown">
+                  <div 
+                    v-for="rating in [5, 4, 3, 2, 1]" 
+                    :key="rating"
+                    class="rating-bar"
+                  >
+                    <span class="rating-label">
+                      {{ rating }}
+                      <i v-if="currentUserResponse && currentUserResponse.ratingValue === rating" 
+                         class="bi bi-check-circle-fill ms-1" 
+                         title="Your rating"></i>
+                    </span>
+                    <div class="progress">
+                      <div 
+                        class="progress-bar" 
+                        :style="{ width: getRatingPercentage(currentPoll.id, rating) + '%' }"
+                        :class="{ 'user-voted': currentUserResponse && currentUserResponse.ratingValue === rating }"
+                      ></div>
+                    </div>
+                    <span class="rating-count">{{ getRatingCount(currentPoll.id, rating) }}</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Commented out: Regular users don't see aggregate rating data
               <div class="average-rating">
                 <div class="rating-display">
                   <span class="rating-number">{{ getAverageRating(currentPoll.id) }}</span>
@@ -484,6 +542,28 @@
                   </div>
                 </div>
               </div>
+              -->
+              
+              <!-- Show simple rating display for regular users -->
+              <div v-if="!isCreator" class="user-rating-display">
+                <div class="rating-stars-display">
+                  <span class="rating-label-simple">Rating Scale: 1-5 stars</span>
+                  <div class="user-rating-stars mt-2">
+                    <i 
+                      v-for="star in 5" 
+                      :key="star"
+                      :class="currentUserResponse && star <= currentUserResponse.ratingValue 
+                        ? 'bi bi-star-fill text-warning' 
+                        : 'bi bi-star text-muted'"
+                      style="font-size: 1.5rem; margin-right: 4px;"
+                    ></i>
+                    <span v-if="currentUserResponse" class="ms-2 text-muted">
+                      ({{ currentUserResponse.ratingValue }}/5)
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
               <div class="total-votes">{{ getTotalVotes(currentPoll.id) }} votes</div>
               
               <!-- Creator-Only Detailed Responses Section -->
@@ -2282,5 +2362,30 @@ export default {
     font-size: 0.7rem;
     padding: 3px 6px;
   }
+}
+
+/* User Rating Display for non-creators */
+.user-rating-display {
+  text-align: center;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.rating-label-simple {
+  font-size: 0.95rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.user-rating-stars {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-rating-stars i {
+  transition: color 0.2s ease;
 }
 </style>
