@@ -24,6 +24,8 @@ from psycopg2.extras import RealDictCursor
 import json
 from datetime import datetime
 
+# Import the database manager for connection pooling
+from app import db_manager
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -32,8 +34,7 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 # Get top 3 comments
 def get_top_comments(content_id, content_type):
-    conn = g.db
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_manager.get_cursor() as cursor:
 
         # Get table name 
         table_name = get_table_name(content_type, "comment")
@@ -91,8 +92,7 @@ def get_top_comments(content_id, content_type):
 
 # Get total number of comments 
 def get_total_comments(content_id, content_type):
-    conn = g.db
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_manager.get_cursor() as cursor:
 
         # Get table name 
         table_name = get_table_name(content_type, "comment")
@@ -112,8 +112,7 @@ def get_total_comments(content_id, content_type):
 # Get number of likes on content
 def get_likes_count(content_id, content_type):
 
-    conn = g.db
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_manager.get_cursor() as cursor:
 
         # Get table name 
         table_name = get_table_name(content_type, "like")
@@ -159,8 +158,7 @@ def get_likes_count(content_id, content_type):
 # Get a list of content id user has liked based on a list of content ids given
 def get_liked_content_ids(user_id, user_type, content_type, content_ids):
 
-    conn = g.db
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_manager.get_cursor() as cursor:
 
         # Get table name and unique field
         table_name = get_table_name(content_type, "like")
@@ -281,8 +279,7 @@ def get_unique_field(content_type):
 
 # Get commenter info 
 def get_commenter_info(user_id, user_type):
-    conn = g.db
-    with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+    with db_manager.get_cursor() as cursor:
 
         if user_type == "user":
             cursor.execute("""
@@ -320,17 +317,13 @@ def get_commenter_info(user_id, user_type):
 # [GET] Get random content
 @blueprint.route("/getRandomListings/<user_id>/<user_type>")
 def getRandomListings(user_id, user_type):
-    conn = g.db
-
     if user_id == "null":
         user_id = None
     if user_type == "null":
         user_type = None
 
-
     try:
-
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Fetch distinct dates by converting timestamps to dates
             cursor.execute('SELECT DISTINCT "addedDate"::DATE FROM "listings" WHERE "addedDate" != CURRENT_DATE')
             date_results = cursor.fetchall()
@@ -570,8 +563,6 @@ def getRandomListings(user_id, user_type):
 # [POST] Get next 30 random content (will include producerReviews as well as venueReviews here)
 @blueprint.route("/getNext30", methods=['POST'])
 def getNext30():
-    conn = g.db
-
     data = request.get_json()
 
     datedListingPreviousDate = data.get('datedListingPreviousDate')
@@ -618,9 +609,7 @@ def getNext30():
     venue_reviews = []
 
     try:
-
-        with conn.cursor() as cursor:
-
+        with db_manager.get_cursor() as cursor:
             # Fetch distinct dates by converting timestamps to dates
             cursor.execute(
                 """
@@ -967,8 +956,7 @@ def likeContent():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name 
             table_name = get_table_name(content_type, "like")
@@ -983,8 +971,6 @@ def likeContent():
                     INSERT INTO "{table_name}" ("listingId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-
-                conn.commit()
 
             # If it is reviewsUserVotes
             elif table_name == "reviewsUserVotes" and user_type == "user":
@@ -1019,7 +1005,6 @@ def likeContent():
                     print("success")
                 else:
                     print("failed")
-                conn.commit()
 
             # If it is producerUpdateLikes
             elif table_name == "producerUpdateLikes":
@@ -1027,7 +1012,6 @@ def likeContent():
                     INSERT INTO "{table_name}" ("updateId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             # If it is venueUpdateLikes
             elif table_name == "venueUpdateLikes":
@@ -1035,7 +1019,6 @@ def likeContent():
                     INSERT INTO "{table_name}" ("updateId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             # If it is 88BContentLikes
             elif table_name == "88BContentLikes":
@@ -1043,12 +1026,11 @@ def likeContent():
                     INSERT INTO "{table_name}" ("contentId", "userId", "userType")
                     VALUES (%s, %s, %s)
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
-            return jsonify({
-                "message": "Content liked successfully",
-                "contentId": content_id
-            }), 200
+        return jsonify({
+            "message": "Content liked successfully",
+            "contentId": content_id
+        }), 200
 
     except Exception as e:
         print("Error occurred while liking content:", e)
@@ -1070,8 +1052,7 @@ def unlikeContent():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "unlike")
@@ -1086,7 +1067,6 @@ def unlikeContent():
                     DELETE FROM "{table_name}"
                     WHERE "listingId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             elif table_name == "reviewsUserVotes" and user_type == "user":
 
@@ -1106,28 +1086,24 @@ def unlikeContent():
                     # Update the upvotes array in the database
                     cursor.execute('UPDATE "reviewsUserVotes" SET "upvotes" = %s WHERE "reviewId" = %s;', 
                                 (json.dumps(upvotes), content_id))
-                    conn.commit()
 
             elif table_name == "producerUpdateLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             elif table_name == "venueUpdateLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             elif table_name == "88BContentLikes":
                 cursor.execute(f"""
                     DELETE FROM "{table_name}"
                     WHERE "contentId" = %s AND "userId" = %s AND "userType" = %s
                 """, (content_id, user_id, user_type))
-                conn.commit()
 
             return jsonify({
                 "message": "Content unliked successfully",
@@ -1156,8 +1132,7 @@ def addComment():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
@@ -1174,7 +1149,6 @@ def addComment():
                 INSERT INTO "{table_name}" ("{unique_field}", "userId", "userType", "comment", "parentId")
                 VALUES (%s, %s, %s, %s, %s)
             """, (content_id, user_id, user_type, comment, parent_id))
-            conn.commit()
 
             # Get the added record
             cursor.execute(f"""
@@ -1218,8 +1192,7 @@ def editComment():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
@@ -1232,7 +1205,6 @@ def editComment():
                 SET "comment" = %s
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (new_comment, comment_id, user_id, user_type))
-            conn.commit()
 
             return jsonify({
                 "message": "Comment edited successfully",
@@ -1260,8 +1232,7 @@ def deleteComment():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
@@ -1273,7 +1244,6 @@ def deleteComment():
                 DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
-            conn.commit()
 
             return jsonify({
                 "message": "Comment deleted successfully"
@@ -1291,8 +1261,7 @@ def deleteComment():
         return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name(content_type, "comment")
@@ -1304,7 +1273,6 @@ def deleteComment():
                 DELETE FROM "{table_name}"
                 WHERE id = %s AND "userId" = %s AND "userType" = %s
             """, (comment_id, user_id, user_type))
-            conn.commit()
 
             return jsonify({
                 "message": "Comment deleted successfully",
@@ -1322,8 +1290,7 @@ def deleteComment():
 def getListingComments(user_id, user_type, content_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("Listing", "comment")
@@ -1408,8 +1375,7 @@ def getListingComments(user_id, user_type, content_id):
 def getMoreListingComments(content_id, last_comment_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("Listing", "comment")
@@ -1474,8 +1440,7 @@ def getMoreListingComments(content_id, last_comment_id):
 def getReviewComments(user_id, content_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("Review", "comment")
@@ -1566,8 +1531,7 @@ def getReviewComments(user_id, content_id):
 def getMoreReviewComments(content_id, last_comment_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("Review", "comment")
@@ -1615,10 +1579,10 @@ def getMoreReviewComments(content_id, last_comment_id):
                     # Append reply to the main comment's replies
                     comment['replies'].append(reply)
 
-            return jsonify({
-                "comments": comments,
-                "lastCommentId": comments[-1]['id'] if comments else None
-            }), 200
+        return jsonify({
+            "comments": comments,
+            "lastCommentId": comments[-1]['id'] if comments else None
+        }), 200
 
     except Exception as e:
         print("Error occurred while retrieving comments:", e)
@@ -1631,8 +1595,7 @@ def getMoreReviewComments(content_id, last_comment_id):
 def getProducerReviewComments(user_id, content_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("pReview", "comment")
@@ -1723,8 +1686,7 @@ def getProducerReviewComments(user_id, content_id):
 def getMoreProducerReviewComments(content_id, last_comment_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("pReview", "comment")
@@ -1773,10 +1735,10 @@ def getMoreProducerReviewComments(content_id, last_comment_id):
                     # Append reply to the main comment's replies
                     comment['replies'].append(reply)
 
-            return jsonify({
-                "comments": comments,
-                "lastCommentId": comments[-1]['id'] if comments else None
-            }), 200
+        return jsonify({
+            "comments": comments,
+            "lastCommentId": comments[-1]['id'] if comments else None
+        }), 200
         
     except Exception as e:
         print("Error occurred while retrieving comments:", e)
@@ -1789,8 +1751,7 @@ def getMoreProducerReviewComments(content_id, last_comment_id):
 def getVenueReviewComments(user_id, content_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("vReview", "comment")
@@ -1882,8 +1843,7 @@ def getVenueReviewComments(user_id, content_id):
 def getMoreVenueReviewComments(content_id, last_comment_id):
 
     try:
-        conn = g.db
-        with conn.cursor() as cursor:
+        with db_manager.get_cursor() as cursor:
 
             # Retrieve the table name
             table_name = get_table_name("vReview", "comment")

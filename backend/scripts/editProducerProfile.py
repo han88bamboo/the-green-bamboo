@@ -9,6 +9,9 @@ from datetime import datetime
 from scripts import pointsHelperFunc, badge_helpers, notifications
 import re
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -18,8 +21,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editDetails', methods=['POST'])
 def editDetails():  
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -35,9 +36,9 @@ def editDetails():
     openForTours = data.get('openForTours', False)
     website = data.get('website', None)
 
-    try:
-        cur.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
-        existingProducer = cur.fetchone()
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('SELECT * FROM producers WHERE id = %s', (producerID,))
+        existingProducer = cursor.fetchone()
 
         if existingProducer:
             if data['image64']:
@@ -48,7 +49,7 @@ def editDetails():
                 image64 = s3Images.uploadBase64ImageToS3(base64_string)
             else:
                 image64 = existingProducer['photo']
-            cur.execute(
+            cursor.execute(
                 """
                 UPDATE producers 
                 SET 
@@ -67,7 +68,6 @@ def editDetails():
                 """,
                 (image64, producerName, producerDesc, isIndependentBottler, originCountry, yearFounded, activeStatus, owner, location, openForTours, website, producerID)
             )
-            conn.commit()
 
             return jsonify(
                 {
@@ -83,20 +83,6 @@ def editDetails():
                     "message": "Producer not found."
                 }
             ), 404
-        
-    except Exception as e:
-        print(str(e))
-        conn.rollback()
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred updating profile!"
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add updates to producer profile
@@ -104,8 +90,6 @@ def editDetails():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addUpdates', methods=['POST'])
 def addUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -119,21 +103,20 @@ def addUpdates():
         base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['image64'])
         image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
-    try:
-        cur.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
-        conn.commit()
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('INSERT INTO "producersUpdates" ("date", "text", "photo", "producerId") VALUES (%s, %s, %s, %s)', (date, text, image64, producerID))
 
         # Fetch producer name
-        cur.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
-        producer_row = cur.fetchone()
+        cursor.execute('SELECT "producerName" FROM producers WHERE id = %s', (producerID,))
+        producer_row = cursor.fetchone()
         producerName = producer_row['producerName'] if producer_row else "This producer"
 
         # Notify all users who follow this producer
-        cur.execute(
+        cursor.execute(
             'SELECT "userId" FROM "usersFollowLists" WHERE %s = ANY("producers")',
             (str(producerID),)
         )
-        followers = cur.fetchall()
+        followers = cursor.fetchall()
 
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
@@ -157,20 +140,6 @@ def addUpdates():
                 "message": "Update added successfully!"
             }
         ), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred creating the update!"
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send questions to producer
@@ -178,9 +147,6 @@ def addUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendQuestions', methods=['POST'])
 def sendQuestions():
-    conn = g.db
-    cur = conn.cursor()
-
     data = request.get_json()
     print(data)
 
@@ -191,105 +157,100 @@ def sendQuestions():
     userID = int(data['userID'])
 
     try:
-        cur.execute(
-            """
-                INSERT INTO "producersQuestionAnswers" (question, answer, date, "userId", "producerId")
-                VALUES (%s, %s, %s, %s, %s)
-            """,
-            (question, answer, date, userID, producerID)
-        )
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                    INSERT INTO "producersQuestionAnswers" (question, answer, date, "userId", "producerId")
+                    VALUES (%s, %s, %s, %s, %s)
+                """,
+                (question, answer, date, userID, producerID)
+            )
 
-        # Send a notification to the producer
-        # Fetch the asking user's username
-        cur.execute('SELECT username FROM users WHERE id = %s', (userID,))
-        user_row = cur.fetchone()
-        user_username = user_row['username'] if user_row else "Someone"
+            # Send a notification to the producer
+            # Fetch the asking user's username
+            cursor.execute('SELECT username FROM users WHERE id = %s', (userID,))
+            user_row = cursor.fetchone()
+            user_username = user_row['username'] if user_row else "Someone"
 
-        # # Fetch the producer's username
-        # cur.execute('SELECT username FROM producers WHERE id = %s', (producerID,))
-        # producer_row = cur.fetchone()
-        # producer_username = producer_row['username'] if producer_row else ""
+            # # Fetch the producer's username
+            # cursor.execute('SELECT username FROM producers WHERE id = %s', (producerID,))
+            # producer_row = cursor.fetchone()
+            # producer_username = producer_row['username'] if producer_row else ""
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        notification_data = {
-            "userId":   producerID,
-            "userType": "producer",
-            "notiTabs": "forYou",
-            "notiType": "producer_question",
-            "image":    None,
-            "link":     f"/Producers/ProducersQA/{producerID}",
-            "message":  f"@{user_username} asked you a question",
-            "createdAt": current_time
-        }
-        notifications.add_notification_to_db(notification_data)
-
-        # Initialize variables for points and badge processing
-        points_earned = 0
-        badge_result = None
-
-        # Award points to user for asking a question
-        if not pointsHelperFunc.check_max_proof_points(userID):
-            # Get points for asking a question
-            cur.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
-            points_rule = cur.fetchone()
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            if points_rule:
-                points_earned = points_rule['proofPoints']
-                
-                # Update user's points
-                cur.execute(
-                    'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s',
-                    (points_earned, userID)
-                )
-                conn.commit()
-                
-                print(f"{points_earned} points awarded to user {userID} for asking a question")
-            
-            # Process the Question badge
-            badge_result = badge_helpers.process_question_badge(conn, cur, userID)
-        
-        # If badge earned, send notification
-        if badge_result:
             notification_data = {
-                "userId":   userID,
-                "userType": "user",
+                "userId":   producerID,
+                "userType": "producer",
                 "notiTabs": "forYou",
-                "notiType": "badge_earned",
+                "notiType": "producer_question",
                 "image":    None,
-                "link":     f"/profile/user/{userID}/{user_username}",
-                "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                "link":     f"/Producers/ProducersQA/{producerID}",
+                "message":  f"@{user_username} asked you a question",
                 "createdAt": current_time
             }
-            print("Sending badge notification:", notification_data)
             notifications.add_notification_to_db(notification_data)
-        
-        # Prepare the response
-        response_data = {
-            "code": 201,
-            "message": "Question sent successfully!"
-        }
-        
-        if points_earned > 0:
-            response_data["pointsEarned"] = points_earned
+
+            # Initialize variables for points and badge processing
+            points_earned = 0
+            badge_result = None
+
+            # Award points to user for asking a question
+            if not pointsHelperFunc.check_max_proof_points(userID):
+                # Get points for asking a question
+                cursor.execute('SELECT "proofPoints" FROM "pointSystemRules" WHERE id = %s', (15,))
+                points_rule = cursor.fetchone()
+                
+                if points_rule:
+                    points_earned = points_rule['proofPoints']
+                    
+                    # Update user's points
+                    cursor.execute(
+                        'UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" + %s WHERE "userID" = %s',
+                        (points_earned, userID)
+                    )
+                    
+                    print(f"{points_earned} points awarded to user {userID} for asking a question")
+                
+                # Process the Question badge
+                badge_result = badge_helpers.process_question_badge(cursor.connection, cursor, userID)
             
-        if badge_result:
-            response_data["badgeAwarded"] = badge_result
+            # If badge earned, send notification
+            if badge_result:
+                notification_data = {
+                    "userId":   userID,
+                    "userType": "user",
+                    "notiTabs": "forYou",
+                    "notiType": "badge_earned",
+                    "image":    None,
+                    "link":     f"/profile/user/{userID}/{user_username}",
+                    "message":  f"Congratulations! You earned a badge: {badge_result['badgeName']}.",
+                    "createdAt": current_time
+                }
+                print("Sending badge notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
             
-        return jsonify(response_data), 201
+            # Prepare the response
+            response_data = {
+                "code": 201,
+                "message": "Question sent successfully!"
+            }
+            
+            if points_earned > 0:
+                response_data["pointsEarned"] = points_earned
+                
+            if badge_result:
+                response_data["badgeAwarded"] = badge_result
+                
+            return jsonify(response_data), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify({
             "code": 500,
             "data": data,
             "message": "An error occurred sending the question!"
         }), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Send answers to questions
@@ -297,8 +258,6 @@ def sendQuestions():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/sendAnswers', methods=['POST'])
 def sendAnswers():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -307,51 +266,50 @@ def sendAnswers():
     answer = data['answer']
 
     try:
-        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
 
-        # Fetch the original asker
-        cur.execute(
-            'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
-            (questionsAnswersID,)
-        )
-        asker_row = cur.fetchone()
-        asker_id = asker_row['userId'] if asker_row else None
+            # Fetch the original asker
+            cursor.execute(
+                'SELECT "userId" FROM "producersQuestionAnswers" WHERE id = %s',
+                (questionsAnswersID,)
+            )
+            asker_row = cursor.fetchone()
+            asker_id = asker_row['userId'] if asker_row else None
 
-        # Fetch producer's username for the notification message
-        cur.execute(
-            'SELECT username FROM producers WHERE id = %s',
-            (producerID,)
-        )
-        producer_row = cur.fetchone()
-        producer_username = producer_row['username'] if producer_row else ''
+            # Fetch producer's username for the notification message
+            cursor.execute(
+                'SELECT username FROM producers WHERE id = %s',
+                (producerID,)
+            )
+            producer_row = cursor.fetchone()
+            producer_username = producer_row['username'] if producer_row else ''
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Send notification back to the user who asked
-        if asker_id:
-            notification_data = {
-                "userId":   asker_id,
-                "userType": "user",
-                "notiTabs": "venues & producers",
-                "notiType": "producer_answer",
-                "image":    None,
-                "link":     f"/profile/producer/{producerID}/{producer_username}",
-                "message":  f"@{producer_username} answered your question",
-                "createdAt": current_time
-            }
-            print("Sending answer notification:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+            # Send notification back to the user who asked
+            if asker_id:
+                notification_data = {
+                    "userId":   asker_id,
+                    "userType": "user",
+                    "notiTabs": "venues & producers",
+                    "notiType": "producer_answer",
+                    "image":    None,
+                    "link":     f"/profile/producer/{producerID}/{producer_username}",
+                    "message":  f"@{producer_username} answered your question",
+                    "createdAt": current_time
+                }
+                print("Sending answer notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Answer sent successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Answer sent successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -359,9 +317,6 @@ def sendAnswers():
                 "message": "An error occurred sending the answer!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Like updates
@@ -369,8 +324,6 @@ def sendAnswers():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/likeUpdates', methods=['POST'])
 def likeUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -379,10 +332,10 @@ def likeUpdates():
     userID = int(data['userID'])
     userType = data['userType']
 
-    try:
+    with db_manager.get_cursor() as cursor:
         # Verify that the update exists and belongs to the producer
-        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
-        existingUpdate = cur.fetchone()
+        cursor.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+        existingUpdate = cursor.fetchone()
 
         if not existingUpdate or existingUpdate['producerId'] != producerID:
             return jsonify(
@@ -393,11 +346,10 @@ def likeUpdates():
             ), 404
         
         # Insert into the likes table
-        cur.execute("""
+        cursor.execute("""
             INSERT INTO "producerUpdateLikes" ("updateId", "userId", "userType")
             VALUES (%s, %s, %s)
         """, (updateID, userID, userType))
-        conn.commit()
 
         return jsonify(
             {
@@ -405,20 +357,6 @@ def likeUpdates():
                 "message": "Update liked successfully!"
             }
         ), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print(str(e))
-        return jsonify(
-            {
-                "code": 500,
-                "data": data,
-                "message": "An error occurred liking the update."
-            }
-        ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Unlike updates
@@ -426,8 +364,6 @@ def likeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/unlikeUpdates', methods=['POST'])
 def unlikeUpdates():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -437,21 +373,21 @@ def unlikeUpdates():
     userType = data['userType']
 
     try:
-        # Verify that the update exists and belongs to the producer
-        cur.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Verify that the update exists and belongs to the producer
+            cursor.execute('SELECT "producerId" FROM "producersUpdates" WHERE "id" = %s', (updateID,))
+            existingUpdate = cursor.fetchone()
 
-        if not existingUpdate or existingUpdate['producerId'] != producerID:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
-        
-        # Remove from the likes table
-        cur.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
-        conn.commit()
+            if not existingUpdate or existingUpdate['producerId'] != producerID:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
+            
+            # Remove from the likes table
+            cursor.execute('DELETE FROM "producerUpdateLikes" WHERE "updateId" = %s AND "userId" = %s AND "userType" = %s', (updateID, userID, userType))
 
         return jsonify(
             {
@@ -461,7 +397,6 @@ def unlikeUpdates():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -470,9 +405,6 @@ def unlikeUpdates():
                 "message": "An error occurred unliking the update."
             }
         ), 500
-
-    finally:
-        cur.close()
     
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile
@@ -480,8 +412,6 @@ def unlikeUpdates():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerStatus', methods=['POST'])
 def updateProducerStatus():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -494,37 +424,37 @@ def updateProducerStatus():
     claimStatus = data['newBusinessData']["claimStatus"]
 
     try:
-        cur.execute(
-            """
-                UPDATE producers
-                SET
-                    "producerName" = %s,
-                    "producerDesc" = %s,
-                    "originCountry" = %s,
-                    "hashedPassword" = %s,
-                    "claimStatus" = %s
-                WHERE id = %s
-            """,
-            (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
-        )
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                    UPDATE producers
+                    SET
+                        "producerName" = %s,
+                        "producerDesc" = %s,
+                        "originCountry" = %s,
+                        "hashedPassword" = %s,
+                        "claimStatus" = %s
+                    WHERE id = %s
+                """,
+                (producerName, producerDesc, originCountry, hashedPassword, claimStatus, producerID)
+            )
 
-        # Find all users who follow this producer
-        cur.execute(
-            '''
-            SELECT "userId"
-            FROM "usersFollowLists"
-            WHERE %s = ANY("producers")
-            ''',
-            (str(producerID),)
-        )
-        followers = cur.fetchall()
+            # Find all users who follow this producer
+            cursor.execute(
+                '''
+                SELECT "userId"
+                FROM "usersFollowLists"
+                WHERE %s = ANY("producers")
+                ''',
+                (str(producerID),)
+            )
+            followers = cursor.fetchall()
 
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Send each of them a notification
-        for row in followers:
-            notification_data = {
+            # Send each of them a notification
+            for row in followers:
+                notification_data = {
                 "userId":   row['userId'],        # the follower’s user ID
                 "userType": "user",
                 "notiTabs":"venues & producers",
@@ -533,9 +463,9 @@ def updateProducerStatus():
                 "link":    f"/profile/producer/{producerID}/{producerName}",
                 "message": f"{producerName} updated their status.",
                 "createdAt": current_time
-            }
-            print("Sending notification:", notification_data)
-            notifications.add_notification_to_db(notification_data)
+                }
+                print("Sending notification:", notification_data)
+                notifications.add_notification_to_db(notification_data)
 
         return jsonify({
             "code": 201,
@@ -543,7 +473,6 @@ def updateProducerStatus():
         }), 201
     
     except Exception as e:
-        conn.rollback()
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -551,9 +480,6 @@ def updateProducerStatus():
             "data": data,
             "message": "An error occurred updating claim status!"
         }), 500
-    
-    finally:
-        cur.close()
 
 
 # -----------------------------------------------------------------------------------------
@@ -570,15 +496,13 @@ def updateProducerStatus():
 # );
 @blueprint.route('/addProfileCount', methods=['POST'])
 def addProfileCount():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     producerID = int(data['businessId'])
     viewsID = int(data['viewsId'])
 
     try:
-        cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s AND id = %s', (producerID, viewsID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s AND id = %s', (producerID, viewsID))
 
         return jsonify(
             {   
@@ -588,7 +512,6 @@ def addProfileCount():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -596,9 +519,6 @@ def addProfileCount():
                 "message": "An error occurred updating the profile view count."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 # [POST] Add new profile view count
@@ -606,24 +526,21 @@ def addProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/addNewProfileCount', methods=['POST'])
 def addNewProfileCount():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
     producerID = int(data['producerID'])
     date = datetime.strptime(data['date'], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
-        cur.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (producerID,))
-        existingProfileView = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "producersProfileViews" WHERE "producerId" = %s', (producerID,))
+            existingProfileView = cursor.fetchone()
 
-        if existingProfileView:
-            cur.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
-            conn.commit()
+            if existingProfileView:
+                cursor.execute('UPDATE "producersProfileViews" SET "count" = "count" + 1 WHERE "producerId" = %s', (producerID,))
 
-        else:
-            cur.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
-            conn.commit()
+            else:
+                cursor.execute('INSERT INTO "producersProfileViews" ("date", "count", "producerId") VALUES (%s, 1, %s)', (date, producerID))
 
         return jsonify(
             {   
@@ -633,7 +550,6 @@ def addNewProfileCount():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -641,9 +557,6 @@ def addNewProfileCount():
                 "message": "An error occurred updating the new profile view count."
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -652,8 +565,6 @@ def addNewProfileCount():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editUpdate', methods=['POST'])
 def editUpdate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -663,49 +574,48 @@ def editUpdate():
     image64 = data.get('image64', '')
 
     try:
-        # Find existing producer and check for the existing update
-        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Find existing producer and check for the existing update
+            cursor.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+            existingUpdate = cursor.fetchone()
 
-        if existingUpdate:
-            # Delete old photo from S3 if it exists
-            if existingUpdate['photo']:
-                s3Images.deleteImageFromS3(existingUpdate['photo'])
+            if existingUpdate:
+                # Delete old photo from S3 if it exists
+                if existingUpdate['photo']:
+                    s3Images.deleteImageFromS3(existingUpdate['photo'])
 
-            # Upload new image to S3 if it exists
-            if image64:
-                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
-                image64 = s3Images.uploadBase64ImageToS3(base64_string)
+                # Upload new image to S3 if it exists
+                if image64:
+                    base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', image64)
+                    image64 = s3Images.uploadBase64ImageToS3(base64_string)
 
-            # Update the producer's update in the database
-            cur.execute(
-                """
-                UPDATE "producersUpdates"
-                SET 
-                    "text" = %s,
-                    "photo" = %s
-                WHERE "producerId" = %s AND id = %s
-                """,
-                (update, image64, producerID, updateID)
-            )
-            conn.commit()
+                # Update the producer's update in the database
+                cursor.execute(
+                    """
+                    UPDATE "producersUpdates"
+                    SET 
+                        "text" = %s,
+                        "photo" = %s
+                    WHERE "producerId" = %s AND id = %s
+                    """,
+                    (update, image64, producerID, updateID)
+                )
 
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Updated producer's update!"
-                }
-            ), 201
-        else:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
+                return jsonify(
+                    {
+                        "code": 201,
+                        "message": "Updated producer's update!"
+                    }
+                ), 201
+            else:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
         
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -714,9 +624,6 @@ def editUpdate():
                 "message": "An error occurred updating producer's update!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -725,8 +632,6 @@ def editUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editAddress', methods=['POST'])
 def editAddress():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -734,12 +639,12 @@ def editAddress():
     updatedLocation = data['updatedLocation']
 
     try:
-        cur.execute("""
-            UPDATE producers
-            SET "location" = %s
-            WHERE "id" = %s
-        """, (updatedLocation, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                UPDATE producers
+                SET "location" = %s
+                WHERE "id" = %s
+            """, (updatedLocation, producerID))
 
         return jsonify(
             {
@@ -747,9 +652,8 @@ def editAddress():
                 "message": "Updated address successfully!"
             }
         ), 201
-    
+
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -757,9 +661,6 @@ def editAddress():
                 "message": "An error occurred updating address!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -768,8 +669,6 @@ def editAddress():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editOpeningHours', methods=['POST'])
 def editOpeningHours():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -788,29 +687,29 @@ def editOpeningHours():
     )
 
     try:
-        # Check if opening hours entry already exists
-        cur.execute('SELECT id FROM "producersOpeningHours" WHERE "producerId" = %s', (producerID,))
-        existing_entry = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if opening hours entry already exists
+            cursor.execute('SELECT id FROM "producersOpeningHours" WHERE "producerId" = %s', (producerID,))
+            existing_entry = cursor.fetchone()
 
-        if existing_entry:
-            cur.execute("""
-                UPDATE "producersOpeningHours" 
-                SET "Monday" = %s, "Tuesday" = %s, "Wednesday" = %s, 
-                    "Thursday" = %s, "Friday" = %s, "Saturday" = %s, 
-                    "Sunday" = %s 
-                WHERE "producerId" = %s
-            """, (*opening_hours, producerID))
+            if existing_entry:
+                cursor.execute("""
+                    UPDATE "producersOpeningHours" 
+                    SET "Monday" = %s, "Tuesday" = %s, "Wednesday" = %s, 
+                        "Thursday" = %s, "Friday" = %s, "Saturday" = %s, 
+                        "Sunday" = %s 
+                    WHERE "producerId" = %s
+                """, (*opening_hours, producerID))
 
-        else:
-            cur.execute(
-                """
-                    INSERT INTO "producersOpeningHours" ("Monday", "Tuesday", "Wednesday", 
-                    "Thursday", "Friday", "Saturday", "Sunday", "producerId") 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """,
-                (*opening_hours, producerID)
-            )
-        conn.commit()
+            else:
+                cursor.execute(
+                    """
+                        INSERT INTO "producersOpeningHours" ("Monday", "Tuesday", "Wednesday", 
+                        "Thursday", "Friday", "Saturday", "Sunday", "producerId") 
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """,
+                    (*opening_hours, producerID)
+                )
 
         return jsonify(
             {
@@ -820,7 +719,6 @@ def editOpeningHours():
         ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -828,9 +726,6 @@ def editOpeningHours():
                 "message": "An error occurred updating opening hours!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -839,8 +734,6 @@ def editOpeningHours():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/deleteUpdate', methods=['POST'])
 def deleteUpdate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -848,35 +741,34 @@ def deleteUpdate():
     updateID = int(data['updateID'])
 
     try:
-        # Find existing producer and see if photo exists, if it does delete it from S3 bucket
-        cur.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-        existingUpdate = cur.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Find existing producer and see if photo exists, if it does delete it from S3 bucket
+            cursor.execute('SELECT * FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
+            existingUpdate = cursor.fetchone()
 
-        if existingUpdate:
-            if existingUpdate['photo']:
-                s3Images.deleteImageFromS3(existingUpdate['photo'])
+            if existingUpdate:
+                if existingUpdate['photo']:
+                    s3Images.deleteImageFromS3(existingUpdate['photo'])
 
-            # Delete the producer's update from the database
-            cur.execute('DELETE FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
-            conn.commit()
+                # Delete the producer's update from the database
+                cursor.execute('DELETE FROM "producersUpdates" WHERE "producerId" = %s AND id = %s', (producerID, updateID))
 
-            return jsonify(
-                {
-                    "code": 201,
-                    "message": "Deleted producer's update!"
-                }
-            ), 201
-        
-        else:
-            return jsonify(
-                {
-                    "code": 404,
-                    "message": "Update not found."
-                }
-            ), 404
+                return jsonify(
+                    {
+                        "code": 201,
+                        "message": "Deleted producer's update!"
+                    }
+                ), 201
+            
+            else:
+                return jsonify(
+                    {
+                        "code": 404,
+                        "message": "Update not found."
+                    }
+                ), 404
         
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -885,9 +777,6 @@ def deleteUpdate():
                 "message": "An error occurred deleting producer's update!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -896,8 +785,6 @@ def deleteUpdate():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/editQA', methods=['POST'])
 def editQA():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -906,18 +793,17 @@ def editQA():
     answer = data['answer']
 
     try:
-        cur.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE "producersQuestionAnswers" SET "answer" = %s WHERE "producerId" = %s AND id = %s', (answer, producerID, questionsAnswersID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated producer's Q&A!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated producer's Q&A!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -926,9 +812,6 @@ def editQA():
                 "message": "An error occurred updating producer's Q&A!"
             }
         ), 500
-    
-    finally:
-        cur.close()
 
 # -----------------------------------------------------------------------------------------
 
@@ -938,8 +821,6 @@ def editQA():
 @blueprint.route('/deleteQA', methods=['POST'])
 def deleteQA():
     print("deleteQA")
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -947,36 +828,34 @@ def deleteQA():
     questionsAnswersID = int(data['questionsAnswersID'])
 
     try:
-        # Get user id from the question
-        cur.execute('SELECT "userId" FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
-        userID = cur.fetchone()
-        
-        cur.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            # Get user id from the question
+            cursor.execute('SELECT "userId" FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID,))
+            userID = cursor.fetchone()
+            
+            cursor.execute('DELETE FROM "producersQuestionAnswers" WHERE "producerId" = %s AND id = %s', (producerID, questionsAnswersID))
 
-        # Deduct points from user for deleting a question
-         
-        # get points for asking a question
-        cur.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
-        points = cur.fetchone()
+            # Deduct points from user for deleting a question
+             
+            # get points for asking a question
+            cursor.execute('SELECT "proofPoints", "ruleName" FROM "pointSystemRules" WHERE id = %s', (15,))
+            points = cursor.fetchone()
 
-        # Update user's points
-        cur.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userID['userId'],))
-        conn.commit()
+            # Update user's points
+            cursor.execute('UPDATE "pointsRecorder" SET "currentPoints" = "currentPoints" - %s WHERE "userID" = %s', (points['proofPoints'], userID['userId'],))
 
-        print(f"Points deducted from user {userID} for deleting a question")
-        
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Deleted producer's Q&A!",
-                 "pointsDeducted": points['proofPoints'],
-                 "rule": points['ruleName']
-            }
-        ), 201
+            print(f"Points deducted from user {userID} for deleting a question")
+            
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Deleted producer's Q&A!",
+                     "pointsDeducted": points['proofPoints'],
+                     "rule": points['ruleName']
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -986,9 +865,6 @@ def deleteQA():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile claim status
@@ -996,8 +872,6 @@ def deleteQA():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatus', methods=['POST'])
 def updateProducerClaimStatus():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -1005,18 +879,17 @@ def updateProducerClaimStatus():
     claimStatus = data["claimStatus"]
 
     try:
-        cur.execute('UPDATE producers SET "claimStatus" = %s WHERE id = %s', (claimStatus, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE producers SET "claimStatus" = %s WHERE id = %s', (claimStatus, producerID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated claim status successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated claim status successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -1026,17 +899,12 @@ def updateProducerClaimStatus():
             }
         ), 500
     
-    finally:
-        cur.close()
-    
 # -----------------------------------------------------------------------------------------
 # [POST] Edit producer profile last check claim status date
 # - Update producer profile with new details
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateProducerClaimStatusCheckDate', methods=['POST'])
 def updateProducerClaimStatusCheckDate():
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
     print(data)
 
@@ -1044,18 +912,17 @@ def updateProducerClaimStatusCheckDate():
     claimStatusCheckDate = datetime.strptime(data["claimStatusCheckDate"], "%Y-%m-%dT%H:%M:%S.%fZ")
 
     try:
-        cur.execute('UPDATE producers SET "claimStatusCheckDate" = %s WHERE id = %s', (claimStatusCheckDate, producerID))
-        conn.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('UPDATE producers SET "claimStatusCheckDate" = %s WHERE id = %s', (claimStatusCheckDate, producerID))
 
-        return jsonify(
-            {   
-                "code": 201,
-                "message": "Updated claim status check date successfully!"
-            }
-        ), 201
+            return jsonify(
+                {   
+                    "code": 201,
+                    "message": "Updated claim status check date successfully!"
+                }
+            ), 201
     
     except Exception as e:
-        conn.rollback()
         print(str(e))
         return jsonify(
             {
@@ -1064,6 +931,3 @@ def updateProducerClaimStatusCheckDate():
                 "message": "An error occurred updating claim status check date!"
             }
         ), 500
-    
-    finally:
-        cur.close()

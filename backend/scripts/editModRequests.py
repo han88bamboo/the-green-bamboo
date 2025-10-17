@@ -19,6 +19,10 @@ from flask import Blueprint, g, request, jsonify
 # ------------------------------------------------------
 # from bson.objectid import ObjectId (REMOVED - not needed for PostgreSQL)
 # ======================================================
+
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -29,7 +33,6 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 @blueprint.route('/submitModRequest', methods=['POST'])
 def submitModRequest():
-    db = g.db
     data = request.get_json()
     print(data)
     userID = data['userID']
@@ -61,15 +64,14 @@ def submitModRequest():
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
     try: 
-        cur = db.cursor()
-        cur.execute(
-            """
-            INSERT INTO "modRequests" ("userID", "drinkType", "modDesc", "reviewStatus")
-            VALUES (%s, %s, %s, %s)
-            """,
-            (userID, drinkType, modDesc, True)
-        )
-        db.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO "modRequests" ("userID", "drinkType", "modDesc", "reviewStatus")
+                VALUES (%s, %s, %s, %s)
+                """,
+                (userID, drinkType, modDesc, True)
+            )
 
         return jsonify(
             {   
@@ -107,8 +109,6 @@ def submitModRequest():
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/updateModRequest', methods=['POST'])
 def updateModRequest():
-    db = g.db
-    cur = db.cursor()
     data = request.get_json()
     print(data)
     requestID = data['requestID']
@@ -123,15 +123,15 @@ def updateModRequest():
 # [NEW] TO BE ADDED FOR POSTGRES:
 # ------------------------------------------------------
     try:
-        cur.execute(
-            """
-            UPDATE "modRequests"
-            SET "reviewStatus" = %s
-            WHERE id = %s
-            """,
-            (reviewStatus, requestID)
-        )
-        db.commit()
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE "modRequests"
+                SET "reviewStatus" = %s
+                WHERE id = %s
+                """,
+                (reviewStatus, requestID)
+            )
 
 # ======================================================
         return jsonify(

@@ -3,6 +3,9 @@ from psycopg2.extras import RealDictCursor
 import traceback
 from datetime import datetime
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 blueprint = Blueprint('editPoll', __name__)
 
 @blueprint.route("/createPoll", methods=['POST'])
@@ -27,7 +30,6 @@ def createPoll():
     }
     """
     try:
-        conn = g.db
         data = request.get_json()
         
         # Validate required fields
@@ -70,7 +72,7 @@ def createPoll():
                         "message": f"Option {i + 1} must have valid text"
                     }), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Always calculate the next orderIndex for this creator (ignore any provided value)
             cursor.execute("""
                 SELECT COALESCE(MAX("orderIndex"), -1) + 1 as next_order
@@ -127,9 +129,6 @@ def createPoll():
                         "optionOrder": option['optionOrder']
                     })
             
-            # Commit the transaction
-            conn.commit()
-            
             # Return the created poll data
             poll_data = {
                 "id": poll_id,
@@ -154,10 +153,6 @@ def createPoll():
             })
     
     except Exception as e:
-        # Rollback in case of error
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error creating poll: {str(e)}")
         return jsonify({
             "code": 500,
@@ -176,7 +171,6 @@ def updatePollVisibility(poll_id):
     }
     """
     try:
-        conn = g.db
         data = request.get_json()
         
         if 'isVisible' not in data:
@@ -185,7 +179,7 @@ def updatePollVisibility(poll_id):
                 "message": "Missing required field: isVisible"
             }), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Update the poll visibility
             cursor.execute("""
                 UPDATE "pollQuestions" 
@@ -202,8 +196,6 @@ def updatePollVisibility(poll_id):
                     "message": "Poll not found"
                 }), 404
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": "Poll visibility updated successfully",
@@ -215,9 +207,6 @@ def updatePollVisibility(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error updating poll visibility: {str(e)}")
         return jsonify({
             "code": 500,
@@ -235,9 +224,7 @@ def deletePoll(poll_id):
     - Poll responses (via CASCADE)
     """
     try:
-        conn = g.db
-        
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Check if poll exists before deletion
             cursor.execute("""
                 SELECT "id", "title" FROM "pollQuestions" WHERE "id" = %s
@@ -256,8 +243,6 @@ def deletePoll(poll_id):
                 DELETE FROM "pollQuestions" WHERE "id" = %s
             """, (poll_id,))
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": f"Poll '{poll['title']}' deleted successfully",
@@ -267,9 +252,6 @@ def deletePoll(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error deleting poll: {str(e)}")
         return jsonify({
             "code": 500,
@@ -288,7 +270,6 @@ def updatePollStatus(poll_id):
     }
     """
     try:
-        conn = g.db
         data = request.get_json()
         
         if 'isActive' not in data:
@@ -297,7 +278,7 @@ def updatePollStatus(poll_id):
                 "message": "Missing required field: isActive"
             }), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Update the poll status
             cursor.execute("""
                 UPDATE "pollQuestions" 
@@ -314,8 +295,6 @@ def updatePollStatus(poll_id):
                     "message": "Poll not found"
                 }), 404
             
-            conn.commit()
-            
             return jsonify({
                 "code": 200,
                 "message": f"Poll {'activated' if data['isActive'] else 'deactivated'} successfully",
@@ -327,9 +306,6 @@ def updatePollStatus(poll_id):
             })
     
     except Exception as e:
-        if 'conn' in locals():
-            conn.rollback()
-        
         print(f"Error updating poll status: {str(e)}")
         return jsonify({
             "code": 500,

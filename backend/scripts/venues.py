@@ -5,6 +5,9 @@ from psycopg2.extras import execute_values
 from flask import Blueprint, g, request, jsonify
 from psycopg2.extras import RealDictCursor # ADDED BY SMU GROUP 3
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 logger = logging.getLogger(__name__)
 
 file_name = os.path.basename(__file__)
@@ -15,7 +18,6 @@ logger.info(project_root)
 
 @blueprint.route("/", methods=['GET'])
 def getVenues():
-    conn = g.db
     """
     Cursor-based pagination endpoint for venues
     Query parameters:
@@ -143,11 +145,10 @@ def getVenues():
         # Add limit to query params (get one extra to check for next page)
         query_params.append(limit + 1)
         
-        # Execute query
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute(venues_query, query_params)
-        venues = cursor.fetchall()
-        cursor.close()
+        # Execute query using connection pooling
+        with db_manager.get_cursor() as cursor:
+            cursor.execute(venues_query, query_params)
+            venues = cursor.fetchall()
         
         # Check if there are more results
         has_next_page = len(venues) > limit
@@ -181,8 +182,6 @@ def getVenues():
 
 @blueprint.route("/types", methods=['GET'])
 def getVenueType():
-    conn = g.db
-
     try: 
         query = """
         SELECT 
@@ -201,10 +200,9 @@ def getVenueType():
             ), '[]'::json) AS sub_type;
         """
 
-        # open connection to execute sql query
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        # Execute query using connection pooling
+        with db_manager.get_cursor() as cursor:
             cursor.execute(query)
-            
             venue_types = cursor.fetchone()  # one row
             return jsonify(venue_types) 
         

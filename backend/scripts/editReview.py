@@ -14,6 +14,9 @@ from scripts.adminFunctions import hash_password
 from scripts.createReview import create_username
 from scripts import badge_helpers, notifications
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -29,7 +32,6 @@ def is_non_empty_photo(value):
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/voteReview', methods=['POST'])
 def voteReview():
-    conn = g.db
     data = request.get_json()
 
     review_id = data['reviewID']
@@ -46,11 +48,11 @@ def voteReview():
     else:
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    with conn.cursor() as cur:
+    with db_manager.get_cursor() as cursor:
         try:
             # Get current votes
-            cur.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
-            result = cur.fetchone()
+            cursor.execute("SELECT id, upvotes, downvotes FROM \"reviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
+            result = cursor.fetchone()
 
             upvotes = result['upvotes'] if result else []
             downvotes = result['downvotes'] if result else []
@@ -104,33 +106,32 @@ def voteReview():
 
             # Update or insert vote record
             if result:
-                cur.execute("""
+                cursor.execute("""
                     UPDATE "reviewsUserVotes"
                     SET upvotes = %s, downvotes = %s
                     WHERE id = %s;
                 """, (json.dumps(upvotes), json.dumps(downvotes), result['id']))
             else:
-                cur.execute("""
+                cursor.execute("""
                     INSERT INTO "reviewsUserVotes" ("reviewId", upvotes, downvotes)
                     VALUES (%s, %s, %s);
                 """, (review_id, json.dumps(upvotes), json.dumps(downvotes)))
-            conn.commit()
 
-            cur.execute('SELECT "userID", "reviewTarget" FROM "reviews" WHERE id = %s', (review_id,))
-            owner_row = cur.fetchone()
+            cursor.execute('SELECT "userID", "reviewTarget" FROM "reviews" WHERE id = %s', (review_id,))
+            owner_row = cursor.fetchone()
             if owner_row:
                 # Fetch the review owner's userID and reviewTarget
                 review_owner_id = owner_row["userID"]
                 review_target = owner_row["reviewTarget"]
                 
                 # fetch the listingName
-                cur.execute('SELECT "listingName" FROM "listings" WHERE id = %s', (review_target,))
-                listing_row = cur.fetchone()
+                cursor.execute('SELECT "listingName" FROM "listings" WHERE id = %s', (review_target,))
+                listing_row = cursor.fetchone()
                 listing_name = listing_row["listingName"] if listing_row else "your item"
 
                 # fetch the voter's username
-                cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
-                voter_row = cur.fetchone()
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                voter_row = cursor.fetchone()
                 voter_username = voter_row["username"] if voter_row else "Someone"                
             
             # If an upvote was removed, delete any existing upvote notification for that review
@@ -138,11 +139,10 @@ def voteReview():
                 # Fetch the review owner’s userID
                 if owner_row:
                     # Delete any existing "review_upvote" notification for this review
-                    cur.execute(
+                    cursor.execute(
                         'DELETE FROM "notifications" WHERE "userId" = %s AND "notiType" = %s AND "link" = %s',
                         (review_owner_id, "review_upvote", f"/listing/view/{review_target}/{listing_name}")
                     )
-                    conn.commit()
             
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # If a new upvote was added, insert a notification (up to the first 3 total)
@@ -166,11 +166,11 @@ def voteReview():
                         notifications.add_notification_to_db(notification_data)      
             
             # Get the review owner and creation date
-            cur.execute(
+            cursor.execute(
                 'SELECT "userID", "createdDate" FROM "reviews" WHERE id = %s',
                 (review_id,)
             )
-            review_row = cur.fetchone()
+            review_row = cursor.fetchone()
             
             badge_result = None
             
@@ -178,8 +178,8 @@ def voteReview():
                 review_owner_id = review_row["userID"]
                 review_created = review_row["createdDate"]
 
-                cur.execute('SELECT username FROM users WHERE id = %s', (review_owner_id,))
-                review_row = cur.fetchone()
+                cursor.execute('SELECT username FROM users WHERE id = %s', (review_owner_id,))
+                review_row = cursor.fetchone()
                 if review_row:
                     # Get the username of the user
                     review_username = review_row['username'] if review_row else "Someone"       
@@ -194,7 +194,7 @@ def voteReview():
                 # Process badge if there's an upvote change within one week
                 if (is_new_upvote and within_one_week) or is_removed_upvote:
                     badge_result = badge_helpers.process_upvote_badge(
-                        conn, cur, review_owner_id, 
+                        cursor.connection, cursor, review_owner_id, 
                         is_new_upvote=is_new_upvote, 
                         is_removed_upvote=is_removed_upvote
                     )
@@ -230,7 +230,6 @@ def voteReview():
 
         except Exception as e:
             print(f"Error in voteReview: {str(e)}")
-            conn.rollback()
             return jsonify({
                 "code": 500,
                 "message": "An error occurred updating the votes.",
@@ -244,281 +243,280 @@ def voteReview():
 # - Possible return codes: 200 (Updated), 400(Review not found), 500 (Error during update)
 @blueprint.route('/updateReview/<id>', methods=['PUT'])
 def updateReview(id):
-    conn = g.db
-    cur = conn.cursor()
-    data = request.get_json()
+    with db_manager.get_cursor(commit=False) as cursor:
+        data = request.get_json()
 
-    # Parse the date from the request body
-    try:
-        created_date = datetime.strptime(data.get('createdDate', ''), "%a, %d %b %Y %H:%M:%S %Z")
-    except ValueError:
-        return jsonify({
-            "code": 400,
-            "message": "Invalid date format."
-        }), 400
-    
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Parse the date from the request body
+        try:
+            created_date = datetime.strptime(data.get('createdDate', ''), "%a, %d %b %Y %H:%M:%S %Z")
+        except ValueError:
+            return jsonify({
+                "code": 400,
+                "message": "Invalid date format."
+            }), 400
+        
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Check if review exists
-    cur.execute("""
-        SELECT * FROM "reviews" WHERE "id" = %s
-    """, (id,))
-    existing_review = cur.fetchone()
+        # Check if review exists
+        cursor.execute("""
+            SELECT * FROM "reviews" WHERE "id" = %s
+        """, (id,))
+        existing_review = cursor.fetchone()
 
-    if existing_review is None:
-        return jsonify({
-            "code": 400,
-            "data": {
-                "reviewDesc": data.get('reviewDesc', '')
-            },
-            "message": "Review does not exist."
-        }), 400
-    
-    # Get proof points from pointSystemRules (id 2 to 6)
-    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" BETWEEN 2 AND 6""")
-    point_system_rules = cur.fetchall()
+        if existing_review is None:
+            return jsonify({
+                "code": 400,
+                "data": {
+                    "reviewDesc": data.get('reviewDesc', '')
+                },
+                "message": "Review does not exist."
+            }), 400
+        
+        # Get proof points from pointSystemRules (id 2 to 6)
+        cursor.execute("""SELECT * FROM "pointSystemRules" WHERE "id" BETWEEN 2 AND 6""")
+        point_system_rules = cursor.fetchall()
 
-    # Check the difference between the new review and the existing review
-    remove_component = []
-    added_component = []
+        # Check the difference between the new review and the existing review
+        remove_component = []
+        added_component = []
 
-    # [1] Check if text review was removed
-    if (data['reviewDesc'] == '' or data['reviewDesc'] is None) and (existing_review['reviewDesc'] != '' and existing_review['reviewDesc'] is not None):
-        remove_component.append(2)
-    elif (data['reviewDesc'] != '' and data['reviewDesc'] is not None) and (existing_review['reviewDesc'] == '' or existing_review['reviewDesc'] is None):
-        added_component.append(2)
+        # [1] Check if text review was removed
+        if (data['reviewDesc'] == '' or data['reviewDesc'] is None) and (existing_review['reviewDesc'] != '' and existing_review['reviewDesc'] is not None):
+            remove_component.append(2)
+        elif (data['reviewDesc'] != '' and data['reviewDesc'] is not None) and (existing_review['reviewDesc'] == '' or existing_review['reviewDesc'] is None):
+            added_component.append(2)
 
-    # [2] Check if extensive review was removed or added
-    updated_review_ext_color = bool(data.get('colour'))
-    updated_review_ext_aroma = bool(data.get('aroma'))
-    updated_review_ext_taste = bool(data.get('taste'))
-    updated_review_ext_finish = bool(data.get('finish'))
+        # [2] Check if extensive review was removed or added
+        updated_review_ext_color = bool(data.get('colour'))
+        updated_review_ext_aroma = bool(data.get('aroma'))
+        updated_review_ext_taste = bool(data.get('taste'))
+        updated_review_ext_finish = bool(data.get('finish'))
 
-    current_review_ext_color = bool(existing_review.get('colour'))
-    current_review_ext_aroma = bool(existing_review.get('aroma'))
-    current_review_ext_taste = bool(existing_review.get('taste'))
-    current_review_ext_finish = bool(existing_review.get('finish'))
+        current_review_ext_color = bool(existing_review.get('colour'))
+        current_review_ext_aroma = bool(existing_review.get('aroma'))
+        current_review_ext_taste = bool(existing_review.get('taste'))
+        current_review_ext_finish = bool(existing_review.get('finish'))
 
-    # Count how many fields exist in current and updated review
-    current_count = sum([
-        current_review_ext_color,
-        current_review_ext_aroma,
-        current_review_ext_taste,
-        current_review_ext_finish
-    ])
+        # Count how many fields exist in current and updated review
+        current_count = sum([
+            current_review_ext_color,
+            current_review_ext_aroma,
+            current_review_ext_taste,
+            current_review_ext_finish
+        ])
 
-    updated_count = sum([
-        updated_review_ext_color,
-        updated_review_ext_aroma,
-        updated_review_ext_taste,
-        updated_review_ext_finish
-    ])
+        updated_count = sum([
+            updated_review_ext_color,
+            updated_review_ext_aroma,
+            updated_review_ext_taste,
+            updated_review_ext_finish
+        ])
 
-    # Track if extensive review was added or removed
-    is_extensive_review_before = current_count > 0
-    is_extensive_review_after = updated_count > 0
+        # Track if extensive review was added or removed
+        is_extensive_review_before = current_count > 0
+        is_extensive_review_after = updated_count > 0
 
-    # Check if anything was removed or added
-    if is_extensive_review_after and not is_extensive_review_before:
-        added_component.append(3)
-    elif not is_extensive_review_after and is_extensive_review_before:
-        remove_component.append(3)
-    
-    # [3] Check if photo was removed or added
-    has_photo_before = is_non_empty_photo(existing_review['photo'])
-    has_photo_after = is_non_empty_photo(data['photo'])
-    
-    if not has_photo_after and has_photo_before:
-        remove_component.append(4)
-    elif has_photo_after and not has_photo_before:
-        added_component.append(4)
+        # Check if anything was removed or added
+        if is_extensive_review_after and not is_extensive_review_before:
+            added_component.append(3)
+        elif not is_extensive_review_after and is_extensive_review_before:
+            remove_component.append(3)
+        
+        # [3] Check if photo was removed or added
+        has_photo_before = is_non_empty_photo(existing_review['photo'])
+        has_photo_after = is_non_empty_photo(data['photo'])
+        
+        if not has_photo_after and has_photo_before:
+            remove_component.append(4)
+        elif has_photo_after and not has_photo_before:
+            added_component.append(4)
 
-    # [4] Check if location was removed or added
-    has_location_before = existing_review['location'] is not None and existing_review['location'] != ''
-    has_location_after = data['location'] is not None and data['location'] != ''
-    
-    if not has_location_after and has_location_before:
-        remove_component.append(5)
-    elif has_location_after and not has_location_before:
-        added_component.append(5)
+        # [4] Check if location was removed or added
+        has_location_before = existing_review['location'] is not None and existing_review['location'] != ''
+        has_location_after = data['location'] is not None and data['location'] != ''
+        
+        if not has_location_after and has_location_before:
+            remove_component.append(5)
+        elif has_location_after and not has_location_before:
+            added_component.append(5)
 
-    # [5] Check if tagged users were removed or added
-    has_tagged_friends_before = existing_review['taggedUsers'] != []
-    has_tagged_friends_after = data['taggedUsers'] != []
-    
-    if not has_tagged_friends_after and has_tagged_friends_before:
-        remove_component.append(6)
-    elif has_tagged_friends_after and not has_tagged_friends_before:
-        added_component.append(6)
+        # [5] Check if tagged users were removed or added
+        has_tagged_friends_before = existing_review['taggedUsers'] != []
+        has_tagged_friends_after = data['taggedUsers'] != []
+        
+        if not has_tagged_friends_after and has_tagged_friends_before:
+            remove_component.append(6)
+        elif has_tagged_friends_after and not has_tagged_friends_before:
+            added_component.append(6)
 
-    # Insert or find the venue
-    venue_id = None
-    location_name = data.get('location')
-    address = data.get('address')
+        # Insert or find the venue
+        venue_id = None
+        location_name = data.get('location')
+        address = data.get('address')
 
-    if location_name and address:
-        cur.execute("""
-            SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
-        """, (location_name, address))
-        venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
+        if location_name and address:
+            cursor.execute("""
+                SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
+            """, (location_name, address))
+            venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
 
-        if not venue_id:
-            username = create_username(location_name)
-            insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
-                                  "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                  VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-            hashed_password = 'hashed_password'  # Replace with actual password hashing logic
-            cur.execute(insert_venue_sql, (location_name, address, hashed_password, username))
-            venue_id = cur.fetchone()['id'] if cur.rowcount > 0 else None
-            print("Venue ID: ", venue_id)
-            conn.commit()
+            if not venue_id:
+                username = create_username(location_name)
+                insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                      "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                      VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+                hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+                cursor.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+                venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
+                print("Venue ID: ", venue_id)
+                cursor.connection.commit()
 
-    # Update review photo
-    if existing_review['photo'] and data['photo'] != existing_review['photo']:
-        s3Images.deleteImageFromS3(existing_review['photo'])
-    if data['photo'] and data['photo'] != existing_review['photo']:
-        base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['photo'])
-        data['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
+        # Update review photo
+        if existing_review['photo'] and data['photo'] != existing_review['photo']:
+            s3Images.deleteImageFromS3(existing_review['photo'])
+        if data['photo'] and data['photo'] != existing_review['photo']:
+            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', data['photo'])
+            data['photo'] = s3Images.uploadBase64ImageToS3(base64_string)
 
-    tagged_users = data.get('taggedUsers', [])
-    flavour_tags = data.get('flavourTag', [])
-    observation_tags = data.get('observationTag', [])
+        tagged_users = data.get('taggedUsers', [])
+        flavour_tags = data.get('flavourTag', [])
+        observation_tags = data.get('observationTag', [])
 
-    update_review_sql = """
-        UPDATE "reviews"
-        SET "userID" = %s, "reviewTarget" = %s, "rating" = %s::DECIMAL(3,1), "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
-            "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
-            "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
-        WHERE "id" = %s
-    """
+        update_review_sql = """
+            UPDATE "reviews"
+            SET "userID" = %s, "reviewTarget" = %s, "rating" = %s::DECIMAL(3,1), "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
+                "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
+                "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
+            WHERE "id" = %s
+        """
 
-    review_values = (
-        data.get('userID'), data.get('reviewTarget'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
-        data.get('reviewType'), created_date,
-        data.get('language'), data.get('finish'), data.get('willRecommend', False), data.get('wouldBuyAgain', False),
-        tagged_users, flavour_tags, data.get('photo'), data.get('colour'), data.get('aroma'), data.get('taste'),
-        observation_tags, venue_id, address, id
-    )
+        review_values = (
+            data.get('userID'), data.get('reviewTarget'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
+            data.get('reviewType'), created_date,
+            data.get('language'), data.get('finish'), data.get('willRecommend', False), data.get('wouldBuyAgain', False),
+            tagged_users, flavour_tags, data.get('photo'), data.get('colour'), data.get('aroma'), data.get('taste'),
+            observation_tags, venue_id, address, id
+        )
 
-    try:
-        cur.execute(update_review_sql, review_values)
-        conn.commit()
+        try:
+            cursor.execute(update_review_sql, review_values)
+            cursor.connection.commit()
 
-        # Update user points 
-        modify_point = 0
-        if remove_component or added_component:
-            for rule in point_system_rules:
-                if rule['id'] in remove_component:
-                    modify_point -= rule['proofPoints']
-                elif rule['id'] in added_component:
-                    modify_point += rule['proofPoints']
+            # Update user points 
+            modify_point = 0
+            if remove_component or added_component:
+                for rule in point_system_rules:
+                    if rule['id'] in remove_component:
+                        modify_point -= rule['proofPoints']
+                    elif rule['id'] in added_component:
+                        modify_point += rule['proofPoints']
 
-            cur.execute("""
-                UPDATE "pointsRecorder"
-                SET "currentPoints" = "currentPoints" + %s
-                WHERE "userID" = %s
-            """, (modify_point, data.get('userID')))
-            conn.commit()
+                cursor.execute("""
+                    UPDATE "pointsRecorder"
+                    SET "currentPoints" = "currentPoints" + %s
+                    WHERE "userID" = %s
+                """, (modify_point, data.get('userID')))
+                cursor.connection.commit()
 
-            print("Additional points: ", modify_point)
+                print("Additional points: ", modify_point)
+                
+            user_id = data.get('userID')
+            badges_updated = []
             
-        user_id = data.get('userID')
-        badges_updated = []
-        
-        # Fetch listing info to get drink type, category and country data
-        cur.execute("""
-            SELECT "drinkType", "typeCategory", "originCountry" 
-            FROM "listings" 
-            WHERE id = %s
-        """, (data.get('reviewTarget'),))
-        
-        listing_info = cur.fetchone()
-        
-        if listing_info and (added_component or remove_component):
+            # Fetch listing info to get drink type, category and country data
+            cursor.execute("""
+                SELECT "drinkType", "typeCategory", "originCountry" 
+                FROM "listings" 
+                WHERE id = %s
+            """, (data.get('reviewTarget'),))
             
-            if 3 in added_component:
-                # ExtensiveReview added - increase badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'ExtensiveReview', 'Action', 1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-            elif 3 in remove_component:
-                # ExtensiveReview removed - decrease badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'ExtensiveReview', 'Action', -1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-                    
-            # 2. Process PhotoAttached badge
-            if 4 in added_component:
-                # Photo added - increase badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'PhotoAttached', 'Action', 1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-            elif 4 in remove_component:
-                # Photo removed - decrease badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'PhotoAttached', 'Action', -1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-                    
-            # 3. Process LocationTagged badge
-            if 5 in added_component:
-                # Location added - increase badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'LocationTagged', 'Action', 1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-            elif 5 in remove_component:
-                # Location removed - decrease badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'LocationTagged', 'Action', -1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-                    
-            # 4. Process FriendTagged badge
-            if 6 in added_component:
-                # Friends tagged - increase badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', 1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
-            elif 6 in remove_component:
-                # Friends untagged - decrease badge progress
-                badge_updated = badge_helpers.update_badge_progress(conn, cur, user_id, 'FriendTagged', 'Action', -1)
-                if badge_updated:
-                    badges_updated.append(badge_updated)
+            listing_info = cursor.fetchone()
+            
+            if listing_info and (added_component or remove_component):
+                
+                if 3 in added_component:
+                    # ExtensiveReview added - increase badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'ExtensiveReview', 'Action', 1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                elif 3 in remove_component:
+                    # ExtensiveReview removed - decrease badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'ExtensiveReview', 'Action', -1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                        
+                # 2. Process PhotoAttached badge
+                if 4 in added_component:
+                    # Photo added - increase badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'PhotoAttached', 'Action', 1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                elif 4 in remove_component:
+                    # Photo removed - decrease badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'PhotoAttached', 'Action', -1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                        
+                # 3. Process LocationTagged badge
+                if 5 in added_component:
+                    # Location added - increase badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'LocationTagged', 'Action', 1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                elif 5 in remove_component:
+                    # Location removed - decrease badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'LocationTagged', 'Action', -1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                        
+                # 4. Process FriendTagged badge
+                if 6 in added_component:
+                    # Friends tagged - increase badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'FriendTagged', 'Action', 1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
+                elif 6 in remove_component:
+                    # Friends untagged - decrease badge progress
+                    badge_updated = badge_helpers.update_badge_progress(cursor.connection, cursor, user_id, 'FriendTagged', 'Action', -1)
+                    if badge_updated:
+                        badges_updated.append(badge_updated)
 
-            # — now send notifications for each badge just earned —
-            cur.execute('SELECT username FROM users WHERE id = %s', (user_id,))
-            user_row = cur.fetchone()
-            review_username = user_row['username'] if user_row else "Someone"
+                # — now send notifications for each badge just earned —
+                cursor.execute('SELECT username FROM users WHERE id = %s', (user_id,))
+                user_row = cursor.fetchone()
+                review_username = user_row['username'] if user_row else "Someone"
 
-            for badge in badges_updated:
-                notification_data = {
-                    "userId":   user_id,
-                    "userType": "user",
-                    "notiTabs": "forYou",
-                    "notiType": "badge_earned",
-                    "image":    None,
-                    "link":     f"/profile/user/{user_id}/{review_username}",
-                    "message":  f"Congratulations! You earned a badge: {badge['badgeName']}.",
-                    "createdAt": current_time
-                }
-                print("Badge notification data: ", notification_data)
-                notifications.add_notification_to_db(notification_data)
-        
-        return jsonify({
-            "code": 200,
-            "data": data.get('reviewDesc', ''),
-            "pointsChange": modify_point,
-            "badgesAwarded": badges_updated
-        }), 200
+                for badge in badges_updated:
+                    notification_data = {
+                        "userId":   user_id,
+                        "userType": "user",
+                        "notiTabs": "forYou",
+                        "notiType": "badge_earned",
+                        "image":    None,
+                        "link":     f"/profile/user/{user_id}/{review_username}",
+                        "message":  f"Congratulations! You earned a badge: {badge['badgeName']}.",
+                        "createdAt": current_time
+                    }
+                    print("Badge notification data: ", notification_data)
+                    notifications.add_notification_to_db(notification_data)
+            
+            return jsonify({
+                "code": 200,
+                "data": data.get('reviewDesc', ''),
+                "pointsChange": modify_point,
+                "badgesAwarded": badges_updated
+            }), 200
 
-    except Exception as e:
-        print(str(e))
-        conn.rollback()
-        return jsonify({
-            "code": 500,
-            "data": {
-                "reviewDesc": data.get('reviewDesc', '')
-            },
-            "message": "An error occurred updating the review."
-        }), 500
+        except Exception as e:
+            print(str(e))
+            cursor.connection.rollback()
+            return jsonify({
+                "code": 500,
+                "data": {
+                    "reviewDesc": data.get('reviewDesc', '')
+                },
+                "message": "An error occurred updating the review."
+            }), 500
     
 # -----------------------------------------------------------------------------------------
 
@@ -527,33 +525,30 @@ def updateReview(id):
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/voteProducerReview', methods=['POST'])
 def voteProducerReview():
-    conn = g.db
     data = request.get_json()
 
     review_id = data['reviewID']
     user_votes = data['userVotes']
     action = data['action']
 
-    with conn.cursor() as cur:
+    with db_manager.get_cursor() as cursor:
         try:
-            cur.execute("SELECT id, upvotes, downvotes FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
-            result = cur.fetchone()
+            cursor.execute("SELECT id, upvotes, downvotes FROM \"producerReviewsUserVotes\" WHERE \"reviewId\" = %s", (review_id,))
+            result = cursor.fetchone()
             print("Result: ", result)
 
             if result:
-                cur.execute("""
+                cursor.execute("""
                     UPDATE "producerReviewsUserVotes"
                     SET upvotes = %s, downvotes = %s
                     WHERE id = %s;
                 """, (user_votes['upvotes'], user_votes['downvotes'], result['id']))
 
             else:
-                cur.execute("""
+                cursor.execute("""
                     INSERT INTO "producerReviewsUserVotes" ("reviewId", upvotes, downvotes)
                     VALUES (%s, %s, %s);
                 """, (review_id, user_votes['upvotes'], user_votes['downvotes']))
-
-            conn.commit()
 
             return jsonify({
                 "code": 201,
@@ -565,7 +560,6 @@ def voteProducerReview():
         
         except Exception as e:
             print(str(e))
-            conn.rollback()
             return jsonify({
                 "code": 500,
                 "message": "An error occurred updating the votes.",
@@ -579,8 +573,6 @@ def voteProducerReview():
 # - Possible return codes: 200 (Updated), 400(Review not found), 500 (Error during update)
 @blueprint.route('/updateProducerReview/<id>', methods=['PUT'])
 def updateProducerReview(id):
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
 
     try:
@@ -588,98 +580,97 @@ def updateProducerReview(id):
     except ValueError:
         return jsonify({"code": 400, "message": "Invalid date format."}), 400
 
-    # Check if review exists
-    cur.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
+    with db_manager.get_cursor() as cursor:
+        # Check if review exists
+        cursor.execute("""SELECT EXISTS(SELECT 1 FROM "producerReviews" WHERE id = %s)""", (id,))
 
-    if not cur.fetchone()['exists']:
-        return jsonify({"code": 400, "message": "Review does not exist."}), 400
-    
-    cur.execute("""SELECT photos FROM "producerReviews" WHERE id = %s""", (id,))
-    old_photos = cur.fetchone()['photos'] or []
-    
-    from threading import Thread
-    def async_delete_images(photo_list):
-        for photo in photo_list:
-            s3Images.deleteImageFromS3(photo)
+        if not cursor.fetchone()['exists']:
+            return jsonify({"code": 400, "message": "Review does not exist."}), 400
+        
+        cursor.execute("""SELECT photos FROM "producerReviews" WHERE id = %s""", (id,))
+        old_photos = cursor.fetchone()['photos'] or []
+        
+        from threading import Thread
+        def async_delete_images(photo_list):
+            for photo in photo_list:
+                s3Images.deleteImageFromS3(photo)
 
-    Thread(target=async_delete_images, args=(old_photos,)).start()
+        Thread(target=async_delete_images, args=(old_photos,)).start()
 
-    new_photos = []
+        new_photos = []
 
-    for photo in data.get('photos', []):
-        if not is_empty_photo(photo):
-            # Upload the photo to S3
-            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
-            photo = s3Images.uploadBase64ImageToS3(base64_string)
-            if photo:
-                new_photos.append(photo)
-        else:
-            photo = None
-    
-    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+        for photo in data.get('photos', []):
+            if not is_empty_photo(photo):
+                # Upload the photo to S3
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+                photo = s3Images.uploadBase64ImageToS3(base64_string)
+                if photo:
+                    new_photos.append(photo)
+            else:
+                photo = None
+        
+        # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
-    update_review_sql = """
-        UPDATE "producerReviews"
-        SET "userID" = %s, "producerID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
-        WHERE "id" = %s
-    """
-    
-    review_values = (
-        data.get('userID'), data.get('producerID'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
-        created_date, new_photos, id
-    )
+        update_review_sql = """
+            UPDATE "producerReviews"
+            SET "userID" = %s, "producerID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
+            WHERE "id" = %s
+        """
+        
+        review_values = (
+            data.get('userID'), data.get('producerID'), float(data.get('rating', 0.0)), data.get('reviewDesc'),
+            created_date, new_photos, id
+        )
 
-    # Get the existing review 
-    cur.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
-    existing_review = cur.fetchone()
+        # Get the existing review 
+        cursor.execute("""SELECT * FROM "producerReviews" WHERE id = %s""", (id,))
+        existing_review = cursor.fetchone()
 
-    # Get proof points from pointSystemRules (id 2 and 4)
-    cur.execute("""SELECT * FROM "pointSystemRules" WHERE "id" IN (2, 4)""")
-    point_system_rules = cur.fetchall()
+        # Get proof points from pointSystemRules (id 2 and 4)
+        cursor.execute("""SELECT * FROM "pointSystemRules" WHERE "id" IN (2, 4)""")
+        point_system_rules = cursor.fetchall()
 
-    # Check the difference between the new review and the existing review
-    remove_component = []
-    added_component = []
+        # Check the difference between the new review and the existing review
+        remove_component = []
+        added_component = []
 
-    print("New data: ", data)
-    print("Old Data: ", existing_review)
+        print("New data: ", data)
+        print("Old Data: ", existing_review)
 
-    # ===== Need to edit this part =====
-    # [1] Check if photo was removed or added  
-    if data['photos'] == [] and existing_review['photos'] != []:
-        remove_component.append(4)
-    elif data.get('photos') and existing_review['photos'] == []:
-        added_component.append(4)
+        # ===== Need to edit this part =====
+        # [1] Check if photo was removed or added  
+        if data['photos'] == [] and existing_review['photos'] != []:
+            remove_component.append(4)
+        elif data.get('photos') and existing_review['photos'] == []:
+            added_component.append(4)
 
-    # =========================================
+        # =========================================
 
-    try:
-        cur.execute(update_review_sql, review_values)
-        conn.commit()
+        try:
+            cursor.execute(update_review_sql, review_values)
 
-        # Update user points
-        modify_point = 0
-        if remove_component or added_component:
-            for rule in point_system_rules:
-                if rule['id'] in remove_component:
-                    modify_point -= rule['proofPoints']
-                elif rule['id'] in added_component:
-                    modify_point += rule['proofPoints']
+            # Update user points
+            modify_point = 0
+            if remove_component or added_component:
+                for rule in point_system_rules:
+                    if rule['id'] in remove_component:
+                        modify_point -= rule['proofPoints']
+                    elif rule['id'] in added_component:
+                        modify_point += rule['proofPoints']
 
-            cur.execute("""
-                UPDATE "pointsRecorder"
-                SET "currentPoints" = "currentPoints" + %s
-                WHERE "userID" = %s
-            """, (modify_point, data.get('userID')))
-            conn.commit()
+                cursor.execute("""
+                    UPDATE "pointsRecorder"
+                    SET "currentPoints" = "currentPoints" + %s
+                    WHERE "userID" = %s
+                """, (modify_point, data.get('userID')))
 
-            print("Additional points: ", modify_point)
+                print("Additional points: ", modify_point)
 
-        return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
+            return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
 
-    except Exception as e:
-        print(str(e))
-        return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
+        except Exception as e:
+            print(str(e))
+            return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
     
 # -----------------------------------------------------------------------------------------
 # [POST] Vote venue review
@@ -687,35 +678,32 @@ def updateProducerReview(id):
 # - Possible return codes: 201 (Updated), 500 (Error during update)
 @blueprint.route('/voteVenueReview', methods=['POST'])
 def voteVenueReview():
-    conn = g.db
     data = request.get_json()
 
     review_id = data['reviewID']
     user_votes = data['userVotes']
     action = data['action']
 
-    with conn.cursor() as cur:
+    with db_manager.get_cursor() as cursor:
         try:
-            cur.execute(
+            cursor.execute(
                 "SELECT id, upvotes, downvotes FROM \"venueReviewsUserVotes\" WHERE \"reviewId\" = %s",
                 (review_id,)
             )
-            result = cur.fetchone()
+            result = cursor.fetchone()
             print("Result: ", result)
 
             if result:
-                cur.execute("""
+                cursor.execute("""
                     UPDATE "venueReviewsUserVotes"
                     SET upvotes = %s, downvotes = %s
                     WHERE id = %s;
                 """, (user_votes['upvotes'], user_votes['downvotes'], result['id']))
             else:
-                cur.execute("""
+                cursor.execute("""
                     INSERT INTO "venueReviewsUserVotes" ("reviewId", upvotes, downvotes)
                     VALUES (%s, %s, %s);
                 """, (review_id, user_votes['upvotes'], user_votes['downvotes']))
-
-            conn.commit()
 
             return jsonify({
                 "code": 201,
@@ -727,7 +715,6 @@ def voteVenueReview():
 
         except Exception as e:
             print(str(e))
-            conn.rollback()
             return jsonify({
                 "code": 500,
                 "message": "An error occurred updating the votes.",
@@ -740,8 +727,6 @@ def voteVenueReview():
 # - Possible return codes: 200 (Updated), 400 (Review not found), 500 (Error during update)
 @blueprint.route('/updateVenueReview/<id>', methods=['PUT'])
 def updateVenueReview(id):
-    conn = g.db
-    cur = conn.cursor()
     data = request.get_json()
 
     try:
@@ -749,58 +734,58 @@ def updateVenueReview(id):
     except ValueError:
         return jsonify({"code": 400, "message": "Invalid date format."}), 400
 
-    # Check if review exists
-    cur.execute("""SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE id = %s)""", (id,))
-    if not cur.fetchone()['exists']:
-        return jsonify({"code": 400, "message": "Review does not exist."}), 400
+    with db_manager.get_cursor() as cursor:
+        # Check if review exists
+        cursor.execute("""SELECT EXISTS(SELECT 1 FROM "venueReviews" WHERE id = %s)""", (id,))
+        if not cursor.fetchone()['exists']:
+            return jsonify({"code": 400, "message": "Review does not exist."}), 400
 
-    cur.execute("""SELECT photos FROM "venueReviews" WHERE id = %s""", (id,))
-    old_photos = cur.fetchone()['photos'] or []
+        cursor.execute("""SELECT photos FROM "venueReviews" WHERE id = %s""", (id,))
+        old_photos = cursor.fetchone()['photos'] or []
 
-    from threading import Thread
-    def async_delete_images(photo_list):
-        for photo in photo_list:
-            s3Images.deleteImageFromS3(photo)
+        from threading import Thread
+        def async_delete_images(photo_list):
+            for photo in photo_list:
+                s3Images.deleteImageFromS3(photo)
 
-    Thread(target=async_delete_images, args=(old_photos,)).start()
+        Thread(target=async_delete_images, args=(old_photos,)).start()
 
-    new_photos = []
+        new_photos = []
 
-    for photo in data.get('photos', []):
-        if not is_empty_photo(photo):
-            # Upload the photo to S3
-            base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
-            photo = s3Images.uploadBase64ImageToS3(base64_string)
-            if photo:
-                new_photos.append(photo)
-        else:
-            photo = None
+        for photo in data.get('photos', []):
+            if not is_empty_photo(photo):
+                # Upload the photo to S3
+                base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', photo)
+                photo = s3Images.uploadBase64ImageToS3(base64_string)
+                if photo:
+                    new_photos.append(photo)
+            else:
+                photo = None
 
-    # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
+        # new_photos = [s3Images.uploadBase64ImageToS3(photo) for photo in data.get('photos', []) if photo]
 
-    update_review_sql = """
-        UPDATE "venueReviews"
-        SET "userID" = %s, "venueID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
-        WHERE "id" = %s
-    """
-    
-    review_values = (
-        data.get('userID'),
-        data.get('venueID'),
-        float(data.get('rating', 0.0)),
-        data.get('reviewDesc'),
-        created_date,
-        new_photos,
-        id
-    )
+        update_review_sql = """
+            UPDATE "venueReviews"
+            SET "userID" = %s, "venueID" = %s, "rating" = %s, "reviewDesc" = %s, "createdDate" = %s, "photos" = %s
+            WHERE "id" = %s
+        """
+        
+        review_values = (
+            data.get('userID'),
+            data.get('venueID'),
+            float(data.get('rating', 0.0)),
+            data.get('reviewDesc'),
+            created_date,
+            new_photos,
+            id
+        )
 
-    try:
-        cur.execute(update_review_sql, review_values)
-        conn.commit()
-        return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
+        try:
+            cursor.execute(update_review_sql, review_values)
+            return jsonify({"code": 200, "data": data.get('reviewDesc', '')}), 200
 
-    except Exception as e:
-        print(str(e))
-        return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
+        except Exception as e:
+            print(str(e))
+            return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
 
 

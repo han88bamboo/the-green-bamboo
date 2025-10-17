@@ -6,6 +6,9 @@ import os
 from flask import Blueprint, g, jsonify, request
 from psycopg2.extras import RealDictCursor
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -55,34 +58,31 @@ def update_user_listings(cursor, user_id, category_name, selected_listings, sele
 def add_listing_to_table(cursor, table_name, listing_id, listing_name, drink_type, type_category):
 
     try:
+        with db_manager.get_cursor() as cursor:
+            # Check if the listing already exists in the table
+            cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingID" = %s', (listing_id,))
+            existing_listing = cursor.fetchone()
 
-        # Check if the listing already exists in the table
-        cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingID" = %s', (listing_id,))
-        existing_listing = cursor.fetchone()
-
-        if existing_listing:
-            # If it exists, increment the counter
-            cursor.execute(f'''
-                UPDATE "{table_name}" 
-                SET "counter" = "counter" + 1 
-                WHERE "listingID" = %s
-            ''', (listing_id,))
-        else:
-            # If it doesn't exist, insert a new record with a counter of 1
-            cursor.execute(f'''
-                INSERT INTO "{table_name}" ("listingID", "listingName", "drinkType", "typeCategory", "counter") 
-                VALUES (%s, %s, %s, %s, 1)
-            ''', (listing_id, listing_name, drink_type, type_category))
-    
-        # Commit the changes
-        g.db.commit()
-
-        # Return True to indicate success
-        return True
+            if existing_listing:
+                # If it exists, increment the counter
+                cursor.execute(f'''
+                    UPDATE "{table_name}" 
+                    SET "counter" = "counter" + 1 
+                    WHERE "listingID" = %s
+                ''', (listing_id,))
+            else:
+                # If it doesn't exist, insert a new record with a counter of 1
+                cursor.execute(f'''
+                    INSERT INTO "{table_name}" ("listingID", "listingName", "drinkType", "typeCategory", "counter") 
+                    VALUES (%s, %s, %s, %s, 1)
+                ''', (listing_id, listing_name, drink_type, type_category))
+        
+            # Connection manager automatically commits on success
+            # Return True to indicate success
+            return True
     
     except Exception as e:
-        g.db.rollback()
-
+        # Connection manager automatically rolls back on exception
         print(f"Error adding listing to {table_name}: {e}")
         # Return False to indicate failure
         return False
@@ -91,33 +91,31 @@ def add_listing_to_table(cursor, table_name, listing_id, listing_name, drink_typ
 # Helper function to remove listing from the specified table
 def remove_listing_from_table(cursor, table_name, listing_name):
     try:
-        # Check if the listing exists in the table
-        cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingName" = %s', (listing_name,))
-        existing_listing = cursor.fetchone()
+        with db_manager.get_cursor() as cursor:
+            # Check if the listing exists in the table
+            cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingName" = %s', (listing_name,))
+            existing_listing = cursor.fetchone()
 
-        if existing_listing:
-            # If it exists, decrement the counter
-            cursor.execute(f'''
-                UPDATE "{table_name}" 
-                SET "counter" = "counter" - 1 
-                WHERE "listingName" = %s
-            ''', (listing_name,))
+            if existing_listing:
+                # If it exists, decrement the counter
+                cursor.execute(f'''
+                    UPDATE "{table_name}" 
+                    SET "counter" = "counter" - 1 
+                    WHERE "listingName" = %s
+                ''', (listing_name,))
+                
+                # If the counter reaches 0, delete the listing from the table
+                cursor.execute(f'''
+                    DELETE FROM "{table_name}" 
+                    WHERE "listingName" = %s AND "counter" <= 0
+                ''', (listing_name,))
             
-            # If the counter reaches 0, delete the listing from the table
-            cursor.execute(f'''
-                DELETE FROM "{table_name}" 
-                WHERE "listingName" = %s AND "counter" <= 0
-            ''', (listing_name,))
-        
-        # Commit the changes
-        g.db.commit()
-
-        # Return True to indicate success
-        return True
+            # Connection manager automatically commits on success
+            # Return True to indicate success
+            return True
     
     except Exception as e:
-        g.db.rollback()
-
+        # Connection manager automatically rolls back on exception
         print(f"Error removing listing from {table_name}: {e}")
         # Return False to indicate failure
         return False
@@ -273,8 +271,6 @@ def addLeaderBoard():
     - 404: User not found
     - 500: Server error
     """
-    conn = g.db
-
     try: 
         data = request.json
         user_id = data.get('userID')
@@ -286,7 +282,7 @@ def addLeaderBoard():
         if not user_id:
             return jsonify({"code": 400, "message": "User ID must be logged in."}), 400
 
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Check if user exists
             cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
             user = cursor.fetchone()
@@ -370,9 +366,7 @@ def addLeaderBoard():
                 WHERE "id" = %s
             ''', (grails_names, up_and_coming_names, goats_names, user_id))
 
-            # Commit all changes
-            conn.commit()
-
+            # Connection manager automatically commits all changes on success
             return jsonify({
                 "code": 201, 
                 "message": "User selections updated successfully.",
@@ -380,7 +374,7 @@ def addLeaderBoard():
             }), 201
 
     except Exception as e:
-        conn.rollback()
+        # Connection manager automatically rolls back on exception
         print(f"Error in addLeaderBoard: {str(e)}")
         return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": str(e)}), 500
 
@@ -405,8 +399,6 @@ def editTop3():
     - 410: Error updating Grails, Up & Coming, or GOATs
     - 500: Server error
     """
-    conn = g.db
-    
     try:
         data = request.json
         user_id = data.get('userID')
@@ -419,7 +411,7 @@ def editTop3():
         if not user_id:
             return jsonify({"code": 400, "message": "User ID is required"}), 400
         
-        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+        with db_manager.get_cursor() as cursor:
             # Check if user exists
             cursor.execute('SELECT * FROM "users" WHERE "id" = %s', (user_id,))
             user = cursor.fetchone()
@@ -455,11 +447,11 @@ def editTop3():
                 WHERE "id" = %s
             ''', (selected_grails, selected_up_and_coming, selected_goats, user_id))
             
-            conn.commit()
-               
+            # Connection manager automatically commits on success
             return jsonify({"code": 201, "message": "User selections updated successfully"}), 201
             
     except Exception as e:
+        # Connection manager automatically rolls back on exception
         print(str(e))
         return jsonify({"code": 500, "message": "An error occurred updating user selections.", "error": e}), 500
     
@@ -467,36 +459,31 @@ def editTop3():
 # [GET] Get top 5 Grails, Up & Coming, and GOATs based on drink type
 @blueprint.route("/getTop5", methods=['GET'])
 def getTop5():
-    conn = g.db
-    cursor = conn.cursor()
-
     drink_type = request.args.get('type')
     type_category = request.args.get('typeCat')
 
     try:
-        grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)
-        up_and_coming_data = fetch_top_5(cursor, "upAndComing", drink_type, type_category)
-        goats_data = fetch_top_5(cursor, "goats", drink_type, type_category)
+        with db_manager.get_cursor() as cursor:
+            grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)
+            up_and_coming_data = fetch_top_5(cursor, "upAndComing", drink_type, type_category)
+            goats_data = fetch_top_5(cursor, "goats", drink_type, type_category)
 
-        return jsonify({
-            "code": 200,
-            "data": {
-                "grails": grails_data,
-                "upAndComing": up_and_coming_data,
-                "goats": goats_data
-            },
-            "message": "Top 5 data retrieved successfully."
-        }), 200
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "grails": grails_data,
+                    "upAndComing": up_and_coming_data,
+                    "goats": goats_data
+                },
+                "message": "Top 5 data retrieved successfully."
+            }), 200
 
     except Exception as e:
         print(str(e))
         return jsonify({
             "code": 500,
             "message": "An error occurred retrieving Top 5 data."
-        }), 500
-
-    finally:
-        cursor.close() 
+        }), 500 
 
 
 
