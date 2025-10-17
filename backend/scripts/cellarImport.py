@@ -803,134 +803,130 @@ def importCellarCsv():
     print("TZHBackendLog: importCellarCsv called")
     
     try:
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
+        with db_manager.get_cursor(commit=False) as cursor:
+            data = request.get_json()
+            owner_type = data.get('ownerType')
+            owner_id = data.get('ownerId')
+            collection_id = data.get('collectionId')
+            import_items = data.get('items', [])
+            
+            # Validate collection belongs to owner
+            cursor.execute("""
+                SELECT "id" FROM "myCellarCollections" 
+                WHERE "id" = %s AND "ownerID" = %s AND "ownerType" = %s
+            """, (collection_id, owner_id, owner_type))
+            
+            if not cursor.fetchone():
+                return jsonify({"code": 400, "message": "Invalid collection"}), 400
         
-        data = request.get_json()
-        owner_type = data.get('ownerType')
-        owner_id = data.get('ownerId')
-        collection_id = data.get('collectionId')
-        import_items = data.get('items', [])
-        
-        # Validate collection belongs to owner
-        cur.execute("""
-            SELECT "id" FROM "myCellarCollections" 
-            WHERE "id" = %s AND "ownerID" = %s AND "ownerType" = %s
-        """, (collection_id, owner_id, owner_type))
-        
-        if not cur.fetchone():
-            return jsonify({"code": 400, "message": "Invalid collection"}), 400
-        
-        imported_count = 0
-        created_listings_count = 0
-        skipped_count = 0
-        errors = []
-        
-        for item in import_items:
-            try:
-                mapped_data = item.get('mappedData', {})
-                selected_match_id = item.get('selectedMatchId')
-                row_number = item.get('rowNumber', 0)
-                
-                # Skip if user chose to skip
-                if selected_match_id == 'skip':
-                    skipped_count += 1
-                    print(f"TZHBackendLog: Row {row_number} - Skipped by user")
-                    continue
-                
-                # Validate required fields
-                if not mapped_data.get('listingName'):
-                    errors.append({"rowNumber": row_number, "error": "Missing drink name"})
-                    continue
-                
-                # Determine listing ID
-                if selected_match_id == 'create_new':
-                    # Create new listing
-                    listing_id = create_new_listing(mapped_data)
-                    created_listings_count += 1
-                elif selected_match_id:
-                    # Use existing listing
-                    try:
-                        listing_id = int(selected_match_id)
-                    except ValueError:
-                        errors.append({"rowNumber": row_number, "error": "Invalid listing ID"})
+            imported_count = 0
+            created_listings_count = 0
+            skipped_count = 0
+            errors = []
+            
+            for item in import_items:
+                try:
+                    mapped_data = item.get('mappedData', {})
+                    selected_match_id = item.get('selectedMatchId')
+                    row_number = item.get('rowNumber', 0)
+                    
+                    # Skip if user chose to skip
+                    if selected_match_id == 'skip':
+                        skipped_count += 1
+                        print(f"TZHBackendLog: Row {row_number} - Skipped by user")
                         continue
-                else:
-                    errors.append({"rowNumber": row_number, "error": "No listing selected"})
-                    continue
-                
-                # Prepare cellar data
-                quantity = mapped_data.get('quantity')
-                if quantity is None or quantity < 1:
-                    quantity = 1
-                
-                cellar_data = {
-                    'listingId': listing_id,
-                    'ownerType': owner_type,
-                    'ownerId': owner_id,
-                    'collectionId': collection_id,
-                    'quantity': quantity,
-                    'variant': mapped_data.get('variant'),
-                    'format': mapped_data.get('drinkFormat', 'Bottle'),
-                    'volumeNumber': mapped_data.get('volumeNumber', 750),
-                    'volumeUnit': mapped_data.get('volumeUnit', 'ml'),
-                    'drinkOnwardsDate': mapped_data.get('drinkOnwardsDate'),
-                    'drinkByDate': mapped_data.get('drinkByDate'),
-                    'currentValueEstimation': mapped_data.get('currentValueEstimation'),
-                    'currentValueCurrency': mapped_data.get('currentValueCurrency', 'USD'),
-                    'suggestedFoodPairing': mapped_data.get('suggestedFoodPairing'),
-                    'status': mapped_data.get('status', 'In Possession'),
-                    'consumption': mapped_data.get('consumption', 'Unopened'),
-                    'currentLocation': mapped_data.get('currentLocation', 'At Home'),
-                    'subLocation': mapped_data.get('subLocation'),
-                    'purchasePrice': mapped_data.get('purchasePrice'),
-                    'purchaseCurrency': mapped_data.get('purchaseCurrency', 'USD'),
-                    'purchaseDate': mapped_data.get('purchaseDate'),
-                    'deliveryDate': mapped_data.get('deliveryDate'),
-                    'purchasePlaceName': mapped_data.get('purchasePlaceName'),
-                    'purchaseAddress': mapped_data.get('purchaseAddress'),
-                    'noteToSelf': mapped_data.get('noteToSelf', '')
+                    
+                    # Validate required fields
+                    if not mapped_data.get('listingName'):
+                        errors.append({"rowNumber": row_number, "error": "Missing drink name"})
+                        continue
+                    
+                    # Determine listing ID
+                    if selected_match_id == 'create_new':
+                        # Create new listing
+                        listing_id = create_new_listing(mapped_data)
+                        created_listings_count += 1
+                    elif selected_match_id:
+                        # Use existing listing
+                        try:
+                            listing_id = int(selected_match_id)
+                        except ValueError:
+                            errors.append({"rowNumber": row_number, "error": "Invalid listing ID"})
+                            continue
+                    else:
+                        errors.append({"rowNumber": row_number, "error": "No listing selected"})
+                        continue
+                    
+                    # Prepare cellar data
+                    quantity = mapped_data.get('quantity')
+                    if quantity is None or quantity < 1:
+                        quantity = 1
+                    
+                    cellar_data = {
+                        'listingId': listing_id,
+                        'ownerType': owner_type,
+                        'ownerId': owner_id,
+                        'collectionId': collection_id,
+                        'quantity': quantity,
+                        'variant': mapped_data.get('variant'),
+                        'format': mapped_data.get('drinkFormat', 'Bottle'),
+                        'volumeNumber': mapped_data.get('volumeNumber', 750),
+                        'volumeUnit': mapped_data.get('volumeUnit', 'ml'),
+                        'drinkOnwardsDate': mapped_data.get('drinkOnwardsDate'),
+                        'drinkByDate': mapped_data.get('drinkByDate'),
+                        'currentValueEstimation': mapped_data.get('currentValueEstimation'),
+                        'currentValueCurrency': mapped_data.get('currentValueCurrency', 'USD'),
+                        'suggestedFoodPairing': mapped_data.get('suggestedFoodPairing'),
+                        'status': mapped_data.get('status', 'In Possession'),
+                        'consumption': mapped_data.get('consumption', 'Unopened'),
+                        'currentLocation': mapped_data.get('currentLocation', 'At Home'),
+                        'subLocation': mapped_data.get('subLocation'),
+                        'purchasePrice': mapped_data.get('purchasePrice'),
+                        'purchaseCurrency': mapped_data.get('purchaseCurrency', 'USD'),
+                        'purchaseDate': mapped_data.get('purchaseDate'),
+                        'deliveryDate': mapped_data.get('deliveryDate'),
+                        'purchasePlaceName': mapped_data.get('purchasePlaceName'),
+                        'purchaseAddress': mapped_data.get('purchaseAddress'),
+                        'noteToSelf': mapped_data.get('noteToSelf', '')
+                    }
+                    
+                    # Add to cellar
+                    result = add_cellar_item_from_import(cellar_data)
+                    imported_count += result['quantity']
+                    
+                    print(f"TZHBackendLog: Row {row_number} - Successfully imported {result['quantity']} item(s)")
+                    
+                except Exception as e:
+                    error_msg = str(e)
+                    print(f"TZHBackendLog: Error importing row {item.get('rowNumber', 0)}: {error_msg}")
+                    import traceback
+                    print(traceback.format_exc())
+                    errors.append({
+                        "rowNumber": item.get('rowNumber', 0),
+                        "error": error_msg
+                    })
+        
+            # Commit all changes
+            cursor.connection.commit()
+            
+            print(f"TZHBackendLog: Import complete - imported: {imported_count}, created: {created_listings_count}, skipped: {skipped_count}, errors: {len(errors)}")
+            
+            return jsonify({
+                "code": 200,
+                "message": "Import complete",
+                "data": {
+                    "importedCount": imported_count,
+                    "createdListingsCount": created_listings_count,
+                    "skippedCount": skipped_count,
+                    "errorCount": len(errors),
+                    "errors": errors
                 }
-                
-                # Add to cellar
-                result = add_cellar_item_from_import(cur, conn, cellar_data)
-                imported_count += result['quantity']
-                
-                print(f"TZHBackendLog: Row {row_number} - Successfully imported {result['quantity']} item(s)")
-                
-            except Exception as e:
-                error_msg = str(e)
-                print(f"TZHBackendLog: Error importing row {item.get('rowNumber', 0)}: {error_msg}")
-                import traceback
-                print(traceback.format_exc())
-                errors.append({
-                    "rowNumber": item.get('rowNumber', 0),
-                    "error": error_msg
-                })
-        
-        # Commit all changes
-        conn.commit()
-        
-        print(f"TZHBackendLog: Import complete - imported: {imported_count}, created: {created_listings_count}, skipped: {skipped_count}, errors: {len(errors)}")
-        
-        return jsonify({
-            "code": 200,
-            "message": "Import complete",
-            "data": {
-                "importedCount": imported_count,
-                "createdListingsCount": created_listings_count,
-                "skippedCount": skipped_count,
-                "errorCount": len(errors),
-                "errors": errors
-            }
-        }), 200
+            }), 200
         
     except Exception as e:
         print(f"TZHBackendLog: Import failed: {str(e)}")
         import traceback
         print(traceback.format_exc())
-        if conn:
-            conn.rollback()
         return jsonify({
             "code": 500,
             "message": f"Import failed: {str(e)}"
