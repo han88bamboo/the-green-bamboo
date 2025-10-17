@@ -16,3 +16,5 @@ feedparser==6.0.11
 beautifulsoup4==4.12.3
 PyMuPDF==1.24.5
 forex-python==1.8
+fuzzywuzzy==0.18.0
+pandas==2.3.3
