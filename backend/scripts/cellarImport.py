@@ -10,6 +10,9 @@ import re
 import unicodedata
 from fuzzywuzzy import fuzz
 
+# Import the database manager for connection pooling
+from app import db_manager
+
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
 
@@ -344,18 +347,14 @@ def processAndDetectDuplicates():
         # Clean headers
         df.columns = [str(h).strip().replace('\ufeff', '').replace('\u200b', '') for h in df.columns]
         
-        conn = g.db
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-        
         # Check if unaccent extension is available
         try:
-            cur.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
-            conn.commit()
-            has_unaccent = True
-            print("TZHBackendLog: unaccent extension available")
+            with db_manager.get_cursor() as cursor:
+                cursor.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
+                has_unaccent = True
+                print("TZHBackendLog: unaccent extension available")
         except Exception as e:
             print(f"TZHBackendLog: Could not enable unaccent extension: {e}")
-            conn.rollback()
             has_unaccent = False
         
         results = []
@@ -450,8 +449,9 @@ def processAndDetectDuplicates():
             search_query += " LIMIT 20"
             
             try:
-                cur.execute(search_query, search_params)
-                potential_matches = cur.fetchall()
+                with db_manager.get_cursor() as cursor:
+                    cursor.execute(search_query, search_params)
+                    potential_matches = cursor.fetchall()
                 print(f"TZHBackendLog: Found {len(potential_matches)} potential matches from database")
             except Exception as e:
                 print(f"TZHBackendLog: Error searching for matches: {e}")
@@ -560,170 +560,216 @@ def processAndDetectDuplicates():
 # STEP 3: IMPORT TO CELLAR WITH USER DECISIONS
 # ============================================================================
 
-def create_new_listing(cur, mapped_data):
+def create_new_listing(mapped_data):
     """Create a new listing in the database from CSV data"""
-    listing_name = mapped_data.get('listingName')
-    producer_name = mapped_data.get('producerName')
-    drink_type = mapped_data.get('drinkType', 'Other')
-    origin_country = mapped_data.get('originCountry')
-    type_category = mapped_data.get('typeCategory')
-    abv = mapped_data.get('abv')
-    
-    # Find or create producer
-    producer_id = None
-    if producer_name:
-        # Normalize producer name for better matching
-        normalized_producer = normalize_string(producer_name)
+    with db_manager.get_cursor() as cursor:
+        listing_name = mapped_data.get('listingName')
+        producer_name = mapped_data.get('producerName')
+        drink_type = mapped_data.get('drinkType', 'Other')
+        origin_country = mapped_data.get('originCountry')
+        type_category = mapped_data.get('typeCategory')
+        abv = mapped_data.get('abv')
         
-        # Try to find existing producer (case-insensitive, normalized)
-        cur.execute("""
-            SELECT "id", "producerName" FROM "producers" 
-            WHERE LOWER(regexp_replace(unaccent("producerName"), '[^a-z0-9 ]', '', 'g')) 
-            = LOWER(regexp_replace(unaccent(%s), '[^a-z0-9 ]', '', 'g'))
-            LIMIT 1
-        """, (producer_name,))
-        producer = cur.fetchone()
+        # Find or create producer
+        producer_id = None
+        if producer_name:
+            # Normalize producer name for better matching
+            normalized_producer = normalize_string(producer_name)
+            
+            # Try to find existing producer (case-insensitive, normalized)
+            cursor.execute("""
+                SELECT "id", "producerName" FROM "producers" 
+                WHERE LOWER(regexp_replace(unaccent("producerName"), '[^a-z0-9 ]', '', 'g')) 
+                = LOWER(regexp_replace(unaccent(%s), '[^a-z0-9 ]', '', 'g'))
+                LIMIT 1
+            """, (producer_name,))
+            producer = cursor.fetchone()
+            
+            if producer:
+                producer_id = producer['id']
+                print(f"TZHBackendLog: Found existing producer: {producer['producerName']} (ID: {producer_id})")
+            else:
+                # Create new producer
+                print(f"TZHBackendLog: Creating new producer: {producer_name}")
+                cursor.execute("""
+                    INSERT INTO "producers" (
+                        "producerName", "producerDesc", "originCountry", "mainDrinks",
+                        "photo", "hashedPassword", "claimStatus", "statusOB", 
+                        "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING "id"
+                """, (
+                    producer_name, "", origin_country or "", [],
+                    "", hash_password(producer_name, "admin1234"), False, "",
+                    None, "", None, False
+                ))
+                producer_id = cursor.fetchone()['id']
+                print(f"TZHBackendLog: Created new producer with ID: {producer_id}")
         
-        if producer:
-            producer_id = producer['id']
-            print(f"TZHBackendLog: Found existing producer: {producer['producerName']} (ID: {producer_id})")
-        else:
-            # Create new producer
-            print(f"TZHBackendLog: Creating new producer: {producer_name}")
-            cur.execute("""
-                INSERT INTO "producers" (
-                    "producerName", "producerDesc", "originCountry", "mainDrinks",
-                    "photo", "hashedPassword", "claimStatus", "statusOB", 
-                    "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING "id"
-            """, (
-                producer_name, "", origin_country or "", [],
-                "", hash_password(producer_name, "admin1234"), False, "",
-                None, "", None, False
-            ))
-            producer_id = cur.fetchone()['id']
-            print(f"TZHBackendLog: Created new producer with ID: {producer_id}")
-    
-    # Create new listing
-    cur.execute("""
-        INSERT INTO "listings" (
-            "listingName", "producerID", "originCountry", "drinkType",
-            "typeCategory", "abv", "addedDate", "allowMod"
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        RETURNING "id"
-    """, (
-        listing_name, producer_id, origin_country, drink_type,
-        type_category, abv, datetime.now(), True
-    ))
-    
-    new_listing_id = cur.fetchone()['id']
-    print(f"TZHBackendLog: Created new listing: '{listing_name}' with ID: {new_listing_id}")
-    
-    return new_listing_id
-
-def add_cellar_item_from_import(cur, conn, cellar_data):
-    """Add item to cellar with proper duplicate handling"""
-    listing_id = cellar_data['listingId']
-    owner_type = cellar_data['ownerType']
-    owner_id = cellar_data['ownerId']
-    collection_id = cellar_data['collectionId']
-    quantity = cellar_data.get('quantity', 1)
-    
-    # Ensure quantity is at least 1
-    if quantity < 1:
-        quantity = 1
-    
-    # Group properties
-    variant = cellar_data.get('variant')
-    format_value = cellar_data.get('format', 'Bottle')
-    volume_number = cellar_data.get('volumeNumber', 750)
-    volume_unit = cellar_data.get('volumeUnit', 'ml')
-    drink_onwards_date = cellar_data.get('drinkOnwardsDate')
-    drink_by_date = cellar_data.get('drinkByDate')
-    current_value_estimation = cellar_data.get('currentValueEstimation')
-    current_value_currency = cellar_data.get('currentValueCurrency', 'USD')
-    suggested_food_pairing = cellar_data.get('suggestedFoodPairing')
-    
-    # Individual properties
-    purchase_date = cellar_data.get('purchaseDate')
-    delivery_date = cellar_data.get('deliveryDate')
-    purchase_price = cellar_data.get('purchasePrice')
-    purchase_currency = cellar_data.get('purchaseCurrency', 'USD')
-    purchase_place_name = cellar_data.get('purchasePlaceName')
-    purchase_address = cellar_data.get('purchaseAddress')
-    status = cellar_data.get('status', 'In Possession')
-    consumption = cellar_data.get('consumption', 'Unopened')
-    current_location = cellar_data.get('currentLocation', 'At Home')
-    sub_location = cellar_data.get('subLocation')
-    note_to_self = cellar_data.get('noteToSelf')
-    
-    # Normalize values
-    if volume_number:
-        volume_number = round(float(volume_number), 2)
-    if volume_unit:
-        volume_unit = volume_unit.lower().strip()
-    if format_value:
-        format_value = format_value.strip().title()
-    
-    # Check for existing master record
-    cur.execute("""
-        SELECT ci."id", ci."collectionID", ci."variantGroupID" 
-        FROM "myCellarItems" ci
-        JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
-        WHERE ci."listingID" = %s 
-        AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
-        AND ci."quantityVariantID" = 1
-        AND UPPER(ci."drinkFormat") = UPPER(%s)
-        AND ROUND(CAST(ci."volumeNumber" AS NUMERIC), 2) = %s
-        AND LOWER(ci."volumeUnit") = %s
-        AND cc."ownerID" = %s
-        AND cc."ownerType" = %s
-        AND ci."archiveStatus" = FALSE
-    """, (
-        listing_id, variant, variant, format_value, 
-        volume_number, volume_unit, owner_id, owner_type
-    ))
-    
-    master_record = cur.fetchone()
-    
-    if not master_record:
-        # Create new master record
-        cur.execute("""
-            INSERT INTO "myCellarItems" (
-                "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
-                "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
-                "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
-                "purchasePlaceName", "purchaseAddress",
-                "status", "consumption", "currentLocation", "subLocation",
-                "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
-            ) VALUES (
-                %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-            ) RETURNING "id"
+        # Create new listing
+        cursor.execute("""
+            INSERT INTO "listings" (
+                "listingName", "producerID", "originCountry", "drinkType",
+                "typeCategory", "abv", "addedDate", "allowMod"
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING "id"
         """, (
-            listing_id, collection_id, variant, 1,
-            format_value, volume_number, volume_unit, drink_by_date, drink_onwards_date,
-            current_value_estimation, current_value_currency, suggested_food_pairing,
-            purchase_date, delivery_date, purchase_price, purchase_currency,
-            purchase_place_name, purchase_address,
-            status, consumption, current_location, sub_location,
-            note_to_self, False, datetime.now(), datetime.now()
+            listing_name, producer_id, origin_country, drink_type,
+            type_category, abv, datetime.now(), True
         ))
         
-        master_id = cur.fetchone()['id']
+        new_listing_id = cursor.fetchone()['id']
+        print(f"TZHBackendLog: Created new listing: '{listing_name}' with ID: {new_listing_id}")
         
-        # Update variantGroupID to self-reference
-        cur.execute('UPDATE "myCellarItems" SET "variantGroupID" = %s WHERE "id" = %s', (master_id, master_id))
+        return new_listing_id
+
+def add_cellar_item_from_import(cellar_data):
+    """Add item to cellar with proper duplicate handling"""
+    with db_manager.get_cursor() as cursor:
+        listing_id = cellar_data['listingId']
+        owner_type = cellar_data['ownerType']
+        owner_id = cellar_data['ownerId']
+        collection_id = cellar_data['collectionId']
+        quantity = cellar_data.get('quantity', 1)
         
-        group_variant_id = master_id
-        created_bottle_ids = [master_id]
+        # Ensure quantity is at least 1
+        if quantity < 1:
+            quantity = 1
         
-        # Create additional bottles if quantity > 1
-        if quantity > 1:
-            for i in range(1, quantity):
-                cur.execute("""
+        # Group properties
+        variant = cellar_data.get('variant')
+        format_value = cellar_data.get('format', 'Bottle')
+        volume_number = cellar_data.get('volumeNumber', 750)
+        volume_unit = cellar_data.get('volumeUnit', 'ml')
+        drink_onwards_date = cellar_data.get('drinkOnwardsDate')
+        drink_by_date = cellar_data.get('drinkByDate')
+        current_value_estimation = cellar_data.get('currentValueEstimation')
+        current_value_currency = cellar_data.get('currentValueCurrency', 'USD')
+        suggested_food_pairing = cellar_data.get('suggestedFoodPairing')
+        
+        # Individual properties
+        purchase_date = cellar_data.get('purchaseDate')
+        delivery_date = cellar_data.get('deliveryDate')
+        purchase_price = cellar_data.get('purchasePrice')
+        purchase_currency = cellar_data.get('purchaseCurrency', 'USD')
+        purchase_place_name = cellar_data.get('purchasePlaceName')
+        purchase_address = cellar_data.get('purchaseAddress')
+        status = cellar_data.get('status', 'In Possession')
+        consumption = cellar_data.get('consumption', 'Unopened')
+        current_location = cellar_data.get('currentLocation', 'At Home')
+        sub_location = cellar_data.get('subLocation')
+        note_to_self = cellar_data.get('noteToSelf')
+        
+        # Normalize values
+        if volume_number:
+            volume_number = round(float(volume_number), 2)
+        if volume_unit:
+            volume_unit = volume_unit.lower().strip()
+        if format_value:
+            format_value = format_value.strip().title()
+        
+        # Check for existing master record
+        cursor.execute("""
+            SELECT ci."id", ci."collectionID", ci."variantGroupID" 
+            FROM "myCellarItems" ci
+            JOIN "myCellarCollections" cc ON ci."collectionID" = cc."id"
+            WHERE ci."listingID" = %s 
+            AND (ci."variant" = %s OR (ci."variant" IS NULL AND %s IS NULL))
+            AND ci."quantityVariantID" = 1
+            AND UPPER(ci."drinkFormat") = UPPER(%s)
+            AND ROUND(CAST(ci."volumeNumber" AS NUMERIC), 2) = %s
+            AND LOWER(ci."volumeUnit") = %s
+            AND cc."ownerID" = %s
+            AND cc."ownerType" = %s
+            AND ci."archiveStatus" = FALSE
+        """, (
+            listing_id, variant, variant, format_value, 
+            volume_number, volume_unit, owner_id, owner_type
+        ))
+        
+        master_record = cursor.fetchone()
+    
+        if not master_record:
+            # Create new master record
+            cursor.execute("""
+                INSERT INTO "myCellarItems" (
+                    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
+                    "drinkFormat", "volumeNumber", "volumeUnit", "drinkByDate", "drinkOnwardsDate",
+                    "currentValueEstimation", "currentValueCurrency", "suggestedFoodPairing",
+                    "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                    "purchasePlaceName", "purchaseAddress",
+                    "status", "consumption", "currentLocation", "subLocation",
+                    "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                ) VALUES (
+                    %s, %s, %s, %s, NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                ) RETURNING "id"
+            """, (
+                listing_id, collection_id, variant, 1,
+                format_value, volume_number, volume_unit, drink_by_date, drink_onwards_date,
+                current_value_estimation, current_value_currency, suggested_food_pairing,
+                purchase_date, delivery_date, purchase_price, purchase_currency,
+                purchase_place_name, purchase_address,
+                status, consumption, current_location, sub_location,
+                note_to_self, False, datetime.now(), datetime.now()
+            ))
+            
+            master_id = cursor.fetchone()['id']
+            
+            # Update variantGroupID to self-reference
+            cursor.execute('UPDATE "myCellarItems" SET "variantGroupID" = %s WHERE "id" = %s', (master_id, master_id))
+        
+            group_variant_id = master_id
+            created_bottle_ids = [master_id]
+            
+            # Create additional bottles if quantity > 1
+            if quantity > 1:
+                for i in range(1, quantity):
+                    cursor.execute("""
+                        INSERT INTO "myCellarItems" (
+                            "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
+                            "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
+                            "purchasePlaceName", "purchaseAddress",
+                            "status", "consumption", "currentLocation", "subLocation",
+                            "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
+                        ) VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        ) RETURNING "id"
+                    """, (
+                        listing_id, collection_id, variant, i + 1, group_variant_id,
+                        purchase_date, delivery_date, purchase_price, purchase_currency,
+                        purchase_place_name, purchase_address,
+                        status, consumption, current_location, sub_location,
+                        note_to_self, False, datetime.now(), datetime.now()
+                    ))
+                    
+                    created_bottle_ids.append(cursor.fetchone()['id'])
+            
+            print(f"TZHBackendLog: Created new master record {master_id} with {quantity} bottle(s)")
+        else:
+            # Existing master - add bottles to group
+            master_id = master_record['id']
+            group_variant_id = master_record['variantGroupID']
+            existing_collection_id = master_record['collectionID']
+            
+            # Use existing master's collection
+            collection_id = existing_collection_id
+            
+            # Get next quantityVariantID
+            cursor.execute("""
+                SELECT MAX("quantityVariantID") as max_id
+                FROM "myCellarItems"
+                WHERE "variantGroupID" = %s
+            """, (group_variant_id,))
+            
+            result = cursor.fetchone()
+            next_variant_id = (result['max_id'] or 1) + 1
+            
+            created_bottle_ids = []
+            
+            # Create individual bottles
+            for i in range(quantity):
+                cursor.execute("""
                     INSERT INTO "myCellarItems" (
                         "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
                         "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
@@ -734,66 +780,22 @@ def add_cellar_item_from_import(cur, conn, cellar_data):
                         %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
                     ) RETURNING "id"
                 """, (
-                    listing_id, collection_id, variant, i + 1, group_variant_id,
+                    listing_id, collection_id, variant, next_variant_id + i, group_variant_id,
                     purchase_date, delivery_date, purchase_price, purchase_currency,
                     purchase_place_name, purchase_address,
                     status, consumption, current_location, sub_location,
                     note_to_self, False, datetime.now(), datetime.now()
                 ))
                 
-                created_bottle_ids.append(cur.fetchone()['id'])
-        
-        print(f"TZHBackendLog: Created new master record {master_id} with {quantity} bottle(s)")
-    else:
-        # Existing master - add bottles to group
-        master_id = master_record['id']
-        group_variant_id = master_record['variantGroupID']
-        existing_collection_id = master_record['collectionID']
-        
-        # Use existing master's collection
-        collection_id = existing_collection_id
-        
-        # Get next quantityVariantID
-        cur.execute("""
-            SELECT MAX("quantityVariantID") as max_id
-            FROM "myCellarItems"
-            WHERE "variantGroupID" = %s
-        """, (group_variant_id,))
-        
-        result = cur.fetchone()
-        next_variant_id = (result['max_id'] or 1) + 1
-        
-        created_bottle_ids = []
-        
-        # Create individual bottles
-        for i in range(quantity):
-            cur.execute("""
-                INSERT INTO "myCellarItems" (
-                    "listingID", "collectionID", "variant", "quantityVariantID", "variantGroupID",
-                    "purchaseDate", "deliveryDate", "purchasePrice", "purchaseCurrency",
-                    "purchasePlaceName", "purchaseAddress",
-                    "status", "consumption", "currentLocation", "subLocation",
-                    "noteToSelf", "archiveStatus", "addedDate", "updatedDate"
-                ) VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                ) RETURNING "id"
-            """, (
-                listing_id, collection_id, variant, next_variant_id + i, group_variant_id,
-                purchase_date, delivery_date, purchase_price, purchase_currency,
-                purchase_place_name, purchase_address,
-                status, consumption, current_location, sub_location,
-                note_to_self, False, datetime.now(), datetime.now()
-            ))
+                created_bottle_ids.append(cursor.fetchone()['id'])
             
-            created_bottle_ids.append(cur.fetchone()['id'])
+            print(f"TZHBackendLog: Added {quantity} bottle(s) to existing master {master_id}")
         
-        print(f"TZHBackendLog: Added {quantity} bottle(s) to existing master {master_id}")
-    
-    return {
-        "masterId": master_id,
-        "bottleIds": created_bottle_ids,
-        "quantity": quantity
-    }
+        return {
+            "masterId": master_id,
+            "bottleIds": created_bottle_ids,
+            "quantity": quantity
+        }
 
 @blueprint.route("/importCellarCsv", methods=['POST'])
 def importCellarCsv():
@@ -844,7 +846,7 @@ def importCellarCsv():
                 # Determine listing ID
                 if selected_match_id == 'create_new':
                     # Create new listing
-                    listing_id = create_new_listing(cur, mapped_data)
+                    listing_id = create_new_listing(mapped_data)
                     created_listings_count += 1
                 elif selected_match_id:
                     # Use existing listing
