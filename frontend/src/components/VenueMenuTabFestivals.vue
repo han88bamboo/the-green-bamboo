@@ -365,9 +365,13 @@
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                         <!-- Item Image -->
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
-                                        </router-link>
+                                        <img 
+                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                            :alt="sectionItem.itemDetails['itemName']"
+                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                            loading="lazy"
+                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'])"
+                                            style="cursor: pointer">
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
                                             <h2 class="fw-bold rating-text text-center m-0 pt-2 d-flex align-items-center justify-content-center"  :class="{ 'd-none': !localShowRating }">
@@ -525,9 +529,13 @@
                                 <div class="row align-items-center">
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
-                                        </router-link>
+                                        <img 
+                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                            :alt="sectionItem.itemDetails['itemName']"
+                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                            loading="lazy"
+                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'])"
+                                            style="cursor: pointer">
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
                                     <div class="col-lg-8 col-12 ps-lg-4">
@@ -692,9 +700,13 @@
                                             <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                             <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                                 <!-- Item Image -->
-                                                <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
-                                                </router-link>
+                                                <img 
+                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                    :alt="subsectionItem.itemDetails['itemName']"
+                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                    loading="lazy"
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'])"
+                                                    style="cursor: pointer">
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
                                                     <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
@@ -831,9 +843,13 @@
                                         <div class="row align-items-center">
                                             <!-- LEFT COLUMN Item Image -->
                                             <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                                <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
-                                                </router-link>
+                                                <img 
+                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                    :alt="subsectionItem.itemDetails['itemName']"
+                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                    loading="lazy"
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'])"
+                                                    style="cursor: pointer">
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
                                             <div class="col-lg-8 col-12 ps-lg-4">
@@ -2292,6 +2308,15 @@
         </div>
     </div>
 
+    <!-- Image Enlargement Modal -->
+    <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
+        <div class="image-modal-container" @click.stop>
+            <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
+            <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+                ✕
+            </button>
+        </div>
+    </div>
 
         <!-- Modal -->
         <div v-if="userID != 'defaultUser' && userType === 'user'" class="modal fade" id="menuItemReviewModal" tabindex="-1"
@@ -3352,6 +3377,11 @@ export default {
             userReviews: new Map(), // Key: `${itemID}-${variant}`, Value: review record
             reviewsLoading: false,
             reviewLoadTimeout: null,
+
+            // Image enlargement modal data
+            showImageModal: false,
+            enlargedImageSrc: '',
+            enlargedImageAlt: '',
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -8156,6 +8186,26 @@ export default {
 
         },
 
+        // ===== IMAGE ENLARGEMENT METHODS =====
+        
+        // Handle image enlargement
+        enlargeImage(imageSrc, altText) {
+            this.enlargedImageSrc = imageSrc;
+            this.enlargedImageAlt = altText;
+            this.showImageModal = true;
+            // Prevent scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        },
+        
+        // Close modal
+        closeImageModal() {
+            this.showImageModal = false;
+            this.enlargedImageSrc = '';
+            this.enlargedImageAlt = '';
+            // Restore scrolling
+            document.body.style.overflow = '';
+        },
+
     // function to display submitted image
     onFileChange(event) {
       const file = event.target.files[0];
@@ -9254,6 +9304,106 @@ input[type="range"].form-range::-webkit-slider-thumb {
     width: 16px !important;
     height: 16px !important;
     margin-right: 1px !important;
+  }
+}
+
+/* ===== IMAGE ENLARGEMENT MODAL STYLES ===== */
+
+/* Modal overlay - darkens background */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Container for image and close button */
+.image-modal-container {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  animation: zoomIn 0.3s ease;
+}
+
+/* The enlarged image itself */
+.enlarged-image {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* Close button */
+.image-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.image-modal-close:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+/* Clickable images */
+.clickable-image {
+  transition: transform 0.2s ease;
+}
+
+.clickable-image:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile responsiveness for image modal */
+@media (max-width: 768px) {
+  .image-modal-container {
+    max-width: 95%;
+    max-height: 95%;
+  }
+  
+  .enlarged-image {
+    max-height: 85vh;
+  }
+  
+  .image-modal-close {
+    top: -35px;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
   }
 }
 
