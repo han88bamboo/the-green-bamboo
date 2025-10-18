@@ -113,7 +113,7 @@ export default {
     // 1-second splash timer
     setTimeout(() => {
       this.showSplash = false;
-    }, 2000);
+    }, 3000);
   },
   beforeUnmount() {
     clearInterval(this.factIntervalId);
