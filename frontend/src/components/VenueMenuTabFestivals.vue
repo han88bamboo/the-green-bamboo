@@ -370,7 +370,7 @@
                                             :alt="sectionItem.itemDetails['itemName']"
                                             class="producer-bottle-listing-page-bottle-image clickable-image" 
                                             loading="lazy"
-                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'])"
+                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
                                             style="cursor: pointer">
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
@@ -534,7 +534,7 @@
                                             :alt="sectionItem.itemDetails['itemName']"
                                             class="producer-bottle-listing-page-bottle-image clickable-image" 
                                             loading="lazy"
-                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'])"
+                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
                                             style="cursor: pointer">
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
@@ -705,7 +705,7 @@
                                                     :alt="subsectionItem.itemDetails['itemName']"
                                                     class="producer-bottle-listing-page-bottle-image clickable-image" 
                                                     loading="lazy"
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'])"
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
                                                     style="cursor: pointer">
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
@@ -848,7 +848,7 @@
                                                     :alt="subsectionItem.itemDetails['itemName']"
                                                     class="producer-bottle-listing-page-bottle-image clickable-image" 
                                                     loading="lazy"
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'])"
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
                                                     style="cursor: pointer">
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
@@ -2310,11 +2310,28 @@
 
     <!-- Image Enlargement Modal -->
     <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
-        <div class="image-modal-container" @click.stop>
-            <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
-            <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
-                ✕
-            </button>
+        <div class="image-modal-content-wrapper" @click.stop>
+            <div class="image-modal-container">
+                <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
+                <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+                    ✕
+                </button>
+            </div>
+            
+            <!-- Description Container -->
+            <div v-if="enlargedImageDesc" class="image-description-container">
+                <div class="image-description-content">
+                    <h5 class="image-description-title">{{ enlargedImageAlt }}</h5>
+                    <p v-if="!showFullImageDescription" class="image-description-text">
+                        {{ enlargedImageDesc.slice(0, 200) + (enlargedImageDesc.length > 200 ? '...' : '') }}
+                        <a v-if="enlargedImageDesc.length > 200" @click="showFullImageDescription = true" class="read-more-link">(Read More)</a>
+                    </p>
+                    <p v-else class="image-description-text">
+                        {{ enlargedImageDesc }}
+                        <a @click="showFullImageDescription = false" class="read-more-link">(Read Less)</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3382,6 +3399,8 @@ export default {
             showImageModal: false,
             enlargedImageSrc: '',
             enlargedImageAlt: '',
+            enlargedImageDesc: '',
+            showFullImageDescription: false,
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -8189,9 +8208,11 @@ export default {
         // ===== IMAGE ENLARGEMENT METHODS =====
         
         // Handle image enlargement
-        enlargeImage(imageSrc, altText) {
+        enlargeImage(imageSrc, altText, description = '') {
             this.enlargedImageSrc = imageSrc;
             this.enlargedImageAlt = altText;
+            this.enlargedImageDesc = description;
+            this.showFullImageDescription = false; // Reset to collapsed state
             this.showImageModal = true;
             // Prevent scrolling when modal is open
             document.body.style.overflow = 'hidden';
@@ -8202,6 +8223,8 @@ export default {
             this.showImageModal = false;
             this.enlargedImageSrc = '';
             this.enlargedImageAlt = '';
+            this.enlargedImageDesc = '';
+            this.showFullImageDescription = false;
             // Restore scrolling
             document.body.style.overflow = '';
         },
@@ -9322,23 +9345,36 @@ input[type="range"].form-range::-webkit-slider-thumb {
   align-items: center;
   z-index: 9999;
   animation: fadeIn 0.3s ease;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Wrapper for image and description - stacks vertically */
+.image-modal-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+  max-height: 90vh;
+  gap: 20px;
 }
 
 /* Container for image and close button */
 .image-modal-container {
   position: relative;
-  max-width: 90%;
-  max-height: 90%;
+  max-width: 100%;
   animation: zoomIn 0.3s ease;
+  flex-shrink: 0;
 }
 
 /* The enlarged image itself */
 .enlarged-image {
   max-width: 100%;
-  max-height: 90vh;
+  max-height: 70vh;
   object-fit: contain;
   border-radius: 8px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: block;
 }
 
 /* Close button */
@@ -9371,6 +9407,54 @@ input[type="range"].form-range::-webkit-slider-thumb {
   opacity: 0.9;
 }
 
+/* Description container below image */
+.image-description-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  max-height: 300px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow-y: auto;
+  flex-shrink: 1;
+}
+
+.image-description-content {
+  color: #333;
+}
+
+.image-description-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #000;
+  border-bottom: 2px solid #f0b358;
+  padding-bottom: 8px;
+}
+
+.image-description-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  color: #444;
+}
+
+.read-more-link {
+  color: #006A50;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+.read-more-link:hover {
+  color: #004d39;
+  text-decoration: none;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -9388,15 +9472,35 @@ input[type="range"].form-range::-webkit-slider-thumb {
   }
 }
 
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Mobile responsiveness for image modal */
 @media (max-width: 768px) {
-  .image-modal-container {
+  .image-modal-overlay {
+    padding: 10px;
+  }
+  
+  .image-modal-content-wrapper {
     max-width: 95%;
-    max-height: 95%;
+    max-height: 95vh;
+    gap: 15px;
+  }
+  
+  .image-modal-container {
+    max-width: 100%;
   }
   
   .enlarged-image {
-    max-height: 85vh;
+    max-height: 50vh;
   }
   
   .image-modal-close {
@@ -9404,6 +9508,22 @@ input[type="range"].form-range::-webkit-slider-thumb {
     width: 32px;
     height: 32px;
     font-size: 20px;
+  }
+  
+  .image-description-container {
+    max-width: 100%;
+    max-height: 40vh;
+    padding: 15px;
+  }
+  
+  .image-description-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  
+  .image-description-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
   }
 }
 
