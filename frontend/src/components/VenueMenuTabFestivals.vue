@@ -794,7 +794,7 @@
                                                                 class="btn primary-btn-less-round-blue btn-sm flex-fill" 
                                                                 data-bs-toggle="modal"
                                                                 data-bs-target="#menuItemReviewModal"
-                                                                @click="initializeReviewForMenuItem(sectionItem)"
+                                                                @click="initializeReviewForMenuItem(subsectionItem)"
                                                                 style="font-weight: bold; border-radius: 20px;">
                                                                 Add Your Review
                                                             </button>
