@@ -165,6 +165,17 @@
                   </tr>
                 </tbody>
               </table>
+              <div v-if="hasDuplicateMappings" class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Duplicate Mapping Detected!</strong>
+                <p class="mb-2 mt-2">You cannot map multiple CSV columns to the same database field:</p>
+                <ul class="mb-0">
+                  <li v-for="dup in duplicateMappings" :key="dup.field">
+                    <strong>{{ getFieldLabel(dup.field) }}</strong> is mapped {{ dup.count }} times
+                  </li>
+                </ul>
+                <p class="mb-0 mt-2"><small>Please ensure each database field is mapped to only one CSV column.</small></p>
+              </div>
             </div>
             
             <div class="d-flex justify-content-between mt-4">
@@ -174,7 +185,7 @@
               <button 
                 class="btn btn-primary"
                 @click="processCSVWithMapping"
-                :disabled="!hasRequiredMapping || processing"
+                :disabled="!hasRequiredMapping || processing || hasDuplicateMappings"
               >
                 <span v-if="processing" class="spinner-border spinner-border-sm me-2"></span>
                 {{ processing ? 'Processing...' : 'Next: Review Duplicates' }}
@@ -640,20 +651,37 @@ export default {
             pages.push(i)
         }
         return pages
+        },
+
+        duplicateMappings() {
+          const mappingCounts = {}
+          Object.values(this.columnMapping).forEach(dbField => {
+            if (dbField && dbField !== '') {
+              mappingCounts[dbField] = (mappingCounts[dbField] || 0) + 1
+            }
+          })
+          
+          return Object.entries(mappingCounts)
+            .filter(([, count]) => count > 1)
+            .map(([field, count]) => ({ field, count }))
+        },
+
+        hasDuplicateMappings() {
+          return this.duplicateMappings.length > 0
         }
     },
     methods: {
         getApiBaseUrl() {
-        return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '')
+          return process.env.VUE_APP_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : '')
         },
         
         handleFileSelect(event) {
-        const file = event.target.files[0]
-        if (file && file.name.endsWith('.csv')) {
-            this.selectedFile = file
-        } else {
-            alert('Please select a valid CSV file')
-        }
+          const file = event.target.files[0]
+          if (file && file.name.endsWith('.csv')) {
+              this.selectedFile = file
+          } else {
+              alert('Please select a valid CSV file')
+          }
         },
         
         formatFileSize(bytes) {
@@ -825,6 +853,37 @@ export default {
           // Force reactivity
           this.columnMapping = { ...this.columnMapping }
         },
+
+        getFieldLabel(dbField) {
+          const labels = {
+            'listingName': 'Drink Name',
+            'producerName': 'Producer Name',
+            'variant': 'Vintage / Variant',
+            'drinkType': 'Drink Type',
+            'typeCategory': 'Category',
+            'originCountry': 'Country',
+            'abv': 'ABV (%)',
+            'quantity': 'Quantity',
+            'drinkFormat': 'Format',
+            'volumeNumber': 'Volume Number',
+            'volumeUnit': 'Volume Unit',
+            'status': 'Status',
+            'consumption': 'Consumption State',
+            'currentLocation': 'Storage Location',
+            'subLocation': 'Sub Location',
+            'purchaseDate': 'Purchase Date',
+            'deliveryDate': 'Delivery Date',
+            'purchasePrice': 'Purchase Price',
+            'purchaseCurrency': 'Currency',
+            'purchasePlaceName': 'Purchase Location',
+            'drinkOnwardsDate': 'Drink From Date',
+            'drinkByDate': 'Drink By Date',
+            'currentValueEstimation': 'Current Value',
+            'noteToSelf': 'Personal Notes',
+            'suggestedFoodPairing': 'Food Pairing'
+          }
+          return labels[dbField] || dbField
+        },
         
         getSampleDataForColumn(header) {
         if (!this.csvSampleData || this.csvSampleData.length === 0) return ''
@@ -845,8 +904,12 @@ export default {
         
         // Check if collection is selected
         if (!this.selectedCollectionId) {
+          if (this.collections.length === 0) {
+            console.log('No collections exist, backend will create default')
+          } else {
             const defaultCollection = this.collections.find(c => c.isDefault)
             this.selectedCollectionId = defaultCollection ? defaultCollection.id : this.collections[0].id
+          }
         }
         
         this.processing = true
