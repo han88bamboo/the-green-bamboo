@@ -196,7 +196,7 @@
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                backgroundColor: showOnlyTastedItems ? '#5DFF38' : '#14785a',
+                                backgroundColor: showOnlyTastedItems ? '#49b02e' : '#14785a',
                                 borderColor: '#14785a',
                                 borderWidth: showOnlyTastedItems ? '3px' : '1px',
                                 borderStyle: 'solid',
