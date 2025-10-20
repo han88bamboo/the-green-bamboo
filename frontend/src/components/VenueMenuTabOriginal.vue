@@ -333,11 +333,12 @@
                 <!-- Main Section Name -->
                 <div class="col-12 d-grid mobile-px-0 section-header-container">
                     <button type="button" 
-                        class="btn secondary-btn-not-rounded fs-6 fw-bold text-start"
+                        class="btn secondary-btn-not-rounded fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
                         aria-expanded="true" :aria-controls="'collapseMenuSection' + index"
                         style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                        {{ menuSection.sectionName }} ↓
+                        <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ menuSection.sectionName }}</span>
+                        <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                     </button>
                 </div>
 
@@ -530,11 +531,12 @@
                             
                             <!-- Subsection Name -->
                             <div class="col-12 d-grid mobile-px-0 mt-3">
-                                <button type="button" class="btn btn-outline-secondary fs-6 fw-bold text-start"
+                                <button type="button" class="btn btn-outline-secondary fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                                     data-bs-toggle="collapse" :data-bs-target="'#collapseSubSection' + index + '_' + subIndex"
                                     aria-expanded="true" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; margin-left: 20px;">
-                                    {{ subsection.sectionName }} ↓
+                                    <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ subsection.sectionName }}</span>
+                                    <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                                 </button>
                             </div>
 
@@ -6380,6 +6382,20 @@ export default {
 </script>
 
 <style scoped>
+/* Collapse indicator chevron animation */
+.collapse-indicator {
+  transition: transform 0.3s ease;
+}
+
+/* Rotate chevron when section is collapsed */
+button[aria-expanded="false"] .collapse-indicator {
+  transform: rotate(-90deg);
+}
+
+button[aria-expanded="true"] .collapse-indicator {
+  transform: rotate(0deg);
+}
+
 /* Drag and drop ghost styles for hierarchical menu system */
 .ghost {
     opacity: 0.5;
