@@ -4689,6 +4689,35 @@ export default {
                     .replace(/\s+/g, '-')                 // Replace spaces with hyphens
                     .replace(/[^\w]/g, '');              // Remove non-word characters
             },
+    
+    // ===== SEARCH NORMALIZATION HELPER METHODS =====
+    // Helper function for accent folding/normalization
+    normalizeAccents(text) {
+        if (!text) return '';
+        // Use Unicode normalization to decompose accented characters, then remove diacritical marks
+        return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    },
+
+    // Helper function for space and punctuation normalization
+    normalizeSpacing(text) {
+        if (!text) return '';
+        // Remove spaces, hyphens, apostrophes, periods, and other common punctuation
+        return text.replace(/[\s\-'.:;()]/g, '');
+    },
+
+    // Combined normalization function for fuzzy matching
+    normalizeForSearch(text) {
+        if (!text) return '';
+        return this.normalizeSpacing(this.normalizeAccents(text.toLowerCase()));
+    },
+
+    // Enhanced fuzzy matching function
+    fuzzyMatch(searchTerm, targetText) {
+        const normalizedSearch = this.normalizeForSearch(searchTerm);
+        const normalizedTarget = this.normalizeForSearch(targetText);
+        return normalizedTarget.includes(normalizedSearch);
+    },
+
     // load data from database
     async loadData() {
       // Add the new selfView logic
@@ -5690,33 +5719,52 @@ export default {
       };
     },
 
-    // for searching for expressions
+    // Enhanced search for expressions with fuzzy matching and multi-field support
     searchForExpressions() {
-      // flag to check if there are search inputs
-      const searchExpressions = this.searchExpressions.toLowerCase();
-      this.searchTerm = this.searchExpressions;
+      console.log("Searching expressions with term: " + this.searchExpressions);
+      
+      // Trim and normalize search term
+      const searchTerm = this.searchExpressions.trim();
+      this.searchTerm = searchTerm;
 
-      // get all listings to search from
+      // If empty search, reset to show all listings
+      if (!searchTerm) {
+        this.resetListings();
+        return;
+      }
+
+      // Get all listings to search from
       const listings = this.allDrinks;
 
-      // if there is something searched
+      // Filter listings with multi-field fuzzy search
       const searchResults = listings.filter((listing) => {
-        const expressionName = listing["listingName"].toLowerCase();
-        return expressionName.includes(searchExpressions);
+        // Search across multiple fields using fuzzy matching
+        return (
+          // Primary field: Listing Name
+          (listing.listingName && this.fuzzyMatch(searchTerm, listing.listingName)) ||
+          // Secondary fields: Producer/Bottler info
+          (listing.bottler && this.fuzzyMatch(searchTerm, listing.bottler)) ||
+          (listing.producerName && this.fuzzyMatch(searchTerm, listing.producerName)) ||
+          // Drink classification
+          (listing.drinkType && this.fuzzyMatch(searchTerm, listing.drinkType)) ||
+          (listing.typeCategory && this.fuzzyMatch(searchTerm, listing.typeCategory)) ||
+          // Origin information
+          (listing.originCountry && this.fuzzyMatch(searchTerm, listing.originCountry)) ||
+          (listing.originRegion && this.fuzzyMatch(searchTerm, listing.originRegion)) ||
+          // Description
+          (listing.officialDesc && this.fuzzyMatch(searchTerm, listing.officialDesc))
+        );
       });
 
-      // if nothing found
+      console.log(`Found ${searchResults.length} results for "${searchTerm}"`);
+
+      // Handle results
       if (searchResults.length == 0) {
         this.filteredListings = [];
         this.lazyListings = [];
       } else {
         this.filteredListings = searchResults;
         this.lazyListings = this.filteredListings.slice(0, 10);
-      }
-
-      // if there is nothing searched
-      if (this.searchExpressions == "") {
-        this.resetListings();
       }
     },
 
