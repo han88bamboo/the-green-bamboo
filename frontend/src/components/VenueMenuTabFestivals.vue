@@ -3888,17 +3888,14 @@ export default {
                     
                     // Add highlight effect after scroll animation completes
                     setTimeout(() => {
-                        // Find the section header button to highlight
-                        const sectionHeader = sectionElement.querySelector('.section-header-container');
-                        const highlightTarget = sectionHeader || sectionElement;
+                        // Apply highlight directly to the section row element
+                        console.log('🔵 Jump to Sheet: Adding highlight to', sectionElement);
                         
-                        console.log('🔵 Jump to Sheet: Adding highlight to', highlightTarget);
-                        
-                        highlightTarget.classList.add('highlight-section');
+                        sectionElement.classList.add('highlight-section');
                         
                         // Remove highlight after 3 seconds
                         setTimeout(() => {
-                            highlightTarget.classList.remove('highlight-section');
+                            sectionElement.classList.remove('highlight-section');
                             console.log('🔵 Jump to Sheet: Highlight removed');
                         }, 3000);
                     }, 600); // Wait 600ms for scroll animation
