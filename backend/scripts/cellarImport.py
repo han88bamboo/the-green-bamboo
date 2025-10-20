@@ -126,7 +126,7 @@ def parse_date(date_str):
         except (ValueError, TypeError):
             continue
     
-    print(f"TZHBackendLog: Could not parse date: {date_str}")
+    print(f"Could not parse date: {date_str}")
     return None
 
 def parse_decimal(value):
@@ -204,7 +204,7 @@ def validate_import_row(row, required_fields=None):
 @blueprint.route("/parseCsvPreview", methods=['POST'])
 def parseCsvPreview():
     """Parse uploaded CSV and return headers + sample rows for column mapping"""
-    print("TZHBackendLog: parseCsvPreview called")
+    print("parseCsvPreview called")
     
     try:
         if 'file' not in request.files:
@@ -234,7 +234,7 @@ def parseCsvPreview():
             try:
                 decoded_content = file_content.decode(encoding)
                 successful_encoding = encoding
-                print(f"TZHBackendLog: Successfully decoded with encoding: {encoding}")
+                print(f"Successfully decoded with encoding: {encoding}")
                 break
             except (UnicodeDecodeError, UnicodeError):
                 continue
@@ -273,7 +273,7 @@ def parseCsvPreview():
         sample_data = df.head(10).fillna('').to_dict('records')
         total_rows = len(df)
         
-        print(f"TZHBackendLog: Parsed CSV with {len(headers)} columns and {total_rows} rows")
+        print(f"Parsed CSV with {len(headers)} columns and {total_rows} rows")
         
         return jsonify({
             "code": 200,
@@ -287,9 +287,9 @@ def parseCsvPreview():
         }), 200
         
     except Exception as e:
-        print(f"TZHBackendLog: Error parsing CSV: {str(e)}")
+        print(f"Error parsing CSV: {str(e)}")
         import traceback
-        print(f"TZHBackendLog: Traceback: {traceback.format_exc()}")
+        print(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             "code": 500,
             "message": f"Error parsing CSV: {str(e)}"
@@ -303,9 +303,8 @@ def parseCsvPreview():
 def processAndDetectDuplicates():
     """
     Process CSV with column mappings and detect potential duplicate drinks
-    FIXED: Now properly detects duplicates by normalizing both search term and database values
     """
-    print("TZHBackendLog: processAndDetectDuplicates called")
+    print("processAndDetectDuplicates called")
     
     try:
         if 'file' not in request.files:
@@ -320,6 +319,24 @@ def processAndDetectDuplicates():
         
         import json
         column_mapping = json.loads(column_mapping_json)
+
+        # Check for duplicate mappings
+        db_field_usage = {}
+        for csv_col, db_field in column_mapping.items():
+            if db_field and db_field.strip():
+                if db_field not in db_field_usage:
+                    db_field_usage[db_field] = []
+                db_field_usage[db_field].append(csv_col)
+
+        duplicate_fields = {k: v for k, v in db_field_usage.items() if len(v) > 1}
+        if duplicate_fields:
+            error_msg = "Duplicate column mappings detected: " + ", ".join(
+                [f"{field} mapped from {', '.join(cols)}" for field, cols in duplicate_fields.items()]
+            )
+            return jsonify({
+                "code": 400,
+                "message": error_msg
+            }), 400
         
         # Read and decode file
         file_content = file.stream.read()
@@ -352,9 +369,9 @@ def processAndDetectDuplicates():
             with db_manager.get_cursor() as cursor:
                 cursor.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
                 has_unaccent = True
-                print("TZHBackendLog: unaccent extension available")
+                print("unaccent extension available")
         except Exception as e:
-            print(f"TZHBackendLog: Could not enable unaccent extension: {e}")
+            print(f"Could not enable unaccent extension: {e}")
             has_unaccent = False
         
         results = []
@@ -418,7 +435,7 @@ def processAndDetectDuplicates():
             normalized_name = normalize_string(drink_name)
             normalized_producer = normalize_string(producer_name) if producer_name else None
 
-            print(f"TZHBackendLog: Searching for: {drink_name} (normalized: {normalized_name})")
+            print(f"Searching for: {drink_name} (normalized: {normalized_name})")
 
             # Build search query with proper normalization
             normalize_listing = get_normalize_sql().format(field='l."listingName"')
@@ -452,9 +469,9 @@ def processAndDetectDuplicates():
                 with db_manager.get_cursor() as cursor:
                     cursor.execute(search_query, search_params)
                     potential_matches = cursor.fetchall()
-                print(f"TZHBackendLog: Found {len(potential_matches)} potential matches from database")
+                print(f"Found {len(potential_matches)} potential matches from database")
             except Exception as e:
-                print(f"TZHBackendLog: Error searching for matches: {e}")
+                print(f"Error searching for matches: {e}")
                 import traceback
                 print(traceback.format_exc())
                 results.append({
@@ -506,7 +523,7 @@ def processAndDetectDuplicates():
                     # Calculate total score
                     total_score = min(100, name_score + producer_bonus + variant_bonus)
                     
-                    print(f"TZHBackendLog: Match '{match['listingName']}' - Name:{name_score}, Producer:{producer_bonus}, Variant:{variant_bonus}, Total:{total_score}")
+                    print(f"Match '{match['listingName']}' - Name:{name_score}, Producer:{producer_bonus}, Variant:{variant_bonus}, Total:{total_score}")
                     
                     if total_score >= threshold:
                         matches_with_scores.append({
@@ -521,13 +538,13 @@ def processAndDetectDuplicates():
                             "similarity": round(total_score, 1)
                         })
                 except Exception as e:
-                    print(f"TZHBackendLog: Error calculating match score: {e}")
+                    print(f"Error calculating match score: {e}")
                     continue
             
             # Sort by similarity score (highest first)
             matches_with_scores.sort(key=lambda x: x['similarity'], reverse=True)
             
-            print(f"TZHBackendLog: Row {index + 2} - {len(matches_with_scores)} matches above threshold")
+            print(f"Row {index + 2} - {len(matches_with_scores)} matches above threshold")
             
             results.append({
                 "rowNumber": index + 2,
@@ -536,7 +553,7 @@ def processAndDetectDuplicates():
                 "validationErrors": []
             })
         
-        print(f"TZHBackendLog: Processed {len(results)} rows successfully")
+        print(f"Processed {len(results)} rows successfully")
         
         return jsonify({
             "code": 200,
@@ -548,9 +565,9 @@ def processAndDetectDuplicates():
         }), 200
         
     except Exception as e:
-        print(f"TZHBackendLog: Error in processAndDetectDuplicates: {str(e)}")
+        print(f"Error in processAndDetectDuplicates: {str(e)}")
         import traceback
-        print(f"TZHBackendLog: Traceback: {traceback.format_exc()}")
+        print(f"Traceback: {traceback.format_exc()}")
         return jsonify({
             "code": 500,
             "message": f"Error processing CSV: {str(e)}"
@@ -560,69 +577,136 @@ def processAndDetectDuplicates():
 # STEP 3: IMPORT TO CELLAR WITH USER DECISIONS
 # ============================================================================
 
-def create_new_listing(mapped_data):
-    """Create a new listing in the database from CSV data"""
-    with db_manager.get_cursor() as cursor:
-        listing_name = mapped_data.get('listingName')
-        producer_name = mapped_data.get('producerName')
-        drink_type = mapped_data.get('drinkType', 'Other')
-        origin_country = mapped_data.get('originCountry')
-        type_category = mapped_data.get('typeCategory')
-        abv = mapped_data.get('abv')
-        
-        # Find or create producer
-        producer_id = None
-        if producer_name:
-            # Normalize producer name for better matching
-            normalized_producer = normalize_string(producer_name)
-            
-            # Try to find existing producer (case-insensitive, normalized)
-            cursor.execute("""
+def create_new_listing(cur, mapped_data, owner_type, owner_id):
+    listing_name = mapped_data.get('listingName')
+    producer_name = mapped_data.get('producerName')
+    drink_type = mapped_data.get('drinkType', 'Other')
+    origin_country = mapped_data.get('originCountry')
+    type_category = mapped_data.get('typeCategory')
+    abv = mapped_data.get('abv')
+    
+    # Find or create producer
+    producer_id = None
+    if producer_name:
+        # Try to find existing producer (case-insensitive, normalized)
+        try:
+            cur.execute("""
                 SELECT "id", "producerName" FROM "producers" 
                 WHERE LOWER(regexp_replace(unaccent("producerName"), '[^a-z0-9 ]', '', 'g')) 
                 = LOWER(regexp_replace(unaccent(%s), '[^a-z0-9 ]', '', 'g'))
                 LIMIT 1
             """, (producer_name,))
-            producer = cursor.fetchone()
-            
-            if producer:
-                producer_id = producer['id']
-                print(f"TZHBackendLog: Found existing producer: {producer['producerName']} (ID: {producer_id})")
-            else:
-                # Create new producer
-                print(f"TZHBackendLog: Creating new producer: {producer_name}")
-                cursor.execute("""
-                    INSERT INTO "producers" (
-                        "producerName", "producerDesc", "originCountry", "mainDrinks",
-                        "photo", "hashedPassword", "claimStatus", "statusOB", 
-                        "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING "id"
-                """, (
-                    producer_name, "", origin_country or "", [],
-                    "", hash_password(producer_name, "admin1234"), False, "",
-                    None, "", None, False
-                ))
-                producer_id = cursor.fetchone()['id']
-                print(f"TZHBackendLog: Created new producer with ID: {producer_id}")
+            producer = cur.fetchone()
+        except Exception as e:
+            # Fallback if unaccent extension not available
+            print(f"Unaccent query failed, using simple LOWER: {e}")
+            cur.execute("""
+                SELECT "id", "producerName" FROM "producers" 
+                WHERE LOWER("producerName") = LOWER(%s)
+                LIMIT 1
+            """, (producer_name,))
+            producer = cur.fetchone()
         
-        # Create new listing
-        cursor.execute("""
-            INSERT INTO "listings" (
-                "listingName", "producerID", "originCountry", "drinkType",
-                "typeCategory", "abv", "addedDate", "allowMod"
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING "id"
-        """, (
-            listing_name, producer_id, origin_country, drink_type,
-            type_category, abv, datetime.now(), True
-        ))
-        
-        new_listing_id = cursor.fetchone()['id']
-        print(f"TZHBackendLog: Created new listing: '{listing_name}' with ID: {new_listing_id}")
-        
-        return new_listing_id
+        if producer:
+            producer_id = producer['id']
+            print(f"Found existing producer: {producer['producerName']} (ID: {producer_id})")
+        else:
+            # Create new producer
+            print(f"Creating new producer: {producer_name}")
+            cur.execute("""
+                INSERT INTO "producers" (
+                    "producerName", "producerDesc", "originCountry", "mainDrinks",
+                    "photo", "hashedPassword", "claimStatus", "statusOB", 
+                    "username", "producerLink", "stripeCustomerId", "isIndependentBottler"
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING "id"
+            """, (
+                producer_name, "", origin_country or "", [],
+                "", hash_password(producer_name, "admin1234"), False, "",
+                None, "", None, False
+            ))
+            producer_id = cur.fetchone()['id']
+            print(f"Created new producer with ID: {producer_id}")
+    
+    # === STEP 1: Record in requestListings for tracking ===
+    # Determine user/venue ID based on owner type
+    user_id = None
+    venue_id = None
+    submitter_type = owner_type  # 'user', 'producer', or 'venue'
+    
+    if owner_type == 'user':
+        user_id = owner_id
+    elif owner_type == 'venue':
+        venue_id = owner_id
+    
+    # Convert abv to string for requestListings (table expects VARCHAR)
+    abv_str = str(abv) if abv is not None else None
+    
+    print(f"Recording in requestListings - submitter: {submitter_type} #{owner_id}")
+    
+    cur.execute("""
+        INSERT INTO "requestListings" (
+            "listingName",
+            "producerID",
+            "producerNew",
+            "drinkType",
+            "originCountry",
+            "typeCategory",
+            "abv",
+            "userID",
+            "venueID",
+            "submitterType",
+            "reviewStatus",
+            "sourceLink"
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING "id"
+    """, (
+        listing_name,
+        producer_id,
+        producer_name if not producer_id else None,  # Store producer name if new
+        drink_type,
+        origin_country,
+        type_category,
+        abv_str,
+        user_id,
+        venue_id,
+        submitter_type,
+        True,  # reviewStatus = True (auto-approved from CSV import)
+        'CSV_CELLAR_IMPORT'  # Special marker to identify CSV imports
+    ))
+    
+    request_listing_id = cur.fetchone()['id']
+    print(f"Recorded in requestListings with ID: {request_listing_id}")
+    
+    # === STEP 2: Create the actual listing ===
+    cur.execute("""
+        INSERT INTO "listings" (
+            "listingName", 
+            "producerID", 
+            "originCountry", 
+            "drinkType",
+            "typeCategory", 
+            "abv", 
+            "addedDate", 
+            "allowMod"
+        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING "id"
+    """, (
+        listing_name, 
+        producer_id, 
+        origin_country, 
+        drink_type,
+        type_category, 
+        abv, 
+        datetime.now(), 
+        True
+    ))
+    
+    new_listing_id = cur.fetchone()['id']
+    print(f"Created new listing: '{listing_name}' with ID: {new_listing_id}")
+    
+    return new_listing_id
 
 def add_cellar_item_from_import(cellar_data):
     """Add item to cellar with proper duplicate handling"""
@@ -745,7 +829,7 @@ def add_cellar_item_from_import(cellar_data):
                     
                     created_bottle_ids.append(cursor.fetchone()['id'])
             
-            print(f"TZHBackendLog: Created new master record {master_id} with {quantity} bottle(s)")
+            print(f"Created new master record {master_id} with {quantity} bottle(s)")
         else:
             # Existing master - add bottles to group
             master_id = master_record['id']
@@ -789,7 +873,7 @@ def add_cellar_item_from_import(cellar_data):
                 
                 created_bottle_ids.append(cursor.fetchone()['id'])
             
-            print(f"TZHBackendLog: Added {quantity} bottle(s) to existing master {master_id}")
+            print(f"Added {quantity} bottle(s) to existing master {master_id}")
         
         return {
             "masterId": master_id,
@@ -800,7 +884,6 @@ def add_cellar_item_from_import(cellar_data):
 @blueprint.route("/importCellarCsv", methods=['POST'])
 def importCellarCsv():
     """Import CSV to cellar with user decisions on duplicates"""
-    print("TZHBackendLog: importCellarCsv called")
     
     try:
         with db_manager.get_cursor(commit=False) as cursor:
@@ -809,6 +892,36 @@ def importCellarCsv():
             owner_id = data.get('ownerId')
             collection_id = data.get('collectionId')
             import_items = data.get('items', [])
+
+            if not collection_id:
+                # Try to find default collection
+                cursor.execute("""
+                    SELECT "id" FROM "myCellarCollections" 
+                    WHERE "ownerID" = %s AND "ownerType" = %s AND "isDefault" = TRUE
+                    LIMIT 1
+                """, (owner_id, owner_type))
+                
+                default_collection = cursor.fetchone()
+
+                if default_collection:
+                    collection_id = default_collection['id']
+                    print(f"Using default collection ID: {collection_id}")
+                else:
+                    print(f"No collections found, creating default collection")
+                    cursor.execute("""
+                        INSERT INTO "myCellarCollections" (
+                            "ownerID", "ownerType", "collectionName", "isDefault", "isPublic",
+                            "createdDate", "updatedDate"
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+                        RETURNING "id"
+                    """, (
+                        owner_id, owner_type, 'My Cellar', True, True,
+                        datetime.now(), datetime.now()
+                    ))
+                    collection_id = cursor.fetchone()['id']
+                    cursor.connection.commit()
+                    print(f"Created default collection ID: {collection_id}")
+
             
             # Validate collection belongs to owner
             cursor.execute("""
@@ -817,7 +930,7 @@ def importCellarCsv():
             """, (collection_id, owner_id, owner_type))
             
             if not cursor.fetchone():
-                return jsonify({"code": 400, "message": "Invalid collection"}), 400
+                return jsonify({"code": 400, "message": "Invalid collection or collection does not belong to this user"}), 400
         
             imported_count = 0
             created_listings_count = 0
@@ -833,7 +946,7 @@ def importCellarCsv():
                     # Skip if user chose to skip
                     if selected_match_id == 'skip':
                         skipped_count += 1
-                        print(f"TZHBackendLog: Row {row_number} - Skipped by user")
+                        print(f"Row {row_number} - Skipped by user")
                         continue
                     
                     # Validate required fields
@@ -843,9 +956,17 @@ def importCellarCsv():
                     
                     # Determine listing ID
                     if selected_match_id == 'create_new':
-                        # Create new listing
-                        listing_id = create_new_listing(mapped_data)
+                        # Create new listing - PASS owner info for tracking
+                        listing_id = create_new_listing(cursor, mapped_data, owner_type, owner_id)
                         created_listings_count += 1
+                        
+                        # Flush the transaction so the listing is visible
+                        # for foreign key constraints when adding to cellar
+                        conn = cursor.connection
+                        conn.commit()
+                        
+                        # Re-establish cursor after commit
+                        cursor = conn.cursor(cursor_factory=RealDictCursor)
                     elif selected_match_id:
                         # Use existing listing
                         try:
@@ -894,11 +1015,11 @@ def importCellarCsv():
                     result = add_cellar_item_from_import(cellar_data)
                     imported_count += result['quantity']
                     
-                    print(f"TZHBackendLog: Row {row_number} - Successfully imported {result['quantity']} item(s)")
+                    print(f"Row {row_number} - Successfully imported {result['quantity']} item(s)")
                     
                 except Exception as e:
                     error_msg = str(e)
-                    print(f"TZHBackendLog: Error importing row {item.get('rowNumber', 0)}: {error_msg}")
+                    print(f"Error importing row {item.get('rowNumber', 0)}: {error_msg}")
                     import traceback
                     print(traceback.format_exc())
                     errors.append({
@@ -909,7 +1030,7 @@ def importCellarCsv():
             # Commit all changes
             cursor.connection.commit()
             
-            print(f"TZHBackendLog: Import complete - imported: {imported_count}, created: {created_listings_count}, skipped: {skipped_count}, errors: {len(errors)}")
+            print(f"Import complete - imported: {imported_count}, created: {created_listings_count}, skipped: {skipped_count}, errors: {len(errors)}")
             
             return jsonify({
                 "code": 200,
@@ -924,7 +1045,7 @@ def importCellarCsv():
             }), 200
         
     except Exception as e:
-        print(f"TZHBackendLog: Import failed: {str(e)}")
+        print(f"Import failed: {str(e)}")
         import traceback
         print(traceback.format_exc())
         return jsonify({
