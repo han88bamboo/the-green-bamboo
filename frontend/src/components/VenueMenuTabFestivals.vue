@@ -185,13 +185,28 @@
                         @keyup.enter="searchMenu">
                 </div>
                 
-                <!-- Sort Button (Non-functional placeholder) -->
+                <!-- Tasting Filter Toggle Button -->
                 <div v-if="!editMenuMode" class="col-3 pe-0">
                     <div class="d-grid gap-2 h-100">
-                        <button class="btn primary-light-dropdown-homepage h-100" 
+                        <button 
+                            class="btn h-100" 
                             type="button"
-                            style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis; background-color: #14785a; border-color: #14785a; color: white;">
-                            Sort By...
+                            @click="toggleTastedFilter"
+                            :style="{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                backgroundColor: showOnlyTastedItems ? '#5DFF38' : '#14785a',
+                                borderColor: '#14785a',
+                                borderWidth: showOnlyTastedItems ? '3px' : '1px',
+                                borderStyle: 'solid',
+                                color: 'white',
+                                fontWeight: 'bold',
+                                fontSize: '0.8rem',
+                                paddingX: '0.2rem',
+                                paddingY: '0.2rem'
+                            }">
+                            {{ showOnlyTastedItems ? tastedItemsCount + ' Tasted' : 'Tasted' }}
                         </button>
                     </div>
                 </div>
@@ -3284,6 +3299,39 @@ export default {
 
         hasUserReviewed() {
             return (menuItem) => this.checkUserReviewed(menuItem);
+        },
+        
+        // Tasting filter computed property - counts tasted items in current search results
+        tastedItemsCount() {
+            let count = 0;
+            
+            // Helper function to count tasted items recursively
+            const countTastedInSection = (section) => {
+                // Count direct items in this section
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    section.sectionMenu.forEach(item => {
+                        if (this.isTasted(item)) {
+                            count++;
+                        }
+                    });
+                }
+                
+                // Count items in subsections
+                if (section.subsections && Array.isArray(section.subsections)) {
+                    section.subsections.forEach(subsection => {
+                        countTastedInSection(subsection);
+                    });
+                }
+            };
+            
+            // Count across all search results
+            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
+                this.searchMenuResults.forEach(section => {
+                    countTastedInSection(section);
+                });
+            }
+            
+            return count;
         }
     },
     data() {
@@ -3334,6 +3382,9 @@ export default {
                 'Price (Low to High)',
                 'Price (High to Low)',
             ],
+            
+            // Tasting Filter
+            showOnlyTastedItems: false,
 
             // Menu item management - Enhanced for hierarchical structure
             newMenuItemID: '', // selected item ID to add to menu
@@ -4718,15 +4769,16 @@ export default {
             this.editableMainSections.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
         },
 
-        // Search Menu - Enhanced for hierarchical structure
+        // Search Menu - Enhanced for hierarchical structure with tasting filter
         searchMenu() {
             console.log("Searching hierarchical menu with term: " + this.searchMenuTerm);
+            console.log("Tasting filter active:", this.showOnlyTastedItems);
             
             // Trim search term, set to lowercase
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
             
-            if (this.searchMenuTerm == '') {
-                // If empty search, show all sections and subsections from current editable structure
+            if (this.searchMenuTerm == '' && !this.showOnlyTastedItems) {
+                // If empty search and no tasting filter, show all sections and subsections from current editable structure
                 this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
             } else {
                 // Reset searchMenuResults
@@ -4740,15 +4792,16 @@ export default {
                         sectionOrder: mainSection.sectionOrder,
                         parentSectionId: mainSection.parentSectionId,
                         isSubSection: mainSection.isSubSection,
+                        isVisible: mainSection.isVisible,
                         sectionMenu: [],
                         subsections: []
                     };
 
                     // Check if main section name matches search term (using fuzzy matching)
-                    let mainSectionMatches = this.fuzzyMatch(this.searchMenuTerm, mainSection.sectionName);
+                    let mainSectionMatches = this.searchMenuTerm ? this.fuzzyMatch(this.searchMenuTerm, mainSection.sectionName) : true;
                     
-                    // If main section matches, include all its items and subsections
-                    if (mainSectionMatches) {
+                    // If main section matches and no tasting filter, include all its items and subsections
+                    if (mainSectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems) {
                         filteredMainSection.sectionMenu = [...mainSection.sectionMenu];
                         if (mainSection.subsections) {
                             filteredMainSection.subsections = [...mainSection.subsections];
@@ -4757,7 +4810,13 @@ export default {
                         // Filter items within main section
                         if (mainSection.sectionMenu) {
                             for (let menuItem of mainSection.sectionMenu) {
-                                if (this.itemMatchesSearch(menuItem)) {
+                                // Check search match
+                                let matchesSearch = !this.searchMenuTerm || this.itemMatchesSearch(menuItem);
+                                // Check tasting filter
+                                let matchesTasting = !this.showOnlyTastedItems || this.isTasted(menuItem);
+                                
+                                // Include item only if it passes both filters
+                                if (matchesSearch && matchesTasting) {
                                     filteredMainSection.sectionMenu.push(menuItem);
                                 }
                             }
@@ -4772,20 +4831,27 @@ export default {
                                     sectionOrder: subsection.sectionOrder,
                                     parentSectionId: subsection.parentSectionId,
                                     isSubSection: subsection.isSubSection,
+                                    isVisible: subsection.isVisible,
                                     sectionMenu: []
                                 };
 
                             // Check if subsection name matches (using fuzzy matching)
-                            let subsectionMatches = this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName);
+                            let subsectionMatches = this.searchMenuTerm ? this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName) : true;
                             
-                            if (subsectionMatches) {
-                                // If subsection matches, include all its items
+                            if (subsectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems) {
+                                // If subsection matches and no tasting filter, include all its items
                                 filteredSubsection.sectionMenu = [...subsection.sectionMenu];
                                 filteredMainSection.subsections.push(filteredSubsection);
                             } else {
                                 // Filter items within subsection
                                 for (let menuItem of subsection.sectionMenu) {
-                                    if (this.itemMatchesSearch(menuItem)) {
+                                    // Check search match
+                                    let matchesSearch = !this.searchMenuTerm || this.itemMatchesSearch(menuItem);
+                                    // Check tasting filter
+                                    let matchesTasting = !this.showOnlyTastedItems || this.isTasted(menuItem);
+                                    
+                                    // Include item only if it passes both filters
+                                    if (matchesSearch && matchesTasting) {
                                         filteredSubsection.sectionMenu.push(menuItem);
                                     }
                                 }
@@ -4802,7 +4868,7 @@ export default {
                     // Add main section to results if it has items, subsections, or matches the search
                     if (filteredMainSection.sectionMenu.length > 0 || 
                         filteredMainSection.subsections.length > 0 || 
-                        mainSectionMatches) {
+                        (mainSectionMatches && this.searchMenuTerm)) {
                         this.searchMenuResults.push(filteredMainSection);
                     }
                 }
@@ -4829,6 +4895,28 @@ export default {
             }
             
             return false;
+        },
+
+        // Toggle Tasting Filter
+        toggleTastedFilter() {
+            console.log("Toggling tasted filter from:", this.showOnlyTastedItems);
+            this.showOnlyTastedItems = !this.showOnlyTastedItems;
+            console.log("Tasted filter now:", this.showOnlyTastedItems);
+            
+            // Re-run search to apply/remove filter
+            this.searchMenu();
+            
+            // Show toast notification
+            const toast = useToast();
+            if (this.showOnlyTastedItems) {
+                toast.info(`Showing ${this.tastedItemsCount} tasted items`, {
+                    timeout: 2000
+                });
+            } else {
+                toast.info('Showing all items', {
+                    timeout: 2000
+                });
+            }
         },
 
         // Sort Menu - Enhanced for hierarchical structure
