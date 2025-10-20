@@ -1,6 +1,6 @@
 ########################################################################################
 # Stage 1: Install dependencies
-FROM public.ecr.aws/docker/library/python:3.11-slim AS builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 ########################################################################################
 # Stage 2: Set up the actual application
-FROM public.ecr.aws/docker/library/python:3.11-slim AS runner
+FROM python:3.11-slim AS runner
 
 WORKDIR /app
 
