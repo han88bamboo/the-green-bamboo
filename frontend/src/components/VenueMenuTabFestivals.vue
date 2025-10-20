@@ -3867,6 +3867,22 @@ export default {
                 console.log('🔵 Jump to Sheet: Section element found:', !!sectionElement);
                 
                 if (sectionElement) {
+                    // Check if section is collapsed and expand it if needed
+                    const collapseElement = sectionElement.querySelector(`#collapseMenuSection${sectionIndex}`);
+                    if (collapseElement && !collapseElement.classList.contains('show')) {
+                        console.log('🔵 Jump to Sheet: Section is collapsed, expanding it...');
+                        // Directly add the 'show' class to expand the section
+                        collapseElement.classList.add('show');
+                        
+                        // Also update the button aria-expanded attribute
+                        const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                        if (toggleButton) {
+                            toggleButton.setAttribute('aria-expanded', 'true');
+                        }
+                    } else {
+                        console.log('🔵 Jump to Sheet: Section is already expanded');
+                    }
+                    
                     // Get the position of the section
                     const rect = sectionElement.getBoundingClientRect();
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
