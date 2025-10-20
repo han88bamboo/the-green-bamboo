@@ -89,7 +89,7 @@
                                         </div>
                                     </div>
                                     <div class="chart-container flex-grow-1">
-                                        <Bar :data="monthlyRatingCount" :options="chartOptions" />
+                                        <Bar :data="monthlyRatingCount" :options="monthlyChartOptions" />
                                     </div>
                                 </div>
                             </div>
@@ -97,7 +97,7 @@
                                 <div class="card p-3 h-100">
                                     <h6 class="fw-bold">Spread of Ratings</h6>
                                     <div class="chart-container">
-                                        <Bar :data="ratingsData" :options="chartOptions" />
+                                        <Bar :data="ratingsData" :options="ratingsChartOptions" />
                                     </div>
                                 </div>
                             </div>
@@ -303,8 +303,8 @@ export default {
                 rating_distribution: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             },
 
-            // chart option setup
-            chartOptions: {
+            // Base chart options - common settings
+            baseChartOptions: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
@@ -324,7 +324,7 @@ export default {
                     y: {
                         beginAtZero: true,
                         display: false, // Hide Y-axis
-                        max: 12 // Set a reasonable max for better visual proportion
+                        // Removed fixed max - let it scale dynamically
                     },
                     x: {
                         grid: {
@@ -426,6 +426,38 @@ export default {
                     borderRadius: 4,
                     barThickness: 20
                 }]
+            }
+        },
+        monthlyChartOptions() {
+            const maxMonthlyValue = Math.max(...this.reviews.monthly_distribution);
+            // Add some padding to the top (10% more than max value)
+            const dynamicMax = maxMonthlyValue > 0 ? Math.ceil(maxMonthlyValue * 1.1) : 12;
+            
+            return {
+                ...this.baseChartOptions,
+                scales: {
+                    ...this.baseChartOptions.scales,
+                    y: {
+                        ...this.baseChartOptions.scales.y,
+                        max: dynamicMax
+                    }
+                }
+            }
+        },
+        ratingsChartOptions() {
+            const maxRatingValue = Math.max(...this.reviews.rating_distribution);
+            // Add some padding to the top (10% more than max value)
+            const dynamicMax = maxRatingValue > 0 ? Math.ceil(maxRatingValue * 1.1) : 10;
+            
+            return {
+                ...this.baseChartOptions,
+                scales: {
+                    ...this.baseChartOptions.scales,
+                    y: {
+                        ...this.baseChartOptions.scales.y,
+                        max: dynamicMax
+                    }
+                }
             }
         }
 
