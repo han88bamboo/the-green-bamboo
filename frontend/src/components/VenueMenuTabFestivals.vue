@@ -373,7 +373,7 @@
                     <button type="button" 
                         class="btn secondary-btn-not-rounded fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
-                        aria-expanded="true" :aria-controls="'collapseMenuSection' + index"
+                        aria-expanded="false" :aria-controls="'collapseMenuSection' + index"
                         style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ menuSection.sectionName }}</span>
                         <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
@@ -381,7 +381,7 @@
                 </div>
 
                 <!-- Main Section Content (Collapsible) -->
-                <div class="collapse show" :id="'collapseMenuSection' + index">
+                <div class="collapse" :id="'collapseMenuSection' + index">
                     
                     <!-- Main Section Direct Items (MOBILE VIEW) -->
                     <div class="mobile-view-show">
@@ -707,7 +707,7 @@
                             <div class="col-12 d-grid mobile-px-0 mt-3">
                                 <button type="button" class="btn btn-outline-secondary fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                                     data-bs-toggle="collapse" :data-bs-target="'#collapseSubSection' + index + '_' + subIndex"
-                                    aria-expanded="true" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
+                                    aria-expanded="false" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; margin-left: 20px;">
                                     <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ subsection.sectionName }}</span>
                                     <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
@@ -715,7 +715,7 @@
                             </div>
 
                             <!-- Subsection Content (Collapsible) -->
-                            <div class="collapse show" :id="'collapseSubSection' + index + '_' + subIndex">
+                            <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
                                 
                                 <!-- No Subsection Contents to Show -->
                                 <div v-if="!subsection.sectionMenu || subsection.sectionMenu.length == 0" class="col-12 my-3 ms-4">
