@@ -1947,6 +1947,81 @@ def uploadPDFMenu():
             "message": "An error occurred while converting PDF to images and uploading menu"
         }), 500
 
+
+# -----------------------------------------------------------------------------------------
+# [DELETE] Delete PDF menu for venue
+@blueprint.route('/deletePDFMenu', methods=['DELETE'])
+def deletePDFMenu():
+    """Delete PDF menu for venue."""
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get request data
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    "code": 400,
+                    "message": "No data provided"
+                }), 400
+            
+            venue_id = data.get('venueID')
+            
+            # Validate required fields
+            if not venue_id:
+                return jsonify({
+                    "code": 400,
+                    "message": "Venue ID is required"
+                }), 400
+            
+            # Check if venue exists and get current menu URLs
+            cursor.execute('SELECT id, "pdfMenuUrl" FROM venues WHERE id = %s', (venue_id,))
+            venue = cursor.fetchone()
+            
+            if not venue:
+                return jsonify({
+                    "code": 404,
+                    "message": "Venue not found"
+                }), 404
+            
+            # Get current menu URLs for cleanup
+            current_menu_urls = venue.get('pdfMenuUrl') if isinstance(venue, dict) else venue[1]
+            
+            if not current_menu_urls:
+                return jsonify({
+                    "code": 404,
+                    "message": "No PDF menu found for this venue"
+                }), 404
+            
+            # Delete menu images from S3
+            try:
+                s3pdfMenu.deleteMenuImagesFromS3(current_menu_urls)
+                print(f"Successfully deleted menu images from S3 for venue {venue_id}")
+            except Exception as e:
+                print(f"Error deleting menu images from S3: {e}")
+                # Continue with database update even if S3 deletion fails
+            
+            # Clear the pdfMenuUrl field in the database
+            cursor.execute(
+                'UPDATE venues SET "pdfMenuUrl" = NULL WHERE id = %s',
+                (venue_id,)
+            )
+            
+            return jsonify({
+                "code": 200,
+                "success": True,
+                "message": "PDF menu deleted successfully!"
+            }), 200
+        
+    except Exception as e:
+        print(f"Error deleting PDF menu: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while deleting PDF menu"
+        }), 500
+
 # -----------------------------------------------------------------------------------------
 # [POST] Add new festival tasting
 @blueprint.route("/addFestivalTasting", methods=['POST'])

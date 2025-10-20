@@ -805,12 +805,18 @@
                             <!-- Current PDF Menu -->
                             <div v-if="hasPdfMenu" class="mb-3">
                                 <button 
-                                    class="btn btn-outline-primary btn-sm ms-2"
+                                    class="btn btn-outline-primary btn-sm"
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
                                 >
                                     {{ viewExistingMenuText }}
+                                </button>
+                                <button 
+                                    class="btn btn-danger btn-sm ms-2"
+                                    @click="confirmDeletePDFMenu"
+                                >
+                                    Delete existing {{ targetVenue?.specialStatus === 'EVENT_FESTIVAL' ? 'Event Map' : 'Dining Menu' }}
                                 </button>
                             </div>
                             
@@ -7957,6 +7963,50 @@ Thank you!`
             } catch (error) {
                 console.error('Error uploading PDF menu:', error);
                 alert('An error occurred while uploading the PDF menu.');
+            }
+        },
+
+        // Confirm delete PDF menu
+        confirmDeletePDFMenu() {
+            const menuType = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' ? 'Event Map' : 'Dining Menu';
+            const confirmMessage = `Are you sure you want to delete the existing ${menuType}? This action cannot be undone.`;
+            
+            if (confirm(confirmMessage)) {
+                this.deletePDFMenu();
+            }
+        },
+
+        // Delete PDF menu
+        async deletePDFMenu() {
+            try {
+                const response = await this.$axios.delete(
+                    `${process.env.VUE_APP_API_URL}/editVenueProfile/deletePDFMenu`,
+                    {
+                        data: {
+                            venueID: this.targetVenueID
+                        }
+                    }
+                );
+                
+                if (response.data.success) {
+                    const successMessage = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                        ? 'Event map deleted successfully!' 
+                        : 'Dining menu deleted successfully!';
+                    alert(successMessage);
+                    // Refresh the page to reflect the deletion
+                    this.$router.go(0);
+                } else {
+                    const errorMessage = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                        ? 'Failed to delete event map.' 
+                        : 'Failed to delete dining menu.';
+                    alert(errorMessage);
+                }
+            } catch (error) {
+                console.error('Error deleting PDF menu:', error);
+                const errorMessage = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL' 
+                    ? 'An error occurred while deleting the event map.' 
+                    : 'An error occurred while deleting the dining menu.';
+                alert(errorMessage);
             }
         },
 
