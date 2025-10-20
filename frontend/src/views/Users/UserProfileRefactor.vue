@@ -50,7 +50,7 @@
                 <h3 class="mb-0">{{ displayUser.displayName }}</h3>
                 <b>@{{ displayUser.username }}</b>
                 <br />
-                {{ drinkCount }} Drinks Tasted
+                {{ totalReviewsCount }} Drinks Tasted
                 <br />
                 <button
                   v-if="
@@ -1425,8 +1425,8 @@
             <!-- Drink I've Reviewed -->
             <div class="mt-4 mobile-view-hide">
               
-             <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviews }} Drinks Reviewed</h5>
-              <p class="mobile-view-show"><strong>{{ totalReviews }} Drinks Reviewed</strong></p>
+             <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviewsCount }} Drinks Reviewed</h5>
+              <p class="mobile-view-show"><strong>{{ totalReviewsCount }} Drinks Reviewed</strong></p>
               <hr />
               <div v-if="!recentReviews || recentReviews.length === 0">
                 {{ ownProfile ? 'You have no drink reviews added yet. Get started by searching for a drink and adding your review!' : 'No drink reviews logged yet.' }}
@@ -4164,7 +4164,6 @@ export default {
       joinDate: null,
       listingIDs: [],
       listings: null,
-      drinkCount: null,
       drinkType: [],
       drinkTypes: [],
       bookedMarkedListings: {},
@@ -4198,6 +4197,7 @@ export default {
 
       // Following/Followers count information
       followersCount: 0,
+      followingCount: 0,
 
       // Add or remove moderator variables
       successRemoveMod: false,
@@ -4235,6 +4235,9 @@ export default {
       isButtonDisabled: false,
       verifyErrorMessage: "",
       resettingPassword: false,
+
+      // Reviews count
+      totalReviewsCount: 0,
 
       // Badges
       reviewsSummary: {},
@@ -4336,10 +4339,8 @@ export default {
     };
   },
   computed: {
-    // Get the count of users this person is following
-    followingCount() {
-      return this.displayUser?.followLists?.users?.length || 0;
-    },
+    // NOTE: This computed property is kept as a fallback but no longer used in template
+    // Template now uses totalReviewsCount (data property) which comes from /getReviews endpoint
     totalReviews() {
     // If the summary already returns a total, prefer it.
     if (this.reviewsSummary && typeof this.reviewsSummary.totalReviews === 'number') {
@@ -4546,7 +4547,9 @@ export default {
           this.getFollowingUsers(),
           this.getFollowersUsers(),
           this.getFollowersCount(),
+          this.getFollowingCount(),
           this.getCellarData(), // Add cellar data loading
+          this.getTotalReviewsCount(), // Get total reviews count
         ]);
 
         await this.getReviewsSummary();
@@ -4664,9 +4667,6 @@ export default {
         this.recentReviews = response.data.recentReview;
         this.topRatedReviews = response.data.topRatedReviews || [];
 
-        // get number of unique listings reviewed by user
-        this.drinkCount = response.data.drinkCount;
-
         this.reviewsDataLoaded = true;
 
         // get listing IDs from all the recent reviews that is not currently in the listingIDs array
@@ -4717,6 +4717,21 @@ export default {
         this.calculateTotalBadges();
       } catch (error) {
         console.error(error);
+      }
+    },
+
+    // Get total reviews count from simpler endpoint
+    async getTotalReviewsCount() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getReviews/${this.displayUserID}`
+        );
+        // Extract just the total_reviews count from the response
+        this.totalReviewsCount = response.data.total_reviews || 0;
+      } catch (error) {
+        console.error('Error fetching total reviews count:', error);
+        // Fall back to 0 on error
+        this.totalReviewsCount = 0;
       }
     },
 
@@ -4862,6 +4877,19 @@ export default {
       } catch (error) {
         console.error("Error fetching followers count:", error);
         this.followersCount = 0;
+      }
+    },
+
+    // Get the count of users this person is following
+    async getFollowingCount() {
+      try {
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getUserDashBoardData/${this.displayUserID}`
+        );
+        this.followingCount = response.data?.data?.totalFollowing || 0;
+      } catch (error) {
+        console.error("Error fetching following count:", error);
+        this.followingCount = 0;
       }
     },
 

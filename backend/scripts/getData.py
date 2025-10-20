@@ -7868,6 +7868,11 @@ def getUserDashBoardData(id):
                     SELECT COUNT(*) as "totalFollowers"
                     FROM "usersFollowLists"
                     WHERE "users" @> ARRAY[%s]::TEXT[]
+                ),
+                total_following AS (
+                    SELECT COALESCE(array_length("users", 1), 0) as "totalFollowing"
+                    FROM "usersFollowLists"
+                    WHERE "userId" = %s
                 )
                 SELECT 
                     (SELECT array_to_json(array_agg(row_to_json(t))) FROM (
@@ -7880,8 +7885,9 @@ def getUserDashBoardData(id):
                     (SELECT array_to_json(array_agg(row_to_json(t))) FROM top_drink_styles t) as top_drink_styles,
                     (SELECT "totalReviews" FROM total_reviews) as total_reviews,
                     (SELECT "totalFollowers" FROM total_followers) as total_followers,
+                    (SELECT "totalFollowing" FROM total_following) as total_following,
                     (SELECT exists FROM user_check) as user_exists
-            """, (id, id, id, id))
+            """, (id, id, id, id, id))
 
             result = cursor.fetchone()
             
@@ -7897,7 +7903,8 @@ def getUserDashBoardData(id):
                     "top5Producers": result['top_producers'] or [],
                     "top5DrinkStyles": result['top_drink_styles'] or [],
                     "totalReviews": result['total_reviews'] or 0,
-                    "totalFollowers": result['total_followers'] or 0
+                    "totalFollowers": result['total_followers'] or 0,
+                    "totalFollowing": result['total_following'] or 0
                 }
             }), 200
 
