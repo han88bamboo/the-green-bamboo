@@ -525,6 +525,7 @@ export default {
             const responseData = response.data.data;
             this.followerCount = responseData.totalFollowers;
             this.drinkCount = responseData.totalReviews;
+            this.totalBadges = responseData.totalBadges;
             this.top5BestReviewedListings = responseData.top5BestReviewedListings;
             this.top5MostReviewedCategories = responseData.top5MostReviewedCategories;
             this.top5Venues = responseData.top5Venues;

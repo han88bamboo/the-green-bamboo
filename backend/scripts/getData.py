@@ -7453,6 +7453,39 @@ def getUserBadges(user_id):
     return jsonify(user_badges)
 
 # -----------------------------------------------------------------------------------------
+# [GET] User Badges Count
+@blueprint.route("/getUserBadgesCount/<int:user_id>")
+def getUserBadgesCount(user_id):
+    """
+    Get the total count of badges earned by a specific user.
+    Returns a simple count for efficient frontend display.
+    """
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Count total badges for the user
+            cursor.execute('''
+                SELECT COUNT(*) as "totalBadges"
+                FROM "userBadges"
+                WHERE "userId" = %s
+            ''', (user_id,))
+            
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({"code": 404, "message": "User not found."}), 404
+            
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "totalBadges": result['totalBadges'] or 0
+                }
+            }), 200
+            
+    except Exception as e:
+        print(f"Error in getUserBadgesCount: {str(e)}")
+        return jsonify({"code": 500, "message": "An error occurred retrieving the badge count."}), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Specific Token
 @blueprint.route("/getToken/<token>")
 def getToken(token):
@@ -7873,6 +7906,11 @@ def getUserDashBoardData(id):
                     SELECT COALESCE(array_length("users", 1), 0) as "totalFollowing"
                     FROM "usersFollowLists"
                     WHERE "userId" = %s
+                ),
+                total_badges AS (
+                    SELECT COUNT(*) as "totalBadges"
+                    FROM "userBadges"
+                    WHERE "userId" = %s
                 )
                 SELECT 
                     (SELECT array_to_json(array_agg(row_to_json(t))) FROM (
@@ -7886,8 +7924,9 @@ def getUserDashBoardData(id):
                     (SELECT "totalReviews" FROM total_reviews) as total_reviews,
                     (SELECT "totalFollowers" FROM total_followers) as total_followers,
                     (SELECT "totalFollowing" FROM total_following) as total_following,
+                    (SELECT "totalBadges" FROM total_badges) as total_badges,
                     (SELECT exists FROM user_check) as user_exists
-            """, (id, id, id, id, id))
+            """, (id, id, id, id, id, id))
 
             result = cursor.fetchone()
             
@@ -7904,7 +7943,8 @@ def getUserDashBoardData(id):
                     "top5DrinkStyles": result['top_drink_styles'] or [],
                     "totalReviews": result['total_reviews'] or 0,
                     "totalFollowers": result['total_followers'] or 0,
-                    "totalFollowing": result['total_following'] or 0
+                    "totalFollowing": result['total_following'] or 0,
+                    "totalBadges": result['total_badges'] or 0
                 }
             }), 200
 
