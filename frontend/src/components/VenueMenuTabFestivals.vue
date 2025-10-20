@@ -3158,7 +3158,13 @@ export default {
             // Return a clean, shareable URL for this venue
             const baseUrl = window.location.origin;
             const venueId = this.targetVenue?.id || this.$route.params?.venueID;
-            return venueId ? `${baseUrl}/venue/${venueId}` : window.location.href;
+            const venueName = this.targetVenue?.venueName;
+            
+            if (!venueId) return window.location.href;
+            
+            // Use slugify to create SEO-friendly URL
+            const slug = venueName ? '/' + this.slugify(venueName) : '';
+            return `${baseUrl}/profile/venue/${venueId}${slug}`;
         },
         
         // Get all main sections (sections without parent)
