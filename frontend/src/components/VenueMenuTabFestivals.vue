@@ -177,12 +177,23 @@
 
         <!-- Search + Edit Menu Options + Sort -->
         <div class="container" v-if="targetVenue['claimStatus']">
-            <div class="row align-items-center mobile-view-show">
+            <div class="row align-items-stretch mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" class="col-12 p-0">
+                <div v-if="!editMenuMode" class="col-9 p-0">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
+                </div>
+                
+                <!-- Sort Button (Non-functional placeholder) -->
+                <div v-if="!editMenuMode" class="col-3 pe-0">
+                    <div class="d-grid gap-2 h-100">
+                        <button class="btn primary-light-dropdown-homepage h-100" 
+                            type="button"
+                            style="white-space: nowrap; overflow:hidden; text-overflow: ellipsis; background-color: #14785a; border-color: #14785a; color: white;">
+                            Sort By...
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
