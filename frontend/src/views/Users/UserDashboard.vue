@@ -686,6 +686,7 @@ export default {
                 id: drink.id,
                 name: drink.listingName || drink.name, // Handle both new and existing items
                 bottler: drink.bottler,
+                producerName: drink.producerName,
                 image: drink.image || drink.photo,  // Handle both image and photo properties
                 originCountry: drink.originCountry
             }));
@@ -762,6 +763,7 @@ export default {
                     name: d.listingName,
                     drinkType: d.drinkType,
                     bottler: d.bottler,
+                    producerName: d.producerName,
                     originCountry: d.originCountry,
                     image: d.photo
                 }));

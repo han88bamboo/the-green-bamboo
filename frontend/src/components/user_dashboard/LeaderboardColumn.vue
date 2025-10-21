@@ -24,8 +24,16 @@
                                 <!-- Name on top -->
                                 <div class="fw-bold text-decoration-underline">{{ item.name }}</div>
                                 
-                                <!-- Bottler at the bottom -->
-                                <small class="d-block mobile-rating-smaller-text-2">{{ item.bottler }}</small>
+                                <!-- Producer/Bottler and Country -->
+                                <small class="d-block mobile-rating-smaller-text-2">
+                                    {{ item.producerName || item.bottler || "Unknown Producer" }}
+                                    {{ item.originCountry ? "• " + item.originCountry : "" }}
+                                </small>
+                                
+                                <!-- Drink Type Badge -->
+                                <div class="mt-1">
+                                    <span class="badge bg-secondary drink-type-badge">{{ item.drinkType }}</span>
+                                </div>
                             </div>
                         </router-link>
                     </div>
@@ -97,6 +105,11 @@ export default {
     object-fit: cover; /* Ensures the image covers the area without distortion */
     border-radius: 4px; /* Optional: adds rounded corners */
 }
+.drink-type-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+}
+
 .add-btn {
     width: 36px;
     height: 36px;

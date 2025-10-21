@@ -38,7 +38,12 @@
                                 :class="{ 'highlighted': index === highlightedIndex }"
                                 @click="selectSuggestion(suggestion)"
                                 @mouseenter="highlightedIndex = index">
-                                {{ suggestion.listingName }}
+                                <div class="suggestion-main-text">{{ suggestion.listingName }}</div>
+                                <small class="text-muted suggestion-sub-text">
+                                    {{ suggestion.producerName || suggestion.bottler || "Unknown Producer" }}
+                                    {{ suggestion.originCountry ? "• " + suggestion.originCountry : "" }}
+                                    <span class="badge bg-light text-dark ms-2">{{ suggestion.drinkType }}</span>
+                                </small>
                             </li>
                         </ul>
                     </div>
@@ -63,11 +68,14 @@
                                 <img :src="drink.image || drink.photo || defaultDrinkImage" alt="Drink bottle"
                                     style="height: 60px; width: 40px; object-fit: contain;" />
                             </div>
-                            <div class="wine-details text-start">
+                            <div class="wine-details text-start flex-grow-1">
                                 <div class="wine-name">{{ drink.listingName || drink.name }}</div>
                                 <div class="wine-producer text-muted">
-                                    {{ drink.bottler || "Unknown Producer" }}
+                                    {{ drink.producerName || drink.bottler || "Unknown Producer" }}
                                     {{ drink.originCountry ? "• " + drink.originCountry : "" }}
+                                </div>
+                                <div class="drink-type-badge">
+                                    <span class="badge bg-secondary mt-1">{{ drink.drinkType }}</span>
                                 </div>
                             </div>
                         </div>
@@ -82,6 +90,42 @@
                                         d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                                 </svg>
                             </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Vintage Year Input (only for Wine/Sake) -->
+                    <div v-if="supportsVintage(drink)" class="vintage-input-section mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="flex-grow-1">
+                                <label class="form-label text-start mb-1 fw-bold">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    Vintage Year (Optional)
+                                </label>
+                                <input 
+                                    v-model.number="drink.vintage"
+                                    type="number" 
+                                    class="form-control vintage-input"
+                                    :class="{ 'is-invalid': drink.vintage && !isValidVintage(drink.vintage) }"
+                                    placeholder="e.g., 2018"
+                                    min="1800"
+                                    :max="currentYear"
+                                    autocomplete="off"
+                                />
+                                <div v-if="drink.vintage && !isValidVintage(drink.vintage)" class="invalid-feedback">
+                                    Please enter a valid year (1800-{{ currentYear }})
+                                </div>
+                                <div class="form-text text-muted">
+                                    Leave blank if vintage is not specified or unknown
+                                </div>
+                            </div>
+                            
+                            <!-- Vintage Display Preview -->
+                            <div v-if="drink.vintage && isValidVintage(drink.vintage)" class="vintage-preview">
+                                <div class="text-center">
+                                    <div class="vintage-year-display">{{ drink.vintage }}</div>
+                                    <small class="text-muted">Vintage</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -125,6 +169,7 @@ export default {
             defaultDrinkImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739',
             debounceTimer: null,
             highlightedIndex: -1, // Track which suggestion is highlighted
+            currentYear: new Date().getFullYear(), // For vintage validation
         };
     },
     computed: {
@@ -250,7 +295,12 @@ export default {
             // alert(limit);
             // Avoid adding duplicates
             if (!this.selectedDrinks.some(d => d.id === suggestion.id)) {
-                this.selectedDrinks.push(suggestion);
+                // Add vintage field for Wine/Sake, undefined for others
+                const drinkWithVintage = {
+                    ...suggestion,
+                    vintage: this.supportsVintage(suggestion) ? null : undefined
+                };
+                this.selectedDrinks.push(drinkWithVintage);
             }
             this.searchInput = '';
             this.suggestions = [];
@@ -265,9 +315,37 @@ export default {
         removeDrink(index) {
             this.selectedDrinks.splice(index, 1);
         },
+        supportsVintage(drink) {
+            // Only Wine and Sake support vintage years
+            return drink.drinkType === 'Wine' || drink.drinkType === 'Sake';
+        },
+        isValidVintage(year) {
+            // Validate vintage year range
+            if (!year) return true; // Allow empty vintage
+            return year > 0 && year >= 1800 && year <= this.currentYear;
+        },
+        validateAllVintages() {
+            // Check if all vintage inputs are valid
+            return this.selectedDrinks.every(drink => {
+                if (this.supportsVintage(drink) && drink.vintage) {
+                    return this.isValidVintage(drink.vintage);
+                }
+                return true;
+            });
+        },
         handleConfirm() {
-            // Emit the selected drink IDs or full objects to the parent
-            this.$emit('confirm', { category: this.category, drinks: this.selectedDrinks });
+            // Validate all vintage inputs before confirming
+            if (!this.validateAllVintages()) {
+                const toast = useToast();
+                toast.error("Please fix invalid vintage years before confirming your selection.");
+                return;
+            }
+
+            // Emit the selected drink objects with vintage data
+            this.$emit('confirm', { 
+                category: this.category, 
+                drinks: this.selectedDrinks 
+            });
         }
     },
     created() {
@@ -340,6 +418,43 @@ export default {
     margin-bottom: 1rem;
 }
 
+/* Vintage Input Styling */
+.vintage-input-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #ffc107;
+}
+
+.vintage-input {
+    font-size: 1.1rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.vintage-input:focus {
+    border-color: #ffc107;
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.vintage-preview {
+    min-width: 80px;
+}
+
+.vintage-year-display {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ffc107;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background-color: #fff3cd;
+}
+
+.drink-type-badge .badge {
+    font-size: 0.75rem;
+}
+
 .confirm-btn {
     background-color: #F4B754;
     color: white;
@@ -358,5 +473,54 @@ export default {
 .confirm-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+/* Autocomplete suggestion styling */
+.suggestion-main-text {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.suggestion-sub-text {
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.suggestion-sub-text .badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+}
+
+.list-group-item {
+    padding: 10px 15px;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item.highlighted {
+    background-color: #f8f9fa;
+    border-color: #007bff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .popup-content {
+        max-width: 95%;
+        padding: 1.5rem;
+    }
+    
+    .vintage-input-section {
+        padding: 10px;
+    }
+    
+    .vintage-year-display {
+        font-size: 1.2rem;
+        padding: 6px 10px;
+    }
 }
 </style>

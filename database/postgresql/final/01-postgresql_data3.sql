@@ -653,6 +653,7 @@ CREATE TABLE "userLeaderboard" (
     "category" VARCHAR(20),  -- e.g. 'grails', 'upAndComing', 'goats'
     "sort_order" INTEGER,    -- whatever user listed will always be kept in order
     "added_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "vintage" SMALLINT DEFAULT NULL,
     PRIMARY KEY ("user_id", "listing_id", "category")
 );
 
@@ -1025,7 +1026,8 @@ CREATE TABLE "grails" (
     "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
     "drinkType" VARCHAR(255),
     "typeCategory" VARCHAR(255),
-    "counter" INTEGER
+    "counter" INTEGER,
+    "vintage" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 
 -- ========= "upAndComing" ==========
@@ -1035,7 +1037,8 @@ CREATE TABLE "upAndComing" (
     "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
     "drinkType" VARCHAR(255),
     "typeCategory" VARCHAR(255),
-    "counter" INTEGER
+    "counter" INTEGER,
+    "vintage" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 
 -- ========= "goats" ==========
@@ -1045,7 +1048,8 @@ CREATE TABLE "goats" (
     "listingID" INTEGER REFERENCES "listings"("id") ON DELETE SET NULL, -- [!] References listings FK
     "drinkType" VARCHAR(255),
     "typeCategory" VARCHAR(255),
-    "counter" INTEGER
+    "counter" INTEGER,
+    "vintage" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
 );
 
 -- ========= [NEW!] notifications =========
