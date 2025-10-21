@@ -189,7 +189,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
             # If only drink type is provided, filter by drink type
             if type_category == "Show All":
                 cursor.execute(f'''
-                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter", "vintage"
                     FROM "{table}"
                     WHERE "drinkType" IN %s
                     ORDER BY "counter" DESC
@@ -198,7 +198,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
             else:
                 # If a specific type category is provided, filter by both drink type and type category
                 cursor.execute(f'''
-                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                    SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter", "vintage"
                     FROM "{table}"
                     WHERE "drinkType" IN %s AND "typeCategory" = %s
                     ORDER BY "counter" DESC
@@ -207,7 +207,7 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
         else:
             # If drink type is Show All Types, fetch top 5 without filtering by drink type
             cursor.execute(f'''
-                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter"
+                SELECT "listingID", "listingName", "drinkType", "typeCategory", "counter", "vintage"
                 FROM "{table}"
                 ORDER BY "counter" DESC
                 LIMIT 5
@@ -526,9 +526,40 @@ def editTop3():
 def getTop5():
     drink_type = request.args.get('type')
     type_category = request.args.get('typeCat')
+    category = request.args.get('category')  # Optional parameter to filter by table
 
     try:
         with db_manager.get_cursor() as cursor:
+            # If category is specified, only fetch that category
+            if category:
+                if category == 'grails':
+                    data = fetch_top_5(cursor, "grails", drink_type, type_category)
+                    return jsonify({
+                        "code": 200,
+                        "data": {"grails": data},
+                        "message": "Grails data retrieved successfully."
+                    }), 200
+                elif category == 'upAndComing':
+                    data = fetch_top_5(cursor, "upAndComing", drink_type, type_category)
+                    return jsonify({
+                        "code": 200,
+                        "data": {"upAndComing": data},
+                        "message": "Up and Coming data retrieved successfully."
+                    }), 200
+                elif category == 'goats':
+                    data = fetch_top_5(cursor, "goats", drink_type, type_category)
+                    return jsonify({
+                        "code": 200,
+                        "data": {"goats": data},
+                        "message": "Goats data retrieved successfully."
+                    }), 200
+                else:
+                    return jsonify({
+                        "code": 400,
+                        "message": "Invalid category. Use 'grails', 'upAndComing', or 'goats'."
+                    }), 400
+            
+            # Default behavior: fetch all three
             grails_data = fetch_top_5(cursor, "grails", drink_type, type_category)
             up_and_coming_data = fetch_top_5(cursor, "upAndComing", drink_type, type_category)
             goats_data = fetch_top_5(cursor, "goats", drink_type, type_category)
