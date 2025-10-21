@@ -14,6 +14,45 @@ blueprint = Blueprint(file_name[:-3], __name__)
 
 # -----------------------------------------------------------------------------------------
 
+# Helper function to validate vintage selections
+def validate_vintage_selections(grails, up_and_coming, goats):
+    """
+    Validates vintage data for leaderboard selections.
+    Ensures each item has an 'id' field and optional 'vintage' field.
+    
+    Args:
+        grails: List of items for grails category
+        up_and_coming: List of items for up and coming category  
+        goats: List of items for goats category
+        
+    Returns:
+        dict: {'valid': bool, 'error': str} - validation result
+    """
+    categories = {
+        'grails': grails,
+        'upAndComing': up_and_coming, 
+        'goats': goats
+    }
+    
+    for category_name, items in categories.items():
+        if not isinstance(items, list):
+            return {'valid': False, 'error': f'{category_name} must be a list'}
+            
+        for i, item in enumerate(items):
+            if not isinstance(item, dict):
+                return {'valid': False, 'error': f'{category_name}[{i}] must be an object with id and optional vintage'}
+                
+            if 'id' not in item:
+                return {'valid': False, 'error': f'{category_name}[{i}] missing required id field'}
+                
+            # Validate vintage if present
+            vintage = item.get('vintage')
+            if vintage is not None:
+                if not isinstance(vintage, int) or vintage < 1800 or vintage > 2050:
+                    return {'valid': False, 'error': f'{category_name}[{i}] vintage must be between 1800-2050'}
+    
+    return {'valid': True, 'error': None}
+
 # Helper function to update database 
 def update_user_listings(cursor, user_id, category_name, selected_listings, selected_drink_ids):
     # Step 1: Get current values
@@ -53,29 +92,41 @@ def update_user_listings(cursor, user_id, category_name, selected_listings, sele
 
 
 # Helper function to check if listing exists in the specified table
-# if listing exists, add 1 to the counter 
+# if listing exists with same vintage, add 1 to the counter 
 # else, add the listing to the table with a counter of 1
-def add_listing_to_table(cursor, table_name, listing_id, listing_name, drink_type, type_category):
+def add_listing_to_table(cursor, table_name, listing_id, listing_name, drink_type, type_category, vintage=None):
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Check if the listing already exists in the table
-            cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingID" = %s', (listing_id,))
+            # Check if the listing already exists in the table with same vintage
+            if vintage is not None:
+                cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingID" = %s AND "vintage" = %s', 
+                              (listing_id, vintage))
+            else:
+                cursor.execute(f'SELECT * FROM "{table_name}" WHERE "listingID" = %s AND "vintage" IS NULL', 
+                              (listing_id,))
             existing_listing = cursor.fetchone()
 
             if existing_listing:
-                # If it exists, increment the counter
-                cursor.execute(f'''
-                    UPDATE "{table_name}" 
-                    SET "counter" = "counter" + 1 
-                    WHERE "listingID" = %s
-                ''', (listing_id,))
+                # If it exists with same vintage, increment the counter
+                if vintage is not None:
+                    cursor.execute(f'''
+                        UPDATE "{table_name}" 
+                        SET "counter" = "counter" + 1 
+                        WHERE "listingID" = %s AND "vintage" = %s
+                    ''', (listing_id, vintage))
+                else:
+                    cursor.execute(f'''
+                        UPDATE "{table_name}" 
+                        SET "counter" = "counter" + 1 
+                        WHERE "listingID" = %s AND "vintage" IS NULL
+                    ''', (listing_id,))
             else:
                 # If it doesn't exist, insert a new record with a counter of 1
                 cursor.execute(f'''
-                    INSERT INTO "{table_name}" ("listingID", "listingName", "drinkType", "typeCategory", "counter") 
-                    VALUES (%s, %s, %s, %s, 1)
-                ''', (listing_id, listing_name, drink_type, type_category))
+                    INSERT INTO "{table_name}" ("listingID", "listingName", "drinkType", "typeCategory", "counter", "vintage") 
+                    VALUES (%s, %s, %s, %s, 1, %s)
+                ''', (listing_id, listing_name, drink_type, type_category, vintage))
         
             # Connection manager automatically commits on success
             # Return True to indicate success
@@ -211,76 +262,40 @@ def fetch_top_5(cursor, table, drink_type=None, type_category=None):
 
 # ==========================================================================================
 # [POST] Update user's Grails, Up & Coming, and GOATs selections
-# helper function to dynamically generate SQL inserts
-def generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids):
-    """
-    Generate SQL INSERT statement and values for userLeaderboard table
-    
-    Args:
-        user_id: User ID
-        grails_ids: List of grails listing IDs
-        up_and_coming_ids: List of up and coming listing IDs
-        goats_ids: List of goats listing IDs
-    
-    Returns:
-        tuple: (sql_query, values_list)
-    """
-    values = []
-    
-    # Add grails entries
-    for i, listing_id in enumerate(grails_ids, 1):
-        values.append((user_id, listing_id, 'grails', i))
-    
-    # Add up and coming entries
-    for i, listing_id in enumerate(up_and_coming_ids, 1):
-        values.append((user_id, listing_id, 'upAndComing', i))
-    
-    # Add goats entries
-    for i, listing_id in enumerate(goats_ids, 1):
-        values.append((user_id, listing_id, 'goats', i))
-    
-    # Generate SQL with proper number of placeholders
-    if not values:
-        return None, []
-    
-    # Create placeholder string for each row: (%s, %s, %s, %s)
-    placeholders = ', '.join(['(%s, %s, %s, %s)' for _ in range(len(values))])
-    
-    sql = f'''INSERT INTO "userLeaderboard" 
-                (user_id, listing_id, category, sort_order) VALUES {placeholders}'''
-    
-    # Flatten the values list for cursor.execute
-    flattened_values = [item for sublist in values for item in sublist]
-    
-    return sql, flattened_values
+
 
 @blueprint.route("/addLeaderBoard", methods=['POST'])
 def addLeaderBoard():
     """
-    Update a user's Grails, Up & Coming, and GOATs drink selections.
+    Update a user's Grails, Up & Coming, and GOATs drink selections with vintage support.
     
     Request body should include:
     - userID: User ID
-    - grails: Array of drink IDs for Grails section
-    - upAndComing: Array of drink IDs for Up & Coming section
-    - goats: Array of drink IDs for GOATs section
+    - grails: Array of objects [{id: int, vintage: int|null}, ...]
+    - upAndComing: Array of objects [{id: int, vintage: int|null}, ...]
+    - goats: Array of objects [{id: int, vintage: int|null}, ...]
     
     Returns:
     - 201: User's selections updated successfully
-    - 400: Missing user ID
+    - 400: Missing user ID or validation errors
     - 404: User not found
     - 500: Server error
     """
     try: 
         data = request.json
         user_id = data.get('userID')
-        grails_ids = data.get('grails', [])
-        up_and_coming_ids = data.get('upAndComing', [])
-        goats_ids = data.get('goats', [])
+        grails = data.get('grails', [])           # Now expects [{id, vintage}, ...]
+        up_and_coming = data.get('upAndComing', [])
+        goats = data.get('goats', [])
 
         # user missing
         if not user_id:
             return jsonify({"code": 400, "message": "User ID must be logged in."}), 400
+
+        # Validate vintage data for Wine/Sake listings
+        validation_result = validate_vintage_selections(grails, up_and_coming, goats)
+        if not validation_result['valid']:
+            return jsonify({"code": 400, "message": validation_result['error']}), 400
 
         with db_manager.get_cursor() as cursor:
             # Check if user exists
@@ -305,58 +320,108 @@ def addLeaderBoard():
             for drink_name in current_goats:
                 remove_listing_from_table(cursor, "goats", drink_name)
 
-            # Step 2: Add new entries to legacy tables
+            # Step 2: Add new entries to legacy tables with vintage support
             # Get listing details for new selections
-            all_new_ids = grails_ids + up_and_coming_ids + goats_ids
+            all_new_ids = [item['id'] for item in grails + up_and_coming + goats]
             if all_new_ids:
                 cursor.execute('''
                     SELECT "id", "listingName", "drinkType", "typeCategory"
                     FROM "listings"
                     WHERE "id" IN %s
-                ''', (tuple(all_new_ids),))
+                ''', (tuple(set(all_new_ids)),))  # Use set to remove duplicates
                 listing_details = {row['id']: row for row in cursor.fetchall()}
 
-                # Add grails to legacy table
-                for listing_id in grails_ids:
+                # Add grails to legacy table with vintage support
+                for item in grails:
+                    listing_id = item['id']
+                    vintage = item.get('vintage')
                     if listing_id in listing_details:
                         drink = listing_details[listing_id]
                         add_listing_to_table(cursor, "grails", drink['id'], 
                                             drink['listingName'], drink['drinkType'], 
-                                            drink['typeCategory'])
+                                            drink['typeCategory'], vintage)
 
-                # Add up and coming to legacy table
-                for listing_id in up_and_coming_ids:
+                # Add up and coming to legacy table with vintage support
+                for item in up_and_coming:
+                    listing_id = item['id']
+                    vintage = item.get('vintage')
                     if listing_id in listing_details:
                         drink = listing_details[listing_id]
                         add_listing_to_table(cursor, "upAndComing", drink['id'], 
                                             drink['listingName'], drink['drinkType'], 
-                                            drink['typeCategory'])
+                                            drink['typeCategory'], vintage)
 
-                # Add goats to legacy table
-                for listing_id in goats_ids:
+                # Add goats to legacy table with vintage support
+                for item in goats:
+                    listing_id = item['id']
+                    vintage = item.get('vintage')
                     if listing_id in listing_details:
                         drink = listing_details[listing_id]
                         add_listing_to_table(cursor, "goats", drink['id'], 
                                             drink['listingName'], drink['drinkType'], 
-                                            drink['typeCategory'])
+                                            drink['typeCategory'], vintage)
 
-            # Step 3: Update userLeaderboard table
+            # Step 3: Update userLeaderboard table with vintage support
             # Clear existing entries for this user
             cursor.execute('DELETE FROM "userLeaderboard" WHERE user_id = %s', (user_id,))
             
-            # Generate and insert new leaderboard entries
-            sql, values = generate_leaderboard_insert(user_id, grails_ids, up_and_coming_ids, goats_ids)
-            if sql and values:
-                cursor.execute(sql, values)
-                rows_affected = cursor.rowcount
-            else:
-                rows_affected = 0
+            # Insert new leaderboard entries with vintage data
+            rows_affected = 0
+            for idx, item in enumerate(grails, 1):
+                cursor.execute('''
+                    INSERT INTO "userLeaderboard" 
+                    (user_id, listing_id, category, sort_order, vintage) 
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (user_id, item['id'], 'grails', idx, item.get('vintage')))
+                rows_affected += 1
+
+            for idx, item in enumerate(up_and_coming, 1):
+                cursor.execute('''
+                    INSERT INTO "userLeaderboard" 
+                    (user_id, listing_id, category, sort_order, vintage) 
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (user_id, item['id'], 'upAndComing', idx, item.get('vintage')))
+                rows_affected += 1
+
+            for idx, item in enumerate(goats, 1):
+                cursor.execute('''
+                    INSERT INTO "userLeaderboard" 
+                    (user_id, listing_id, category, sort_order, vintage) 
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (user_id, item['id'], 'goats', idx, item.get('vintage')))
+                rows_affected += 1
 
             # Step 4: Update user table with listing names (for backward compatibility)
-            # Convert IDs back to names for the users table
-            grails_names = [listing_details[lid]['listingName'] for lid in grails_ids if lid in listing_details]
-            up_and_coming_names = [listing_details[lid]['listingName'] for lid in up_and_coming_ids if lid in listing_details]
-            goats_names = [listing_details[lid]['listingName'] for lid in goats_ids if lid in listing_details]
+            # Convert to names with vintage info for the users table
+            grails_names = []
+            for item in grails:
+                listing_id = item['id']
+                vintage = item.get('vintage')
+                if listing_id in listing_details:
+                    name = listing_details[listing_id]['listingName']
+                    if vintage:
+                        name += f" ({vintage})"
+                    grails_names.append(name)
+
+            up_and_coming_names = []
+            for item in up_and_coming:
+                listing_id = item['id']
+                vintage = item.get('vintage')
+                if listing_id in listing_details:
+                    name = listing_details[listing_id]['listingName']
+                    if vintage:
+                        name += f" ({vintage})"
+                    up_and_coming_names.append(name)
+
+            goats_names = []
+            for item in goats:
+                listing_id = item['id']
+                vintage = item.get('vintage')
+                if listing_id in listing_details:
+                    name = listing_details[listing_id]['listingName']
+                    if vintage:
+                        name += f" ({vintage})"
+                    goats_names.append(name)
 
             cursor.execute('''
                 UPDATE "users" 

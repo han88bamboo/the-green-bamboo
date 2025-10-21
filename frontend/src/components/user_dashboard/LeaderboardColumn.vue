@@ -11,7 +11,7 @@
             </div>
             <div v-else class="d-flex flex-column flex-grow-1">
                 <div class="overflow-auto">
-                    <div v-for="item in items" :key="item.id" class="d-flex align-items-center mt-2">
+                    <div v-for="item in validItems" :key="item.id" class="d-flex align-items-center mt-2">
 
                         <router-link :to="listingUrl(item)" class="d-flex align-items-center default-clickable-text text-decoration-none mb-3">
                             <!-- Image on the left -->
@@ -22,7 +22,10 @@
                             <!-- Text content on the right -->
                             <div class="flex-grow-1 text-start">
                                 <!-- Name on top -->
-                                <div class="fw-bold text-decoration-underline">{{ item.name }}</div>
+                                <div class="fw-bold text-decoration-underline">
+                                    {{ item.name }}
+                                    <span v-if="item.vintage" class="text-muted fw-normal">({{ item.vintage }})</span>
+                                </div>
                                 
                                 <!-- Producer/Bottler and Country -->
                                 <small class="d-block mobile-rating-smaller-text-2">
@@ -64,6 +67,12 @@ export default {
     data() {
         return {
             defaultDrinkImage: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'
+        }
+    },
+    computed: {
+        validItems() {
+            // Filter out undefined items and items without valid id
+            return this.items.filter(item => item && item.id);
         }
     },
     methods: {

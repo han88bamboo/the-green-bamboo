@@ -517,27 +517,46 @@ export default {
                 throw new Error(`HTTP ${api_response.status}: ${api_response.statusText}`)
             }
             const data = await api_response.json();
-            const merged_listings = [...(data["grails"] || []), 
-                ...(data["upAndComing"] || []), 
-                ...(data["goats"] || [])];
+            
+            // Extract IDs from vintage-enabled data structure for detailed lookup
+            const extractIds = (items) => items.map(item => 
+                typeof item === 'object' && item.id ? item.id : item
+            );
+            
+            const merged_listings = [
+                ...extractIds(data["grails"] || []), 
+                ...extractIds(data["upAndComing"] || []), 
+                ...extractIds(data["goats"] || [])
+            ];
 
             // fetch full listing call it once instead of multiple calls
             const detailed_list = await this.fetchFullListingDetails(merged_listings || []);
 
-            // build quick selection 
-            const selection = {
-                grails: data["grails"],
-                upAndComing: data["upAndComing"],
-                goats: data["goats"],
-            };
-
             // Create a quick lookup map for detailedData
             const detailMap = Object.fromEntries(detailed_list.map(item => [item.id, item]));
-            // Replace IDs in each list with the full detail
+            
+            // Process vintage-enabled data and merge with detailed info
+            const processVintageItems = (items) => {
+                return items.map(item => {
+                    const id = typeof item === 'object' && item.id ? item.id : item;
+                    const vintage = typeof item === 'object' ? item.vintage : null;
+                    const detailedItem = detailMap[id];
+                    
+                    if (detailedItem) {
+                        return {
+                            ...detailedItem,
+                            vintage: vintage
+                        };
+                    }
+                    return null;
+                }).filter(item => item !== null);
+            };
+
+            // Replace IDs in each list with the full detail, preserving vintage data
             const updatedSelection = {
-                goats: selection.goats.map(id => detailMap[id]),
-                grails: selection.grails.map(id => detailMap[id]),
-                upAndComing: selection.upAndComing.map(id => detailMap[id])
+                goats: processVintageItems(data["goats"] || []),
+                grails: processVintageItems(data["grails"] || []),
+                upAndComing: processVintageItems(data["upAndComing"] || [])
             };
 
             // // now we will sort all data back to each categories
@@ -545,9 +564,14 @@ export default {
             this.upAndComing = updatedSelection["upAndComing"]
             this.goats = updatedSelection["goats"]
 
-            // console.log("---------------------")
-            // console.log(data)
-            // console.log(merged_listings)
+            // Debug: Check what we're getting and processing
+            console.log("Backend response data:", data)
+            console.log("Merged listing IDs:", merged_listings)
+            console.log("Detailed listings:", detailed_list)
+            console.log("Final processed data:")
+            console.log("- grails:", this.grails)
+            console.log("- upAndComing:", this.upAndComing)
+            console.log("- goats:", this.goats)
             // console.log(detailed_list)
             // console.log(updatedSelection)
             // console.log("---------------------")
@@ -681,14 +705,15 @@ export default {
         async handleConfirmSelection({ category, drinks }) {
             const safeDrinksCopy = JSON.parse(JSON.stringify(drinks));
 
-            // Transform the drinks data to match the expected format
+            // Transform the drinks data to match the expected format (include vintage)
             const transformedDrinks = safeDrinksCopy.map(drink => ({
                 id: drink.id,
                 name: drink.listingName || drink.name, // Handle both new and existing items
                 bottler: drink.bottler,
                 producerName: drink.producerName,
                 image: drink.image || drink.photo,  // Handle both image and photo properties
-                originCountry: drink.originCountry
+                originCountry: drink.originCountry,
+                vintage: drink.vintage || null  // Preserve vintage data
             }));
 
             // Update the appropriate category
@@ -723,12 +748,21 @@ export default {
                     return;
                 }
 
-                // We only need to send the IDs to the backend
+                // Send IDs with vintage data to the backend
                 const payload = {
                     userID: this.userID,
-                    grails: this.grails.map(d => d.id),
-                    upAndComing: this.upAndComing.map(d => d.id),
-                    goats: this.goats.map(d => d.id),
+                    grails: this.grails.map(d => ({
+                        id: d.id,
+                        vintage: d.vintage || null
+                    })),
+                    upAndComing: this.upAndComing.map(d => ({
+                        id: d.id,
+                        vintage: d.vintage || null
+                    })),
+                    goats: this.goats.map(d => ({
+                        id: d.id,
+                        vintage: d.vintage || null
+                    })),
                 };
 
                 // Make API call and check response

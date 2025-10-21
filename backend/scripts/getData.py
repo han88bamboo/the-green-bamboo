@@ -584,7 +584,7 @@ def lbListings():
         user_id = request.args.get('id', '').strip()
 
         sql = """
-            SELECT "user_id", "listing_id", "category"
+            SELECT "user_id", "listing_id", "category", "vintage"
             FROM "userLeaderboard"
             WHERE "user_id" = %s
             ORDER BY "sort_order" ASC; 
@@ -607,12 +607,19 @@ def lbListings():
         for row in rows:
             listing_id = row["listing_id"]
             category = row["category"]
+            vintage = row.get("vintage")
+            
+            # Create item object with id and vintage
+            item = {"id": listing_id}
+            if vintage is not None:
+                item["vintage"] = vintage
+                
             if category == 'grails':
-                grails.append(listing_id)
+                grails.append(item)
             elif category == 'upAndComing':
-                upAndComing.append(listing_id)
+                upAndComing.append(item)
             elif category == 'goats':
-                goats.append(listing_id)
+                goats.append(item)
 
         # Return as JSON response
         return jsonify({
