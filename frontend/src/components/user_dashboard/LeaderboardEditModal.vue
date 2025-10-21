@@ -118,14 +118,6 @@
                                     Leave blank if vintage is not specified or unknown
                                 </div>
                             </div>
-                            
-                            <!-- Vintage Display Preview -->
-                            <div v-if="drink.vintage && isValidVintage(drink.vintage)" class="vintage-preview">
-                                <div class="text-center">
-                                    <div class="vintage-year-display">{{ drink.vintage }}</div>
-                                    <small class="text-muted">Vintage</small>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     
@@ -437,20 +429,6 @@ export default {
     box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
 }
 
-.vintage-preview {
-    min-width: 80px;
-}
-
-.vintage-year-display {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #ffc107;
-    border: 2px solid #ffc107;
-    border-radius: 8px;
-    padding: 8px 12px;
-    background-color: #fff3cd;
-}
-
 .drink-type-badge .badge {
     font-size: 0.75rem;
 }
@@ -516,11 +494,6 @@ export default {
     
     .vintage-input-section {
         padding: 10px;
-    }
-    
-    .vintage-year-display {
-        font-size: 1.2rem;
-        padding: 6px 10px;
     }
 }
 </style>
