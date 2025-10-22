@@ -3894,11 +3894,19 @@ export default {
                         viewportHeight: window.innerHeight
                     });
                     
-                    // Smooth scroll to center the section in viewport
+                    // Add scroll margin to account for toolbar
+                    sectionElement.style.scrollMarginTop = '180px';
+                    
+                    // Smooth scroll to top of the section with toolbar offset
                     sectionElement.scrollIntoView({ 
                         behavior: 'smooth', 
-                        block: 'center' 
+                        block: 'start' 
                     });
+                    
+                    // Clean up the scroll margin after scroll completes
+                    setTimeout(() => {
+                        sectionElement.style.scrollMarginTop = '';
+                    }, 1000);
                     
                     console.log('🔵 Jump to Sheet: Scroll executed');
                     
