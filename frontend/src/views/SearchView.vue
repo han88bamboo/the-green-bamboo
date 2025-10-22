@@ -237,9 +237,9 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <div class="d-flex justify-content-center col-3  image-container mb-3 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                                     <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" 
-                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain;">
+                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain !important;">
                                     <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" 
-                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain;"> 
+                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain !important;"> 
                                 </router-link>
                             </div>
 
