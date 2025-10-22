@@ -326,6 +326,7 @@
             <!-- HIERARCHICAL MENU SECTIONS -->
             <div class="row mb-2" v-for="(menuSection, index) in searchMenuResults"
                 v-bind:key="menuSection.id || index"
+                :data-section-index="index"
                 :class="{ 
                     'menu-section-hidden': menuSection.isVisible === false
                 }">
@@ -2041,6 +2042,52 @@
                 Invalid area, please try again.
             </div>
         </div>
+
+                <!-- ------- START Jump to Section Feature (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+        
+        <!-- Floating "Jump to Section" Button (Mobile Only) -->
+        <button 
+            v-if="visibleMainSections.length > 0 && !editMenuMode"
+            class="jump-to-floating-btn mobile-view-show" 
+            @click="openJumpToSheet"
+            aria-label="Jump to section">
+            <i class="bi bi-list-ul"></i> Jump to Section ({{ visibleMainSections.length }})
+        </button>
+
+        <!-- Bottom Sheet Backdrop (Mobile Only) -->
+        <div 
+            class="jump-to-backdrop mobile-view-show" 
+            :class="{ 'active': showJumpToSheet }"
+            @click="closeJumpToSheet"></div>
+
+        <!-- Bottom Sheet Drawer (Mobile Only) -->
+        <div 
+            class="jump-to-sheet mobile-view-show" 
+            :class="{ 'open': showJumpToSheet }">
+            
+            <!-- Sheet Header -->
+            <div class="sheet-header">
+                <h5>Jump to Section</h5>
+                <button @click="closeJumpToSheet" class="sheet-close" aria-label="Close">×</button>
+            </div>
+            
+            <!-- Sheet Content -->
+            <div class="sheet-content">
+                <div 
+                    v-for="(section, index) in visibleMainSections" 
+                    :key="section.sectionOrder || index"
+                    @click="jumpToSection(index, section.sectionName)"
+                    class="section-item">
+                    <i class="bi bi-chevron-right"></i>
+                    {{ section.sectionName }}
+                    <span class="item-count">({{ getSectionItemCount(section) }} items)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ------- END Jump to Section Feature ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+        
+
     </div>
 
 </template>
@@ -2178,7 +2225,11 @@ export default {
                 }
             });
             return flatMenu;
-        }
+        },
+        // Jump to Section - Get only visible main sections (excluding hidden sections)
+        visibleMainSections() {
+            return this.searchMenuResults.filter(section => section.isVisible !== false);
+        }        
     },
     data() {
         return {
@@ -2349,6 +2400,8 @@ export default {
                     return true;
                 }.bind(this)
             },
+            // Jump to Section feature (Mobile only)
+            showJumpToSheet: false,
         }
     },
     watch: {
@@ -2435,7 +2488,138 @@ export default {
             this.watchersEnabled = true;
         });
     },
+    beforeUnmount() {
+        // Cleanup: Restore body scroll if sheet was left open
+        if (this.showJumpToSheet) {
+            document.body.style.overflow = '';
+        }
+    },
     methods: {
+
+
+        // ------- START Jump to Section Methods (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        
+        // Open the bottom sheet drawer
+        openJumpToSheet() {
+            console.log('🔵 Jump to Sheet: Opening sheet');
+            this.showJumpToSheet = true;
+            // Prevent background scroll when sheet is open
+            document.body.style.overflow = 'hidden';
+        },
+
+        // Close the bottom sheet drawer
+        closeJumpToSheet() {
+            console.log('🔵 Jump to Sheet: Closing sheet');
+            this.showJumpToSheet = false;
+            // Restore background scroll
+            document.body.style.overflow = '';
+        },
+
+        // Jump to a specific section with smooth scroll and highlight effect
+        jumpToSection(sectionIndex, sectionName) {
+            console.log('🔵 Jump to Sheet: Jumping to section', { sectionIndex, sectionName });
+            
+            // Close the sheet first
+            this.closeJumpToSheet();
+            
+            // Small delay to allow sheet close animation to complete
+            setTimeout(() => {
+                // Find the section element by data attribute
+                const sectionElement = document.querySelector(`[data-section-index="${sectionIndex}"]`);
+                
+                console.log('🔵 Jump to Sheet: Section element found:', !!sectionElement);
+                
+                if (sectionElement) {
+                    // Check if section is collapsed and expand it if needed
+                    const collapseElement = sectionElement.querySelector(`#collapseMenuSection${sectionIndex}`);
+                    if (collapseElement && !collapseElement.classList.contains('show')) {
+                        console.log('🔵 Jump to Sheet: Section is collapsed, expanding it...');
+                        // Directly add the 'show' class to expand the section
+                        collapseElement.classList.add('show');
+                        
+                        // Also update the button aria-expanded attribute
+                        const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                        if (toggleButton) {
+                            toggleButton.setAttribute('aria-expanded', 'true');
+                        }
+                    } else {
+                        console.log('🔵 Jump to Sheet: Section is already expanded');
+                    }
+                    
+                    // Get the position of the section
+                    const rect = sectionElement.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    const sectionTop = rect.top + scrollTop;
+                    
+                    console.log('🔵 Jump to Sheet: Section position', {
+                        sectionTop,
+                        currentScroll: scrollTop,
+                        viewportHeight: window.innerHeight
+                    });
+                    
+                    // Add scroll margin to account for toolbar
+                    sectionElement.style.scrollMarginTop = '180px';
+                    
+                    // Smooth scroll to top of the section with toolbar offset
+                    sectionElement.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                    
+                    // Clean up the scroll margin after scroll completes
+                    setTimeout(() => {
+                        sectionElement.style.scrollMarginTop = '';
+                    }, 1000);
+                    
+                    console.log('🔵 Jump to Sheet: Scroll executed');
+                    
+                    // Add highlight effect after scroll animation completes
+                    setTimeout(() => {
+                        // Apply highlight directly to the section row element
+                        console.log('🔵 Jump to Sheet: Adding highlight to', sectionElement);
+                        
+                        sectionElement.classList.add('highlight-section');
+                        
+                        // Remove highlight after 3 seconds
+                        setTimeout(() => {
+                            sectionElement.classList.remove('highlight-section');
+                            console.log('🔵 Jump to Sheet: Highlight removed');
+                        }, 3000);
+                    }, 600); // Wait 600ms for scroll animation
+                } else {
+                    console.warn('🔵 Jump to Sheet: Section element not found!');
+                }
+            }, 300); // Wait 300ms for sheet close animation
+        },
+
+        // Get total item count for a section (including subsections)
+        getSectionItemCount(section) {
+            let count = 0;
+            
+            // Count direct items in this section
+            if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                count += section.sectionMenu.length;
+            }
+            
+            // Count items in all subsections
+            if (section.subsections && Array.isArray(section.subsections)) {
+                section.subsections.forEach(subsection => {
+                    if (subsection.sectionMenu && Array.isArray(subsection.sectionMenu)) {
+                        count += subsection.sectionMenu.length;
+                    }
+                });
+            }
+            
+            console.log('🔵 Jump to Sheet: Section item count', {
+                sectionName: section.sectionName,
+                count
+            });
+            
+            return count;
+        },
+
+        // ------- END Jump to Section Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
         // Helper method to determine text color based on background color
         getContrastColor(hexcolor) {
             if (!hexcolor) return '#000000';
@@ -6500,4 +6684,236 @@ button[aria-expanded="true"] .collapse-indicator {
   margin-left: 0.25rem;
   white-space: nowrap;
 }
+
+/* ------- START Jump to Section Feature Styles (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* Floating "Jump to Section" Button - Subtle Orange, Mobile Only */
+.jump-to-floating-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  background: rgba(242, 153, 74, 0.9); /* Subtle transparent orange */
+  color: white;
+  border: 2px solid rgba(242, 153, 74, 1);
+  border-radius: 30px;
+  padding: 12px 20px;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.jump-to-floating-btn:hover,
+.jump-to-floating-btn:active {
+  background: rgba(242, 153, 74, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.jump-to-floating-btn i {
+  font-size: 18px;
+}
+
+/* Backdrop overlay for bottom sheet */
+.jump-to-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1040;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.jump-to-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Bottom Sheet Drawer */
+.jump-to-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1050;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.jump-to-sheet.open {
+  transform: translateY(0);
+}
+
+/* Sheet Header */
+.sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, rgba(242, 153, 74, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+  border-radius: 20px 20px 0 0;
+  flex-shrink: 0;
+}
+
+.sheet-header h5 {
+  margin: 0;
+  font-weight: bold;
+  color: #333;
+  font-size: 18px;
+}
+
+.sheet-close {
+  background: none;
+  border: none;
+  font-size: 32px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.sheet-close:hover {
+  color: #333;
+}
+
+/* Sheet Content - Scrollable list of sections */
+.sheet-content {
+  overflow-y: auto;
+  padding: 8px 0;
+  flex: 1;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Individual Section Item */
+.section-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+.section-item:active {
+  background: rgba(242, 153, 74, 0.15);
+}
+
+.section-item:last-child {
+  border-bottom: none;
+}
+
+.section-item i {
+  color: #F2994A;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.item-count {
+  margin-left: auto;
+  color: #999;
+  font-size: 13px;
+  font-weight: normal;
+  flex-shrink: 0;
+}
+
+/* Highlight animation for sections (reuse existing or enhance) */
+@keyframes highlightBorder {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+  }
+}
+
+.highlight-section {
+  animation: highlightBorder 1s ease-out infinite;
+  border: 2px solid #FFC107 !important;
+  border-radius: 5px;
+}
+
+/* Mobile responsiveness adjustments */
+@media (max-width: 767px) {
+  .jump-to-floating-btn {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .jump-to-floating-btn i {
+    font-size: 16px;
+  }
+
+  .jump-to-sheet {
+    max-height: 75vh;
+  }
+
+  .sheet-header {
+    padding: 14px 18px;
+  }
+
+  .sheet-header h5 {
+    font-size: 16px;
+  }
+
+  .section-item {
+    padding: 14px 18px;
+  }
+
+  .section-item i {
+    font-size: 16px;
+  }
+
+  .item-count {
+    font-size: 12px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .jump-to-floating-btn {
+    bottom: 12px;
+    right: 12px;
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .section-item {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+}
+
+/* ------- END Jump to Section Feature Styles ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
 </style>
