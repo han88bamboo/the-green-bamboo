@@ -214,7 +214,7 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                                     <p class="default-text fs-5 mobile-fs-6" style="margin-bottom: 0.3rem;"><b><u>{{ resultListing['listingName'] }}</u></b></p>
                                 </router-link>
                                 <p class="text-start mb-1 mobile-fs-7"> 
-                                    {{ resultListing["bottler"] }} | {{ resultListing["drinkType"] }} | {{ resultListing["typeCategory"] }} | {{ resultListing["abv"] }} ABV | {{ resultListing["originCountry"] }} 
+                                    {{ resultListing["producerName"] }} <!--| {{ resultListing["bottler"] }}| {{ resultListing["drinkType"] }}  -->| {{ resultListing["typeCategory"] }} | {{ resultListing["abv"] }}% ABV | {{ resultListing["originCountry"] }} 
                                 </p>
                                 <p class="mt-1 fst-italic scrollable-long mobile-fs-7">
                                 {{ resultListing["officialDesc"]?.length > 60 
