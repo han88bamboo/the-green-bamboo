@@ -12,12 +12,14 @@
                 class="primary-clickable-text text-decoration-none"
                 style="color: #027562"
             >
-                <h6 class="card-title fw-bold text-start">{{ listing.listingName.slice(0, 40) }}</h6>
+                <h6 class="card-title fw-bold text-start">
+                    {{ (listing.listingName + (listing.vintage ? ' (' + listing.vintage + ')' : '')).slice(0, 40) }}
+                </h6>
             </router-link>
             
         
 
-            <!-- Producer Name -->
+            <!-- Producer Name & Drink Type -->
             <router-link
                 :to="{
                 path:
@@ -30,6 +32,7 @@
             >
                  <p class="card-text fw-bold">{{ listing.producerName.slice(0, 40) }}</p>
             </router-link>
+            <p class="card-text text-muted small">{{ listing.drinkType }}</p>
            
 
             <!--Rating-->
@@ -75,12 +78,14 @@
                 class="primary-clickable-text text-decoration-none"
                 style="color: #027562"
             >
-                <p class="mobile-rating-smaller-text-2 fw-bold text-start mb-1">{{ listing.listingName.slice(0, 22) }}</p>
+                <p class="mobile-rating-smaller-text-2 fw-bold text-start mb-1">
+                    {{ (listing.listingName + (listing.vintage ? ' (' + listing.vintage + ')' : '')).slice(0, 22) }}
+                </p>
             </router-link>
             </div>
             
             <div class="flex-grow-1 col-12 d-flex flex-column justify-content-between px-3 pt-0">
-            <!-- Producer Name -->
+            <!-- Producer Name & Drink Type -->
             <router-link
                 :to="{
                 path:
@@ -93,6 +98,7 @@
             >
                  <p class="card-text fw-bold">{{ listing.producerName.slice(0, 20) }}</p>
             </router-link>
+            <p class="card-text text-muted mobile-rating-smaller-text-2">{{ listing.drinkType }}</p>
             </div>
 
             <div class="col-12 d-flex flex-column justify-content-between px-3 mt-2">
