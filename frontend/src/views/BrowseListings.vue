@@ -273,7 +273,7 @@
                             <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
                                  class="img-fluid rounded" 
                                  :alt="resultListing.listingName"
-                                 style="width: 100%; height: 120px; object-fit: cover;">
+                                 style="max-width: 100%; max-height: 120px; width: auto; height: auto; object-fit: contain; display: block; margin: auto;">
                         </router-link>
                     </div>
                     <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
@@ -312,12 +312,12 @@
                     
                     <!-- DESKTOP VIEW-->
                     <!-- Image  -->
-                    <div class="d-flex justify-content-end col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
+                    <div class="d-flex justify-content-center col-3 image-container mb-3 mobile-px-0 mobile-view-hide">
                         <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
                             <img :src="resultListing.photo || 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739'" 
                                  class="img-fluid rounded" 
                                  :alt="resultListing.listingName"
-                                 style="width: 200px; height: 200px; object-fit: cover;">
+                                 style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain;">
                         </router-link>
                     </div>
 

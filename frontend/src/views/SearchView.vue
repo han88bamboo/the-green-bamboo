@@ -204,8 +204,10 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             <!-- Image -->
                             <div class="mobile-col-3 mobile-me-3 image-container mb-3 mobile-px-0 producer-profile-no-left-padding-large-screen mobile-view-show">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:100px; height:100px">
-                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:256px; height:256px*/"> 
+                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" 
+                                    style="max-width: 100%; max-height: 120px; width: auto; height: auto; object-fit: contain; display: block; margin: auto;">
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" 
+                                    style="max-width: 100%; max-height: 120px; width: auto; height: auto; object-fit: contain; display: block; margin: auto;"> 
                                 </router-link>
                             </div>
                             <div class="col-lg-8 col-12 ps-3 mobile-col-6 mobile-pe-0 mobile-ps-1 mobile-view-show">
@@ -232,10 +234,12 @@ x<!-- Search page from navigation bar. Globally available, and should still use 
                             </div>
                             <!-- DESKTOP VIEW-->
                             <!-- Image  -->
-                            <div class="d-flex justify-content-end col-3  image-container mb-3 mobile-px-0 mobile-view-hide">
+                            <div class="d-flex justify-content-center col-3  image-container mb-3 mobile-px-0 mobile-view-hide">
                                 <router-link :to="{ path: '/listing/view/' + resultListing.id + '/' + slugify(resultListing.listingName) }">
-                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" style="width:200px; height:200px">
-                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" style="/*width:300px; height:300px*/"> 
+                                    <img v-if="resultListing['photo']" :src="resultListing['photo']" class="img-border img-fluid object-fit-cover review-image" 
+                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain;">
+                                    <img v-else src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739" class=" img-border img-fluid object-fit-cover review-image" 
+                                    style="max-width: 200px; max-height: 200px; width: auto; height: auto; object-fit: contain;"> 
                                 </router-link>
                             </div>
 
