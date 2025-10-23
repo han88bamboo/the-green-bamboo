@@ -85,6 +85,9 @@
           type="text"
           :placeholder="searchPlaceholder"
           autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
         />
       </div>
     </div>
