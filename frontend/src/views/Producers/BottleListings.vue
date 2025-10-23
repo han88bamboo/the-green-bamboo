@@ -178,8 +178,7 @@
                       <!-- Red Add Review Button for regular users -->
                       <template v-else-if="userType == 'user'">
                         <!-- Logged-In User XYZ-->
-                        <button class="btn text-white fw-semibold px-2" data-bs-toggle="modal"
-                          data-bs-target="#reviewModal"
+                        <button class="btn text-white fw-semibold px-2" @click="handleReviewClick"
                           style="border-radius: 0; height: 40px; background-color: #FF3E31;">
                           {{ !inEdit ? 'Add Review' : 'Reviewed' }}
                         </button>
@@ -848,8 +847,8 @@
               <!-- Logged-in users XYZ-->
               <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                  <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
-                    data-bs-target="#reviewModal" style="font-weight: bold;"> <!--v-if="!inEdit"-->
+                  <button class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
+                    style="font-weight: bold;"> <!--v-if="!inEdit"-->
                     Add Your Review
                   </button>
                 </div>
@@ -863,8 +862,8 @@
               </div>
               <div v-else>
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
-                  <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
-                    data-bs-target="#reviewModal" style="font-weight: bold;">
+                  <button v-if="!inEdit" class="btn primary-btn-less-round-blue btn-lg" @click="handleReviewClick"
+                    style="font-weight: bold;">
                     Add Your Review
                   </button>
                   <button v-else class="btn primary-btn-less-round-blue btn-lg" style="font-weight: bold;">
@@ -2492,7 +2491,7 @@
                 " class="row">
                   <!-- Add button -->
                   <div class="mobile-col-3 col-sm-6 col-md-4 col-lg-2 p-0 mobile-px-1">
-                    <div data-bs-toggle="modal" data-bs-target="#reviewModal">
+                    <div @click="handleReviewClick" style="cursor: pointer;">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="#83A9E8" class="bi bi-plus-lg review-image"
                         viewBox="0 0 16 16" style="cursor: pointer">
                         <path fill-rule="evenodd"
@@ -2727,8 +2726,7 @@
                     <ul class="dropdown-menu" >
                       <li
                         v-if="(review.userID === parseInt(userID) && !(Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType))) || correctModerator || (user && user.isAdmin)">
-                        <button class="dropdown-item" @click="setUpdateID(review)" data-bs-toggle="modal"
-                          data-bs-target="#reviewModal">
+                        <button class="dropdown-item" @click="setUpdateID(review); handleReviewClick()">
                           Edit
                         </button>
                       </li>
@@ -3565,6 +3563,7 @@
 <script>
 import { ref, computed } from 'vue'
 import { useHead, useSeoMeta } from '@unhead/vue'
+import { Modal } from 'bootstrap'
 
 import NavBar from "@/components/NavBar.vue";
 // import ReviewModal from '@/components/EditReview.vue'
@@ -4534,6 +4533,23 @@ export default {
   methods: {
     // fetch specific listing data
     created() { },
+
+    // Handle review modal opening with scroll to top
+    handleReviewClick() {
+      // Scroll to top of page - try multiple methods for compatibility
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+      
+      // Longer delay to ensure scroll completes before modal opens
+      setTimeout(() => {
+        const modalElement = document.getElementById('reviewModal');
+        if (modalElement) {
+          const modal = new Modal(modalElement);
+          modal.show();
+        }
+      }, 300);
+    },
 
     // Setup auto-resize functionality for textareas
     setupAutoResize() {
