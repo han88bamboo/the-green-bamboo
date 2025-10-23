@@ -177,7 +177,7 @@
 
                       <!-- Red Add Review Button for regular users -->
                       <template v-else-if="userType == 'user'">
-                        <!-- Logged-In User -->
+                        <!-- Logged-In User XYZ-->
                         <button class="btn text-white fw-semibold px-2" data-bs-toggle="modal"
                           data-bs-target="#reviewModal"
                           style="border-radius: 0; height: 40px; background-color: #FF3E31;">
@@ -845,7 +845,7 @@
             </div>
             <!-- For non-venue users - show Add Your Review buttons -->
             <div v-else-if="userType !== 'venue'">
-              <!-- Logged-in users -->
+              <!-- Logged-in users XYZ-->
               <div v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(specified_listing.drinkType)">
                 <div v-if="userType === 'user' && userID !== 'defaultUser'">
                   <button class="btn primary-btn-less-round-blue btn-lg" data-bs-toggle="modal"
@@ -4182,20 +4182,9 @@ export default {
       // Initialize paywall scroll control for non-logged in users
       this.initializePaywallControls();
 
-      // Add modal event listener for cellar modal
+      
+      // Note: Cellar modal, review modal, and menu modal event listeners will be set up after user data loads
       this.$nextTick(() => {
-        const cellarModal = document.getElementById('cellarModal');
-        if (cellarModal) {
-          cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
-        }
-        
-        // Add event listener for review modal to setup auto-resize when it opens
-        const reviewModal = document.getElementById('reviewModal');
-        if (reviewModal) {
-          reviewModal.addEventListener('show.bs.modal', this.onReviewModalOpen);
-        }
-        
-        // Note: Menu modal event listener will be set up after user data loads
         console.log('Mounted: User type during initial setup:', this.userType);
         console.log('Mounted: User ID during initial setup:', this.userID);
         
@@ -6577,8 +6566,7 @@ export default {
           `${process.env.VUE_APP_API_URL}/getData/getListing/` + this.listing_id
         );
         if (listing.data.length !== 0) {
-          this.loadData();
-          // Load local storage variables
+          // Load local storage variables FIRST
           const accID = localStorage.getItem("88B_accID");
           if (accID !== null) {
             this.userID = localStorage.getItem("88B_accID");
@@ -6592,8 +6580,34 @@ export default {
           
           console.log('User data loaded - UserType:', this.userType, 'UserID:', this.userID);
           
-          // Set up menu modal event listener now that user data is loaded
-          this.setupMenuModalEventListener();
+          // AWAIT loadData() to ensure all data is loaded and component is fully rendered
+          await this.loadData();
+          
+          console.log('All data loaded, setting up event listeners...');
+          
+          // Set up modal event listeners now that all data is loaded and component is rendered
+          this.$nextTick(() => {
+            // Attach review modal event listener
+            const reviewModal = document.getElementById('reviewModal');
+            if (reviewModal) {
+              console.log('Review modal event listener attached successfully');
+              reviewModal.addEventListener('show.bs.modal', this.onReviewModalOpen);
+            } else {
+              console.log('Review modal not found in DOM');
+            }
+            
+            // Attach cellar modal event listener
+            const cellarModal = document.getElementById('cellarModal');
+            if (cellarModal) {
+              console.log('Cellar modal event listener attached successfully');
+              cellarModal.addEventListener('show.bs.modal', this.onCellarModalOpen);
+            } else {
+              console.log('Cellar modal not found in DOM');
+            }
+            
+            // Set up menu modal event listener
+            this.setupMenuModalEventListener();
+          });
           
           // this.getCurrentLocation();
         } else {
@@ -7007,6 +7021,10 @@ export default {
     // Review modal open handler
     onReviewModalOpen() {
       console.log('Review modal opening - setting up auto-resize...');
+      // Scroll to top of page instantly
+      console.log('Scrolling to top of page...');
+      window.scrollTo(0, 0);
+      
       // Setup auto-resize functionality when the modal opens
       this.$nextTick(() => {
         this.setupAutoResize();
