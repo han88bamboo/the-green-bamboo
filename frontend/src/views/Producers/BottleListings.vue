@@ -4536,12 +4536,15 @@ export default {
     // Handle review modal opening with scroll to top
     handleReviewClick() {
       try {
-        // Scroll to top of page - try multiple methods for compatibility
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
+        // Wait for Vue to finish any DOM updates (like from setUpdateID)
+        this.$nextTick(() => {
+          // Scroll to top of page instantly - use instant scroll (no 'smooth')
+          window.scrollTo(0, 0);
+          document.documentElement.scrollTop = 0;
+          document.body.scrollTop = 0;
+        });
         
-        // Delay to ensure scroll completes before modal opens
+        // Short delay before opening modal (50ms is enough for instant scroll)
         setTimeout(() => {
           // Since window.bootstrap is not available in this build configuration,
           // we'll use Bootstrap's data-attribute API by programmatically clicking
@@ -4565,7 +4568,7 @@ export default {
           } else {
             console.error('reviewModal element not found');
           }
-        }, 300);
+        }, 50);
       } catch (error) {
         console.error('Error in handleReviewClick:', error);
       }
