@@ -5472,10 +5472,12 @@ export default {
         this.image64 = specificReview[0].photo;
         
         // Handle location restoration based on review data
-        if (specificReview[0].location === null && 
+        if ((specificReview[0].location === null && 
             specificReview[0].address && 
-            specificReview[0].address.toLowerCase() === 'home') {
-          // Case 1: Home location
+            specificReview[0].address.toLowerCase() === 'home') ||
+            (specificReview[0].location && 
+            specificReview[0].location.toLowerCase() === 'home')) {
+          // Case 1: Home location (handles both legacy null format and current "Home" format)
           this.selectedLocationType = 'home';
           this.selectedLocation = 'Home';
           this.selectedLocationAddress = 'Home';
