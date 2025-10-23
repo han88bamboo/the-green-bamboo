@@ -355,21 +355,26 @@ def updateReview(id):
         address = data.get('address')
 
         if location_name and address:
-            cursor.execute("""
-                SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
-            """, (location_name, address))
-            venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
-
-            if not venue_id:
-                username = create_username(location_name)
-                insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
-                                      "hashedPassword", "claimStatus", photo, "reservationDetails", username)
-                                      VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
-                hashed_password = 'hashed_password'  # Replace with actual password hashing logic
-                cursor.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+            # Check if this is a "Home" tasting
+            if location_name.lower() == 'home' and address.lower() == 'home':
+                venue_id = None  # NULL for home tastings (no venue reference needed)
+                address = 'home'  # Normalize to lowercase for consistency
+            else:
+                cursor.execute("""
+                    SELECT "id" FROM "venues" WHERE "venueName" = %s AND "address" = %s
+                """, (location_name, address))
                 venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
-                print("Venue ID: ", venue_id)
-                cursor.connection.commit()
+
+                if not venue_id:
+                    username = create_username(location_name)
+                    insert_venue_sql = """INSERT INTO venues ("venueName", "address", "venueType", "originLocation", "venueDesc",
+                                          "hashedPassword", "claimStatus", photo, "reservationDetails", username)
+                                          VALUES (%s, %s, '', '', '', %s, FALSE, '', '', %s) RETURNING id"""
+                    hashed_password = 'hashed_password'  # Replace with actual password hashing logic
+                    cursor.execute(insert_venue_sql, (location_name, address, hashed_password, username))
+                    venue_id = cursor.fetchone()['id'] if cursor.rowcount > 0 else None
+                    print("Venue ID: ", venue_id)
+                    cursor.connection.commit()
 
         # Update review photo
         if existing_review['photo'] and data['photo'] != existing_review['photo']:
