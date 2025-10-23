@@ -5470,16 +5470,69 @@ export default {
         }
         this.selectedObservations = specificReview[0].observationTag;
         this.image64 = specificReview[0].photo;
-        let selectedLocation = [];
-        if (specificReview[0].location != null) {
-          selectedLocation = this.locationOptions.filter((location) => {
+        
+        // Handle location restoration based on review data
+        if (specificReview[0].location === null && 
+            specificReview[0].address && 
+            specificReview[0].address.toLowerCase() === 'home') {
+          // Case 1: Home location
+          this.selectedLocationType = 'home';
+          this.selectedLocation = 'Home';
+          this.selectedLocationAddress = 'Home';
+          this.locationInputValue = 'Home';
+        } else if (specificReview[0].location != null) {
+          // Case 2: Venue location - check if it's a venue ID (number) or venue name (string)
+          
+          // First, try to match by ID (for database venues)
+          let selectedLocation = this.locationOptions.filter((location) => {
             return location["id"] == specificReview[0].location;
           });
+          
+          if (selectedLocation.length > 0) {
+            // Venue found by ID in locationOptions (venue that sells this drink)
+            this.selectedLocationType = 'venue';
+            this.selectedLocation = selectedLocation[0].name;
+            this.selectedLocationAddress = selectedLocation[0].address;
+            this.selectedLocationId = selectedLocation[0].id;
+            this.locationInputValue = selectedLocation[0].name;
+          } else {
+            // Try to match by name (for Google Maps venues stored as names)
+            selectedLocation = this.locationOptions.filter((location) => {
+              return location["name"] == specificReview[0].location;
+            });
+            
+            if (selectedLocation.length > 0) {
+              // Venue found by name in locationOptions
+              this.selectedLocationType = 'venue';
+              this.selectedLocation = selectedLocation[0].name;
+              this.selectedLocationAddress = selectedLocation[0].address;
+              this.selectedLocationId = selectedLocation[0].id;
+              this.locationInputValue = selectedLocation[0].name;
+            } else {
+              // Venue not in locationOptions - it's a Google Maps venue or custom location
+              // Check if we can find it in reviewedAtVenues to get the name
+              const reviewedVenue = this.reviewedAtVenues.find(venue => 
+                venue.id == specificReview[0].location || venue.venueName == specificReview[0].location
+              );
+              
+              if (reviewedVenue) {
+                // Found in reviewedAtVenues - use the venue name
+                this.selectedLocationType = 'venue';
+                this.selectedLocation = reviewedVenue.venueName;
+                this.selectedLocationAddress = reviewedVenue.address || specificReview[0].address || '';
+                this.selectedLocationId = reviewedVenue.id;
+                this.locationInputValue = reviewedVenue.venueName;
+              } else {
+                // Fallback: treat as Google Maps venue with name as-is
+                this.selectedLocationType = 'venue';
+                this.selectedLocation = specificReview[0].location;
+                this.selectedLocationAddress = specificReview[0].address || '';
+                this.locationInputValue = specificReview[0].location;
+              }
+            }
+          }
         }
-        if (selectedLocation.length != 0) {
-          this.selectedLocation = selectedLocation[0].name;
-          // this.selectedLocationaddress=selectedLocation[0].address
-        }
+        
         // Clear cache when editing an existing review
         this.clearReviewCache();
       }
