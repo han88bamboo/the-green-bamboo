@@ -3563,7 +3563,6 @@
 <script>
 import { ref, computed } from 'vue'
 import { useHead, useSeoMeta } from '@unhead/vue'
-import { Modal } from 'bootstrap'
 
 import NavBar from "@/components/NavBar.vue";
 // import ReviewModal from '@/components/EditReview.vue'
@@ -4536,19 +4535,40 @@ export default {
 
     // Handle review modal opening with scroll to top
     handleReviewClick() {
-      // Scroll to top of page - try multiple methods for compatibility
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      document.documentElement.scrollTop = 0;
-      document.body.scrollTop = 0;
-      
-      // Longer delay to ensure scroll completes before modal opens
-      setTimeout(() => {
-        const modalElement = document.getElementById('reviewModal');
-        if (modalElement) {
-          const modal = new Modal(modalElement);
-          modal.show();
-        }
-      }, 300);
+      try {
+        // Scroll to top of page - try multiple methods for compatibility
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        
+        // Delay to ensure scroll completes before modal opens
+        setTimeout(() => {
+          // Since window.bootstrap is not available in this build configuration,
+          // we'll use Bootstrap's data-attribute API by programmatically clicking
+          // a hidden trigger button
+          const modalElement = document.getElementById('reviewModal');
+          if (modalElement) {
+            // Create a temporary button with data-bs-toggle and data-bs-target
+            const triggerBtn = document.createElement('button');
+            triggerBtn.setAttribute('data-bs-toggle', 'modal');
+            triggerBtn.setAttribute('data-bs-target', '#reviewModal');
+            triggerBtn.style.display = 'none';
+            document.body.appendChild(triggerBtn);
+            
+            // Click the button to trigger Bootstrap's modal
+            triggerBtn.click();
+            
+            // Clean up the temporary button
+            setTimeout(() => {
+              document.body.removeChild(triggerBtn);
+            }, 100);
+          } else {
+            console.error('reviewModal element not found');
+          }
+        }, 300);
+      } catch (error) {
+        console.error('Error in handleReviewClick:', error);
+      }
     },
 
     // Setup auto-resize functionality for textareas
