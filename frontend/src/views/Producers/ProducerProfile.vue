@@ -2375,7 +2375,7 @@
             </div>
           </div>
           <!-- DRINK LISTING CATALOGUE-->
-          <div class="row scrollable-listings">
+          <div class="row Xscrollable-listings"> <!-- switched off nested scroll -->
             <!-- v-loop for each listing -->
             <div class="container text-start">
               <div
