@@ -8703,4 +8703,9 @@ export default {
   opacity: 0.65;
 }
 
+.cellar-dashboard>.card:hover {
+  transition: none !important;
+  transform: none !important;
+}
+
 </style>
