@@ -325,7 +325,7 @@ def getMenuItems(section_id):
                 lst."listingName", lst."photo", lst."bottler", lst."drinkType", lst."abv", 
                 lst."officialDesc", lst."originCountry", lst."typeCategory", lst."producerID",
                 p."producerName",
-                mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
+                mi."itemPrice", mi."itemAvailability", mi."new", mi."staffPick", mi."itemServingType", 
                 srvTyp."servingType", mi."variant",
                 (SELECT AVG(r."rating") 
                 FROM "reviews" r 
@@ -376,6 +376,8 @@ def getMenuItems(section_id):
                         "producerName": row['producerName'],
                         "avgRating": "-" if row['avgRating'] is None else round(float(row['avgRating']), 1),
                         "itemAvailability": row['itemAvailability'],
+                        "new": row['new'],
+                        "staffPick": row['staffPick'],
                         "variant": row['variant'],
                         "servingType": row['itemServingType'],
                         "servingTypeText": row['servingType'],

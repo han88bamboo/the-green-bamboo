@@ -990,7 +990,7 @@
                                                 </div>
                                             </div>
                                             <div class="row mobile-view-show">
-                                                <div class="col-4 ps-0 pt-2">
+                                                <div class="col-4 ps-0 pt-2 pe-0">
                                                     <div class="form-check form-switch form-check-inline">
                                                         <input class="form-check-input" type="checkbox" role="switch"
                                                             :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
@@ -1001,6 +1001,30 @@
                                                             {{ menuItem.itemAvailability ? 'Available' : 'Unavailable' }}
                                                         </label>
                                                     </div>
+
+                                                    <div class="form-check form-switch form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                            v-model="menuItem.new">
+                                                        <label class="form-check-label fst-italic"
+                                                            :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                            :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                            {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                        </label>
+                                                    </div>
+
+                                                     <div class="form-check form-switch form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                            v-model="menuItem.staffPick">
+                                                        <label class="form-check-label fst-italic"
+                                                            :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                            :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                            {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                        </label>
+                                                    </div>
+
+
                                                 </div>
                                                 <div class="col-3 pe-0">
                                                     <div class="input-group">
@@ -1023,6 +1047,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
                                             <!-- Desktop view for direct items -->
                                             <div class="row mobile-view-hide">
                                                 <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0">
@@ -1078,6 +1103,30 @@
                                                                     {{ menuItem.itemAvailability ? 'Item Available' : 'Temporarily Unavailable' }}
                                                                 </label>
                                                             </div>
+
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                    :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
+                                                                    v-model="menuItem.new">
+                                                                <label class="form-check-label fst-italic"
+                                                                    :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                    :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
+                                                                    {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                </label>
+                                                            </div>
+
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                    :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
+                                                                    v-model="menuItem.staffPick">
+                                                                <label class="form-check-label fst-italic"
+                                                                    :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                    :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
+                                                                    {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                </label>
+                                                            </div>
+
+
                                                         </div>
                                                         <div class="col-3">
                                                             <div class="input-group">
@@ -1094,6 +1143,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -1361,7 +1411,7 @@
                                                 <!-- Item Menu Details abc-->
                                                 <div class="row mobile-view-show">
                                                     <!-- Toggle Item Availability -->
-                                                    <div class="col-4 ps-0 pt-2">
+                                                    <div class="col-4 ps-0 pt-2 pe-0">
                                                         <div class="form-check form-switch form-check-inline">
                                                             <input class="form-check-input" type="checkbox"
                                                                 role="switch"
@@ -1379,6 +1429,34 @@
                                                                 Unavailable
                                                             </label>
                                                         </div>
+
+                                                        <div class="form-check form-switch form-check-inline">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                role="switch"
+                                                                :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                v-model="menuItem.new">
+                                                            <label class="form-check-label fst-italic"
+                                                                :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="form-check form-switch form-check-inline">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                role="switch"
+                                                                :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                v-model="menuItem.staffPick">
+                                                            <label class="form-check-label fst-italic"
+                                                                :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                            </label>
+                                                        </div>
+
+
                                                     </div>
 
                                                     <!-- Edit Item Price -->
@@ -1405,6 +1483,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
+                                                
                                                 <div class="row mobile-view-hide">
 
                                                     <!-- Item Image -->
@@ -1513,8 +1592,7 @@
 
                                                             <!-- Toggle Item Availability -->
                                                             <div class="col-4">
-                                                                <div
-                                                                    class="form-check form-switch form-check-inline">
+                                                                <div class="form-check form-switch form-check-inline">
                                                                     <input class="form-check-input"
                                                                         type="checkbox" role="switch"
                                                                         :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
@@ -1531,6 +1609,34 @@
                                                                         Temporarily Unavailable
                                                                     </label>
                                                                 </div>
+                                                                
+                                                                <div class="form-check form-switch form-check-inline">
+                                                                    <input class="form-check-input"
+                                                                        type="checkbox" role="switch"
+                                                                        :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        v-model="menuItem.new">
+                                                                    <label class="form-check-label fst-italic"
+                                                                        :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                        :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                    </label>
+                                                                </div>
+
+                                                                <div class="form-check form-switch form-check-inline">
+                                                                    <input class="form-check-input"
+                                                                        type="checkbox" role="switch"
+                                                                        :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        v-model="menuItem.staffPick">
+                                                                    <label class="form-check-label fst-italic"
+                                                                        :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                        :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                    </label>
+                                                                </div>
+
+
                                                             </div>
 
                                                             <!-- Edit Item Price -->
@@ -1560,7 +1666,7 @@
                                                                 </div>
                                                             </div>
 
-
+                                                        
                                                         </div>
 
                                                         <!-- ------- END Item Menu Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -3183,6 +3289,17 @@ export default {
                     // The API returns {code, data, pagination} structure
                     const items = response.data.data || response.data;
                     console.log('🍽️ Section items loaded:', items.length, 'items');
+                    
+                    // Debug: Log first item to verify new/staffPick from backend
+                    if (items.length > 0) {
+                        console.log('🍽️ First item from backend (loadSectionItems):', {
+                            itemID: items[0].itemID,
+                            itemAvailability: items[0].itemAvailability,
+                            new: items[0].new,
+                            staffPick: items[0].staffPick
+                        });
+                    }
+                    
                     return items;
                 } else {
                     console.warn('🍽️ No items found for section:', sectionId);
@@ -3283,6 +3400,19 @@ export default {
 
         // Enrich menu items with listing data
         async enrichItemsWithListingData(items) {
+            console.log('🍽️ enrichItemsWithListingData: Processing', items.length, 'items');
+            
+            // Debug: Log first item BEFORE processing
+            if (items.length > 0) {
+                console.log('🍽️ enrichItemsWithListingData: First item BEFORE enrichment:', {
+                    itemID: items[0].itemID,
+                    itemAvailability: items[0].itemAvailability,
+                    new: items[0].new,
+                    staffPick: items[0].staffPick,
+                    allKeys: Object.keys(items[0])
+                });
+            }
+            
             const enrichedItems = [];
             
             for (const item of items) {
@@ -3380,6 +3510,17 @@ export default {
                 }
             }
 
+            // Debug: Log first enriched item AFTER processing
+            if (enrichedItems.length > 0) {
+                console.log('🍽️ enrichItemsWithListingData: First item AFTER enrichment:', {
+                    itemID: enrichedItems[0].itemID,
+                    itemAvailability: enrichedItems[0].itemAvailability,
+                    new: enrichedItems[0].new,
+                    staffPick: enrichedItems[0].staffPick,
+                    allKeys: Object.keys(enrichedItems[0])
+                });
+            }
+
             return enrichedItems;
         },
 
@@ -3420,6 +3561,12 @@ export default {
             this.editableMainSections = hierarchicalData.map(section => {
                 // Deep copy section menu items and ensure database values are preserved
                 const copiedSectionMenu = section.sectionMenu ? section.sectionMenu.map(item => {
+                    console.log('🍽️ Original item before copy:', {
+                        itemID: item.itemID,
+                        itemAvailability: item.itemAvailability,
+                        new: item.new,
+                        staffPick: item.staffPick
+                    });
                     const copiedItem = JSON.parse(JSON.stringify(item));
                     
                     // Ensure critical database fields are properly mapped for edit mode
@@ -3468,6 +3615,8 @@ export default {
                         itemID: copiedItem.itemID,
                         itemPrice: copiedItem.itemPrice,
                         itemAvailability: copiedItem.itemAvailability,
+                        new: copiedItem.new,
+                        staffPick: copiedItem.staffPick,
                         itemServingType: copiedItem.itemServingType,
                         itemVintage: copiedItem.itemVintage
                     });
@@ -3478,6 +3627,12 @@ export default {
                 // Process subsections with their own menu items
                 const copiedSubsections = section.subsections ? section.subsections.map(subsection => {
                     const copiedSubsectionMenu = subsection.sectionMenu ? subsection.sectionMenu.map(item => {
+                        console.log('🍽️ Original subsection item before copy:', {
+                            itemID: item.itemID,
+                            itemAvailability: item.itemAvailability,
+                            new: item.new,
+                            staffPick: item.staffPick
+                        });
                         const copiedItem = JSON.parse(JSON.stringify(item));
                         
                         // Apply same processing as main section items
@@ -3486,6 +3641,16 @@ export default {
                         }
                         if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
                             copiedItem.itemAvailability = true;
+                        }
+                        
+                        // Ensure 'new' has default value
+                        if (copiedItem.new === undefined || copiedItem.new === null) {
+                            copiedItem.new = false;
+                        }
+                        
+                        // Ensure 'staffPick' has default value
+                        if (copiedItem.staffPick === undefined || copiedItem.staffPick === null) {
+                            copiedItem.staffPick = false;
                         }
                         
                         let servingTypeValue = copiedItem.itemServingType || copiedItem.servingType || null;
@@ -3505,6 +3670,16 @@ export default {
                         if (copiedItem.itemVintage === undefined || copiedItem.itemVintage === null) {
                             copiedItem.itemVintage = copiedItem.vintage || null;
                         }
+                        
+                        console.log('🍽️ Edit mode subsection item mapped:', {
+                            itemID: copiedItem.itemID,
+                            itemPrice: copiedItem.itemPrice,
+                            itemAvailability: copiedItem.itemAvailability,
+                            new: copiedItem.new,
+                            staffPick: copiedItem.staffPick,
+                            itemServingType: copiedItem.itemServingType,
+                            itemVintage: copiedItem.itemVintage
+                        });
                         
                         return copiedItem;
                     }) : [];

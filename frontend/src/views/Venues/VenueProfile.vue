@@ -5477,6 +5477,7 @@ export default {
                         new: item.new,
                         staffPick: item.staffPick,
                         itemPrice: item.itemPrice,
+                        itemServingType: item.servingType,  // Map to itemServingType for edit mode
                         servingType: item.servingType,
                         servingTypeText: item.servingTypeText
                     }));
@@ -5484,6 +5485,18 @@ export default {
                     // Sort items by itemOrder
                     section.sectionMenu.sort((a, b) => parseInt(a.itemOrder) - parseInt(b.itemOrder));
                     console.log(`🍽️ loadMenuItemsForSection: Loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
+                    
+                    // Debug: Log first item to verify new/staffPick mapping
+                    if (section.sectionMenu.length > 0) {
+                        console.log('🍽️ First item mapped in VenueProfile:', {
+                            itemID: section.sectionMenu[0].itemID,
+                            itemAvailability: section.sectionMenu[0].itemAvailability,
+                            new: section.sectionMenu[0].new,
+                            staffPick: section.sectionMenu[0].staffPick,
+                            itemServingType: section.sectionMenu[0].itemServingType,
+                            servingType: section.sectionMenu[0].servingType
+                        });
+                    }
                 } else {
                     section.sectionMenu = [];
                     console.log(`🍽️ loadMenuItemsForSection: No items found for section "${section.sectionName}" - Response:`, itemsResponse.data);
