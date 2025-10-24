@@ -365,6 +365,10 @@
                                                 {{ sectionItem.itemDetails['itemRating'] }}
                                                 <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                             </p>
+                                            <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.25rem;">
+                                                <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
+                                                <span v-if="sectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <!-- SECOND COLUMN: Item Information -->
@@ -439,6 +443,10 @@
                                         <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
                                             <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                         </router-link>
+                                        <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
+                                            <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
+                                            <span v-if="sectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                        </div>
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
                                     <div class="col-lg-7 col-12 ps-lg-4">
@@ -565,6 +573,10 @@
                                                         {{ subsectionItem.itemDetails['itemRating'] }}
                                                         <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                                     </p>
+                                                    <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.25rem;">
+                                                        <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
+                                                        <span v-if="subsectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <!-- SECOND COLUMN: Item Information -->
@@ -632,6 +644,10 @@
                                                 <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
                                                     <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
                                                 </router-link>
+                                                <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
+                                                    <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
+                                                    <span v-if="subsectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                                </div>
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
                                             <div class="col-lg-7 col-12 ps-lg-4">
