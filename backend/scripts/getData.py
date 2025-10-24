@@ -4463,6 +4463,8 @@ def getVenues():
                                     'itemOrder', mi."itemOrder",
                                     'itemPrice', mi."itemPrice",
                                     'itemAvailability', mi."itemAvailability",
+                                    'new', mi."new",
+                                    'staffPick', mi."staffPick",
                                     'itemID', mi."itemID",
                                     'itemServingType', mi."itemServingType"
                                 ) ORDER BY mi."itemOrder")
@@ -4736,6 +4738,7 @@ def getVenueMenu(section_id):
                     p."producerName",
                     mi."itemPrice", mi."itemAvailability", mi."itemServingType", 
                     srvTyp."servingType", mi."variant",
+                    mi."new", mi."staffPick",
                     (SELECT AVG(r."rating") FROM "reviews" r WHERE r."reviewTarget" = lst."id") as "avgRating",
                     COUNT(*) OVER() as total_count
                 FROM "menuItems" mi
@@ -4781,6 +4784,8 @@ def getVenueMenu(section_id):
                         "producerName": row['producerName'],
                         "avgRating": "-" if row['avgRating'] is None else round(float(row['avgRating']), 1),
                         "itemAvailability": row['itemAvailability'],
+                        "new": row['new'],
+                        "staffPick": row['staffPick'],
                         "variant": row['variant'],
                         "servingType": row['itemServingType'],
                         "servingTypeText": row['servingType'],
@@ -4854,6 +4859,8 @@ def getVenueMenuBySearch(venue_id):
                     l.abv,
                     mi."itemPrice",
                     mi."itemAvailability",
+                    mi."new",
+                    mi."staffPick",
                     mi."itemServingType",
                     st."servingType",
                     mi.variant
@@ -4883,6 +4890,8 @@ def getVenueMenuBySearch(venue_id):
                     "drinkType": row['drinkType'],
                     "abv": row['abv'],
                     "itemAvailability": row['itemAvailability'],
+                    "new": row['new'],
+                    "staffPick": row['staffPick'],
                     "variant": row['variant'],
                     "servingType": row['itemServingType'],
                     "servingTypeText": row['servingType'],

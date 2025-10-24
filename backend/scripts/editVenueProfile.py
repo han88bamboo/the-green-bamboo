@@ -1381,6 +1381,18 @@ def editMenuHierarchical():
                         columns.append("variant")
                         values.append(itemVintage)
 
+                    # Add 'new' field if provided
+                    itemNew = item.get('new')
+                    if itemNew is not None:
+                        columns.append("new")
+                        values.append(bool(itemNew))
+                    
+                    # Add 'staffPick' field if provided
+                    itemStaffPick = item.get('staffPick')
+                    if itemStaffPick is not None:
+                        columns.append("staffPick")
+                        values.append(bool(itemStaffPick))
+
                     # Append it back as string to be passed for execution
                     column_names = ", ".join(f'"{col}"' for col in columns)
                     placeholders = ", ".join(["%s"] * len(values))

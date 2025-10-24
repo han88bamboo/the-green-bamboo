@@ -5474,6 +5474,8 @@ export default {
                         itemID: item.itemID,
                         itemOrder: item.itemOrder,
                         itemAvailability: item.itemAvailability,
+                        new: item.new,
+                        staffPick: item.staffPick,
                         itemPrice: item.itemPrice,
                         servingType: item.servingType,
                         servingTypeText: item.servingTypeText

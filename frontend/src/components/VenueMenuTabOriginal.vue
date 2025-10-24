@@ -2809,6 +2809,16 @@ export default {
                         if (item.variant !== undefined && item.variant !== null) {
                             item.itemVintage = item.variant;
                         }
+                        
+                        // Ensure 'new' has default value
+                        if (item.new === undefined || item.new === null) {
+                            item.new = false;
+                        }
+                        
+                        // Ensure 'staffPick' has default value
+                        if (item.staffPick === undefined || item.staffPick === null) {
+                            item.staffPick = false;
+                        }
                     });
                 }
                 
@@ -2819,6 +2829,16 @@ export default {
                             subsection.sectionMenu.forEach(item => {
                                 if (item.variant !== undefined && item.variant !== null) {
                                     item.itemVintage = item.variant;
+                                }
+                                
+                                // Ensure 'new' has default value
+                                if (item.new === undefined || item.new === null) {
+                                    item.new = false;
+                                }
+                                
+                                // Ensure 'staffPick' has default value
+                                if (item.staffPick === undefined || item.staffPick === null) {
+                                    item.staffPick = false;
                                 }
                             });
                         }
@@ -3338,6 +3358,16 @@ export default {
                     // Set the vintage from the backend variant field
                     item.itemVintage = item.variant;
 
+                    // Ensure 'new' has default value
+                    if (item.new === undefined || item.new === null) {
+                        item.new = false;
+                    }
+                    
+                    // Ensure 'staffPick' has default value
+                    if (item.staffPick === undefined || item.staffPick === null) {
+                        item.staffPick = false;
+                    }
+
                     // Get serving type name
                     let servingTypeData = this.servingTypes.find(s => s.id == item["itemServingType"]);
                     if (servingTypeData != undefined) {
@@ -3398,6 +3428,16 @@ export default {
                     }
                     if (copiedItem.itemAvailability === undefined || copiedItem.itemAvailability === null) {
                         copiedItem.itemAvailability = true; // Default to available
+                    }
+                    
+                    // Ensure 'new' has default value
+                    if (copiedItem.new === undefined || copiedItem.new === null) {
+                        copiedItem.new = false;
+                    }
+                    
+                    // Ensure 'staffPick' has default value
+                    if (copiedItem.staffPick === undefined || copiedItem.staffPick === null) {
+                        copiedItem.staffPick = false;
                     }
                     
                     // For serving type dropdown, handle multiple possible field names and ensure integer type
@@ -4601,6 +4641,8 @@ export default {
                             itemVintage: item.vintage || item.itemVintage || null,
                             itemPrice: item.itemPrice || item.price || null,
                             itemAvailability: item.itemAvailability !== undefined ? item.itemAvailability : true,
+                            new: item.new !== undefined ? item.new : false,
+                            staffPick: item.staffPick !== undefined ? item.staffPick : false,
                             itemServingType: item.itemServingType || item.servingTypeID || null
                         };
                         
