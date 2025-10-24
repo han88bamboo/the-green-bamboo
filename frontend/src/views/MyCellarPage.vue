@@ -7408,6 +7408,15 @@ export default {
 .add-drink-to-cellar .card {
   border: 1px solid #007bff;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  transition: none !important;
+  transform: none !important;
+}
+
+.add-drink-to-cellar .card:hover {
+  border: 1px solid #007bff !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  transition: none !important;
+  transform: none !important;
 }
 
 .add-drink-to-cellar .card-header {
@@ -7489,9 +7498,9 @@ export default {
 }
 
 .add-drink-to-cellar .btn-primary:disabled {
-  bbackground-color: #0b5ed7;
+  background-color: #0b5ed7;
   border-color: #0a58ca;
-  opaciy: 0.8;
+  opacity: 0.8;
   
 }
 
@@ -8204,6 +8213,15 @@ export default {
 .cellar-change-log .card {
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   border: 1px solid rgb(219, 219, 219);
+  transition: none !important;
+  transform: none !important;
+}
+
+.cellar-change-log .card:hover {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+  border: 1px solid rgb(219, 219, 219) !important;
+  transition: none !important;
+  transform: none !important;
 }
 
 .cellar-change-log .card-header {
@@ -8232,15 +8250,15 @@ export default {
 .changelog-entry {
   background-color: #fafbfc;
   border: 1px solid #e9ecef !important;
-  transition: all 0.2s ease;
+  /* transition: all 0.2s ease; */ /* Hover effect disabled */
 }
 
-.changelog-entry:hover {
+/* .changelog-entry:hover {
   background-color: #f1f3f4;
   border-color: #d1ecf1 !important;
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+} */ /* Hover effect disabled */
 
 .changelog-entry .change-description {
   font-size: 0.9rem;
