@@ -219,7 +219,7 @@
               <div v-else-if="activeTab === 'dashboard'" class="dashboard-tab-content">
                 <div class="cellar-dashboard">
                   <div class="card h-100">
-                    <div class="card-header">
+                    <div class="card-header w-100">
                       <h5 class="card-title mb-0">
                         <i class="bi bi-bar-chart me-2"></i>
                         Cellar Dashboard
@@ -282,7 +282,7 @@
                               <!-- Top Drink Types -->
                               <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Top Drink Types</h6>
                                   </div>
                                   <div class="card-body">
@@ -300,7 +300,7 @@
                               <!-- Top Categories -->
                               <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Top Categories</h6>
                                   </div>
                                   <div class="card-body">
@@ -318,7 +318,7 @@
                               <!-- Top Countries -->
                               <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Top Countries</h6>
                                   </div>
                                   <div class="card-body">
@@ -336,7 +336,7 @@
                               <!-- Top Producers -->
                               <div class="col-md-4 col-lg-3 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Top Producers</h6>
                                   </div>
                                   <div class="card-body">
@@ -357,7 +357,7 @@
                               <!-- Top Purchase Locations -->
                               <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Top Purchase Locations</h6>
                                   </div>
                                   <div class="card-body">
@@ -375,7 +375,7 @@
                               <!-- Items by Status -->
                               <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Items by Status</h6>
                                   </div>
                                   <div class="card-body">
@@ -393,7 +393,7 @@
                               <!-- Items by Consumption -->
                               <div class="col-md-6 col-lg-4 mb-4">
                                 <div class="card">
-                                  <div class="card-header">
+                                  <div class="card-header w-100">
                                     <h6 class="mb-0">Items by Consumption</h6>
                                   </div>
                                   <div class="card-body">
