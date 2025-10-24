@@ -1373,6 +1373,7 @@ def get_producer_listings():
             return jsonify([])
         
         # Optimized query using trigram index for fuzzy string matching
+        # Set similarity threshold to 0.15 for more lenient matching
         sql = """
             SELECT "id", "producerName", "originCountry",
                 similarity(unaccent("producerName"), unaccent(%s)) as sim_score
@@ -1383,6 +1384,8 @@ def get_producer_listings():
         """
 
         with db_manager.get_cursor() as cursor:
+            # Set threshold to 0.15 for this connection
+            cursor.execute("SET pg_trgm.similarity_threshold = 0.15;")
             cursor.execute(sql, (query, query, limit))
             rows = cursor.fetchall()
 
@@ -2362,7 +2365,7 @@ def getAllUserReviews(id):
             "message": "An error occurred while fetching user reviews."
         }), 500
     
-# [GET] Get all listings names test
+# [GET] Get all listings names 
 @blueprint.route('/bottle-listings', methods=['GET'])
 def get_bottle_listings():
     """Get bottle listings with search functionality"""
@@ -2376,6 +2379,7 @@ def get_bottle_listings():
             return jsonify([])
 
         # Optimized query using trigram index for fuzzy string matching
+        # Set similarity threshold to 0.15 for more lenient matching
         sql = """           
             SELECT 
                 l."id", 
@@ -2409,6 +2413,8 @@ def get_bottle_listings():
             LIMIT %s;
         """
         with db_manager.get_cursor() as cursor:
+            # Set threshold to 0.15 for this connection
+            cursor.execute("SET pg_trgm.similarity_threshold = 0.15;")
             cursor.execute(sql, (query, query, query, query, query, query, limit))
             rows = cursor.fetchall()
 
@@ -3850,7 +3856,7 @@ def getVenuesWithSpecificListing(listingID):
         }), 500
 
 
-# [GET] Get all listings names test
+# [GET] Get all listings names
 @blueprint.route('/venue-listings', methods=['GET'])
 def get_venue_listings():
     """Get venue listings with search functionality"""
@@ -3864,6 +3870,7 @@ def get_venue_listings():
             return jsonify([])
         
         # Optimized query using trigram index for fuzzy string matching
+        # Set similarity threshold to 0.15 for more lenient matching
         sql = """
             SELECT "id", "venueName", "originLocation", "address",
                 similarity(unaccent("venueName"), unaccent(%s)) as sim_score
@@ -3874,6 +3881,8 @@ def get_venue_listings():
         """
 
         with db_manager.get_cursor() as cursor:
+            # Set threshold to 0.15 for this connection
+            cursor.execute("SET pg_trgm.similarity_threshold = 0.15;")
             cursor.execute(sql, (query, query, limit))
             rows = cursor.fetchall()
 
@@ -3914,6 +3923,7 @@ def get_user_listings():
             return jsonify([])
         
         # Optimized query using trigram index for fuzzy string matching
+        # Set similarity threshold to 0.15 for more lenient matching
         sql = """
             SELECT "id", "username", "displayName", "photo",
                 similarity(unaccent("username"), unaccent(%s)) as sim_score
@@ -3924,6 +3934,8 @@ def get_user_listings():
         """
 
         with db_manager.get_cursor() as cursor:
+            # Set threshold to 0.15 for this connection
+            cursor.execute("SET pg_trgm.similarity_threshold = 0.15;")
             cursor.execute(sql, (query, query, limit))
             rows = cursor.fetchall()
 
