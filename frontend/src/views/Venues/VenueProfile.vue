@@ -4063,6 +4063,7 @@
     <SignUpPopup 
         :show="showSignUpPopup"
         v-model:email="signUpEmail"
+        :venueId="targetVenue?.id || parseInt(targetVenueID)"
         @close="closeSignUpPopup"
         @submit="handleSignUpEmailSubmit"
     />
@@ -4844,21 +4845,22 @@ export default {
                 : 'Click to Upload PDF Menu (Make sure to Save profile edits first!)';
         },
 
-        // Check if signup popup should be triggered - now only for venue ID 99
+        // Check if signup popup should be triggered - for venue IDs 99 and 109
         shouldTriggerSignUpPopup() {
             // Original logic (commented out for reference):
             // const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
             // const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;
             // const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
             
-            // New logic: Only trigger for venue ID 99
-            const isTargetVenue = this.targetVenue?.id === 99 || this.targetVenueID === '99';
+            // New logic: Trigger for venue IDs 99 and 109
+            const isTargetVenue = this.targetVenue?.id === 99 || this.targetVenueID === '99' ||
+                                  this.targetVenue?.id === 109 || this.targetVenueID === '109';
             const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   // Keep user sign-in check
             const result = isTargetVenue && isNotSignedIn && !this.signUpPopupTriggered;
             
             console.log('🎪 shouldTriggerSignUpPopup computed:', {
                 // isFestival: isFestival, // Commented out - no longer needed
-                isTargetVenue: isTargetVenue, // New: Check if venue ID is 99
+                isTargetVenue: isTargetVenue, // New: Check if venue ID is 99 or 109
                 isNotSignedIn: isNotSignedIn,
                 signUpPopupTriggered: this.signUpPopupTriggered,
                 result: result,

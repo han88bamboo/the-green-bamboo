@@ -12,14 +12,14 @@
 
             <!-- Banner Image -->
             <div class="banner-container">
-                <img src="/img/defaultGroupBanner.61a71c68.png" alt="Drink-X Banner" class="banner-image" />
+                <img :src="bannerImage" alt="Drink-X Banner" class="banner-image" />
             </div>
 
             <!-- Content -->
             <div class="popup-content">
                 <!-- Header -->
                 <!--<h2 class="popup-title">Track All Your Favourite Drinks on Drink-X. Completely Free!</h2>-->
-                <h2 class="popup-title">Welcome to Whisky Live Singapore 2025! Sign In to Drink-X to Unlock Your Digital Guide</h2>
+                <h2 class="popup-title">{{ welcomeMessage }}</h2>
                 <!-- Tagline -->
                 <p class="popup-tagline">
                     See what others say about the event's drinks, rate drinks you've tasted & track them on your personal cellar system!
@@ -65,6 +65,10 @@ export default {
         email: {
             type: String,
             default: ''
+        },
+        venueId: {
+            type: Number,
+            default: null
         }
     },
     emits: ['close', 'submit', 'update:email'],
@@ -77,6 +81,26 @@ export default {
         isValidEmail() {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(this.emailInput);
+        },
+        welcomeMessage() {
+            if (this.venueId === 109) {
+                return 'Welcome to Sake Matsuri Singapore 2025 (11th Edition)! Sign In to Drink-X to Unlock Your Digital Guide';
+            }
+            if (this.venueId === 99) {
+                return 'Welcome to Whisky Live Singapore 2025! Sign In to Drink-X to Unlock Your Digital Guide';
+            }
+            // Default message for other venues
+            return 'Track All Your Favourite Drinks on Drink-X. Completely Free!';
+        },
+        bannerImage() {
+            if (this.venueId === 109) {
+                return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Sake_Matsuri_banner.png?v=1761298884';
+            }
+            if (this.venueId === 99) {
+                return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_8_Whiskylive-9-november-2019-184-of-361-scaled.jpg?v=1761299521';
+            }
+            // Default banner for other venues
+            return '/img/defaultGroupBanner.61a71c68.png';
         }
     },
     watch: {
