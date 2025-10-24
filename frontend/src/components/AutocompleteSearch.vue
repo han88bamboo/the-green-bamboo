@@ -264,8 +264,8 @@ export default {
   setup(props, { emit }) {
     const router = useRouter()
     const listingsReturnCount = 6
-    const venuesReturnCount = 3
-    const producersReturnCount = 3
+    const venuesReturnCount = 5
+    const producersReturnCount = 5
     const usersReturnCount = 3
     const searchInput = ref(null)
     const searchQuery = ref('')
