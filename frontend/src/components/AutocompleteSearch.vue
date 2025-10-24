@@ -500,7 +500,7 @@ export default {
       if (query.length >= 1) {
         debounceTimer.value = setTimeout(() => {
           performSearch(query)
-        }, 300)
+        }, 450)
       } else {
         // Immediately clear results for empty/short queries
         performSearch(query)
