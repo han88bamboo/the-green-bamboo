@@ -196,11 +196,11 @@
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                backgroundColor: showOnlyTastedItems ? '#49b02e' : '#14785a',
-                                borderColor: '#14785a',
+                                backgroundColor: showOnlyTastedItems ? 'white' : '#49b02e',
+                                borderColor: '#49b02e',
                                 borderWidth: showOnlyTastedItems ? '3px' : '1px',
                                 borderStyle: 'solid',
-                                color: 'white',
+                                color: showOnlyTastedItems ? '#49b02e' : 'white',
                                 fontWeight: 'bold',
                                 fontSize: '0.8rem',
                                 paddingX: '0.2rem',
@@ -9333,7 +9333,7 @@ button[aria-expanded="true"] .collapse-indicator {
   font-size: 1.0rem;
   position: relative;
   border-width: 3px !important;
-  border-color: #14785a !important;
+  border-color: #49b02e !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23ebebeb' stroke-linecap='square' stroke-linejoin='round' stroke-width='2' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");
 }
 

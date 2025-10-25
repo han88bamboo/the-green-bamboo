@@ -74,7 +74,7 @@
         <div class="poll-status">
           <span v-if="!currentPoll.isActive" class="badge bg-secondary me-2">Closed</span>
           <span v-if="!currentPoll.isVisible" class="badge  me-2" style="background-color:#596269;"><i class="bi bi-eye"></i> Hidden</span>
-          <span v-if="currentPoll.expiresAt" class="badge bg-info me-2">
+          <span v-if="currentPoll.expiresAt" class="badge bg-info me-2" >
             Expires: {{ formatDate(currentPoll.expiresAt) }}
           </span>
         </div>
@@ -99,7 +99,7 @@
           
           <!-- Multiple Choice Single Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_single_selection'">
-            <h5 class="mb-3">Select one option:</h5>
+            <p class="mb-3 mobile-rating-smaller-text-2">Select one option:</p>
             
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
@@ -118,10 +118,10 @@
                     v-model="selectedSingleOption"
                   >
                 </div>
-                <span class="option-text">{{ option.optionText }}</span>
+                <span class="option-text mobile-rating-smaller-text-2">{{ option.optionText }}</span>
               </div>
               <button 
-                class="btn btn-primary mt-3" 
+                class="btn primary-btn-less-round-blue fw-bold mobile-rating-smaller-text-2 mt-2" 
                 @click="submitSingleChoice(currentPoll.id)"
                 :disabled="!selectedSingleOption"
               >
@@ -132,7 +132,7 @@
             <!-- Results View (for everyone else) -->
             <div v-if="shouldShowResults" class="poll-results">
               <!-- User's Previous Vote Indicator -->
-              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3 mobile-rating-smaller-text-2">
                 <div class="alert alert-info">
                   <i class="bi bi-check-circle-fill me-2"></i>
                   <strong>You voted for:</strong> 
@@ -146,7 +146,7 @@
                 class="result-option"
               >
                 <div class="result-header">
-                  <span class="option-text">
+                  <span class="option-text mobile-rating-smaller-text-2">
                     {{ option.optionText }}
                     <i v-if="userVotedForOption(currentPoll.id, option.id)" 
                        class="bi bi-check-circle-fill text-success ms-2" 
@@ -259,7 +259,7 @@
                   <div v-else-if="!loadingDetailedResponses" class="no-responses">
                     <div class="text-center text-muted py-3">
                       <i class="bi bi-inbox mb-2" style="font-size: 2rem;"></i>
-                      <p class="mb-0">No responses yet for this poll.</p>
+                      <p class="mb-0 mobile-rating-smaller-text-2">No responses yet for this poll.</p>
                     </div>
                   </div>
                   
@@ -276,7 +276,7 @@
 
           <!-- Multiple Choice Multi Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection'">
-             <h5 class="mb-3">Select all that apply:</h5>
+             <p class="mb-3 mobile-rating-smaller-text-2">Select all that apply:</p>
              
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
@@ -294,10 +294,10 @@
                     v-model="selectedMultiOptions"
                   >
                 </div>
-                <span class="option-text">{{ option.optionText }}</span>
+                <span class="option-text mobile-rating-smaller-text-2">{{ option.optionText }}</span>
               </div>
               <button 
-                class="btn btn-primary mt-3" 
+                class="btn primary-btn-less-round-blue fw-bold mobile-rating-smaller-text-2 mt-2" 
                 @click="submitMultiChoice(currentPoll.id)"
                 :disabled="selectedMultiOptions.length === 0"
               >
@@ -308,7 +308,7 @@
             <!-- Results View (for everyone else) -->
             <div v-if="shouldShowResults" class="poll-results">
               <!-- User's Previous Vote Indicator -->
-              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3 mobile-rating-smaller-text-2">
                 <div class="alert alert-info">
                   <i class="bi bi-check-circle-fill me-2"></i>
                   <strong>You voted for:</strong> 
@@ -322,7 +322,7 @@
                 class="result-option"
               >
                 <div class="result-header">
-                  <span class="option-text">
+                  <span class="option-text mobile-rating-smaller-text-2">
                     {{ option.optionText }}
                     <i v-if="userVotedForOption(currentPoll.id, option.id)" 
                        class="bi bi-check-circle-fill text-success ms-2" 
@@ -456,8 +456,8 @@
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
               <div class="rating-scale">
-                <div class="rating-labels d-flex justify-content-center">
-                    <h5 >Select from 1 to 5:</h5>
+                <div class="rating-labels d-flex justify-content-center mb-1">
+                    <p>Select from 1 to 5:</p>
                 </div>
                 <div class="rating-options">
                   <div 
@@ -476,7 +476,7 @@
             <!-- Results View (for everyone else) -->
             <div v-if="shouldShowResults" class="poll-results rating-results">
               <!-- User's Previous Rating Indicator -->
-              <div v-if="currentUserResponse" class="user-vote-indicator mb-3">
+              <div v-if="currentUserResponse" class="user-vote-indicator mb-3 mobile-rating-smaller-text-2">
                 <div class="alert alert-info">
                   <i class="bi bi-star-fill me-2"></i>
                   <strong>You rated:</strong> 

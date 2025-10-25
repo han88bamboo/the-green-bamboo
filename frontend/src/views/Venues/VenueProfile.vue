@@ -1565,7 +1565,7 @@
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 
                 <!-- Poll Card Section (only for logged-in users) -->
-                <div v-if="user_id !== 'defaultUser'" class="row mt-4" id="poll-section">
+                <div v-if="user_id !== 'defaultUser'" class="row my-3" id="poll-section">
                     <div class="col-12">
                         <PollCard 
                             :creator-id="targetVenue.id"
