@@ -399,7 +399,7 @@
                                             class="producer-bottle-listing-page-bottle-image clickable-image" 
                                             loading="lazy"
                                             @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
-                                            style="cursor: pointer">
+                                            style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
                                             <h2 class="fw-bold rating-text text-center m-0 pt-2 d-flex align-items-center justify-content-center"  :class="{ 'd-none': !localShowRating }">
@@ -563,7 +563,7 @@
                                             class="producer-bottle-listing-page-bottle-image clickable-image" 
                                             loading="lazy"
                                             @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
-                                            style="cursor: pointer">
+                                            style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
                                     <div class="col-lg-8 col-12 ps-lg-4">
@@ -735,7 +735,7 @@
                                                     class="producer-bottle-listing-page-bottle-image clickable-image" 
                                                     loading="lazy"
                                                     @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer">
+                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
                                                     <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
@@ -878,7 +878,7 @@
                                                     class="producer-bottle-listing-page-bottle-image clickable-image" 
                                                     loading="lazy"
                                                     @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer">
+                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
                                             <div class="col-lg-8 col-12 ps-lg-4">
@@ -1244,7 +1244,7 @@
                                             <!-- Standard menu item template for main section direct items (same as before) -->
                                             <div class="row mobile-view-show">
                                                 <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                     <div class="row">
                                                         <div class="col-1 d-grid">
                                                             <button type="button" class="btn icon-btn" @click.stop.prevent="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
@@ -1552,7 +1552,7 @@
                                                         class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                                         <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image"> -->
                                                         <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
-                                                            class="producer-bottle-listing-page-bottle-image">
+                                                            class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                         <!-- Remove Item From Menu Section -->
                                                         <div class="row">
                                                             <div class="col-1 d-grid">
@@ -2178,7 +2178,7 @@
                                             <div
                                                 class=" mobile-col-3 image-container text-center mx-auto">
                                                 <img :src="(item.newMenuItemTarget.photo || defaultPhoto)"
-                                                    class="producer-bottle-listing-page-bottle-image">
+                                                    class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                             </div>
 
                                             <!-- Item Information -->
