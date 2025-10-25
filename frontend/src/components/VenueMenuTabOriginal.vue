@@ -1121,8 +1121,6 @@
                                                             {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
                                                         </label>
                                                     </div>
-
-
                                                 </div>
                                                 <div class="col-3 pe-0">
                                                     <div class="input-group">
@@ -1739,8 +1737,6 @@
                                                                         {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
                                                                     </label>
                                                                 </div>
-
-
                                                             </div>
 
                                                             <!-- Edit Item Price -->
