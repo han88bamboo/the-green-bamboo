@@ -392,14 +392,33 @@
                                 <div class="row">
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
-                                        <!-- Item Image -->
-                                        <img 
-                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                            :alt="sectionItem.itemDetails['itemName']"
-                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                            loading="lazy"
-                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
-                                            style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        <!-- Item Image with Notch Wrapper -->
+                                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                            <!-- Notch Overlay for New Item (takes priority) -->
+                                            <div v-if="sectionItem.new" class="item-notch item-notch-new">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">★</span>
+                                                    <span class="notch-text">New Item!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                            <div v-else-if="sectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">♛</span>
+                                                    <span class="notch-text">Staff Pick!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <img 
+                                                :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                :alt="sectionItem.itemDetails['itemName']"
+                                                class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                loading="lazy" 
+                                                @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
+                                                style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        </div>
+
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
                                             <h2 class="fw-bold rating-text text-center m-0 pt-2 d-flex align-items-center justify-content-center"  :class="{ 'd-none': !localShowRating }">
@@ -557,13 +576,32 @@
                                 <div class="row align-items-center">
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                        <img 
-                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                            :alt="sectionItem.itemDetails['itemName']"
-                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                            loading="lazy"
-                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
-                                            style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        <!-- Item Image with Notch Wrapper -->
+                                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                            <!-- Notch Overlay for New Item (takes priority) -->
+                                            <div v-if="sectionItem.new" class="item-notch item-notch-new">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">★</span>
+                                                    <span class="notch-text">New Item!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                            <div v-else-if="sectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">♛</span>
+                                                    <span class="notch-text">Staff Pick!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <img 
+                                                :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                :alt="sectionItem.itemDetails['itemName']"
+                                                class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                loading="lazy" 
+                                                @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
+                                                style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        </div>
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
                                     <div class="col-lg-8 col-12 ps-lg-4">
@@ -728,14 +766,32 @@
                                         <div class="row">
                                             <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                             <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
-                                                <!-- Item Image -->
-                                                <img 
-                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                                    :alt="subsectionItem.itemDetails['itemName']"
-                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                                    loading="lazy"
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                                                               <!-- Item Image with Notch Wrapper -->
+                                                <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                                    <!-- Notch Overlay for New Item (takes priority) -->
+                                                    <div v-if="subsectionItem.new" class="item-notch item-notch-new">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">★</span>
+                                                            <span class="notch-text">New Item!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                                    <div v-else-if="subsectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">♛</span>
+                                                            <span class="notch-text">Staff Pick!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <img 
+                                                        :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                        :alt="subsectionItem.itemDetails['itemName']"
+                                                        class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                        loading="lazy" 
+                                                        @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                        style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                </div>
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
                                                     <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
@@ -872,13 +928,32 @@
                                         <div class="row align-items-center">
                                             <!-- LEFT COLUMN Item Image -->
                                             <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                                <img 
-                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                                    :alt="subsectionItem.itemDetails['itemName']"
-                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                                    loading="lazy"
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                                                                <!-- Item Image with Notch Wrapper -->
+                                                <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                                    <!-- Notch Overlay for New Item (takes priority) -->
+                                                    <div v-if="subsectionItem.new" class="item-notch item-notch-new">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">★</span>
+                                                            <span class="notch-text">New Item!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                                    <div v-else-if="subsectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">♛</span>
+                                                            <span class="notch-text">Staff Pick!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <img 
+                                                        :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                        :alt="subsectionItem.itemDetails['itemName']"
+                                                        class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                        loading="lazy" 
+                                                        @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                        style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                </div>
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
                                             <div class="col-lg-8 col-12 ps-lg-4">
@@ -1285,7 +1360,7 @@
                                                 </div>
                                             </div>
                                             <div class="row mobile-view-show">
-                                                <div class="col-4 ps-0 pt-2">
+                                                <div class="col-4 ps-0 pt-2 pe-0">
                                                     <div class="form-check form-switch form-check-inline">
                                                         <input class="form-check-input" type="checkbox" role="switch"
                                                             :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
@@ -1294,6 +1369,30 @@
                                                             :class="menuItem.itemAvailability ? 'text-success' : 'text-danger'"
                                                             :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
                                                             {{ menuItem.itemAvailability ? 'Available' : 'Unavailable' }}
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="form-check form-switch form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                            v-model="menuItem.new"
+                                                            @change="menuItem.new && (menuItem.staffPick = false)">
+                                                        <label class="form-check-label fst-italic"
+                                                            :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                            :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                            {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                        </label>
+                                                    </div>
+
+                                                     <div class="form-check form-switch form-check-inline">
+                                                        <input class="form-check-input" type="checkbox" role="switch"
+                                                            :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                            v-model="menuItem.staffPick"
+                                                            @change="menuItem.staffPick && (menuItem.new = false)">
+                                                        <label class="form-check-label fst-italic"
+                                                            :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                            :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                            {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1373,6 +1472,31 @@
                                                                     {{ menuItem.itemAvailability ? 'Item Available' : 'Temporarily Unavailable' }}
                                                                 </label>
                                                             </div>
+
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                    :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
+                                                                    v-model="menuItem.new"
+                                                                    @change="menuItem.new && (menuItem.staffPick = false)">
+                                                                <label class="form-check-label fst-italic"
+                                                                    :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                    :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
+                                                                    {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                </label>
+                                                            </div>
+
+                                                            <div class="form-check form-switch form-check-inline">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                    :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
+                                                                    v-model="menuItem.staffPick"
+                                                                    @change="menuItem.staffPick && (menuItem.new = false)">
+                                                                <label class="form-check-label fst-italic"
+                                                                    :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                    :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
+                                                                    {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
+                                                                </label>
+                                                            </div>
+
                                                         </div>
                                                         <div class="col-3">
                                                             <div class="input-group">
@@ -1656,7 +1780,7 @@
                                                 <!-- Item Menu Details abc-->
                                                 <div class="row mobile-view-show">
                                                     <!-- Toggle Item Availability -->
-                                                    <div class="col-4 ps-0 pt-2">
+                                                    <div class="col-4 ps-0 pt-2 pe-0">
                                                         <div class="form-check form-switch form-check-inline">
                                                             <input class="form-check-input" type="checkbox"
                                                                 role="switch"
@@ -1672,6 +1796,34 @@
                                                                 class="form-check-label text-danger fst-italic"
                                                                 :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
                                                                 Unavailable
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="form-check form-switch form-check-inline">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                role="switch"
+                                                                :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                v-model="menuItem.new"
+                                                                @change="menuItem.new && (menuItem.staffPick = false)">
+                                                            <label class="form-check-label fst-italic"
+                                                                :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                            </label>
+                                                        </div>
+
+                                                        <div class="form-check form-switch form-check-inline">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                role="switch"
+                                                                :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                v-model="menuItem.staffPick"
+                                                                @change="menuItem.staffPick && (menuItem.new = false)">
+                                                            <label class="form-check-label fst-italic"
+                                                                :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
                                                             </label>
                                                         </div>
                                                     </div>
@@ -1808,8 +1960,7 @@
 
                                                             <!-- Toggle Item Availability -->
                                                             <div class="col-4">
-                                                                <div
-                                                                    class="form-check form-switch form-check-inline">
+                                                                <div class="form-check form-switch form-check-inline">
                                                                     <input class="form-check-input"
                                                                         type="checkbox" role="switch"
                                                                         :id="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
@@ -1824,6 +1975,34 @@
                                                                         class="form-check-label text-danger fst-italic"
                                                                         :for="'AvailCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
                                                                         Temporarily Unavailable
+                                                                    </label>
+                                                                </div>
+                                                                
+                                                                <div class="form-check form-switch form-check-inline">
+                                                                    <input class="form-check-input"
+                                                                        type="checkbox" role="switch"
+                                                                        :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        v-model="menuItem.new"
+                                                                        @change="menuItem.new && (menuItem.staffPick = false)">
+                                                                    <label class="form-check-label fst-italic"
+                                                                        :class="menuItem.new ? 'text-primary' : 'text-muted'"
+                                                                        :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        {{ menuItem.new ? 'New Item' : 'Not New' }}
+                                                                    </label>
+                                                                </div>
+
+                                                                <div class="form-check form-switch form-check-inline">
+                                                                    <input class="form-check-input"
+                                                                        type="checkbox" role="switch"
+                                                                        :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
+                                                                        v-model="menuItem.staffPick"
+                                                                        @change="menuItem.staffPick && (menuItem.new = false)">
+                                                                    <label class="form-check-label fst-italic"
+                                                                        :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
+                                                                        :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
+                                                                        {{ menuItem.staffPick ? 'Staff Pick' : 'Not Staff Pick' }}
                                                                     </label>
                                                                 </div>
                                                             </div>
@@ -6016,6 +6195,8 @@ export default {
                             itemVintage: item.vintage || item.itemVintage || null,
                             itemPrice: item.itemPrice || item.price || null,
                             itemAvailability: item.itemAvailability !== undefined ? item.itemAvailability : true,
+                            new: item.new !== undefined ? item.new : false,
+                            staffPick: item.staffPick !== undefined ? item.staffPick : false,
                             itemServingType: item.itemServingType || item.servingTypeID || null
                         };
                         
@@ -9189,6 +9370,114 @@ button[aria-expanded="false"] .collapse-indicator {
 
 button[aria-expanded="true"] .collapse-indicator {
   transform: rotate(0deg);
+}
+
+/* ===== ITEM NOTCH OVERLAY STYLES (New Item & Staff Pick) ===== */
+
+/* Base notch styles - positioned in top-left corner of image container */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px; /* Match the image border-radius */
+}
+
+/* New Item notch - Orange/Yellow theme */
+.item-notch-new {
+  border-color: #F2994A transparent transparent transparent;
+}
+
+/* Staff Pick notch - Black theme */
+.item-notch-staff-pick {
+  border-color: #2C2C2C transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* New Item text styling */
+.item-notch-new .notch-content {
+  color: white;
+}
+
+/* Staff Pick text styling */
+.item-notch-staff-pick .notch-content {
+  color: #FFD700; /* Gold color for contrast on black */
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
 }
 
 /* Drag and drop ghost styles for hierarchical menu system */
