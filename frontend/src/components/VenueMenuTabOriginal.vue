@@ -355,8 +355,25 @@
                                 <div class="row">
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
-                                        <!-- Item Image -->
-                                    
+                                        
+                                        <!-- Item Image with Notch Wrapper -->
+                                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                            <!-- Notch Overlay for New Item (takes priority) -->
+                                            <div v-if="sectionItem.new" class="item-notch item-notch-new">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">★</span>
+                                                    <span class="notch-text">New Item!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                            <div v-else-if="sectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">♛</span>
+                                                    <span class="notch-text">Staff Pick!</span>
+                                                </div>
+                                            </div>
+                                            
                                             <img 
                                                 :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
                                                 :alt="sectionItem.itemDetails['itemName']"
@@ -364,6 +381,7 @@
                                                 loading="lazy" 
                                                 @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
                                                 style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        </div>
                                         
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
@@ -371,10 +389,6 @@
                                                 {{ sectionItem.itemDetails['itemRating'] }}
                                                 <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                             </p>
-                                            <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.25rem;">
-                                                <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
-                                                <span v-if="sectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
-                                            </div>
                                         </div>
                                     </div>
                                     <!-- SECOND COLUMN: Item Information -->
@@ -447,17 +461,31 @@
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                         
-                                        <img 
-                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                            :alt="sectionItem.itemDetails['itemName']"
-                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                            loading="lazy" 
-                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
-                                            style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                        
-                                        <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
-                                            <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
-                                            <span v-if="sectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                        <!-- Item Image with Notch Wrapper -->
+                                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                            <!-- Notch Overlay for New Item (takes priority) -->
+                                            <div v-if="sectionItem.new" class="item-notch item-notch-new">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">★</span>
+                                                    <span class="notch-text">New Item!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                            <div v-else-if="sectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                <div class="notch-content">
+                                                    <span class="notch-icon">♛</span>
+                                                    <span class="notch-text">Staff Pick!</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <img 
+                                                :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                :alt="sectionItem.itemDetails['itemName']"
+                                                class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                loading="lazy" 
+                                                @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
+                                                style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                         </div>
                                     </div>
                                     <!-- CENTER COLUMN (Main Info) -->
@@ -575,15 +603,33 @@
                                         <div class="row">
                                             <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                             <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
-                                                <!-- Item Image -->
                                                 
-                                                <img 
-                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                                    :alt="subsectionItem.itemDetails['itemName']"
-                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                                    loading="lazy" 
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                <!-- Item Image with Notch Wrapper -->
+                                                <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                                    <!-- Notch Overlay for New Item (takes priority) -->
+                                                    <div v-if="subsectionItem.new" class="item-notch item-notch-new">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">★</span>
+                                                            <span class="notch-text">New Item!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                                    <div v-else-if="subsectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">♛</span>
+                                                            <span class="notch-text">Staff Pick!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <img 
+                                                        :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                        :alt="subsectionItem.itemDetails['itemName']"
+                                                        class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                        loading="lazy" 
+                                                        @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                        style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                </div>
                                                 
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
@@ -591,10 +637,6 @@
                                                         {{ subsectionItem.itemDetails['itemRating'] }}
                                                         <span style="font-size: 20px; margin-left: 0.3rem;">★</span>
                                                     </p>
-                                                    <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.25rem;">
-                                                        <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
-                                                        <span v-if="subsectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
-                                                    </div>
                                                 </div>
                                             </div>
                                             <!-- SECOND COLUMN: Item Information -->
@@ -660,17 +702,31 @@
                                             <!-- LEFT COLUMN Item Image -->
                                             <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                                
-                                                <img 
-                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
-                                                    :alt="subsectionItem.itemDetails['itemName']"
-                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
-                                                    loading="lazy" 
-                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
-                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                                
-                                                <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
-                                                    <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
-                                                    <span v-if="subsectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
+                                                <!-- Item Image with Notch Wrapper -->
+                                                <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                                                    <!-- Notch Overlay for New Item (takes priority) -->
+                                                    <div v-if="subsectionItem.new" class="item-notch item-notch-new">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">★</span>
+                                                            <span class="notch-text">New Item!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Notch Overlay for Staff Pick (only if not new) -->
+                                                    <div v-else-if="subsectionItem.staffPick" class="item-notch item-notch-staff-pick">
+                                                        <div class="notch-content">
+                                                            <span class="notch-icon">♛</span>
+                                                            <span class="notch-text">Staff Pick!</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <img 
+                                                        :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                        :alt="subsectionItem.itemDetails['itemName']"
+                                                        class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                        loading="lazy" 
+                                                        @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                        style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                 </div>
                                             </div>
                                             <!-- CENTER COLUMN (Main Info) -->
@@ -6896,6 +6952,114 @@ button[aria-expanded="false"] .collapse-indicator {
 
 button[aria-expanded="true"] .collapse-indicator {
   transform: rotate(0deg);
+}
+
+/* ===== ITEM NOTCH OVERLAY STYLES (New Item & Staff Pick) ===== */
+
+/* Base notch styles - positioned in top-left corner of image container */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px; /* Match the image border-radius */
+}
+
+/* New Item notch - Orange/Yellow theme */
+.item-notch-new {
+  border-color: #F2994A transparent transparent transparent;
+}
+
+/* Staff Pick notch - Black theme */
+.item-notch-staff-pick {
+  border-color: #2C2C2C transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* New Item text styling */
+.item-notch-new .notch-content {
+  color: white;
+}
+
+/* Staff Pick text styling */
+.item-notch-staff-pick .notch-content {
+  color: #FFD700; /* Gold color for contrast on black */
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
 }
 
 /* Drag and drop ghost styles for hierarchical menu system */
