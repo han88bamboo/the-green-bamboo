@@ -1101,7 +1101,8 @@
                                                     <div class="form-check form-switch form-check-inline">
                                                         <input class="form-check-input" type="checkbox" role="switch"
                                                             :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                            v-model="menuItem.new">
+                                                            v-model="menuItem.new"
+                                                            @change="menuItem.new && (menuItem.staffPick = false)">
                                                         <label class="form-check-label fst-italic"
                                                             :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                             :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
@@ -1112,7 +1113,8 @@
                                                      <div class="form-check form-switch form-check-inline">
                                                         <input class="form-check-input" type="checkbox" role="switch"
                                                             :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                            v-model="menuItem.staffPick">
+                                                            v-model="menuItem.staffPick"
+                                                            @change="menuItem.staffPick && (menuItem.new = false)">
                                                         <label class="form-check-label fst-italic"
                                                             :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                             :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
@@ -1203,7 +1205,8 @@
                                                             <div class="form-check form-switch form-check-inline">
                                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                                     :id="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
-                                                                    v-model="menuItem.new">
+                                                                    v-model="menuItem.new"
+                                                                    @change="menuItem.new && (menuItem.staffPick = false)">
                                                                 <label class="form-check-label fst-italic"
                                                                     :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                     :for="'NewCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
@@ -1214,7 +1217,8 @@
                                                             <div class="form-check form-switch form-check-inline">
                                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                                     :id="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'"
-                                                                    v-model="menuItem.staffPick">
+                                                                    v-model="menuItem.staffPick"
+                                                                    @change="menuItem.staffPick && (menuItem.new = false)">
                                                                 <label class="form-check-label fst-italic"
                                                                     :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                     :for="'StaffPickCheck' + menuSection.sectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName + 'Desktop'">
@@ -1531,7 +1535,8 @@
                                                                 role="switch"
                                                                 :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                 :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                                v-model="menuItem.new">
+                                                                v-model="menuItem.new"
+                                                                @change="menuItem.new && (menuItem.staffPick = false)">
                                                             <label class="form-check-label fst-italic"
                                                                 :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                 :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
@@ -1544,7 +1549,8 @@
                                                                 role="switch"
                                                                 :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                 :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                                v-model="menuItem.staffPick">
+                                                                v-model="menuItem.staffPick"
+                                                                @change="menuItem.staffPick && (menuItem.new = false)">
                                                             <label class="form-check-label fst-italic"
                                                                 :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                 :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
@@ -1711,7 +1717,8 @@
                                                                         type="checkbox" role="switch"
                                                                         :id="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                         :name="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                                        v-model="menuItem.new">
+                                                                        v-model="menuItem.new"
+                                                                        @change="menuItem.new && (menuItem.staffPick = false)">
                                                                     <label class="form-check-label fst-italic"
                                                                         :class="menuItem.new ? 'text-primary' : 'text-muted'"
                                                                         :for="'NewCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
@@ -1724,7 +1731,8 @@
                                                                         type="checkbox" role="switch"
                                                                         :id="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
                                                                         :name="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName"
-                                                                        v-model="menuItem.staffPick">
+                                                                        v-model="menuItem.staffPick"
+                                                                        @change="menuItem.staffPick && (menuItem.new = false)">
                                                                     <label class="form-check-label fst-italic"
                                                                         :class="menuItem.staffPick ? 'text-warning' : 'text-muted'"
                                                                         :for="'StaffPickCheck' + menuSection.sectionOrder + subsection.subsectionOrder + menuItem.itemOrder + menuItem.itemDetails.itemName">
