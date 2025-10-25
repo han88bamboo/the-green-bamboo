@@ -84,13 +84,13 @@ export default {
         },
         welcomeMessage() {
             if (this.venueId === 109) {
-                return 'Welcome to Sake Matsuri Singapore 2025 (11th Edition)! Sign In to Drink-X to Unlock Your Digital Guide';
+                return 'Welcome to Sake Matsuri Singapore 2025 (11th Edition)! Sign In to Get Started!';
             }
             if (this.venueId === 99) {
-                return 'Welcome to Whisky Live Singapore 2025! Sign In to Drink-X to Unlock Your Digital Guide';
+                return 'Welcome to Whisky Live Singapore 2025! Sign In to Get Started!';
             }
             // Default message for other venues
-            return 'Track All Your Favourite Drinks on Drink-X. Completely Free!';
+            return 'Keep Track of All Your Favourite Drinks on Drink-X. Completely Free!';
         },
         bannerImage() {
             if (this.venueId === 109) {
