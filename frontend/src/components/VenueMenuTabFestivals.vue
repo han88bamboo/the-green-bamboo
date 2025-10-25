@@ -2455,11 +2455,11 @@
                 <!--tzh changed #535C72 to #F0B358-->
                 <!-- V-if to edit or add review -->
                 <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Add Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                  Add Your Review of <b>{{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}</b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <!--tzh changed white to black and to bold-->
                 <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Edit Your Review: {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }}<span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
+                  Edit Your Review of <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b><span v-if="currentMenuItem?.variant || currentMenuItem?.itemVintage"> ({{ currentMenuItem?.variant || currentMenuItem?.itemVintage }})</span>
                 </h5>
                 <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
                   aria-label="Close"></button>
@@ -2467,12 +2467,6 @@
 
               <!-- This is where modal starts for review-->
               <div class="modal-body px-4">
-                <!-- row 0: expression name for mobile only -->
-                <div class="row mobile-view-show">
-                  <p class="text-body-secondary text-start">
-                    <b> {{ currentMenuItem?.itemDetails?.itemName || currentMenuItem?.listingName || 'Unknown Item' }} </b>
-                  </p>
-                </div>
                 <!-- row 1: language, location -->
                 <div class="row mobile-view-hide">
                   <!-- language-->
@@ -2494,6 +2488,32 @@
                       </p>
                     </div>
                   </div>
+            
+                </div>
+                <div class="row">
+                    <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                        class="col-12">
+                        <p class="text-start mb-0 fw-bold">Vintage
+                          <span
+                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
+                            For wine and sake, you can review specific vintage years.
+                          </span>
+                        </p>
+                    </div>
+                    <div class="row mb-2">
+                      <div
+                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
+                        class="col-4">
+                        <input v-model="variant" type="text" class="form-control" id="vintage"
+                          placeholder="e.g. 2020" 
+                          :class="{ 'bg-light': isVintageAutoPopulated }" />
+                        <small v-if="isVintageAutoPopulated" class="text-muted">
+                          <i class="fas fa-info-circle"></i> Auto-filled from menu item
+                        </small>
+                      </div>
+                    </div>
                 </div>
 
                 <!-- row 4A: add photo, friends, location-->
@@ -2623,227 +2643,81 @@
                   </div>
                 </div>
 
-                <!-- row 2: rating -->
+                <!-- row 10: flavour tags -->
                 <div class="row">
-                  <div class="col-11 mb-3">
-                    <div class="row align-items-center text-start" >
-                      <p class="text-star mb-1 fw-bold my-2">
-                      <span class="badge rounded-pill step-index ">2</span>
-                        &nbsp;My Rating<span class="text-danger">*</span>
-                      </p>
-                      <label for="customRange2" class="form-label">
-                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
-                        Stars
-                      </label>
-                      <div class="d-flex align-items-center rounded p-2 mx-3" style="background-color: rgb(255, 246, 228);">
-                        <div class="col-auto">
-                          <label for="customRange" class="ms-2 form-label fw-bold">1</label>
-                        </div>
+                  <div class="form-group mb-3 text-start ">
+                    <p class="text-start mb-2 fw-bold my-2">
+                      <span class="badge rounded-pill step-index">2</span>
+                      &nbsp;Flavour Tags
+                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
+                      Tag the flavours you taste:
+                      </span>
+                    </p>
+                    <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
+                      Selected flavour tags:
+                      <div class="row">
                         <div class="col">
-                          <div class="slider-container" style="transform: scale(0.95); transform-origin: center;">
-                            <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
-                              id="customRange"   />
-                            <div class="tickmarks">
-                              <span class="tick" style="left: 5%">|</span>
-                              <span class="tick" style="left: 15%">|</span>
-                              <span class="tick" style="left: 25%">|</span>
-                              <span class="tick" style="left: 35%">|</span>
-                              <span class="tick" style="left: 45%">|</span>
-                              <span class="tick" style="left: 55%">|</span>
-                              <span class="tick" style="left: 65%">|</span>
-                              <span class="tick" style="left: 75%">|</span>
-                              <span class="tick" style="left: 85%">|</span>
-                              <span class="tick" style="left: 95%">|</span>
+                          <div class="d-flex flex-wrap gap-2">
+                            <div v-for="flavourTag in selectedFlavourTags" v-bind:key="flavourTag" class="mb-0 pb-0">
+                              <button v-if="flavourTag == '<deleted>'" :style="{
+                                color: 'white',
+                                backgroundColor: '#030303',
+                              }" class="btn">
+                                {{ flavourTag }}
+                              </button>
+                              <button v-else :style="{
+                                color: 'white',
+                                backgroundColor:
+                                  '#' + flavourTag.split('#')[1],
+                              }" class="btn">
+                                {{ flavourTag.split("#")[0] }}
+                              </button>
                             </div>
                           </div>
                         </div>
-                        <div class="col-auto">
-                          <label for="customRange" class="me-2 form-label fw-bold">10</label>
-                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                <!-- row 4: review and vintage -->
-                <div class="row">
-                  <div class="col justify-content-start mb-3">
-                    <div class="row mb-2">
-                      <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
-                        class="col-12">
-                        <p class="text-start mb-0 fw-bold">Vintage
-                          <span
-                            v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
-                            class="text-start mb-0 fw-bold" style="font-size: 0.85em; color: #6c757d;">
-                            For wine and sake, you can review specific vintage years.
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="row mb-2">
-                      <div
-                        v-if="Array.isArray(VARIANT_DRNK_TYP) && VARIANT_DRNK_TYP.includes(currentMenuItem?.drinkType)"
-                        class="col-4">
-                        <input v-model="variant" type="text" class="form-control" id="vintage"
-                          placeholder="e.g. 2020" 
-                          :class="{ 'bg-light': isVintageAutoPopulated }" />
-                        <small v-if="isVintageAutoPopulated" class="text-muted">
-                          <i class="fas fa-info-circle"></i> Auto-filled from menu item
-                        </small>
-                      </div>
-                    </div>
-                    <!-- Labels row -->
-                    <div class="row mb-2">
-                      <div class="col-12">
-                        <p class="text-start mb-0 fw-bold">
-                          <span class="badge rounded-pill step-index">3</span>&nbsp;
-                          Review<span class="text-danger fw-bold">*</span>
-                        </p>
-
-                      </div>
-                    </div>
-
-                    <!-- Input fields row -->
-                    <div class="row">
-                      <div class="col-12">
-                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Write your review here..."></textarea>
-                      </div>
-                    </div>
-
-                    <div v-if="reviewDescError !== ''" class="col-md-12">
-                      <p class="text-danger text-start mb-2 fw-bold">
-                        {{ reviewDescError }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- row 5: buttons (would recommend, would buy again) -->
-                <div class="row">
-                  <!-- Would Recommend Section -->
-                  <div class="col-md-6 mb-3 text-start">
-                    <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
-                    <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
-                      <option value="" selected disabled>
-                        Select Yes / No
-                      </option>
-                      <option :value="true">Yes</option>
-                      <option :value="false">No</option>
-                      <option :value="null">–</option>
-                    </select>
-                  </div>
-
-                  <!-- Would Buy Again Section -->
-                  <div class="col-md-6 mb-3 text-start">
-                    <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
-                    <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
-                      <option value="" disabled selected>
-                        Select Yes / No
-                      </option>
-                      <option :value="true">Yes</option>
-                      <option :value="false">No</option>
-                      <option :value="null">–</option>
-                    </select>
-                  </div>
-                </div>
-
-                
-
-                <!-- row 6: extend review -->
-                <div class="row">
-                  <!-- Buttons to expand -->
-                  <div v-if="!extendReview" class="col justify-content-start mb-3 text-start">
-                    <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
-                        @click="controlModal">
-                        Extend Review &#9660;
-                      </button>
-                    </div>
-                  </div>
-                  <!-- Button to collapse -->
-                  <div v-if="extendReview" class="col justify-content-start mb-3 text-start">
-                    <div class="col-md-12 text-center">
-                      <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
-                        @click="controlModal">
-                        Condense Review &#9650;
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Preview section when collapsed -->
-                <div v-if="!extendReview" class="row mb-3">
-                  <div class="col-12">
-                    <div class="extended-preview-container" @click="controlModal">
-                      <!-- Limited height preview content -->
-                      <div class="preview-content">
-                        <!-- row 7: colours -->
+                    
+                    <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags"
+                      v-bind:key="family['_id']" :style="{
+                        color: 'white',
+                        backgroundColor: family['hexcode'],
+                        borderColor: family['hexcode'],
+                        borderWidth: '1px',
+                      }">
+                      {{ family["familyTag"] }}
+                    </button>
+                    <!-- This is the container/dropdown box for the subtags -->
+                    <div v-for="family in flavorTags" :key="family['_id']">
+                      <div v-if="family.showBox" class="rounded p-3"
+                        :style="{ border: '3px solid ' + family['hexcode'] }">
                         <div class="row">
-                          <div class="col-6 col-md-12 justify-content-start">
-                            <p class="text-start mb-1 fw-bold small">Colour</p>
-                          </div>
-                        </div>
-
-                        <!-- row 7B: all colours (show more colors, tighter spacing) -->
-                        <div class="row justify-content-start mb-1 text-start">
-                          <div class="col-12">
-                            <button v-for="(colour, i) in colours.slice(0, 14)" :key="i"
-                              class="btn me-1 mb-1 preview-color-btn" disabled :style="{
-                                width: '18px',
-                                height: '18px',
-                                backgroundColor: colour,
-                                borderRadius: '0',
-                                borderColor: 'grey',
-                                borderWidth: '1px',
-                                marginRight: '2px',
-                                padding: '0',
-                              }"></button>
-                          </div>
-                        </div>
-
-                        <!-- row 8: aroma, taste and finish (tighter spacing) -->
-                        <div class="row">
-                          <div class="col justify-content-start">
-                            <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold small">Aroma</p>
-                              <div class="preview-input-field"></div>
-                            </div>
-                            <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold small">Taste</p>
-                              <div class="preview-input-field"></div>
-                            </div>
-                            <div class="form-group mb-1">
-                              <p class="text-start mb-1 fw-bold small">Finish</p>
-                              <div class="preview-input-field"></div>
-                            </div>
+                          <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
+                            <button @click="
+                              toggleFlavourSelection(
+                                element.subTag,
+                                family['hexcode'],
+                                element.id
+                              )
+                              " class="btn mb-2 sub-flavour-tags mobile-px-1" :style="{
+                                backgroundColor: selectedFlavourTags.includes(
+                                  element.subTag + family['hexcode']
+                                )
+                                  ? 'grey'
+                                  : family['hexcode'],
+                                borderColor: family['hexcode'],
+                              }">
+                              {{ element.subTag }}
+                            </button>
                           </div>
                         </div>
                       </div>
-
-                      <!-- Fade overlay with call-to-action -->
-                      <div class="preview-fade-overlay">
-                        <div class="preview-cta">
-                          <span class="fst-italic">Extend and add more details!</span>
-                          <i class="bi bi-chevron-down ms-2"></i>
-                        </div>
-                      </div>
                     </div>
+                    <!-- End of dropdown -->
                   </div>
                 </div>
 
-                <!-- row 7: section breaker (horizontal line) -->
-                <div class="row">
-                  <!-- Dashed line -->
-                  <div class="col justify-content-start mb-1 text-start">
-                    <div class="col-md-12 text-center">
-                      <p class="dotted-line"></p>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- TOGGLEABLE SECTION -->
+                                <!-- TOGGLEABLE SECTION -->
                 <div v-if="extendReview">
 
                   <!-- row 7: colours -->
@@ -2952,79 +2826,188 @@
                 </div>
                 <!-- end of v-if check for extendReview -->
 
-                <!-- row 10: flavour tags -->
+                <!-- row 4: review and vintage -->
                 <div class="row">
-                  <div class="form-group mb-3 text-start ">
-                    <p class="text-start mb-2 fw-bold my-2">
-                      <span class="badge rounded-pill step-index">4</span>
-                      &nbsp;Flavour Tags
-                      <span class="fs-7" style="font-weight:normal; font-style: italic;">
-                      Tag the flavours you taste:
-                      </span>
-                    </p>
-                    <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
-                      Selected flavour tags:
-                      <div class="row">
-                        <div class="col">
-                          <div class="d-flex flex-wrap gap-2">
-                            <div v-for="flavourTag in selectedFlavourTags" v-bind:key="flavourTag" class="mb-0 pb-0">
-                              <button v-if="flavourTag == '<deleted>'" :style="{
-                                color: 'white',
-                                backgroundColor: '#030303',
-                              }" class="btn">
-                                {{ flavourTag }}
-                              </button>
-                              <button v-else :style="{
-                                color: 'white',
-                                backgroundColor:
-                                  '#' + flavourTag.split('#')[1],
-                              }" class="btn">
-                                {{ flavourTag.split("#")[0] }}
-                              </button>
-                            </div>
+                  <div class="col justify-content-start mb-3">
+                    <div class="row align-items-center">
+                      <div class="col-5 text-start">
+                        <p class="text-start mb-0 fw-bold">
+                          <span class="badge rounded-pill step-index">3</span>&nbsp;
+                          Review<span class="text-danger fw-bold">*</span>
+                        </p>
+                        
+                      </div>
+                      <div class="col-7 text-end align-items-center">
+                        <!-- Buttons to expand -->
+                        <div v-if="!extendReview" class="col justify-content-start text-start">
+                          <div class="col-md-12 text-center ">
+                            <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
+                              @click="controlModal">
+                              Detailed Review &#9660;
+                            </button>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    
-                    <button class="btn mb-2 me-2" @click="toggleBox(family)" v-for="family in flavorTags"
-                      v-bind:key="family['_id']" :style="{
-                        color: 'white',
-                        backgroundColor: family['hexcode'],
-                        borderColor: family['hexcode'],
-                        borderWidth: '1px',
-                      }">
-                      {{ family["familyTag"] }}
-                    </button>
-                    <!-- This is the container/dropdown box for the subtags -->
-                    <div v-for="family in flavorTags" :key="family['_id']">
-                      <div v-if="family.showBox" class="rounded p-3"
-                        :style="{ border: '3px solid ' + family['hexcode'] }">
-                        <div class="row">
-                          <div class="col-3 mobile-px-1" v-for="(element, index) in family.subTag2" :key="index">
-                            <button @click="
-                              toggleFlavourSelection(
-                                element.subTag,
-                                family['hexcode'],
-                                element.id
-                              )
-                              " class="btn mb-2 sub-flavour-tags mobile-px-1" :style="{
-                                backgroundColor: selectedFlavourTags.includes(
-                                  element.subTag + family['hexcode']
-                                )
-                                  ? 'grey'
-                                  : family['hexcode'],
-                                borderColor: family['hexcode'],
-                              }">
-                              {{ element.subTag }}
+                        <!-- Button to collapse -->
+                        <div v-if="extendReview" class="col justify-content-start text-start">
+                          <div class="col-md-12 text-center">
+                            <button class="btn primary-btn-less-round-blue btn-md fw-bold w-100" style="color:white"
+                              @click="controlModal">
+                              Quick Review &#9650;
                             </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <!-- End of dropdown -->
+                    <!-- Labels row -->
+                    <div class="row mb-2">
+                      <div class="col-12">
+                        
+
+                      </div>
+                    </div>
+                    
+
+                    <!-- Input fields row -->
+                    <div class="row">
+                      <div class="col-12">
+                        <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
+                          rows="3" placeholder="Min 20 characters"></textarea>
+                      </div>
+                    </div>
+
+                    <div v-if="reviewDescError !== ''" class="col-md-12">
+                      <p class="text-danger text-start mb-2 fw-bold">
+                        {{ reviewDescError }}
+                      </p>
+                    </div>
                   </div>
                 </div>
+                <!-- Preview section when collapsed -->
+                <div v-if="!extendReview" class="row mb-3">
+                  <div class="col-12">
+                    <div class="extended-preview-container" @click="controlModal">
+                      <!-- Limited height preview content -->
+                      <div class="preview-content">
+                        <!-- row 7: colours -->
+                        <div class="row">
+                          <div class="col-6 col-md-12 justify-content-start">
+                            <p class="text-start mb-1 fw-bold small">Colour</p>
+                          </div>
+                        </div>
+                        <!-- row 7B: all colours (show more colors, tighter spacing) -->
+                        <div class="row justify-content-start mb-1 text-start">
+                          <div class="col-12">
+                            <button v-for="(colour, i) in colours.slice(0, 14)" :key="i"
+                              class="btn me-1 mb-1 preview-color-btn" disabled :style="{
+                                width: '18px',
+                                height: '18px',
+                                backgroundColor: colour,
+                                borderRadius: '0',
+                                borderColor: 'grey',
+                                borderWidth: '1px',
+                                marginRight: '2px',
+                                padding: '0',
+                              }"></button>
+                          </div>
+                        </div>
+
+                        <!-- row 8: aroma, taste and finish (tighter spacing) -->
+                        <div class="row">
+                          <div class="col justify-content-start">
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold small">Aroma</p>
+                              <br>
+                            </div>
+                            <div class="form-group mb-1">
+                              <p class="text-start mb-1 fw-bold small">Taste</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Fade overlay with call-to-action -->
+                      <div class="preview-fade-overlay">
+                        <div class="preview-cta">
+                          <span >Extend to add more details!</span>
+                          <i class="bi bi-chevron-down ms-2"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- row 2: rating -->
+                <div class="row">
+                  <div class="col-11 mb-3">
+                    <div class="row align-items-center text-start" >
+                      <p class="text-star mb-1 fw-bold my-2">
+                      <span class="badge rounded-pill step-index ">4</span>
+                        &nbsp;My Rating<span class="text-danger">*</span>
+                      </p>
+                      <label for="customRange2" class="form-label">
+                        <span style="color: #f0b358">★</span><span style="font-weight: bold">{{ rating }}</span>
+                        Stars
+                      </label>
+                      <div class="d-flex align-items-center rounded p-2 mx-3" style="background-color: rgb(255, 246, 228); border: 2px solid #f0b358">
+                        <div class="col-auto">
+                          <label for="customRange" class="ms-2 form-label fw-bold">1</label>
+                        </div>
+                        <div class="col">
+                          <div class="slider-container" style="transform: scale(0.95); transform-origin: center; ">
+                            <input v-model="rating" type="range" class="form-range" min="1" max="10" step="0.1"
+                              id="customRange"   />
+                            <div class="tickmarks">
+                              <span class="tick" style="left: 5%">|</span>
+                              <span class="tick" style="left: 15%">|</span>
+                              <span class="tick" style="left: 25%">|</span>
+                              <span class="tick" style="left: 35%">|</span>
+                              <span class="tick" style="left: 45%">|</span>
+                              <span class="tick" style="left: 55%">|</span>
+                              <span class="tick" style="left: 65%">|</span>
+                              <span class="tick" style="left: 75%">|</span>
+                              <span class="tick" style="left: 85%">|</span>
+                              <span class="tick" style="left: 95%">|</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-auto">
+                          <label for="customRange" class="me-2 form-label fw-bold">10</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+                <!-- row 5: buttons (would recommend, would buy again) -->
+                <div class="row">
+                  <!-- Would Recommend Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="recommendDropdown">Would Recommend</label>
+                    <select class="form-select" id="recommendDropdown" v-model="wouldRecommend">
+                      <option value="" selected disabled>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+
+                  <!-- Would Buy Again Section -->
+                  <div class="col-md-6 mb-3 text-start">
+                    <label class="fw-bold" for="buyAgainDropdown">Would Buy Again</label>
+                    <select class="form-select" id="buyAgainDropdown" v-model="wouldBuyAgain">
+                      <option value="" disabled selected>
+                        Select Yes / No
+                      </option>
+                      <option :value="true">Yes</option>
+                      <option :value="false">No</option>
+                      <option :value="null">–</option>
+                    </select>
+                  </div>
+                </div>
+                
 
                 <!-- row 11: observation tags -->
                 <div class="row">
@@ -3120,6 +3103,11 @@
                     </button>
                   </div>
                 </div>
+                
+
+               
+                
+
               </div>
 
               <!-- End of modal body -->
@@ -9490,6 +9478,7 @@ button[aria-expanded="true"] .collapse-indicator {
   border: 1px solid #e9ecef;
   border-radius: 8px;
   overflow: hidden;
+  background-color: #f2f2f2; /* light grey */
 }
 
 .extended-preview-container:hover {
@@ -9497,11 +9486,13 @@ button[aria-expanded="true"] .collapse-indicator {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.preview-content {
-  padding: 20px;
-  height: 200px;
-  overflow: hidden;
-  position: relative;
+  .preview-content {
+    padding: 20px;
+    height: 200px;
+    /* Fixed height for preview */
+    overflow: hidden;
+    position: relative;
+    color: grey;
 }
 
 .preview-input-field {
@@ -9528,48 +9519,56 @@ button[aria-expanded="true"] .collapse-indicator {
   transform: translateY(-50%);
 }
 
-.preview-fade-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 140px;
-  background: linear-gradient(to bottom,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.4) 30%,
-      rgba(255, 255, 255, 0.8) 60%,
-      rgba(255, 255, 255, 0.95) 80%,
-      rgba(255, 255, 255, 1) 100%);
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  padding: 15px;
-}
+  .preview-fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    /* Increased height for stronger fade */
+    background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 30%,
+        /* Earlier fade start */
+        rgba(255, 255, 255, 0.8) 60%,
+        rgba(255, 255, 255, 0.95) 80%,
+        rgba(255, 255, 255, 1) 100%);
+    /* Stronger fade */
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    padding: 15px;
+  }
 
-.preview-cta {
-  color: #333;
-  font-size: 1rem;
-  font-weight: 900;
-  text-align: center;
-  text-shadow: 2px 1px 8px rgba(0, 0, 0, 0.2),
-    0px 0px 12px rgba(0, 0, 0, 0.3),
-    1px 1px 4px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  background: none;
-  border: none;
-  padding: 0;
-  border-radius: 0;
-  backdrop-filter: none;
-  box-shadow: none;
-}
+  .preview-cta {
+    color: #333;
+    font-size: 1rem;
+    font-weight: 900;
+    /* Extra bold */
+    text-align: center;
+    
+    /* Heavy shadow */
+    transition: all 0.3s ease;
+    background: none;
+    /* Remove background */
+    border: none;
+    /* Remove border */
+    padding: 0;
+    /* Remove padding */
+    border-radius: 0;
+    /* Remove border radius */
+    backdrop-filter: none;
+    /* Remove backdrop filter */
+    box-shadow: none;
+    /* Remove box shadow */
+  }
 
-.extended-preview-container:hover .preview-cta {
-  color: #000;
-  transform: translateY(-1px);
-  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.9),
-    0px 0px 15px rgba(0, 0, 0, 0.7),
-    2px 2px 6px rgba(0, 0, 0, 1);
-}
+ .extended-preview-container:hover {
+    color: #000;
+    /* Darker on hover */
+    transform: translateY(-1px);
+    border: 2px solid rgb(240, 179, 88);
+  }
 
 .preview-color-btn {
   margin-right: 2px !important;
@@ -9622,9 +9621,6 @@ input[type="range"].form-range::-webkit-slider-thumb {
   .preview-cta {
     font-size: 0.9rem;
     font-weight: 800;
-    text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.8),
-      0px 0px 10px rgba(0, 0, 0, 0.6),
-      1px 1px 3px rgba(0, 0, 0, 0.9);
   }
 
   .preview-color-btn {

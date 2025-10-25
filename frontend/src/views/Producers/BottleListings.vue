@@ -2004,7 +2004,7 @@
                     <!-- End of dropdown -->
                   </div>
                 </div>
-                                <!-- TOGGLEABLE SECTION -->
+                <!-- TOGGLEABLE SECTION -->
                 <div v-if="extendReview">
 
                   <!-- row 7: colours -->
@@ -2299,15 +2299,6 @@
                     </select>
                   </div>
                 </div>
-
-                
-
-                <!-- row 6: extend review -->
-                <div class="row">
-                  
-                  
-                </div>
-
                 
 
                 <!-- row 7: section breaker (horizontal line) -->
@@ -2319,9 +2310,6 @@
                     </div>
                   </div>
                 </div>
-
-
-                
 
                 <!-- row 11: observation tags -->
                 <div class="row">
