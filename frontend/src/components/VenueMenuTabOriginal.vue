@@ -357,7 +357,7 @@
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                         <!-- Item Image -->
                                         <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
+                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                         </router-link>
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
@@ -441,7 +441,7 @@
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                         <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
+                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                         </router-link>
                                         <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
                                             <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
@@ -565,7 +565,7 @@
                                             <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                                 <!-- Item Image -->
                                                 <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
+                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                 </router-link>
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
@@ -642,7 +642,7 @@
                                             <!-- LEFT COLUMN Item Image -->
                                             <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
                                                 <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy">
+                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                 </router-link>
                                                 <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
                                                     <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
@@ -965,7 +965,7 @@
                                             <!-- Standard menu item template for main section direct items (same as before) -->
                                             <div class="row mobile-view-show">
                                                 <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
-                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image">
+                                                    <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                     <div class="row">
                                                         <div class="col-1 d-grid">
                                                             <button type="button" class="btn icon-btn" @click.stop.prevent="deleteMenuItem(menuSection.sectionOrder, menuItem.itemOrder)">
@@ -1323,7 +1323,7 @@
                                                         class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0">
                                                         <!-- <img :src=" 'data:image/jpeg;base64,' + (menuItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image"> -->
                                                         <img :src="(menuItem.itemDetails['itemPhoto'] || defaultPhoto)"
-                                                            class="producer-bottle-listing-page-bottle-image">
+                                                            class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                                         <!-- Remove Item From Menu Section -->
                                                         <div class="row">
                                                             <div class="col-1 d-grid">
@@ -2006,7 +2006,7 @@
                                             <div
                                                 class=" mobile-col-3 image-container text-center mx-auto">
                                                 <img :src="(item.newMenuItemTarget.photo || defaultPhoto)"
-                                                    class="producer-bottle-listing-page-bottle-image">
+                                                    class="producer-bottle-listing-page-bottle-image" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
                                             </div>
 
                                             <!-- Item Information -->
