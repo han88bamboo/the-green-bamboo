@@ -356,9 +356,15 @@
                                     <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                     <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                         <!-- Item Image -->
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                        </router-link>
+                                    
+                                            <img 
+                                                :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                :alt="sectionItem.itemDetails['itemName']"
+                                                class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                loading="lazy" 
+                                                @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
+                                                style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        
                                         <!-- Item Rating (below image) -->
                                         <div class="mt-1">
                                             <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
@@ -440,9 +446,15 @@
                                 <div class="row align-items-center">
                                     <!-- LEFT COLUMN Item Image -->
                                     <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                        <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + slugify(sectionItem.itemDetails.itemName) }" class="default-text-no-background">
-                                            <img :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                        </router-link>
+                                        
+                                        <img 
+                                            :src="(sectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                            :alt="sectionItem.itemDetails['itemName']"
+                                            class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                            loading="lazy" 
+                                            @click="enlargeImage(sectionItem.itemDetails['itemPhoto'] || defaultPhoto, sectionItem.itemDetails['itemName'], sectionItem.itemDetails['itemDesc'] || '')"
+                                            style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                        
                                         <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
                                             <span v-if="sectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
                                             <span v-if="sectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
@@ -564,9 +576,15 @@
                                             <!-- FIRST COLUMN: Image + Rating stacked vertically -->
                                             <div class="col-lg-2 col-12 image-container text-center mx-auto mb-3 mb-lg-0 producer-profile-no-left-padding-large-screen mobile-col-3 mobile-mx-0 mobile-px-0 mobile-mb-0 d-flex flex-column align-items-center">
                                                 <!-- Item Image -->
-                                                <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                                </router-link>
+                                                
+                                                <img 
+                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                    :alt="subsectionItem.itemDetails['itemName']"
+                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                    loading="lazy" 
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                    style="cursor: pointer;max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                
                                                 <!-- Item Rating (below image) -->
                                                 <div class="mt-1">
                                                     <p class="fs-4 fw-bold rating-text text-center m-0 d-flex align-items-center justify-content-center" :class="{ 'd-none': !localShowRating }">
@@ -641,9 +659,15 @@
                                         <div class="row align-items-center">
                                             <!-- LEFT COLUMN Item Image -->
                                             <div class="col-lg-2 col-12 text-center mb-3 mb-lg-0">
-                                                <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="default-text-no-background">
-                                                    <img :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" class="producer-bottle-listing-page-bottle-image" loading="lazy" style="max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
-                                                </router-link>
+                                               
+                                                <img 
+                                                    :src="(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto)" 
+                                                    :alt="subsectionItem.itemDetails['itemName']"
+                                                    class="producer-bottle-listing-page-bottle-image clickable-image" 
+                                                    loading="lazy" 
+                                                    @click="enlargeImage(subsectionItem.itemDetails['itemPhoto'] || defaultPhoto, subsectionItem.itemDetails['itemName'], subsectionItem.itemDetails['itemDesc'] || '')"
+                                                    style="cursor: pointer; max-width:100%; width: auto; height:auto; object-fit:contain;display:block; margin:auto;">
+                                                
                                                 <div class="d-flex align-items-center justify-content-center gap-1" style="margin-top: 0.5rem;">
                                                     <span v-if="subsectionItem.new" style="font-size: 1.5rem;" title="New Item">🆕</span>
                                                     <span v-if="subsectionItem.staffPick" style="font-size: 1.5rem;" title="Staff Pick">🫰</span>
@@ -2212,6 +2236,34 @@
 
     </div>
 
+
+    <!-- Image Enlargement Modal -->
+    <div v-if="showImageModal" class="image-modal-overlay" @click="closeImageModal">
+        <div class="image-modal-content-wrapper" @click.stop>
+            <div class="image-modal-container">
+                <img :src="enlargedImageSrc" :alt="enlargedImageAlt" class="enlarged-image" />
+                <button class="image-modal-close" @click="closeImageModal" aria-label="Close">
+                    ✕
+                </button>
+            </div>
+            
+            <!-- Description Container -->
+            <div v-if="enlargedImageDesc" class="image-description-container">
+                <div class="image-description-content">
+                    <h5 class="image-description-title">{{ enlargedImageAlt }}</h5>
+                    <p v-if="!showFullImageDescription" class="image-description-text">
+                        {{ enlargedImageDesc.slice(0, 200) + (enlargedImageDesc.length > 200 ? '...' : '') }}
+                        <a v-if="enlargedImageDesc.length > 200" @click="showFullImageDescription = true" class="read-more-link">(Read More)</a>
+                    </p>
+                    <p v-else class="image-description-text">
+                        {{ enlargedImageDesc }}
+                        <a @click="showFullImageDescription = false" class="read-more-link">(Read Less)</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </template>
 
 <script>
@@ -2524,6 +2576,14 @@ export default {
             },
             // Jump to Section feature (Mobile only)
             showJumpToSheet: false,
+
+            // Image enlargement modal data
+            showImageModal: false,
+            enlargedImageSrc: '',
+            enlargedImageAlt: '',
+            enlargedImageDesc: '',
+            showFullImageDescription: false,
+
         }
     },
     watch: {
@@ -6748,6 +6808,31 @@ export default {
                 });
         },
 
+        // ===== IMAGE ENLARGEMENT METHODS =====
+        
+        // Handle image enlargement
+        enlargeImage(imageSrc, altText, description = '') {
+            this.enlargedImageSrc = imageSrc;
+            this.enlargedImageAlt = altText;
+            this.enlargedImageDesc = description;
+            this.showFullImageDescription = false; // Reset to collapsed state
+            this.showImageModal = true;
+            // Prevent scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        },
+        
+        // Close modal
+        closeImageModal() {
+            this.showImageModal = false;
+            this.enlargedImageSrc = '';
+            this.enlargedImageAlt = '';
+            this.enlargedImageDesc = '';
+            this.showFullImageDescription = false;
+            // Restore scrolling
+            document.body.style.overflow = '';
+        },
+
+
         // Toggle Show Rating
         async toggleShowRating() {
             try {
@@ -6916,6 +7001,203 @@ button[aria-expanded="true"] .collapse-indicator {
   color: #6c757d;
   margin-left: 0.25rem;
   white-space: nowrap;
+}
+
+/* ===== IMAGE ENLARGEMENT MODAL STYLES ===== */
+
+/* Modal overlay - darkens background */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Wrapper for image and description - stacks vertically */
+.image-modal-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90%;
+  max-height: 90vh;
+  gap: 20px;
+}
+
+/* Container for image and close button */
+.image-modal-container {
+  position: relative;
+  max-width: 100%;
+  animation: zoomIn 0.3s ease;
+  flex-shrink: 0;
+}
+
+/* The enlarged image itself */
+.enlarged-image {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: block;
+}
+
+/* Close button */
+.image-modal-close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.image-modal-close:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+/* Clickable images */
+.clickable-image {
+  transition: transform 0.2s ease;
+}
+
+.clickable-image:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+
+/* Description container below image */
+.image-description-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  max-height: 300px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+  overflow-y: auto;
+  flex-shrink: 1;
+}
+
+.image-description-content {
+  color: #333;
+}
+
+.image-description-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 12px;
+  color: #000;
+  border-bottom: 2px solid #f0b358;
+  padding-bottom: 8px;
+}
+
+.image-description-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  color: #444;
+}
+
+.read-more-link {
+  color: #006A50;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+
+.read-more-link:hover {
+  color: #004d39;
+  text-decoration: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Mobile responsiveness for image modal */
+@media (max-width: 768px) {
+  .image-modal-overlay {
+    padding: 10px;
+  }
+  
+  .image-modal-content-wrapper {
+    max-width: 95%;
+    max-height: 95vh;
+    gap: 15px;
+  }
+  
+  .image-modal-container {
+    max-width: 100%;
+  }
+  
+  .enlarged-image {
+    max-height: 50vh;
+  }
+  
+  .image-modal-close {
+    top: -35px;
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+  
+  .image-description-container {
+    max-width: 100%;
+    max-height: 40vh;
+    padding: 15px;
+  }
+  
+  .image-description-title {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  
+  .image-description-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
 }
 
 /* ------- START Jump to Section Feature Styles (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
