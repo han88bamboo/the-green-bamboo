@@ -1,6 +1,6 @@
 <template>
   <div class="poll-card-container" :class="{ 'mobile-collapsed': isMobileCollapsed }">
-    <!-- Mobile Collapse Header (only visible on mobile and when polls exist) -->
+    <!-- Collapse Header (visible on both mobile and desktop when polls exist) -->
     <div v-if="polls.length > 0" class="mobile-collapse-header" @click="toggleMobileCollapse">
       <div class="mobile-header-content">
         <div class="mobile-header-info">
@@ -40,6 +40,17 @@
       <!-- Poll Card -->
       <div class="poll-card">
         <div class="poll-header">
+          <!-- Header Navigation Arrow Left -->
+          <button 
+            v-if="polls.length > 1"
+            class="header-nav-arrow header-nav-arrow-left" 
+            @click="previousPoll"
+            :disabled="currentPollIndex === 0"
+            title="Previous Poll"
+          >
+            <i class="bi bi-chevron-left"></i>
+          </button>
+
           <div class="poll-title-section">
             <h4 class="poll-title">
               <div class="poll-title-content">
@@ -50,6 +61,17 @@
             </h4>
             <p class="poll-question">{{ currentPoll.questionText }}</p>
           </div>
+
+          <!-- Header Navigation Arrow Right -->
+          <button 
+            v-if="polls.length > 1"
+            class="header-nav-arrow header-nav-arrow-right" 
+            @click="nextPoll"
+            :disabled="currentPollIndex === polls.length - 1"
+            title="Next Poll"
+          >
+            <i class="bi bi-chevron-right"></i>
+          </button>
           
           <!-- Creator Controls (only visible to poll creator) -->
           <div v-if="isCreator" class="poll-controls">
@@ -1891,9 +1913,9 @@ export default {
   overflow: hidden;
 }
 
-/* Mobile Collapse Header - Hidden on desktop */
+/* Collapse Header - Visible on both desktop and mobile */
 .mobile-collapse-header {
-  display: none;
+  display: block;
   padding: 15px 20px;
   background-color: #f8f9fa;
   border-bottom: 1px solid #dee2e6;
@@ -1952,9 +1974,15 @@ export default {
   overflow: hidden;
 }
 
-/* Desktop: Always show content regardless of collapsed state */
-.poll-content-container {
-  max-height: none;
+/* Desktop and Mobile: Apply collapsed state */
+.poll-content-container.collapsed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.poll-content-container:not(.collapsed) {
+  max-height: 3000px;
   opacity: 1;
 }
 
@@ -2000,6 +2028,47 @@ export default {
   right: 10px;
 }
 
+/* Header Navigation Arrows - Always visible at the top */
+.header-nav-arrow {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #dee2e6;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-nav-arrow:hover:not(:disabled) {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.header-nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.header-nav-arrow i {
+  font-size: 1.2rem;
+  color: #495057;
+}
+
+.header-nav-arrow-left {
+  margin-right: 12px;
+}
+
+.header-nav-arrow-right {
+  margin-left: 12px;
+}
+
 .poll-card {
   flex: 1;
   padding: 20px;
@@ -2009,12 +2078,14 @@ export default {
 .poll-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 15px;
+  gap: 10px;
 }
 
 .poll-title-section {
   flex: 1;
+  min-width: 0;
 }
 
 .poll-title {
@@ -2291,23 +2362,7 @@ export default {
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  /* Show mobile collapse header only on mobile */
-  .mobile-collapse-header {
-    display: block;
-  }
-
-  /* Mobile-specific: Apply collapsed state only on mobile */
-  .poll-content-container.collapsed {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-  }
-
-  .poll-content-container:not(.collapsed) {
-    max-height: 2000px;
-    opacity: 1;
-  }
-
+  /* Mobile-specific adjustments */
   .poll-card {
     margin: 0 50px;
     padding: 15px;
@@ -2325,10 +2380,35 @@ export default {
   .carousel-arrow-right {
     right: 5px;
   }
+
+  .header-nav-arrow {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .header-nav-arrow i {
+    font-size: 1rem;
+  }
+
+  .header-nav-arrow-left {
+    margin-right: 8px;
+  }
+
+  .header-nav-arrow-right {
+    margin-left: 8px;
+  }
   
   .poll-header {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .poll-title-section {
+    flex-basis: 100%;
+    order: 2;
   }
   
   .poll-controls {
@@ -2358,6 +2438,25 @@ export default {
   
   .poll-title {
     display:none;
+  }
+
+  .header-nav-arrow {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+  }
+
+  .header-nav-arrow i {
+    font-size: 0.9rem;
+  }
+
+  .header-nav-arrow-left {
+    margin-right: 6px;
+  }
+
+  .header-nav-arrow-right {
+    margin-left: 6px;
   }
   
   .poll-option {
