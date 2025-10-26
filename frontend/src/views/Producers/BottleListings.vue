@@ -8523,12 +8523,17 @@ export default {
   .paywall-content {
     position: absolute;
     top: 27%;
-    left: 49%;
+    left: 44.5%;
     transform: translate(-50%, -50%);
     text-align: center;
     pointer-events: all !important;
     z-index: 10001;
   }
+@media (max-width: 575px) {
+  .paywall-content{
+    left: 49%;
+  }
+}
 
   .paywall-signup-btn {
     background: linear-gradient(135deg, #FF3E31 0%, #d63031 100%);
