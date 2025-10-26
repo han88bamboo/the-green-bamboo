@@ -154,7 +154,9 @@
         <!-- Preview Button -->
         <button 
           class="btn btn-warning mt-3"
-          @click="showPreview"
+          @click="loadPreview"
+          data-bs-toggle="modal"
+          data-bs-target="#mergePreviewModal"
           :disabled="!masterEntity || selectedEntities.length < 2 || loadingPreview"
         >
           <span v-if="loadingPreview" class="spinner-border spinner-border-sm me-2"></span>
@@ -308,7 +310,6 @@
 
 <script>
 import axios from 'axios';
-import { Modal } from 'bootstrap';
 
 export default {
   name: 'EntityMerge',
@@ -331,16 +332,12 @@ export default {
       // Preview
       previewData: null,
       loadingPreview: false,
-      previewModal: null,
       
       // Processing
       merging: false,
       successMessage: '',
       errorMessage: ''
     };
-  },
-  mounted() {
-    this.previewModal = new Modal(this.$refs.previewModal);
   },
   methods: {
     async performSearch() {
@@ -420,7 +417,7 @@ export default {
       this.masterEntity = this.selectedEntities.find(e => e.id === parseInt(this.masterEntityId));
     },
     
-    async showPreview() {
+    async loadPreview() {
       if (!this.masterEntity || this.selectedEntities.length < 2) {
         this.errorMessage = 'Please select a master and at least one duplicate.';
         return;
@@ -449,7 +446,7 @@ export default {
         });
         
         this.previewData = response.data.data;
-        this.previewModal.show();
+        // Modal will open automatically via data-bs-toggle attribute
       } catch (error) {
         console.error('Preview error:', error);
         this.errorMessage = 'Failed to load preview. Please try again.';
@@ -460,8 +457,8 @@ export default {
 
     async handleMasterChangeInPreview() {
       this.masterEntity = this.selectedEntities.find(e => e.id === parseInt(this.masterEntityId));
-      // Reload preview with new master
-      await this.showPreview();
+      // Reload preview with new master (modal stays open)
+      await this.loadPreview();
     },
     
     async executeMerge() {
@@ -488,7 +485,18 @@ export default {
         });
         
         this.successMessage = response.data.message;
-        this.previewModal.hide();
+        
+        // Close modal using Bootstrap's data attribute (triggering button with data-bs-dismiss)
+        const modalElement = this.$refs.previewModal;
+        const modalBackdrop = document.querySelector('.modal-backdrop');
+        if (modalElement) {
+          modalElement.classList.remove('show');
+          modalElement.style.display = 'none';
+          document.body.classList.remove('modal-open');
+          if (modalBackdrop) {
+            modalBackdrop.remove();
+          }
+        }
         
         // Reset selection
         this.selectedEntities = [];
