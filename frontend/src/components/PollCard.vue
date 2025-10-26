@@ -886,7 +886,7 @@
                   </button>
                 </div>
                 <button 
-                  v-if="newPoll.options.length < 10"
+                  v-if="newPoll.options.length < 35"
                   type="button" 
                   class="btn btn-outline-secondary btn-sm" 
                   @click="addOption"
@@ -1428,7 +1428,7 @@ export default {
     },
     
     addOption() {
-      if (this.newPoll.options.length < 10) {
+      if (this.newPoll.options.length < 35) {
         this.newPoll.options.push({ text: '' });
       }
     },
