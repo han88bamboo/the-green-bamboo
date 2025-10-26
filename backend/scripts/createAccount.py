@@ -249,7 +249,12 @@ def createAccount():
         ), 201
     
     except Exception as e:
-        print(str(e))
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"ERROR creating account for user '{rawUsername}':")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error message: {str(e)}")
+        print(f"Full traceback:\n{error_trace}")
         return jsonify(
             {
                 "code": 500,

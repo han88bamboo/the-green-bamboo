@@ -871,6 +871,8 @@ export default {
         choiceFlavours: [],
         preferences: [],
       };
+      console.log("=== SIGNUP PAYLOAD ===");
+      console.log(JSON.stringify(submitData, null, 2));
       this.createAccount(submitAPI, submitData);
     },
     async createAccount(submitAPI, submitData) {
