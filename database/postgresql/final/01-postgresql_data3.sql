@@ -505,7 +505,8 @@ CREATE TABLE "listings" (
     "photo" TEXT,
     "drinkStyle" VARCHAR(255), -- added by tzh
     "tags" TEXT,
-    "order" INTEGER DEFAULT NULL
+    "order" INTEGER DEFAULT NULL,
+    "varietyTags" TEXT[]  -- added for variety tags feature (array of text)
 );
 
 -- create index 
@@ -851,7 +852,8 @@ CREATE TABLE "requestListings" (
     "drinkStyle" VARCHAR(255), -- added by tzh
     "officialDesc" TEXT, -- added by tzh
     "submitterType" VARCHAR(20) DEFAULT 'user',  -- added by tzh
-    "venueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL  -- added by tzh
+    "venueID" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL,  -- added by tzh
+    "varietyTags" TEXT[]  -- added for variety tags feature
 );
 
 -- ========= "requestEdits" =========

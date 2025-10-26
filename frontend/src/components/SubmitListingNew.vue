@@ -486,6 +486,54 @@
                             </div>
                         </div>
 
+                        <!-- Input: Variety Tags -->
+                        <div class="form-group mb-3">
+                            <p class="text-start mb-1 fw-bold">Variety Tags</p>
+                            <p class="text-start mb-1 text-muted" style="font-size: 14px;">Add as many tags as applicable (e.g., Pinot Noir, Chardonnay, Golden Promise Barley)</p>
+                            
+                            <!-- Input field with Add button -->
+                            <div class="input-group mb-2">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    v-model="varietyTagInput"
+                                    @keyup.enter="addVarietyTag"
+                                    placeholder="Type a variety tag and press Enter or click +"
+                                    maxlength="20"
+                                >
+                                <button 
+                                    class="btn btn-outline-success" 
+                                    type="button" 
+                                    @click="addVarietyTag"
+                                    :disabled="!varietyTagInput.trim()"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Display added tags as badges -->
+                            <div v-if="varietyTagsList.length > 0" class="d-flex flex-wrap gap-2">
+                                <span 
+                                    v-for="(tag, index) in varietyTagsList" 
+                                    :key="index"
+                                    class="badge bg-primary d-flex align-items-center"
+                                    style="font-size: 14px; padding: 8px 12px;"
+                                >
+                                    {{ tag }}
+                                    <button 
+                                        type="button" 
+                                        class="btn-close btn-close-white ms-2" 
+                                        style="font-size: 10px;"
+                                        @click="removeVarietyTag(index)"
+                                        aria-label="Remove tag"
+                                    ></button>
+                                </span>
+                            </div>
+                        </div>
+
                         <!-- Input: Country of Origin -->
                         <div class="form-group mb-3">
                             <div class=" mb-3">
@@ -833,6 +881,10 @@
                 selectedBottler: {},
                 showBottlerDropdown: false,
 
+                // Variety Tags
+                varietyTagInput: "",
+                varietyTagsList: [],
+
                 form: {
                     "editDesc": "",
                     "sourceLink": "",
@@ -853,6 +905,7 @@
                     "photo": "",
                     "tags": "",
                     "order": "",
+                    "varietyTags": null,
                 },
                 producerDebounceTimer: null,
                 bottlerDebounceTimer: null,
@@ -886,6 +939,17 @@
                         id: this.form['bottlerID'],
                         producerName: this.form['bottler']
                     };
+                }
+                
+                // Restore varietyTagsList from cache
+                const cachedVarietyTags = localStorage.getItem('cachedVarietyTagsList');
+                if (cachedVarietyTags) {
+                    try {
+                        this.varietyTagsList = JSON.parse(cachedVarietyTags);
+                    } catch (e) {
+                        console.error("Error parsing cached variety tags:", e);
+                        this.varietyTagsList = [];
+                    }
                 }
             }
 
@@ -933,6 +997,21 @@
                 localStorage.setItem('cachedListingTempDrinkStyle', newVal);
             },
 
+            // Watch varietyTagsList changes and update form
+            varietyTagsList: {
+                handler(newVal) {
+                    // Convert array to PostgreSQL array format or null if empty
+                    if (newVal && newVal.length > 0) {
+                        this.form['varietyTags'] = newVal;
+                    } else {
+                        this.form['varietyTags'] = null;
+                    }
+                    // Cache the list
+                    localStorage.setItem('cachedVarietyTagsList', JSON.stringify(newVal));
+                },
+                deep: true,
+            },
+
             // Keep input value synced with selected country and form data
             selectedCountry(newVal) {
                 if (newVal && this.countryInputValue !== newVal) {
@@ -963,6 +1042,45 @@
                     .toLowerCase()
                     .replace(/\s+/g, '')
                     .replace(/[^\w]/g, '');
+            },
+
+            // Add variety tag to the list
+            addVarietyTag() {
+                const tag = this.varietyTagInput.trim();
+                
+                // Validate tag
+                if (!tag) {
+                    return;
+                }
+                
+                // Check length (max 20 characters)
+                if (tag.length > 20) {
+                    alert("Each variety tag must be 20 characters or less.");
+                    return;
+                }
+                
+                // Check for special characters (allow only letters, numbers, and spaces)
+                if (!/^[a-zA-Z0-9\s]+$/.test(tag)) {
+                    alert("Variety tags can only contain letters, numbers, and spaces.");
+                    return;
+                }
+                
+                // Check for duplicates (case-insensitive)
+                if (this.varietyTagsList.some(t => t.toLowerCase() === tag.toLowerCase())) {
+                    alert("This variety tag has already been added.");
+                    return;
+                }
+                
+                // Add tag to list
+                this.varietyTagsList.push(tag);
+                
+                // Clear input
+                this.varietyTagInput = "";
+            },
+
+            // Remove variety tag from the list
+            removeVarietyTag(index) {
+                this.varietyTagsList.splice(index, 1);
             },
 
             // Function to validate tags format
@@ -1051,6 +1169,7 @@
                     localStorage.removeItem('cachedListingTempDrinkType');
                     localStorage.removeItem('cachedListingTempTypeCategory');
                     localStorage.removeItem('cachedListingTempDrinkStyle');
+                    localStorage.removeItem('cachedVarietyTagsList');
                 }
 
                 const cachedForm = localStorage.getItem('cachedListingForm');
@@ -1488,6 +1607,26 @@
                     this.form["order"] = "";
                 }
                 console.log('form.order:', this.form["order"]);
+
+                // Handle varietyTags field - populate if exists
+                if (previousData.varietyTags && Array.isArray(previousData.varietyTags)) {
+                    this.varietyTagsList = [...previousData.varietyTags];
+                    this.form["varietyTags"] = previousData.varietyTags;
+                } else if (previousData.varietyTags && typeof previousData.varietyTags === 'string') {
+                    // Handle case where it comes as a string (shouldn't happen but defensive)
+                    try {
+                        this.varietyTagsList = JSON.parse(previousData.varietyTags);
+                        this.form["varietyTags"] = this.varietyTagsList;
+                    } catch (e) {
+                        this.varietyTagsList = [];
+                        this.form["varietyTags"] = null;
+                    }
+                } else {
+                    this.varietyTagsList = [];
+                    this.form["varietyTags"] = null;
+                }
+                console.log('form.varietyTags:', this.form["varietyTags"]);
+                console.log('varietyTagsList:', this.varietyTagsList);
             },
 
             // Helper function to reset form (by refreshing page)
@@ -1498,6 +1637,7 @@
                 localStorage.removeItem('cachedListingTempDrinkType');
                 localStorage.removeItem('cachedListingTempTypeCategory');
                 localStorage.removeItem('cachedListingTempDrinkStyle');
+                localStorage.removeItem('cachedVarietyTagsList');
                 // Remove requestID router param from current path
                 let newPath = this.$route.path.split("/").slice(0, -1).join("/");
                 window.location.replace(newPath);
@@ -1507,6 +1647,7 @@
                 localStorage.removeItem('cachedListingTempDrinkType');
                 localStorage.removeItem('cachedListingTempTypeCategory');
                 localStorage.removeItem('cachedListingTempDrinkStyle');
+                localStorage.removeItem('cachedVarietyTagsList');
                 this.$router.go(0);
             }
             else {
@@ -1860,7 +2001,8 @@
                                 "typeCategory": (this.tempTypeCategory || "").trim(),
                                 "reviewStatus": false,
                                 "drinkStyle": (this.tempDrinkStyle || "").trim(),
-                                "officialDesc": (this.form["officialDesc"] || "").trim(), 
+                                "officialDesc": (this.form["officialDesc"] || "").trim(),
+                                "varietyTags": this.form["varietyTags"] || null,
                             }
                             
                             // Add this log before the API call:
@@ -1921,6 +2063,7 @@
                             "drinkStyle": (this.tempDrinkStyle || "").trim(),
                             "tags": (this.form["tags"] || "").trim(),
                             "order": this.form["order"] || null,
+                            "varietyTags": this.form["varietyTags"] || null,
                         }
 
                         // Listing Creation Mode

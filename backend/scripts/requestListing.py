@@ -59,6 +59,25 @@ def requestListing():
             print(f"Warning: Failed to process image: {str(e)}")
             rawRequest['photo'] = "https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739"
         
+        # Handle varietyTags field - ensure it's a PostgreSQL array or NULL
+        if 'varietyTags' in rawRequest:
+            if rawRequest['varietyTags'] is None or rawRequest['varietyTags'] == "" or rawRequest['varietyTags'] == []:
+                rawRequest['varietyTags'] = None
+            elif isinstance(rawRequest['varietyTags'], list):
+                # It's already a list, keep it as is (will be converted to PostgreSQL array)
+                pass
+            elif isinstance(rawRequest['varietyTags'], str):
+                # If it's a string, try to parse it as JSON array
+                try:
+                    rawRequest['varietyTags'] = json.loads(rawRequest['varietyTags'])
+                except:
+                    # If parsing fails, set to NULL
+                    rawRequest['varietyTags'] = None
+            else:
+                rawRequest['varietyTags'] = None
+        else:
+            rawRequest['varietyTags'] = None
+        
         # Handle nullable foreign keys
         producerId = rawRequest.get('producerID') or None
         userId = rawRequest.get('userID') or None
@@ -79,10 +98,10 @@ def requestListing():
                     "listingName", bottler, "drinkType", "sourceLink", "brandRelation", 
                     "reviewStatus", "userID", photo, "originCountry", "producerID", 
                     "bottlerID", "producerNew", "typeCategory", abv, age, "reviewLink", "drinkStyle", "officialDesc",
-                    "submitterType", "venueID"
+                    "submitterType", "venueID", "varietyTags"
                 ) VALUES (%s, %s, %s, %s, %s, 
                           %s, %s, %s, %s, %s, 
-                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                          %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id;
             """, (
                 rawRequestName,
@@ -104,7 +123,8 @@ def requestListing():
                 rawRequest.get('drinkStyle', ''),
                 rawRequest.get('officialDesc', ''),
                 submitter_type,
-                venue_id
+                venue_id,
+                rawRequest.get('varietyTags', None)
             ))
 
             newRequestId = cursor.fetchone()
@@ -129,8 +149,8 @@ def requestListing():
                         "listingName", "bottler", "drinkType", "sourceLink", 
                         "producerID", "bottlerID", "originCountry", "typeCategory", 
                         "abv", "age", "reviewLink", "drinkStyle", "officialDesc", 
-                        "allowMod", "addedDate", "photo"
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        "allowMod", "addedDate", "photo", "varietyTags"
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id;
                 """, (
                     rawRequestName,
@@ -148,7 +168,8 @@ def requestListing():
                     rawRequest.get('officialDesc', ''),
                     True,  # allowMod
                     current_time,
-                    rawRequest['photo']
+                    rawRequest['photo'],
+                    rawRequest.get('varietyTags', None)
                 ))
                 
                 listing_id = cursor.fetchone()['id']
@@ -363,7 +384,7 @@ def requestListingModify(requestID):
                 SET "listingName" = %s, bottler = %s, "drinkType" = %s, "sourceLink" = %s, "brandRelation" = %s, 
                     "reviewStatus" = %s, "userID" = %s, photo = %s, "originCountry" = %s, "producerID" = %s, 
                     "bottlerID" = %s, "producerNew" = %s, "typeCategory" = %s, abv = %s, age = %s, "reviewLink" = %s, "drinkStyle" = %s, "officialDesc" = %s,
-                    "submitterType" = %s, "venueID" = %s
+                    "submitterType" = %s, "venueID" = %s, "varietyTags" = %s
                 WHERE id = %s;
             """, (
                 rawRequestName,
@@ -386,6 +407,7 @@ def requestListingModify(requestID):
                 rawRequest.get('officialDesc', ''),
                 submitter_type,
                 venue_id,
+                rawRequest.get('varietyTags', None),
                 requestID
             ))
 

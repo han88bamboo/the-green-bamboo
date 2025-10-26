@@ -196,6 +196,26 @@ def createListings():
                     except (ValueError, TypeError):
                         rawBottle['order'] = None
 
+            # Handle varietyTags field - ensure it's a PostgreSQL array or NULL
+            if 'varietyTags' in rawBottle:
+                if rawBottle['varietyTags'] is None or rawBottle['varietyTags'] == "" or rawBottle['varietyTags'] == []:
+                    rawBottle['varietyTags'] = None
+                elif isinstance(rawBottle['varietyTags'], list):
+                    # It's already a list, keep it as is (will be converted to PostgreSQL array)
+                    pass
+                elif isinstance(rawBottle['varietyTags'], str):
+                    # If it's a string, try to parse it as JSON array
+                    try:
+                        import json
+                        rawBottle['varietyTags'] = json.loads(rawBottle['varietyTags'])
+                    except:
+                        # If parsing fails, set to NULL
+                        rawBottle['varietyTags'] = None
+                else:
+                    rawBottle['varietyTags'] = None
+            else:
+                rawBottle['varietyTags'] = None
+
             # uploading as base64 image
             if rawBottle['photo'] is not None and rawBottle['photo'] != "":
                 base64_string = re.sub(r'^data:image\/[a-zA-Z]+;base64,', '', rawBottle['photo'])

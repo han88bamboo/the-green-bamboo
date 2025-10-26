@@ -58,6 +58,24 @@ def updateListing(id):
             except (ValueError, TypeError):
                 updatedListing['order'] = None
 
+    # Handle varietyTags field - ensure it's a PostgreSQL array or NULL
+    if 'varietyTags' in updatedListing:
+        if updatedListing['varietyTags'] is None or updatedListing['varietyTags'] == "" or updatedListing['varietyTags'] == []:
+            updatedListing['varietyTags'] = None
+        elif isinstance(updatedListing['varietyTags'], list):
+            # It's already a list, keep it as is (will be converted to PostgreSQL array)
+            pass
+        elif isinstance(updatedListing['varietyTags'], str):
+            # If it's a string, try to parse it as JSON array
+            try:
+                import json
+                updatedListing['varietyTags'] = json.loads(updatedListing['varietyTags'])
+            except:
+                # If parsing fails, set to NULL
+                updatedListing['varietyTags'] = None
+        else:
+            updatedListing['varietyTags'] = None
+
     updatedListingName = updatedListing["listingName"]
 
     with db_manager.get_cursor() as cursor:

@@ -8482,7 +8482,7 @@ def getTopListings():
             GROUP BY l."id", l."listingName", l."bottler", l."bottlerID",
                     l."originCountry", l."drinkType", l."abv", l."officialDesc", l."allowMod",
                     l."addedDate", l."typeCategory", l."age", l."reviewLink", l."sourceLink",
-                    l."photo", l."drinkStyle"
+                    l."photo", l."drinkStyle", l."varietyTags"
             ORDER BY review_count DESC, l."addedDate" DESC
             LIMIT 6;  -- Limit the results to 6 top listings
         """

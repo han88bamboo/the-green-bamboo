@@ -533,11 +533,11 @@
                 <div class="g-0 row Xcol-lg-12 pe-0 ps-0 xpadding-right-for-suggesteditslink-large-screen">
                   <!--<div class="py-2"></div>-->
                   <!-- below truncated-->
-                  <div class="col-1">
+                  <div class="col-2 col-xxl-1">
                     <h6 class="text-body-secondary fst-italic mt-2">About</h6>
                     <!--tzh added about-->
                   </div>
-                  <div class="col-11 mb-0" style="margin-top: 0.35rem !important">
+                  <div class="col-10 col-xxl-11 mb-0" style="margin-top: 0.35rem !important">
                     <router-link :to="{ path: '/request/modify/edit/' + this.listing_id }" class="no-underline">
                       <button type="button"
                         class="btn p-0 ps-1 pe-1 rounded-0 d-flex justify-content-between align-items-center">
@@ -694,9 +694,18 @@
                 <p class="mb-3"><u> Drink Style </u></p>
               </div>
 
+              <!-- variety tags -->
+              <div v-if="specified_listing['varietyTags'] && specified_listing['varietyTags'].length > 0"
+                class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
+                <h5 class="text-body-secondary mb-1">
+                  <b> {{ specified_listing['varietyTags'].join('; ') }} </b>
+                </h5>
+                <p class="mb-3"><u> Variety Tag(s) </u></p>
+              </div>
+
               <!-- age -->
               <div v-if="specified_listing['age']"
-                class="col-6 col-lg-2 px-1 text-start mobile-view-hide text-color-black">
+                class="col-6 col-lg-1 px-1 text-start mobile-view-hide text-color-black">
                 <!-- this code was only relevant before we had new vintage feature for reviews
                   <div v-if="specified_listing['drinkType'] == 'Wine'">
                   <h5 class="text-body-secondary mb-1">
@@ -709,17 +718,10 @@
                   <h5 class="text-body-secondary mb-1">
                     <b> {{ specified_listing["age"] }} </b>
                   </h5>
-                  <p class="mb-3"><u> Age (Years)</u></p>
+                  <p class="mb-3"><u>Years</u></p>
                 </div>
               </div>
 
-              <!-- country of origin -->
-              <div class="col-6 col-lg-3 px-1 text-start mobile-view-hide text-color-black">
-                <h5 class="text-body-secondary mb-1">
-                  <b> {{ specified_listing["originCountry"] }} </b>
-                </h5>
-                <p class="mb-3"><u> Country of Origin </u></p>
-              </div>
 
               <!-- abv -->
               <div v-if="specified_listing['abv']"
@@ -5460,17 +5462,22 @@ export default {
         this.image64 = specificReview[0].photo;
         
         // Handle location restoration based on review data
-        if ((specificReview[0].location === null && 
-            specificReview[0].address && 
-            specificReview[0].address.toLowerCase() === 'home') ||
-            (specificReview[0].location && 
-            specificReview[0].location.toLowerCase() === 'home')) {
+        const reviewLocation = specificReview[0].location;
+        const reviewAddress = specificReview[0].address;
+        
+        // Check if location is "Home" (handle both string and null cases)
+        const isHomeLocation = (
+          (reviewLocation === null && reviewAddress && String(reviewAddress).toLowerCase() === 'home') ||
+          (reviewLocation && typeof reviewLocation === 'string' && reviewLocation.toLowerCase() === 'home')
+        );
+        
+        if (isHomeLocation) {
           // Case 1: Home location (handles both legacy null format and current "Home" format)
           this.selectedLocationType = 'home';
           this.selectedLocation = 'Home';
           this.selectedLocationAddress = 'Home';
           this.locationInputValue = 'Home';
-        } else if (specificReview[0].location != null) {
+        } else if (reviewLocation != null) {
           // Case 2: Venue location - check if it's a venue ID (number) or venue name (string)
           
           // First, try to match by ID (for database venues)
