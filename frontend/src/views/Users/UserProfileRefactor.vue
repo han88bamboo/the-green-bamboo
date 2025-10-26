@@ -4377,6 +4377,35 @@ export default {
   }
   
   },
+  watch: {
+    // Watch for route changes to reload data when navigating between different user profiles
+    '$route'(to, from) {
+      // Check if we're still on a user profile route but the userID has changed
+      if (to.params.userID && to.params.userID !== from.params.userID) {
+        // Reset data loading state
+        this.dataLoaded = false;
+        
+        // Update displayUserID and routeUsername from the new route
+        this.displayUserID = to.params.userID;
+        this.routeUsername = to.params.username;
+        
+        // Check if this is own profile
+        this.ownProfile = (this.displayUserID === this.userID);
+        
+        // Reset any tab-specific state if needed
+        if (to.params.listName) {
+          this.currentList = to.params.listName;
+          this.activeTab = "list";
+        } else {
+          this.currentList = "";
+          // Don't reset activeTab if no listName - let user stay on current tab
+        }
+        
+        // Reload all data for the new user
+        this.loadData();
+      }
+    }
+  },
   mounted() {
     console.log("Recent Reviews Data:", this.recentReviews?.[0]);
     console.log("Top Rated Reviews Data:", this.topRatedReviews?.[0]);
