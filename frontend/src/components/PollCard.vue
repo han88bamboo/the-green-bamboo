@@ -182,6 +182,14 @@
               <div v-if="isCreator" class="creator-responses-section mt-4">
                 <div class="detailed-responses-header">
                   <button 
+                    class="btn btn-success btn-sm me-2"
+                    @click="openRandomPickWinnerModal(currentPoll.id)"
+                    :disabled="getTotalVotes(currentPoll.id) === 0"
+                  >
+                    <i class="bi bi-trophy me-2"></i>
+                    Randomly Pick A Winner
+                  </button>
+                  <button 
                     class="btn btn-outline-info btn-sm"
                     @click="toggleDetailedResponses(currentPoll.id)"
                     :disabled="loadingDetailedResponses"
@@ -357,6 +365,14 @@
               <!-- Creator-Only Detailed Responses Section -->
               <div v-if="isCreator" class="creator-responses-section mt-4">
                 <div class="detailed-responses-header">
+                  <button 
+                    class="btn btn-success btn-sm me-2"
+                    @click="openRandomPickWinnerModal(currentPoll.id)"
+                    :disabled="getTotalVotes(currentPoll.id) === 0"
+                  >
+                    <i class="bi bi-trophy me-2"></i>
+                    Randomly Pick A Winner
+                  </button>
                   <button 
                     class="btn btn-outline-info btn-sm"
                     @click="toggleDetailedResponses(currentPoll.id)"
@@ -570,6 +586,14 @@
               <div v-if="isCreator" class="creator-responses-section mt-4">
                 <div class="detailed-responses-header">
                   <button 
+                    class="btn btn-success btn-sm me-2"
+                    @click="openRandomPickWinnerModal(currentPoll.id)"
+                    :disabled="getTotalVotes(currentPoll.id) === 0"
+                  >
+                    <i class="bi bi-trophy me-2"></i>
+                    Randomly Pick A Winner
+                  </button>
+                  <button 
                     class="btn btn-outline-info btn-sm"
                     @click="toggleDetailedResponses(currentPoll.id)"
                     :disabled="loadingDetailedResponses"
@@ -689,6 +713,103 @@
         </span>
         <span v-else>Create Another Poll</span>
       </button>
+    </div>
+
+    <!-- Random Winner Modal -->
+    <div 
+      v-if="showRandomWinnerModal" 
+      class="modal fade show" 
+      style="display: block; background-color: rgba(0,0,0,0.5);"
+      @click.self="closeRandomWinnerModal"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="bi bi-trophy-fill text-warning me-2"></i>
+              Random Winner Selection
+            </h5>
+            <button type="button" class="btn-close" @click="closeRandomWinnerModal"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Loading State -->
+            <div v-if="randomWinnerLoading" class="winner-loading-container">
+              <div class="lottery-animation">
+                <div class="lottery-spinner"></div>
+                <div class="lottery-balls">
+                  <div class="lottery-ball"></div>
+                  <div class="lottery-ball"></div>
+                  <div class="lottery-ball"></div>
+                </div>
+              </div>
+              <p class="loading-text mt-4">Selecting a random winner...</p>
+            </div>
+
+            <!-- Winner Display -->
+            <div v-else-if="randomWinner" class="winner-display">
+              <div class="winner-announcement">
+                <div class="confetti">🎉</div>
+                <h3 class="winner-title">Congratulations!</h3>
+                <div class="winner-card">
+                  <div class="winner-icon">
+                    <i class="bi bi-person-circle"></i>
+                  </div>
+                  <div class="winner-info">
+                    <h4 class="winner-name">{{ randomWinner.respondentDisplayName || randomWinner.respondentUsername }}</h4>
+                    <p class="winner-username">@{{ randomWinner.respondentUsername }}</p>
+                  </div>
+                </div>
+
+                <!-- Display their response -->
+                <div class="winner-response mt-4">
+                  <h6 class="response-header">Their Response:</h6>
+                  
+                  <!-- Multiple Choice Response -->
+                  <div v-if="randomWinner.selectedOptionsText && randomWinner.selectedOptionsText.length > 0" class="response-content">
+                    <div v-for="(optionText, index) in randomWinner.selectedOptionsText" :key="index" class="response-option">
+                      <i class="bi bi-check-circle-fill text-success me-2"></i>
+                      {{ optionText }}
+                    </div>
+                  </div>
+
+                  <!-- Rating Response -->
+                  <div v-else-if="randomWinner.ratingValue" class="response-content">
+                    <div class="rating-display-winner">
+                      <i 
+                        v-for="star in 5" 
+                        :key="star"
+                        class="bi"
+                        :class="star <= randomWinner.ratingValue ? 'bi-star-fill text-warning' : 'bi-star text-muted'"
+                      ></i>
+                      <span class="ms-2">({{ randomWinner.ratingValue }} out of 5)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Responses State -->
+            <div v-else-if="randomWinnerError" class="no-winner-state">
+              <div class="no-winner-icon">
+                <i class="bi bi-inbox"></i>
+              </div>
+              <p class="no-winner-text">{{ randomWinnerError }}</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeRandomWinnerModal">Close</button>
+            <button 
+              v-if="randomWinner"
+              type="button" 
+              class="btn btn-success" 
+              @click="pickAnotherWinner"
+            >
+              <i class="bi bi-arrow-repeat me-2"></i>
+              Pick Another Winner
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Create Poll Modal -->
@@ -861,6 +982,13 @@ export default {
       
       // Modal state
       showCreateModal: false,
+      showRandomWinnerModal: false,
+      
+      // Random winner state
+      randomWinner: null,
+      randomWinnerLoading: false,
+      randomWinnerError: null,
+      currentRandomPollId: null,
       
       // New poll form
       newPoll: {
@@ -1213,6 +1341,65 @@ export default {
       }
     },
     
+    // Random Winner Modal Management
+    openRandomPickWinnerModal(pollId) {
+      this.currentRandomPollId = pollId;
+      this.showRandomWinnerModal = true;
+      this.pickRandomWinner(pollId);
+    },
+
+    closeRandomWinnerModal() {
+      this.showRandomWinnerModal = false;
+      this.randomWinner = null;
+      this.randomWinnerError = null;
+      this.currentRandomPollId = null;
+    },
+
+    async pickRandomWinner(pollId) {
+      this.randomWinnerLoading = true;
+      this.randomWinner = null;
+      this.randomWinnerError = null;
+
+      try {
+        // Add a minimum delay for the animation effect (1.5 seconds)
+        const minDelay = new Promise(resolve => setTimeout(resolve, 1500));
+        
+        const response = await fetch(
+          `${process.env.VUE_APP_API_URL}/getData/randomPickRespondentForOnePoll/${pollId}`
+        );
+
+        // Wait for minimum delay to complete
+        await minDelay;
+
+        if (response.ok) {
+          const result = await response.json();
+          
+          if (result.code === 200 && result.data) {
+            if (result.data.randomRespondent) {
+              this.randomWinner = result.data.randomRespondent;
+            } else {
+              this.randomWinnerError = result.message || 'No responses found for this poll.';
+            }
+          } else {
+            this.randomWinnerError = result.message || 'Failed to select a winner.';
+          }
+        } else {
+          this.randomWinnerError = 'Failed to connect to the server.';
+        }
+      } catch (error) {
+        console.error('Error picking random winner:', error);
+        this.randomWinnerError = 'An error occurred while selecting a winner.';
+      } finally {
+        this.randomWinnerLoading = false;
+      }
+    },
+
+    pickAnotherWinner() {
+      if (this.currentRandomPollId) {
+        this.pickRandomWinner(this.currentRandomPollId);
+      }
+    },
+
     // Modal Management
     closeCreateModal() {
       this.showCreateModal = false;
@@ -2387,5 +2574,245 @@ export default {
 
 .user-rating-stars i {
   transition: color 0.2s ease;
+}
+
+/* Random Winner Modal Styles */
+.winner-loading-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.lottery-animation {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+}
+
+.lottery-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #28a745;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.lottery-balls {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+}
+
+.lottery-ball {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border-radius: 50%;
+  animation: bounce 0.6s ease-in-out infinite;
+}
+
+.lottery-ball:nth-child(1) {
+  top: 10px;
+  left: 30px;
+  animation-delay: 0s;
+}
+
+.lottery-ball:nth-child(2) {
+  top: 30px;
+  left: 50px;
+  animation-delay: 0.2s;
+}
+
+.lottery-ball:nth-child(3) {
+  top: 50px;
+  left: 30px;
+  animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.loading-text {
+  color: #6c757d;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.winner-display {
+  text-align: center;
+  padding: 20px;
+}
+
+.winner-announcement {
+  position: relative;
+}
+
+.confetti {
+  font-size: 3rem;
+  animation: confetti-fall 0.8s ease-out;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100px) scale(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.winner-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #28a745;
+  margin: 15px 0;
+}
+
+.winner-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px 0;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  animation: slide-up 0.5s ease-out;
+}
+
+@keyframes slide-up {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.winner-icon {
+  font-size: 4rem;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.winner-info {
+  color: white;
+}
+
+.winner-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.winner-username {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.winner-response {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: left;
+}
+
+.response-header {
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.response-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.response-option {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background: white;
+  border-radius: 8px;
+  border: 2px solid #28a745;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.rating-display-winner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.rating-display-winner i {
+  font-size: 1.8rem;
+}
+
+.no-winner-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.no-winner-icon {
+  font-size: 4rem;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+.no-winner-text {
+  font-size: 1.1rem;
+  color: #6c757d;
+}
+
+/* Mobile responsive for winner modal */
+@media (max-width: 576px) {
+  .winner-card {
+    padding: 20px;
+  }
+
+  .winner-name {
+    font-size: 1.2rem;
+  }
+
+  .winner-icon {
+    font-size: 3rem;
+  }
+
+  .lottery-animation {
+    width: 120px;
+    height: 120px;
+  }
+
+  .lottery-spinner {
+    width: 100px;
+    height: 100px;
+  }
 }
 </style>

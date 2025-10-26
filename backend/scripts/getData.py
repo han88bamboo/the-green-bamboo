@@ -10894,3 +10894,115 @@ def get_poll_responses_by_creator(creator_id, creator_type):
             "message": "An error occurred fetching poll responses."
         }), 500
 
+
+@blueprint.route('/randomPickRespondentForOnePoll/<int:poll_id>', methods=['GET'])
+def random_pick_respondent_for_one_poll(poll_id):
+    """Get one randomly selected respondent and their response for a specific poll"""
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # First, verify the poll exists
+            cursor.execute('''
+                SELECT 
+                    "id",
+                    "title" as "pollTitle",
+                    "questionText",
+                    "questionType"
+                FROM "pollQuestions" 
+                WHERE "id" = %s
+            ''', (poll_id,))
+            
+            poll = cursor.fetchone()
+            
+            if not poll:
+                return jsonify({
+                    "code": 404,
+                    "message": "Poll not found."
+                }), 404
+            
+            # Get all responses for this poll with user information
+            cursor.execute('''
+                SELECT 
+                    pr."id" as "responseId",
+                    pr."pollId",
+                    pr."respondentId",
+                    pr."selectedOptionIds",
+                    pr."ratingValue",
+                    u."username" as "respondentUsername",
+                    u."displayName" as "respondentDisplayName"
+                FROM "pollResponses" pr
+                LEFT JOIN "users" u ON pr."respondentId" = u."id"
+                WHERE pr."pollId" = %s
+            ''', (poll_id,))
+            
+            responses = cursor.fetchall()
+            
+            # Check if there are any responses
+            if not responses or len(responses) == 0:
+                return jsonify({
+                    "code": 200,
+                    "message": "No responses found for this poll.",
+                    "data": {
+                        "pollId": poll_id,
+                        "pollTitle": poll['pollTitle'],
+                        "questionText": poll['questionText'],
+                        "questionType": poll['questionType'],
+                        "randomRespondent": None
+                    }
+                }), 200
+            
+            # Randomly select one response
+            import random
+            selected_response = random.choice(responses)
+            
+            # Build the respondent data
+            respondent_data = {
+                "respondentId": selected_response['respondentId'],
+                "respondentUsername": selected_response['respondentUsername'],
+                "respondentDisplayName": selected_response['respondentDisplayName'],
+                "selectedOptionIds": selected_response['selectedOptionIds'],
+                "ratingValue": selected_response['ratingValue'],
+                "selectedOptionsText": None  # Will be populated for multiple choice
+            }
+            
+            # For multiple choice questions, get the human-readable option text
+            if poll['questionType'] in ['multiple_choice_single_selection', 'multiple_choice_multi_selection']:
+                if selected_response['selectedOptionIds']:
+                    # Get option texts for the selected option IDs
+                    format_strings = ','.join(['%s'] * len(selected_response['selectedOptionIds']))
+                    cursor.execute(f'''
+                        SELECT 
+                            po."id",
+                            po."optionText",
+                            po."optionOrder"
+                        FROM "pollOptions" po
+                        WHERE po."pollId" = %s AND po."id" IN ({format_strings})
+                        ORDER BY po."optionOrder" ASC
+                    ''', [poll_id] + selected_response['selectedOptionIds'])
+                    
+                    selected_options = cursor.fetchall()
+                    
+                    # Create a list of option texts in the order they were selected
+                    respondent_data['selectedOptionsText'] = [
+                        opt['optionText'] for opt in selected_options
+                    ]
+        
+        return jsonify({
+            "code": 200,
+            "data": {
+                "pollId": poll_id,
+                "pollTitle": poll['pollTitle'],
+                "questionText": poll['questionText'],
+                "questionType": poll['questionType'],
+                "randomRespondent": respondent_data
+            }
+        }), 200
+        
+    except Exception as e:
+        print("Random pick respondent error:", str(e))
+        print("Traceback:", traceback.format_exc())
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred selecting a random respondent."
+        }), 500
+
