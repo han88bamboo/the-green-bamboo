@@ -2542,7 +2542,14 @@
                 <h5>Jump to Section</h5>
                 <button @click="closeJumpToSheet" class="sheet-close" aria-label="Close">×</button>
             </div>
-            
+
+            <!-- Back to Top Button -->
+            <div class="sheet-back-to-top">
+                <button @click.stop="scrollToTop" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-arrow-up-circle"></i> Back to Top
+                </button>
+            </div>  
+
             <!-- Sheet Content -->
             <div class="sheet-content">
                 <div 
@@ -4092,6 +4099,123 @@ export default {
                     }, 600); // Wait 600ms for scroll animation
                 } else {
                     console.warn('🔵 Jump to Sheet: Section element not found!');
+                }
+            }, 300); // Wait 300ms for sheet close animation
+        },
+
+        // Scroll to top of the page
+        scrollToTop() {
+            console.log('🔵 Jump to Sheet: scrollToTop method called');
+            
+            // Close the sheet first
+            this.closeJumpToSheet();
+            
+            // Small delay to allow sheet close animation to complete
+            setTimeout(() => {
+                console.log('🔵 Jump to Sheet: About to execute scroll to top');
+                
+                try {
+                    // Use the same approach as jumpToSection - find the target element and scroll to it
+                    // This mimics what jumpToSection does but targets the very top
+                    
+                    // Try to find the specific element with the target classes
+                    const targetElement = document.querySelector('.col-lg-3.col-12.mb-lg-0.mb-3.image-container.text-start.mobile-col-5');
+                    if (targetElement) {
+                        console.log('🔵 Jump to Sheet: Found target element with specified classes, scrolling to it');
+                        // Add scroll margin to account for 250px offset
+                        targetElement.style.scrollMarginTop = '250px';
+                        targetElement.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        // Clean up the scroll margin after scroll completes
+                        setTimeout(() => {
+                            targetElement.style.scrollMarginTop = '';
+                        }, 1000);
+                        return;
+                    }
+                    
+                    // Try to find the menu wrapper as backup
+                    const menuWrapper = document.querySelector('.menu-wrapper');
+                    if (menuWrapper) {
+                        console.log('🔵 Jump to Sheet: Found menu wrapper, scrolling to it');
+                        // Add scroll margin to account for 250px offset
+                        menuWrapper.style.scrollMarginTop = '250px';
+                        menuWrapper.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        // Clean up the scroll margin after scroll completes
+                        setTimeout(() => {
+                            menuWrapper.style.scrollMarginTop = '';
+                        }, 1000);
+                        return;
+                    }
+                    
+                    // Try to find the first section
+                    const firstSection = document.querySelector('[data-section-index="0"]');
+                    if (firstSection) {
+                        console.log('🔵 Jump to Sheet: Found first section, scrolling above it');
+                        // Add scroll margin to account for 250px offset
+                        firstSection.style.scrollMarginTop = '250px';
+                        firstSection.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        // Clean up the scroll margin after scroll completes
+                        setTimeout(() => {
+                            firstSection.style.scrollMarginTop = '';
+                        }, 1000);
+                        return;
+                    }
+                    
+                    // Try finding any section and scroll to the top of the menu area
+                    const anySectionElement = document.querySelector('[data-section-index]');
+                    if (anySectionElement) {
+                        console.log('🔵 Jump to Sheet: Found a section, scrolling to menu top');
+                        // Get the parent container and scroll to its top
+                        const menuContainer = anySectionElement.closest('.container');
+                        if (menuContainer) {
+                            // Add scroll margin to account for 250px offset
+                            menuContainer.style.scrollMarginTop = '250px';
+                            menuContainer.scrollIntoView({ 
+                                behavior: 'smooth', 
+                                block: 'start' 
+                            });
+                            // Clean up the scroll margin after scroll completes
+                            setTimeout(() => {
+                                menuContainer.style.scrollMarginTop = '';
+                            }, 1000);
+                            return;
+                        }
+                    }
+                    
+                    // Fallback: Use window.scrollTo and other methods
+                    console.log('🔵 Jump to Sheet: Using fallback scroll methods');
+                    
+                    // Try window scroll
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    // Try document element scroll
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                    
+                    // Try app container
+                    const appContainer = document.querySelector('#app');
+                    if (appContainer && appContainer.scrollTop > 0) {
+                        appContainer.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                    
+                } catch (error) {
+                    console.error('🔵 Jump to Sheet: Error during scroll:', error);
+                    // Final fallback
+                    try {
+                        window.scrollTo(0, 0);
+                        document.documentElement.scrollTop = 0;
+                        document.body.scrollTop = 0;
+                    } catch (fallbackError) {
+                        console.error('🔵 Jump to Sheet: Fallback also failed:', fallbackError);
+                    }
                 }
             }, 300); // Wait 300ms for sheet close animation
         },
@@ -10228,6 +10352,34 @@ input[type="range"].form-range::-webkit-slider-thumb {
 
 .sheet-close:hover {
   color: #333;
+}
+
+/* Back to Top Button */
+.sheet-back-to-top {
+  padding: 12px 20px;
+  border-bottom: 2px solid #f0f0f0;
+  background-color: #fafafa;
+  flex-shrink: 0;
+}
+
+.sheet-back-to-top button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.sheet-back-to-top button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+}
+
+.sheet-back-to-top button i {
+  font-size: 20px;
 }
 
 /* Sheet Content - Scrollable list of sections */
