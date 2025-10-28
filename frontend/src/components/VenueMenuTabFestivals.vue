@@ -4045,15 +4045,32 @@ export default {
                 if (sectionElement) {
                     // Check if section is collapsed and expand it if needed
                     const collapseElement = sectionElement.querySelector(`#collapseMenuSection${sectionIndex}`);
+                    const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                    
                     if (collapseElement && !collapseElement.classList.contains('show')) {
-                        console.log('🔵 Jump to Sheet: Section is collapsed, expanding it...');
-                        // Directly add the 'show' class to expand the section
-                        collapseElement.classList.add('show');
+                        console.log('🔵 Jump to Sheet: Section is collapsed, triggering expansion...');
                         
-                        // Also update the button aria-expanded attribute
-                        const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                        // Find the section object from our data to trigger proper lazy loading
+                        const sectionObj = this.visibleMainSections.find(s => s.sectionName === sectionName);
+                        
+                        if (sectionObj && toggleButton) {
+                            // Create a mock event object to match what the normal click handler expects
+                            const mockEvent = {
+                                currentTarget: toggleButton,
+                                target: toggleButton,
+                                preventDefault: () => {},
+                                stopPropagation: () => {}
+                            };
+                            
+                            // Trigger our lazy loading logic BEFORE expanding
+                            console.log('🔵 Jump to Sheet: Triggering lazy loading for section:', sectionObj.sectionName);
+                            this.handleSectionExpand(sectionObj, mockEvent);
+                        }
+                        
+                        // Programmatically click the toggle button to trigger Bootstrap expansion
                         if (toggleButton) {
-                            toggleButton.setAttribute('aria-expanded', 'true');
+                            console.log('🔵 Jump to Sheet: Clicking toggle button to expand section');
+                            toggleButton.click();
                         }
                     } else {
                         console.log('🔵 Jump to Sheet: Section is already expanded');
@@ -5259,14 +5276,19 @@ export default {
 
         // Search Menu - Enhanced for hierarchical structure with tasting filter
         searchMenu() {
-            console.log("Searching hierarchical menu with term: " + this.searchMenuTerm);
-            console.log("Tasting filter active:", this.showOnlyTastedItems);
+            console.log("🔍 SEARCH DEBUG: Starting search");
+            console.log("🔍 Search term:", this.searchMenuTerm);
+            console.log("🔍 Tasting filter active:", this.showOnlyTastedItems);
+            console.log("🔍 editableMainSections:", this.editableMainSections);
+            console.log("🔍 editableMainSections length:", this.editableMainSections.length);
+            console.log("🔍 Current searchMenuResults:", this.searchMenuResults);
             
             // Trim search term, set to lowercase
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
             
             if (this.searchMenuTerm == '' && !this.showOnlyTastedItems) {
                 // If empty search and no tasting filter, show all sections and subsections from current editable structure
+                console.log("🔍 Using editableMainSections for empty search");
                 this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
             } else {
                 // Reset searchMenuResults
@@ -5364,6 +5386,10 @@ export default {
 
             // Sort search results
             this.sortMenu(this.sortMenuTerm);
+            
+            console.log("🔍 SEARCH DEBUG: Search completed");
+            console.log("🔍 Final searchMenuResults:", this.searchMenuResults);
+            console.log("🔍 Final searchMenuResults length:", this.searchMenuResults.length);
         },
 
         // Check if a menu item matches the search term

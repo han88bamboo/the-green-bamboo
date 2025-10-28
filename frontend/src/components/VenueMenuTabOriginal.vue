@@ -2783,15 +2783,32 @@ export default {
                 if (sectionElement) {
                     // Check if section is collapsed and expand it if needed
                     const collapseElement = sectionElement.querySelector(`#collapseMenuSection${sectionIndex}`);
+                    const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                    
                     if (collapseElement && !collapseElement.classList.contains('show')) {
-                        console.log('🔵 Jump to Sheet: Section is collapsed, expanding it...');
-                        // Directly add the 'show' class to expand the section
-                        collapseElement.classList.add('show');
+                        console.log('🔵 Jump to Sheet: Section is collapsed, triggering expansion...');
                         
-                        // Also update the button aria-expanded attribute
-                        const toggleButton = sectionElement.querySelector(`[data-bs-target="#collapseMenuSection${sectionIndex}"]`);
+                        // Find the section object from our data to trigger proper lazy loading
+                        const sectionObj = this.visibleMainSections.find(s => s.sectionName === sectionName);
+                        
+                        if (sectionObj && toggleButton) {
+                            // Create a mock event object to match what the normal click handler expects
+                            const mockEvent = {
+                                currentTarget: toggleButton,
+                                target: toggleButton,
+                                preventDefault: () => {},
+                                stopPropagation: () => {}
+                            };
+                            
+                            // Trigger our lazy loading logic BEFORE expanding
+                            console.log('🔵 Jump to Sheet: Triggering lazy loading for section:', sectionObj.sectionName);
+                            this.handleSectionExpand(sectionObj, mockEvent);
+                        }
+                        
+                        // Programmatically click the toggle button to trigger Bootstrap expansion
                         if (toggleButton) {
-                            toggleButton.setAttribute('aria-expanded', 'true');
+                            console.log('🔵 Jump to Sheet: Clicking toggle button to expand section');
+                            toggleButton.click();
                         }
                     } else {
                         console.log('🔵 Jump to Sheet: Section is already expanded');
