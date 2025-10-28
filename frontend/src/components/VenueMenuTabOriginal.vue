@@ -336,7 +336,8 @@
                     <button type="button" 
                         class="btn secondary-btn-not-rounded fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                         data-bs-toggle="collapse" :data-bs-target="'#collapseMenuSection' + index"
-                        aria-expanded="true" :aria-controls="'collapseMenuSection' + index"
+                        aria-expanded="false" :aria-controls="'collapseMenuSection' + index"
+                        @click="handleSectionExpand(menuSection, $event)"
                         style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
                         <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ menuSection.sectionName }}</span>
                         <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
@@ -344,7 +345,7 @@
                 </div>
 
                 <!-- Main Section Content (Collapsible) -->
-                <div class="collapse show" :id="'collapseMenuSection' + index">
+                <div class="collapse" :id="'collapseMenuSection' + index">
                     
                     <!-- Main Section Direct Items (MOBILE VIEW) -->
                     <div class="mobile-view-show">
@@ -582,7 +583,8 @@
                             <div class="col-12 d-grid mobile-px-0 mt-3">
                                 <button type="button" class="btn btn-outline-secondary fs-6 fw-bold text-start d-flex justify-content-between align-items-center"
                                     data-bs-toggle="collapse" :data-bs-target="'#collapseSubSection' + index + '_' + subIndex"
-                                    aria-expanded="true" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
+                                    aria-expanded="false" :aria-controls="'collapseSubSection' + index + '_' + subIndex"
+                                    @click="handleSectionExpand(subsection, $event)"
                                     style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis; margin-left: 20px;">
                                     <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ subsection.sectionName }}</span>
                                     <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
@@ -590,7 +592,7 @@
                             </div>
 
                             <!-- Subsection Content (Collapsible) -->
-                            <div class="collapse show" :id="'collapseSubSection' + index + '_' + subIndex">
+                            <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
                                 
                                 <!-- No Subsection Contents to Show -->
                                 <div v-if="!subsection.sectionMenu || subsection.sectionMenu.length == 0" class="col-12 my-3 ms-4">
@@ -3585,15 +3587,17 @@ export default {
                     sectionOrder: section.sectionOrder,
                     parentSectionId: section.parentSectionId,
                     isSubSection: section.isSubSection,
-                    sectionMenu: [],
-                    subsections: []
+                    sectionMenu: [], // ✅ Empty initially - items will load when section is expanded
+                    subsections: [],
+                    itemsLoaded: false, // ✅ Track if items have been loaded
+                    isLoading: false    // ✅ Track if currently loading
                 };
 
-                // Load items for this section
-                if (section.id) {
-                    const sectionItems = await this.loadSectionItems(section.id);
-                    processedSection.sectionMenu = await this.enrichItemsWithListingData(sectionItems);
-                }
+                // ❌ REMOVED: Don't load items upfront anymore
+                // if (section.id) {
+                //     const sectionItems = await this.loadSectionItems(section.id);
+                //     processedSection.sectionMenu = await this.enrichItemsWithListingData(sectionItems);
+                // }
 
                 // If this is a main section (no parent), look for its subsections
                 if (!section.parentSectionId) {
@@ -3606,14 +3610,16 @@ export default {
                             sectionOrder: subsection.sectionOrder,
                             parentSectionId: subsection.parentSectionId,
                             isSubSection: subsection.isSubSection,
-                            sectionMenu: []
+                            sectionMenu: [], // ✅ Empty initially - items will load when subsection is expanded
+                            itemsLoaded: false, // ✅ Track if items have been loaded
+                            isLoading: false    // ✅ Track if currently loading
                         };
 
-                        // Load items for this subsection
-                        if (subsection.id) {
-                            const subsectionItems = await this.loadSectionItems(subsection.id);
-                            processedSubsection.sectionMenu = await this.enrichItemsWithListingData(subsectionItems);
-                        }
+                        // ❌ REMOVED: Don't load subsection items upfront anymore
+                        // if (subsection.id) {
+                        //     const subsectionItems = await this.loadSectionItems(subsection.id);
+                        //     processedSubsection.sectionMenu = await this.enrichItemsWithListingData(subsectionItems);
+                        // }
 
                         processedSection.subsections.push(processedSubsection);
                     }
@@ -7062,7 +7068,49 @@ export default {
                 const toast = useToast();
                 toast.error('Failed to update rating display setting. Please try again.');
             }
-        }
+        },
+        // NEW METHOD: Handle section expansion and trigger lazy loading
+        async handleSectionExpand(section, event) {
+            console.log(`🍽️ Section "${section.sectionName}" was clicked`);
+            
+            if (!event?.currentTarget) {
+                console.warn('⚠️ No currentTarget found in event, cannot proceed');
+                return;
+            }
+            
+            const button = event.currentTarget;
+            const targetSelector = button.getAttribute('data-bs-target');
+            
+            console.log(`🍽️ Target selector: ${targetSelector}`);
+            
+            if (!targetSelector) {
+                console.warn('⚠️ No data-bs-target found on button');
+                return;
+            }
+            
+            const targetElement = document.querySelector(targetSelector);
+            
+            if (!targetElement) {
+                console.warn('⚠️ Target collapse element not found');
+                return;
+            }
+            
+            // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
+            const handleShown = () => {
+                console.log(`🚀 Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
+                this.loadSectionItemsLazy(section);
+            };
+            
+            // Add one-time event listener for the 'shown.bs.collapse' event
+            targetElement.addEventListener('shown.bs.collapse', handleShown, { once: true });
+            console.log(`👂 Added one-time event listener for shown.bs.collapse on section "${section.sectionName}"`);
+        },
+
+        // NEW METHOD: Communicate with parent to load section items
+        async loadSectionItemsLazy(section) {
+            // Emit event to parent VenueProfile to load this section's items
+            this.$emit('load-section-items', section);
+        }    
     }
 }
 </script>

@@ -2290,6 +2290,7 @@
                         @menu-updated="handleMenuUpdated"
                         @menu-update-error="handleMenuUpdateError"
                         @claim-venue-account="handleClaimVenueAccount"
+                        @load-section-items="loadMenuItemsForSectionLazy"
                     />
 
                     <!-- Festival/Event Menu Component -->
@@ -2310,6 +2311,7 @@
                         @menu-updated="handleMenuUpdated"
                         @menu-update-error="handleMenuUpdateError"
                         @claim-venue-account="handleClaimVenueAccount"
+                        @load-section-items="loadMenuItemsForSectionLazy"
                     />
 
                     <!-- Debug info for development -->
@@ -5417,18 +5419,17 @@ export default {
                 if (menuResponse.data && Array.isArray(menuResponse.data)) {
                     this.detailedMenu = menuResponse.data;
                     
-                    // Sort sections by sectionOrder and add menu items to each section
+                    // Sort sections by sectionOrder but DON'T load items yet
                     this.detailedMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
                     
-                    // Load menu items for each section
+                    // Initialize each section with empty items array and loading state
                     for (let section of this.detailedMenu) {
-                        if (section.id) {
-                            await this.loadMenuItemsForSection(section);
-                        }
+                        section.sectionMenu = [];  // Empty initially
+                        section.itemsLoaded = false;  // Track if items are loaded
+                        section.isLoading = false;  // Track if currently loading
                     }
                     
-                    console.log('🍽️ loadMenuData: Successfully loaded hierarchical menu with', this.detailedMenu.length, 'sections');
-                    console.log('🍽️ loadMenuData: Menu sections:', this.detailedMenu);
+                    console.log('🍽️ loadMenuData: Successfully loaded hierarchical menu structure with', this.detailedMenu.length, 'sections (items will load on demand)');
                 } else {
                     console.log('🍽️ loadMenuData: No menu data found, setting empty array');
                     this.detailedMenu = [];
@@ -5508,7 +5509,37 @@ export default {
                 section.sectionMenu = [];
             }
         },
-
+        // NEW METHOD: Load menu items only when section is expanded
+        async loadMenuItemsForSectionLazy(section) {
+            console.log(`🍽️ VenueProfile: loadMenuItemsForSectionLazy received for section: "${section.sectionName}"`);
+            console.log(`🍽️ VenueProfile: Section details:`, {
+                id: section.id,
+                sectionName: section.sectionName,
+                itemsLoaded: section.itemsLoaded,
+                isLoading: section.isLoading,
+                sectionMenuLength: section.sectionMenu?.length
+            });
+            
+            // Check if already loaded or currently loading
+            if (section.itemsLoaded || section.isLoading) {
+                console.log(`🍽️ Section "${section.sectionName}" already loaded or loading, skipping`);
+                return;
+            }
+            
+            console.log(`🍽️ Lazy loading items for section: "${section.sectionName}"`);
+            section.isLoading = true;
+            
+            try {
+                // Use the existing loadMenuItemsForSection method
+                await this.loadMenuItemsForSection(section);
+                section.itemsLoaded = true;
+                console.log(`🍽️ Successfully lazy loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
+            } catch (error) {
+                console.error(`❌ Error lazy loading section "${section.sectionName}":`, error);
+            } finally {
+                section.isLoading = false;
+            }
+        },
         async loadBottleReviews() {
             try {
                 const response = await this.$axios.get(
