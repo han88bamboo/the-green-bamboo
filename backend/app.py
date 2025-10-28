@@ -1,10 +1,12 @@
 import os
 import importlib
 from datetime import datetime
+import json
+import traceback
 
 import urllib
 import stripe
-from flask import Flask, g
+from flask import Flask, g, request
 from flask import jsonify
 from flask_cors import CORS
 from flask_mail import Mail
@@ -15,7 +17,9 @@ from dotenv import load_dotenv
 from contextlib import contextmanager
 
 import logging.config
+import logging
 
+# Enhanced logging configuration for CloudWatch
 logging.config.fileConfig(
     os.path.abspath(
         os.path.join(
@@ -25,15 +29,108 @@ logging.config.fileConfig(
     ),
     disable_existing_loggers=False,
 )
+
+# Create structured logger for CloudWatch
 logger = logging.getLogger(__name__)
+
+# CloudWatch-friendly structured logging helper
+class StructuredLogger:
+    def __init__(self, logger_name):
+        self.logger = logging.getLogger(logger_name)
+    
+    def log_request_start(self, endpoint, method, params=None):
+        """Log the start of a request with context"""
+        context = {
+            "event": "request_start",
+            "endpoint": endpoint,
+            "method": method,
+            "timestamp": datetime.now().isoformat(),
+            "request_id": getattr(g, 'request_id', 'unknown')
+        }
+        if params:
+            context["params"] = params
+        self.logger.info(json.dumps(context))
+    
+    def log_request_success(self, endpoint, duration_ms=None, result_count=None):
+        """Log successful request completion"""
+        context = {
+            "event": "request_success",
+            "endpoint": endpoint,
+            "timestamp": datetime.now().isoformat(),
+            "request_id": getattr(g, 'request_id', 'unknown')
+        }
+        if duration_ms:
+            context["duration_ms"] = duration_ms
+        if result_count is not None:
+            context["result_count"] = result_count
+        self.logger.info(json.dumps(context))
+    
+    def log_request_error(self, endpoint, error, error_type=None, traceback_str=None):
+        """Log request errors with full context"""
+        context = {
+            "event": "request_error",
+            "endpoint": endpoint,
+            "error": str(error),
+            "error_type": error_type or type(error).__name__,
+            "timestamp": datetime.now().isoformat(),
+            "request_id": getattr(g, 'request_id', 'unknown')
+        }
+        if traceback_str:
+            context["traceback"] = traceback_str
+        self.logger.error(json.dumps(context))
+    
+    def log_database_operation(self, operation, query=None, params=None, success=True, error=None):
+        """Log database operations"""
+        context = {
+            "event": "database_operation",
+            "operation": operation,
+            "success": success,
+            "timestamp": datetime.now().isoformat(),
+            "request_id": getattr(g, 'request_id', 'unknown')
+        }
+        if query:
+            context["query"] = query[:200] + "..." if len(query) > 200 else query
+        if params:
+            context["params"] = str(params)
+        if error:
+            context["error"] = str(error)
+        
+        if success:
+            self.logger.info(json.dumps(context))
+        else:
+            self.logger.error(json.dumps(context))
+
+# Global structured logger instance
+structured_logger = StructuredLogger(__name__)
 
 # Allow all requests
 app = Flask(__name__)
 CORS(app)
 
+# Add request ID for tracking
+@app.before_request
+def before_request_logging():
+    import uuid
+    g.request_id = str(uuid.uuid4())[:8]  # Short request ID
+    g.request_start_time = datetime.now()
+    
+    # Log incoming request
+    structured_logger.log_request_start(
+        endpoint=request.endpoint or request.path,
+        method=request.method,
+        params=dict(request.args) if request.args else None
+    )
+
 @app.errorhandler(Exception)
 def handle_exception(e):
-    response = jsonify({"error": str(e)})
+    # Log the unhandled exception with full context
+    structured_logger.log_request_error(
+        endpoint=request.endpoint or request.path,
+        error=e,
+        traceback_str=traceback.format_exc()
+    )
+    
+    response = jsonify({"error": str(e), "request_id": getattr(g, 'request_id', 'unknown')})
     response.status_code = 500
     response.headers.add("Access-Control-Allow-Origin", "*")
     return response

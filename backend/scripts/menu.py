@@ -1,5 +1,6 @@
 import logging
 import os
+import psycopg2
 from psycopg2.extras import execute_values
 
 from flask import Blueprint, g, request, jsonify
@@ -21,7 +22,21 @@ logger.info(project_root)
 
 @blueprint.route("/<int:venue_id>", methods=['GET'])
 def getMenuSections(venue_id: int):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Single start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getMenuSections venue_id={venue_id}")
+    
     try: 
+        # Input validation
+        if not venue_id or venue_id <= 0:
+            logger.warning(f"Charsiucharlie_debug REQ-{request_id} Invalid venue_id={venue_id}")
+            return jsonify({
+                "code": 400, 
+                "message": "Invalid venue ID", 
+                "request_id": request_id
+            }), 400
+        
         query = """
             SELECT COALESCE((
                 SELECT json_agg(json_build_object(
@@ -42,14 +57,33 @@ def getMenuSections(venue_id: int):
             cursor.execute(query, (venue_id,))
             
             menu_sections = cursor.fetchone()  # one row
-            return jsonify(menu_sections['menu'])  # just the array
+            
+            # Check if venue exists
+            if menu_sections is None:
+                logger.warning(f"Charsiucharlie_debug REQ-{request_id} No menu found venue_id={venue_id}")
+                return jsonify({
+                    "code": 404, 
+                    "message": f"No menu found for venue {venue_id}", 
+                    "request_id": request_id
+                }), 404
+            
+            menu_data = menu_sections.get('menu', [])
+            return jsonify(menu_data)  # just the array
 
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR venue_id={venue_id} error={str(db_error)}")
         return jsonify({
             "code": 500,
-            "message": "An error occurred when getting the venue's menu."
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR venue_id={venue_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred when getting the venue's menu.",
+            "request_id": request_id
         }), 500
 
 
@@ -252,10 +286,15 @@ def updateMenu():
 @blueprint.route("/getMenuItems/<section_id>")
 def getMenuItems(section_id):
     """Optimized version with performance improvements and better error handling"""
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log with section_id
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getMenuItems section_id={section_id}")
     
     # Input validation
     if not section_id:
-        return jsonify({"code": 400, "message": "Menu category is mandatory."}), 400
+        logger.warning(f"Charsiucharlie_debug REQ-{request_id} Missing section_id")
+        return jsonify({"code": 400, "message": "Menu category is mandatory.", "request_id": request_id}), 400
     
     # Parse and validate query parameters
     try:
@@ -264,7 +303,8 @@ def getMenuItems(section_id):
         limit = 1000  # Remove pagination - load all items
         search = request.args.get("search", "").strip()
     except ValueError:
-        return jsonify({"code": 400, "message": "Invalid pagination parameters"}), 400
+        logger.warning(f"Charsiucharlie_debug REQ-{request_id} Invalid pagination params section_id={section_id}")
+        return jsonify({"code": 400, "message": "Invalid pagination parameters", "request_id": request_id}), 400
     
     offset = 0  # (page - 1) * limit
     
@@ -345,15 +385,14 @@ def getMenuItems(section_id):
             ORDER BY mi."itemOrder" ASC; -- , mi."id" ASC for tie-breaker
             """
             
-            print(f"DEBUG: section_id = {section_id}, params = {params}")
-            print(f"DEBUG: SQL = {sql}")
+            # Execute complex menu items query
             cursor.execute(sql, params)  # + [limit, offset]
             rows = cursor.fetchall()
-            print(f"DEBUG: Found {len(rows)} rows")
             
             if not rows:
                 total_items = 0
                 menu_items = []
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getMenuItems success section_id={section_id} items=0")
             else:
                 # Get total count from the window function (access by key since using RealDictRow)
                 # "description": row['officialDesc'],
@@ -386,6 +425,8 @@ def getMenuItems(section_id):
                     }
                     for row in rows
                 ]
+                # Log success with result count
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getMenuItems success section_id={section_id} items={total_items}")
             
             # Calculate pagination info
             total_pages = (total_items + limit - 1) // limit
@@ -405,15 +446,18 @@ def getMenuItems(section_id):
                 }
             }), 200
         
-    except Exception as e:
-        # # Log the actual error for debugging
-        # import logging
-        # logging.error(f"Database error in get_menu_items: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        
-        # Return generic error to client
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR section_id={section_id} error={str(db_error)}")
         return jsonify({
             "code": 500,
-            "message": "An error occurred retrieving menu items." + str(e)
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR section_id={section_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving menu items.",
+            "request_id": request_id
         }), 500

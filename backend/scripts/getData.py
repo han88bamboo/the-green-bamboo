@@ -85,6 +85,8 @@
 import os
 import json
 import random
+import logging
+import psycopg2
 
 import feedparser
 import re
@@ -104,7 +106,8 @@ from scripts.currencyService import currency_converter
 # Import the database manager for connection pooling
 from app import db_manager
 
-#import logger from app.py
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 file_name = os.path.basename(__file__)
 blueprint = Blueprint(file_name[:-3], __name__)
@@ -351,82 +354,207 @@ def fetch_follow_lists(cursor, user_id):
 # [GET] accountRequests
 @blueprint.route('/getAccountRequests', methods=['GET'])
 def getAccountRequests():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "accountRequests"')
-        allAccountRequests = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getAccountRequests")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "accountRequests"')
+            allAccountRequests = cursor.fetchall()
 
-    if not allAccountRequests:
-        return jsonify([])
+        if not allAccountRequests:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getAccountRequests success count=0")
+            return jsonify([])
 
-    return jsonify(allAccountRequests)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getAccountRequests success count={len(allAccountRequests)}")
+        return jsonify(allAccountRequests)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getAccountRequests error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAccountRequests error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving account requests",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Countries
 @blueprint.route('/getCountries', methods=['GET'])
 def getCountries():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("SELECT * FROM countries")
-        allCountries = cursor.fetchall()
-
-    if not allCountries:
-        return jsonify([])
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    return jsonify(allCountries)
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getCountries")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("SELECT * FROM countries")
+            allCountries = cursor.fetchall()
+
+        if not allCountries:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getCountries success count=0")
+            return jsonify([])
+
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getCountries success count={len(allCountries)}")
+        return jsonify(allCountries)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getCountries error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getCountries error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving countries",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings
 @blueprint.route("/getListings", methods=['GET'])
 def getListings():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings"')
-        listings_data = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    if not listings_data:
-        return jsonify([])
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListings")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "listings"')
+            listings_data = cursor.fetchall()
+        
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListings success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListings success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListings error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListings error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listings",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings with Tags
 @blueprint.route("/getListingsWithTags", methods=['GET'])
 def getListingsWithTags():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "tags" IS NOT NULL AND "tags" != \'\'')
-        listings_data = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    if not listings_data:
-        return jsonify([])
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWithTags")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "listings" WHERE "tags" IS NOT NULL AND "tags" != \'\'')
+            listings_data = cursor.fetchall()
+        
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWithTags success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWithTags success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsWithTags error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsWithTags error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listings with tags",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings filtered by #wlp2025 tag, sorted by order column ascending
 @blueprint.route("/getListingsWlp2025", methods=['GET'])
 def getListingsWlp2025():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('''
-            SELECT * FROM "listings" 
-            WHERE "tags" IS NOT NULL 
-            AND "tags" LIKE %s 
-            ORDER BY 
-                CASE 
-                    WHEN "order" IS NULL OR "order" < 0 THEN 1 
-                    ELSE 0 
-                END,
-                CASE 
-                    WHEN "order" IS NOT NULL AND "order" >= 0 THEN "order" 
-                    ELSE NULL 
-                END ASC NULLS LAST
-            LIMIT 20
-        ''', ('%#wlp2025%',))
-        listings_data = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    if not listings_data:
-        return jsonify([])
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWlp2025")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT * FROM "listings" 
+                WHERE "tags" IS NOT NULL 
+                AND "tags" LIKE %s 
+                ORDER BY 
+                    CASE 
+                        WHEN "order" IS NULL OR "order" < 0 THEN 1 
+                        ELSE 0 
+                    END,
+                    CASE 
+                        WHEN "order" IS NOT NULL AND "order" >= 0 THEN "order" 
+                        ELSE NULL 
+                    END ASC NULLS LAST
+                LIMIT 20
+            ''', ('%#wlp2025%',))
+            listings_data = cursor.fetchall()
+        
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWlp2025 success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsWlp2025 success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsWlp2025 error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsWlp2025 error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving WLP2025 listings",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
@@ -434,6 +562,11 @@ def getListingsWlp2025():
 # Parameters: tag (string), drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int), limit (int)
 @blueprint.route("/getListingsByTag/<tag>", methods=['GET'])
 def getListingsByTag(tag):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByTag tag={tag}")
+    
     # Get filter parameters
     drink_type = request.args.get('drinkType', '').strip()
     type_category = request.args.get('typeCategory', '').strip()
@@ -533,6 +666,7 @@ def getListingsByTag(tag):
             listings_data = cursor.fetchall()
 
             if not listings_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByTag success count=0")
                 return jsonify([])
 
             # Process results to match getListingsBySearch format
@@ -551,33 +685,74 @@ def getListingsByTag(tag):
                 
                 result.append(listing_dict)
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByTag success count={len(result)}")
             return jsonify(result)
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsByTag error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching listings by tag: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"code": 500, "message": "An error occurred while fetching listings by tag."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsByTag error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching listings by tag",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Recent Listings (Past 48 Hours)
 @blueprint.route("/getRecentListings", methods=['GET'])
 def getRecentListings():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "addedDate" >= NOW() - INTERVAL \'48 hours\'')
-        listings_data = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    if not listings_data:
-        return jsonify([])
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentListings")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "listings" WHERE "addedDate" >= NOW() - INTERVAL \'48 hours\'')
+            listings_data = cursor.fetchall()
+        
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentListings success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentListings success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getRecentListings error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getRecentListings error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving recent listings",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings by user id
 @blueprint.route("/lbListings", methods=['GET'])
 def lbListings():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} lbListings")
     
     try:
         # Get query parameters
@@ -596,6 +771,7 @@ def lbListings():
 
         # if nothing was found
         if not rows:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} lbListings success count=0")
             return jsonify([]), 200
 
         # Initialize lists
@@ -621,6 +797,10 @@ def lbListings():
             elif category == 'goats':
                 goats.append(item)
 
+        # Log success with result count
+        total_items = len(grails) + len(upAndComing) + len(goats)
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} lbListings success count={total_items}")
+        
         # Return as JSON response
         return jsonify({
             "userID": user_id,
@@ -628,17 +808,31 @@ def lbListings():
             "upAndComing": upAndComing,
             "goats": goats
         }), 200
-    
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR lbListings error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # print("something went wrong" + str(e), flush=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR lbListings error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving user leaderboard listings",
+            "request_id": request_id
+        }), 500
 
 
 @blueprint.route("/getListingsByIDs", methods=['GET', 'POST'])
 def getListingsByIDs():
-
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByIDs method={request.method}")
+    
     try:
         # Handle both GET and POST requests
         if request.method == 'POST':
@@ -651,6 +845,7 @@ def getListingsByIDs():
             listing_ids = [int(i) for i in raw_ids]
 
         if not listing_ids:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByIDs success count=0")
             return jsonify([]), 200
 
         # Ensure all IDs are integers
@@ -684,40 +879,82 @@ def getListingsByIDs():
             for row in rows
         ]
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByIDs success count={len(result)}")
         return jsonify(result), 200
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsByIDs error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsByIDs error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listings by IDs",
+            "request_id": request_id
+        }), 500
 
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in discovery tab [discover tab]
 @blueprint.route("/getFiltered30/<id>")
 def getFiltered30(id):
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    id = int(id)
-    drinkType= request.args.get('drinkType')  # e.g. ?age=30
-    drinkCategory = request.args.get('drinkCategory')
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getFiltered30 id={id}")
     
-    with db_manager.get_cursor() as cursor:
-        if(drinkType and drinkCategory):
-            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
-        elif(drinkType):
-            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s LIMIT 30', (id,drinkType,))      
-        else:
-            cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
-        listings_data = cursor.fetchall()
-    
-    if not listings_data:
-        return jsonify([])
+    try:
+        id = int(id)
+        drinkType= request.args.get('drinkType')  # e.g. ?age=30
+        drinkCategory = request.args.get('drinkCategory')
+        
+        with db_manager.get_cursor() as cursor:
+            if(drinkType and drinkCategory):
+                cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
+            elif(drinkType):
+                cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s LIMIT 30', (id,drinkType,))      
+            else:
+                cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
+            listings_data = cursor.fetchall()
+        
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getFiltered30 success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getFiltered30 success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getFiltered30 error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getFiltered30 error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving filtered listings",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [POST] Get Listings from next in following list for both venue and producer [following tab]
 @blueprint.route("/getNextFollowing30", methods=['POST'])
 def getNextFollowing30():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getNextFollowing30")
 
     followedProducers = request.args.get('followedProducers')
     followedVenues = request.args.get('followedVenues')
@@ -788,60 +1025,136 @@ def getNextFollowing30():
                         producer_name = cursor.fetchone()
                         listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getNextFollowing30 success count={len(listings_data)}")
+        
         return jsonify({
             "listings": listings_data,
             "lastListingIdP": last_listing_id_p,
             "lastMenuId": last_menu_id
         })
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getNextFollowing30 error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching next following listings: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getNextFollowing30 error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching listings",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Listings from db when filter is applied for next 30 in following tab
 @blueprint.route("/getFilteredFollowing30/<id>")
 def getFilteredFollowing30(id):
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    id = int(id)
-    drinkType= request.args.get('drinkType')  # e.g. ?age=30
-    drinkCategory = request.args.get('drinkCategory')
-    
-    with db_manager.get_cursor() as cursor:
-        if(drinkType and drinkCategory):
-            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
-        elif(drinkType):
-            cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s LIMIT 30', (id,drinkType,))      
-        else:
-            cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
-        listings_data = cursor.fetchall()
-    
-    if not listings_data:
-        return jsonify([])
+    try:
+        id = int(id)
+        drinkType= request.args.get('drinkType')  # e.g. ?age=30
+        drinkCategory = request.args.get('drinkCategory')
+        
+        # Log request start with key parameters
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getFilteredFollowing30 id={id} drinkType={drinkType} drinkCategory={drinkCategory}")
+        
+        with db_manager.get_cursor() as cursor:
+            if(drinkType and drinkCategory):
+                cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s AND "typeCategory" = %s LIMIT 30', (id,drinkType,drinkCategory,))
+            elif(drinkType):
+                cursor.execute('SELECT * FROM "listings" where "id" > %s AND "drinkType" = %s LIMIT 30', (id,drinkType,))      
+            else:
+                cursor.execute('SELECT * FROM "listings" where "id" > %s LIMIT 30', (id,))
+            listings_data = cursor.fetchall()
+        
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getFilteredFollowing30 success count={len(listings_data)}")
+        
+        if not listings_data:
+            return jsonify([])
 
-    return jsonify(listings_data)
+        return jsonify(listings_data)
+        
+    except ValueError as val_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} VALIDATION_ERROR getFilteredFollowing30 error={str(val_error)}")
+        return jsonify({
+            "code": 400,
+            "message": "Invalid input parameters",
+            "request_id": request_id
+        }), 400
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getFilteredFollowing30 error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getFilteredFollowing30 error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching filtered listings",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [GET] Specific Listing
 @blueprint.route("/getListing/<id>")
 def getListing(id):
-
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
-        listing_data = cursor.fetchone()
-
-    if listing_data is None:
-        return jsonify([])
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    return jsonify(listing_data)
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListing id={id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "listings" WHERE "id" = %s', (id,))
+            listing_data = cursor.fetchone()
+
+        if listing_data is None:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListing success count=0")
+            return jsonify([])
+        
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListing success count=1")
+        return jsonify(listing_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListing error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListing error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listing",
+            "request_id": request_id
+        }), 500
 
 
 # [GET] Listings by search term
 # Parameters: searchTerm (string), lastID (int)
 @blueprint.route("/getListingsBySearch")
 def getListingsBySearch():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     searchTerm = request.args.get('searchTerm', '').strip()
     lastID = request.args.get('lastID', '0').strip()
     lastID = int(lastID) if lastID.isdigit() else 0
+
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsBySearch searchTerm='{searchTerm}' lastID={lastID}")
 
     try:
         search = f'%{searchTerm}%'
@@ -875,6 +1188,7 @@ def getListingsBySearch():
 
                 
             if not listings_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsBySearch success count=0")
                 return jsonify([])
             
             # Loop through the listings to get the average rating for each listing and producer name
@@ -898,17 +1212,33 @@ def getListingsBySearch():
                 producer_name = cursor.fetchone()
                 listing['producerName'] = producer_name['producerName'] if producer_name else 'Unknown Producer'
             
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsBySearch success count={len(listings_data)}")
             return jsonify(listings_data)
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsBySearch error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching listings by search: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching listings."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsBySearch error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching listings",
+            "request_id": request_id
+        }), 500
 
 
 # [GET] Listings by filters with smart ordering
 # Parameters: drinkType (string), typeCategory (string), originCountry (string), minRating (float), maxRating (float), offset (int)
 @blueprint.route("/getListingsByFilters")
 def getListingsByFilters():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     # Get filter parameters
     drink_type = request.args.get('drinkType', '').strip()
     type_category = request.args.get('typeCategory', '').strip()
@@ -917,6 +1247,9 @@ def getListingsByFilters():
     max_rating = request.args.get('maxRating', '').strip()
     offset = int(request.args.get('offset', 0))
     limit = int(request.args.get('limit', 30))
+
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByFilters drinkType='{drink_type}' typeCategory='{type_category}' originCountry='{origin_country}' minRating='{min_rating}' maxRating='{max_rating}' offset={offset} limit={limit}")
 
     try:
         # Build WHERE conditions (case-insensitive matching)
@@ -1006,6 +1339,7 @@ def getListingsByFilters():
             listings_data = cursor.fetchall()
 
         if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByFilters success count=0")
             return jsonify([])
 
         # Process results to match getListingsBySearch format
@@ -1024,18 +1358,35 @@ def getListingsByFilters():
             
             result.append(listing_dict)
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByFilters success count={len(result)}")
         return jsonify(result)
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsByFilters error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching listings by filters: {str(e)}")
-        import traceback
-        traceback.print_exc()  # This will print the full stack trace to help debug
-        return jsonify({"code": 500, "message": "An error occurred while fetching filtered listings."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsByFilters error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching filtered listings",
+            "request_id": request_id
+        }), 500
 
 
 # [GET] Get detailed listing information by listing ID
 @blueprint.route("/getListingsDetailedByID/<id>")
 def getListingsDetailedByID(id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsDetailedByID id={id}")
+    
     try:
         with db_manager.get_cursor() as cursor:
             # Fetch the listing details
@@ -1043,6 +1394,7 @@ def getListingsDetailedByID(id):
             listing_data = cursor.fetchone()
 
             if listing_data is None:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsDetailedByID success count=0")
                 return jsonify({"code": 404, "message": "Listing not found"}), 404
 
             # Fetch the producer details
@@ -1050,6 +1402,7 @@ def getListingsDetailedByID(id):
             producer_data = cursor.fetchone()
 
             if producer_data is None:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsDetailedByID producer_not_found")
                 return jsonify({"code": 404, "message": "Producer not found"}), 404
 
             # Combine the listing and producer data
@@ -1072,16 +1425,35 @@ def getListingsDetailedByID(id):
             else:
                 detailed_listing['avgRating'] = '-'
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsDetailedByID success count=1")
             return jsonify(detailed_listing), 200
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsDetailedByID error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching detailed listing by ID {id}: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching the listing."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsDetailedByID error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the listing.",
+            "request_id": request_id
+        }), 500
 
 
 # [GET] Get Listing names by dynamic search term
 @blueprint.route("/getListingNamesDynamicSearch/<searchTerm>")
 def getListingNamesDynamicSearch(searchTerm):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesDynamicSearch searchTerm='{searchTerm}'")
+    
     try:
         # Handle placeholder for empty search from frontend
         if searchTerm == '_EMPTY_SEARCH_':
@@ -1089,6 +1461,7 @@ def getListingNamesDynamicSearch(searchTerm):
             
         # For general search, require at least 1 character
         if len(searchTerm.strip()) < 1:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesDynamicSearch success count=0")
             return jsonify([])
             
         with db_manager.get_cursor() as cursor:
@@ -1161,17 +1534,40 @@ def getListingNamesDynamicSearch(searchTerm):
             listing.update(listing_dict)
 
         if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesDynamicSearch success count=0")
             return jsonify([])
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesDynamicSearch success count={len(listings_data)}")
         return jsonify(listings_data)
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingNamesDynamicSearch error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred while fetching listing names",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching listing names by dynamic search: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching listing names."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingNamesDynamicSearch error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching listing names",
+            "request_id": request_id
+        }), 500
 
 # [GET] Get producer names by dynamic search term
 @blueprint.route("/getProducerNamesDynamicSearch/<searchTerm>")
 def getProducerNamesDynamicSearch(searchTerm):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Input validation
+    if not searchTerm or not searchTerm.strip():
+        logger.warning(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch validation_failed empty_search_term")
+        return jsonify({"code": 400, "message": "Search term cannot be empty.", "request_id": request_id}), 400
+    
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch start search_term='{searchTerm[:50]}'")
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -1209,17 +1605,26 @@ def getProducerNamesDynamicSearch(searchTerm):
                 producer.update(producer_dict)
 
             if not producers_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch success count=0")
                 return jsonify([])
 
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch success count={len(producers_data)}")
         return jsonify(producers_data)
 
+    except psycopg2.Error as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch db_error {str(e)}", exc_info=True)
+        return jsonify({"code": 500, "message": "Database error occurred while searching producers.", "request_id": request_id}), 500
     except Exception as e:
-        print(f"Error in getProducerNamesDynamicSearch: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while searching producers."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} getProducerNamesDynamicSearch error {str(e)}", exc_info=True)
+        return jsonify({"code": 500, "message": "An error occurred while searching producers.", "request_id": request_id}), 500
 
 # [GET] Get Listing names by dynamic search term filtered by producer
 @blueprint.route("/getListingNamesByProducer/<searchTerm>/<int:producerId>")
 def getListingNamesByProducer(searchTerm, producerId):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesByProducer searchTerm='{searchTerm}' producerId={producerId}")
 
     try:
         with db_manager.get_cursor() as cursor:
@@ -1305,8 +1710,11 @@ def getListingNamesByProducer(searchTerm, producerId):
                     listing.update(listing_dict)
 
                 if not listings_data:
+                    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesByProducer success count=0")
                     return jsonify([])
 
+                # Log success with result count
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingNamesByProducer success count={len(listings_data)}")
                 return jsonify(listings_data)
 
             finally:
@@ -1317,39 +1725,101 @@ def getListingNamesByProducer(searchTerm, producerId):
                     except:
                         pass  # Ignore any errors during cleanup
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingNamesByProducer error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred while searching listings by producer",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error in getListingNamesByProducer: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while searching listings by producer."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingNamesByProducer error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while searching listings by producer",
+            "request_id": request_id
+        }), 500
 
 # [GET] Specific Listings By Producer
 @blueprint.route("/getListingsByProducer/<id>")
 def getListingsByProducer(id):
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('''
-            SELECT * FROM "listings"
-            WHERE "producerID" = %s OR "bottlerID" = %s
-        ''', (id, id))
-        listings_data = cursor.fetchall()
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByProducer producer_id={id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('''
+                SELECT * FROM "listings"
+                WHERE "producerID" = %s OR "bottlerID" = %s
+            ''', (id, id))
+            listings_data = cursor.fetchall()
 
-    if not listings_data:
-        return jsonify([])
+        if not listings_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByProducer success count=0")
+            return jsonify([])
 
-    return jsonify(listings_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsByProducer success count={len(listings_data)}")
+        return jsonify(listings_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsByProducer producer_id={id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsByProducer producer_id={id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listings by producer",
+            "request_id": request_id
+        }), 500
 
 # [GET] Get Listings details by listing name
 @blueprint.route("/getListingByName/<listing_name>")
 def getListingByName(listing_name):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     # URL decode the listing name in case there are special characters
     listing_name = unquote(listing_name)
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingByName listing_name='{listing_name}'")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT * FROM "listings" WHERE "listingName" = %s', (listing_name,))
+            listing_data = cursor.fetchone()
 
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "listings" WHERE "listingName" = %s', (listing_name,))
-        listing_data = cursor.fetchone()
+        if listing_data is None:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingByName success count=0")
+            return jsonify({"code": 404, "message": "Listing not found"}), 404
 
-    if listing_data is None:
-        return jsonify({"code": 404, "message": "Listing not found"}), 404
-
-    return jsonify(listing_data)
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingByName success count=1")
+        return jsonify(listing_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingByName error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingByName error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching the listing",
+            "request_id": request_id
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 
@@ -1361,6 +1831,7 @@ def getListingByName(listing_name):
 # [GET] Get all listings names test
 @blueprint.route('/producer-listings', methods=['GET'])
 def get_producer_listings():
+    request_id = getattr(g, 'request_id', 'unknown')
     
     """Get producer ttle listings with search functionality"""
     try:
@@ -1368,8 +1839,12 @@ def get_producer_listings():
         query = request.args.get('q', '').strip()
         limit = int(request.args.get('limit', 3))
 
+        # Start log for request tracking
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} producer-listings query={query} limit={limit}")
+
         # Validate query
         if not query:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} producer-listings success count=0 (empty_query)")
             return jsonify([])
         
         # Optimized query using trigram index for fuzzy string matching
@@ -1391,6 +1866,7 @@ def get_producer_listings():
 
         # if nothing was found
         if not rows:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} producer-listings success count=0")
             return jsonify([]), 200
 
         result = [
@@ -1402,17 +1878,33 @@ def get_producer_listings():
             for row in rows
         ]
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} producer-listings success count={len(result)}")
         return jsonify(result), 200
     
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR producer-listings query={query} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # print("something went wrong" + str(e), flush=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR producer-listings query={query} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving producer listings",
+            "request_id": request_id
+        }), 500
 
 # [GET] Producers
 @blueprint.route("/getProducers")
 def getProducers():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducers")
 
     try:
         # Query to get producers and related data
@@ -1463,6 +1955,7 @@ def getProducers():
             producers_data = cursor.fetchall()
 
             if not producers_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducers success count=0")
                 return jsonify([])
 
             producers_list = []
@@ -1473,10 +1966,21 @@ def getProducers():
                 producer['updates'] = producer['updates'] if producer['updates'] else []
                 producers_list.append(producer)
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducers success count={len(producers_list)}")
             return jsonify(producers_list), 200
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getProducers error={str(db_error)}")
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving producers."
+            }
+        ), 500
+        
     except Exception as e:
-        print(str(e))
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getProducers error={str(e)}", exc_info=True)
         return jsonify(
             {
                 "code": 500,
@@ -1490,6 +1994,11 @@ def getProducers():
 # [GET] Specific Producer
 @blueprint.route("/getProducer/<int:id>")
 def getProducer(id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducer id={id}")
+    
     try:
         with db_manager.get_cursor() as cursor:
             # Query to get a specific producer and related data
@@ -1540,6 +2049,7 @@ def getProducer(id):
             producer_data = cursor.fetchone()
 
             if producer_data is None:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducer success count=0 (not_found)")
                 return jsonify({"message": "Producer not found"}), 404
 
             producer = dict(producer_data)
@@ -1547,14 +2057,27 @@ def getProducer(id):
             producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
             producer['updates'] = producer['updates'] if producer['updates'] else []
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducer success count=1")
             return jsonify(producer), 200
 
-    except Exception as e:
-        print(str(e))
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getProducer id={id} error={str(db_error)}")
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred retrieving the producer."
+                "message": "An error occurred retrieving the producer.",
+                "request_id": request_id
+            }
+        ), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getProducer id={id} error={str(e)}", exc_info=True)
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer.",
+                "request_id": request_id
             }
         ), 500
 
@@ -1562,10 +2085,16 @@ def getProducer(id):
 # [GET] Producers by IDs
 @blueprint.route("/getProducersByIDs", methods=['POST'])
 def getProducersByIDs():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     try:
         producer_ids = request.json.get('producerIDs', [])
+        
+        # Start log for request tracking
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersByIDs producer_ids_count={len(producer_ids) if producer_ids else 0}")
 
         if not producer_ids:
+            logger.warning(f"Charsiucharlie_debug REQ-{request_id} getProducersByIDs validation_failed empty_producer_ids")
             return jsonify([
                 {
                     "code": 404,
@@ -1586,6 +2115,7 @@ def getProducersByIDs():
                     })
 
             if not producers_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersByIDs success count=0")
                 return jsonify([
                     {
                         "code": 404,
@@ -1593,25 +2123,41 @@ def getProducersByIDs():
                     }
                 ]), 404
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersByIDs success count={len(producers_data)}")
             return jsonify({
                 "code": 200,
                 "message": "Producers fetched successfully.",
                 "data": producers_data
             }), 200
     
-    except Exception as e:
-        print(str(e))
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getProducersByIDs error={str(db_error)}")
         return jsonify({
             "code": 500,
-            "message": "An error occurred retrieving the producers."
+            "message": "An error occurred retrieving the producers.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getProducersByIDs error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving the producers.",
+            "request_id": request_id
         }), 500
 
 # [GET] Producers by search term
 @blueprint.route("/getProducersBySearch", methods=['GET'])
 def getProducersBySearch():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     searchTerm = request.args.get('searchTerm', '').strip()
     lastID = request.args.get('lastID', '0').strip()
     lastID = int(lastID) if lastID.isdigit() else 0
+
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersBySearch searchTerm='{searchTerm}' lastID={lastID}")
 
     try:
         with db_manager.get_cursor() as cursor:
@@ -1627,6 +2173,7 @@ def getProducersBySearch():
             producers_data = cursor.fetchall()
 
             if not producers_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersBySearch success count=0")
                 return jsonify([])
             
             # Loop through the producers to get both ratings for each producer
@@ -1666,15 +2213,26 @@ def getProducersBySearch():
                 # Remove the hashed password and other sensitive fields
                 producer.pop('hashedPassword', None)
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducersBySearch success count={len(producers_data)}")
             return jsonify(producers_data)
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getProducersBySearch error={str(db_error)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers.", "request_id": request_id}), 500
+        
     except Exception as e:
-        print(f"Error fetching producers by search: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getProducersBySearch error={str(e)}", exc_info=True)
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers.", "request_id": request_id}), 500
 
 # [GET] Specific Producer
 @blueprint.route("/getProducerByRequestId/<id>")
 def getProducerByRequestId(id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducerByRequestId id={id}")
+    
     try:
         with db_manager.get_cursor() as cursor:
             query = """
@@ -1724,6 +2282,7 @@ def getProducerByRequestId(id):
             producer_data = cursor.fetchone()
 
             if producer_data is None:
+                logger.warning(f"Charsiucharlie_debug REQ-{request_id} getProducerByRequestId producer_not_found id={id}")
                 return jsonify({"message": "Producer not found"}), 404
 
             producer = dict(producer_data)
@@ -1731,21 +2290,38 @@ def getProducerByRequestId(id):
             producer['openingHours'] = producer['openingHours'] if producer['openingHours'] else {}
             producer['updates'] = producer['updates'] if producer['updates'] else []
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getProducerByRequestId success count=1")
             return jsonify(producer), 200
     
-    except Exception as e:
-        print(str(e))
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getProducerByRequestId id={id} error={str(db_error)}")
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred retrieving the producer."
+                "message": "An error occurred retrieving the producer.",
+                "request_id": request_id
+            }
+        ), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getProducerByRequestId id={id} error={str(e)}", exc_info=True)
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred retrieving the producer.",
+                "request_id": request_id
             }
         ), 500
 
 # [GET] List of unique producers names and id
 @blueprint.route("/getUniqueProducersNamesID/<search_term>/<pid>")
 def getUniqueProducersNamesID(search_term, pid):
+    request_id = getattr(g, 'request_id', 'unknown')
     search_term = search_term.strip().lower()
+
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueProducersNamesID search_term='{search_term}' pid={pid}")
 
     try:
         with db_manager.get_cursor() as cursor:
@@ -1755,6 +2331,7 @@ def getUniqueProducersNamesID(search_term, pid):
                 producer_data = cursor.fetchone()
                 
                 if producer_data:
+                    logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueProducersNamesID success count=1")
                     return jsonify({
                         "code": 200,
                         "message": "Producer fetched successfully.",
@@ -1779,6 +2356,7 @@ def getUniqueProducersNamesID(search_term, pid):
             producers_data = cursor.fetchall()  
 
             if not producers_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueProducersNamesID success count=0")
                 return jsonify({
                     "code": 404,
                     "message": "No producers found."
@@ -1797,80 +2375,145 @@ def getUniqueProducersNamesID(search_term, pid):
                 }
                 producers_list.append(producer_dict)
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueProducersNamesID success count={len(producers_list)}")
             return jsonify({
                 "code": 200,
                 "message": "Producers fetched successfully.",
                 "data": producers_list
             })
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getUniqueProducersNamesID error={str(db_error)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers.", "request_id": request_id}), 500
+        
     except Exception as e:
-        print(f"Error fetching producers by search: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching producers."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getUniqueProducersNamesID error={str(e)}", exc_info=True)
+        return jsonify({"code": 500, "message": "An error occurred while fetching producers.", "request_id": request_id}), 500
 
 
 # [GET] List of unique bottlers names and id
 @blueprint.route("/getUniqueBottlersNamesID/<search_term>")
 def getUniqueBottlersNamesID(search_term):
+    request_id = getattr(g, 'request_id', 'unknown')
     search_term = search_term.strip().lower()
 
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT "id", "producerName"
-            FROM "producers"
-            WHERE "producerName" ILIKE %s AND "isIndependentBottler" = TRUE
-            LIMIT 30
-        """, ('%' + search_term + '%',))
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueBottlersNamesID search_term='{search_term}'")
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT "id", "producerName"
+                FROM "producers"
+                WHERE "producerName" ILIKE %s AND "isIndependentBottler" = TRUE
+                LIMIT 30
+            """, ('%' + search_term + '%',))
+            
+            bottlers_data = cursor.fetchall()
+
+        if not bottlers_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueBottlersNamesID success count=0")
+            return jsonify({
+                "code": 404,
+                "message": "No independent bottlers found."
+            })
         
-        bottlers_data = cursor.fetchall()
+        # Convert the data to a list of dictionaries
+        bottlers_list = []
+        for bottler in bottlers_data:
+            if bottler["producerName"] == None:
+                continue
+            bottler_dict = {
+                "producerName": bottler["producerName"],
+                "id": bottler["id"]
+            }
+            bottlers_list.append(bottler_dict)
 
-    if not bottlers_data:
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getUniqueBottlersNamesID success count={len(bottlers_list)}")
         return jsonify({
-            "code": 404,
-            "message": "No independent bottlers found."
+            "code": 200,
+            "message": "Independent bottlers fetched successfully.",
+            "data": bottlers_list
         })
-    
-    # Convert the data to a list of dictionaries
-    bottlers_list = []
-    for bottler in bottlers_data:
-        if bottler["producerName"] == None:
-            continue
-        bottler_dict = {
-            "producerName": bottler["producerName"],
-            "id": bottler["id"]
-        }
-        bottlers_list.append(bottler_dict)
 
-    return jsonify({
-        "code": 200,
-        "message": "Independent bottlers fetched successfully.",
-        "data": bottlers_list
-    })
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getUniqueBottlersNamesID error={str(db_error)}")
+        return jsonify({"code": 500, "message": "An error occurred while fetching bottlers.", "request_id": request_id}), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getUniqueBottlersNamesID error={str(e)}", exc_info=True)
+        return jsonify({"code": 500, "message": "An error occurred while fetching bottlers.", "request_id": request_id}), 500
 
 # [GET] All producers with basic info needed for listings
 @blueprint.route("/getAllProducers")
 def getAllProducers():
-    with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT "id", "producerName" FROM "producers"')
-        producers_data = cursor.fetchall()
-
-    if not producers_data:
-        return jsonify([])
+    request_id = getattr(g, 'request_id', 'unknown')
     
-    return jsonify(producers_data)
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllProducers")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute('SELECT "id", "producerName" FROM "producers"')
+            producers_data = cursor.fetchall()
+
+        if not producers_data:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllProducers success count=0")
+            return jsonify([])
+        
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllProducers success count={len(producers_data)}")
+        return jsonify(producers_data)
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getAllProducers error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAllProducers error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving all producers",
+            "request_id": request_id
+        }), 500
 
 # [GET] All venues with basic info needed for listings
 @blueprint.route('/getAllVenues', methods=['GET'])
 def getAllVenues():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllVenues")
+    
     try:
         with db_manager.get_cursor() as cursor:
             cursor.execute('SELECT "id", "venueName", "address", "venueType", "originLocation", "photo", "username" FROM "venues"')
             venues = cursor.fetchall()
-            return jsonify(venues), 200
-    except Exception as e:
-        print("Get all venues error:", str(e))
+            
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllVenues success count={len(venues)}")
+        return jsonify(venues), 200
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getAllVenues error={str(db_error)}")
         return jsonify({
             "code": 500,
-            "message": "An error occurred retrieving venues."
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAllVenues error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving venues",
+            "request_id": request_id
         }), 500
 
 # ----------------------
@@ -1959,6 +2602,10 @@ def getAllVenues():
 # [GET] Get 5 most recent listing reviews for landing page
 @blueprint.route("/get5MostRecentReviews", methods=['GET'])
 def get5MostRecentReviews():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} get5MostRecentReviews")
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -2037,21 +2684,34 @@ def get5MostRecentReviews():
                 
                 formatted_reviews.append(formatted_review)
             
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} get5MostRecentReviews success count={len(formatted_reviews)}")
             return jsonify(formatted_reviews), 200
             
-    except Exception as e:
-        print(f"Error fetching 5 most recent reviews: {str(e)}")
-        import traceback
-        traceback.print_exc()
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR get5MostRecentReviews error={str(db_error)}")
         return jsonify({
             "code": 500,
-            "message": "An error occurred while fetching recent reviews."
+            "message": "An error occurred while fetching recent reviews.",
+            "request_id": request_id
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR get5MostRecentReviews error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recent reviews.",
+            "request_id": request_id
         }), 500
 
 
 # [GET] Get 5 most highly rated listing reviews for landing page
 @blueprint.route("/get5MostHighlyRatedReviews", methods=['GET'])
 def get5MostHighlyRatedReviews():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} get5MostHighlyRatedReviews")
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -2130,12 +2790,19 @@ def get5MostHighlyRatedReviews():
                 
                 formatted_reviews.append(formatted_review)
             
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} get5MostHighlyRatedReviews success count={len(formatted_reviews)}")
             return jsonify(formatted_reviews), 200
             
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR get5MostHighlyRatedReviews error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching highly rated reviews."
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching 5 most highly rated reviews: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR get5MostHighlyRatedReviews error={str(e)}", exc_info=True)
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching highly rated reviews."
@@ -2145,6 +2812,10 @@ def get5MostHighlyRatedReviews():
 # [GET] Get 3 most recent venue reviews for landing page
 @blueprint.route("/getMostRecentVenueReviews", methods=['GET'])
 def getMostRecentVenueReviews():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getMostRecentVenueReviews")
     
     try:
         with db_manager.get_cursor() as cursor:
@@ -2188,6 +2859,7 @@ def getMostRecentVenueReviews():
             reviews_data = cursor.fetchall()
             
             if not reviews_data:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} getMostRecentVenueReviews success count=0")
                 return jsonify([]), 200
             
             # Convert each row to a dict and format the data
@@ -2221,12 +2893,19 @@ def getMostRecentVenueReviews():
                 
                 formatted_reviews.append(formatted_review)
             
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getMostRecentVenueReviews success count={len(formatted_reviews)}")
             return jsonify(formatted_reviews), 200
             
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getMostRecentVenueReviews error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching recent venue reviews."
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching 3 most recent venue reviews: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getMostRecentVenueReviews error={str(e)}", exc_info=True)
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching recent venue reviews."
@@ -2236,75 +2915,101 @@ def getMostRecentVenueReviews():
 # [GET] Get recent listing reviews by a specific user + top 5 listings based on the review ratings by a specific user + number of reviews done (aka drink count)
 @blueprint.route("/getRecentListingReviews/<id>")
 def getRecentListingReviews(id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentListingReviews id={id}")
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            cursor.execute("""
+                SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+                FROM "reviews"
+                LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+                WHERE "reviews"."userID" = %s 
+                AND "reviews"."reviewType" = 'Listing'
+                ORDER BY "reviews"."createdDate" DESC
+                LIMIT 5
+            """, (id,))
 
-    with db_manager.get_cursor() as cursor:
-        cursor.execute("""
-            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
-            FROM "reviews"
-            LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
-            WHERE "reviews"."userID" = %s 
-            AND "reviews"."reviewType" = 'Listing'
-            ORDER BY "reviews"."createdDate" DESC
-            LIMIT 5
-        """, (id,))
+            reviews_data = cursor.fetchall()
 
-        reviews_data = cursor.fetchall()
+            if not reviews_data:
+                reviews_data = []
 
-        if not reviews_data:
-            reviews_data = []
+            for review in reviews_data:
+                review["userVotes"] = {
+                    "upvotes": review["upvotes"] if review["upvotes"] else [],
+                    "downvotes": review["downvotes"] if review["downvotes"] else []
+                }
+                del review["upvotes"]
+                del review["downvotes"]
 
-        for review in reviews_data:
-            review["userVotes"] = {
-                "upvotes": review["upvotes"] if review["upvotes"] else [],
-                "downvotes": review["downvotes"] if review["downvotes"] else []
-            }
-            del review["upvotes"]
-            del review["downvotes"]
+            # Get top 5 highest rated reviews by the user (changed from just listing IDs)
+            cursor.execute("""
+                SELECT r.*, l."listingName", l."photo" as "listingPhoto", 
+                       p."producerName", v."venueName"
+                FROM "reviews" r
+                LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
+                LEFT JOIN "producers" p ON l."producerID" = p."id"
+                LEFT JOIN "venues" v ON r."location" = v."id"
+                WHERE r."reviewType" = 'Listing' 
+                AND r."userID" = %s
+                AND r."rating" IS NOT NULL
+                ORDER BY r."rating" DESC, r."createdDate" DESC
+                LIMIT 5
+            """, (id,))
+            
+            top_rated_reviews_data = cursor.fetchall()
 
-        # Get top 5 highest rated reviews by the user (changed from just listing IDs)
-        cursor.execute("""
-            SELECT r.*, l."listingName", l."photo" as "listingPhoto", 
-                   p."producerName", v."venueName"
-            FROM "reviews" r
-            LEFT JOIN "listings" l ON r."reviewTarget" = l."id"
-            LEFT JOIN "producers" p ON l."producerID" = p."id"
-            LEFT JOIN "venues" v ON r."location" = v."id"
-            WHERE r."reviewType" = 'Listing' 
-            AND r."userID" = %s
-            AND r."rating" IS NOT NULL
-            ORDER BY r."rating" DESC, r."createdDate" DESC
-            LIMIT 5
-        """, (id,))
+            # Retrieve the number of reviews done by the user (number of unique listings reviewed)
+            cursor.execute('SELECT COUNT(DISTINCT "reviewTarget") FROM "reviews" WHERE "userID" = %s', (id,))
+            drink_count = cursor.fetchone()
+
+        # Log success with result counts
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getRecentListingReviews success recent_count={len(reviews_data)} top_rated_count={len(top_rated_reviews_data)} drink_count={drink_count['count']}")
         
-        top_rated_reviews_data = cursor.fetchall()
-
-        # Retrieve the number of reviews done by the user (number of unique listings reviewed)
-        cursor.execute('SELECT COUNT(DISTINCT "reviewTarget") FROM "reviews" WHERE "userID" = %s', (id,))
-        drink_count = cursor.fetchone()
-
-    return jsonify({
-        "recentReview": reviews_data,
-        "topRatedReviews": top_rated_reviews_data,  # top rated reviews
-        "drinkCount": drink_count["count"]
-    }), 200
+        return jsonify({
+            "recentReview": reviews_data,
+            "topRatedReviews": top_rated_reviews_data,  # top rated reviews
+            "drinkCount": drink_count["count"]
+        }), 200
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getRecentListingReviews id={id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred while fetching user reviews."
+        }), 500
+        
+    except Exception as e:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getRecentListingReviews id={id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred while fetching user reviews."
+        }), 500
 
 # [GET] Get all reviews by a specific user with pagination
 @blueprint.route("/getAllUserReviews/<id>")
 def getAllUserReviews(id):
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     # Get pagination parameters
     offset = int(request.args.get('offset', 0))
     limit = int(request.args.get('limit', 50))  # Default to 50 reviews per page
+    
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllUserReviews id={id} offset={offset} limit={limit}")
         
     try:
         # Convert id to int and validate
         user_id = int(id)
         if user_id <= 0:
-            print(f"DEBUG: Invalid user ID: {user_id}")
+            logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAllUserReviews invalid_user_id={user_id}")
             return jsonify({"code": 400, "message": "Invalid user ID"}), 400
         
         with db_manager.get_cursor() as cursor:
             # Get total count of reviews by the user
-            print(f"DEBUG: Executing count query for userID={user_id}")
             cursor.execute("""
                 SELECT COUNT(*) as total
                 FROM "reviews"
@@ -2345,6 +3050,9 @@ def getAllUserReviews(id):
             # Calculate if there are more reviews
             has_more = (offset + len(reviews_data)) < total_count
 
+            # Log success with result counts
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getAllUserReviews success reviews_count={len(reviews_data)} total_count={total_count} has_more={has_more}")
+            
             return jsonify({
                 "code": 200,
                 "message": "User reviews fetched successfully",
@@ -2356,10 +3064,18 @@ def getAllUserReviews(id):
             }), 200
 
     except ValueError:
-        print(f"DEBUG: Could not convert id to integer: {id}")
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAllUserReviews invalid_id_format id={id}")
         return jsonify({"code": 400, "message": "Invalid user ID format"}), 400
+        
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getAllUserReviews id={id} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred while fetching user reviews."
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching all user reviews: {str(e)}")
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getAllUserReviews id={id} error={str(e)}", exc_info=True)
         return jsonify({
             "code": 500,
             "message": "An error occurred while fetching user reviews."
@@ -2368,14 +3084,20 @@ def getAllUserReviews(id):
 # [GET] Get all listings names 
 @blueprint.route('/bottle-listings', methods=['GET'])
 def get_bottle_listings():
+    request_id = getattr(g, 'request_id', 'unknown')
+    
     """Get bottle listings with search functionality"""
     try:
         # Get query parameters
         query = request.args.get('q', '').strip()
         limit = int(request.args.get('limit', 3))
 
+        # Start log for request tracking
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} bottle-listings query={query} limit={limit}")
+
         # Validate query
         if not query:
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} bottle-listings success count=0 (empty_query)")
             return jsonify([])
 
         # Optimized query using trigram index for fuzzy string matching
@@ -2420,6 +3142,7 @@ def get_bottle_listings():
 
             # if nothing was found
             if not rows:
+                logger.info(f"Charsiucharlie_debug REQ-{request_id} bottle-listings success count=0")
                 return jsonify([]), 200
 
             result = [
@@ -2435,22 +3158,37 @@ def get_bottle_listings():
                 for row in rows
             ]
 
+            # Log success with result count
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} bottle-listings success count={len(result)}")
             return jsonify(result), 200
     
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR bottle-listings query={query} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # print("something went wrong" + str(e), flush=True)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR bottle-listings query={query} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving bottle listings",
+            "request_id": request_id
+        }), 500
 
 
 # [GET] Get all listings names
 @blueprint.route("/getListingsNames/<search_term>")
 def getListingsNames(search_term):
+    request_id = getattr(g, 'request_id', 'unknown')
     search_term = search_term.strip()
 
-    try:
+    # Start log for request tracking
+    logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsNames search_term={search_term}")
 
+    try:
         with db_manager.get_cursor() as cursor:
             # Fetch 20 listings names based on the search term
             cursor.execute("""
@@ -2463,16 +3201,31 @@ def getListingsNames(search_term):
             listings_data = cursor.fetchall()
 
         if not listings_data:
-            return jsonify([]), 404
+            logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsNames success count=0")
+            return jsonify([]), 200
 
         # Convert into a list
         listings_data = [listing['listingName'] for listing in listings_data]
 
+        # Log success with result count
+        logger.info(f"Charsiucharlie_debug REQ-{request_id} getListingsNames success count={len(listings_data)}")
         return jsonify(listings_data), 200
 
+    except psycopg2.Error as db_error:
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} DB_ERROR getListingsNames search_term={search_term} error={str(db_error)}")
+        return jsonify({
+            "code": 500,
+            "message": "Database error occurred",
+            "request_id": request_id
+        }), 500
+        
     except Exception as e:
-        print(f"Error fetching listings names: {str(e)}")
-        return jsonify({"code": 500, "message": "An error occurred while fetching listings names."}), 500
+        logger.error(f"Charsiucharlie_debug REQ-{request_id} ERROR getListingsNames search_term={search_term} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred retrieving listings names",
+            "request_id": request_id
+        }), 500
 
 
 
