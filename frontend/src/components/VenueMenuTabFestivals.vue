@@ -4316,26 +4316,31 @@ export default {
                         this.expandedSections.add(`collapseMenuSection${sectionIndex}`);
                     }
                     
-                    // Now expand all subsections of this main section simultaneously (no delay between subsections)
+                    // Now expand all subsections of this main section sequentially with 50ms delay between each
                     if (section.subsections && section.subsections.length > 0) {
-                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}"`);
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 50ms delay between each`);
                         
-                        // Create array of promises for all subsections of this main section
-                        const subsectionPromises = section.subsections.map(async (subsection, subIndex) => {
+                        // Expand each subsection one at a time with 50ms delay
+                        for (let subIndex = 0; subIndex < section.subsections.length; subIndex++) {
+                            const subsection = section.subsections[subIndex];
                             const subsectionId = `collapseSubSection${sectionIndex}_${subIndex}`;
                             const subsectionExpanded = this.isSectionExpanded(subsectionId);
                             
-                            console.log(`🔍 PROGRESSIVE EXPANSION: Subsection "${subsection.sectionName}" expanded state:`, subsectionExpanded);
+                            console.log(`🔍 PROGRESSIVE EXPANSION: Subsection ${subIndex + 1}/${section.subsections.length} "${subsection.sectionName}" expanded state:`, subsectionExpanded);
                             
                             if (!subsectionExpanded) {
                                 await this.expandSingleSection(subsection, sectionIndex, 'subsection', subIndex);
                                 // Track that this subsection is expanded
                                 this.expandedSubsections.add(subsectionId);
                             }
-                        });
+                            
+                            // 50ms delay before next subsection (but not after the last one)
+                            if (subIndex < section.subsections.length - 1) {
+                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next subsection...');
+                                await new Promise(resolve => setTimeout(resolve, 50));
+                            }
+                        }
                         
-                        // Wait for all subsections of this main section to expand simultaneously
-                        await Promise.all(subsectionPromises);
                         console.log(`🔍 PROGRESSIVE EXPANSION: All subsections for main section "${section.sectionName}" completed`);
                     }
                     
