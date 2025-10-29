@@ -89,7 +89,8 @@ const generateCard = async () => {
       previewUrl.value = stage.value.toDataURL({
         mimeType: 'image/png',
         quality: 1,
-        pixelRatio: 2
+        pixelRatio: 2,
+        fill: null,
       })
       console.log('Preview generated:', previewUrl.value ? 'Success' : 'Failed')
     } else {
@@ -104,14 +105,35 @@ const generateCard = async () => {
 }
 
 const handleDownload = async () => {
-  if (!stage.value || !previewUrl.value) {
-    console.error('No preview available to download')
-    return
-  }
+  if (!stage.value) return;
 
-  const filename = `${props.reviewData.beverage.name.replace(/\s+/g, '-')}-review.png`
-  await downloadImage(filename)
-}
+  try {
+    // 🔹 1. Hide background (any node with class "background")
+    const bgNode = stage.value.findOne('.background');
+    if (bgNode) bgNode.hide();
+
+    // 🔹 2. Export stage as PNG without background fill
+    const dataURL = stage.value.toDataURL({
+      mimeType: 'image/png',
+      quality: 1,
+      pixelRatio: 2,
+      fill: null, // ✅ transparent background
+    });
+
+    // 🔹 3. Restore background after export
+    if (bgNode) bgNode.show();
+
+    // 🔹 4. Trigger download
+    const filename = `${props.reviewData.beverage.name
+      .replace(/\s+/g, '-')
+      .toLowerCase()}-review.png`;
+
+    // 👇 Make sure downloadImage accepts both arguments
+    await downloadImage(filename, dataURL);
+  } catch (error) {
+    console.error('Download failed:', error);
+  }
+};
 
 onMounted(() => {
   // Small delay to ensure DOM is ready
@@ -131,12 +153,12 @@ watch(() => props.template, () => {
 <template>
   <div class="share-card-generator">
     <!-- Template Selector -->
-    <div class="template-selector">
+    <!-- <div class="template-selector">
       <button v-for="(_, templateName) in templates" :key="templateName" :class="{ active: template === templateName }"
         @click="$emit('update:template', templateName)">
         {{ templateName }}
       </button>
-    </div>
+    </div> -->
 
     <!-- Konva Container (hidden, just for rendering) -->
     <div class="konva-container">
@@ -167,9 +189,6 @@ watch(() => props.template, () => {
       </button>
       <button @click="emit('copy-link')" class="secondary">
         Copy Link
-      </button>
-      <button @click="emit('close')" class="secondary">
-        Close
       </button>
     </div>
 

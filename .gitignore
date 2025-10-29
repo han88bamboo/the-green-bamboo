@@ -508,3 +508,4 @@ start_project.sh
 .gemini/
 .vscode/
 backend-test/
+feedback/

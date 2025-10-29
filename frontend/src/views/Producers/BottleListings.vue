@@ -658,16 +658,16 @@
             <span class="text-decoration-none">{{ specified_listing["typeCategory"] }} |
             </span>
             <span v-if="specified_listing['drinkStyle']" class="text-decoration-none">{{ specified_listing["drinkStyle"]
-            }} |
+              }} |
             </span>
             <span v-if="specified_listing['abv']" class="text-decoration-none">{{ specified_listing["abv"] }}% |
             </span>
             <span v-if="specified_listing['originCountry']" class="text-decoration-none">{{
               specified_listing["originCountry"]
-            }} |
+              }} |
             </span>
             <span v-if="specified_listing['id']" class="text-decoration-none">Drink ID: {{ specified_listing["id"]
-            }}</span>
+              }}</span>
           </p>
           <div class="col-2 d-flex justify-content-end make-bookmark-bigger mobile-view-hide">
             <BookmarkIcon v-if="user" :user="user" :listing="specified_listing" :overlay="false" size="30"
@@ -1500,7 +1500,7 @@
                       <input type="number" class="form-control" v-model="menuItemForm.vintage" placeholder="e.g., 2019"
                         min="1800" :max="new Date().getFullYear()">
                       <small class="text-muted">Enter the vintage year for this {{ specified_listing.drinkType
-                      }}.</small>
+                        }}.</small>
                     </div>
 
                     <!-- Menu item price -->
@@ -2522,6 +2522,8 @@
                     :style="{ backgroundColor: getTagColor(parseInt(tag)) }">
                     {{ getTagName(parseInt(tag)) }}
                   </span>
+
+                  <!-- Observation Tags -->
                   <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1"
                     style="background-color: #f0b358; color: black">
                     {{ tag }}
@@ -2550,7 +2552,7 @@
                   <span class="mx-2">{{
                     review.userVotes.upvotes.length -
                     review.userVotes.downvotes.length
-                  }}</span>
+                    }}</span>
 
                   <div class="">
                     <!-- Downvote -->
@@ -2698,7 +2700,7 @@
                               " style="color: inherit" target="_blank">
                               <b>{{
                                 getVenueNameFromID(detailedReview.location)
-                              }} </b>
+                                }} </b>
                               <!--tzh testing code anchor-->
                             </a>
                           </span>
@@ -2909,28 +2911,31 @@ tag, index
               </div>
               <!-- modal end -->
 
-        <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="shareReviewModalLabel">Share Your Review</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div v-if="shareSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
-                  {{ shareSuccessMessage }}
-                  <button type="button" class="btn-close" @click="shareSuccess = false" aria-label="Close"></button>
+              <div class="modal fade" id="shareReviewModal" tabindex="-1" aria-labelledby="shareReviewModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="shareReviewModalLabel">Share Your Review</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div v-if="shareSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ shareSuccessMessage }}
+                        <button type="button" class="btn-close" @click="shareSuccess = false"
+                          aria-label="Close"></button>
+                      </div>
+                      <div v-if="shareError" class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ shareErrorMessage }}
+                        <button type="button" class="btn-close" @click="shareError = false" aria-label="Close"></button>
+                      </div>
+                      <ShareCardGenerator v-if="showShareModal" :review-data="reviewData" :template="selectedTemplate"
+                        @update:template="selectedTemplate = $event" @close="closeShareModal"
+                        @copy-link="copyReviewLink" />
+                    </div>
+                  </div>
                 </div>
-                <div v-if="shareError" class="alert alert-danger alert-dismissible fade show" role="alert">
-                  {{ shareErrorMessage }}
-                  <button type="button" class="btn-close" @click="shareError = false" aria-label="Close"></button>
-                </div>
-                <ShareCardGenerator v-if="showShareModal" :review-data="reviewData" :template="selectedTemplate"
-                  @update:template="selectedTemplate = $event" @close="closeShareModal" @copy-link="copyReviewLink" />
               </div>
-            </div>
-          </div>
-        </div>
             </div>
 
 
@@ -5132,6 +5137,7 @@ export default {
     },
 
     async shareReview(review) {
+      console.log("review data : ", review)
       this.currentReview = review;
       const flavourTags = [];
       if (review.flavourTag != null) {
@@ -5160,10 +5166,12 @@ export default {
           abv: this.specified_listing.abv,
         },
         review: {
+          reviewDesc: review.reviewDesc,
           rating: review.rating,
           flavorTags: flavourTags,
+          observationTags: review.observationTag,
           date: review.date,
-          location: review.tagLocation,
+          location: review.location,
         },
         user: {
           name: this.user.displayName,
@@ -5202,8 +5210,10 @@ export default {
       if (!this.currentReview) return;
 
       try {
-        const currentUrl = window.location.origin;
-        const shareUrl = `${currentUrl}/listing/${this.listing_id}?reviewId=${this.currentReview.id}`;
+        //const currentUrl = window.location.origin;
+        //const shareUrl = `${currentUrl}/listing/${this.listing_id}?reviewId=${this.currentReview.id}`;
+        const currentUrl = window.location.origin + window.location.pathname;
+        const shareUrl = `${currentUrl}?reviewId=${this.currentReview.id}`;
 
         await navigator.clipboard.writeText(shareUrl);
 

@@ -24,6 +24,10 @@ export const useKonvaShare = () => {
 
     const dataURL = stage.value.toDataURL({
       mimeType: "image/png",
+      x: 0,
+      y: 0,
+      width: 1080,
+      height: 1350,
       quality: 1,
       pixelRatio: 3, // High DPI for mobile
     });

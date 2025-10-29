@@ -1,217 +1,226 @@
 // templates/MinimalTemplate.js
 import Konva from "konva";
 
-const renderTags = (layer, tags, yPos, WIDTH) => {
-  const tagSpacing = 20;
-  const tagHeight = 50;
-  const tagFontSize = 24;
-  const tagFontFamily = "Arial";
-  const tagFill = "#333333"; // Dark text
-  const tagBgFill = "#EEEEEE"; // Light grey background
+export const createMinimalTemplate = async (layer, data) => {
+  const width = 1080;
+  const height = 1350;
 
-  const tagObjects = tags.map(tag => {
-    const width = tag.length * 16 + 40;
-    return { text: tag, width: width };
-  });
-
-  const totalWidth = tagObjects.reduce((sum, tag) => sum + tag.width, 0) + Math.max(0, tagObjects.length - 1) * tagSpacing;
-
-  let currentX = (WIDTH - totalWidth) / 2;
-
-  tagObjects.forEach(({ text, width }) => {
-    const tagBg = new Konva.Rect({
-      x: currentX,
-      y: yPos,
-      width: width,
-      height: tagHeight,
-      fill: tagBgFill,
-      cornerRadius: 25,
-    });
-    layer.add(tagBg);
-
-    const tagText = new Konva.Text({
-      text: text,
-      x: currentX + 20,
-      y: yPos + (tagHeight - tagFontSize) / 2,
-      fontSize: tagFontSize,
-      fontFamily: tagFontFamily,
-      fill: tagFill,
-    });
-    layer.add(tagText);
-
-    currentX += width + tagSpacing;
-  });
-
-  return yPos + tagHeight;
-};
-
-
-export const createMinimalTemplate = async (layer, data, images) => {
-  const WIDTH = 1080;
-  const HEIGHT = 1920;
-
-  // 1. Background - REMOVED for transparency
-
-  // 2. Beverage Image (if available)
-  if (images.beverage) {
-    const beverageImg = new Konva.Image({
-      image: images.beverage,
-      x: WIDTH / 2,
-      y: 400,
-      offsetX: 200,
-      offsetY: 200,
-      width: 400,
-      height: 400,
-      cornerRadius: 20,
-      // Adding a light border in case the image is transparent too
-      stroke: '#EEEEEE',
-      strokeWidth: 2,
-    });
-    layer.add(beverageImg);
-  }
-
-  // 3. Beverage Name
-  const nameText = new Konva.Text({
-    text: data.beverage.name,
-    x: 80,
-    y: 750,
-    width: WIDTH - 160,
-    fontSize: 80,
-    fontFamily: "Arial",
-    fontStyle: "bold",
-    fill: "#333333", // Dark text
-    align: "center",
-  });
-  layer.add(nameText);
-
-  // 4. Type/ABV
-  const subtitleText = new Konva.Text({
-    text: `${data.beverage.type} • ${data.beverage.abv}%`,
-    x: 80,
-    y: nameText.y() + nameText.height() + 20,
-    width: WIDTH - 160,
-    fontSize: 36,
-    fontFamily: "Arial",
-    fill: "#555555", // Slightly lighter dark text
-    opacity: 0.8,
-    align: "center",
-  });
-  layer.add(subtitleText);
-
-  // 5. Rating (Large)
-  const ratingGroup = new Konva.Group({
-    x: WIDTH / 2,
-    y: subtitleText.y() + subtitleText.height() + 150,
-  });
-
-  const ratingBg = new Konva.Circle({
+  // Safe rating formatting
+  const rating = Number(data.review?.rating) || 0;
+  const ratingText = rating.toFixed(1);
+  // Background
+  const bg = new Konva.Rect({
     x: 0,
     y: 0,
-    radius: 120,
-    fill: "#EEEEEE", // Light grey background
+    width: width,
+    height: height * 2,
+    fill: "#b0b0b0", // Single solid color instead
   });
-  ratingGroup.add(ratingBg);
+  layer.add(bg);
 
-  const ratingText = new Konva.Text({
-    text: data.review.rating.toFixed(1),
-    x: -120,
-    y: -50,
-    fontSize: 96,
-    fontFamily: "Arial",
+  // Checkerboard pattern overlay (optional, for that textured look)
+  const patternSize = 60;
+  const cols = Math.ceil(width / patternSize);
+  const rows = Math.ceil((height * 2) / patternSize);
+
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      if ((i + j) % 2 === 0) {
+        const square = new Konva.Rect({
+          x: i * patternSize,
+          y: j * patternSize,
+          width: patternSize,
+          height: patternSize,
+          fill: "#4f4e4eff", // Lighter gray instead of white
+          opacity: 0.6, // More visible
+        });
+        layer.add(square);
+      }
+    }
+  }
+
+  // Rating Section (Top Center)
+  const ratingGroup = new Konva.Group({
+    x: width / 2,
+    y: 150,
+  });
+
+  // Rating Number
+  const ratingNum = new Konva.Text({
+    x: -150,
+    y: 200,
+    text: ratingText,
+    fontSize: 120,
+    fontFamily: "Arial, sans-serif",
     fontStyle: "bold",
-    fill: "#333333", // Dark text
-    width: 240,
-    align: "center",
+    fill: "#ffffff",
+    stroke: "#333333",
+    strokeWidth: 2,
   });
-  ratingGroup.add(ratingText);
+  ratingGroup.add(ratingNum);
 
-  const starsText = new Konva.Text({
-    text: "★★★★★".slice(0, Math.round(data.review.rating)) + "☆☆☆☆☆".slice(Math.round(data.review.rating)),
-    x: -120,
-    y: 50,
-    fontSize: 40,
-    fill: "#FFC107", // Brighter gold
-    width: 240,
-    align: "center",
+  // Star
+  const star = new Konva.Star({
+    x: 110,
+    y: 260,
+    numPoints: 5,
+    innerRadius: 30,
+    outerRadius: 60,
+    fill: "#FFA500",
+    stroke: "#FF8C00",
+    strokeWidth: 3,
   });
-  ratingGroup.add(starsText);
+  ratingGroup.add(star);
 
   layer.add(ratingGroup);
 
-  let currentY = ratingGroup.y() + 120 + 50;
+  // Review Comment (Center)
+  if (data.review?.reviewDesc) {
+    const comment = new Konva.Text({
+      x: 100,
+      y: 500,
+      text: `"${data.review.reviewDesc}"`,
+      fontSize: 52,
+      fontFamily: "Arial, sans-serif",
+      fontStyle: "bold",
+      fill: "#ffffff",
+      stroke: "#ffffffff",
+      strokeWidth: 1.5,
+      width: width - 200,
+      height: 150,
+      ellipsis: true, // ✅ This adds "..." when text overflows
+      align: "center",
+      wrap: "word",
+      lineHeight: 1.3,
+    });
+    layer.add(comment);
+  }
 
-  // 6. Location (conditional)
-  if (data.review.location) {
-    const locationText = new Konva.Text({
-      text: `📍 ${data.review.location}`,
-      x: 80,
+  // Tags Section (flavor profiles and characteristics)
+  const tags = [];
+
+  // Get flavor tags from review data
+  if (data.review?.flavourTag && Array.isArray(data.review.flavourTag)) {
+    tags.push(...data.review.flavourTag.slice(0, 3));
+  }
+
+  // Get characteristic tags
+  if (
+    data.review?.characteristics &&
+    Array.isArray(data.review.characteristics)
+  ) {
+    tags.push(...data.review.characteristics.slice(0, 3));
+  }
+
+  // Default tags if none provided
+  if (tags.length === 0) {
+    tags.push("Smooth", "Balanced", "Flavorful");
+  }
+
+  // Tag colors
+  const tagColors = [
+    { bg: "#E8D5A8", text: "#5C4B2E" }, // Cream/tan
+    { bg: "#7B9FE8", text: "#1E3A5F" }, // Blue
+    { bg: "#C77EB5", text: "#4A1E40" }, // Purple/pink
+    { bg: "#F39C6B", text: "#5C2E1E" }, // Orange
+    { bg: "#FFB84D", text: "#5C3E1E" }, // Yellow/gold
+  ];
+
+  // Draw tags in rows
+  const tagStartY = 680;
+  const tagSpacing = 20;
+  const maxTagsPerRow = 3;
+  let currentX = width / 2;
+  let currentY = tagStartY;
+  let currentRowTags = 0;
+
+  tags.forEach((tag, index) => {
+    const colorScheme = tagColors[index % tagColors.length];
+
+    // Calculate tag dimensions
+    const tempText = new Konva.Text({
+      text: tag,
+      fontSize: 36,
+      fontFamily: "Arial, sans-serif",
+      fontStyle: "bold",
+    });
+    const tagWidth = tempText.width() + 60;
+    const tagHeight = 60;
+
+    // Move to next row if needed
+    if (currentRowTags >= maxTagsPerRow) {
+      currentY += tagHeight + tagSpacing;
+      currentRowTags = 0;
+    }
+
+    // Calculate position for centering
+    if (currentRowTags === 0) {
+      const rowTags = Math.min(maxTagsPerRow, tags.length - index);
+      const rowWidth = rowTags * (tagWidth + tagSpacing) - tagSpacing;
+      currentX = (width - rowWidth) / 2;
+    }
+
+    // Tag background
+    const tagBg = new Konva.Rect({
+      x: currentX,
       y: currentY,
-      width: WIDTH - 160,
-      fontSize: 32,
-      fontFamily: "Arial",
-      fill: "#555555", // Lighter dark text
+      width: tagWidth,
+      height: tagHeight,
+      fill: colorScheme.bg,
+      cornerRadius: 30,
+      shadowColor: "rgba(0, 0, 0, 0.3)",
+      shadowBlur: 10,
+      shadowOffset: { x: 0, y: 4 },
+    });
+    layer.add(tagBg);
+
+    // Tag text
+    const tagText = new Konva.Text({
+      x: currentX,
+      y: currentY + 12,
+      text: tag,
+      fontSize: 36,
+      fontFamily: "Arial, sans-serif",
+      fontStyle: "bold",
+      fill: colorScheme.text,
+      width: tagWidth,
       align: "center",
     });
-    layer.add(locationText);
-    currentY += locationText.height() + 40;
-  }
+    layer.add(tagText);
 
-  // 7. Flavour Tags (Top 3)
-  if (data.review.flavourTags && data.review.flavourTags.length > 0) {
-    const flavourTags = data.review.flavourTags.slice(0, 3);
-    currentY = renderTags(layer, flavourTags, currentY, WIDTH) + 20;
-  }
+    currentX += tagWidth + tagSpacing;
+    currentRowTags++;
+  });
 
-  // 8. Action Tags (Top 3)
-  if (data.review.observationTags && data.review.observationTags.length > 0) {
-    const actionTags = data.review.observationTags.slice(0, 3);
-    currentY = renderTags(layer, actionTags, currentY, WIDTH) + 40;
-  }
+  // Beverage Name (Bottom)
+  // const beverageName = new Konva.Text({
+  //   x: 80,
+  //   y: 220,
+  //   text: data.beverage?.name || "Unknown Beverage",
+  //   fontSize: 100,
+  //   fontFamily: "Arial, sans-serif",
+  //   fontStyle: "bold",
+  //   fill: "#ffffff",
+  //   stroke: "#333333",
+  //   strokeWidth: 2,
+  //   width: width - 160,
+  //   align: "center",
+  // });
+  // layer.add(beverageName);
 
-  // 9. Date (conditional)
-  const reviewDate = new Date(data.review.date);
-  if (!isNaN(reviewDate)) {
-    const dateText = new Konva.Text({
-      text: reviewDate.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }),
-      x: 80,
-      y: currentY,
-      width: WIDTH - 160,
-      fontSize: 28,
-      fontFamily: "Arial",
-      fill: "#777777", // Lighter dark text
-      opacity: 0.8,
-      align: "center",
-    });
-    layer.add(dateText);
-  }
-
-  // 10. Footer: Username and App Logo
-  const usernameText = new Konva.Text({
-    text: data.user.name,
+  // User Info
+  const userName = new Konva.Text({
     x: 80,
-    y: HEIGHT - 100,
+    y: 960,
+    text: `— ${data.user?.name || "Anonymous"}`,
     fontSize: 32,
-    fontFamily: "Arial",
-    fill: "#555555", // Lighter dark text
-    opacity: 0.8,
+    fontFamily: "Arial, sans-serif",
+    fill: "#ffffff",
+    opacity: 0.9,
+    width: width - 160,
+    align: "center",
   });
-  layer.add(usernameText);
+  layer.add(userName);
 
-  const logoText = new Konva.Text({
-    text: "Drink-x",
-    x: WIDTH - 280, // Bounding box start
-    y: HEIGHT - 100,
-    width: 200, // Bounding box width
-    fontSize: 36,
-    fontFamily: "Arial",
-    fontStyle: "bold",
-    fill: "#555555", // Lighter dark text
-    opacity: 0.7,
-    align: "right",
-  });
-  layer.add(logoText);
+  layer.batchDraw();
 };
