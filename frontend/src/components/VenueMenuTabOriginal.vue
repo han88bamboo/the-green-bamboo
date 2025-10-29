@@ -2646,6 +2646,13 @@ export default {
             // Jump to Section feature (Mobile only)
             showJumpToSheet: false,
 
+            // Progressive Section Expansion for Search (NEW)
+            hasPerformedFirstSearch: false, // Track if user has performed their first search
+            isExpandingSections: false, // Flag to prevent search execution during expansion
+            expansionQueue: [], // Queue of sections to expand progressively
+            expandedSections: new Set(), // Track which main sections are expanded
+            expandedSubsections: new Set(), // Track which subsections are expanded
+
             // Image enlargement modal data
             showImageModal: false,
             enlargedImageSrc: '',
@@ -3014,6 +3021,178 @@ export default {
         },
 
         // ------- END Jump to Section Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        // ------- START Progressive Section Expansion Methods --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        // NEW METHOD: Progressive expansion of all sections before search
+        async progressivelyExpandAllSections() {
+            console.log('🔍 PROGRESSIVE EXPANSION: Starting progressive expansion of all sections');
+            
+            // Set flag to indicate expansion is in progress
+            this.isExpandingSections = true;
+            
+            try {
+                // Get all main sections from editableMainSections
+                const mainSections = this.editableMainSections || [];
+                console.log('🔍 PROGRESSIVE EXPANSION: Found', mainSections.length, 'main sections to expand');
+                
+                // Expand each main section one at a time with 50ms delay
+                for (let i = 0; i < mainSections.length; i++) {
+                    const section = mainSections[i];
+                    const sectionIndex = i;
+                    
+                    console.log(`🔍 PROGRESSIVE EXPANSION: Processing main section ${i + 1}/${mainSections.length}: "${section.sectionName}"`);
+                    
+                    // Check if main section is already expanded
+                    const mainSectionExpanded = this.isSectionExpanded(`collapseMenuSection${sectionIndex}`);
+                    console.log(`🔍 PROGRESSIVE EXPANSION: Main section "${section.sectionName}" expanded state:`, mainSectionExpanded);
+                    
+                    // Expand main section if not already expanded
+                    if (!mainSectionExpanded) {
+                        await this.expandSingleSection(section, sectionIndex, 'main');
+                        // Track that this section is expanded
+                        this.expandedSections.add(`collapseMenuSection${sectionIndex}`);
+                    }
+                    
+                    // Now expand all subsections of this main section simultaneously (no delay between subsections)
+                    if (section.subsections && section.subsections.length > 0) {
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}"`);
+                        
+                        // Create array of promises for all subsections of this main section
+                        const subsectionPromises = section.subsections.map(async (subsection, subIndex) => {
+                            const subsectionId = `collapseSubSection${sectionIndex}_${subIndex}`;
+                            const subsectionExpanded = this.isSectionExpanded(subsectionId);
+                            
+                            console.log(`🔍 PROGRESSIVE EXPANSION: Subsection "${subsection.sectionName}" expanded state:`, subsectionExpanded);
+                            
+                            if (!subsectionExpanded) {
+                                await this.expandSingleSection(subsection, sectionIndex, 'subsection', subIndex);
+                                // Track that this subsection is expanded
+                                this.expandedSubsections.add(subsectionId);
+                            }
+                        });
+                        
+                        // Wait for all subsections of this main section to expand simultaneously
+                        await Promise.all(subsectionPromises);
+                        console.log(`🔍 PROGRESSIVE EXPANSION: All subsections for main section "${section.sectionName}" completed`);
+                    }
+                    
+                    // 50ms delay before next main section (but not after the last one)
+                    if (i < mainSections.length - 1) {
+                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next main section...');
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                    }
+                }
+                
+                console.log('🔍 PROGRESSIVE EXPANSION: All sections expansion completed successfully');
+                
+            } catch (error) {
+                console.error('🔍 PROGRESSIVE EXPANSION: Error during expansion:', error);
+            } finally {
+                // Clear the expansion flag
+                this.isExpandingSections = false;
+                console.log('🔍 PROGRESSIVE EXPANSION: Expansion process finished, proceeding with search');
+            }
+        },
+
+        // NEW METHOD: Expand a single section (main section or subsection)
+        async expandSingleSection(section, mainSectionIndex, sectionType, subsectionIndex = null) {
+            return new Promise((resolve) => {
+                try {
+                    let sectionId, toggleButtonSelector;
+                    
+                    if (sectionType === 'main') {
+                        sectionId = `collapseMenuSection${mainSectionIndex}`;
+                        toggleButtonSelector = `[data-bs-target="#${sectionId}"]`;
+                    } else if (sectionType === 'subsection') {
+                        sectionId = `collapseSubSection${mainSectionIndex}_${subsectionIndex}`;
+                        toggleButtonSelector = `[data-bs-target="#${sectionId}"]`;
+                    } else {
+                        console.warn('🔍 PROGRESSIVE EXPANSION: Unknown section type:', sectionType);
+                        resolve();
+                        return;
+                    }
+                    
+                    console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${sectionType} "${section.sectionName}" with ID: ${sectionId}`);
+                    
+                    // Find the DOM elements
+                    const collapseElement = document.getElementById(sectionId);
+                    const toggleButton = document.querySelector(toggleButtonSelector);
+                    
+                    if (!collapseElement || !toggleButton) {
+                        console.warn(`🔍 PROGRESSIVE EXPANSION: Could not find DOM elements for ${sectionType} "${section.sectionName}"`);
+                        console.warn('🔍 PROGRESSIVE EXPANSION: collapseElement found:', !!collapseElement);
+                        console.warn('🔍 PROGRESSIVE EXPANSION: toggleButton found:', !!toggleButton);
+                        resolve();
+                        return;
+                    }
+                    
+                    // Check if section is already expanded
+                    if (collapseElement.classList.contains('show')) {
+                        console.log(`🔍 PROGRESSIVE EXPANSION: ${sectionType} "${section.sectionName}" is already expanded, skipping`);
+                        resolve();
+                        return;
+                    }
+                    
+                    console.log(`🔍 PROGRESSIVE EXPANSION: Triggering expansion for ${sectionType} "${section.sectionName}"`);
+                    
+                    // Create mock event for handleSectionExpand (for lazy loading)
+                    const mockEvent = {
+                        currentTarget: toggleButton,
+                        target: toggleButton,
+                        preventDefault: () => {},
+                        stopPropagation: () => {}
+                    };
+                    
+                    // Trigger lazy loading first (same as jumpToSection logic)
+                    this.handleSectionExpand(section, mockEvent);
+                    
+                    // Set up one-time listener for when expansion completes
+                    const handleExpansionComplete = () => {
+                        console.log(`🔍 PROGRESSIVE EXPANSION: ${sectionType} "${section.sectionName}" expansion completed`);
+                        resolve();
+                    };
+                    
+                    // Listen for the Bootstrap 'shown.bs.collapse' event
+                    collapseElement.addEventListener('shown.bs.collapse', handleExpansionComplete, { once: true });
+                    
+                    // Also set a timeout fallback in case the event doesn't fire
+                    const timeoutId = setTimeout(() => {
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Timeout reached for ${sectionType} "${section.sectionName}", resolving anyway`);
+                        collapseElement.removeEventListener('shown.bs.collapse', handleExpansionComplete);
+                        resolve();
+                    }, 1000); // 1 second timeout
+                    
+                    // Clear timeout if event fires normally
+                    collapseElement.addEventListener('shown.bs.collapse', () => {
+                        clearTimeout(timeoutId);
+                    }, { once: true });
+                    
+                    // Programmatically click the toggle button to trigger Bootstrap expansion
+                    toggleButton.click();
+                    
+                } catch (error) {
+                    console.error(`🔍 PROGRESSIVE EXPANSION: Error expanding ${sectionType} "${section.sectionName}":`, error);
+                    resolve(); // Always resolve to continue with other sections
+                }
+            });
+        },
+
+        // NEW METHOD: Check if a section is expanded
+        isSectionExpanded(sectionId) {
+            const element = document.getElementById(sectionId);
+            return element && element.classList.contains('show');
+        },
+
+        // NEW METHOD: Reset the first search flag (for testing or component reset)
+        resetFirstSearchFlag() {
+            console.log('🔍 PROGRESSIVE EXPANSION: Resetting first search flag');
+            this.hasPerformedFirstSearch = false;
+            this.expandedSections.clear();
+            this.expandedSubsections.clear();
+        },
+
+        // ------- END Progressive Section Expansion Methods ----------------------------------------------------
 
         // Helper method to determine text color based on background color
         getContrastColor(hexcolor) {
@@ -4079,12 +4258,30 @@ export default {
         },
 
         // Search Menu - Enhanced for hierarchical structure
-        searchMenu() {
+        async searchMenu() {
             console.log("Searching hierarchical menu with term: " + this.searchMenuTerm);
             
             // Trim search term, set to lowercase
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
             
+            // PROGRESSIVE EXPANSION: If this is the first search and there's a search term, expand all sections first
+            if (!this.hasPerformedFirstSearch && this.searchMenuTerm !== '') {
+                console.log("🔍 PROGRESSIVE EXPANSION: This is the first search with a term, triggering progressive expansion");
+                
+                // Mark that first search has been performed
+                this.hasPerformedFirstSearch = true;
+                
+                // Trigger progressive expansion of all sections
+                await this.progressivelyExpandAllSections();
+                
+                console.log("🔍 PROGRESSIVE EXPANSION: Expansion completed, proceeding with search");
+            } else if (this.searchMenuTerm === '') {
+                console.log("🔍 PROGRESSIVE EXPANSION: Empty search term, skipping expansion");
+            } else {
+                console.log("🔍 PROGRESSIVE EXPANSION: Not first search or expansion in progress, proceeding directly to search");
+            }
+            
+            // Proceed with normal search logic            
             if (this.searchMenuTerm == '') {
                 // If empty search, show all sections and subsections from current editable structure
                 this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
