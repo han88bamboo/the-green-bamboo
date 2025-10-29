@@ -764,8 +764,8 @@
                             <!-- Subsection Content (Collapsible) -->
                             <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
                                 
-                                <!-- No Subsection Contents to Show -->
-                                <div v-if="!subsection.sectionMenu || subsection.sectionMenu.length == 0" class="col-12 my-3 ms-4">
+                                <!-- No Subsection Contents to Show (with delay) -->
+                                <div v-if="shouldShowNoSubsectionItemsMessage(subsection, menuSection.id)" class="col-12 my-3 ms-4">
                                     <p class="text-center fst-italic m-0">No menu items in this subsection!</p>
                                 </div>
 
@@ -1094,8 +1094,8 @@
                         </div>
                     </div>
 
-                    <!-- Show message when section has no items and no subsections -->
-                    <div v-if="(!menuSection.sectionMenu || menuSection.sectionMenu.length == 0) && (!menuSection.subsections || menuSection.subsections.length == 0)" class="col-12 my-3">
+                    <!-- Show message when section has no items and no subsections (with delay) -->
+                    <div v-if="shouldShowNoItemsMessage(menuSection)" class="col-12 my-3">
                         <p class="text-center fst-italic m-0">No menu items to show!</p>
                     </div>
 
@@ -3574,6 +3574,37 @@ export default {
         // Jump to Section - Get only visible main sections (excluding hidden sections)
         visibleMainSections() {
             return this.searchMenuResults.filter(section => section.isVisible !== false);
+        },
+
+        // Delay Message Display (Option 4) - Helper method for template
+        shouldShowNoItemsMessage() {
+            return (menuSection) => {
+                const hasNoItems = (!menuSection.sectionMenu || menuSection.sectionMenu.length === 0) && 
+                                  (!menuSection.subsections || menuSection.subsections.length === 0);
+                
+                if (!hasNoItems) return false;
+                
+                const expandTime = this.sectionExpandTimestamps.get(menuSection.id);
+                if (!expandTime) return false;
+                
+                // Use reactive currentTime to trigger re-evaluation
+                return this.currentTime - expandTime > this.noItemsMessageDelay;
+            };
+        },
+
+        shouldShowNoSubsectionItemsMessage() {
+            return (subsection, parentSectionId) => {
+                const hasNoItems = !subsection.sectionMenu || subsection.sectionMenu.length === 0;
+                
+                if (!hasNoItems) return false;
+                
+                const subsectionKey = `${parentSectionId}-${subsection.id}`;
+                const expandTime = this.sectionExpandTimestamps.get(subsectionKey);
+                if (!expandTime) return false;
+                
+                // Use reactive currentTime to trigger re-evaluation
+                return this.currentTime - expandTime > this.noItemsMessageDelay;
+            };
         }
     },
     data() {
@@ -3846,6 +3877,12 @@ export default {
             // Tasting Filter Loading State
             isTastingFilterLoading: false, // Track when tasting filter is expanding sections
 
+            // Delay Message Display (Option 4)
+            noItemsMessageDelay: 500, // 0.5 seconds delay
+            sectionExpandTimestamps: new Map(), // Track when sections were expanded
+            currentTime: Date.now(), // Reactive time tracker for computed methods
+            delayMessageTimer: null, // Timer for updating currentTime
+
         }
     },
     watch: {
@@ -4039,11 +4076,21 @@ export default {
 
         this.loadReviewData();
 
+        // Setup timer for reactive delay message display
+        this.delayMessageTimer = setInterval(() => {
+            this.currentTime = Date.now();
+        }, 50); // Update every 50ms for smooth timing
+
     },
     beforeUnmount() {
         // Cleanup: Restore body scroll if sheet was left open
         if (this.showJumpToSheet) {
             document.body.style.overflow = '';
+        }
+
+        // Cleanup: Clear delay message timer
+        if (this.delayMessageTimer) {
+            clearInterval(this.delayMessageTimer);
         }
     },
     methods: {
@@ -9827,6 +9874,21 @@ export default {
         }
 
         console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
+
+        // Track expansion timestamp for delay message display
+        // For subsections, we need to determine the parent section ID from the target selector
+        let timestampKey = section.id;
+        if (targetSelector && targetSelector.includes('collapseSubSection')) {
+            // This is a subsection - extract parent section info from the DOM hierarchy
+            const parentSection = button.closest('[data-section-index]');
+            if (parentSection) {
+                const parentSectionData = this.searchMenuResults[parseInt(parentSection.dataset.sectionIndex)];
+                if (parentSectionData) {
+                    timestampKey = `${parentSectionData.id}-${section.id}`;
+                }
+            }
+        }
+        this.sectionExpandTimestamps.set(timestampKey, Date.now());
 
         // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
         const handleShown = () => {
