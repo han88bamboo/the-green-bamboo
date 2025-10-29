@@ -49,80 +49,118 @@
               <div class="col-8">
                 <h3 class="mb-0">{{ displayUser.displayName }}</h3>
                 <b>@{{ displayUser.username }}</b>
-                <br />
-                {{ totalReviewsCount }} Drinks Tasted
-                <br />
                 <button
-                  v-if="
-                    displayUser &&
-                    displayUser.modType &&
-                    displayUser.modType.length > 0
-                  "
-                  data-bs-toggle="modal"
-                  data-bs-target="#moderatormodal"
-                  class="btn btn-warning hover-button mt-1 px-3 mobile-view-hide"
-                  style="border-radius: 20px; font-size: 0.8rem"
-                >
-                  ★ Certified Moderator
+                v-if="ownProfile && user"
+                type="button"
+                class="btn p-0 m-0 ms-2"
+                style="color:grey"
+                data-bs-toggle="modal"
+                data-bs-target="#editProfileModal"
+              >
+                <i class="bi bi-pencil"></i>
                 </button>
                 <button
-                  v-if="
-                    displayUser &&
-                    displayUser.modType &&
-                    displayUser.modType.length > 0
-                  "
+                v-if="ownProfile && user"
+                type="button"
+                class="btn p-0 m-0 ms-2"
+                style="color:grey"
+                data-bs-toggle="modal"
+                data-bs-target="#changePasswordModal"
+                >
+                  <i class="bi bi-shield-lock-fill"></i>
+                </button>
+                <div class="container ps-0 mt-2 text-center">
+                  <div class="row">
+                    <div class="col-4 px-0">
+                      <router-link
+                          :to="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`"
+                          class="text-decoration-none text-dark"
+                        >
+                      <div>
+                        <h3 class="mb-0"><b>{{ totalReviewsCount }}</b></h3>
+                        <b>reviews</b>
+                      </div>
+                    </router-link>
+                    </div>
+                    <div class="col-4 ps-1">
+                       <router-link
+                          :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                          class="text-decoration-none text-dark"
+                        >
+                        <div>
+                          <h3 class="mb-0"><b>{{ followersCount }}</b></h3>
+                          <b>followers </b>
+                        </div>
+                      </router-link>
+                    </div>
+                    <div class="col-4">
+                      <router-link
+                          :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                          class="text-decoration-none text-dark"
+                        >
+                      <div>
+                        <h3 class="mb-0"><b>{{ followingCount }}</b></h3>
+                        <b>following</b>
+                      </div>
+                    </router-link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div>
+                <!-- User Title: Moderator Badges -->
+                <button
+                  v-if="displayUser && displayUser.modType && displayUser.modType.length > 0"
                   data-bs-toggle="modal"
                   data-bs-target="#moderatormodal"
-                  class="btn btn-warning hover-button mt-1 px-3 me-3 mobile-view-show"
+                  class="btn btn-warning hover-button mt-1 px-3 me-3"
                   style="border-radius: 20px; font-size: 0.8rem"
                 >
                   ★ Moderator
                 </button>
-
                 <!-- User Title (ambassador) -->
-                <span v-if="displayUser && displayUser.ambassador === true" class="badge rounded-pill ms-2"
+                <span 
+                  v-if="displayUser && displayUser.ambassador === true" 
+                  class="badge rounded-pill ms-2"
                   style="background-color: #ff3e31; color: white">
                   Ambassador
                 </span>
-
                 <!-- User Title (category expert) -->
-                <span v-if="displayUser && displayUser.categoryExpert" class="badge rounded-pill ms-2"
+                <span 
+                  v-if="displayUser && displayUser.categoryExpert" 
+                  class="badge rounded-pill ms-2"
                   style="background-color: #5D83D9; color: white">
                   {{ displayUser.categoryExpert }}
                 </span>
-
                 <!-- Add this temporarily to debug -->
                 <div style="display: none;">
                   {{ displayUser && typeof displayUser.ambassador }} - 
                   {{ displayUser && JSON.stringify(displayUser.ambassador) }}
                 </div>
-                
-                <br class="mobile-view-hide"/>
-                <button
-                v-if="ownProfile && user"
-                type="button"
-                class="mt-2 btn tertiary-btn-blue-outline xprimary-btn-outline-not-round"
-                data-bs-toggle="modal"
-                data-bs-target="#editProfileModal"
-                style="font-weight: bold"
-              >
-                Edit Profile
-              </button>
-              
-              <button
-                v-if="ownProfile && user"
-                type="button"
-                class="mt-2 btn tertiary-btn-blue-outline xprimary-btn-outline-not-round ms-1"
-                data-bs-toggle="modal"
-                data-bs-target="#changePasswordModal"
-              >
-                <i class="bi bi-shield-lock-fill"></i>
-              </button>
-              </div>
             </div>
 
             <!-- additional information -->
             <div class="mt-3">
+              <div class="row">
+                <div class="col-5">
+                  <b>Rank</b>
+                </div>
+                <div class="col-7 text-end fw-bold">
+                  <span  :style="{ color: displayUser.proofRank[1] }"> {{ displayUser.proofRank[0] }}</span>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-5">
+                  <b> Points Earned </b>
+                </div>
+                <div class="col-7 text-end">
+                  <span> {{ proofPoints }} pts </span>
+                </div>
+              </div>
               <div class="row mobile-view-hide">
                 <div class="col-5 ">
                   <b>Member Since</b>
@@ -136,7 +174,7 @@
                   <b>Drink of Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="!displayUserDrinkChoice"><i>None</i></span>
+                  <span v-if="!displayUserDrinkChoice"><i>Not selected</i></span>
                   <span v-else>{{ displayUserDrinkChoice }}</span>
                 </div>
               </div>
@@ -146,43 +184,15 @@
                   <b>Flavour Choice</b>
                 </div>
                 <div class="col-7 text-end">
-                  <span v-if="!selectedFlavours || selectedFlavours.length === 0"><i>None</i></span>
+                  <span v-if="!selectedFlavours || selectedFlavours.length === 0"><i>Not selected</i></span>
                   <span v-else>{{ Array.isArray(selectedFlavours) ? selectedFlavours.join(", ") : selectedFlavours }}</span>
                 </div>
               </div>
-              <!-- Display Chosen Flavour Tag End -->
-              <!-- Display Chosen Observation Tag Start (NOT ON MOBILE) 
-              <div class="row mobile-view-hide">
-                <div class="col-5">
-                  <b>Observation Tags</b>
-                </div>
-                <div class="col-7 text-end">
-                  <span v-if="!selectedObservationTags || selectedObservationTags.length === 0"
-                    ><i>None</i></span
-                  >
-                  <span v-else>{{ Array.isArray(selectedObservationTags) ? selectedObservationTags.join(", ") : selectedObservationTags }}</span>
-                </div>
-              </div>
-               -->
-              <div class="row">
-                <div class="col-5">
-                  <b> Points Earned </b>
-                </div>
-                <div class="col-7 text-end">
-                  <span> {{ proofPoints }} pts </span>
-                </div>
-              </div>
+              
+              
+
             </div>
 
-            <!-- Rank -->
-            <div class="row">
-              <div class="col-5">
-                <b>Rank</b>
-              </div>
-              <div class="col-7 text-end">
-                <span  :style="{ color: displayUser.proofRank[1] }"> {{ displayUser.proofRank[0] }}</span>
-              </div>
-            </div>
 
             <!-- Top row -->
             <div class="row mt-0 gx-2"> <!-- use gx-2 to match bottom if you like -->
@@ -302,7 +312,7 @@
               aria-labelledby="exampleModalLabel"
               aria-hidden="true"
             >
-              <div class="modal-dialog modal-dialog-centered modal-lg">
+              <div class="modal-dialog modal-dialog-centered modal-lg mobile-ps-0">
                 <div class="modal-content">
                   <div class="modal-header">
                     <h1 class="modal-title fs-5" id="exampleModalLabel">
@@ -702,7 +712,7 @@
                         expertise as a moderator! Just some quick questions:</b
                       >
                     </p>
-                    <!--- <a href="#" class="m-2" style="font-style: italic; color: inherit">Click here to learn more about being a moderator</a>-->
+                    
 
                     <div class="px-3">
                       <h6 class="m-3 mx-0">
@@ -1412,13 +1422,13 @@
               </div>
 
               <div v-if="userBadges && userBadges.length > 0">
-                <a 
-                  href="#" 
-                  @click.prevent="switchTab('badges')" 
-                  style="color: black"
+                <button 
+                  v-if="userBadges && userBadges.length > 0"
+                  @click="switchTab('badges')" 
+                  class="btn btn-link p-0 text-dark "
                 >
                   View all badges
-                </a>
+                </button>
               </div>
             </div>
 
@@ -1462,9 +1472,12 @@
                 </div>
               </div>
 
-              <div>
-                <a :href="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View all reviewed drinks</a>
-              </div>
+             <router-link
+                :to="`/profile/user/allreviews/${displayUserID}/${displayUser.username}`"
+                class="text-dark text-decoration-underline"
+              >
+                View all reviewed drinks
+              </router-link>
             </div>
 
 
@@ -1559,9 +1572,12 @@
 
             <!-- View All Friends Link -->
             <div class="mt-4 mobile-view-hide">
-              <div>
-                <a :href="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`" style="color: black; text-decoration: underline;">View All Friends</a>
-              </div>
+                <router-link
+                  :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
+                  class="text-dark text-decoration-underline"
+                >
+                  View all friends
+                </router-link>
             </div>
 
 

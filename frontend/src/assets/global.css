@@ -1235,7 +1235,7 @@ button.primary-square:hover {
 }
 
 .inactive-toggle-button {
-  color: black !important; /* Active state text color */
+  color: grey !important; /* Active state text color */
   background-color: white !important; /* Active state background color */
   border: none !important; /* Underline for active tab */
   border-radius: 0px !important;
