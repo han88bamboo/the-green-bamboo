@@ -179,14 +179,17 @@
         <div class="container" v-if="targetVenue['claimStatus']">
             <div class="row align-items-stretch mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" class="col-9 p-0">
+                <div v-if="!editMenuMode" class="col-9 p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
+                    <!-- Search Loading Spinner -->
+                    <span v-if="isSearchExpanding" class="search-spinner spinner-border spinner-border-sm"
+                        role="status" aria-hidden="true"></span>                        
                 </div>
                 
                 <!-- Tasting Filter Toggle Button -->
-                <div v-if="!editMenuMode" class="col-3 pe-0">
+                <div v-if="!editMenuMode" class="col-3 pe-0 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
@@ -739,7 +742,7 @@
                         <div v-for="(subsection, subIndex) in menuSection.subsections" :key="subsection.id || subIndex" 
                              class="ms-3"
                              :class="{
-                                 'menu-section-hidden': !subsection.isVisible
+                                  'menu-section-hidden': subsection.isVisible === false
                              }">
                             
                             <!-- Subsection Name -->
@@ -3832,6 +3835,9 @@ export default {
             expansionQueue: [], // Queue of sections to expand progressively
             expandedSections: new Set(), // Track which main sections are expanded
             expandedSubsections: new Set(), // Track which subsections are expanded
+                        
+            // Search Loading State
+            isSearchExpanding: false, // Track when first search is expanding sections
 
         }
     },
@@ -3906,7 +3912,30 @@ export default {
                     this.getDefaultServingType();
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
-            }
+            }            
+        },
+
+        // SEARCH FIX + Review Loading: Watch for changes in editableMainSections (combined watcher)
+        editableMainSections: {
+            handler(newSections) {
+                // SEARCH FIX: Only process if watchers are enabled (after mount)
+                if (this.watchersEnabled) {
+                    console.log('🔍 WATCHER: editableMainSections changed, length:', newSections?.length || 0);
+                    // The waitForLazyLoadingComplete method will handle the stability detection
+                    // No need for complex tracking here anymore
+                }
+
+                // REVIEW LOADING: Watch for changes in menu data to reload reviews
+                if (this.isSignedInUser && newSections && newSections.length > 0) {
+                    // Debounce the review loading to avoid excessive API calls
+                    clearTimeout(this.reviewLoadTimeout);
+                    this.reviewLoadTimeout = setTimeout(() => {
+                        console.log('🍽️ Menu sections changed, reloading user reviews');
+                        this.loadUserReviews();
+                    }, 1000);
+                }
+            },
+            deep: true
         },
 
         // Watch for venue changes to reload tastings
@@ -3942,21 +3971,6 @@ export default {
                     this.userReviews.clear();
                 }
             }
-        },
-
-        // Watch for changes in menu data to reload reviews
-        editableMainSections: {
-            handler(newSections) {
-                if (this.isSignedInUser && newSections && newSections.length > 0) {
-                    // Debounce the review loading to avoid excessive API calls
-                    clearTimeout(this.reviewLoadTimeout);
-                    this.reviewLoadTimeout = setTimeout(() => {
-                        console.log('🍽️ Menu sections changed, reloading user reviews');
-                        this.loadUserReviews();
-                    }, 1000);
-                }
-            },
-            deep: true
         }
     },
     mounted() {
@@ -4294,11 +4308,14 @@ export default {
             this.isExpandingSections = true;
             
             try {
-                // Get all main sections from editableMainSections
-                const mainSections = this.editableMainSections || [];
+                // Get sections from searchMenuResults if we're in search mode, otherwise use editableMainSections
+                // This ensures the indices match the template rendering
+                const mainSections = (this.searchMenuTerm && this.searchMenuResults.length > 0) 
+                    ? this.searchMenuResults 
+                    : this.editableMainSections || [];
                 console.log('🔍 PROGRESSIVE EXPANSION: Found', mainSections.length, 'main sections to expand');
-                
-                // Expand each main section one at a time with 50ms delay
+                console.log('🔍 PROGRESSIVE EXPANSION: Using search results:', this.searchMenuTerm && this.searchMenuResults.length > 0);
+                // Expand each main section one at a time with 10ms delay
                 for (let i = 0; i < mainSections.length; i++) {
                     const section = mainSections[i];
                     const sectionIndex = i;
@@ -4316,11 +4333,11 @@ export default {
                         this.expandedSections.add(`collapseMenuSection${sectionIndex}`);
                     }
                     
-                    // Now expand all subsections of this main section sequentially with 50ms delay between each
+                    // Now expand all subsections of this main section sequentially with 10ms delay between each
                     if (section.subsections && section.subsections.length > 0) {
-                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 50ms delay between each`);
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 10ms delay between each`);
                         
-                        // Expand each subsection one at a time with 50ms delay
+                        // Expand each subsection one at a time with 10ms delay
                         for (let subIndex = 0; subIndex < section.subsections.length; subIndex++) {
                             const subsection = section.subsections[subIndex];
                             const subsectionId = `collapseSubSection${sectionIndex}_${subIndex}`;
@@ -4334,20 +4351,20 @@ export default {
                                 this.expandedSubsections.add(subsectionId);
                             }
                             
-                            // 50ms delay before next subsection (but not after the last one)
+                            // 10ms delay before next subsection (but not after the last one)
                             if (subIndex < section.subsections.length - 1) {
-                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next subsection...');
-                                await new Promise(resolve => setTimeout(resolve, 50));
+                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next subsection...');
+                                await new Promise(resolve => setTimeout(resolve, 10));
                             }
                         }
                         
                         console.log(`🔍 PROGRESSIVE EXPANSION: All subsections for main section "${section.sectionName}" completed`);
                     }
                     
-                    // 50ms delay before next main section (but not after the last one)
+                    // 10ms delay before next main section (but not after the last one)
                     if (i < mainSections.length - 1) {
-                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next main section...');
-                        await new Promise(resolve => setTimeout(resolve, 50));
+                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next main section...');
+                        await new Promise(resolve => setTimeout(resolve, 10));
                     }
                 }
                 
@@ -4428,7 +4445,7 @@ export default {
                         console.log(`🔍 PROGRESSIVE EXPANSION: Timeout reached for ${sectionType} "${section.sectionName}", resolving anyway`);
                         collapseElement.removeEventListener('shown.bs.collapse', handleExpansionComplete);
                         resolve();
-                    }, 1000); // 1 second timeout
+                    }, 500); // 1 second timeout
                     
                     // Clear timeout if event fires normally
                     collapseElement.addEventListener('shown.bs.collapse', () => {
@@ -5105,6 +5122,7 @@ export default {
                             sectionOrder: subsection.sectionOrder,
                             parentSectionId: subsection.parentSectionId,
                             isSubSection: subsection.isSubSection,
+                            isVisible: subsection.isVisible, // ← Add this line to preserve visibility
                             sectionMenu: [], // ✅ Empty initially - items will load when subsection is expanded
                             itemsLoaded: false, // ✅ Track if items have been loaded
                             isLoading: false    // ✅ Track if currently loading
@@ -5485,13 +5503,23 @@ export default {
             if (!this.hasPerformedFirstSearch && this.searchMenuTerm !== '') {
                 console.log("🔍 PROGRESSIVE EXPANSION: This is the first search with a term, triggering progressive expansion");
                 
+                // Show loading spinner for first search expansion
+                this.isSearchExpanding = true;
+                                
                 // Mark that first search has been performed
                 this.hasPerformedFirstSearch = true;
                 
                 // Trigger progressive expansion of all sections
                 await this.progressivelyExpandAllSections();
                 
-                console.log("🔍 PROGRESSIVE EXPANSION: Expansion completed, proceeding with search");
+                // SEARCH FIX: Wait for lazy loading to complete before proceeding with search
+                await this.waitForLazyLoadingComplete();
+                
+                // Hide loading spinner when expansion and loading complete
+                this.isSearchExpanding = false;
+                
+                console.log("🔍 PROGRESSIVE EXPANSION: Expansion and lazy loading completed, proceeding with search");
+                
             } else if (this.searchMenuTerm === '') {
                 console.log("🔍 PROGRESSIVE EXPANSION: Empty search term, skipping expansion");
             } else {
@@ -5597,6 +5625,14 @@ export default {
                 }
             }
 
+            // If we have search results with subsections, expand them to show the content
+            if (this.searchMenuTerm !== '' && this.searchMenuResults.length > 0) {
+                console.log("🔍 SEARCH EXPANSION: Search completed, expanding sections to show subsection content");
+                // Use setTimeout to allow DOM to update with search results first
+                setTimeout(async () => {
+                    await this.progressivelyExpandAllSections();
+                }, 100);
+            }
             // Sort search results
             this.sortMenu(this.sortMenuTerm);
             
@@ -9762,10 +9798,10 @@ export default {
         }
 
         console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
-        
+
         // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
         const handleShown = () => {
-            console.log(`� charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
+            console.log(`🔵 charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
             this.loadSectionItemsLazy(section);
         };
         
@@ -9788,6 +9824,67 @@ export default {
         this.$emit('load-section-items', section);
         console.log(`🔵 charsiucharlie: STEP 4 - Emitted 'load-section-items' event to parent for section: "${section.sectionName}"`);
     },
+
+    // SEARCH FIX: Wait for lazy loading to complete by watching editableMainSections for stability
+    async waitForLazyLoadingComplete() {
+        console.log('🔍 WAITING: Starting to wait for lazy loading to complete');
+        console.log('🔍 WAITING: Current editableMainSections length:', this.editableMainSections.length);
+        
+        // Take initial snapshot of the data
+        let lastDataSnapshot = JSON.stringify(this.editableMainSections);
+        let stabilityTimer = null;
+        let timeoutTimer = null;
+        let checkInterval = null;
+        
+
+        return new Promise((resolve) => {
+            // Function to check if data has stabilized
+                const checkDataStability = () => {
+                    const currentDataSnapshot = JSON.stringify(this.editableMainSections);
+
+                    // If data has changed, reset the stability timer
+                    if (currentDataSnapshot !== lastDataSnapshot) {
+                        console.log('🔍 WAITING: Data changed, resetting stability timer');
+                        lastDataSnapshot = currentDataSnapshot;
+                        // Clear existing stability timer
+                        if (stabilityTimer) {
+                            clearTimeout(stabilityTimer);
+                        }
+
+                        // Set new stability timer for 100ms
+                        stabilityTimer = setTimeout(() => {
+                            console.log('🔍 WAITING: Data stable for 100ms, proceeding with search');
+                            cleanup();
+                            resolve();
+                        }, 100);
+                    }
+                };    
+
+                // Cleanup function
+                const cleanup = () => {
+                    if (stabilityTimer) clearTimeout(stabilityTimer);
+                    if (timeoutTimer) clearTimeout(timeoutTimer);
+                    if (checkInterval) clearInterval(checkInterval);
+                };
+                // Start checking data stability every 10ms
+                checkInterval = setInterval(checkDataStability, 10);                    
+                      
+                // Initial stability timer (in case data is already stable)
+                stabilityTimer = setTimeout(() => {
+                    console.log('🔍 WAITING: Initial data stable for 100ms, proceeding with search');
+                    cleanup();
+                    resolve();
+                }, 100);
+                
+                // Safety timeout after 3 seconds
+                timeoutTimer = setTimeout(() => {
+                    console.log('🔍 WAITING: Timeout reached, proceeding with search anyway');
+                    cleanup();
+                    resolve();
+                }, 3000);
+            });       
+        },
+
 
     // NEW METHOD: Detect if new section items were added (for lazy loading)
     detectNewSectionItems(newMenu, oldMenu) {
@@ -9884,6 +9981,17 @@ export default {
 </script>
 
 <style scoped>
+
+/* Search spinner positioning */
+.search-spinner {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  margin-top: -0.5rem; /* Center vertically without interfering with rotation */
+  color: #83a9e8;
+  z-index: 10;
+}
+
 /* Collapse indicator chevron animation */
 .collapse-indicator {
   transition: transform 0.3s ease;
