@@ -600,8 +600,8 @@
                             <!-- Subsection Content (Collapsible) -->
                             <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
                                 
-                                <!-- No Subsection Contents to Show -->
-                                <div v-if="!subsection.sectionMenu || subsection.sectionMenu.length == 0" class="col-12 my-3 ms-4">
+                                <!-- No Subsection Contents to Show (with delay) -->
+                                <div v-if="shouldShowNoSubsectionItemsMessage(subsection, menuSection.id)" class="col-12 my-3 ms-4">
                                     <p class="text-center fst-italic m-0">No menu items in this subsection!</p>
                                 </div>
 
@@ -819,8 +819,8 @@
                         </div>
                     </div>
 
-                    <!-- Show message when section has no items and no subsections -->
-                    <div v-if="(!menuSection.sectionMenu || menuSection.sectionMenu.length == 0) && (!menuSection.subsections || menuSection.subsections.length == 0)" class="col-12 my-3">
+                    <!-- Show message when section has no items and no subsections (with delay) -->
+                    <div v-if="shouldShowNoItemsMessage(menuSection)" class="col-12 my-3">
                         <p class="text-center fst-italic m-0">No menu items to show!</p>
                     </div>
 
@@ -2478,6 +2478,37 @@ export default {
         // Jump to Section - Get only visible main sections (excluding hidden sections)
         visibleMainSections() {
             return this.searchMenuResults.filter(section => section.isVisible !== false);
+        },
+
+        // Delay Message Display (Option 4) - Helper method for template
+        shouldShowNoItemsMessage() {
+            return (menuSection) => {
+                const hasNoItems = (!menuSection.sectionMenu || menuSection.sectionMenu.length === 0) && 
+                                  (!menuSection.subsections || menuSection.subsections.length === 0);
+                
+                if (!hasNoItems) return false;
+                
+                const expandTime = this.sectionExpandTimestamps.get(menuSection.id);
+                if (!expandTime) return false;
+                
+                // Use reactive currentTime to trigger re-evaluation
+                return this.currentTime - expandTime > this.noItemsMessageDelay;
+            };
+        },
+
+        shouldShowNoSubsectionItemsMessage() {
+            return (subsection, parentSectionId) => {
+                const hasNoItems = !subsection.sectionMenu || subsection.sectionMenu.length === 0;
+                
+                if (!hasNoItems) return false;
+                
+                const subsectionKey = `${parentSectionId}-${subsection.id}`;
+                const expandTime = this.sectionExpandTimestamps.get(subsectionKey);
+                if (!expandTime) return false;
+                
+                // Use reactive currentTime to trigger re-evaluation
+                return this.currentTime - expandTime > this.noItemsMessageDelay;
+            };
         }        
     },
     data() {
@@ -2669,6 +2700,12 @@ export default {
             enlargedImageDesc: '',
             showFullImageDescription: false,
 
+            // Delay Message Display (Option 4)
+            noItemsMessageDelay: 500, // 0.5 seconds delay
+            sectionExpandTimestamps: new Map(), // Track when sections were expanded
+            currentTime: Date.now(), // Reactive time tracker for computed methods
+            delayMessageTimer: null, // Timer for updating currentTime
+
         }
     },
     watch: {
@@ -2756,7 +2793,18 @@ export default {
                 }
             },
             deep: true
-        }
+        },
+
+        // Watch for selfView changes - auto-expand sections when venue owner loads the page
+        selfView: {
+            handler(newSelfView) {
+                if (newSelfView === true) {
+                    console.log('🍽️ selfView became true, waiting for sections to load before expanding...');
+                    this.waitForSectionsAndExpand();
+                }
+            },
+            immediate: true // Check immediately in case selfView is already true on mount
+        }        
     },
     mounted() {
         console.log('🍽️ VenueMenuTabOriginal: mounted() called');
@@ -2777,11 +2825,25 @@ export default {
         this.$nextTick(() => {
             this.watchersEnabled = true;
         });
+
+        // Setup timer for reactive delay message display
+        this.delayMessageTimer = setInterval(() => {
+            this.currentTime = Date.now();
+        }, 50); // Update every 50ms for smooth timing
+
     },
+
+
+    
     beforeUnmount() {
         // Cleanup: Restore body scroll if sheet was left open
         if (this.showJumpToSheet) {
             document.body.style.overflow = '';
+        }
+
+        // Cleanup: Clear delay message timer
+        if (this.delayMessageTimer) {
+            clearInterval(this.delayMessageTimer);
         }
     },
     methods: {
@@ -3224,6 +3286,73 @@ export default {
         },
 
         // ------- END Progressive Section Expansion Methods ----------------------------------------------------
+
+        // NEW METHOD: Wait for sections to be loaded and then trigger progressive expansion for selfView
+        async waitForSectionsAndExpand() {
+            console.log('🍽️ waitForSectionsAndExpand: Starting to wait for sections...');
+            
+            return new Promise((resolve) => {
+                // Check if sections are already loaded
+                const checkSectionsLoaded = () => {
+                    // Consider sections loaded when editableMainSections is populated
+                    const sectionsReady = this.editableMainSections && 
+                                         Array.isArray(this.editableMainSections) && 
+                                         this.editableMainSections.length > 0;
+                    
+                    if (sectionsReady) {
+                        console.log('🍽️ waitForSectionsAndExpand: Sections loaded! Found', this.editableMainSections.length, 'sections');
+                        console.log('🍽️ waitForSectionsAndExpand: Calling progressivelyExpandAllSections...');
+                        
+                        // Use nextTick to ensure DOM is ready
+                        this.$nextTick(async () => {
+                            try {
+                                await this.progressivelyExpandAllSections();
+                                console.log('🍽️ waitForSectionsAndExpand: Progressive expansion completed!');
+                                resolve();
+                            } catch (error) {
+                                console.error('🍽️ waitForSectionsAndExpand: Error during progressive expansion:', error);
+                                resolve(); // Resolve anyway to avoid hanging
+                            }
+                        });
+                        return true;
+                    }
+                    
+                    console.log('🍽️ waitForSectionsAndExpand: Sections not ready yet...', {
+                        editableMainSectionsExists: !!this.editableMainSections,
+                        isArray: Array.isArray(this.editableMainSections),
+                        length: this.editableMainSections?.length || 0
+                    });
+                    return false;
+                };
+                
+                // If sections are already loaded, expand immediately
+                if (checkSectionsLoaded()) {
+                    return;
+                }
+                
+                // Otherwise, set up polling to check periodically
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max wait time
+                
+                const pollInterval = setInterval(() => {
+                    attempts++;
+                    
+                    if (checkSectionsLoaded()) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        console.warn('🍽️ waitForSectionsAndExpand: Timeout waiting for sections to load');
+                        clearInterval(pollInterval);
+                        resolve(); // Resolve to avoid hanging
+                    }
+                }, 100); // Check every 100ms
+            });
+        },
+
+        // ------- START Review Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
         // Helper method to determine text color based on background color
         getContrastColor(hexcolor) {
@@ -7383,7 +7512,22 @@ export default {
             }
 
             console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
-            
+
+            // Track expansion timestamp for delay message display
+            // For subsections, we need to determine the parent section ID from the target selector
+            let timestampKey = section.id;
+            if (targetSelector && targetSelector.includes('collapseSubSection')) {
+                // This is a subsection - extract parent section info from the DOM hierarchy
+                const parentSection = button.closest('[data-section-index]');
+                if (parentSection) {
+                    const parentSectionData = this.searchMenuResults[parseInt(parentSection.dataset.sectionIndex)];
+                    if (parentSectionData) {
+                        timestampKey = `${parentSectionData.id}-${section.id}`;
+                    }
+                }
+            }
+            this.sectionExpandTimestamps.set(timestampKey, Date.now());
+                        
             // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
             const handleShown = () => {
                 console.log(`🔵 charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
