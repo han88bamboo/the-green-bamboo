@@ -24,7 +24,7 @@ const isGenerating = ref(false)
 const previewUrl = ref(null)
 const error = ref(null)
 
-const { initStage, downloadImage, layer, stage } = useKonvaShare()
+const { initStage, layer, stage } = useKonvaShare()
 const { loadMultipleImages } = useImageLoader()
 
 const templates = {
@@ -108,28 +108,36 @@ const handleDownload = async () => {
   if (!stage.value) return;
 
   try {
-    // 🔹 1. Hide background (any node with class "background")
-    const bgNode = stage.value.findOne('.background');
-    if (bgNode) bgNode.hide();
+    // 🔹 1. Find all background nodes
+    const backgroundNodes = stage.value.find('.background');
 
-    // 🔹 2. Export stage as PNG without background fill
+    // 🔹 2. Hide them before exporting
+    backgroundNodes.forEach(node => node.hide());
+    layer.value.draw(); // Redraw the layer to apply changes
+
+    // 🔹 3. Export stage as PNG with a transparent background
     const dataURL = stage.value.toDataURL({
       mimeType: 'image/png',
       quality: 1,
       pixelRatio: 2,
-      fill: null, // ✅ transparent background
     });
 
-    // 🔹 3. Restore background after export
-    if (bgNode) bgNode.show();
+    // 🔹 4. Restore background after export for the preview
+    backgroundNodes.forEach(node => node.show());
+    layer.value.draw(); // Redraw to restore preview
 
-    // 🔹 4. Trigger download
+    // 🔹 5. Trigger download directly
     const filename = `${props.reviewData.beverage.name
       .replace(/\s+/g, '-')
       .toLowerCase()}-review.png`;
 
-    // 👇 Make sure downloadImage accepts both arguments
-    await downloadImage(filename, dataURL);
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
   } catch (error) {
     console.error('Download failed:', error);
   }

@@ -8,17 +8,19 @@ export const createMinimalTemplate = async (layer, data) => {
   // Safe rating formatting
   const rating = Number(data.review?.rating) || 0;
   const ratingText = rating.toFixed(1);
-  // Background
+
+  // Background - for preview but not for download
   const bg = new Konva.Rect({
     x: 0,
     y: 0,
     width: width,
     height: height * 2,
     fill: "#b0b0b0", // Single solid color instead
+    name: "background", // Tag for hiding
   });
   layer.add(bg);
 
-  // Checkerboard pattern overlay (optional, for that textured look)
+  // Checkerboard pattern overlay - to simulate transparency, but not for download
   const patternSize = 60;
   const cols = Math.ceil(width / patternSize);
   const rows = Math.ceil((height * 2) / patternSize);
@@ -33,6 +35,7 @@ export const createMinimalTemplate = async (layer, data) => {
           height: patternSize,
           fill: "#4f4e4eff", // Lighter gray instead of white
           opacity: 0.6, // More visible
+          name: "background", // Tag for hiding
         });
         layer.add(square);
       }
