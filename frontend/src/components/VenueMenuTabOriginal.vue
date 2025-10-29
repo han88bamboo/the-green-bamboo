@@ -3133,55 +3133,71 @@ export default {
                 console.log('🔍 PROGRESSIVE EXPANSION: Found', mainSections.length, 'main sections to expand');
                 console.log('🔍 PROGRESSIVE EXPANSION: Using search results:', this.searchMenuTerm && this.searchMenuResults.length > 0);
                 
-                // Expand each main section one at a time with 10ms delay - OPTIMIZED for speed
+                // Build a flat list of all sections and subsections to expand
+                const expandableItems = [];
+                
                 for (let i = 0; i < mainSections.length; i++) {
                     const section = mainSections[i];
                     const sectionIndex = i;
                     
-                    console.log(`🔍 PROGRESSIVE EXPANSION: Processing main section ${i + 1}/${mainSections.length}: "${section.sectionName}"`);
+                    // Add main section to the list
+                    expandableItems.push({
+                        type: 'main',
+                        section: section,
+                        sectionIndex: sectionIndex,
+                        id: `collapseMenuSection${sectionIndex}`,
+                        name: section.sectionName
+                    });
                     
-                    // Check if main section is already expanded
-                    const mainSectionExpanded = this.isSectionExpanded(`collapseMenuSection${sectionIndex}`);
-                    console.log(`🔍 PROGRESSIVE EXPANSION: Main section "${section.sectionName}" expanded state:`, mainSectionExpanded);
-                    
-                    // Expand main section if not already expanded
-                    if (!mainSectionExpanded) {
-                        await this.expandSingleSection(section, sectionIndex, 'main');
-                        // Track that this section is expanded
-                        this.expandedSections.add(`collapseMenuSection${sectionIndex}`);
-                    }
-                    
-                    // Now expand all subsections of this main section sequentially with 10ms delay between each - OPTIMIZED
+                    // Add all subsections to the list
                     if (section.subsections && section.subsections.length > 0) {
-                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 10ms delay between each`);
-                        
-                        // Expand each subsection one at a time with 10ms delay - OPTIMIZED
                         for (let subIndex = 0; subIndex < section.subsections.length; subIndex++) {
                             const subsection = section.subsections[subIndex];
-                            const subsectionId = `collapseSubSection${sectionIndex}_${subIndex}`;
-                            const subsectionExpanded = this.isSectionExpanded(subsectionId);
-                            
-                            console.log(`🔍 PROGRESSIVE EXPANSION: Subsection ${subIndex + 1}/${section.subsections.length} "${subsection.sectionName}" expanded state:`, subsectionExpanded);
-                            
-                            if (!subsectionExpanded) {
-                                await this.expandSingleSection(subsection, sectionIndex, 'subsection', subIndex);
-                                // Track that this subsection is expanded
-                                this.expandedSubsections.add(subsectionId);
-                            }
-                            
-                            // 10ms delay before next subsection (but not after the last one) - OPTIMIZED
-                            if (subIndex < section.subsections.length - 1) {
-                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next subsection...');
-                                await new Promise(resolve => setTimeout(resolve, 10));
+                            expandableItems.push({
+                                type: 'subsection',
+                                section: subsection,
+                                sectionIndex: sectionIndex,
+                                subsectionIndex: subIndex,
+                                id: `collapseSubSection${sectionIndex}_${subIndex}`,
+                                name: subsection.sectionName
+                            });
+                        }
+                    }
+                }
+                
+                console.log('🔍 PROGRESSIVE EXPANSION: Built flat list of', expandableItems.length, 'expandable items');
+                
+                // Process items in batches of 5
+                const BATCH_SIZE = 5;
+                for (let batchStart = 0; batchStart < expandableItems.length; batchStart += BATCH_SIZE) {
+                    const batchEnd = Math.min(batchStart + BATCH_SIZE, expandableItems.length);
+                    const batch = expandableItems.slice(batchStart, batchEnd);
+                    
+                    console.log(`🔍 PROGRESSIVE EXPANSION: Processing batch ${Math.floor(batchStart/BATCH_SIZE) + 1}: items ${batchStart + 1}-${batchEnd}`);
+                    
+                    // Expand all items in this batch simultaneously
+                    await Promise.all(batch.map(async (item) => {
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Processing ${item.type} "${item.name}"`);
+                        
+                        // Check if item is already expanded
+                        const isExpanded = this.isSectionExpanded(item.id);
+                        console.log(`🔍 PROGRESSIVE EXPANSION: ${item.type} "${item.name}" expanded state:`, isExpanded);
+                        
+                        // Expand if not already expanded
+                        if (!isExpanded) {
+                            if (item.type === 'main') {
+                                await this.expandSingleSection(item.section, item.sectionIndex, 'main');
+                                this.expandedSections.add(item.id);
+                            } else if (item.type === 'subsection') {
+                                await this.expandSingleSection(item.section, item.sectionIndex, 'subsection', item.subsectionIndex);
+                                this.expandedSubsections.add(item.id);
                             }
                         }
-                        
-                        console.log(`🔍 PROGRESSIVE EXPANSION: All subsections for main section "${section.sectionName}" completed`);
-                    }
+                    }));
                     
-                    // 10ms delay before next main section (but not after the last one) - OPTIMIZED
-                    if (i < mainSections.length - 1) {
-                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next main section...');
+                    // 10ms delay before next batch (but not after the last batch)
+                    if (batchEnd < expandableItems.length) {
+                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next batch...');
                         await new Promise(resolve => setTimeout(resolve, 10));
                     }
                 }
