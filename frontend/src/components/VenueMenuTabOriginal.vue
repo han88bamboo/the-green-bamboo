@@ -39,8 +39,9 @@
                     <div class="mobile-view-hide me-2">
                         <button type="button"
                             class="mobile-view-hide btn tertiary-btn-blue-outline Xprimary-btn-outline-thick rounded-0 reverse-clickable-text"
-                            @click="enableEditMenuMode">
-                            Edit Menu
+                            @click="enableEditMenuMode"
+                            :disabled="editButtonDisabled">
+                            {{ editButtonDisabled ? 'Edit Menu (Disabled: Waiting for menu to load)' : 'Edit Menu' }}
                         </button>
                     </div>
 
@@ -2514,7 +2515,10 @@ export default {
     data() {
         return {
             drag: false,
-            
+
+            // Edit button disabled state for initial 10 seconds
+            editButtonDisabled: true,
+
             // Constants
             VARIANT_DRNK_TYP: ['Wine', 'Champagne', 'Sparkling Wine'],
             defaultPhoto: 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultDrinkImage.png?v=1750084739', // You should replace this with your actual default image path
@@ -2830,6 +2834,11 @@ export default {
         this.delayMessageTimer = setInterval(() => {
             this.currentTime = Date.now();
         }, 50); // Update every 50ms for smooth timing
+
+        // Enable edit button after 10 seconds
+        setTimeout(() => {
+            this.editButtonDisabled = false;
+        }, 10000);
 
     },
 
