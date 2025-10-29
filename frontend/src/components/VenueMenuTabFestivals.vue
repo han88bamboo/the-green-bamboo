@@ -195,6 +195,7 @@
                             class="btn h-100" 
                             type="button"
                             @click="toggleTastedFilter"
+                            :disabled="isTastingFilterLoading"
                             :style="{
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
@@ -209,7 +210,10 @@
                                 paddingX: '0.2rem',
                                 paddingY: '0.2rem'
                             }">
-                            {{ showOnlyTastedItems ? tastedItemsCount + ' Tasted' : 'Tasted' }}
+                            <span v-if="isTastingFilterLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                            <span v-if="isTastingFilterLoading">Loading...</span>
+                            <span v-else-if="showOnlyTastedItems">{{ tastedItemsCount + ' Tasted' }}</span>
+                            <span v-else>Tasted</span>
                         </button>
                     </div>
                 </div>
@@ -3838,6 +3842,9 @@ export default {
                         
             // Search Loading State
             isSearchExpanding: false, // Track when first search is expanding sections
+            
+            // Tasting Filter Loading State
+            isTastingFilterLoading: false, // Track when tasting filter is expanding sections
 
         }
     },
@@ -5663,22 +5670,44 @@ export default {
         // Toggle Tasting Filter
         async toggleTastedFilter() {
             console.log("Toggling tasted filter from:", this.showOnlyTastedItems);
-            this.showOnlyTastedItems = !this.showOnlyTastedItems;
-            console.log("Tasted filter now:", this.showOnlyTastedItems);
             
-            // Re-run search to apply/remove filter (now async)
-            await this.searchMenu();
+            // Set loading state immediately
+            this.isTastingFilterLoading = true;
             
-            // Show toast notification
-            const toast = useToast();
-            if (this.showOnlyTastedItems) {
-                toast.info(`Showing ${this.tastedItemsCount} tasted items`, {
-                    timeout: 2000
-                });
-            } else {
-                toast.info('Showing all items', {
-                    timeout: 2000
-                });
+            try {
+                this.showOnlyTastedItems = !this.showOnlyTastedItems;
+                console.log("Tasted filter now:", this.showOnlyTastedItems);
+                
+                // If we're now showing only tasted items, expand all sections first
+                if (this.showOnlyTastedItems) {
+                    console.log('🥂 TASTING FILTER: Expanding all sections to show tasted items');
+                    
+                    // Step 1: Progressively expand all sections
+                    await this.progressivelyExpandAllSections();
+                    
+                    // Step 2: Wait for any lazy loading to complete
+                    await this.waitForLazyLoadingComplete();
+                    
+                    console.log('🥂 TASTING FILTER: All sections expanded and loaded, applying filter');
+                }
+                
+                // Re-run search to apply/remove filter (now async)
+                await this.searchMenu();
+                
+                // Show toast notification
+                const toast = useToast();
+                if (this.showOnlyTastedItems) {
+                    toast.info(`Showing ${this.tastedItemsCount} tasted items`, {
+                        timeout: 2000
+                    });
+                } else {
+                    toast.info('Showing all items', {
+                        timeout: 2000
+                    });
+                }
+            } finally {
+                // Always clear loading state when done
+                this.isTastingFilterLoading = false;
             }
         },
 
