@@ -5514,21 +5514,45 @@ export default {
                     }
                     
                     // CRITICAL FIX: Update the detailedMenu array to trigger Vue reactivity
-                    // Instead of mutating the section object directly, create a new detailedMenu array
-                    const updatedDetailedMenu = this.detailedMenu.map(s => 
-                        s.id === section.id 
-                            ? { 
-                                ...s, 
+                    // Handle both main sections and subsections
+                    const updatedDetailedMenu = this.detailedMenu.map(mainSection => {
+                        // Check if this is the main section we're updating
+                        if (mainSection.id === section.id) {
+                            return {
+                                ...mainSection,
                                 sectionMenu: transformedItems,
                                 itemsLoaded: true,
                                 isLoading: false
+                            };
+                        }
+                        
+                        // Check if we need to update a subsection within this main section
+                        if (mainSection.subsections && mainSection.subsections.length > 0) {
+                            const hasTargetSubsection = mainSection.subsections.some(sub => sub.id === section.id);
+                            if (hasTargetSubsection) {
+                                return {
+                                    ...mainSection,
+                                    subsections: mainSection.subsections.map(subsection => 
+                                        subsection.id === section.id 
+                                            ? {
+                                                ...subsection,
+                                                sectionMenu: transformedItems,
+                                                itemsLoaded: true,
+                                                isLoading: false
+                                            }
+                                            : subsection
+                                    )
+                                };
                             }
-                            : s
-                    );
+                        }
+                        
+                        // No changes needed for this main section
+                        return mainSection;
+                    });
                     
                     // Update the main detailedMenu to trigger child component watchers
                     this.detailedMenu = updatedDetailedMenu;
-                    console.log(`🔵 charsiucharlie: STEP 5c - Updated detailedMenu array to trigger Vue reactivity`);
+                    console.log(`🔵 charsiucharlie: STEP 5c - Updated detailedMenu array to trigger Vue reactivity for section/subsection: "${section.sectionName}"`);
                     
                     // Also update the passed section object for immediate reference (backward compatibility)
                     section.sectionMenu = transformedItems;
@@ -5539,16 +5563,41 @@ export default {
                     console.log(`🔵 charsiucharlie: No items found for section "${section.sectionName}" - Response:`, itemsResponse.data);
                     
                     // CRITICAL FIX: Update detailedMenu even when no items found
-                    const updatedDetailedMenu = this.detailedMenu.map(s => 
-                        s.id === section.id 
-                            ? { 
-                                ...s, 
+                    // Handle both main sections and subsections
+                    const updatedDetailedMenu = this.detailedMenu.map(mainSection => {
+                        // Check if this is the main section we're updating
+                        if (mainSection.id === section.id) {
+                            return {
+                                ...mainSection,
                                 sectionMenu: [],
                                 itemsLoaded: true,
                                 isLoading: false
+                            };
+                        }
+                        
+                        // Check if we need to update a subsection within this main section
+                        if (mainSection.subsections && mainSection.subsections.length > 0) {
+                            const hasTargetSubsection = mainSection.subsections.some(sub => sub.id === section.id);
+                            if (hasTargetSubsection) {
+                                return {
+                                    ...mainSection,
+                                    subsections: mainSection.subsections.map(subsection => 
+                                        subsection.id === section.id 
+                                            ? {
+                                                ...subsection,
+                                                sectionMenu: [],
+                                                itemsLoaded: true,
+                                                isLoading: false
+                                            }
+                                            : subsection
+                                    )
+                                };
                             }
-                            : s
-                    );
+                        }
+                        
+                        // No changes needed for this main section
+                        return mainSection;
+                    });
                     this.detailedMenu = updatedDetailedMenu;
                     
                     // Also update the passed section object for backward compatibility
@@ -5560,16 +5609,41 @@ export default {
                 console.error(`❌ charsiucharlie: Error loading items for section "${section.sectionName}":`, error);
                 
                 // CRITICAL FIX: Update detailedMenu even on error
-                const updatedDetailedMenu = this.detailedMenu.map(s => 
-                    s.id === section.id 
-                        ? { 
-                            ...s, 
+                // Handle both main sections and subsections
+                const updatedDetailedMenu = this.detailedMenu.map(mainSection => {
+                    // Check if this is the main section we're updating
+                    if (mainSection.id === section.id) {
+                        return {
+                            ...mainSection,
                             sectionMenu: [],
                             itemsLoaded: false,
                             isLoading: false
+                        };
+                    }
+                    
+                    // Check if we need to update a subsection within this main section
+                    if (mainSection.subsections && mainSection.subsections.length > 0) {
+                        const hasTargetSubsection = mainSection.subsections.some(sub => sub.id === section.id);
+                        if (hasTargetSubsection) {
+                            return {
+                                ...mainSection,
+                                subsections: mainSection.subsections.map(subsection => 
+                                    subsection.id === section.id 
+                                        ? {
+                                            ...subsection,
+                                            sectionMenu: [],
+                                            itemsLoaded: false,
+                                            isLoading: false
+                                        }
+                                        : subsection
+                                )
+                            };
                         }
-                        : s
-                );
+                    }
+                    
+                    // No changes needed for this main section
+                    return mainSection;
+                });
                 this.detailedMenu = updatedDetailedMenu;
                 
                 // Also update the passed section object for backward compatibility
@@ -5598,11 +5672,31 @@ export default {
             console.log(`🔵 charsiucharlie: STEP 5a - About to lazy load items for section: "${section.sectionName}"`);
             
             // Set loading state in detailedMenu to trigger reactivity
-            const updatedDetailedMenuForLoading = this.detailedMenu.map(s => 
-                s.id === section.id 
-                    ? { ...s, isLoading: true }
-                    : s
-            );
+            // Handle both main sections and subsections
+            const updatedDetailedMenuForLoading = this.detailedMenu.map(mainSection => {
+                // Check if this is the main section we're updating
+                if (mainSection.id === section.id) {
+                    return { ...mainSection, isLoading: true };
+                }
+                
+                // Check if we need to update a subsection within this main section
+                if (mainSection.subsections && mainSection.subsections.length > 0) {
+                    const hasTargetSubsection = mainSection.subsections.some(sub => sub.id === section.id);
+                    if (hasTargetSubsection) {
+                        return {
+                            ...mainSection,
+                            subsections: mainSection.subsections.map(subsection => 
+                                subsection.id === section.id 
+                                    ? { ...subsection, isLoading: true }
+                                    : subsection
+                            )
+                        };
+                    }
+                }
+                
+                // No changes needed for this main section
+                return mainSection;
+            });
             this.detailedMenu = updatedDetailedMenuForLoading;
             section.isLoading = true; // Also update passed object for immediate reference
             
@@ -5615,16 +5709,41 @@ export default {
                 console.error(`❌ charsiucharlie: Error lazy loading section "${section.sectionName}":`, error);
                 
                 // Handle error state in detailedMenu
-                const updatedDetailedMenuForError = this.detailedMenu.map(s => 
-                    s.id === section.id 
-                        ? { 
-                            ...s, 
+                // Handle both main sections and subsections
+                const updatedDetailedMenuForError = this.detailedMenu.map(mainSection => {
+                    // Check if this is the main section we're updating
+                    if (mainSection.id === section.id) {
+                        return {
+                            ...mainSection,
                             isLoading: false,
                             itemsLoaded: false,
                             sectionMenu: []
+                        };
+                    }
+                    
+                    // Check if we need to update a subsection within this main section
+                    if (mainSection.subsections && mainSection.subsections.length > 0) {
+                        const hasTargetSubsection = mainSection.subsections.some(sub => sub.id === section.id);
+                        if (hasTargetSubsection) {
+                            return {
+                                ...mainSection,
+                                subsections: mainSection.subsections.map(subsection => 
+                                    subsection.id === section.id 
+                                        ? {
+                                            ...subsection,
+                                            isLoading: false,
+                                            itemsLoaded: false,
+                                            sectionMenu: []
+                                        }
+                                        : subsection
+                                )
+                            };
                         }
-                        : s
-                );
+                    }
+                    
+                    // No changes needed for this main section
+                    return mainSection;
+                });
                 this.detailedMenu = updatedDetailedMenuForError;
                 
                 // Also update passed object for backward compatibility

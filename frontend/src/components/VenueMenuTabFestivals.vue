@@ -9799,14 +9799,14 @@ export default {
             const newSection = newMenu[i];
             const oldSection = oldMenu[i];
             
-            // Check if this section got new items
+            // Check if main section got new items
             const newItemCount = newSection.sectionMenu ? newSection.sectionMenu.length : 0;
             const oldItemCount = oldSection.sectionMenu ? oldSection.sectionMenu.length : 0;
             
             if (newItemCount > oldItemCount) {
-                console.log(`🔵 charsiucharlie: NEW ITEMS DETECTED! Section "${newSection.sectionName}" got new items: ${oldItemCount} → ${newItemCount}`);
+                console.log(`🔵 charsiucharlie: NEW ITEMS DETECTED! Main section "${newSection.sectionName}" got new items: ${oldItemCount} → ${newItemCount}`);
                 if (newSection.sectionMenu && newSection.sectionMenu.length > 0) {
-                    console.log(`🔵 charsiucharlie: First new item in "${newSection.sectionName}":`, {
+                    console.log(`🔵 charsiucharlie: First new item in main section "${newSection.sectionName}":`, {
                         itemID: newSection.sectionMenu[0].itemID,
                         itemName: newSection.sectionMenu[0].itemDetails?.itemName || newSection.sectionMenu[0].itemName,
                         itemType: newSection.sectionMenu[0].itemDetails?.itemType || newSection.sectionMenu[0].itemType
@@ -9814,9 +9814,40 @@ export default {
                 }
                 return true;
             }
+            
+            // Check subsections for new items
+            const newSubsections = newSection.subsections || [];
+            const oldSubsections = oldSection.subsections || [];
+            
+            // If subsection count changed, it's a structure change not item addition
+            if (newSubsections.length !== oldSubsections.length) {
+                console.log(`🔵 charsiucharlie: Subsection count changed for "${newSection.sectionName}", not item addition`);
+                continue; // Check next main section
+            }
+            
+            // Check each subsection for new items
+            for (let j = 0; j < newSubsections.length; j++) {
+                const newSubsection = newSubsections[j];
+                const oldSubsection = oldSubsections[j];
+                
+                const newSubItemCount = newSubsection.sectionMenu ? newSubsection.sectionMenu.length : 0;
+                const oldSubItemCount = oldSubsection.sectionMenu ? oldSubsection.sectionMenu.length : 0;
+                
+                if (newSubItemCount > oldSubItemCount) {
+                    console.log(`🔵 charsiucharlie: NEW ITEMS DETECTED! Subsection "${newSubsection.sectionName}" in main section "${newSection.sectionName}" got new items: ${oldSubItemCount} → ${newSubItemCount}`);
+                    if (newSubsection.sectionMenu && newSubsection.sectionMenu.length > 0) {
+                        console.log(`🔵 charsiucharlie: First new item in subsection "${newSubsection.sectionName}":`, {
+                            itemID: newSubsection.sectionMenu[0].itemID,
+                            itemName: newSubsection.sectionMenu[0].itemDetails?.itemName || newSubsection.sectionMenu[0].itemName,
+                            itemType: newSubsection.sectionMenu[0].itemDetails?.itemType || newSubsection.sectionMenu[0].itemType
+                        });
+                    }
+                    return true;
+                }
+            }
         }
         
-        console.log(`🔵 charsiucharlie: No new items detected in any section`);
+        console.log(`🔵 charsiucharlie: No new items detected in any main section or subsection`);
         return false;
     },
 
