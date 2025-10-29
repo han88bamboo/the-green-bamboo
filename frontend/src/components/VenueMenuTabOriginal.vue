@@ -2659,9 +2659,6 @@ export default {
             expandedSections: new Set(), // Track which main sections are expanded
             expandedSubsections: new Set(), // Track which subsections are expanded
             
-            // Lazy Loading Tracking for Search Fix
-            pendingLazyLoads: new Set(), // Track sections waiting for lazy load completion
-            
             // Search Loading State
             isSearchExpanding: false, // Track when first search is expanding sections
 
@@ -2748,12 +2745,14 @@ export default {
             }
         },
         
-        // SEARCH FIX: Watch for changes in editableMainSections to detect lazy loading completion
+        // SEARCH FIX: Watch for changes in editableMainSections - simplified for new approach
         editableMainSections: {
-            handler(newSections, oldSections) {
-                // Only process if we have pending lazy loads and watchers are enabled
-                if (this.pendingLazyLoads.size > 0 && this.watchersEnabled) {
-                    this.detectLazyLoadCompletion(newSections, oldSections);
+            handler(newSections) {
+                // Only process if watchers are enabled (after mount)
+                if (this.watchersEnabled) {
+                    console.log('🔍 WATCHER: editableMainSections changed, length:', newSections?.length || 0);
+                    // The waitForLazyLoadingComplete method will handle the stability detection
+                    // No need for complex tracking here anymore
                 }
             },
             deep: true
@@ -3063,7 +3062,7 @@ export default {
                 console.log('🔍 PROGRESSIVE EXPANSION: Found', mainSections.length, 'main sections to expand');
                 console.log('🔍 PROGRESSIVE EXPANSION: Using search results:', this.searchMenuTerm && this.searchMenuResults.length > 0);
                 
-                // Expand each main section one at a time with 50ms delay
+                // Expand each main section one at a time with 10ms delay - OPTIMIZED for speed
                 for (let i = 0; i < mainSections.length; i++) {
                     const section = mainSections[i];
                     const sectionIndex = i;
@@ -3081,11 +3080,11 @@ export default {
                         this.expandedSections.add(`collapseMenuSection${sectionIndex}`);
                     }
                     
-                    // Now expand all subsections of this main section sequentially with 50ms delay between each
+                    // Now expand all subsections of this main section sequentially with 10ms delay between each - OPTIMIZED
                     if (section.subsections && section.subsections.length > 0) {
-                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 50ms delay between each`);
+                        console.log(`🔍 PROGRESSIVE EXPANSION: Expanding ${section.subsections.length} subsections for main section "${section.sectionName}" with 10ms delay between each`);
                         
-                        // Expand each subsection one at a time with 50ms delay
+                        // Expand each subsection one at a time with 10ms delay - OPTIMIZED
                         for (let subIndex = 0; subIndex < section.subsections.length; subIndex++) {
                             const subsection = section.subsections[subIndex];
                             const subsectionId = `collapseSubSection${sectionIndex}_${subIndex}`;
@@ -3099,20 +3098,20 @@ export default {
                                 this.expandedSubsections.add(subsectionId);
                             }
                             
-                            // 50ms delay before next subsection (but not after the last one)
+                            // 10ms delay before next subsection (but not after the last one) - OPTIMIZED
                             if (subIndex < section.subsections.length - 1) {
-                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next subsection...');
-                                await new Promise(resolve => setTimeout(resolve, 50));
+                                console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next subsection...');
+                                await new Promise(resolve => setTimeout(resolve, 10));
                             }
                         }
                         
                         console.log(`🔍 PROGRESSIVE EXPANSION: All subsections for main section "${section.sectionName}" completed`);
                     }
                     
-                    // 50ms delay before next main section (but not after the last one)
+                    // 10ms delay before next main section (but not after the last one) - OPTIMIZED
                     if (i < mainSections.length - 1) {
-                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 50ms before next main section...');
-                        await new Promise(resolve => setTimeout(resolve, 50));
+                        console.log('🔍 PROGRESSIVE EXPANSION: Waiting 10ms before next main section...');
+                        await new Promise(resolve => setTimeout(resolve, 10));
                     }
                 }
                 
@@ -3193,7 +3192,7 @@ export default {
                         console.log(`🔍 PROGRESSIVE EXPANSION: Timeout reached for ${sectionType} "${section.sectionName}", resolving anyway`);
                         collapseElement.removeEventListener('shown.bs.collapse', handleExpansionComplete);
                         resolve();
-                    }, 1000); // 1 second timeout
+                    }, 500); // 500ms timeout - OPTIMIZED from 1000ms
                     
                     // Clear timeout if event fires normally
                     collapseElement.addEventListener('shown.bs.collapse', () => {
@@ -7385,13 +7384,9 @@ export default {
 
             console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
             
-            // SEARCH FIX: Track this section as pending lazy load
-            this.pendingLazyLoads.add(section.id);
-            console.log(`🔍 LAZY LOAD TRACKING: Added section "${section.sectionName}" to pending loads. Total pending: ${this.pendingLazyLoads.size}`);
-            
             // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
             const handleShown = () => {
-                console.log(`� charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
+                console.log(`🔵 charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
                 this.loadSectionItemsLazy(section);
             };
             
@@ -7415,83 +7410,65 @@ export default {
             console.log(`🔵 charsiucharlie: STEP 4 - Emitted 'load-section-items' event to parent for section: "${section.sectionName}"`);
         },
 
-        // SEARCH FIX: Wait for all lazy loading to complete before proceeding with search
+        // SEARCH FIX: Wait for lazy loading to complete by watching editableMainSections for stability
         async waitForLazyLoadingComplete() {
             console.log('🔍 WAITING: Starting to wait for lazy loading to complete');
-            console.log('🔍 WAITING: Pending lazy loads:', this.pendingLazyLoads.size);
+            console.log('🔍 WAITING: Current editableMainSections length:', this.editableMainSections.length);
             
-            // If no pending loads, resolve immediately
-            if (this.pendingLazyLoads.size === 0) {
-                console.log('🔍 WAITING: No pending lazy loads, proceeding immediately');
-                return Promise.resolve();
-            }
+            // Take initial snapshot of the data
+            let lastDataSnapshot = JSON.stringify(this.editableMainSections);
+            let stabilityTimer = null;
+            let timeoutTimer = null;
+            let checkInterval = null;
             
-            // Wait for all pending loads to complete (with timeout)
             return new Promise((resolve) => {
-                const checkInterval = setInterval(() => {
-                    if (this.pendingLazyLoads.size === 0) {
-                        clearInterval(checkInterval);
-                        console.log('🔍 WAITING: All lazy loads completed, proceeding with search');
-                        resolve();
-                    }
-                }, 50); // Check every 50ms
-                
-                // Timeout after 5 seconds to avoid infinite waiting
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    console.log('🔍 WAITING: Timeout reached, proceeding with search anyway');
-                    resolve();
-                }, 5000);
-            });
-        },
-
-        // SEARCH FIX: Handle when lazy loading completes for a section
-        onSectionItemsLoaded(section) {
-            console.log(`🔍 LAZY LOAD COMPLETE: Section "${section.sectionName}" items loaded`);
-            this.pendingLazyLoads.delete(section.id);
-            console.log('🔍 LAZY LOAD COMPLETE: Remaining pending loads:', this.pendingLazyLoads.size);
-        },
-
-        // SEARCH FIX: Detect lazy loading completion by watching for sections getting populated with items
-        detectLazyLoadCompletion(newSections, oldSections) {
-            if (!newSections || !oldSections || newSections.length !== oldSections.length) {
-                return; // Structure change, not item addition
-            }
-            
-            for (let i = 0; i < newSections.length; i++) {
-                const newSection = newSections[i];
-                const oldSection = oldSections[i];
-                
-                // Check if this section was pending and now has items
-                if (this.pendingLazyLoads.has(newSection.id)) {
-                    const newItemCount = newSection.sectionMenu ? newSection.sectionMenu.length : 0;
-                    const oldItemCount = oldSection.sectionMenu ? oldSection.sectionMenu.length : 0;
+                // Function to check if data has stabilized
+                const checkDataStability = () => {
+                    const currentDataSnapshot = JSON.stringify(this.editableMainSections);
                     
-                    // If section got new items, mark lazy load as complete
-                    if (newItemCount > oldItemCount) {
-                        console.log(`🔍 LAZY LOAD DETECTION: Section "${newSection.sectionName}" got ${newItemCount - oldItemCount} new items`);
-                        this.onSectionItemsLoaded(newSection);
-                    }
-                }
-                
-                // Check subsections too
-                if (newSection.subsections && oldSection.subsections) {
-                    for (let j = 0; j < newSection.subsections.length && j < oldSection.subsections.length; j++) {
-                        const newSubsection = newSection.subsections[j];
-                        const oldSubsection = oldSection.subsections[j];
+                    // If data has changed, reset the stability timer
+                    if (currentDataSnapshot !== lastDataSnapshot) {
+                        console.log('🔍 WAITING: Data changed, resetting stability timer');
+                        lastDataSnapshot = currentDataSnapshot;
                         
-                        if (this.pendingLazyLoads.has(newSubsection.id)) {
-                            const newSubItemCount = newSubsection.sectionMenu ? newSubsection.sectionMenu.length : 0;
-                            const oldSubItemCount = oldSubsection.sectionMenu ? oldSubsection.sectionMenu.length : 0;
-                            
-                            if (newSubItemCount > oldSubItemCount) {
-                                console.log(`🔍 LAZY LOAD DETECTION: Subsection "${newSubsection.sectionName}" got ${newSubItemCount - oldSubItemCount} new items`);
-                                this.onSectionItemsLoaded(newSubsection);
-                            }
+                        // Clear existing stability timer
+                        if (stabilityTimer) {
+                            clearTimeout(stabilityTimer);
                         }
+                        
+                        // Set new stability timer for 100ms
+                        stabilityTimer = setTimeout(() => {
+                            console.log('🔍 WAITING: Data stable for 100ms, proceeding with search');
+                            cleanup();
+                            resolve();
+                        }, 100);
                     }
-                }
-            }
+                };
+                
+                // Cleanup function
+                const cleanup = () => {
+                    if (stabilityTimer) clearTimeout(stabilityTimer);
+                    if (timeoutTimer) clearTimeout(timeoutTimer);
+                    if (checkInterval) clearInterval(checkInterval);
+                };
+                
+                // Start checking data stability every 10ms
+                checkInterval = setInterval(checkDataStability, 10);
+                
+                // Initial stability timer (in case data is already stable)
+                stabilityTimer = setTimeout(() => {
+                    console.log('🔍 WAITING: Initial data stable for 100ms, proceeding with search');
+                    cleanup();
+                    resolve();
+                }, 100);
+                
+                // Safety timeout after 3 seconds
+                timeoutTimer = setTimeout(() => {
+                    console.log('🔍 WAITING: Timeout reached, proceeding with search anyway');
+                    cleanup();
+                    resolve();
+                }, 3000);
+            });
         },
 
         // NEW METHOD: Detect if new section items were added (for lazy loading)
