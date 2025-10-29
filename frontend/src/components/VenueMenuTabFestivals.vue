@@ -4015,6 +4015,17 @@ export default {
                     this.userReviews.clear();
                 }
             }
+        },
+
+        // Watch for selfView changes - auto-expand sections when venue owner loads the page
+        selfView: {
+            handler(newSelfView) {
+                if (newSelfView === true) {
+                    console.log('🍽️ selfView became true, waiting for sections to load before expanding...');
+                    this.waitForSectionsAndExpand();
+                }
+            },
+            immediate: true // Check immediately in case selfView is already true on mount
         }
     },
     mounted() {
@@ -4531,6 +4542,72 @@ export default {
         },
 
         // ------- END Progressive Section Expansion Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+        // NEW METHOD: Wait for sections to be loaded and then trigger progressive expansion for selfView
+        async waitForSectionsAndExpand() {
+            console.log('🍽️ waitForSectionsAndExpand: Starting to wait for sections...');
+            
+            return new Promise((resolve) => {
+                // Check if sections are already loaded
+                const checkSectionsLoaded = () => {
+                    // Consider sections loaded when editableMainSections is populated
+                    const sectionsReady = this.editableMainSections && 
+                                         Array.isArray(this.editableMainSections) && 
+                                         this.editableMainSections.length > 0;
+                    
+                    if (sectionsReady) {
+                        console.log('🍽️ waitForSectionsAndExpand: Sections loaded! Found', this.editableMainSections.length, 'sections');
+                        console.log('🍽️ waitForSectionsAndExpand: Calling progressivelyExpandAllSections...');
+                        
+                        // Use nextTick to ensure DOM is ready
+                        this.$nextTick(async () => {
+                            try {
+                                await this.progressivelyExpandAllSections();
+                                console.log('🍽️ waitForSectionsAndExpand: Progressive expansion completed!');
+                                resolve();
+                            } catch (error) {
+                                console.error('🍽️ waitForSectionsAndExpand: Error during progressive expansion:', error);
+                                resolve(); // Resolve anyway to avoid hanging
+                            }
+                        });
+                        return true;
+                    }
+                    
+                    console.log('🍽️ waitForSectionsAndExpand: Sections not ready yet...', {
+                        editableMainSectionsExists: !!this.editableMainSections,
+                        isArray: Array.isArray(this.editableMainSections),
+                        length: this.editableMainSections?.length || 0
+                    });
+                    return false;
+                };
+                
+                // If sections are already loaded, expand immediately
+                if (checkSectionsLoaded()) {
+                    return;
+                }
+                
+                // Otherwise, set up polling to check periodically
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds max wait time
+                
+                const pollInterval = setInterval(() => {
+                    attempts++;
+                    
+                    if (checkSectionsLoaded()) {
+                        clearInterval(pollInterval);
+                        return;
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        console.warn('🍽️ waitForSectionsAndExpand: Timeout waiting for sections to load');
+                        clearInterval(pollInterval);
+                        resolve(); // Resolve to avoid hanging
+                    }
+                }, 100); // Check every 100ms
+            });
+        },
+
+        // ------- START Review Methods ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         initializeReviewForMenuItem(menuItem) {
             // Set the review target to the menu item's listing ID
