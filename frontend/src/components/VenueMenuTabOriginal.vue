@@ -2659,22 +2659,32 @@ export default {
         // Watch for changes in detailedMenu from parent (for backward compatibility)
         detailedMenu: {
             handler(newMenu, oldMenu) {
+                console.log('🔵 charsiucharlie: STEP 6 - detailedMenu watcher triggered - Parent has updated detailedMenu prop');
+                console.log('🔵 charsiucharlie: New menu length:', newMenu ? newMenu.length : 0);
+                console.log('🔵 charsiucharlie: Old menu length:', oldMenu ? oldMenu.length : 0);
+                
                 // Only trigger if we're not already loading and this is a significant change
                 if (this.isLoading) {
-                    console.log('🍽️ Already loading, skipping detailedMenu change');
+                    console.log('🔵 charsiucharlie: Already loading, skipping detailedMenu change');
+                    return;
+                }
+                
+                // Special check for lazy loading: detect when section items are added
+                const hasNewItems = this.detectNewSectionItems(newMenu, oldMenu);
+                if (hasNewItems) {
+                    console.log('🔵 charsiucharlie: STEP 7 RESULT - Detected new section items from lazy loading, proceeding to update internal state');
+                    this.updateInternalStateFromDetailedMenu(newMenu);
                     return;
                 }
                 
                 // Check for meaningful changes
                 const hasSignificantChange = JSON.stringify(newMenu) !== JSON.stringify(oldMenu);
                 if (!hasSignificantChange) {
-                    console.log('🍽️ No significant change in detailedMenu');
+                    console.log('🔵 charsiucharlie: No significant change in detailedMenu');
                     return;
                 }
                 
-                console.log('🍽️ detailedMenu changed, re-initializing menu data');
-                console.log('🍽️ New menu length:', newMenu ? newMenu.length : 0);
-                console.log('🍽️ Old menu length:', oldMenu ? oldMenu.length : 0);
+                console.log('🔵 charsiucharlie: detailedMenu changed significantly, re-initializing menu data');
                 
                 // Re-run smart initialization to adapt to new data
                 this.initializeMenuData();
@@ -7088,45 +7098,136 @@ export default {
         },
         // NEW METHOD: Handle section expansion and trigger lazy loading
         async handleSectionExpand(section, event) {
-            console.log(`🍽️ Section "${section.sectionName}" was clicked`);
+            console.log(`🔵 charsiucharlie: STEP 1 - handleSectionExpand() called for section: "${section.sectionName}"`);
+            console.log(`🔵 charsiucharlie: Current section state:`, {
+                id: section.id,
+                sectionName: section.sectionName,
+                itemsLoaded: section.itemsLoaded,
+                isLoading: section.isLoading,
+                sectionMenuLength: section.sectionMenu?.length || 0
+            });
             
             if (!event?.currentTarget) {
-                console.warn('⚠️ No currentTarget found in event, cannot proceed');
+                console.warn('⚠️ charsiucharlie: No currentTarget found in event, cannot proceed');
                 return;
             }
             
             const button = event.currentTarget;
             const targetSelector = button.getAttribute('data-bs-target');
             
-            console.log(`🍽️ Target selector: ${targetSelector}`);
+            console.log(`🔵 charsiucharlie: Target selector: ${targetSelector}`);
             
             if (!targetSelector) {
-                console.warn('⚠️ No data-bs-target found on button');
+                console.warn('⚠️ charsiucharlie: No data-bs-target found on button');
                 return;
             }
             
             const targetElement = document.querySelector(targetSelector);
             
             if (!targetElement) {
-                console.warn('⚠️ Target collapse element not found');
+                console.warn('⚠️ charsiucharlie: Target collapse element not found');
                 return;
             }
             
+            // Check if section is already loaded (has items)
+            if (section.sectionMenu && section.sectionMenu.length > 0) {
+                console.log(`🔵 charsiucharlie: Section "${section.sectionName}" already has ${section.sectionMenu.length} items, skipping lazy load`);
+                return;
+            }
+
+            console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
+            
             // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
             const handleShown = () => {
-                console.log(`🚀 Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
+                console.log(`� charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
                 this.loadSectionItemsLazy(section);
             };
             
             // Add one-time event listener for the 'shown.bs.collapse' event
             targetElement.addEventListener('shown.bs.collapse', handleShown, { once: true });
-            console.log(`👂 Added one-time event listener for shown.bs.collapse on section "${section.sectionName}"`);
+            console.log(`👂 charsiucharlie: Added one-time event listener for shown.bs.collapse on section "${section.sectionName}"`);
         },
 
         // NEW METHOD: Communicate with parent to load section items
         async loadSectionItemsLazy(section) {
+            console.log(`🔵 charsiucharlie: STEP 3 - loadSectionItemsLazy called for section: "${section.sectionName}"`);
+            console.log(`🔵 charsiucharlie: Section object before emit:`, {
+                id: section.id,
+                sectionName: section.sectionName,
+                itemsLoaded: section.itemsLoaded,
+                isLoading: section.isLoading,
+                sectionMenuLength: section.sectionMenu?.length
+            });
             // Emit event to parent VenueProfile to load this section's items
             this.$emit('load-section-items', section);
+            console.log(`🔵 charsiucharlie: STEP 4 - Emitted 'load-section-items' event to parent for section: "${section.sectionName}"`);
+        },
+
+        // NEW METHOD: Detect if new section items were added (for lazy loading)
+        detectNewSectionItems(newMenu, oldMenu) {
+            console.log(`🔵 charsiucharlie: STEP 7a - detectNewSectionItems() called to compare old vs new menu`);
+            console.log(`🔵 charsiucharlie: Old menu sections count: ${oldMenu ? oldMenu.length : 0}`);
+            console.log(`🔵 charsiucharlie: New menu sections count: ${newMenu ? newMenu.length : 0}`);
+            
+            if (!newMenu || !oldMenu || newMenu.length !== oldMenu.length) {
+                console.log(`🔵 charsiucharlie: Menu structure changed, not item addition`);
+                return false; // Structure change, not item addition
+            }
+            
+            for (let i = 0; i < newMenu.length; i++) {
+                const newSection = newMenu[i];
+                const oldSection = oldMenu[i];
+                
+                // Check if this section got new items
+                const newItemCount = newSection.sectionMenu ? newSection.sectionMenu.length : 0;
+                const oldItemCount = oldSection.sectionMenu ? oldSection.sectionMenu.length : 0;
+                
+                if (newItemCount > oldItemCount) {
+                    console.log(`🔵 charsiucharlie: NEW ITEMS DETECTED! Section "${newSection.sectionName}" got new items: ${oldItemCount} → ${newItemCount}`);
+                    if (newSection.sectionMenu && newSection.sectionMenu.length > 0) {
+                        console.log(`🔵 charsiucharlie: First new item in "${newSection.sectionName}":`, {
+                            itemID: newSection.sectionMenu[0].itemID,
+                            itemName: newSection.sectionMenu[0].itemDetails?.itemName || newSection.sectionMenu[0].itemName,
+                            itemType: newSection.sectionMenu[0].itemDetails?.itemType || newSection.sectionMenu[0].itemType
+                        });
+                    }
+                    return true;
+                }
+            }
+            
+            console.log(`🔵 charsiucharlie: No new items detected in any section`);
+            return false;
+        },
+
+        // NEW METHOD: Update internal state when detailedMenu gets new items
+        updateInternalStateFromDetailedMenu(newMenu) {
+            console.log(`🔵 charsiucharlie: STEP 7b - updateInternalStateFromDetailedMenu() called`);
+            console.log(`🔵 charsiucharlie: Updating internal state with new menu data`);
+            
+            try {
+                // Update internal structures if they exist
+                if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
+                    // Re-build searchable menu from the updated data
+                    this.searchMenuResults = this.buildSearchableMenu ? this.buildSearchableMenu(newMenu) : newMenu;
+                    console.log(`🔵 charsiucharlie: STEP 8 - Updated searchMenuResults with new items`);
+                }
+                
+                // Update editableMainSections if needed (for edit mode compatibility)
+                if (this.editableMainSections && this.editableMainSections.length > 0) {
+                    // Use existing method if available, otherwise direct assignment
+                    if (this.resetEditableMainSectionsWithHierarchicalData) {
+                        this.resetEditableMainSectionsWithHierarchicalData(newMenu);
+                    } else {
+                        this.editableMainSections = JSON.parse(JSON.stringify(newMenu)); // Deep copy
+                    }
+                    console.log(`🔵 charsiucharlie: STEP 9 - Updated editableMainSections for edit mode compatibility`);
+                }
+                
+                console.log(`🔵 charsiucharlie: STEP 10 - Internal state update completed successfully`);
+                
+            } catch (error) {
+                console.error(`❌ charsiucharlie: Error updating internal state from detailedMenu:`, error);
+            }
         }    
     }
 }

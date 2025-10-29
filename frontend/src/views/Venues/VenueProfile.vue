@@ -5443,15 +5443,23 @@ export default {
 
         // Load menu items for a specific section
         async loadMenuItemsForSection(section) {
+            console.log(`🔵 charsiucharlie: STEP 5b - loadMenuItemsForSection() called - Making API call for section: "${section.sectionName}"`);
+            
             try {
                 // Use the existing getVenueMenu endpoint to get items for this section
                 //const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getVenueMenu/${section.id}`);
-                const itemsResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/getMenuItems/${section.id}`);
+                const apiUrl = `${process.env.VUE_APP_API_URL}/menu/getMenuItems/${section.id}`;
+                console.log(`🔵 charsiucharlie: Making API call to: ${apiUrl}`);
+                
+                const itemsResponse = await this.$axios.get(apiUrl);
+                console.log(`🔵 charsiucharlie: API call completed, response code: ${itemsResponse.data?.code}`);
                 
                 // Backend returns structured response: {code: 200, data: [...items...], pagination: {...}}
                 if (itemsResponse.data && itemsResponse.data.code === 200 && Array.isArray(itemsResponse.data.data)) {
+                    console.log(`🔵 charsiucharlie: API returned ${itemsResponse.data.data.length} raw items`);
+                    
                     // Transform the data to match the expected structure
-                    section.sectionMenu = itemsResponse.data.data.map(item => ({
+                    const transformedItems = itemsResponse.data.data.map(item => ({
                         ...item,
                         itemDetails: {
                             itemName: item.name,
@@ -5486,33 +5494,94 @@ export default {
                     }));
                     
                     // Sort items by itemOrder
-                    section.sectionMenu.sort((a, b) => parseInt(a.itemOrder) - parseInt(b.itemOrder));
-                    console.log(`🍽️ loadMenuItemsForSection: Loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
+                    transformedItems.sort((a, b) => parseInt(a.itemOrder) - parseInt(b.itemOrder));
+                    console.log(`🔵 charsiucharlie: Transformed and sorted ${transformedItems.length} items for section "${section.sectionName}"`);
                     
                     // Debug: Log first item to verify new/staffPick mapping
-                    if (section.sectionMenu.length > 0) {
-                        console.log('🍽️ First item mapped in VenueProfile:', {
-                            itemID: section.sectionMenu[0].itemID,
-                            itemAvailability: section.sectionMenu[0].itemAvailability,
-                            new: section.sectionMenu[0].new,
-                            staffPick: section.sectionMenu[0].staffPick,
-                            itemServingType: section.sectionMenu[0].itemServingType,
-                            servingType: section.sectionMenu[0].servingType
+                    if (transformedItems.length > 0) {
+                        const firstItem = transformedItems[0];
+                        console.log('🔵 charsiucharlie: FIRST MENU ITEM mapped in VenueProfile:', {
+                            itemID: firstItem.itemID,
+                            itemName: firstItem.itemDetails?.itemName,
+                            itemType: firstItem.itemDetails?.itemType,
+                            itemProducer: firstItem.itemDetails?.itemProducer,
+                            itemAvailability: firstItem.itemAvailability,
+                            new: firstItem.new,
+                            staffPick: firstItem.staffPick,
+                            itemServingType: firstItem.itemServingType,
+                            servingType: firstItem.servingType
                         });
                     }
+                    
+                    // CRITICAL FIX: Update the detailedMenu array to trigger Vue reactivity
+                    // Instead of mutating the section object directly, create a new detailedMenu array
+                    const updatedDetailedMenu = this.detailedMenu.map(s => 
+                        s.id === section.id 
+                            ? { 
+                                ...s, 
+                                sectionMenu: transformedItems,
+                                itemsLoaded: true,
+                                isLoading: false
+                            }
+                            : s
+                    );
+                    
+                    // Update the main detailedMenu to trigger child component watchers
+                    this.detailedMenu = updatedDetailedMenu;
+                    console.log(`🔵 charsiucharlie: STEP 5c - Updated detailedMenu array to trigger Vue reactivity`);
+                    
+                    // Also update the passed section object for immediate reference (backward compatibility)
+                    section.sectionMenu = transformedItems;
+                    section.itemsLoaded = true;
+                    section.isLoading = false;
+                    
                 } else {
+                    console.log(`🔵 charsiucharlie: No items found for section "${section.sectionName}" - Response:`, itemsResponse.data);
+                    
+                    // CRITICAL FIX: Update detailedMenu even when no items found
+                    const updatedDetailedMenu = this.detailedMenu.map(s => 
+                        s.id === section.id 
+                            ? { 
+                                ...s, 
+                                sectionMenu: [],
+                                itemsLoaded: true,
+                                isLoading: false
+                            }
+                            : s
+                    );
+                    this.detailedMenu = updatedDetailedMenu;
+                    
+                    // Also update the passed section object for backward compatibility
                     section.sectionMenu = [];
-                    console.log(`🍽️ loadMenuItemsForSection: No items found for section "${section.sectionName}" - Response:`, itemsResponse.data);
+                    section.itemsLoaded = true;
+                    section.isLoading = false;
                 }
             } catch (error) {
-                console.error(`❌ loadMenuItemsForSection: Error loading items for section "${section.sectionName}":`, error);
+                console.error(`❌ charsiucharlie: Error loading items for section "${section.sectionName}":`, error);
+                
+                // CRITICAL FIX: Update detailedMenu even on error
+                const updatedDetailedMenu = this.detailedMenu.map(s => 
+                    s.id === section.id 
+                        ? { 
+                            ...s, 
+                            sectionMenu: [],
+                            itemsLoaded: false,
+                            isLoading: false
+                        }
+                        : s
+                );
+                this.detailedMenu = updatedDetailedMenu;
+                
+                // Also update the passed section object for backward compatibility
                 section.sectionMenu = [];
+                section.itemsLoaded = false;
+                section.isLoading = false;
             }
         },
         // NEW METHOD: Load menu items only when section is expanded
         async loadMenuItemsForSectionLazy(section) {
-            console.log(`🍽️ VenueProfile: loadMenuItemsForSectionLazy received for section: "${section.sectionName}"`);
-            console.log(`🍽️ VenueProfile: Section details:`, {
+            console.log(`🔵 charsiucharlie: STEP 4 RECEIVED - VenueProfile: loadMenuItemsForSectionLazy received event from child for section: "${section.sectionName}"`);
+            console.log(`🔵 charsiucharlie: Section details:`, {
                 id: section.id,
                 sectionName: section.sectionName,
                 itemsLoaded: section.itemsLoaded,
@@ -5522,22 +5591,46 @@ export default {
             
             // Check if already loaded or currently loading
             if (section.itemsLoaded || section.isLoading) {
-                console.log(`🍽️ Section "${section.sectionName}" already loaded or loading, skipping`);
+                console.log(`🔵 charsiucharlie: Section "${section.sectionName}" already loaded or loading, skipping`);
                 return;
             }
             
-            console.log(`🍽️ Lazy loading items for section: "${section.sectionName}"`);
-            section.isLoading = true;
+            console.log(`🔵 charsiucharlie: STEP 5a - About to lazy load items for section: "${section.sectionName}"`);
+            
+            // Set loading state in detailedMenu to trigger reactivity
+            const updatedDetailedMenuForLoading = this.detailedMenu.map(s => 
+                s.id === section.id 
+                    ? { ...s, isLoading: true }
+                    : s
+            );
+            this.detailedMenu = updatedDetailedMenuForLoading;
+            section.isLoading = true; // Also update passed object for immediate reference
             
             try {
-                // Use the existing loadMenuItemsForSection method
+                // Use the existing loadMenuItemsForSection method (it will handle detailedMenu updates)
                 await this.loadMenuItemsForSection(section);
-                section.itemsLoaded = true;
-                console.log(`🍽️ Successfully lazy loaded ${section.sectionMenu.length} items for section "${section.sectionName}"`);
+                console.log(`🔵 charsiucharlie: STEP 5c - Successfully lazy loaded ${section.sectionMenu?.length || 0} items for section "${section.sectionName}"`);
+                console.log(`🔵 charsiucharlie: STEP 5d - detailedMenu has been updated and will trigger watcher in child component`);
             } catch (error) {
-                console.error(`❌ Error lazy loading section "${section.sectionName}":`, error);
-            } finally {
+                console.error(`❌ charsiucharlie: Error lazy loading section "${section.sectionName}":`, error);
+                
+                // Handle error state in detailedMenu
+                const updatedDetailedMenuForError = this.detailedMenu.map(s => 
+                    s.id === section.id 
+                        ? { 
+                            ...s, 
+                            isLoading: false,
+                            itemsLoaded: false,
+                            sectionMenu: []
+                        }
+                        : s
+                );
+                this.detailedMenu = updatedDetailedMenuForError;
+                
+                // Also update passed object for backward compatibility
                 section.isLoading = false;
+                section.itemsLoaded = false;
+                section.sectionMenu = [];
             }
         },
         async loadBottleReviews() {
