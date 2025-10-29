@@ -2157,7 +2157,7 @@
           <div :class="{ 'mt-2': ownProfile }">
             <!-- reviews button -->
             <button
-              class="btn mx-1 fw-bold no-hover"
+              class="btn fw-bold no-hover"
               :class="{
                 'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'reviews',
@@ -2171,7 +2171,7 @@
 
             <!-- cellar button -->
             <button
-              class="btn mx-1 fw-bold no-hover"
+              class="btn fw-bold no-hover"
               :class="{
                 'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'cellar',
@@ -2185,7 +2185,7 @@
 
             <!-- drink list button -->
             <button
-              class="btn mx-1 fw-bold no-hover"
+              class="btn  fw-bold no-hover"
               :class="{
                 'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'lists' || activeTab === 'list' || activeTab === 'producer_lists' || activeTab === 'producer_list' || activeTab === 'venue_lists' || activeTab === 'venue_list',
@@ -2200,7 +2200,7 @@
 
             <!-- My Badges button -->
             <button
-              class="btn mx-1 fw-bold no-hover"
+              class="btn  fw-bold no-hover"
               :class="{
                 'mobile-toggle-button-producer-profile active-toggle-button':
                   activeTab === 'badges',

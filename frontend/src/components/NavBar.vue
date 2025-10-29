@@ -49,7 +49,7 @@
 
           <div class="d-flex align-items-center gap-1" :class="{ 'ms-auto': accType !== '' }">
             <!-- help button -->
-            <div class="me-1" v-if="accType != ''">
+            <div class="me-1 mobile-view-hide" v-if="accType != ''">
               <button type="button" class="btn p-0 help-btn" data-bs-toggle="modal" data-bs-target="#help-modal">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="grey" class="bi bi-question-circle"
                   viewBox="0 0 16 16">
@@ -203,17 +203,12 @@
             <!-- backdrop overlay -->
             <div v-if="showNotifications" class="notification-backdrop" @click="showNotifications = false"></div>
 
-            <!-- profile icon -->
-            <button v-if="onProfile" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
+            <!-- profile icon (hidden when not logged in) -->
+            <button v-if="accType !== ''" type="button" class="btn p-0 me-1" @click="forceLoad(profileURL)">
               <img :src="computedPhoto" style="width: 45px; height: 45px" class="img-border" />
             </button>
 
-            <router-link v-if="!onProfile" :to="profileURL">
-              <button type="button" class="btn p-0 mobile-view-hide">
-                <img :src="computedPhoto" style="width: 45px; height: 45px" class="img-border" />
-              </button>
-            </router-link>
-
+            
 
             <!-- Navigation Button and Dropdown Menu - DESKTOP -->
             <div class="position-relative d-none d-md-block">
@@ -352,7 +347,21 @@
                 </button>
               </div>
 
-              <ul class="list-unstyled ps-4">
+              <!-- profile icon (hidden when not logged in) -->
+              <div class="row d-flex justify-content-between align-items-center">
+              <button v-if="accType !== ''" type="button" class="rounded btn p-0 me-1" @click="forceLoad(profileURL)">
+                <img :src="computedPhoto" style="width: 90px; height: 90px;  border-radius: 50%" class="img-border" />
+                
+              </button>
+              <router-link :to="profileURL" class="fw-bold mt-2" style="text-decoration: none; ">
+               @{{ accUsername }}
+              </router-link>
+              <router-link :to="profileURL" style="text-decoration: none; font-weight: normal">
+                <i>View Profile</i>
+              </router-link>
+              </div>
+
+              <ul class="list-unstyled ps-4 mt-2">
                 <!-- Home -->
                 <li class="drawer-section-title text-start"><router-link to="/"
                     style="text-decoration: none">Home</router-link></li>
@@ -394,10 +403,19 @@
                 </li>
 
                 <!-- Clubs and Events -->
-
-                <li class="drawer-section-title pt-2 text-start">
-                  <router-link to="/clubs/view" style="text-decoration: none">
+                <!-- My Stats (Collapsible) -->
+                <li class="drawer-section-title mt-2 d-flex align-items-center text-start" @click="toggleClubsEvents">
+                  <span>Join Clubs & Events</span>
+                  <span style="margin-left: 8px;">{{ showClubsEvents? '▾' : '▸' }}</span>
+                </li>
+                <li v-show="showClubsEvents" class="text-start">
+                  <router-link to="/clubs/view" style="text-decoration: none; font-weight: normal">
                     {{ accType === 'producer' || accType === 'venue' ? 'Create A Club' : 'Join Clubs' }}
+                  </router-link>
+                </li>
+                <li v-show="showClubsEvents" class="text-start">
+                  <router-link to="/events/view" style="text-decoration: none; font-weight: normal">
+                    {{ accType === 'producer' || accType === 'venue' ? 'Create An Event' : 'Find Events' }}
                   </router-link>
                 </li>
 
@@ -405,19 +423,6 @@
                   <router-link to="/find-lists" style="text-decoration: none">
                     Lists
                   </router-link>
-                </li>
-
-                <li class="drawer-section-title pt-2 text-start">
-                  <router-link to="/events/view" style="text-decoration: none">
-                    {{ accType === 'producer' || accType === 'venue' ? 'Create An Event' : 'Find Events' }}
-                  </router-link>
-                </li>
-
-                <!-- Find Friends option - only for regular users -->
-                <li v-if="accType === 'user'" class="drawer-section-title pt-2 text-start">
-                  <span style="cursor: pointer" data-bs-toggle="modal" data-bs-target="#findFriendsModal">
-                    Find Friends
-                  </span>
                 </li>
 
                 
@@ -462,7 +467,7 @@
 
                 <!-- Auth -->
                 <div v-if="profileURL === '/login'" class=" py-2 text-start"><router-link to="/login"
-                    class="btn primary-btn-less-round-blue fw-bold text-start" style="text-decoration: none;">Sign
+                    class="btn primary-btn-less-round-blue fw-bold text-start" style="text-decoration: none; color: white;">Sign
                     Up</router-link></div>
                 <li v-if="profileURL !== '/login'" class="text-start pt-2 fw-bold"><span @click="logout"
                     style="text-decoration: none">Log Out</span></li>
@@ -843,12 +848,14 @@
           onCreate: false,
           onRequest: false,
           dashboardWord: "",
+          accUsername: "",
           showNotifications: false,
           activeTab: "forYou",
           showDrawer: false,
           showMobileMenu: false,
           showExplore: false,
           showStats: false,
+          showClubsEvents:false,
           showAdmin: false,
           dropdownOpen: false,
 
@@ -929,6 +936,8 @@
       }
 
       const accUsername = localStorage.getItem("88B_accUsername");
+
+      
       
       if (this.accType === "producer") {
         return `/my-cellar/producer/${this.userID}/${accUsername}`;
@@ -951,6 +960,7 @@
           this.userID = localStorage.getItem("88B_accID");
           let accID = localStorage.getItem("88B_accID");
           let accUsername = localStorage.getItem("88B_accUsername");
+          this.accUsername = accUsername || this.accUsername || "";
           let url = `${process.env.VUE_APP_API_URL}/getData/get`;
 
           if (this.accType == "user") {
@@ -1021,6 +1031,11 @@
             const response = await this.$axios.get(url);
             this.photo = response.data["photo"];
 
+            // sync username from the profile payload (fallback to localStorage)
+            this.accUsername = response.data.username || response.data.accUsername || localStorage.getItem("88B_accUsername") || "";
+            // keep localStorage consistent for other parts of the app
+            if (this.accUsername) localStorage.setItem("88B_accUsername", this.accUsername);
+
             if (this.accType == "user") {
               if (response.data.isAdmin) {
                 this.isAdmin = true;
@@ -1056,6 +1071,9 @@
 
         toggleStats() {
           this.showStats = !this.showStats;
+        },
+        toggleClubsEvents() {
+          this.showClubsEvents = !this.showClubsEvents;
         },
 
         toggleAdmin() {
@@ -1448,7 +1466,7 @@
     .drawer-header {
       display: flex;
       justify-content: flex-end;
-      padding: 1rem;
+      padding: 0rem;
     }
 
     .mobile-drawer {
