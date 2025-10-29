@@ -576,7 +576,7 @@
                         <div v-for="(subsection, subIndex) in menuSection.subsections" :key="subsection.id || subIndex" 
                              class="ms-3"
                              :class="{
-                                 'menu-section-hidden': !subsection.isVisible
+                                 'menu-section-hidden': subsection.isVisible === false
                              }">
                             
                             <!-- Subsection Name -->
@@ -3032,9 +3032,13 @@ export default {
             this.isExpandingSections = true;
             
             try {
-                // Get all main sections from editableMainSections
-                const mainSections = this.editableMainSections || [];
+                // Get sections from searchMenuResults if we're in search mode, otherwise use editableMainSections
+                // This ensures the indices match the template rendering
+                const mainSections = (this.searchMenuTerm && this.searchMenuResults.length > 0) 
+                    ? this.searchMenuResults 
+                    : this.editableMainSections || [];
                 console.log('🔍 PROGRESSIVE EXPANSION: Found', mainSections.length, 'main sections to expand');
+                console.log('🔍 PROGRESSIVE EXPANSION: Using search results:', this.searchMenuTerm && this.searchMenuResults.length > 0);
                 
                 // Expand each main section one at a time with 50ms delay
                 for (let i = 0; i < mainSections.length; i++) {
@@ -4334,6 +4338,7 @@ export default {
                                     sectionOrder: subsection.sectionOrder,
                                     parentSectionId: subsection.parentSectionId,
                                     isSubSection: subsection.isSubSection,
+                                    isVisible: subsection.isVisible, // ← Add this line to preserve visibility
                                     sectionMenu: []
                                 };
 
@@ -4368,6 +4373,15 @@ export default {
                         this.searchMenuResults.push(filteredMainSection);
                     }
                 }
+            }
+
+            // If we have search results with subsections, expand them to show the content
+            if (this.searchMenuTerm !== '' && this.searchMenuResults.length > 0) {
+                console.log("🔍 SEARCH EXPANSION: Search completed, expanding sections to show subsection content");
+                // Use setTimeout to allow DOM to update with search results first
+                setTimeout(async () => {
+                    await this.progressivelyExpandAllSections();
+                }, 100);
             }
 
             // Sort search results
