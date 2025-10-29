@@ -179,10 +179,13 @@
         <div class="container" v-if="targetVenue['claimStatus']">
             <div class="row align-items-center mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" class="col-12 p-0">
+                <div v-if="!editMenuMode" class="col-12 p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search menu" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
+                    <!-- Search Loading Spinner -->
+                    <span v-if="isSearchExpanding" class="search-spinner spinner-border spinner-border-sm"
+                        role="status" aria-hidden="true"></span>
                 </div>
 
                 <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
@@ -231,10 +234,13 @@
                 </div>
 
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" class="col-9 p-0">
+                <div v-if="!editMenuMode" class="col-9 p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search menu" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
+                    <!-- Search Loading Spinner -->
+                    <span v-if="isSearchExpanding" class="search-spinner spinner-border spinner-border-sm"
+                        role="status" aria-hidden="true"></span>
                 </div>
 
                 <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
@@ -2652,6 +2658,12 @@ export default {
             expansionQueue: [], // Queue of sections to expand progressively
             expandedSections: new Set(), // Track which main sections are expanded
             expandedSubsections: new Set(), // Track which subsections are expanded
+            
+            // Lazy Loading Tracking for Search Fix
+            pendingLazyLoads: new Set(), // Track sections waiting for lazy load completion
+            
+            // Search Loading State
+            isSearchExpanding: false, // Track when first search is expanding sections
 
             // Image enlargement modal data
             showImageModal: false,
@@ -2734,6 +2746,17 @@ export default {
                     this.initializeMultipleItemsDefaultServingTypes();
                 }
             }
+        },
+        
+        // SEARCH FIX: Watch for changes in editableMainSections to detect lazy loading completion
+        editableMainSections: {
+            handler(newSections, oldSections) {
+                // Only process if we have pending lazy loads and watchers are enabled
+                if (this.pendingLazyLoads.size > 0 && this.watchersEnabled) {
+                    this.detectLazyLoadCompletion(newSections, oldSections);
+                }
+            },
+            deep: true
         }
     },
     mounted() {
@@ -4277,13 +4300,22 @@ export default {
             if (!this.hasPerformedFirstSearch && this.searchMenuTerm !== '') {
                 console.log("🔍 PROGRESSIVE EXPANSION: This is the first search with a term, triggering progressive expansion");
                 
+                // Show loading spinner for first search expansion
+                this.isSearchExpanding = true;
+                
                 // Mark that first search has been performed
                 this.hasPerformedFirstSearch = true;
                 
                 // Trigger progressive expansion of all sections
                 await this.progressivelyExpandAllSections();
                 
-                console.log("🔍 PROGRESSIVE EXPANSION: Expansion completed, proceeding with search");
+                // SEARCH FIX: Wait for lazy loading to complete before proceeding with search
+                await this.waitForLazyLoadingComplete();
+                
+                // Hide loading spinner when expansion and loading complete
+                this.isSearchExpanding = false;
+                
+                console.log("🔍 PROGRESSIVE EXPANSION: Expansion and lazy loading completed, proceeding with search");
             } else if (this.searchMenuTerm === '') {
                 console.log("🔍 PROGRESSIVE EXPANSION: Empty search term, skipping expansion");
             } else {
@@ -7353,6 +7385,10 @@ export default {
 
             console.log(`🔵 charsiucharlie: Section "${section.sectionName}" has no items, proceeding with lazy load`);
             
+            // SEARCH FIX: Track this section as pending lazy load
+            this.pendingLazyLoads.add(section.id);
+            console.log(`🔍 LAZY LOAD TRACKING: Added section "${section.sectionName}" to pending loads. Total pending: ${this.pendingLazyLoads.size}`);
+            
             // Use Bootstrap's 'shown.bs.collapse' event to detect when expansion is complete
             const handleShown = () => {
                 console.log(`� charsiucharlie: STEP 2 - Bootstrap collapse shown event fired - section "${section.sectionName}" fully expanded, loading items...`);
@@ -7377,6 +7413,85 @@ export default {
             // Emit event to parent VenueProfile to load this section's items
             this.$emit('load-section-items', section);
             console.log(`🔵 charsiucharlie: STEP 4 - Emitted 'load-section-items' event to parent for section: "${section.sectionName}"`);
+        },
+
+        // SEARCH FIX: Wait for all lazy loading to complete before proceeding with search
+        async waitForLazyLoadingComplete() {
+            console.log('🔍 WAITING: Starting to wait for lazy loading to complete');
+            console.log('🔍 WAITING: Pending lazy loads:', this.pendingLazyLoads.size);
+            
+            // If no pending loads, resolve immediately
+            if (this.pendingLazyLoads.size === 0) {
+                console.log('🔍 WAITING: No pending lazy loads, proceeding immediately');
+                return Promise.resolve();
+            }
+            
+            // Wait for all pending loads to complete (with timeout)
+            return new Promise((resolve) => {
+                const checkInterval = setInterval(() => {
+                    if (this.pendingLazyLoads.size === 0) {
+                        clearInterval(checkInterval);
+                        console.log('🔍 WAITING: All lazy loads completed, proceeding with search');
+                        resolve();
+                    }
+                }, 50); // Check every 50ms
+                
+                // Timeout after 5 seconds to avoid infinite waiting
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    console.log('🔍 WAITING: Timeout reached, proceeding with search anyway');
+                    resolve();
+                }, 5000);
+            });
+        },
+
+        // SEARCH FIX: Handle when lazy loading completes for a section
+        onSectionItemsLoaded(section) {
+            console.log(`🔍 LAZY LOAD COMPLETE: Section "${section.sectionName}" items loaded`);
+            this.pendingLazyLoads.delete(section.id);
+            console.log('🔍 LAZY LOAD COMPLETE: Remaining pending loads:', this.pendingLazyLoads.size);
+        },
+
+        // SEARCH FIX: Detect lazy loading completion by watching for sections getting populated with items
+        detectLazyLoadCompletion(newSections, oldSections) {
+            if (!newSections || !oldSections || newSections.length !== oldSections.length) {
+                return; // Structure change, not item addition
+            }
+            
+            for (let i = 0; i < newSections.length; i++) {
+                const newSection = newSections[i];
+                const oldSection = oldSections[i];
+                
+                // Check if this section was pending and now has items
+                if (this.pendingLazyLoads.has(newSection.id)) {
+                    const newItemCount = newSection.sectionMenu ? newSection.sectionMenu.length : 0;
+                    const oldItemCount = oldSection.sectionMenu ? oldSection.sectionMenu.length : 0;
+                    
+                    // If section got new items, mark lazy load as complete
+                    if (newItemCount > oldItemCount) {
+                        console.log(`🔍 LAZY LOAD DETECTION: Section "${newSection.sectionName}" got ${newItemCount - oldItemCount} new items`);
+                        this.onSectionItemsLoaded(newSection);
+                    }
+                }
+                
+                // Check subsections too
+                if (newSection.subsections && oldSection.subsections) {
+                    for (let j = 0; j < newSection.subsections.length && j < oldSection.subsections.length; j++) {
+                        const newSubsection = newSection.subsections[j];
+                        const oldSubsection = oldSection.subsections[j];
+                        
+                        if (this.pendingLazyLoads.has(newSubsection.id)) {
+                            const newSubItemCount = newSubsection.sectionMenu ? newSubsection.sectionMenu.length : 0;
+                            const oldSubItemCount = oldSubsection.sectionMenu ? oldSubsection.sectionMenu.length : 0;
+                            
+                            if (newSubItemCount > oldSubItemCount) {
+                                console.log(`🔍 LAZY LOAD DETECTION: Subsection "${newSubsection.sectionName}" got ${newSubItemCount - oldSubItemCount} new items`);
+                                this.onSectionItemsLoaded(newSubsection);
+                            }
+                        }
+                    }
+                }
+            }
         },
 
         // NEW METHOD: Detect if new section items were added (for lazy loading)
@@ -7481,6 +7596,16 @@ export default {
 </script>
 
 <style scoped>
+/* Search spinner positioning */
+.search-spinner {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  margin-top: -0.5rem; /* Center vertically without interfering with rotation */
+  color: #83a9e8;
+  z-index: 10;
+}
+
 /* Collapse indicator chevron animation */
 .collapse-indicator {
   transition: transform 0.3s ease;
