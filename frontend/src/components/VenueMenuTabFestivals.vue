@@ -502,6 +502,7 @@
                                                             @change="toggleTasting(sectionItem, $event)"
                                                             :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
                                                         >
+                                                        <i class="bi bi-bookmark festival-bookmark"></i>
                                                     </div>
                                                 </div>
                                             </div>
@@ -734,6 +735,7 @@
                                                     @change="toggleTasting(sectionItem, $event)"
                                                     :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
                                                 >
+                                                <i class="bi bi-bookmark festival-bookmark"></i>
                                             </div>
                                         </div>
 
@@ -885,6 +887,7 @@
                                                                     @change="toggleTasting(subsectionItem, $event)"
                                                                     :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
                                                                 >
+                                                                <i class="bi bi-bookmark festival-bookmark"></i>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -1086,6 +1089,7 @@
                                                             @change="toggleTasting(subsectionItem, $event)"
                                                             :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
                                                         >
+                                                        <i class="bi bi-bookmark festival-bookmark"></i>
                                                     </div>
                                                 </div>
 
@@ -10207,6 +10211,10 @@ export default {
 
 <style scoped>
 
+.festival-bookmark {
+  color: grey;
+  font-size: 1.5rem; /* Adjust this value */
+}
 /* Search spinner positioning */
 .search-spinner {
   position: absolute;
