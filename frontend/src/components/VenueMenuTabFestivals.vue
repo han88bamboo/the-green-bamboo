@@ -180,7 +180,7 @@
         <div class="container" v-if="targetVenue['claimStatus']">
             <div class="row align-items-stretch mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" class="col-9 p-0 position-relative">
+                <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-9' : 'col-12'" class="p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
@@ -190,7 +190,7 @@
                 </div>
                 
                 <!-- Tasting Filter Toggle Button -->
-                <div v-if="!editMenuMode" class="col-3 pe-0 position-relative">
+                <div v-if="!editMenuMode && isSignedInUser" class="col-3 pe-0 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
