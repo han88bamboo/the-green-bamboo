@@ -1213,12 +1213,12 @@
                 </div>
                 <div v-else class="row mt-4 mobile-mt-1 text-start ">
                     <div class="col-12">
-                        <div v-if="targetVenue.venueDesc.length > 115">
+                        <div v-if="targetVenue.venueDesc.length > 109">
                             <p v-if="!showFullDescription"
                                 class="text-body-secondary fs m-0 mobile-rating-smaller-text-2"
                                 style="white-space: pre-wrap;">
-                                {{ targetVenue["venueDesc"].slice(0, 115) + (targetVenue["venueDesc"].length
-                                > 115 ? '...' : '')}}
+                                {{ targetVenue["venueDesc"].slice(0, 109) + (targetVenue["venueDesc"].length
+                                > 109 ? '...' : '')}}
                                 <a @click="showFullDescription = true" style="font-weight: bold;">(Read
                                     More)</a>
                             </p>
