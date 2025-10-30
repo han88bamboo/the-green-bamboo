@@ -8184,9 +8184,9 @@ button[aria-expanded="true"] .collapse-indicator {
   bottom: 20px;
   right: 20px;
   z-index: 999;
-  background: rgba(242, 153, 74, 0.9); /* Subtle transparent orange */
+  background:  #212529; /* changed from subtle transparent orange  rgba(242, 153, 74, 0.9)*/
   color: white;
-  border: 2px solid rgba(242, 153, 74, 1);
+  border: 2px solid #212529; /* changed from rgba(242, 153, 74, 1) */
   border-radius: 30px;
   padding: 12px 20px;
   font-weight: bold;
