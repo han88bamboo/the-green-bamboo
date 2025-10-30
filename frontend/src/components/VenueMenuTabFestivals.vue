@@ -2569,7 +2569,7 @@
                     class="section-item">
                     <i class="bi bi-chevron-right"></i>
                     {{ section.sectionName }}
-                    <span class="item-count">({{ getSectionItemCount(section) }} items)</span>
+                    <!-- <span class="item-count">({{ getSectionItemCount(section) }} items)</span> -->
                 </div>
             </div>
         </div>
