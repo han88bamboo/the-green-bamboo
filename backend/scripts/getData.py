@@ -6459,6 +6459,81 @@ def getFestivalTastings(user_id, venue_id):
         }), 500
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get festival bookmarks for a specific user and venue
+@blueprint.route("/getFestivalBookmarks/<int:user_id>/<venue_name>", methods=['GET'])
+def getFestivalBookmarks(user_id, venue_name):
+    """
+    Get all bookmarked items for a specific user from their "Favourites from <venue_name>" list.
+    Returns a simple array of itemIDs to allow the frontend to show filled bookmark icons.
+    
+    Args:
+        user_id (int): The ID of the user
+        venue_name (str): The name of the venue (used to find "Favourites from <venue_name>" list)
+        
+    Returns:
+        JSON object with:
+        - bookmarkedItems: Array of itemIDs that the user has bookmarked for this venue
+        - count: Total number of items bookmarked by this user for this venue
+    """
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Find the "Favourites from <venue_name>" list for this user
+            list_name = f"Favourites from {venue_name}"
+            
+            # Query to get the list ID first
+            list_sql = '''
+                SELECT "id" 
+                FROM "usersDrinkLists" 
+                WHERE "userId" = %s AND "listName" = %s
+            '''
+            
+            cursor.execute(list_sql, (user_id, list_name))
+            list_result = cursor.fetchone()
+            
+            if not list_result:
+                # No favourites list found for this venue
+                return jsonify({
+                    'bookmarkedItems': [],
+                    'count': 0,
+                    'userId': user_id,
+                    'venueName': venue_name,
+                    'listName': list_name
+                })
+            
+            list_id = list_result['id']
+            
+            # Query to get all bookmarked itemIDs from this list
+            items_sql = '''
+                SELECT "drinkId" as "itemID"
+                FROM "usersDrinkListItems"
+                WHERE "listId" = %s
+                ORDER BY "addedDate" DESC
+            '''
+            
+            cursor.execute(items_sql, (list_id,))
+            bookmarks = cursor.fetchall()
+            
+            # Extract simple array of itemIDs
+            bookmarked_items = [bookmark['itemID'] for bookmark in bookmarks]
+            
+            return jsonify({
+                'bookmarkedItems': bookmarked_items,
+                'count': len(bookmarked_items),
+                'userId': user_id,
+                'venueName': venue_name,
+                'listName': list_name
+            })
+            
+    except Exception as e:
+        print(f"Error getting festival bookmarks: {str(e)}")
+        return jsonify({
+            'error': 'Failed to retrieve festival bookmarks',
+            'bookmarkedItems': [],
+            'count': 0
+        }), 500
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get aggregated festival tasting analytics for a venue
 @blueprint.route("/getUserFestivalTastedListAggregatedData/<int:venue_id>", methods=['GET'])
 def getUserFestivalTastedListAggregatedData(venue_id):

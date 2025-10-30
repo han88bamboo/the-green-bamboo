@@ -508,11 +508,15 @@
                                                 <!-- Bookmark Icon -->
                                                 <div class="bookmark-container">
                                                     <i 
-                                                        class="bi bi-bookmark festival-bookmark"
-                                                        :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }"
+                                                        :class="[
+                                                            'bi', 
+                                                            isBookmarked(sectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                            'festival-bookmark',
+                                                            { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }
+                                                        ]"
                                                         @click="toggleBookmark(sectionItem, $event)"
                                                         style="cursor: pointer;"
-                                                        :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                        :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : (isBookmarked(sectionItem) ? 'Already in favourites' : 'Add to favourites')"
                                                     ></i>
                                                 </div>                                                
                                             </div>
@@ -746,11 +750,15 @@
                                             <!-- Bookmark Icon -->
                                             <div class="bookmark-container">
                                                 <i 
-                                                    class="bi bi-bookmark festival-bookmark"
-                                                    :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }"
+                                                    :class="[
+                                                        'bi', 
+                                                        isBookmarked(sectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                        'festival-bookmark',
+                                                        { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }
+                                                    ]"
                                                     @click="toggleBookmark(sectionItem, $event)"
                                                     style="cursor: pointer;"
-                                                    :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                    :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : (isBookmarked(sectionItem) ? 'Already in favourites' : 'Add to favourites')"
                                                 ></i>
                                             </div>                                            
                                         </div>
@@ -903,11 +911,15 @@
                                                         <!-- Bookmark Icon -->
                                                         <div class="bookmark-container">
                                                             <i 
-                                                                class="bi bi-bookmark festival-bookmark"
-                                                                :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }"
+                                                                :class="[
+                                                                    'bi', 
+                                                                    isBookmarked(subsectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                                    'festival-bookmark',
+                                                                    { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }
+                                                                ]"
                                                                 @click="toggleBookmark(subsectionItem, $event)"
                                                                 style="cursor: pointer;"
-                                                                :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                                :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : (isBookmarked(subsectionItem) ? 'Already in favourites' : 'Add to favourites')"
                                                             ></i>
                                                         </div>                                                        
                                                     </div>
@@ -1110,11 +1122,15 @@
                                                     <!-- Bookmark Icon -->
                                                     <div class="bookmark-container">
                                                         <i 
-                                                            class="bi bi-bookmark festival-bookmark"
-                                                            :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }"
+                                                            :class="[
+                                                                'bi', 
+                                                                isBookmarked(subsectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                                'festival-bookmark',
+                                                                { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }
+                                                            ]"
                                                             @click="toggleBookmark(subsectionItem, $event)"
                                                             style="cursor: pointer;"
-                                                            :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                            :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : (isBookmarked(subsectionItem) ? 'Already in favourites' : 'Add to favourites')"
                                                         ></i>
                                                     </div>                                                    
                                                 </div>
@@ -3784,6 +3800,7 @@ export default {
             updatingTasting: false,
 
             // Festival Bookmark data
+            userBookmarks: new Map(), // Key: `itemID`, Value: bookmark record (simplified for venue-specific bookmarking)
             bookmarkLoadingItems: new Set(), // Track which items are being bookmarked
 
             // User Reviews Tracker data
@@ -4051,6 +4068,10 @@ export default {
                         console.log('🍽️ Venue changed, reloading tastings for venue:', newVenueId);
                         this.loadUserTastings();
                     }
+                    if (this.currentUserId) {
+                        console.log('🔖 Venue changed, reloading bookmarks for venue:', newVenueId);
+                        this.loadUserBookmarks();
+                    }
                     if (this.isSignedInUser) {
                         console.log('🍽️ Venue changed, reloading reviews for venue:', newVenueId);
                         this.loadUserReviews();
@@ -4067,12 +4088,17 @@ export default {
                         console.log('🍽️ User signed in, loading tastings for user:', newUserId);
                         this.loadUserTastings();
                     }
+                    if (this.currentUserId) {
+                        console.log('🔖 User signed in, loading bookmarks for user:', newUserId);
+                        this.loadUserBookmarks();
+                    }
                     console.log('🍽️ User signed in, loading reviews for user:', newUserId);
                     this.loadUserReviews();
                 } else if (!newUserId) {
-                    // User signed out - clear tastings and reviews
-                    console.log('🍽️ User signed out, clearing tastings and reviews');
+                    // User signed out - clear tastings, bookmarks and reviews
+                    console.log('🍽️ User signed out, clearing tastings, bookmarks and reviews');
                     this.userTastings.clear();
+                    this.userBookmarks.clear();
                     this.userReviews.clear();
                 }
             }
@@ -4128,8 +4154,15 @@ export default {
             } else {
                 console.log('🍽️ NOT loading user tastings. Reasons:');
                 console.log('  - showTastingTracker:', this.showTastingTracker);
-                console.log('  - isSignedInUser:', this.isSignedInUser);
-                console.log('  - selfView:', this.selfView);
+            }
+            
+            // Load user bookmarks if user is signed in
+            if (this.currentUserId) {
+                console.log('🔖 Loading user bookmarks for venue');
+                await this.loadUserBookmarks();
+            } else {
+                console.log('🔖 NOT loading user bookmarks. Reasons:');
+                console.log('  - currentUserId:', this.currentUserId);
             }
 
             // Load user reviews if user is signed in (regardless of tasting tracker)
@@ -8801,6 +8834,23 @@ export default {
             return this.userTastings.get(key);
         },
 
+        // Check if an item is bookmarked
+        isBookmarked(menuItem) {
+            // Use simple itemID as key instead of complex tracking key
+            return this.userBookmarks.has(menuItem.itemID);
+        },
+
+        // Generate bookmark tracking key including venue (kept for loading state tracking)
+        generateBookmarkKey(menuItem) {
+            return this.generateBookmarkTrackingKey(menuItem);
+        },
+
+        // Get bookmark record
+        getBookmarkRecord(menuItem) {
+            // Use simple itemID as key
+            return this.userBookmarks.get(menuItem.itemID);
+        },
+
         // Toggle tasting status when checkbox is clicked
         async toggleTasting(menuItem, event) {
             const isChecked = event.target.checked;
@@ -9027,6 +9077,63 @@ export default {
             }
         },
 
+        // Load user's existing bookmarks for this venue
+        async loadUserBookmarks() {
+            if (!this.currentUserId) {
+                console.log('🔖 Skipping loadUserBookmarks - currentUserId not available');
+                return;
+            }
+
+            const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+            if (!venueName) {
+                console.log('🔖 Skipping loadUserBookmarks - venueName not available');
+                return;
+            }
+
+            try {
+                console.log('🔖 Loading user bookmarks for venue:', venueName, 'user:', this.currentUserId);
+                
+                // Use the new simplified endpoint that returns just itemIDs
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getFestivalBookmarks/${this.currentUserId}/${venueName}`);
+
+                if (response.status === 200 && response.data) {
+                    const responseData = response.data;
+                    console.log('🔖 Raw response data:', responseData);
+                    
+                    // Get the simple array of itemIDs
+                    const bookmarkedItems = responseData.bookmarkedItems || [];
+                    console.log('🔖 Bookmarked itemIDs:', bookmarkedItems);
+                    
+                    // Populate local bookmarks map with simple itemID keys
+                    this.userBookmarks.clear();
+                    bookmarkedItems.forEach(itemID => {
+                        // Use simple itemID as key instead of complex tracking key
+                        this.userBookmarks.set(itemID, {
+                            itemID: itemID,
+                            venueName: venueName,
+                            listName: responseData.listName
+                        });
+                        console.log('🔖 Adding bookmark to map:', itemID);
+                    });
+                    
+                    console.log(`🔖 Loaded ${bookmarkedItems.length} existing bookmarks for venue ${venueName}`);
+                    console.log('🔖 Final userBookmarks Map:', Array.from(this.userBookmarks.entries()));
+                } else {
+                    console.log('🔖 No bookmarks found for this venue');
+                    this.userBookmarks.clear();
+                }
+                
+            } catch (error) {
+                console.error('Error loading user bookmarks:', error);
+                if (error.response?.status === 404) {
+                    console.log('🔖 No bookmarks found (404) - this is normal for first-time users');
+                }
+                // Don't show error to user - this is background loading
+                // Just clear the bookmarks to ensure clean state
+                this.userBookmarks.clear();
+            }
+        },
+
         // Get tasting statistics for current venue
         getTastingStats() {
             if (!this.showTastingTracker) return null;
@@ -9118,8 +9225,8 @@ export default {
 
         // Helper method to generate bookmark tracking key consistently
         generateBookmarkTrackingKey(menuItem) {
-            // Use itemID for bookmark tracking (simpler than tasting tracker)
-            return `${menuItem.itemID}`;
+            // Include venue and variant for proper state tracking
+            return `${menuItem.itemID}-${menuItem.variant || 'default'}-${this.venue_id}`;
         },
 
         // Toggle bookmark status when bookmark icon is clicked
@@ -9200,6 +9307,19 @@ export default {
 
                 if (response.status >= 200 && response.status < 300) {
                     console.log('🔖 Successfully added to favourites:', response.data);
+                    
+                    // Update local bookmark state if newly added
+                    if (response.status === 201 || (response.status === 200 && !response.data.data?.alreadyExists)) {
+                        // Use simple itemID as key for local state consistency
+                        const bookmarkRecord = {
+                            itemID: menuItem.itemID,
+                            venueName: venueName,
+                            listName: listName,
+                            addedAt: new Date().toISOString()
+                        };
+                        this.userBookmarks.set(menuItem.itemID, bookmarkRecord);
+                        console.log('🔖 Updated local bookmark state for itemID:', menuItem.itemID);
+                    }
                     
                     // Show success toast
                     const { useToast } = await import('vue-toastification');
@@ -10360,7 +10480,6 @@ export default {
 
 .festival-bookmark:hover {
   color: #F2994A;
-  transform: scale(1.1);
 }
 
 .festival-bookmark.loading {
