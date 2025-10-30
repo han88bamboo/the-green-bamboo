@@ -3067,7 +3067,7 @@
                     <div class="row">
                       <div class="col-12">
                         <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Min 20 characters"></textarea>
+                          rows="3" placeholder="Share your overall thoughts"></textarea>
                       </div>
                     </div>
 

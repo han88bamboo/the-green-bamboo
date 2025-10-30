@@ -2164,7 +2164,7 @@
                     <div class="row">
                       <div class="col-12">
                         <textarea v-model="reviewDesc" class="form-control auto-resize-textarea" id="reviewTextarea"
-                          rows="3" placeholder="Min 20 characters"></textarea>
+                          rows="3" placeholder="Share your overall thoughts"></textarea>
                       </div>
                     </div>
 
@@ -5642,17 +5642,19 @@ export default {
       // TODO Combine with editReview because using the same variables
 
       // let errorPhrase = "Your completion is incomplete"
+      
       // form validation
-      if (this.reviewDesc.length < 20) {
-        this.reviewDescError =
-          "Character count is less than 20, please write more for a more detailed review.";
-        alert(
-          "Submission has error, please fill in the required fields properly"
-        );
-        return "Submission error";
-      } else {
-        this.reviewDescError = "";
-      }
+      // if (this.reviewDesc.length < 20) {
+      //   this.reviewDescError =
+      //     "Character count is less than 20, please write more for a more detailed review.";
+      //   alert(
+      //     "Submission has error, please fill in the required fields properly"
+      //   );
+      //   return "Submission error";
+      // } else {
+      //   this.reviewDescError = "";
+      // }
+
       if (this.selectedLanguage == "") {
         this.nullSelectedLanguage = true;
         alert(
@@ -5722,15 +5724,17 @@ export default {
     },
 
     editReview() {
-      if (this.reviewDesc.length < 20) {
-        this.reviewDescError =
-          "Character count is less than 20, please write more for a more detailed review.";
-        alert(
-          "Submission has error, please fill in the required fields properly"
-        );
-        this.isSubmittingReview = false;  // Reset loading state on validation error
-        return "Submission error";
-      }
+
+      // if (this.reviewDesc.length < 20) {
+      //   this.reviewDescError =
+      //     "Character count is less than 20, please write more for a more detailed review.";
+      //   alert(
+      //     "Submission has error, please fill in the required fields properly"
+      //   );
+      //   this.isSubmittingReview = false;  // Reset loading state on validation error
+      //   return "Submission error";
+      // }
+
       if (this.selectedLanguage == "") {
         this.nullSelectedLanguage = true;
         alert(
