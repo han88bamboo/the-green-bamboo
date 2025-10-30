@@ -1,16 +1,21 @@
 <template>
   <div class="poll-card-container" :class="{ 'mobile-collapsed': isMobileCollapsed }">
-    <!-- Collapse Header (visible on both mobile and desktop when polls exist) -->
-    <div v-if="polls.length > 0" class="mobile-collapse-header" @click="toggleMobileCollapse">
+    <!-- Collapse Header (visible on both mobile and desktop when polls exist OR user is creator) -->
+    <div v-if="polls.length > 0 || isCreator" class="mobile-collapse-header" @click="toggleMobileCollapse">
       <div class="mobile-header-content">
         <div class="mobile-header-info">
           <h6 class="mobile-poll-title">
             <div class="mobile-poll-title-content">
-              
-              <span class="mobile-poll-text"><i class="bi bi-bar-chart-fill poll-icon"></i><span class="poll-label">Poll:</span> {{ currentPoll.title }}</span>
+              <span class="mobile-poll-text">
+                <i class="bi bi-bar-chart-fill poll-icon"></i>
+                <span class="poll-label">Poll:</span> 
+                <span v-if="polls.length > 0">{{ currentPoll.title }}</span>
+                <span v-else>No polls yet</span>
+              </span>
             </div>
           </h6>
-          <span class="mobile-poll-count">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+          <span class="mobile-poll-count" v-if="polls.length > 0">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+          <span class="mobile-poll-count" v-else>0 polls</span>
         </div>
         <div class="mobile-collapse-icon">
           <svg v-if="isMobileCollapsed" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
@@ -96,8 +101,8 @@
         <div class="poll-status">
           <span v-if="!currentPoll.isActive" class="badge bg-secondary me-2">Closed</span>
           <span v-if="!currentPoll.isVisible" class="badge  me-2" style="background-color:#596269;"><i class="bi bi-eye"></i> Hidden</span>
-          <span v-if="currentPoll.expiresAt" class="badge bg-info me-2" >
-            Expires: {{ formatDate(currentPoll.expiresAt) }}
+          <span v-if="currentPoll.expiresAt" class="badge me-2" :class="getExpirationBadgeClass(currentPoll.expiresAt)">
+            {{ formatRelativeTime(currentPoll.expiresAt) }}
           </span>
         </div>
 
@@ -121,7 +126,7 @@
           
           <!-- Multiple Choice Single Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_single_selection'">
-            <p class="mb-3 mobile-rating-smaller-text-2">Select one option:</p>
+            <p class="mb-3 mobile-rating-smaller-text-2">Select one option, then click 'SUBMIT':</p>
             
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
@@ -306,7 +311,7 @@
 
           <!-- Multiple Choice Multi Selection -->
           <div v-if="currentPoll.questionType === 'multiple_choice_multi_selection'">
-             <p class="mb-3 mobile-rating-smaller-text-2">Select all that apply:</p>
+             <p class="mb-3 mobile-rating-smaller-text-2">Select all that apply, then click 'SUBMIT':</p>
              
             <!-- Voting Interface (only for ordinary users who can vote) -->
             <div v-if="canUserVote" class="poll-voting">
@@ -1581,6 +1586,82 @@ export default {
       if (!dateString) return '';
       const date = new Date(dateString);
       return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    },
+
+    formatRelativeTime(dateString) {
+      if (!dateString) return '';
+      
+      const targetDate = new Date(dateString);
+      const now = new Date();
+      const diffMs = targetDate.getTime() - now.getTime();
+      
+      // If the date is in the past, show "Expired"
+      if (diffMs < 0) {
+        const pastDiffMs = Math.abs(diffMs);
+        const pastMinutes = Math.floor(pastDiffMs / (1000 * 60));
+        const pastHours = Math.floor(pastDiffMs / (1000 * 60 * 60));
+        const pastDays = Math.floor(pastDiffMs / (1000 * 60 * 60 * 24));
+        
+        if (pastDays > 0) {
+          return `Expired ${pastDays} day${pastDays > 1 ? 's' : ''} ago`;
+        } else if (pastHours > 0) {
+          return `Expired ${pastHours} hour${pastHours > 1 ? 's' : ''} ago`;
+        } else if (pastMinutes > 0) {
+          return `Expired ${pastMinutes} minute${pastMinutes > 1 ? 's' : ''} ago`;
+        } else {
+          return 'Expired';
+        }
+      }
+      
+      // Calculate time remaining
+      const minutes = Math.floor(diffMs / (1000 * 60));
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const weeks = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+      const months = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 30));
+      
+      if (months > 0) {
+        return `Expires in ${months} month${months > 1 ? 's' : ''}`;
+      } else if (weeks > 0) {
+        return `Expires in ${weeks} week${weeks > 1 ? 's' : ''}`;
+      } else if (days > 0) {
+        return `Expires in ${days} day${days > 1 ? 's' : ''}`;
+      } else if (hours > 0) {
+        return `Expires in ${hours} hour${hours > 1 ? 's' : ''}`;
+      } else if (minutes > 0) {
+        return `Expires in ${minutes} minute${minutes > 1 ? 's' : ''}`;
+      } else {
+        return 'Expires very soon';
+      }
+    },
+
+    getExpirationBadgeClass(dateString) {
+      if (!dateString) return 'bg-info';
+      
+      const targetDate = new Date(dateString);
+      const now = new Date();
+      const diffMs = targetDate.getTime() - now.getTime();
+      
+      // If expired, show red
+      if (diffMs < 0) {
+        return 'bg-danger';
+      }
+      
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      // If expiring within 1 hour, show red
+      if (hours < 1) {
+        return 'bg-danger';
+      }
+      // If expiring within 24 hours, show orange/warning
+      else if (days < 1) {
+        return 'bg-warning';
+      }
+      // Otherwise, show blue/info
+      else {
+        return 'bg-info';
+      }
     },
 
     formatResponseDate(dateString) {
