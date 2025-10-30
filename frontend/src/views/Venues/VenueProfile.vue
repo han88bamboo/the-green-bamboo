@@ -2312,6 +2312,7 @@
                         @menu-update-error="handleMenuUpdateError"
                         @claim-venue-account="handleClaimVenueAccount"
                         @load-section-items="loadMenuItemsForSectionLazy"
+                        @trigger-signup-popup="manuallyTriggerSignUpPopup"
                     />
 
                     <!-- Debug info for development -->
@@ -5013,6 +5014,12 @@ export default {
                 // Redirect to sign up page
                 this.$router.push('/signup');
             }
+        },
+
+        // Manual trigger for SignUp Popup (called from child components via event)
+        manuallyTriggerSignUpPopup() {
+            this.showSignUpPopup = true;
+            console.log('🎪 Sign up popup manually triggered by button click from child component');
         },
         
         // Load venue type data for dropdowns

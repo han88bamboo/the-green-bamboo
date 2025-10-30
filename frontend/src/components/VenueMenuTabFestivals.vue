@@ -495,7 +495,7 @@
                                                    
                                                     <div class="form-check">
                                                         <input 
-                                                            class="form-check-input tasting-checkbox" 
+                                                            class="form-check-input " 
                                                             type="checkbox" 
                                                             :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
                                                             :checked="isTasted(sectionItem)"
@@ -505,6 +505,13 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div  v-else class="col-6 d-flex justify-content-end">                                                
+                                                <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Scan_to_browse_every_sake_available_at_each_booth_at_your_fingertips_1.png?v=1761818675" 
+                                                    alt="Checkbox icon" 
+                                                    style="width: 30px;"
+                                                    @click="triggerSignUpPopup">   
+                                            </div>
+
                                         </div>
                                         
                                         <!-- Mobile Action Row: Review Buttons -->
@@ -10187,6 +10194,12 @@ export default {
         } catch (error) {
             console.error(`❌ charsiucharlie: Error updating internal state from detailedMenu:`, error);
         }
+    },
+
+    // Manual SignUp Popup trigger method - emits event to parent VenueProfile
+    triggerSignUpPopup() {
+        this.$emit('trigger-signup-popup');
+        console.log('🎪 VenueMenuTabFestivals: Emitting signup popup trigger event to parent');
     }    
     }
 }
