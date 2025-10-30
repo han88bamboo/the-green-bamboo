@@ -215,6 +215,7 @@
                            
                             <template v-else-if="showOnlyTastedItems">
                                 {{ tastedItemsCount }}
+                            </template>
                             <i v-else class="bi bi-check-lg"></i>
                         </button>
                     </div>
