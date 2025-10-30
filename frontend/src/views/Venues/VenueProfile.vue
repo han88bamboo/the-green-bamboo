@@ -1565,7 +1565,7 @@
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 
                 <!-- Poll Card Section (only for logged-in users) -->
-                <div v-if="user_id !== 'defaultUser'" class="row my-3" id="poll-section">
+                <div class="row my-3" id="poll-section">
                     <div class="col-12">
                         <PollCard 
                             :creator-id="targetVenue.id"
@@ -1573,6 +1573,7 @@
                             :current-user-id="user_id === 'defaultUser' ? null : parseInt(user_id)"
                             :current-user-type="userType"
                             :is-creator="selfView"
+                            @trigger-signup-popup="manuallyTriggerSignUpPopup"
                         />
                     </div>
                 </div>

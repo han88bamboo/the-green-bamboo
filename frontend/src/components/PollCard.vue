@@ -1,7 +1,7 @@
 <template>
   <div class="poll-card-container" :class="{ 'mobile-collapsed': isMobileCollapsed }">
-    <!-- Collapse Header (visible on both mobile and desktop when polls exist OR user is creator) -->
-    <div v-if="polls.length > 0 || isCreator" class="mobile-collapse-header" @click="toggleMobileCollapse">
+    <!-- Collapse Header for Logged-in Users (visible when polls exist OR user is creator) -->
+    <div v-if="(polls.length > 0 || isCreator) && currentUserId" class="mobile-collapse-header" @click="toggleMobileCollapse">
       <div class="mobile-header-content">
         <div class="mobile-header-info">
           <h6 class="mobile-poll-title">
@@ -24,6 +24,29 @@
           <svg v-else xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chevron-up" viewBox="0 0 16 16">
             <path fill-rule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
           </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapse Header for Non-Logged-in Users (triggers signup popup) -->
+    <div v-if="(polls.length > 0 || isCreator) && !currentUserId" class="mobile-collapse-header" @click="triggerSignUpPopup">
+      <div class="mobile-header-content">
+        <div class="mobile-header-info">
+          <h6 class="mobile-poll-title">
+            <div class="mobile-poll-title-content">
+              <span class="mobile-poll-text">
+                <i class="bi bi-bar-chart-fill poll-icon"></i>
+                <span class="poll-label">Poll:</span> 
+                <span v-if="polls.length > 0">{{ currentPoll.title }}</span>
+                <span v-else>No polls yet</span>
+              </span>
+            </div>
+          </h6>
+          <span class="mobile-poll-count" v-if="polls.length > 0">{{ currentPollIndex + 1 }} / {{ polls.length }}</span>
+          <span class="mobile-poll-count" v-else>0 polls</span>
+        </div>
+        <div class="mobile-collapse-icon">
+          <i class="bi bi-box-arrow-in-right" style="font-size: 1.2rem; color: #007bff;" title="Sign up to participate"></i>
         </div>
       </div>
     </div>
@@ -1107,6 +1130,12 @@ export default {
     toggleMobileCollapse() {
       this.isMobileCollapsed = !this.isMobileCollapsed;
     },
+
+    // Manual SignUp Popup trigger method - emits event to parent
+    triggerSignUpPopup() {
+      this.$emit('trigger-signup-popup');
+      console.log('🎪 PollCard: Emitting signup popup trigger event to parent');
+    },
     
     // Single Choice Voting
     selectSingleOption(pollId, optionId) {
@@ -2007,6 +2036,7 @@ export default {
 .mobile-collapse-header:hover {
   background-color: #e9ecef;
 }
+
 
 .mobile-header-content {
   display: flex;
