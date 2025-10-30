@@ -4438,13 +4438,14 @@ def getBottleReviewsByVenueId(id):
 
     with db_manager.get_cursor() as cursor:
         # Get bottle reviews where the location field matches the venue ID
+        # Use listing photo as fallback when review photo is NULL or empty
         cursor.execute("""
-            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes"
+            SELECT "reviews".*, "reviewsUserVotes"."upvotes", "reviewsUserVotes"."downvotes",
+                   "listings"."photo" AS "listingPhoto"
             FROM "reviews"
             LEFT JOIN "reviewsUserVotes" ON "reviews"."id" = "reviewsUserVotes"."reviewId"
+            LEFT JOIN "listings" ON "reviews"."reviewTarget" = "listings"."id"
             WHERE "reviews"."location" = %s
-            AND "reviews"."photo" IS NOT NULL
-            AND "reviews"."photo" != ''
             ORDER BY "reviews"."createdDate" DESC
         """, (id,))
 
@@ -4453,8 +4454,16 @@ def getBottleReviewsByVenueId(id):
         if not reviews_data:
             return jsonify([])
         
-        # Format the user votes data similar to venue reviews
+        # Format the user votes data and handle photo fallback logic
         for review in reviews_data:
+            # Use listing photo as fallback if review photo is NULL or empty
+            if not review["photo"] or review["photo"].strip() == "":
+                review["photo"] = review["listingPhoto"]
+            
+            # Remove the temporary listingPhoto field
+            if "listingPhoto" in review:
+                del review["listingPhoto"]
+            
             review["userVotes"] = {
                 "upvotes": review["upvotes"] if review["upvotes"] else [],
                 "downvotes": review["downvotes"] if review["downvotes"] else []
