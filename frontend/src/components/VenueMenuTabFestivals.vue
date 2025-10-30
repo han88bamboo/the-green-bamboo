@@ -510,7 +510,7 @@
                                                     <i 
                                                         :class="[
                                                             'bi', 
-                                                            isBookmarked(sectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                            isBookmarked(sectionItem) ? 'bi-bookmark-fill' : 'bi-bookmark',
                                                             'festival-bookmark',
                                                             { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }
                                                         ]"
@@ -752,7 +752,7 @@
                                                 <i 
                                                     :class="[
                                                         'bi', 
-                                                        isBookmarked(sectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                        isBookmarked(sectionItem) ? 'bi-bookmark-fill' : 'bi-bookmark',
                                                         'festival-bookmark',
                                                         { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }
                                                     ]"
@@ -913,7 +913,7 @@
                                                             <i 
                                                                 :class="[
                                                                     'bi', 
-                                                                    isBookmarked(subsectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                                    isBookmarked(subsectionItem) ? 'bi-bookmark-fill' : 'bi-bookmark',
                                                                     'festival-bookmark',
                                                                     { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }
                                                                 ]"
@@ -1124,7 +1124,7 @@
                                                         <i 
                                                             :class="[
                                                                 'bi', 
-                                                                isBookmarked(subsectionItem) ? 'bi-bookmark-heart' : 'bi-bookmark',
+                                                                isBookmarked(subsectionItem) ? 'bi-bookmark-fill' : 'bi-bookmark',
                                                                 'festival-bookmark',
                                                                 { 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }
                                                             ]"
@@ -10480,12 +10480,18 @@ export default {
 
 .festival-bookmark:hover {
   color: #F2994A;
+  transform: scale(1.1);
 }
 
 .festival-bookmark.loading {
   color: #F2994A;
   opacity: 0.6;
   animation: bookmarkPulse 1.5s ease-in-out infinite;
+}
+
+/* Gold color for bookmarked items (bi-bookmark-heart) */
+.festival-bookmark.bi-bookmark-fill {
+  color: #F2994A;
 }
 
 .bookmark-container {
