@@ -9380,12 +9380,21 @@ export default {
             this.bookmarkLoadingItems.add(itemKey);
             
             try {
-                await this.addToFavourites(menuItem);
+                // Check current bookmark state
+                const isCurrentlyBookmarked = this.isBookmarked(menuItem);
+                
+                if (isCurrentlyBookmarked) {
+                    // Remove from bookmarks
+                    await this.removeFromFavourites(menuItem);
+                } else {
+                    // Add to bookmarks
+                    await this.addToFavourites(menuItem);
+                }
             } catch (error) {
                 console.error('🔖 Error toggling bookmark:', error);
                 const { useToast } = await import('vue-toastification');
                 const toast = useToast();
-                toast.error('Failed to bookmark item. Please try again.');
+                toast.error('Failed to update bookmark. Please try again.');
             } finally {
                 // Remove from loading set
                 this.bookmarkLoadingItems.delete(itemKey);
@@ -9427,18 +9436,16 @@ export default {
                 if (response.status >= 200 && response.status < 300) {
                     console.log('🔖 Successfully added to favourites:', response.data);
                     
-                    // Update local bookmark state if newly added
-                    if (response.status === 201 || (response.status === 200 && !response.data.data?.alreadyExists)) {
-                        // Use simple itemID as key for local state consistency
-                        const bookmarkRecord = {
-                            itemID: menuItem.itemID,
-                            venueName: venueName,
-                            listName: listName,
-                            addedAt: new Date().toISOString()
-                        };
-                        this.userBookmarks.set(menuItem.itemID, bookmarkRecord);
-                        console.log('🔖 Updated local bookmark state for itemID:', menuItem.itemID);
-                    }
+                    // Update local bookmark state for both new additions and existing items
+                    // This handles cases where local state might be out of sync
+                    const bookmarkRecord = {
+                        itemID: menuItem.itemID,
+                        venueName: venueName,
+                        listName: listName,
+                        addedAt: new Date().toISOString()
+                    };
+                    this.userBookmarks.set(menuItem.itemID, bookmarkRecord);
+                    console.log('🔖 Updated local bookmark state for itemID:', menuItem.itemID);
                     
                     // Show success toast
                     const { useToast } = await import('vue-toastification');
@@ -9459,6 +9466,76 @@ export default {
                 
             } catch (error) {
                 console.error('🔖 Error adding to favourites:', error);
+                
+                // Re-throw for handling in toggleBookmark
+                throw error;
+            }
+        },
+
+        // Remove item from "Favourites from <Venue Name>" list
+        async removeFromFavourites(menuItem) {
+            const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+            const listName = `Favourites from ${venueName}`;
+            
+            const payload = {
+                userId: this.currentUserId,
+                listName: listName,
+                drinkId: menuItem.itemID
+            };
+
+            // Debug logging to verify payload format
+            console.log('🔖 REMOVE FROM FAVOURITES - Payload being sent:', {
+                userId: payload.userId,
+                listName: payload.listName,
+                drinkId: payload.drinkId,
+                menuItemName: menuItem.listingName || menuItem.name || 'Unknown',
+                venueName: venueName,
+                finalPayloadString: JSON.stringify(payload)
+            });
+
+            try {
+                const response = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/editProfile/removeFromFestivalFavouriteList`,
+                    payload,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.status >= 200 && response.status < 300) {
+                    console.log('🔖 Successfully removed from favourites:', response.data);
+                    
+                    // Update local bookmark state - remove from local state
+                    this.userBookmarks.delete(menuItem.itemID);
+                    console.log('🔖 Updated local bookmark state - removed itemID:', menuItem.itemID);
+                    
+                    // Show success toast
+                    const { useToast } = await import('vue-toastification');
+                    const toast = useToast();
+                    
+                    const itemName = menuItem.listingName || menuItem.name || 'Drink';
+                    toast.success(`${itemName} has been removed from your Favourites list!`);
+                    
+                } else {
+                    throw new Error(`Unexpected response status: ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('🔖 Error removing from favourites:', error);
+                
+                // Handle 404 errors specifically (item not found)
+                if (error.response && error.response.status === 404) {
+                    // Still remove from local state in case of sync issues
+                    this.userBookmarks.delete(menuItem.itemID);
+                    console.log('🔖 Item not found on server, removed from local state anyway');
+                    
+                    const { useToast } = await import('vue-toastification');
+                    const toast = useToast();
+                    toast.info('Item was not in your favourites list');
+                    return; // Don't re-throw for 404s
+                }
                 
                 // Re-throw for handling in toggleBookmark
                 throw error;

@@ -63,18 +63,112 @@ def editDetails():
 
         except Exception as e:
             print(str(e))
-            return jsonify(
-                {
-                    "code": 500,
+            return jsonify({
+                "code": 500,
+                "data": {
+                    "userID": userID,
+                    "drinkChoice": drinkChoice if 'drinkChoice' in locals() else None,
+                    "flavourTag": flavourTag if 'flavourTag' in locals() else None
+                },
+                "message": "An error occurred updating user preferences."
+            }), 500
+
+@blueprint.route('/removeFromFestivalFavouriteList', methods=['POST'])
+def remove_from_festival_favourite_list():
+    """Remove drink from festival favourites list"""
+    data = request.get_json()
+    userID = int(data['userId'])
+    listName = data['listName'] 
+    drinkId = int(data['drinkId'])
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Find the favourites list
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s',
+                (userID, listName)
+            )
+            
+            existing_list = cursor.fetchone()
+            
+            if not existing_list:
+                return jsonify({
+                    "code": 404,
                     "data": {
-                        "userID": userID,
-                        "drinkChoice": data["drinkChoice"],
-                        "flavourTag": data["flavourTag"],
-                        "observationTags": data["observationTags"]
+                        "listName": listName,
+                        "drinkId": drinkId,
+                        "found": False
                     },
-                    "message": "An error occurred updating the image or drink choice."
-                }
-            ), 500
+                    "message": "Favourites list not found."
+                }), 404
+            
+            list_id = existing_list['id']
+            
+            # Check if the drink is in the list
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
+                (list_id, drinkId)
+            )
+            
+            existing_item = cursor.fetchone()
+            
+            if not existing_item:
+                return jsonify({
+                    "code": 404,
+                    "data": {
+                        "listName": listName,
+                        "drinkId": drinkId,
+                        "found": False
+                    },
+                    "message": "Drink not found in your favourites list."
+                }), 404
+            
+            # Remove the drink from the list
+            cursor.execute(
+                'DELETE FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
+                (list_id, drinkId)
+            )
+            
+            # Check if the list is now empty
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM "usersDrinkListItems" WHERE "listId" = %s',
+                (list_id,)
+            )
+            
+            remaining_items = cursor.fetchone()['count']
+            list_deleted = False
+            
+            # Optionally delete the empty list (uncomment if desired)
+            # if remaining_items == 0:
+            #     cursor.execute(
+            #         'DELETE FROM "usersDrinkLists" WHERE "id" = %s',
+            #         (list_id,)
+            #     )
+            #     list_deleted = True
+            
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "listName": listName,
+                    "drinkId": drinkId,
+                    "listId": list_id,
+                    "remainingItems": remaining_items,
+                    "listDeleted": list_deleted
+                },
+                "message": "Drink has been removed from your favourites list!"
+            }), 200
+        
+    except Exception as e:
+        print("Remove from festival favourites error:", str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userId": userID,
+                "listName": listName,
+                "drinkId": drinkId
+            },
+            "message": "An error occurred removing the drink from favourites."
+        }), 500
 
 # -----------------------------------------------------------------------------------------
 # [POST] Update user producer bookmark
@@ -943,4 +1037,105 @@ def create_and_add_to_festival_favourite_list():
                 "drinkId": drinkId
             },
             "message": "An error occurred adding the drink to favourites."
+        }), 500
+
+# -----------------------------------------------------------------------------------------
+# [POST] Remove from festival favourites list
+# - Remove drink from "Favourites from <Venue Name>" list
+# - Possible return codes: 200 (Removed), 404 (Not found), 500 (Error)
+@blueprint.route('/removeFromFestivalFavouriteList', methods=['POST'])
+def remove_from_festival_favourite_list():
+    """Remove drink from festival favourites list"""
+    data = request.get_json()
+    userID = int(data['userId'])
+    listName = data['listName'] 
+    drinkId = int(data['drinkId'])
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Find the favourites list
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s',
+                (userID, listName)
+            )
+            
+            existing_list = cursor.fetchone()
+            
+            if not existing_list:
+                return jsonify({
+                    "code": 404,
+                    "data": {
+                        "listName": listName,
+                        "drinkId": drinkId,
+                        "found": False
+                    },
+                    "message": "Favourites list not found."
+                }), 404
+            
+            list_id = existing_list['id']
+            
+            # Check if the drink is in the list
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
+                (list_id, drinkId)
+            )
+            
+            existing_item = cursor.fetchone()
+            
+            if not existing_item:
+                return jsonify({
+                    "code": 404,
+                    "data": {
+                        "listName": listName,
+                        "drinkId": drinkId,
+                        "found": False
+                    },
+                    "message": "Drink not found in your favourites list."
+                }), 404
+            
+            # Remove the drink from the list
+            cursor.execute(
+                'DELETE FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
+                (list_id, drinkId)
+            )
+            
+            # Check if the list is now empty
+            cursor.execute(
+                'SELECT COUNT(*) as count FROM "usersDrinkListItems" WHERE "listId" = %s',
+                (list_id,)
+            )
+            
+            remaining_items = cursor.fetchone()['count']
+            list_deleted = False
+            
+            # Optionally delete the empty list (uncomment if desired)
+            # if remaining_items == 0:
+            #     cursor.execute(
+            #         'DELETE FROM "usersDrinkLists" WHERE "id" = %s',
+            #         (list_id,)
+            #     )
+            #     list_deleted = True
+            
+            return jsonify({
+                "code": 200,
+                "data": {
+                    "listName": listName,
+                    "drinkId": drinkId,
+                    "listId": list_id,
+                    "remainingItems": remaining_items,
+                    "listDeleted": list_deleted
+                },
+                "message": "Drink has been removed from your favourites list!"
+            }), 200
+        
+    except Exception as e:
+        print("Remove from festival favourites error:", str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userId": userID,
+                "listName": listName,
+                "drinkId": drinkId
+            },
+            "message": "An error occurred removing the drink from favourites."
         }), 500
