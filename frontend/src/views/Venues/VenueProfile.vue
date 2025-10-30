@@ -3199,7 +3199,7 @@
 
                     <!-- ------- END Q & A / Events Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                     <!-- Events Details -->
-                    <div class="col-xl-12 col-lg-3 col-md-6 col-12">
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-mt-4">
                         <EventBox :selfView="selfView" :targetUserID="targetVenue.id" targetUserType="venue" />
                     </div>
                     <!-- Map View -->

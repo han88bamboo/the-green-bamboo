@@ -19,7 +19,12 @@
             <div class="popup-content">
                 <!-- Header -->
                 <!--<h2 class="popup-title">Track All Your Favourite Drinks on Drink-X. Completely Free!</h2>-->
-                <h2 class="popup-title">{{ welcomeMessage }}<br><span style="color:#337D25;">Sign up for Drink-X free and track each drink you've tasted here!</span></h2>
+                <h2 class="popup-title mb-2" style="color:#f0b358">
+                    {{ welcomeMessage }}
+                </h2>
+                <h3 class="fw-bold mb-2" style="color:black;">
+                    Sign up for Drink-X to start collecting every drink you taste!
+                </h3>
                 <!-- Tagline -->
                 <!-- <p class="popup-tagline">
                     See what others say about the event's drinks, rate drinks you've tasted & track them on your personal cellar system!
@@ -84,7 +89,7 @@ export default {
         },
         welcomeMessage() {
             if (this.venueId === 109) {
-                return 'Welcome to Sake Matsuri 2025 (11th Ed)🍶🎆!';
+                return 'Welcome to Sake Matsuri 2025 🍶!';
             }
             if (this.venueId === 99) {
                 return 'Welcome to Whisky Live Singapore 2025!';
