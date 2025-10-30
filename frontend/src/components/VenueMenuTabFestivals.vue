@@ -442,9 +442,9 @@
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
 
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                                <p class="fw-bold mobile-fs-6 fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
-                                                    {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                                <p class="fw-bold mobile-fs-6 fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
+                                                    <span style="text-decoration: none;">{{ getSectionItemNumber(menuSection, sectionItem) }}</span>{{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link> 
                                                     <!-- Flavor Tags - Comma separated -->
@@ -617,9 +617,9 @@
 
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
-                                                <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style="overflow:hidden;text-overflow: ellipsis;">
-                                                    {{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                                <p class="fw-bold fs-5 text-start m-0" style="overflow:hidden;text-overflow: ellipsis;">
+                                                    <span style="text-decoration: none;">{{ getSectionItemNumber(menuSection, sectionItem) }}</span>{{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
                                             </router-link>
                                                             
@@ -814,9 +814,9 @@
                                             <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                        <p class="fw-bold mobile-fs-6 fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
-                                                            {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }"  style="text-decoration: none;">
+                                                        <p class="fw-bold mobile-fs-6 fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
+                                                            <span style="text-decoration: none;">{{ getSubsectionItemNumber(subsection, subsectionItem) }}</span>{{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
                                                         </p>
                                                     </router-link>
 
@@ -969,9 +969,9 @@
                                             <div class="col-lg-8 col-12 ps-lg-4">
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
-                                                        <p class="fw-bold fs-5 text-start text-decoration-underline m-0" style=" overflow:hidden;text-overflow: ellipsis;">
-                                                            {{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                                        <p class="fw-bold fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
+                                                            <span style="text-decoration: none;">{{ getSubsectionItemNumber(subsection, subsectionItem) }}</span>{{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
                                                         </p>
                                                     </router-link>
 
@@ -1343,8 +1343,8 @@
                                                 <div class="col-lg-10 col-12 ps-3 mobile-col-7 mobile-pe-0 mobile-ps-1">
                                                     <div class="row">
                                                         <div class="col-12 mobile-pe-0">
-                                                            <p class="mobile-fs-6 fs-5 fw-bold text-start text-decoration-underline m-0" style="margin-bottom:0.3rem;">
-                                                                {{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
+                                                            <p class="mobile-fs-6 fs-5 fw-bold text-start  m-0" style="margin-bottom:0.3rem;">
+                                                                <span style="text-decoration: none;">{{ getSectionItemNumber(menuSection, menuItem) }}</span>{{ menuItem.itemDetails['itemName'] }} {{ menuItem.itemVintage ? ' [' + menuItem.itemVintage + ' Vintage]' : '' }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -3570,6 +3570,23 @@ export default {
             }
             
             return count;
+        },
+
+        // Menu item numbering helpers
+        getSectionItemNumber() {
+            return (menuSection, sectionItem) => {
+                if (!menuSection.sectionMenu) return '';
+                const index = menuSection.sectionMenu.findIndex(item => item.itemID === sectionItem.itemID);
+                return index !== -1 ? `${index + 1}. ` : '';
+            };
+        },
+
+        getSubsectionItemNumber() {
+            return (subsection, subsectionItem) => {
+                if (!subsection.sectionMenu) return '';
+                const index = subsection.sectionMenu.findIndex(item => item.itemID === subsectionItem.itemID);
+                return index !== -1 ? `${index + 1}. ` : '';
+            };
         },
 
         // Jump to Section - Get only visible main sections (excluding hidden sections)
