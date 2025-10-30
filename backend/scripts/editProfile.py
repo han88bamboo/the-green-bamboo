@@ -342,7 +342,7 @@ def updateBookmark():
                 # Process PublicList badge based on net list changes
                 net_list_change = num_lists_to_add_count - num_lists_to_delete_count
                 if net_list_change != 0:
-                    badge_result = badge_helpers.process_public_list_badge(cursor, userID, net_list_change)
+                    badge_result = badge_helpers.process_public_list_badge(cursor.connection, cursor, userID, net_list_change)
 
             cursor.execute('SELECT username FROM users WHERE id = %s', (userID,))
             user_row = cursor.fetchone()
