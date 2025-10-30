@@ -180,7 +180,7 @@
         <div class="container" v-if="targetVenue['claimStatus']">
             <div class="row align-items-stretch mobile-view-show">
                 <!-- Search Bar -->
-                <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-9' : 'col-12'" class="p-0 position-relative">
+                <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-8' : 'col-12'" class="p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
                         @keyup.enter="searchMenu">
@@ -190,7 +190,7 @@
                 </div>
                 
                 <!-- Tasting Filter Toggle Button -->
-                <div v-if="!editMenuMode && isSignedInUser" class="col-3 pe-0 position-relative">
+                <div v-if="!editMenuMode && isSignedInUser" class="col-2 pe-1 position-relative">
                     <div class="d-grid gap-2 h-100">
                         <button 
                             class="btn h-100" 
@@ -212,9 +212,42 @@
                                 paddingY: '0.2rem'
                             }">
                             <span v-if="isTastingFilterLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                            <span v-if="isTastingFilterLoading">Loading...</span>
-                            <span v-else-if="showOnlyTastedItems">{{ tastedItemsCount + ' Tasted' }}</span>
-                            <span v-else>Tasted</span>
+                           
+                            <template v-else-if="showOnlyTastedItems">
+                                {{ tastedItemsCount }}
+                            <i v-else class="bi bi-check-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bookmark Filter Toggle Button -->
+                <div v-if="!editMenuMode && isSignedInUser" class="col-2 ps-1 position-relative">
+                    <div class="d-grid gap-2 h-100">
+                        <button 
+                            class="btn h-100" 
+                            type="button"
+                            @click="toggleBookmarkFilter"
+                            :disabled="isBookmarkFilterLoading"
+                            :style="{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                backgroundColor: showOnlyBookmarkedItems ? 'white' : '#F2994A',
+                                borderColor: '#F2994A',
+                                borderWidth: showOnlyBookmarkedItems ? '3px' : '1px',
+                                borderStyle: 'solid',
+                                color: showOnlyBookmarkedItems ? '#F2994A' : 'white',
+                                fontWeight: 'bold',
+                                fontSize: '0.8rem',
+                                paddingX: '0.2rem',
+                                paddingY: '0.2rem'
+                            }">
+                            <span v-if="isBookmarkFilterLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                           
+                            <template v-else-if="showOnlyBookmarkedItems">
+                                {{ bookmarkedItemsCount }}
+                            </template>
+                            <i v-else class="bi bi-bookmark-fill"></i>
                         </button>
                     </div>
                 </div>
@@ -3625,6 +3658,39 @@ export default {
             return count;
         },
 
+        // Bookmark filter computed property - counts bookmarked items in current search results
+        bookmarkedItemsCount() {
+            let count = 0;
+            
+            // Helper function to count bookmarked items recursively
+            const countBookmarkedInSection = (section) => {
+                // Count direct items in this section
+                if (section.sectionMenu && Array.isArray(section.sectionMenu)) {
+                    section.sectionMenu.forEach(item => {
+                        if (this.isBookmarked(item)) {
+                            count++;
+                        }
+                    });
+                }
+                
+                // Count items in subsections
+                if (section.subsections && Array.isArray(section.subsections)) {
+                    section.subsections.forEach(subsection => {
+                        countBookmarkedInSection(subsection);
+                    });
+                }
+            };
+            
+            // Count across all search results
+            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
+                this.searchMenuResults.forEach(section => {
+                    countBookmarkedInSection(section);
+                });
+            }
+            
+            return count;
+        },
+
         // Menu item numbering helpers
         getSectionItemNumber() {
             return (menuSection, sectionItem) => {
@@ -3954,6 +4020,10 @@ export default {
             
             // Tasting Filter Loading State
             isTastingFilterLoading: false, // Track when tasting filter is expanding sections
+
+            // Bookmark Filter
+            showOnlyBookmarkedItems: false,
+            isBookmarkFilterLoading: false, // Track when bookmark filter is expanding sections
 
             // Delay Message Display (Option 4)
             noItemsMessageDelay: 500, // 0.5 seconds delay
@@ -5739,6 +5809,7 @@ export default {
             console.log("🔍 SEARCH DEBUG: Starting search");
             console.log("🔍 Search term:", this.searchMenuTerm);
             console.log("🔍 Tasting filter active:", this.showOnlyTastedItems);
+            console.log("🔍 Bookmark filter active:", this.showOnlyBookmarkedItems);
             console.log("🔍 editableMainSections:", this.editableMainSections);
             console.log("🔍 editableMainSections length:", this.editableMainSections.length);
             console.log("🔍 Current searchMenuResults:", this.searchMenuResults);
@@ -5775,8 +5846,8 @@ export default {
             }
             
             // Proceed with normal search logic
-            if (this.searchMenuTerm == '' && !this.showOnlyTastedItems) {
-                // If empty search and no tasting filter, show all sections and subsections from current editable structure
+            if (this.searchMenuTerm == '' && !this.showOnlyTastedItems && !this.showOnlyBookmarkedItems) {
+                // If empty search and no filters active, show all sections and subsections from current editable structure
                 console.log("🔍 Using editableMainSections for empty search");
                 this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
             } else {
@@ -5813,9 +5884,11 @@ export default {
                                 let matchesSearch = !this.searchMenuTerm || this.itemMatchesSearch(menuItem);
                                 // Check tasting filter
                                 let matchesTasting = !this.showOnlyTastedItems || this.isTasted(menuItem);
+                                // Check bookmark filter
+                                let matchesBookmark = !this.showOnlyBookmarkedItems || this.isBookmarked(menuItem);
                                 
-                                // Include item only if it passes both filters
-                                if (matchesSearch && matchesTasting) {
+                                // Include item only if it passes all filters
+                                if (matchesSearch && matchesTasting && matchesBookmark) {
                                     filteredMainSection.sectionMenu.push(menuItem);
                                 }
                             }
@@ -5837,8 +5910,8 @@ export default {
                             // Check if subsection name matches (using fuzzy matching)
                             let subsectionMatches = this.searchMenuTerm ? this.fuzzyMatch(this.searchMenuTerm, subsection.sectionName) : true;
                             
-                            if (subsectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems) {
-                                // If subsection matches and no tasting filter, include all its items
+                            if (subsectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems && !this.showOnlyBookmarkedItems) {
+                                // If subsection matches and no filtering, include all its items
                                 filteredSubsection.sectionMenu = [...subsection.sectionMenu];
                                 filteredMainSection.subsections.push(filteredSubsection);
                             } else {
@@ -5848,9 +5921,11 @@ export default {
                                     let matchesSearch = !this.searchMenuTerm || this.itemMatchesSearch(menuItem);
                                     // Check tasting filter
                                     let matchesTasting = !this.showOnlyTastedItems || this.isTasted(menuItem);
+                                    // Check bookmark filter
+                                    let matchesBookmark = !this.showOnlyBookmarkedItems || this.isBookmarked(menuItem);
                                     
-                                    // Include item only if it passes both filters
-                                    if (matchesSearch && matchesTasting) {
+                                    // Include item only if it passes all filters
+                                    if (matchesSearch && matchesTasting && matchesBookmark) {
                                         filteredSubsection.sectionMenu.push(menuItem);
                                     }
                                 }
@@ -5949,6 +6024,49 @@ export default {
             } finally {
                 // Always clear loading state when done
                 this.isTastingFilterLoading = false;
+            }
+        },
+
+        async toggleBookmarkFilter() {
+            console.log("Toggling bookmark filter from:", this.showOnlyBookmarkedItems);
+            
+            // Set loading state immediately
+            this.isBookmarkFilterLoading = true;
+            
+            try {
+                this.showOnlyBookmarkedItems = !this.showOnlyBookmarkedItems;
+                console.log("Bookmark filter now:", this.showOnlyBookmarkedItems);
+                
+                // If we're now showing only bookmarked items, expand all sections first
+                if (this.showOnlyBookmarkedItems) {
+                    console.log('🔖 BOOKMARK FILTER: Expanding all sections to show bookmarked items');
+                    
+                    // Step 1: Progressively expand all sections
+                    await this.progressivelyExpandAllSections();
+                    
+                    // Step 2: Wait for any lazy loading to complete
+                    await this.waitForLazyLoadingComplete();
+                    
+                    console.log('🔖 BOOKMARK FILTER: All sections expanded and loaded, applying filter');
+                }
+                
+                // Re-run search to apply/remove filter (now async)
+                await this.searchMenu();
+                
+                // Show toast notification
+                const toast = useToast();
+                if (this.showOnlyBookmarkedItems) {
+                    toast.info(`Showing ${this.bookmarkedItemsCount} bookmarked items`, {
+                        timeout: 2000
+                    });
+                } else {
+                    toast.info('Showing all items', {
+                        timeout: 2000
+                    });
+                }
+            } finally {
+                // Always clear loading state when done
+                this.isBookmarkFilterLoading = false;
             }
         },
 
