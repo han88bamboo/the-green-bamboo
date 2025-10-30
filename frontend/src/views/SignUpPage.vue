@@ -552,7 +552,7 @@ export default {
       errorMessage: false,
       duplicateEntry: false,
       fillForm: true,
-      responseCode: "",
+      reviewResponseCode: "",
       loginError: false,
       flavourTags: [], // Store the flavour tags from database
       observationTags: [], // Store the observation tags from database
@@ -1102,6 +1102,17 @@ export default {
           localStorage.setItem("88B_accType", "user");
           localStorage.setItem("88B_accUsername", response.data["username"]);
 
+          // Check for stored redirect URL from venue signup
+          const redirectUrl = sessionStorage.getItem('88B_postSignupRedirectUrl');
+          if (redirectUrl) {
+            console.log('🔗 Found stored redirect URL, redirecting to:', redirectUrl);
+            // Remove the stored URL to prevent future unintended redirects
+            sessionStorage.removeItem('88B_postSignupRedirectUrl');
+            // Redirect to the stored venue page URL
+            window.location.href = redirectUrl;
+            return;
+          }
+
           //   this.$router.push({
           //     name: "profileuser",
           //     params: {
@@ -1110,6 +1121,7 @@ export default {
           //     },
           //   });
 
+          // Default redirect to user profile if no stored redirect URL
           this.$router.push(`/profile/user/${userID}/${accUsername}`);
         }
       } catch (error) {

@@ -4945,6 +4945,18 @@ export default {
             shouldTriggerSignUpPopup: this.shouldTriggerSignUpPopup
         });
 
+        // Store current URL for post-signup redirect if this is a target venue (99 or 109) and user is not signed in
+        if (this.shouldTriggerSignUpPopup) {
+            const currentUrl = window.location.href;
+            const existingStoredUrl = sessionStorage.getItem('88B_postSignupRedirectUrl');
+            
+            // Only store if not already stored or if it's different
+            if (!existingStoredUrl || existingStoredUrl !== currentUrl) {
+                sessionStorage.setItem('88B_postSignupRedirectUrl', currentUrl);
+                console.log('🔗 Stored current venue URL for potential post-signup redirect (mounted):', currentUrl);
+            }
+        }
+
         var userName = localStorage.getItem("88B_accUsername");
         if (userName !== null) {
             this.userName = userName;
@@ -4994,6 +5006,11 @@ export default {
         // Sign Up Popup Methods for Festival Pages
         triggerSignUpPopup() {
             if (this.shouldTriggerSignUpPopup) {
+                // Store the current venue page URL for post-signup redirect
+                const currentUrl = window.location.href;
+                sessionStorage.setItem('88B_postSignupRedirectUrl', currentUrl);
+                console.log('🔗 Stored current venue URL for post-signup redirect:', currentUrl);
+                
                 setTimeout(() => {
                     this.showSignUpPopup = true;
                     this.signUpPopupTriggered = true;
@@ -5012,6 +5029,11 @@ export default {
                 localStorage.setItem('88B_signupEmail', this.signUpEmail.trim());
                 console.log('📧 Sign up email stored in localStorage with key 88B_signupEmail:', this.signUpEmail.trim());
                 
+                // Store the current venue page URL for post-signup redirect
+                const currentUrl = window.location.href;
+                sessionStorage.setItem('88B_postSignupRedirectUrl', currentUrl);
+                console.log('🔗 Stored current venue URL for post-signup redirect:', currentUrl);
+                
                 // Redirect to sign up page
                 this.$router.push('/signup');
             }
@@ -5019,6 +5041,11 @@ export default {
 
         // Manual trigger for SignUp Popup (called from child components via event)
         manuallyTriggerSignUpPopup() {
+            // Store the current venue page URL for post-signup redirect
+            const currentUrl = window.location.href;
+            sessionStorage.setItem('88B_postSignupRedirectUrl', currentUrl);
+            console.log('🔗 Stored current venue URL for post-signup redirect (manual trigger):', currentUrl);
+            
             this.showSignUpPopup = true;
             console.log('🎪 Sign up popup manually triggered by button click from child component');
         },

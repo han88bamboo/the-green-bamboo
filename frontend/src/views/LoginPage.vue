@@ -657,7 +657,18 @@ export default {
     },
 
     redirectPage() {
-      // Redirect for selected roles
+      // Check for stored redirect URL from venue signup
+      const redirectUrl = sessionStorage.getItem('88B_postSignupRedirectUrl');
+      if (redirectUrl) {
+        console.log('🔗 Found stored redirect URL, redirecting to:', redirectUrl);
+        // Remove the stored URL to prevent future unintended redirects
+        sessionStorage.removeItem('88B_postSignupRedirectUrl');
+        // Redirect to the stored venue page URL
+        window.location.href = redirectUrl;
+        return;
+      }
+
+      // Redirect for selected roles (default behavior)
 
       // [TODO] change to correct page and use router pushing
       // this.$router.push({path: '/Users/Bottle-Listings'})
