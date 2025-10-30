@@ -862,3 +862,85 @@ def remove_upvote():
             "code": 500,
             "message": "An error occurred removing the upvote."
         }), 500
+
+# -----------------------------------------------------------------------------------------
+# [POST] Create and add to festival favourites list
+# - Check if "Favourites from <Venue Name>" list exists, create if needed, and add drink
+# - Possible return codes: 200 (Already exists), 201 (Added), 500 (Error)
+@blueprint.route('/createAndAddToFestivalFavouriteList', methods=['POST'])
+def create_and_add_to_festival_favourite_list():
+    """Create favourites list if needed and add drink to it"""
+    data = request.get_json()
+    userID = int(data['userId'])
+    listName = data['listName'] 
+    drinkId = int(data['drinkId'])
+    
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Check if the favourites list already exists
+            cursor.execute(
+                'SELECT "id" FROM "usersDrinkLists" WHERE "userId" = %s AND "listName" = %s',
+                (userID, listName)
+            )
+            
+            existing_list = cursor.fetchone()
+            
+            if existing_list:
+                list_id = existing_list['id']
+                
+                # Check if the drink is already in the list
+                cursor.execute(
+                    'SELECT "id" FROM "usersDrinkListItems" WHERE "listId" = %s AND "drinkId" = %s',
+                    (list_id, drinkId)
+                )
+                
+                existing_item = cursor.fetchone()
+                
+                if existing_item:
+                    return jsonify({
+                        "code": 200,
+                        "data": {
+                            "listName": listName,
+                            "drinkId": drinkId,
+                            "alreadyExists": True
+                        },
+                        "message": "Drink is already in your favourites list."
+                    }), 200
+                    
+            else:
+                # Create the favourites list
+                list_desc = "Drinks you bookmarked at this event"
+                cursor.execute(
+                    'INSERT INTO "usersDrinkLists" ("userId", "listName", "listDesc", "isPublic") VALUES (%s, %s, %s, %s) RETURNING "id"',
+                    (userID, listName, list_desc, True)  # Default to public
+                )
+                list_id = cursor.fetchone()["id"]
+            
+            # Add the drink to the list
+            cursor.execute(
+                'INSERT INTO "usersDrinkListItems" ("listId", "drinkId", "addedDate") VALUES (%s, %s, NOW())',
+                (list_id, drinkId)
+            )
+            
+            return jsonify({
+                "code": 201,
+                "data": {
+                    "listName": listName,
+                    "drinkId": drinkId,
+                    "listId": list_id,
+                    "alreadyExists": False
+                },
+                "message": "Drink has been added to your favourites list!"
+            }), 201
+        
+    except Exception as e:
+        print("Create and add to festival favourites error:", str(e))
+        return jsonify({
+            "code": 500,
+            "data": {
+                "userId": userID,
+                "listName": listName,
+                "drinkId": drinkId
+            },
+            "message": "An error occurred adding the drink to favourites."
+        }), 500

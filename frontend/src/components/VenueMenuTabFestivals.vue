@@ -489,22 +489,32 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- Right Column: Tasting Tracker -->
-                                            <div class="col-6 d-flex justify-content-end" v-if="showTastingTracker">
-                                                <div class=" tasting-tracker">
-                                                   
+                                            <!-- Right Column: Tasting Tracker & Bookmark -->
+                                            <div class="col-6 d-flex justify-content-end align-items-center gap-2" v-if="showTastingTracker">
+                                                <!-- Tasting Tracker -->
+                                                <div class="tasting-tracker">
                                                     <div class="form-check">
                                                         <input 
-                                                            class="form-check-input " 
+                                                            class="form-check-input" 
                                                             type="checkbox" 
                                                             :id="`tasting-mobile-${generateTrackingKey(sectionItem)}`"
                                                             :checked="isTasted(sectionItem)"
                                                             @change="toggleTasting(sectionItem, $event)"
                                                             :disabled="tastingLoadingItems.has(generateTrackingKey(sectionItem))"
                                                         >
-                                                        <i class="bi bi-bookmark festival-bookmark"></i>
                                                     </div>
                                                 </div>
+
+                                                <!-- Bookmark Icon -->
+                                                <div class="bookmark-container">
+                                                    <i 
+                                                        class="bi bi-bookmark festival-bookmark"
+                                                        :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }"
+                                                        @click="toggleBookmark(sectionItem, $event)"
+                                                        style="cursor: pointer;"
+                                                        :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                    ></i>
+                                                </div>                                                
                                             </div>
                                             <div  v-else class="col-6 d-flex justify-content-end">                                                
                                                 <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/Scan_to_browse_every_sake_available_at_each_booth_at_your_fingertips_1.png?v=1761818675" 
@@ -718,25 +728,31 @@
                                     <!-- RIGHT COLUMN (Rating + Reviews) -->
                                     <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
                                         
-                                        <!-- Festival Tasting Tracker -->
-                                        <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                            <div class="form-check justify-content-end">
-                                                <!-- <label 
-                                                    class="form-check-label tasting-label" 
-                                                    :for="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                    <span class="tasted-text" v-if="isTasted(sectionItem)">✓ Tasted</span>
-                                                    <span class="not-tasted-text" v-else>Tasted?</span>
-                                                </label> -->
-                                                <input 
-                                                    class="form-check-input tasting-checkbox" 
-                                                    type="checkbox" 
-                                                    :id="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`"
-                                                    :checked="isTasted(sectionItem)"
-                                                    @change="toggleTasting(sectionItem, $event)"
-                                                    :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
-                                                >
-                                                <i class="bi bi-bookmark festival-bookmark"></i>
+                                        <!-- Festival Tasting Tracker & Bookmark -->
+                                        <div class="d-flex justify-content-end align-items-center gap-3 mt-2" v-if="showTastingTracker">                                            
+                                            <!-- Tasting Tracker -->
+                                            <div class="tasting-tracker">
+                                                <div class="form-check">
+                                                    <input 
+                                                        class="form-check-input tasting-checkbox" 
+                                                        type="checkbox" 
+                                                        :id="`tasting-${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                        :checked="isTasted(sectionItem)"
+                                                        @change="toggleTasting(sectionItem, $event)"
+                                                        :disabled="tastingLoadingItems.has(`${sectionItem.itemID}-${sectionItem.variant || sectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                    >
+                                                </div>
                                             </div>
+                                            <!-- Bookmark Icon -->
+                                            <div class="bookmark-container">
+                                                <i 
+                                                    class="bi bi-bookmark festival-bookmark"
+                                                    :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) }"
+                                                    @click="toggleBookmark(sectionItem, $event)"
+                                                    style="cursor: pointer;"
+                                                    :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(sectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                ></i>
+                                            </div>                                            
                                         </div>
 
                                         <!-- Item Rating -->
@@ -870,15 +886,10 @@
                                                     </div>
                                                     
                                                     <!-- Right Column: Tasting Tracker -->
-                                                    <div class="col-4 d-flex justify-content-end" v-if="showTastingTracker">
+                                                    <div class="col-4 d-flex justify-content-end align-items-center gap-2" v-if="showTastingTracker">
+                                                        <!-- Tasting Tracker -->
                                                         <div class="tasting-tracker">
                                                             <div class="form-check">
-                                                                <!-- <label 
-                                                                    class="form-check-label tasting-label" 
-                                                                    :for="`tasting-mobile-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                                    <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                                    <span class="not-tasted-text" v-else>Tasted?</span>
-                                                                </label> -->
                                                                 <input 
                                                                     class="form-check-input tasting-checkbox" 
                                                                     type="checkbox" 
@@ -887,9 +898,18 @@
                                                                     @change="toggleTasting(subsectionItem, $event)"
                                                                     :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
                                                                 >
-                                                                <i class="bi bi-bookmark festival-bookmark"></i>
                                                             </div>
                                                         </div>
+                                                        <!-- Bookmark Icon -->
+                                                        <div class="bookmark-container">
+                                                            <i 
+                                                                class="bi bi-bookmark festival-bookmark"
+                                                                :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }"
+                                                                @click="toggleBookmark(subsectionItem, $event)"
+                                                                style="cursor: pointer;"
+                                                                :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                            ></i>
+                                                        </div>                                                        
                                                     </div>
                                                 </div>
                                                 
@@ -1072,25 +1092,31 @@
                                             <!-- RIGHT COLUMN (Rating + Reviews) -->
                                             <div class="col-lg-2 col-12 d-flex flex-column align-items-end mb-4">
                                                 
-                                                <!-- Festival Tasting Tracker -->
-                                                <div class="tasting-tracker mt-2" v-if="showTastingTracker">
-                                                    <div class="form-check justify-content-end">
-                                                        <!-- <label 
-                                                            class="form-check-label tasting-label" 
-                                                            :for="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`">
-                                                            <span class="tasted-text" v-if="isTasted(subsectionItem)">✓ Tasted</span>
-                                                            <span class="not-tasted-text" v-else>Tasted?</span>
-                                                        </label> -->
-                                                        <input 
-                                                            class="form-check-input tasting-checkbox" 
-                                                            type="checkbox" 
-                                                            :id="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
-                                                            :checked="isTasted(subsectionItem)"
-                                                            @change="toggleTasting(subsectionItem, $event)"
-                                                            :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
-                                                        >
-                                                        <i class="bi bi-bookmark festival-bookmark"></i>
+                                                <!-- Festival Tasting Tracker & Bookmark -->
+                                                <div class="d-flex justify-content-end align-items-center gap-3 mt-2" v-if="showTastingTracker">
+                                                    <!-- Tasting Tracker -->
+                                                    <div class="tasting-tracker">
+                                                        <div class="form-check">
+                                                            <input 
+                                                                class="form-check-input tasting-checkbox" 
+                                                                type="checkbox" 
+                                                                :id="`tasting-sub-${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`"
+                                                                :checked="isTasted(subsectionItem)"
+                                                                @change="toggleTasting(subsectionItem, $event)"
+                                                                :disabled="tastingLoadingItems.has(`${subsectionItem.itemID}-${subsectionItem.variant || subsectionItem.itemVintage || 'default'}-${targetVenue.id}`)"
+                                                            >
+                                                        </div>
                                                     </div>
+                                                    <!-- Bookmark Icon -->
+                                                    <div class="bookmark-container">
+                                                        <i 
+                                                            class="bi bi-bookmark festival-bookmark"
+                                                            :class="{ 'loading': bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) }"
+                                                            @click="toggleBookmark(subsectionItem, $event)"
+                                                            style="cursor: pointer;"
+                                                            :title="bookmarkLoadingItems.has(generateBookmarkTrackingKey(subsectionItem)) ? 'Adding to favourites...' : 'Add to favourites'"
+                                                        ></i>
+                                                    </div>                                                    
                                                 </div>
 
                                                 <!-- Item Rating -->
@@ -3756,6 +3782,9 @@ export default {
             userTastings: new Map(), // Key: `${itemID}-${variant}`, Value: tasting record
             tastingLoadingItems: new Set(), // Track which items are being updated
             updatingTasting: false,
+
+            // Festival Bookmark data
+            bookmarkLoadingItems: new Set(), // Track which items are being bookmarked
 
             // User Reviews Tracker data
             userReviews: new Map(), // Key: `${itemID}-${variant}`, Value: review record
@@ -9085,6 +9114,118 @@ export default {
             }
         },
 
+        // ===== FESTIVAL BOOKMARK METHODS =====
+
+        // Helper method to generate bookmark tracking key consistently
+        generateBookmarkTrackingKey(menuItem) {
+            // Use itemID for bookmark tracking (simpler than tasting tracker)
+            return `${menuItem.itemID}`;
+        },
+
+        // Toggle bookmark status when bookmark icon is clicked
+        async toggleBookmark(menuItem, event) {
+            // Prevent event bubbling
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // Check if user is authenticated
+            if (!this.currentUserId) {
+                console.log('🔖 User not authenticated, triggering signup popup');
+                this.triggerSignUpPopup();
+                return;
+            }
+
+            // Check if venue name is available
+            const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+            if (!venueName) {
+                console.error('🔖 Venue name not available for bookmark');
+                console.error('🔖 targetVenue object:', this.targetVenue);
+                const { useToast } = await import('vue-toastification');
+                const toast = useToast();
+                toast.error('Unable to bookmark: venue information missing');
+                return;
+            }
+
+            const itemKey = this.generateBookmarkTrackingKey(menuItem);
+            
+            // Add to loading set
+            this.bookmarkLoadingItems.add(itemKey);
+            
+            try {
+                await this.addToFavourites(menuItem);
+            } catch (error) {
+                console.error('🔖 Error toggling bookmark:', error);
+                const { useToast } = await import('vue-toastification');
+                const toast = useToast();
+                toast.error('Failed to bookmark item. Please try again.');
+            } finally {
+                // Remove from loading set
+                this.bookmarkLoadingItems.delete(itemKey);
+            }
+        },
+
+        // Add item to "Favourites from <Venue Name>" list
+        async addToFavourites(menuItem) {
+            const venueName = this.targetVenue?.venueName || this.targetVenue?.name;
+            const listName = `Favourites from ${venueName}`;
+            
+            const payload = {
+                userId: this.currentUserId,
+                listName: listName,
+                drinkId: menuItem.itemID
+            };
+
+            // Debug logging to verify payload format
+            console.log('🔖 ADD TO FAVOURITES - Payload being sent:', {
+                userId: payload.userId,
+                listName: payload.listName,
+                drinkId: payload.drinkId,
+                menuItemName: menuItem.listingName || menuItem.name || 'Unknown',
+                venueName: venueName,
+                finalPayloadString: JSON.stringify(payload)
+            });
+
+            try {
+                const response = await this.$axios.post(
+                    `${process.env.VUE_APP_API_URL}/editProfile/createAndAddToFestivalFavouriteList`,
+                    payload,
+                    {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (response.status >= 200 && response.status < 300) {
+                    console.log('🔖 Successfully added to favourites:', response.data);
+                    
+                    // Show success toast
+                    const { useToast } = await import('vue-toastification');
+                    const toast = useToast();
+                    
+                    const itemName = menuItem.listingName || menuItem.name || 'Drink';
+                    
+                    // Check if item already existed (200 response) or was newly added (201 response)
+                    if (response.status === 200 && response.data.data?.alreadyExists) {
+                        toast.info(`${itemName} is already in your Favourites list`);
+                    } else {
+                        toast.success(`${itemName} has been added to your Favourites list!`);
+                    }
+                    
+                } else {
+                    throw new Error(`Unexpected response status: ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('🔖 Error adding to favourites:', error);
+                
+                // Re-throw for handling in toggleBookmark
+                throw error;
+            }
+        },
+
         // ===== USER REVIEW TRACKER METHODS =====
 
         // Helper method to generate review tracking key consistently
@@ -10213,7 +10354,41 @@ export default {
 
 .festival-bookmark {
   color: grey;
-  font-size: 1.5rem; /* Adjust this value */
+  font-size: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.festival-bookmark:hover {
+  color: #F2994A;
+  transform: scale(1.1);
+}
+
+.festival-bookmark.loading {
+  color: #F2994A;
+  opacity: 0.6;
+  animation: bookmarkPulse 1.5s ease-in-out infinite;
+}
+
+.bookmark-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pulse animation for loading state */
+@keyframes bookmarkPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
 }
 /* Search spinner positioning */
 .search-spinner {
