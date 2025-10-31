@@ -2896,7 +2896,7 @@
                       <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
                         <div class="d-flex flex-wrap justify-content-md-end gap-2">
                           <button @click="viewList('lists')" type="button" class="btn btn-sm tertiary-btn-blue drinklist">
-                            <i class="bi bi-arrow-left-circle"></i>
+                            <i class="bi bi-arrow-left-circle me-2"></i>
                             <span class="mobile-view-hide">Back to See All Lists</span>
                           </button>
                           
@@ -2928,7 +2928,13 @@
                           style="background-color: #f04444; border-color: #f04444; color: white;"
                           data-bs-toggle="modal" data-bs-target="#exampleModal">
                           <i class="bi bi-plus-circle me-2"></i>
-                          <span class="mobile-view-hide">Add Drink</span>
+                          <span>Add Drink</span>
+                        </button>
+
+                        <button type="button" class="btn btn-sm tertiary-btn-blue"
+                          @click="updateCurrentURL(); copyToClipboard(currentURL)">
+                          <i class="bi bi-reply share-icon me-2"></i>
+                          <span class="mobile-view-hide">Share</span>
                         </button>
 
                         <!-- Privacy toggle -->
