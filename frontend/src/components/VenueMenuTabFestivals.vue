@@ -183,7 +183,12 @@
                 <div v-if="!editMenuMode" :class="isSignedInUser ? 'col-8' : 'col-12'" class="p-0 position-relative">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
                         type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
-                        @keyup.enter="searchMenu">
+                        @keyup.enter="searchMenu"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        >
                     <!-- Search Loading Spinner -->
                     <span v-if="isSearchExpanding" class="search-spinner spinner-border spinner-border-sm"
                         role="status" aria-hidden="true"></span>                        
@@ -208,7 +213,7 @@
                                 color: showOnlyTastedItems ? '#49b02e' : 'white',
                                 fontWeight: 'bold',
                                 fontSize: '0.8rem',
-                                paddingX: '0.2rem',
+                                paddingX: '3px',
                                 paddingY: '0.2rem'
                             }">
                             <span v-if="isTastingFilterLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
@@ -240,7 +245,7 @@
                                 color: showOnlyBookmarkedItems ? '#F2994A' : 'white',
                                 fontWeight: 'bold',
                                 fontSize: '0.8rem',
-                                paddingX: '0.2rem',
+                                paddingX: '3px',
                                 paddingY: '0.2rem'
                             }">
                             <span v-if="isBookmarkFilterLoading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
@@ -301,8 +306,12 @@
                 <!-- Search Bar -->
                 <div v-if="!editMenuMode" class="col-9 p-0">
                     <input class="form-control rounded fst-italic" style="border: 2px solid #83a9e8"
-                        type="text" placeholder="Search festival line up" v-model="searchMenuTerm"
-                        @keyup.enter="searchMenu">
+                        type="text" placeholder="Search festival line up 🔎" v-model="searchMenuTerm"
+                        @keyup.enter="searchMenu"
+                        autocomplete="off"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false">
                 </div>
 
                 <!-- Edit Menu Options: Reset Section Order / Add New Section / Add Menu Item / Save Menu / Reset / Exit -->
