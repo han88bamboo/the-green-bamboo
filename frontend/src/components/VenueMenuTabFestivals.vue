@@ -4585,8 +4585,8 @@ export default {
                 }
                                        console.log('🔍 PROGRESSIVE EXPANSION: Built flat list of', expandableItems.length, 'expandable items');
                 
-                // Process items in batches of 5
-                const BATCH_SIZE = 5;
+                // Process items in batches of 16
+                const BATCH_SIZE = 16;
                 for (let batchStart = 0; batchStart < expandableItems.length; batchStart += BATCH_SIZE) {
                     const batchEnd = Math.min(batchStart + BATCH_SIZE, expandableItems.length);
                     const batch = expandableItems.slice(batchStart, batchEnd);
