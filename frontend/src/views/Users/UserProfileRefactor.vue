@@ -2567,9 +2567,12 @@
                     </button>
                     <!-- display all drinks lists -->
                     <div class="row g-3">
+                      <template
+                        v-for="(bookmarkList, name, index) in displayUserBookmarks"
+                        :key="name"
+                      >
                         <div
-                          v-for="(bookmarkList, name, index) in displayUserBookmarks"
-                          :key="name"
+                          v-if="bookmarkList.isPublic || ownProfile"
                           class="col-12 col-md-6"
                         >
                           <div
@@ -2796,6 +2799,7 @@
                             <!-- modal end -->
                           </div>
                         </div>
+                      </template>
                     </div>
                     <!-- create new drink list modal -->
                     <div
