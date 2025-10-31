@@ -10678,9 +10678,12 @@ export default {
 <style scoped>
 
 .festival-bookmark {
-  color: grey;
+  color: #F2994A;
   font-size: 1.5rem;
   transition: all 0.3s ease;
+  text-shadow: 
+    0 0 1px currentColor, 
+    0 0 1px currentColor;
 }
 
 .festival-bookmark:hover {
