@@ -39,6 +39,15 @@ const router = createRouter({
   routes,
   // ADDED BY SMU GROUP 3 (This ensure that the user is brought to the top of the page when they navigate from one page to another)
   scrollBehavior(to, from, savedPosition) {
+    // Check if we're navigating within the same user profile (same component, different list)
+    if (to.name === from.name && 
+        to.params.userID === from.params.userID && 
+        to.path.includes('/profile/user/') && 
+        from.path.includes('/profile/user/')) {
+      // Preserve scroll position when navigating within the same profile
+      return false; // Don't scroll at all
+    }
+    
     // Always force scroll to top immediately for new navigation
     // This prevents scroll position inheritance from previous page
     if (!savedPosition) {

@@ -2894,22 +2894,29 @@
 
                       <!-- View controls (right aligned) -->
                       <div class="col-12 col-md-6 text-md-end mt-2 mt-md-0">
-                        <div class="btn-group" role="group">
-                          <button type="button" class="btn btn-sm"
-                            :class="listViewType === 'grid' ? 'btn-primary' : 'btn-outline-secondary'"
-                            @click="listViewType = 'grid'" title="Grid View">
-                            <i class="bi bi-grid-3x3-gap"></i>
+                        <div class="d-flex flex-wrap justify-content-md-end gap-2">
+                          <button @click="viewList('lists')" type="button" class="btn btn-sm tertiary-btn-blue drinklist">
+                            <i class="bi bi-arrow-left-circle"></i>
+                            <span class="mobile-view-hide">Back to See All Lists</span>
                           </button>
-                          <button type="button" class="btn btn-sm"
-                            :class="listViewType === 'column' ? 'btn-primary' : 'btn-outline-secondary'"
-                            @click="listViewType = 'column'" title="Column View">
-                            <i class="bi bi-view-stacked"></i>
-                          </button>
-                          <button type="button" class="btn btn-sm"
-                            :class="listViewType === 'list' ? 'btn-primary' : 'btn-outline-secondary'"
-                            @click="listViewType = 'list'" title="List View">
-                            <i class="bi bi-list"></i>
-                          </button>
+                          
+                          <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm"
+                              :class="listViewType === 'grid' ? 'btn-primary' : 'btn-outline-secondary'"
+                              @click="listViewType = 'grid'" title="Grid View">
+                              <i class="bi bi-grid-3x3-gap"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm"
+                              :class="listViewType === 'column' ? 'btn-primary' : 'btn-outline-secondary'"
+                              @click="listViewType = 'column'" title="Column View">
+                              <i class="bi bi-view-stacked"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm"
+                              :class="listViewType === 'list' ? 'btn-primary' : 'btn-outline-secondary'"
+                              @click="listViewType = 'list'" title="List View">
+                              <i class="bi bi-list"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2917,15 +2924,11 @@
                     <!-- Actions Row -->
                     <div class="row mb-3">
                       <div class="col-12 d-flex flex-wrap gap-2">
-                        <button v-if="ownProfile" type="button" class="btn btn-sm tertiary-btn-blue drinklist"
+                        <button v-if="ownProfile" type="button" class="btn btn-sm btn-primary fw-bold"
+                          style="background-color: #f04444; border-color: #f04444; color: white;"
                           data-bs-toggle="modal" data-bs-target="#exampleModal">
-                          <i class="bi bi-plus"></i>
-                          <span class="mobile-view-hide">&nbsp; Add Drink</span>
-                        </button>
-
-                        <button @click="viewList('lists')" type="button" class="btn btn-sm tertiary-btn-blue drinklist">
-                          <i class="bi bi-arrow-left-circle"></i>
-                          <span class="mobile-view-hide">&nbsp; Back to Drinks Lists</span>
+                          <i class="bi bi-plus-circle me-2"></i>
+                          <span class="mobile-view-hide">Add Drink</span>
                         </button>
 
                         <!-- Privacy toggle -->
@@ -6178,22 +6181,22 @@ export default {
     viewList(name) {
       if (name == "lists") {
         this.activeTab = "lists";
-        this.$router.push(
-          "/profile/user/" +
+        this.$router.push({
+          path: "/profile/user/" +
             this.displayUserID +
             "/" +
             this.displayUser.username
-        );
+        });
       } else {
         this.activeTab = "list";
         this.currentList = name;
-        this.$router.push(
-          "/profile/user/" +
+        this.$router.push({
+          path: "/profile/user/" +
             this.displayUserID +
             "/" +
             this.displayUser.username +
             name
-        );
+        });
 
         if (this.ownProfile) {
           this.removeExistingListingInList();
@@ -6206,15 +6209,15 @@ export default {
     viewProducerList(name) {
       if (name === "producer_lists") {
         this.activeTab = "producer_lists";
-        this.$router.push(
-          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
-        );
+        this.$router.push({
+          path: "/profile/user/" + this.displayUserID + "/" + this.displayUser.username
+        });
       } else {
         this.activeTab = "producer_list";
         this.currentProducerList = name;
-        this.$router.push(
-          "/profile/user/" + this.displayUserID + "/" + this.displayUser.username + "/producer_list/" + encodeURIComponent(name)
-        );
+        this.$router.push({
+          path: "/profile/user/" + this.displayUserID + "/" + this.displayUser.username + "/producer_list/" + encodeURIComponent(name)
+        });
         
         if (this.ownProfile) {
           this.removeExistingProducersInList();
@@ -6225,22 +6228,22 @@ export default {
     viewVenueList(name) {
       if (name == "venue_lists") {
         this.activeTab = "venue_lists";
-        this.$router.push(
-          "/profile/user/" +
+        this.$router.push({
+          path: "/profile/user/" +
             this.displayUserID +
             "/" +
             this.displayUser.username
-        );
+        });
       } else {
         this.activeTab = "venue_list";
         this.currentVenueList = name;
-        this.$router.push(
-          "/profile/user/" +
+        this.$router.push({
+          path: "/profile/user/" +
             this.displayUserID +
             "/" +
             this.displayUser.username +
             "/venue_list/" + encodeURIComponent(name)
-        );
+        });
       }
     },
     
