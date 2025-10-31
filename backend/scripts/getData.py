@@ -210,6 +210,7 @@ def fetch_drink_lists(cursor, user_id):
             # Initialize list if not exists
             if list_name not in result:
                 result[list_name] = {
+                    "listId": row["list_id"],  # Include the database ID
                     "listDesc": row["listDesc"],
                     "isPublic": row["isPublic"],
                     "createdAt": row["createdAt"],

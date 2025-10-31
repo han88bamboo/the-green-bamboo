@@ -2931,9 +2931,9 @@
                           <span>Add Drink</span>
                         </button>
 
-                        <button type="button" class="btn btn-sm tertiary-btn-blue"
-                          @click="updateCurrentURL(); copyToClipboard(currentURL)">
-                          <i class="bi bi-reply share-icon me-2"></i>
+                        <button v-if="displayUserBookmarks[currentList].isPublic" type="button" class="btn btn-sm tertiary-btn-blue"
+                          @click="shareCurrentList()">
+                          <i class="bi bi-reply me-2"></i>
                           <span class="mobile-view-hide">Share</span>
                         </button>
 
@@ -6820,13 +6820,70 @@ export default {
         .writeText(text)
         .then(() => {
           const toast = useToast();
-          toast.success("Collection link copied to clipboard!");
+          // Check if it's a list sharing URL
+          if (text.includes('/find-lists?listId=')) {
+            toast.success("List link copied to clipboard!");
+          } else if (text.includes('/find-lists?userId=')) {
+            toast.success("List link copied to clipboard! (fallback method)");
+          } else {
+            toast.success("Link copied to clipboard!");
+          }
         })
         .catch((err) => {
           console.error("Failed to copy text: ", err);
           const toast = useToast();
           toast.error("Failed to copy link. Please try again.");
         });
+    },
+
+    shareCurrentList() {
+      if (!this.currentList) {
+        console.error("No current list to share");
+        return;
+      }
+
+      // Get the actual database ID from the loaded data (already includes listId from usersDrinkLists table)
+      this.getListIdAndShare();
+    },
+
+    async getListIdAndShare() {
+      try {
+        // Get the list ID from the local data structure (already loaded from usersDrinkLists table)
+        const listData = this.displayUserBookmarks[this.currentList];
+        
+        // Debug logging to see the structure
+        console.log("Current list:", this.currentList);
+        console.log("List data:", listData);
+        console.log("Available bookmark keys:", Object.keys(this.displayUserBookmarks));
+        
+        if (listData && listData.listId) {
+          const listId = listData.listId;
+          
+          console.log("Found list ID:", listId);
+          
+          // Convert list name to URL-friendly format
+          const urlFriendlyName = this.currentList.toLowerCase().replace(/\s+/g, '-');
+          
+          // Construct the share URL with the actual database ID
+          const shareUrl = `${window.location.origin}/find-lists?listId=${listId}&name=${urlFriendlyName}`;
+          
+          this.copyToClipboard(shareUrl);
+        } else {
+          console.error("List data structure:", listData);
+          throw new Error(`List ID not found in local data for list: ${this.currentList}`);
+        }
+      } catch (error) {
+        console.error("Error getting list ID:", error);
+        
+        // Fallback: use a simpler URL format with just the list name
+        const urlFriendlyName = this.currentList.toLowerCase().replace(/\s+/g, '-');
+        const fallbackUrl = `${window.location.origin}/find-lists?userId=${this.displayUserID}&name=${urlFriendlyName}`;
+        
+        this.copyToClipboard(fallbackUrl);
+        
+        const toast = useToast();
+        toast.warning("Using fallback sharing method. List ID could not be retrieved.");
+      }
     },
     // ------------------ Add Friend Functions ------------------
     shareOnFacebook() {
