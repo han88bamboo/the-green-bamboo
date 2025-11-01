@@ -8,8 +8,8 @@
             <div class="mobile-poll-title-content">
               <span class="mobile-poll-text">
                 <i class="bi bi-bar-chart-fill poll-icon"></i>
-                <span class="poll-label">Poll:</span> 
-                <span v-if="polls.length > 0">{{ currentPoll.title }}</span>
+                <span class="poll-label me-1">Poll:</span> 
+                <span v-if="polls.length > 0" style="color:#ff3e31;">{{ currentPoll.title }}</span>
                 <span v-else>No polls yet</span>
               </span>
             </div>
@@ -36,8 +36,8 @@
             <div class="mobile-poll-title-content">
               <span class="mobile-poll-text">
                 <i class="bi bi-bar-chart-fill poll-icon"></i>
-                <span class="poll-label">Poll:</span> 
-                <span v-if="polls.length > 0">{{ currentPoll.title }}</span>
+                <span class="poll-label me-1">Poll:</span> 
+                <span v-if="polls.length > 0"><span style="color:#ff3e31;">{{ currentPoll.title }}</span></span>
                 <span v-else>No polls yet</span>
               </span>
             </div>
