@@ -2945,8 +2945,8 @@
                       Tag the flavours you taste:
                       </span>
                     </p>
-                    <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2">
-                      Selected flavour tags:
+                    <div v-if="selectedFlavourTags.length > 0" class="form-label pb-2" style="background-color: rgb(233, 236, 239); padding:5px 10px;border-radius:5px;">
+                      You have selected:
                       <div class="row">
                         <div class="col">
                           <div class="d-flex flex-wrap gap-2">
@@ -4193,6 +4193,15 @@ export default {
                 }
             },
             immediate: true // Check immediately in case selfView is already true on mount
+        },
+
+        // Watch for when extend review section becomes visible
+        extendReview(newVal) {
+            if (newVal) {
+                this.$nextTick(() => {
+                    this.setupAutoResize();
+                });
+            }
         }
     },
     mounted() {
@@ -4271,6 +4280,22 @@ export default {
             this.editButtonDisabled = false;
         }, 10000);
 
+        // Initialize auto-resize functionality for textareas
+        this.$nextTick(() => {
+            this.setupAutoResize();
+        });
+
+        // Setup Bootstrap modal event listener for review modal
+        this.$nextTick(() => {
+            const reviewModal = document.getElementById('menuItemReviewModal');
+            if (reviewModal) {
+                reviewModal.addEventListener('shown.bs.modal', () => {
+                    console.log('Review modal opened - setting up auto-resize...');
+                    this.setupAutoResize();
+                });
+            }
+        });
+
     },
     beforeUnmount() {
         // Cleanup: Restore body scroll if sheet was left open
@@ -4281,6 +4306,18 @@ export default {
         // Cleanup: Clear delay message timer
         if (this.delayMessageTimer) {
             clearInterval(this.delayMessageTimer);
+        }
+
+        // Cleanup: Remove auto-resize event listeners
+        const textareas = document.querySelectorAll('.auto-resize-textarea');
+        textareas.forEach(textarea => {
+            textarea.removeEventListener('input', this.autoResize);
+        });
+
+        // Cleanup: Remove modal event listener
+        const reviewModal = document.getElementById('menuItemReviewModal');
+        if (reviewModal) {
+            reviewModal.removeEventListener('shown.bs.modal', this.setupAutoResize);
         }
     },
     methods: {
@@ -10231,6 +10268,11 @@ export default {
     this.currentMenuItem = menuItem;
     // Reset form to defaults
     this.resetReviewForm();
+    
+    // Setup auto-resize functionality when modal opens
+    this.$nextTick(() => {
+        this.setupAutoResize();
+    });
     },
 
     // Reset the review form to default values
@@ -10670,6 +10712,51 @@ export default {
     triggerSignUpPopup() {
         this.$emit('trigger-signup-popup');
         console.log('🎪 VenueMenuTabFestivals: Emitting signup popup trigger event to parent');
+    },
+
+    // ===== AUTO-RESIZE TEXTAREA FUNCTIONALITY =====
+    
+    // Setup auto-resize functionality for textareas
+    setupAutoResize() {
+      // Use a short delay to ensure modal is fully rendered
+      setTimeout(() => {
+        const textareas = document.querySelectorAll('.auto-resize-textarea');
+        console.log('Found textareas:', textareas.length); // Debug log
+
+        textareas.forEach(textarea => {
+          // Remove existing listeners to avoid duplicates
+          textarea.removeEventListener('input', this.autoResize);
+
+          // Auto-resize on input
+          textarea.addEventListener('input', this.autoResize);
+
+          // Set initial height
+          this.autoResize({ target: textarea });
+        });
+      }, 100);
+    },
+
+    // Auto-resize function for textareas
+    autoResize(event) {
+      if (!event || !event.target) return;
+
+      const textarea = event.target;
+
+      // Reset height to auto to get correct scrollHeight
+      textarea.style.height = 'auto';
+
+      // Set new height based on content
+      const newHeight = Math.max(38, textarea.scrollHeight);
+      textarea.style.height = newHeight + 'px';
+
+      console.log('Resizing textarea:', textarea.id, 'to height:', newHeight); // Debug log
+    },
+
+    // Call this when modal opens or when textareas become visible
+    initializeTextareas() {
+      this.$nextTick(() => {
+        this.setupAutoResize();
+      });
     }    
     }
 }
