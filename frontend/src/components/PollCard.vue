@@ -2021,20 +2021,23 @@ export default {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  border-color: #F2994A;
+  border-width: 2px;
+  border-style: solid;
 }
 
 /* Collapse Header - Visible on both desktop and mobile */
 .mobile-collapse-header {
   display: block;
   padding: 15px 20px;
-  background-color: #f8f9fa;
+  background-color: #ffe9b6;
   border-bottom: 1px solid #dee2e6;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .mobile-collapse-header:hover {
-  background-color: #e9ecef;
+  background-color: #fbf1d8;
 }
 
 
