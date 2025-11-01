@@ -9850,6 +9850,11 @@ export default {
         );
         return "Submission error";
       }
+
+      // Save current form data to cache before submission
+      // This ensures we can restore the form if submission fails
+      this.cacheReviewForm();
+
       let createdDate = new Date().toISOString();
       if (this.reviewDesc !== "") {
         this.reviewDesc = this.reviewDesc.trim();
@@ -10236,6 +10241,8 @@ export default {
     },
 
     cacheReviewForm() {
+      console.log('charsiucharlie_cache_debug: cacheReviewForm() called - saving review form data to localStorage');
+      
       const cacheKey = `reviewCache_${this.reviewTarget}_${this.userID}`;
       const data = {
         selectedLanguage: this.selectedLanguage,
@@ -10259,7 +10266,19 @@ export default {
         locationInputValue: this.locationInputValue,
         image64: this.image64
       };
+      
+      console.log('charsiucharlie_cache_debug: Cache key:', cacheKey);
+      console.log('charsiucharlie_cache_debug: Data being cached:', {
+        reviewDesc: data.reviewDesc ? `"${data.reviewDesc.substring(0, 50)}..."` : 'empty',
+        rating: data.rating,
+        selectedLanguage: data.selectedLanguage,
+        hasPhoto: !!data.image64,
+        selectedFlavourTagsCount: data.selectedFlavourTags.length,
+        selectedObservationsCount: data.selectedObservations.length
+      });
+      
       localStorage.setItem(cacheKey, JSON.stringify(data));
+      console.log('charsiucharlie_cache_debug: Successfully saved review form data to localStorage');
     },    
 
     // Set current menu item being reviewed
