@@ -485,7 +485,7 @@
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
 
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }" style="text-decoration: none;">
                                                 <p class="fw-bold mobile-fs-6 fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                     <span style="text-decoration: none;">{{ getSectionItemNumber(menuSection, sectionItem) }}</span>{{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
@@ -578,7 +578,7 @@
                                             <!-- Review Buttons Side by Side -->
                                             <div class="col-12 d-flex gap-2">
                                                 <!-- See Reviews Button -->
-                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" class="flex-fill">
+                                                <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }" class="flex-fill">
                                                     <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
                                                 </router-link>
                                                 
@@ -682,7 +682,7 @@
 
                                         <div class="d-flex align-items-center flex-wrap gap-2">
                                             <!-- Item Name -->
-                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                            <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }" style="text-decoration: none;">
                                                 <p class="fw-bold fs-5 text-start m-0" style="overflow:hidden;text-overflow: ellipsis;">
                                                     <span style="text-decoration: none;">{{ getSectionItemNumber(menuSection, sectionItem) }}</span>{{ sectionItem.itemDetails['itemName'] }} {{ sectionItem.itemVintage ? ' [' + sectionItem.itemVintage + ' Vintage]' : '' }}
                                                 </p>
@@ -699,7 +699,7 @@
 
                                         <!-- Item Details (Producer, Type, ABV, Country) -->
                                         <p class="text-start mb-1" style="overflow:hidden;text-overflow: ellipsis;">
-                                            <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + sectionItem.itemDetails['itemProducer'] }">
+                                            <router-link v-if="sectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + sectionItem.itemDetails['itemProducerID'] + '/' + normalizeItemNameForUrl(sectionItem.itemDetails['itemProducer']) }">
                                                 <span v-if="sectionItem.itemDetails['itemProducer']">{{ sectionItem.itemDetails['itemProducer'] }} | </span>
                                             </router-link>
                                             <span v-if="sectionItem.itemDetails['itemType']">{{ sectionItem.itemDetails['itemType'] }} | </span>
@@ -735,7 +735,7 @@
                                             </p>
 
                                             <!-- See User Reviews -->
-                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + sectionItem.itemDetails.itemName }">
+                                            <router-link :to="{ path: '/listing/view/' + sectionItem.itemID + '/' + normalizeItemNameForUrl(sectionItem.itemDetails.itemName) }">
                                                 <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                             </router-link>
 
@@ -890,7 +890,7 @@
                                             <div class="mobile-col-9 mobile-pe-0 mobile-ps-2">
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }"  style="text-decoration: none;">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }"  style="text-decoration: none;">
                                                         <p class="fw-bold mobile-fs-6 fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                             <span style="text-decoration: none;">{{ getSubsectionItemNumber(subsection, subsectionItem) }}</span>{{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
                                                         </p>
@@ -974,7 +974,7 @@
                                                     <!-- Review Buttons Side by Side -->
                                                     <div class="col-12 d-flex gap-2">
                                                         <!-- See Reviews Button -->
-                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" class="flex-fill">
+                                                        <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }" class="flex-fill">
                                                             <button type="button" class="btn btn-read-more btn-sm w-100"> See Reviews </button>
                                                         </router-link>
                                                         
@@ -1054,7 +1054,7 @@
                                             <div class="col-lg-8 col-12 ps-lg-4">
                                                 <div class="d-flex align-items-center flex-wrap gap-2">
                                                     <!-- Item Name -->
-                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }" style="text-decoration: none;">
+                                                    <router-link class="default-text-no-background" :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }" style="text-decoration: none;">
                                                         <p class="fw-bold fs-5 text-start m-0" style=" overflow:hidden;text-overflow: ellipsis;">
                                                             <span style="text-decoration: none;">{{ getSubsectionItemNumber(subsection, subsectionItem) }}</span>{{ subsectionItem.itemDetails['itemName'] }} {{ subsectionItem.itemVintage ? ' [' + subsectionItem.itemVintage + ' Vintage]' : '' }}
                                                         </p>
@@ -1071,7 +1071,7 @@
 
                                                 <!-- Item Details (Producer, Type, ABV, Country) -->
                                                 <p class="text-start mb-1" style="white-space: nowrap; overflow:hidden;text-overflow: ellipsis;">
-                                                    <router-link v-if="subsectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + subsectionItem.itemDetails['itemProducerID'] + '/' + subsectionItem.itemDetails['itemProducer'] }">
+                                                    <router-link v-if="subsectionItem.itemDetails['itemProducerID']" style="color: #2c3e50;" class="text-decoration-none" :to="{ path: '/profile/producer/' + subsectionItem.itemDetails['itemProducerID'] + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails['itemProducer']) }">
                                                         <span v-if="subsectionItem.itemDetails['itemProducer']">{{ subsectionItem.itemDetails['itemProducer'] }} | </span>
                                                     </router-link>
                                                     <span v-if="subsectionItem.itemDetails['itemType']">{{ subsectionItem.itemDetails['itemType'] }} | </span>
@@ -1107,7 +1107,7 @@
                                                     </p>
 
                                                     <!-- See User Reviews -->
-                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + subsectionItem.itemDetails.itemName }">
+                                                    <router-link :to="{ path: '/listing/view/' + subsectionItem.itemID + '/' + normalizeItemNameForUrl(subsectionItem.itemDetails.itemName) }">
                                                         <button type="button" class="btn btn-read-more px-10"> See Reviews </button>
                                                     </router-link>
 
@@ -4962,6 +4962,35 @@ export default {
             const normalizedSearch = this.normalizeForSearch(searchTerm);
             const normalizedTarget = this.normalizeForSearch(targetText);
             return normalizedTarget.includes(normalizedSearch);
+        },
+
+        // CJK-aware normalization for URL-safe item names
+        normalizeItemNameForUrl(itemName) {
+            if (!itemName) return '';
+            
+            // Step 1: Remove CJK (Chinese, Japanese, Korean) characters
+            let cleaned = itemName.replace(/[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff]+/g, '');
+            
+            // Step 2: Normalize and remove accented characters
+            let normalized = cleaned.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            // Step 3: Remove special characters and spaces, keep only alphanumeric, hyphens, underscores
+            let sanitized = normalized.replace(/[^a-zA-Z0-9\-_\s]/g, '');
+            
+            // Step 4: Replace spaces with hyphens for URL compatibility
+            sanitized = sanitized.replace(/\s+/g, '-');
+            
+            // Step 5: Remove multiple consecutive hyphens
+            sanitized = sanitized.replace(/-+/g, '-');
+            
+            // Step 6: Remove leading/trailing hyphens
+            sanitized = sanitized.replace(/^-+|-+$/g, '');
+            
+            // Step 7: Convert to lowercase
+            sanitized = sanitized.toLowerCase();
+            
+            // Step 8: If empty after sanitization, return a fallback
+            return sanitized || 'item';
         },
 
         // Smart initialization method that detects available data sources
