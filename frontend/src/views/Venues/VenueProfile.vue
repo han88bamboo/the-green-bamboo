@@ -1566,7 +1566,7 @@
                 
                 <!-- Poll Card Section (only for logged-in users) -->
                 <div class="row my-3" id="poll-section">
-                    <div class="col-12">
+                    <div class="col-12" id="poll-card-container-highlighted">
                         <PollCard 
                             :creator-id="targetVenue.id"
                             creator-type="venue"
@@ -7982,6 +7982,19 @@ export default {
                 console.log('Poll section not found!');
             }
         },
+
+        // Function to highlight poll card on page load
+        highlightPollCardOnLoad() {
+            setTimeout(() => {
+                const pollCardContainer = document.getElementById('poll-card-container-highlighted');
+                if (pollCardContainer) {
+                    pollCardContainer.classList.add('highlight-section');
+                    setTimeout(() => {
+                        pollCardContainer.classList.remove('highlight-section');
+                    }, 3000);
+                }
+            }, 100);
+        },
         // highlightMenuSection() {
         //     // Find the menu section
         //     const menuSection = document.getElementById('menu');
@@ -8518,6 +8531,17 @@ Thank you!`
                 console.log('🏢 Log 155: venueExists changed from', oldVal, 'to', newVal);
             },
             immediate: true
+        },
+
+        // Watch for isPageReady to trigger poll card highlight
+        isPageReady: {
+            handler(newVal, oldVal) {
+                if (newVal === true && oldVal !== true) {
+                    console.log('🎯 Page is ready, triggering poll card highlight');
+                    this.highlightPollCardOnLoad();
+                }
+            },
+            immediate: false
         },
 
         // Watch for changes in targetVenue to trigger signup popup for festivals
