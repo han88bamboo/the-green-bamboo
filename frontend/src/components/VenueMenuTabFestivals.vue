@@ -4293,6 +4293,12 @@ export default {
                     console.log('Review modal opened - setting up auto-resize...');
                     this.setupAutoResize();
                 });
+                
+                // Add event listener for when modal is hidden/closed
+                reviewModal.addEventListener('hidden.bs.modal', () => {
+                    console.log('Review modal closed - cleaning up flavor tag dropdowns...');
+                    this.closeAllFlavorTagDropdowns();
+                });
             }
         });
 
@@ -4318,6 +4324,7 @@ export default {
         const reviewModal = document.getElementById('menuItemReviewModal');
         if (reviewModal) {
             reviewModal.removeEventListener('shown.bs.modal', this.setupAutoResize);
+            reviewModal.removeEventListener('hidden.bs.modal', this.closeAllFlavorTagDropdowns);
         }
     },
     methods: {
@@ -10329,7 +10336,19 @@ export default {
         this.nullSelectedLanguage = false;
         this.isVenueAutoPopulated = false;
         this.isVintageAutoPopulated = false;
+        
+        // Close all flavor tag dropdowns
+        this.closeAllFlavorTagDropdowns();
         },
+
+    // Close all flavor tag family dropdowns
+    closeAllFlavorTagDropdowns() {
+        if (this.flavorTags && Array.isArray(this.flavorTags)) {
+            this.flavorTags.forEach((family) => {
+                family.showBox = false;
+            });
+        }
+    },
 
     // Load all review-related data (flavors, colors, etc.)
     async loadReviewData() {
