@@ -4831,7 +4831,7 @@ def getUsers():
                 
                 user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
                 user_data["producerLists"] = fetch_producer_lists(cursor, user_id)
-                user_data["venueLists"] = fetch_venue_lists(cursor, id)
+                user_data["venueLists"] = fetch_venue_lists(cursor, user_id)
                 user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
 
@@ -5008,7 +5008,7 @@ def getUserByUsername(username):
 
             user_data["drinkLists"] = fetch_drink_lists(cursor, user_id)
             user_data["producerLists"] = fetch_producer_lists(cursor, user_id) 
-            user_data["venueLists"] = fetch_venue_lists(cursor, id)
+            user_data["venueLists"] = fetch_venue_lists(cursor, user_id)
             user_data["followLists"] = fetch_follow_lists(cursor, user_id)
 
         return jsonify(user_data), 200
