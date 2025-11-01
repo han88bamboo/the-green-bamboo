@@ -2021,7 +2021,7 @@ export default {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  border-color: #F2994A;
+  border-color: #ff3e31;
   border-width: 2px;
   border-style: solid;
 }
