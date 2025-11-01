@@ -84,7 +84,7 @@
               <div class="poll-title-content">
                 <span class="poll-title-text">
                 <i class="bi bi-bar-chart-fill poll-icon"></i>
-                <span class="poll-label">Poll:</span> {{ currentPoll.title }}</span>
+                <span class="poll-label me-1">Poll:</span> <span style="color:#ff3e31;">{{ currentPoll.title }}</span></span>
               </div>
             </h4>
             <p class="poll-question">{{ currentPoll.questionText }}</p>
