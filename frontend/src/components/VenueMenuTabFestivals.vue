@@ -4013,6 +4013,7 @@ export default {
             friendTagList: [],
             showFriendTagList: [],
             isSubmittingReview: false,
+            imageProcessing: false, // Track image processing state
             users: [],
 
             // Jump to Section feature (Mobile only)
@@ -9840,19 +9841,124 @@ export default {
             document.body.style.overflow = '';
         },
 
-    // function to display submitted image
-    onFileChange(event) {
+    // Enhanced image processing with scaling and compression
+    async onFileChange(event) {
       const file = event.target.files[0];
-      const reader = new FileReader();
+      if (!file || !file.type.startsWith('image/')) {
+        console.warn('Invalid file selected');
+        return;
+      }
 
-      reader.onloadend = async () => {
-        this.selectedImage = reader.result;
-        const base64String = reader.result
-          .replace("data:", "")
-          .replace(/^.+,/, "");
-        this.image64 = base64String;
-      };
-      reader.readAsDataURL(file);
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image file too large. Please select an image under 10MB.');
+        return;
+      }
+
+      this.imageProcessing = true;
+      
+      try {
+        const result = await this.processImageWithScaling(file);
+        this.selectedImage = result.dataUrl;
+        this.image64 = result.base64;
+        
+        // Log compression stats for debugging
+        const originalSizeKB = (file.size / 1024).toFixed(1);
+        const newSizeKB = (result.size / 1024).toFixed(1);
+        const reductionPercent = (((file.size - result.size) / file.size) * 100).toFixed(1);
+        
+        console.log(`Charsiucharlie_photo_submission: 📸 Image optimized: ${originalSizeKB}KB → ${newSizeKB}KB (${reductionPercent}% reduction)`);
+        
+      } catch (error) {
+        console.error('Charsiucharlie_photo_submission: Image processing failed:', error);
+        // Fallback to original method
+        await this.fallbackImageProcessing(file);
+      } finally {
+        this.imageProcessing = false;
+      }
+    },
+
+    // Process image with Canvas scaling and compression
+    async processImageWithScaling(file) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          reject(new Error('Canvas 2D context not available'));
+          return;
+        }
+        
+        const img = new Image();
+        
+        img.onload = () => {
+          try {
+            // Define maximum dimensions (optimize for mobile data)
+            const maxWidth = 800;
+            const maxHeight = 600;
+            
+            // Calculate scaled dimensions maintaining aspect ratio
+            let { width, height } = img;
+            const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+            
+            width *= scale;
+            height *= scale;
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Enable high-quality image smoothing
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Draw scaled image
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to base64 with compression (80% quality for good balance)
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            const base64 = dataUrl.replace(/^data:image\/jpeg;base64,/, '');
+            
+            // Calculate approximate size of base64 string
+            const size = Math.round((base64.length * 3) / 4);
+            
+            resolve({ dataUrl, base64, size });
+            
+          } catch (error) {
+            reject(error);
+          } finally {
+            // Cleanup object URL
+            URL.revokeObjectURL(img.src);
+          }
+        };
+        
+        img.onerror = () => reject(new Error('Failed to load image'));
+        
+        // Use createObjectURL for better memory management
+        img.src = URL.createObjectURL(file);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => reject(new Error('Image processing timeout')), 10000);
+      });
+    },
+
+    // Fallback to original processing method
+    async fallbackImageProcessing(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = () => {
+          this.selectedImage = reader.result;
+          const base64String = reader.result
+            .replace("data:", "")
+            .replace(/^.+,/, "");
+          this.image64 = base64String;
+          console.log('Charsiucharlie_photo_submission: ⚠️ Using fallback image processing (no compression)');
+          resolve();
+        };
+        
+        reader.onerror = () => reject(new Error('FileReader failed'));
+        reader.readAsDataURL(file);
+      });
     },
 
     // Function to set delete ID for review deletion
