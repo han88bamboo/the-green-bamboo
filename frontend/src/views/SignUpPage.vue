@@ -199,6 +199,7 @@
                   </div>                 
                   
                   <!-- Input: Repeat Password -->
+                  <!-- COMMENTED OUT - removed repeat password requirement
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                       <div class="form-floating">
@@ -223,6 +224,7 @@
                       </div>
                     </div>
                   </div>
+                  -->
                   <!-- Input: Country -->
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
@@ -513,7 +515,7 @@ export default {
       email: "",
       password: "",
       passwordStrength: 0,
-      passwordRepeat: "",
+      // passwordRepeat: "", // COMMENTED OUT - removed repeat password requirement
       firstName: "",
       lastName: "",
       birthday: "",
@@ -533,10 +535,10 @@ export default {
       missingEmail: false,
       invalidEmail: false,
       invalidUsernameFormat: false, // Add this new line
-      passwordMismatch: false,
+      // passwordMismatch: false, // COMMENTED OUT - removed repeat password requirement
       missingPassword: false,
       weakPassword: false,
-      missingPasswordRepeat: false,
+      // missingPasswordRepeat: false, // COMMENTED OUT - removed repeat password requirement
       missingFirstName: false,
       missingLastName: false,
       missingBirthday: false,
@@ -761,6 +763,19 @@ export default {
         this.invalidEmail = true;
         errorCount++;
       }
+      
+      // Password validation - SIMPLIFIED (removed repeat password requirement)
+      // Now requires: At least 8 characters + any one of (uppercase, lowercase, number, special char)
+      if (this.password == "") {
+        this.missingPassword = true;
+        errorCount++;
+      } else if (this.passwordStrength < 5) {
+        this.weakPassword = true;
+        errorCount++;
+      }
+
+      // COMMENTED OUT - removed repeat password requirement
+      /*
       // Password validation
       if (this.password !== this.passwordRepeat) {
         this.passwordMismatch = true;
@@ -779,6 +794,8 @@ export default {
         this.missingPasswordRepeat = true;
         errorCount++;
       }
+      */
+      
       // country validation
       if (this.selectedCountry == "") {
         this.missingCountry = true;
@@ -1042,9 +1059,9 @@ export default {
       this.missingEmail = false;
       this.invalidEmail = false;
       this.invalidUsernameFormat = false; 
-      this.passwordMismatch = false;
+      // this.passwordMismatch = false; // COMMENTED OUT - removed repeat password requirement
       this.missingPassword = false;
-      this.missingPasswordRepeat = false;
+      // this.missingPasswordRepeat = false; // COMMENTED OUT - removed repeat password requirement
       this.missingBirthday = false;
       // this.missingAgeCheck = false; // COMMENTED OUT - no longer using checkbox
       this.missingCountry = false;
