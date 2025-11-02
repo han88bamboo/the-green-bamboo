@@ -13,15 +13,42 @@
 -->
 <template>
   <div>
-    <div class="form-floating">
+    <div class="form-floating password-input-container">
+      <!-- COMMENTED OUT - old simple password input without visibility toggle
+      <input
+        id="password"
+        v-model="password"
+        type="password"
+        placeholder="Enter your password"
+        class="form-control form-box-outline"
+        @input="handleInput"
+      />
+      -->
+      
+      <!-- NEW IMPLEMENTATION - password input with hold-to-show eye icon -->
       <input
         id="password"
         v-model="password"
         :type="showPassword ? 'text' : 'password'"
         placeholder="Enter your password"
-        class="form-control form-box-outline"
+        class="form-control form-box-outline password-input-with-icon"
         @input="handleInput"
       />
+      
+      <!-- Eye icon button for hold-to-show functionality -->
+      <button
+        type="button"
+        class="password-toggle-btn"
+        @mousedown="showPasswordOnHold"
+        @mouseup="hidePasswordOnRelease"
+        @mouseleave="hidePasswordOnRelease"
+        @touchstart="showPasswordOnHold"
+        @touchend="hidePasswordOnRelease"
+        tabindex="-1"
+      >
+        {{ showPassword ? '🙈' : '👁️' }}
+      </button>
+      
       <label for="password"> Password </label>
     </div>
     
@@ -40,23 +67,22 @@
     <div class="requirements-list" v-if="password.length > 0">
       <div class="requirement-item" :class="{ 'met': requirements.length }">
         <span class="check-icon">{{ requirements.length ? '✓' : '✗' }}</span>
-        At least 8 characters long
+        Contains at least 8 characters <strong>&nbsp;(Required)</strong>
       </div>
-      <div class="requirement-item" :class="{ 'met': requirements.uppercase }">
-        <span class="check-icon">{{ requirements.uppercase ? '✓' : '✗' }}</span>
-        Contains uppercase letter
+      <div class="requirement-note">
+        <em>Plus at least ONE of the following:</em>
       </div>
-      <div class="requirement-item" :class="{ 'met': requirements.lowercase }">
-        <span class="check-icon">{{ requirements.lowercase ? '✓' : '✗' }}</span>
-        Contains lowercase letter
+      <div class="requirement-item" :class="{ 'met': requirements.uppercase && requirements.lowercase }">
+        <span class="check-icon">{{ (requirements.uppercase && requirements.lowercase) ? '✓' : '✗' }}</span>
+        Contains both uppercase and lowercase letters
       </div>
-      <div class="requirement-item" :class="{ 'met': requirements.number }">
-        <span class="check-icon">{{ requirements.number ? '✓' : '✗' }}</span>
-        Contains at least one number
+      <div class="requirement-item" :class="{ 'met': requirements.number && /[a-zA-Z]/.test(password) }">
+        <span class="check-icon">{{ (requirements.number && /[a-zA-Z]/.test(password)) ? '✓' : '✗' }}</span>
+        Contains at least one number (in addition to letters)
       </div>
-      <div class="requirement-item" :class="{ 'met': requirements.special }">
-        <span class="check-icon">{{ requirements.special ? '✓' : '✗' }}</span>
-        Contains special character
+      <div class="requirement-item" :class="{ 'met': requirements.special && /[a-zA-Z]/.test(password) }">
+        <span class="check-icon">{{ (requirements.special && /[a-zA-Z]/.test(password)) ? '✓' : '✗' }}</span>
+        Contains at least one special character (in addition to letters)
       </div>
     </div>
   </div>
@@ -69,7 +95,7 @@ export default {
   data() {
     return {
       password: '',
-      showPassword: false,
+      showPassword: false, // REACTIVATED - now used for hold-to-show functionality
       strengthLevel: 0,
       requirements: {
         length: false,
@@ -106,13 +132,47 @@ export default {
         special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(this.password)
       }
       
-      // Calculate strength level
-      this.strengthLevel = Object.values(this.requirements).filter(Boolean).length
+      // MODIFIED LOGIC - Calculate strength level with new requirements:
+      // Must have length + at least one other requirement
+      // Note: uppercase and lowercase are now combined into one requirement
+      // Note: number requirement now also requires at least one letter (to prevent pure numeric passwords)
+      // Note: special requirement now also requires at least one letter (to prevent pure symbolic passwords)
+      const hasLength = this.requirements.length;
+      const hasBothUpperAndLowercase = this.requirements.uppercase && this.requirements.lowercase;
+      const hasNumberAndLetter = this.requirements.number && (/[a-zA-Z]/.test(this.password)); // Number + any letter
+      const hasSpecialAndLetter = this.requirements.special && (/[a-zA-Z]/.test(this.password)); // Special + any letter
+      
+      const otherRequirementsMet = [
+        hasBothUpperAndLowercase,
+        hasNumberAndLetter,
+        hasSpecialAndLetter
+      ].filter(Boolean).length;
+      
+      // If length requirement is met AND at least one other requirement is met, 
+      // set strength to 5 (strong), otherwise calculate normally
+      if (hasLength && otherRequirementsMet >= 1) {
+        this.strengthLevel = 5; // Strong password
+      } else {
+        // Original calculation for visual feedback when requirements not met
+        this.strengthLevel = Object.values(this.requirements).filter(Boolean).length;
+      }
     },
     
+    // NEW IMPLEMENTATION - hold-to-show password functionality
+    showPasswordOnHold() {
+      this.showPassword = true
+    },
+    
+    hidePasswordOnRelease() {
+      this.showPassword = false
+    },
+    
+    // COMMENTED OUT - old toggle functionality replaced with hold-to-show
+    /*
     togglePasswordVisibility() {
       this.showPassword = !this.showPassword
     },
+    */
     
     getStrengthColor() {
       const colors = [
@@ -141,6 +201,44 @@ export default {
 </script>
 
 <style scoped>
+/* Password input container with eye icon */
+.password-input-container {
+  position: relative;
+}
+
+.password-input-with-icon {
+  padding-right: 45px !important; /* Make room for eye icon */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  color: #666;
+  user-select: none;
+  z-index: 3;
+  transition: color 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+  color: #333;
+}
+
+.password-toggle-btn:active {
+  color: #000;
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+}
+
 .password-strength-container {
   max-width: 400px;
   margin: 0 auto;
@@ -197,6 +295,14 @@ export default {
   font-size: 14px;
   color: #666;
   transition: all 0.3s ease;
+}
+
+.requirement-note {
+  margin: 8px 0;
+  padding-left: 26px; /* Align with requirement items */
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
 }
 
 .requirement-item:last-child {
