@@ -284,23 +284,78 @@
                   <div class="row pt-2">
                     <div class="d-grid gap-2 col-xl-5 col-md-7 col-9 mx-auto">
                       <div class="form-floating">
-                        <div class="input-group mb-0">
-                          <span class="input-group-text" id="basic-addon1"
-                            >Birthday</span
-                          >
-                          <input
-                            type="date"
-                            class="form-control form-box-outline"
-                            v-model="birthday"
-                            id="birthday"
-                            placeholder="Birthday"
-                          />
+                        <!-- COMMENTED OUT - old date picker input
+                        <input
+                          type="date"
+                          class="form-control form-box-outline"
+                          v-model="birthday"
+                          id="birthday"
+                          placeholder="Birthday"
+                        />
+                        -->
+                        
+                        <!-- NEW IMPLEMENTATION - Three dropdown selects in two rows -->
+                        <div class="birthday-dropdowns">
+                          <!-- First row: Birthday label, Day and Month -->
+                          <div class="birthday-row">
+                            <span class="input-group-text birthday-label">Birthday</span>
+                            <select
+                              v-model="birthdayDay"
+                              class="form-select form-box-outline birthday-select"
+                              @change="updateBirthdayString"
+                            >
+                              <option value="">Day</option>
+                              <option v-for="day in 31" :key="day" :value="day.toString().padStart(2, '0')">
+                                {{ day }}
+                              </option>
+                            </select>
+                            
+                            <select
+                              v-model="birthdayMonth"
+                              class="form-select form-box-outline birthday-select"
+                              @change="updateBirthdayString"
+                            >
+                              <option value="">Month</option>
+                              <option value="01">January</option>
+                              <option value="02">February</option>
+                              <option value="03">March</option>
+                              <option value="04">April</option>
+                              <option value="05">May</option>
+                              <option value="06">June</option>
+                              <option value="07">July</option>
+                              <option value="08">August</option>
+                              <option value="09">September</option>
+                              <option value="10">October</option>
+                              <option value="11">November</option>
+                              <option value="12">December</option>
+                            </select>
+                          </div>
+                          
+                          <!-- Second row: Year -->
+                          <div class="birthday-row">
+                            <select
+                              v-model="birthdayYear"
+                              class="form-select form-box-outline birthday-select birthday-year"
+                              @change="updateBirthdayString"
+                            >
+                              <option value="">Year</option>
+                              <option v-for="year in yearRange" :key="year" :value="year.toString()">
+                                {{ year }}
+                              </option>
+                            </select>
+                          </div>
                         </div>
+                        
                         <div class="text-center mb-3">
                           <span
                             v-if="missingBirthday"
                             class="text-danger mt-0 mb-3"
                             >Please enter your birthday.</span
+                          >
+                          <span
+                            v-if="invalidBirthday"
+                            class="text-danger mt-0 mb-3"
+                            >Please enter a valid date.</span
                           >
                           <span v-if="underAge" class="text-danger mt-0 mb-3"
                             >You are underage, creation of account is not
@@ -519,6 +574,9 @@ export default {
       firstName: "",
       lastName: "",
       birthday: "",
+      birthdayDay: "",
+      birthdayMonth: "",
+      birthdayYear: "",
       ageCheck: "",
       selectedCountry: "",
 
@@ -542,6 +600,7 @@ export default {
       missingFirstName: false,
       missingLastName: false,
       missingBirthday: false,
+      invalidBirthday: false,
       missingAgeCheck: false,
       duplicateUser: false,
       missingCountry: false,
@@ -560,6 +619,17 @@ export default {
       observationTags: [], // Store the observation tags from database
       drinkType: [], // Store the drink type from database
     };
+  },
+  computed: {
+    // Generate year range from 1920 to current year
+    yearRange() {
+      const currentYear = new Date().getFullYear();
+      const years = [];
+      for (let year = currentYear; year >= 1920; year--) {
+        years.push(year);
+      }
+      return years;
+    }
   },
   mounted() {
     this.loadData();
@@ -722,9 +792,45 @@ export default {
     goBack() {
       this.$router.go(-1);
     },
+    
+    // NEW METHOD - Update birthday string when dropdowns change
+    updateBirthdayString() {
+      if (this.birthdayDay && this.birthdayMonth && this.birthdayYear) {
+        // Create YYYY-MM-DD format same as type="date"
+        this.birthday = `${this.birthdayYear}-${this.birthdayMonth}-${this.birthdayDay}`;
+        
+        // Validate that the date actually exists
+        this.validateBirthdayDate();
+      } else {
+        this.birthday = "";
+        this.invalidBirthday = false;
+      }
+    },
+    
+    // NEW METHOD - Validate that the selected date actually exists
+    validateBirthdayDate() {
+      if (this.birthday) {
+        const testDate = new Date(this.birthday);
+        const [year, month, day] = this.birthday.split('-');
+        
+        // Check if the date is valid by comparing the constructed date
+        // with the input values (handles leap years, invalid days, etc.)
+        const isValidDate = testDate.getFullYear() == parseInt(year) &&
+                           (testDate.getMonth() + 1) == parseInt(month) &&
+                           testDate.getDate() == parseInt(day);
+        
+        this.invalidBirthday = !isValidDate;
+      }
+    },
+    
     signUp() {
       // Reset all errors/success message, just in case
       this.resetError();
+      
+      // Re-validate birthday date to ensure it's still valid
+      if (this.birthday) {
+        this.validateBirthdayDate();
+      }
 
       // Form validation
       let errorCount = 0;
@@ -806,10 +912,11 @@ export default {
       if (this.birthday == "") {
         this.missingBirthday = true;
         errorCount++;
-      }
-
-      // Uncomment to allow age checker
-      else {
+      } else if (this.invalidBirthday) {
+        // Check if the date is invalid (from dropdown validation)
+        errorCount++;
+      } else {
+        // Only proceed with age validation if the date is valid
         var dob = new Date(this.birthday);
         var now = new Date();
         var age = now.getFullYear() - dob.getFullYear();
@@ -1063,6 +1170,7 @@ export default {
       this.missingPassword = false;
       // this.missingPasswordRepeat = false; // COMMENTED OUT - removed repeat password requirement
       this.missingBirthday = false;
+      this.invalidBirthday = false;
       // this.missingAgeCheck = false; // COMMENTED OUT - no longer using checkbox
       this.missingCountry = false;
       this.underAge = false;
@@ -1311,6 +1419,52 @@ export default {
   
   .country-dropdown-body {
     max-height: 190px;
+  }
+}
+
+/* Birthday Dropdown Styles */
+.birthday-dropdowns {
+  margin-top: 8px;
+}
+
+.birthday-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.birthday-label {
+  flex-shrink: 0;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.birthday-select {
+  flex: 1;
+  min-height: 44px; /* Ensure touch-friendly height on mobile */
+}
+
+.birthday-year {
+  width: 100%; /* Year takes full width in second row */
+}
+
+/* Responsive adjustments for birthday dropdowns */
+@media (max-width: 767px) {
+  .birthday-row {
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  
+  .birthday-label {
+    min-width: 70px;
+    font-size: 14px;
+  }
+  
+  .birthday-select {
+    min-height: 48px; /* Larger touch targets on mobile */
+    font-size: 16px; /* Prevent zoom on iOS */
   }
 }
 </style>
