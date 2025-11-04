@@ -520,12 +520,12 @@
                                             <div class="col-6">
                                                 <div class="d-flex align-items-center gap-1 flex-wrap">
                                                     <!-- Item Price / Item Serving Type -->
-                                                    <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
+                                                    <p v-if="sectionItem.itemPrice != -1" class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                         <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                            {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
+                                                            {{ sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                         </template>
                                                         <template v-else>
-                                                            {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                            {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice }}
                                                         </template>
                                                         / {{ sectionItem.itemDetails.itemServingTypeName }}
                                                     </p>
@@ -730,12 +730,12 @@
                                         <div class="d-flex align-items-center gap-3">
 
                                             <!-- Price + Serving Type -->
-                                            <p class="text-start fw-bold default-text-no-background mb-0">
+                                            <p v-if="sectionItem.itemPrice != -1" class="text-start fw-bold default-text-no-background mb-0">
                                                 <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                    {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
+                                                    {{ sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                 </template>
                                                 <template v-else>
-                                                    {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                    {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice }}
                                                 </template>
                                                 / {{ sectionItem.itemDetails.itemServingTypeName }}
                                             </p>
@@ -935,12 +935,12 @@
                                                     <div class="col-8">
                                                         <div class="d-flex align-items-center gap-1 flex-wrap">
                                                             <!-- Item Price / Item Serving Type -->
-                                                            <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
+                                                            <p v-if="subsectionItem.itemPrice != -1" class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                                 <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                                    {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
+                                                                    {{ subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                                 </template>
                                                                 <template v-else>
-                                                                    {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                                    {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice }}
                                                                 </template>
                                                                 / {{ subsectionItem.itemDetails.itemServingTypeName }}
                                                             </p>
@@ -1112,12 +1112,12 @@
                                                 <div class="d-flex align-items-center gap-3">
 
                                                     <!-- Price + Serving Type -->
-                                                    <p class="text-start fw-bold default-text-no-background mb-0">
+                                                    <p v-if="subsectionItem.itemPrice != -1" class="text-start fw-bold default-text-no-background mb-0">
                                                         <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                            {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
+                                                            {{ subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                         </template>
                                                         <template v-else>
-                                                            {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                            {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice }}
                                                         </template>
                                                         / {{ subsectionItem.itemDetails.itemServingTypeName }}
                                                     </p>
