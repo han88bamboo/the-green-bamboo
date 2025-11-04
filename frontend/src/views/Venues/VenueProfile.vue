@@ -5523,6 +5523,7 @@ export default {
                         new: item.new,
                         staffPick: item.staffPick,
                         itemPrice: item.itemPrice,
+                        itemPriceCurrency: item.itemPriceCurrency,
                         itemServingType: item.servingType,  // Map to itemServingType for edit mode
                         servingType: item.servingType,
                         servingTypeText: item.servingTypeText
@@ -5543,6 +5544,8 @@ export default {
                             itemAvailability: firstItem.itemAvailability,
                             new: firstItem.new,
                             staffPick: firstItem.staffPick,
+                            itemPrice: firstItem.itemPrice,
+                            itemPriceCurrency: firstItem.itemPriceCurrency,
                             itemServingType: firstItem.itemServingType,
                             servingType: firstItem.servingType
                         });

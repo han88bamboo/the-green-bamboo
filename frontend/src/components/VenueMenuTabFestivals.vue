@@ -521,7 +521,12 @@
                                                 <div class="d-flex align-items-center gap-1 flex-wrap">
                                                     <!-- Item Price / Item Serving Type -->
                                                     <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
-                                                        ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                        <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
+                                                            {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPriceCurrency || '$' }}
+                                                        </template>
+                                                        <template v-else>
+                                                            {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                        </template>
                                                         / {{ sectionItem.itemDetails.itemServingTypeName }}
                                                     </p>
                                                     <!-- Item Availability -->
@@ -726,7 +731,12 @@
 
                                             <!-- Price + Serving Type -->
                                             <p class="text-start fw-bold default-text-no-background mb-0">
-                                                ${{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
+                                                    {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPriceCurrency || '$' }}
+                                                </template>
+                                                <template v-else>
+                                                    {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
+                                                </template>
                                                 / {{ sectionItem.itemDetails.itemServingTypeName }}
                                             </p>
                                             <!-- Availability -->
@@ -926,7 +936,12 @@
                                                         <div class="d-flex align-items-center gap-1 flex-wrap">
                                                             <!-- Item Price / Item Serving Type -->
                                                             <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
-                                                                ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                                <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
+                                                                    {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPriceCurrency || '$' }}
+                                                                </template>
+                                                                <template v-else>
+                                                                    {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                                </template>
                                                                 / {{ subsectionItem.itemDetails.itemServingTypeName }}
                                                             </p>
                                                             <!-- Item Availability -->
@@ -1098,7 +1113,12 @@
 
                                                     <!-- Price + Serving Type -->
                                                     <p class="text-start fw-bold default-text-no-background mb-0">
-                                                        ${{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                        <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
+                                                            {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPriceCurrency || '$' }}
+                                                        </template>
+                                                        <template v-else>
+                                                            {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
+                                                        </template>
                                                         / {{ subsectionItem.itemDetails.itemServingTypeName }}
                                                     </p>
                                                     <!-- Availability -->
@@ -5001,7 +5021,6 @@ export default {
             // Priority 1: Check if parent provides detailedMenu data (Legacy/Backward Compatibility)
             if (this.detailedMenu && this.detailedMenu.length > 0) {
                 console.log('🍽️ Using provided detailedMenu data (legacy mode)');
-                console.log('🍽️ detailedMenu structure:', this.detailedMenu);
                 this.dataSourceMode = 'legacy-prop';
                 this.loadMenuDataFromProp();
                 return;
@@ -5109,6 +5128,11 @@ export default {
             // Set editableMainSections and searchMenuResults using the provided hierarchical data
             this.resetEditableMainSectionsWithHierarchicalData(hierarchicalMenu);
             this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
+
+            // DEBUG: Log sample menu item to check data structure
+            if (hierarchicalMenu.length > 0 && hierarchicalMenu[0].sectionMenu && hierarchicalMenu[0].sectionMenu.length > 0) {
+                console.log('🔍 CURRENCY DEBUG - Sample menu item:', JSON.stringify(hierarchicalMenu[0].sectionMenu[0], null, 2));
+            }
 
             // Emit the processed data back to parent
             this.emitMenuDataProcessed(hierarchicalMenu);
@@ -5449,6 +5473,7 @@ export default {
             console.log('🍽️ Loading hierarchical menu structure for venue:', venueId);
             
             try {
+                console.log('🔍 CHARSIUCHARLIE_API_ENDPOINT_DEBUG - Calling hierarchical menu API:', `${process.env.VUE_APP_API_URL}/menu/${venueId}`);
                 const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${venueId}`);
                 
                 if (response.status === 200 && response.data) {

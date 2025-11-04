@@ -4906,3 +4906,8 @@ VALUES (9, 1177334, 'Mon, 22 Sep 2025 09:37:17 GMT', '');
 
 UPDATE "usersDrinkLists" SET "listDesc" = '', "isPublic" = true WHERE "id" = 9;
 
+
+INSERT INTO "currencySymbols" ("symbol") VALUES 
+('$'), ('Tokens'), ('€'), ('£'), ('¥'), ('₩'), ('₹'), ('₽'), ('₺'), ('₫'), ('₦'), 
+('₱'), ('₲'), ('₵'), ('₴'), ('₭'), ('฿'), ('₡'), ('₪'), ('₸'), ('؋'), 
+('₮'), ('₿'), ('Ξ');

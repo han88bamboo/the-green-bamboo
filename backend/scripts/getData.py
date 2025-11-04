@@ -5727,6 +5727,7 @@ def getVenue(id):
                                     'itemOrder', mi."itemOrder",
                                     'itemVintage', mi."variant",
                                     'itemPrice', mi."itemPrice",
+                                    'itemPriceCurrency', mi."itemPriceCurrency",  -- ADD THIS LINE
                                     'itemAvailability', mi."itemAvailability",
                                     'itemID', mi."itemID",
                                     'itemServingType', mi."itemServingType"
@@ -5829,6 +5830,7 @@ def getVenueByRequestId(id):
                                 SELECT json_agg(json_build_object(
                                     'itemOrder', mi."itemOrder",
                                     'itemPrice', mi."itemPrice",
+                                    'itemPriceCurrency', mi."itemPriceCurrency",  -- ADD THIS LINE
                                     'itemAvailability', mi."itemAvailability",
                                     'itemID', mi."itemID",
                                     'itemServingType', mi."itemServingType"

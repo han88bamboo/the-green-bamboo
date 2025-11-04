@@ -43,6 +43,7 @@ DROP TABLE IF EXISTS "reviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "producerReviews" CASCADE;
 DROP TABLE IF EXISTS "producerReviewsUserVotes" CASCADE;
 DROP TABLE IF EXISTS "servingTypes" CASCADE;
+DROP TABLE IF EXISTS "currencySymbols" CASCADE;
 DROP TABLE IF EXISTS "specialColours" CASCADE;
 DROP TABLE IF EXISTS "subTags" CASCADE;
 DROP TABLE IF EXISTS "tokens" CASCADE;
@@ -108,6 +109,12 @@ CREATE TABLE "accountRequests" (
 CREATE TABLE "servingTypes" (
     "id" SERIAL PRIMARY KEY,
     "servingType" VARCHAR(255)
+);
+
+-- ========= "currencySymbols" =========
+CREATE TABLE "currencySymbols" (
+    "id" SERIAL PRIMARY KEY,
+    "symbol" VARCHAR(10) NOT NULL UNIQUE
 );
 
 -- ========= "specialColours" =========
@@ -751,7 +758,8 @@ CREATE TABLE "menuItems" (
     "sectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
     "variant" SMALLINT DEFAULT NULL, -- 2 bytes per row, Handles years from -32,768 to 32,767
     "new" BOOLEAN,
-    "staffPick" BOOLEAN
+    "staffPick" BOOLEAN,
+    "itemPriceCurrency" VARCHAR(10) DEFAULT 'Tokens' -- newly added to support currency drop-down list
 );
 -- ALTER TABLE "menuItems" ADD COLUMN "variant" SMALLINT DEFAULT NULL;
 
