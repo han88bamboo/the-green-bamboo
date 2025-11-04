@@ -522,7 +522,7 @@
                                                     <!-- Item Price / Item Serving Type -->
                                                     <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                         <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                            {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPriceCurrency || '$' }}
+                                                            {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                         </template>
                                                         <template v-else>
                                                             {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
@@ -732,7 +732,7 @@
                                             <!-- Price + Serving Type -->
                                             <p class="text-start fw-bold default-text-no-background mb-0">
                                                 <template v-if="(sectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                    {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPriceCurrency || '$' }}
+                                                    {{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }} {{ sectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                 </template>
                                                 <template v-else>
                                                     {{ sectionItem.itemPriceCurrency || '$' }}{{ sectionItem.itemPrice == -1 ? '-' : sectionItem.itemPrice }}
@@ -937,7 +937,7 @@
                                                             <!-- Item Price / Item Serving Type -->
                                                             <p class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
                                                                 <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                                    {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPriceCurrency || '$' }}
+                                                                    {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                                 </template>
                                                                 <template v-else>
                                                                     {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
@@ -1114,7 +1114,7 @@
                                                     <!-- Price + Serving Type -->
                                                     <p class="text-start fw-bold default-text-no-background mb-0">
                                                         <template v-if="(subsectionItem.itemPriceCurrency || '$') === 'Tokens'">
-                                                            {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPriceCurrency || '$' }}
+                                                            {{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }} {{ subsectionItem.itemPrice <= 1 ? 'Token' : 'Tokens' }}
                                                         </template>
                                                         <template v-else>
                                                             {{ subsectionItem.itemPriceCurrency || '$' }}{{ subsectionItem.itemPrice == -1 ? '-' : subsectionItem.itemPrice }}
