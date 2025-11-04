@@ -378,7 +378,7 @@
                                      style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
                                      :alt="review.venueName" />
                                 <img v-else
-                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                     src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337"
                                      class="rounded-circle me-3 flex-shrink-0" 
                                      style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #3CB371;" 
                                      alt="Default venue" />
@@ -479,7 +479,7 @@
                                              style="object-fit: cover;" 
                                             :alt="review.venueName" />
                                         <img v-else
-                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultVenueProfilePhoto.png?v=1748435337"
                                             class="w-100 h-100"
                                              style="object-fit: cover;" 
                                             alt="Default venue" />
