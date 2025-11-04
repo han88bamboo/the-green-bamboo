@@ -2170,75 +2170,32 @@
           </div>
 
           <!-- Events Nearby Section -->
-          <div v-if="!ownProfile || true"
-            style="
-              border: 1px solid rgb(224, 224, 224); border-radius: 8px; padding: 16px; background-color: rgb(255, 255, 255);;
-            "
-            class="mb-4"
-            >
-            <h5
-              style="
-                font-size: 18px;
-                font-weight: bold;
-                border-bottom: 1px solid #e0e0e0;
-                padding-bottom: 16px;
-                margin-bottom: 16px;
-                color: #6c757d;
-              "
-            >
-              Check Out Events Nearby!
-            </h5>
+          <section class="dx-events card">
+            <header class="dx-events__header">
+              <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
+            </header>
 
-            <div>
-              <div
-                style="
-                  display: flex;
-                  align-items: flex-start;
-                  gap: 16px;
-                  margin-bottom: 16px;
-                "
-              >
-                <a 
-                  href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025"
-                >
-                  <div
-                    style="
-                      width: 80px;
-                      height: 80px;
-                      border-radius: 8px;
-                      flex-shrink: 0;
-                      overflow: hidden;
-                      cursor: pointer;
-                      transition: transform 0.2s ease;
-                    "
-                    class="event-image"
-                    @mouseover="$event.target.style.transform = 'scale(1.05)'"
-                    @mouseleave="$event.target.style.transform = 'scale(1)'"
-                  >
-                    <img
-                      src="https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/87edb4b1-c96f-4f26-b6f5-1d59545b2983.jpg"
-                      alt="Champagniac Singapore 2025"
-                      style="
-                        width: 100%;
-                        height: 100%;
-                        object-fit: cover;
-                      "
-                    >
-                  </div>
+            <div class="dx-events__body">
+              <article class="dx-event">
+                <a class="dx-event__media" href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025" aria-label="Champagniac Singapore 2025">
+                  <!-- Replace with your real image -->
+                  <img
+                    class="dx-event__img"
+                    src="https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/87edb4b1-c96f-4f26-b6f5-1d59545b2983.jpg"
+                    alt="Champagniac Singapore 2025 poster"
+                    loading="lazy"
+                  />
                 </a>
-                <div class="flex-grow-1">
-                  <a 
-                    href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025"
-                    style="text-decoration: none; color: inherit;"
-                  >
-                    <h5 class="mb-2 fw-bold event-title" style="cursor: pointer; transition: color 0.2s ease;">Champagniac Singapore 2025</h5>
-                  </a>
-                  <p class="mb-1 text-muted event-date">8-9th Nov 2025</p>
-                  <p class="mb-0 event-description">Taste 100+ Champagnes!</p>
+
+                <div class="dx-event__content">
+                  <h3 class="dx-event__name">Champagniac Singapore 2025</h3>
+                  <p class="dx-event__meta"><em>8th – 9th November 2025</em></p>
+                  <p class="dx-event__desc">Taste 100+ Champagnes</p>
                 </div>
-              </div>
+              </article>
             </div>
-          </div>
+          </section>
+
 
           <!-- reviews and lists -->
           <div :class="{ 'mt-2': ownProfile }">
@@ -7861,40 +7818,108 @@ export default {
   .cellar-item-card .card-body {
     padding: 0.75rem;
   }
-}
 
-/* Events Section Mobile Styles */
-@media (max-width: 767.98px) {
-  .event-image {
-    width: 60px !important;
-    height: 60px !important;
-  }
-  
-  .event-title {
-    font-size: 0.9rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  
-  .event-date {
-    font-size: 0.75rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-  
-  .event-description {
-    font-size: 0.8rem !important;
-    margin-bottom: 0 !important;
+  .dx-events.card {
+    margin: 10px; 
   }
 }
 
-@media (min-width: 768px) {
-  .event-image {
-    width: 80px;
-    height: 80px;
-  }
+
+/* Events Section Styles */
+.dx-events.card {
+  --dx-radius: 10px;
+  --dx-border: #e5e7eb;
+  --dx-shadow: 0 2px 12px rgba(0,0,0,.06);
+  --dx-heading: #ffffff;
+  --dx-text: #1f2937;
+  --dx-muted: #6b7280;
+
+  border: 1px solid var(--dx-border);
+  border-radius: var(--dx-radius);
+  background: #fff;
+  box-shadow: var(--dx-shadow);
+  overflow: hidden; /* ensures rounded top corners clip the header */
 }
 
-/* Event link hover effects */
-.event-title:hover {
-  color: #f0b358 !important;
+/* Gradient header */
+.dx-events__header {
+  background: linear-gradient(180deg, #5DA2F0 0%, #2263C6 100%);
+  color: var(--dx-heading);
+  padding: 16px 20px;
 }
+
+.dx-events__title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+/* Body */
+.dx-events__body {
+  padding: 18px 20px 22px;
+}
+
+/* Single event row */
+.dx-event {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+/* Image block */
+.dx-event__media {
+  display: block;
+  width: 84px;
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0,0,0,.08);
+}
+.dx-event__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text block */
+.dx-event__content { color: var(--dx-text); }
+.dx-event__name {
+  margin: 2px 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.dx-event__meta {
+  margin: 0 0 6px;
+  color: var(--dx-muted);
+  font-size: .95rem;
+}
+.dx-event__desc {
+  margin: 0;
+  color: var(--dx-text);
+  font-size: .98rem;
+}
+
+/* Hover affordance (no layout shift) */
+.dx-event__media:hover .dx-event__img { transform: scale(1.02); }
+.dx-event__img { transition: transform 160ms ease; }
+
+/* Accessibility: honor reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .dx-event__img { transition: none; }
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 520px) {
+  .dx-events__title { font-size: 1rem; }
+  .dx-event {
+    grid-template-columns: 72px 1fr;
+    gap: 12px;
+  }
+  .dx-event__media { width: 72px; }
+}
+
+
 </style>

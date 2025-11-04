@@ -468,9 +468,23 @@
                                 </div>
                             </div>
                             
-                            <!-- Default image if no photos -->
+                            <!-- Default image if no photos --> <!-- KAI EDIT-->
                             <div v-else class="default-venue-image position-relative" style="height: 200px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-store text-muted" style="font-size: 3rem;"></i>
+                                <div class="d-flex w-100" style="height: 200px;">
+                                    <!-- default venue photo - takes full width -->
+                                    <div class="photo-container w-100">
+                                        <img v-if="review.venuePhoto" 
+                                            :src="review.venuePhoto" 
+                                            class="w-100 h-100"
+                                             style="object-fit: cover;" 
+                                            :alt="review.venueName" />
+                                        <img v-else
+                                            src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/defaultProfilePhoto.png?v=1748434288"
+                                            class="w-100 h-100"
+                                             style="object-fit: cover;" 
+                                            alt="Default venue" />
+                                    </div>
+                                </div>
                                 
                                 <!-- User and Rating Overlay on default image -->
                                 <div class="review-overlay position-absolute d-flex align-items-center">
@@ -484,6 +498,8 @@
                                          class="rounded-circle me-1" 
                                          style="width: 22px; height: 22px; object-fit: cover;" 
                                          alt="Default profile" />
+
+                                    
                                     <span class="overlay-text">
                                         @{{ truncateText(review.username, 15) }} rated 
                                         <span class="overlay-rating">{{ parseFloat(review.rating) && !isNaN(parseFloat(review.rating)) ? parseFloat(review.rating).toFixed(1) : 'N/A' }}★</span>
