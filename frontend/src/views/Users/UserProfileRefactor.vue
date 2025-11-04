@@ -2172,16 +2172,13 @@
           <!-- Events Nearby Section -->
           <div v-if="!ownProfile || true"
             style="
-              border: 1px solid #e0e0e0;
-              border-radius: 8px;
-              padding: 16px;
-              background-color: #ffffff;
+              border: 1px solid rgb(224, 224, 224); border-radius: 8px; padding: 16px; background-color: rgb(255, 255, 255);;
             "
             class="mb-4"
             >
-            <h3
+            <h5
               style="
-                font-size: 24px;
+                font-size: 18px;
                 font-weight: bold;
                 border-bottom: 1px solid #e0e0e0;
                 padding-bottom: 16px;
@@ -2190,7 +2187,7 @@
               "
             >
               Check Out Events Nearby!
-            </h3>
+            </h5>
 
             <div>
               <div
