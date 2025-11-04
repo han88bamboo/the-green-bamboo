@@ -1393,6 +1393,12 @@ def editMenuHierarchical():
                         columns.append("staffPick")
                         values.append(bool(itemStaffPick))
 
+                    # Add 'itemPriceCurrency' field if provided
+                    itemPriceCurrency = item.get('itemPriceCurrency')
+                    if itemPriceCurrency is not None:
+                        columns.append("itemPriceCurrency")
+                        values.append(itemPriceCurrency)
+
                     # Append it back as string to be passed for execution
                     column_names = ", ".join(f'"{col}"' for col in columns)
                     placeholders = ", ".join(["%s"] * len(values))

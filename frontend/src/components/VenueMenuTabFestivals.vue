@@ -1524,7 +1524,12 @@
                                                 </div>
                                                 <div class="col-3 pe-0">
                                                     <div class="input-group">
-                                                        <span class="input-group-text fw-bold p-1">$</span>
+                                                        <select class="form-select p-1" style="max-width: 80px; border-radius: 0.375rem 0 0 0.375rem;" 
+                                                            v-model="menuItem.itemPriceCurrency">
+                                                            <option v-for="currency in currencies" :key="currency" :value="currency">
+                                                                {{ currency }}
+                                                            </option>
+                                                        </select>
                                                         <input type="number" class="p-1 form-control"
                                                             v-model="menuItem.itemPrice" placeholder="-"
                                                             min="0" step="0.01">
@@ -1626,7 +1631,12 @@
                                                         </div>
                                                         <div class="col-3">
                                                             <div class="input-group">
-                                                                <span class="input-group-text fw-bold">$</span>
+                                                                <select class="form-select" style="max-width: 70px; border-radius: 0.375rem 0 0 0.375rem;" 
+                                                                    v-model="menuItem.itemPriceCurrency">
+                                                                    <option v-for="currency in currencies" :key="currency" :value="currency">
+                                                                        {{ currency }}
+                                                                    </option>
+                                                                </select>
                                                                 <input type="number" class="form-control" v-model="menuItem.itemPrice" placeholder="-" min="0" step="0.01">
                                                             </div>
                                                         </div>
@@ -1957,7 +1967,12 @@
                                                     <!-- Edit Item Price -->
                                                     <div class="col-3 pe-0">
                                                         <div class="input-group">
-                                                            <span class="input-group-text fw-bold p-1">$</span>
+                                                            <select class="form-select p-1" style="max-width: 80px; border-radius: 0.375rem 0 0 0.375rem;" 
+                                                                v-model="menuItem.itemPriceCurrency">
+                                                                <option v-for="currency in currencies" :key="currency" :value="currency">
+                                                                    {{ currency }}
+                                                                </option>
+                                                            </select>
                                                             <input type="number" class="p-1 form-control"
                                                                 v-model="menuItem.itemPrice" placeholder="-"
                                                                 min="0" step="0.01">
@@ -2136,8 +2151,12 @@
                                                             <!-- Edit Item Price -->
                                                             <div class="col-3">
                                                                 <div class="input-group">
-                                                                    <span
-                                                                        class="input-group-text fw-bold">$</span>
+                                                                    <select class="form-select" style="max-width: 70px; border-radius: 0.375rem 0 0 0.375rem;" 
+                                                                        v-model="menuItem.itemPriceCurrency">
+                                                                        <option v-for="currency in currencies" :key="currency" :value="currency">
+                                                                            {{ currency }}
+                                                                        </option>
+                                                                    </select>
                                                                     <input type="number" class="form-control"
                                                                         v-model="menuItem.itemPrice"
                                                                         placeholder="-" min="0" step="0.01">
@@ -3889,6 +3908,9 @@ export default {
             
             // Data source mode tracking
             dataSourceMode: '', // 'legacy-flat', 'legacy-hierarchical', 'api-hierarchical', 'empty'
+            
+            // Currency symbols for dropdowns
+            currencies: [], // Will be loaded from API
 
             // Festival Tasting Tracker data
             userTastings: new Map(), // Key: `${itemID}-${variant}`, Value: tasting record
@@ -4256,6 +4278,9 @@ export default {
         // Smart data source detection and adaptation
         this.initializeMenuData();
         
+        // Load currency symbols for edit mode dropdowns
+        this.loadCurrencies();
+        
         // Load user tastings if this is a festival venue and user is signed in
         this.$nextTick(async () => {
             if (this.showTastingTracker) {
@@ -4349,6 +4374,51 @@ export default {
         }
     },
     methods: {
+        
+        // Load currency symbols from API
+        async loadCurrencies() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getCurrencies`);
+                if (response.status === 200 && response.data) {
+                    this.currencies = response.data;
+                    console.log('💰 Loaded currencies:', this.currencies);
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('💰 Error loading currencies:', error);
+                // Fallback to default currencies if API fails
+                this.currencies = ['$', '€', '£', 'Tokens'];
+            }
+        },
+        
+        // Ensure menu items have default currency if not set
+        ensureMenuItemCurrencies(menuData) {
+            if (!Array.isArray(menuData)) return;
+            
+            menuData.forEach(section => {
+                if (section.sectionMenu) {
+                    section.sectionMenu.forEach(item => {
+                        if (!item.itemPriceCurrency) {
+                            item.itemPriceCurrency = '$'; // Default to $ if not set
+                        }
+                    });
+                }
+                
+                // Handle subsections
+                if (section.subsections) {
+                    section.subsections.forEach(subsection => {
+                        if (subsection.sectionMenu) {
+                            subsection.sectionMenu.forEach(item => {
+                                if (!item.itemPriceCurrency) {
+                                    item.itemPriceCurrency = '$'; // Default to $ if not set
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        },
 
         // ------- START Jump to Section Methods (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
         
@@ -5729,6 +5799,9 @@ export default {
         resetEditableMainSectionsWithHierarchicalData(hierarchicalData) {
             console.log('🍽️ Resetting editable main sections with hierarchical data');
             
+            // Ensure all menu items have default currencies
+            this.ensureMenuItemCurrencies(hierarchicalData);
+            
             // Directly populate editableMainSections with hierarchical structure
             this.editableMainSections = hierarchicalData.map(section => {
                 // Deep copy section menu items and ensure database values are preserved
@@ -7096,6 +7169,7 @@ export default {
                             itemOrder: index, // Ensure sequential ordering
                             itemVintage: item.vintage || item.itemVintage || null,
                             itemPrice: item.itemPrice || item.price || null,
+                            itemPriceCurrency: item.itemPriceCurrency || '$', // Include currency field
                             itemAvailability: item.itemAvailability !== undefined ? item.itemAvailability : true,
                             new: item.new !== undefined ? item.new : false,
                             staffPick: item.staffPick !== undefined ? item.staffPick : false,
@@ -7603,6 +7677,7 @@ export default {
                 itemOrder: this.newMenuItemTargetSection.sectionMenu.length,
                 itemVintage: this.newMenuItemVintage,
                 itemPrice: this.newMenuItemPrice,
+                itemPriceCurrency: '$', // Default currency for new items
                 itemServingType: this.newMenuItemServingType,
                 itemAvailability: true,
                 itemDetails: {
@@ -7977,6 +8052,7 @@ export default {
                     itemOrder: this.globalMenuItemTargetSection.sectionMenu.length,
                     itemVintage: item.newMenuItemVintage,
                     itemPrice: item.newMenuItemPrice || -1,
+                    itemPriceCurrency: '$', // Default currency for new items
                     itemServingType: item.newMenuItemServingType,
                     itemAvailability: true,
                     itemDetails: {

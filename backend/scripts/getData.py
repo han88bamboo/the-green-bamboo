@@ -67,7 +67,7 @@
 #           /getFlavourTags (GET), /getSubTags (GET), /getObservationTags (GET),
 #           /getVenueMainTypes (GET), /getVenueSubTypes (GET),
 #           /getColours (GET), /getSpecialColours (GET), /getLanguages (GET),
-#           /getServingTypes (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
+#           /getServingTypes (GET), /getCurrencies (GET), /getLatestNews (GET), /getRequestInaccuracyByVenue/<id> (GET),
 #           /getUserNames (GET), /getQuestionsUpdates (GET), /getRequestsCount (POST), /getUserNamesDynamic/<search_Term> (GET), 
 #           /bottle-listings (GET), /producer-listings (GET), /venue-listings (GET), /user-listings (GET),
 #           /getFoodPairings/<ownerType>/<ownerID> (GET), /getCurrentLocations/<ownerType>/<ownerID> (GET), /getSubLocations/<ownerType>/<ownerID> (GET), /getNoteToSelf/<ownerType>/<ownerID> (GET),
@@ -7109,6 +7109,22 @@ def getServingTypes():
         return jsonify([])
     
     return jsonify(serving_types_data), 200
+
+@blueprint.route("/getCurrencies")
+def getCurrencies():
+    """Get all available currency symbols for venue menu items"""
+    
+    with db_manager.get_cursor() as cursor:
+        cursor.execute('SELECT "symbol" FROM "currencySymbols" ORDER BY "id"')
+        currency_data = cursor.fetchall()
+
+    if not currency_data:
+        return jsonify([])
+    
+    # Extract just the symbol values from the database result
+    currencies = [row['symbol'] for row in currency_data]
+    
+    return jsonify(currencies), 200
 
 # -----------------------------------------------------------------------------------------
 
