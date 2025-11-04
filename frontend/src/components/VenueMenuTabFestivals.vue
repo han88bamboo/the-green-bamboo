@@ -2382,6 +2382,18 @@
                                             v-model="item.newMenuItemVintage">
                                     </div>
 
+                                    <!-- [input] menu item currency -->
+                                    <div class="form-group mb-3">
+                                        <p class="text-start mb-1">Menu Item Currency</p>
+                                        <select class="form-select" v-model="item.newMenuItemCurrency">
+                                            <option v-for="currency in currencies" 
+                                                    :key="currency" 
+                                                    :value="currency">
+                                                {{ currency }}
+                                            </option>
+                                        </select>
+                                    </div>
+
                                     <!-- [input] menu item price -->
                                     <div class="form-group mb-3">
                                         <p class="text-start mb-1"> Menu Item Price (Note: If there is
@@ -2483,7 +2495,7 @@
                                                     <div class="col-4">
                                                         <p
                                                             class="text-start fs-5 fw-bold default-text-no-background">
-                                                            $ {{
+                                                            {{ item.newMenuItemCurrency || '$' }} {{
                                                             item.newMenuItemPrice || "-" }} / {{
                                                             servingTypes.find(i => i.id ==
                                                             item.newMenuItemServingType)?.servingType ||
@@ -2557,7 +2569,7 @@
                                                         <!-- Item Price / Item Serving Type -->
                                                         <p
                                                             class="text-start mobile-rating-smaller-text-2 fw-bold default-text-no-background mb-0">
-                                                            $ {{ item.newMenuItemPrice || "-" }} / {{
+                                                            {{ item.newMenuItemCurrency || '$' }} {{ item.newMenuItemPrice || "-" }} / {{
                                                             servingTypes.find(i => i.id ==
                                                             item.newMenuItemServingType)?.servingType ||
                                                             "-" }}</p>
@@ -3856,6 +3868,7 @@ export default {
             newMenuItemTargetParentSection: {}, // Parent section if targeting a subsection
             newMenuItemVintage: null,
             newMenuItemPrice: -1,
+            newMenuItemCurrency: '$', // Default currency for new items
             newMenuItemServingType: {},
 
             searchQuery: '',
@@ -3871,6 +3884,7 @@ export default {
                     newMenuItemTarget: {},
                     newMenuItemVintage: null,
                     newMenuItemPrice: -1,
+                    newMenuItemCurrency: '$', // Default currency for new items
                     newMenuItemServingType: 1, // Will be properly initialized when servingTypes are loaded
                     debounceTimer: null,
                     // Producer search functionality
@@ -7759,6 +7773,7 @@ export default {
                     newMenuItemTarget: {},
                     newMenuItemVintage: null,
                     newMenuItemPrice: -1,
+                    newMenuItemCurrency: '$', // Default currency for new items
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
                     producerDebounceTimer: null,
@@ -7791,6 +7806,7 @@ export default {
                     newMenuItemTarget: {},
                     newMenuItemVintage: null,
                     newMenuItemPrice: -1,
+                    newMenuItemCurrency: '$', // Default currency for new items
                     newMenuItemServingType: defaultServingId,
                     debounceTimer: null,
                     producerDebounceTimer: null
@@ -8052,7 +8068,7 @@ export default {
                     itemOrder: this.globalMenuItemTargetSection.sectionMenu.length,
                     itemVintage: item.newMenuItemVintage,
                     itemPrice: item.newMenuItemPrice || -1,
-                    itemPriceCurrency: '$', // Default currency for new items
+                    itemPriceCurrency: item.newMenuItemCurrency || '$', // Use selected currency or default to $
                     itemServingType: item.newMenuItemServingType,
                     itemAvailability: true,
                     itemDetails: {
@@ -8079,6 +8095,7 @@ export default {
                         listingID: item.newMenuItemTarget['id'],
                         itemVintage: item.newMenuItemVintage,
                         itemPrice: item.newMenuItemPrice || -1,
+                        itemPriceCurrency: item.newMenuItemCurrency || '$', // Include selected currency
                         servingType: item.newMenuItemServingType,
                         sectionName: this.globalMenuItemTargetSection.sectionName,
                         sectionOrder: this.globalMenuItemTargetSection.sectionOrder,

@@ -1040,6 +1040,7 @@ def addListingToMenu():
     menuOrder = int(data['menuOrder'])
     listingID = int(data['listingID'])
     itemPrice = data['itemPrice']
+    itemPriceCurrency = data.get('itemPriceCurrency', '$')  # Get currency or default to $
     servingType = int(data['servingType'])
     sectionName = data['sectionName']
 
@@ -1072,8 +1073,8 @@ def addListingToMenu():
             
             sectionId = section['id']
 
-            columns = ["itemOrder", "itemPrice", "itemAvailability", "itemID", "itemServingType", "sectionId"]
-            values = [menuOrder, itemPrice, True, listingID, servingType, sectionId]
+            columns = ["itemOrder", "itemPrice", "itemPriceCurrency", "itemAvailability", "itemID", "itemServingType", "sectionId"]
+            values = [menuOrder, itemPrice, itemPriceCurrency, True, listingID, servingType, sectionId]
 
             if itemVintage is not None:
                 columns.append("variant")
