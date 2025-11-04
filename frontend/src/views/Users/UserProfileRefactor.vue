@@ -29,7 +29,7 @@
     <div class="container text-start">
       <div class="row">
         <!-- user profile -->
-        <div class="col-12 col-md-4 mb-0">
+        <div class="col-12 col-md-4 mb-0 pb-2">
           <div class="container">
             <!-- basic information -->
             <div class="row">
@@ -231,19 +231,18 @@
               <div class="col-6" v-if="ownProfile && user">
                 <router-link
                   :to="{ path: '/dashboard/user/' + userID }"
-                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  class="btn mobile-rating-smaller-text-2 primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
                   style="font-weight: bold"
                 >
-                  View My Drink Stats
+                  My Drink Stats
                 <i class="bi bi-arrow-up-right"></i>
-                </router-link>
-                
+                </router-link> 
               </div>
               <div class="col-6">
                 <router-link 
                     :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
-                    class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
-                    style="font-weight: bold"
+                    class=" mobile-rating-smaller-text-2  fw-bold btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                    
                   >
                     View All Reviews
                   <i class="bi bi-arrow-up-right"></i>
@@ -251,13 +250,13 @@
               </div>
               <div class="col-6" v-if="ownProfile && user">
                 <div>
-                  <button class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
+                  <button class="btn mobile-rating-smaller-text-2  primary-btn-less-round-blue btn-md mt-2 w-100 d-flex justify-content-between align-items-start"
                           type="button" 
                           data-bs-toggle="collapse" 
                           data-bs-target="#recentactivityCollapse"
                           aria-expanded="false" 
                           aria-controls="recentactivityCollapse">
-                    <span class="fw-bold">View Recent Activity</span>
+                    <span class="fw-bold">Recent Activity</span>
                     <i class="bi bi-chevron-down"></i>
                   </button>
                 </div>
@@ -265,8 +264,8 @@
               <div class="col-6">
                 <router-link
                   :to="`/profile/user/allfollowingfollowers/${displayUserID}/${displayUser.username}`"
-                  class="btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
-                  style="font-weight: bold"
+                  class="btn mobile-rating-smaller-text-2  fw-bold primary-btn-less-round-blue btn-md mt-2 w-100 d-flex justify-content-between align-items-start"
+                  
                 >
                   View All Friends
                 <i class="bi bi-arrow-up-right"></i>
@@ -1582,15 +1581,12 @@
 
 
             <!-- My Recent ACtivity -->
-            <div v-if="ownProfile" class="mt-4">
+            <div v-if="ownProfile" class="mt-4 mobile-mt-0">
               <h5 class="mobile-view-hide" style="font-weight:bold">Recent Activity</h5>
-              
-              
-              <div class="mb-4 Xmobile-view-hide collapse d-lg-block" id="recentactivityCollapse">
-              <hr>
+              <div class="mb-4 collapse d-lg-block" id="recentactivityCollapse">
                 <div>
                     <div class="square-inline">
-                        <p class="fw-bold text-start">Your Recent Activity</p>
+                        <p class="fw-bold text-start my-2">Your Recent Activity</p>
                     </div>
                     <div class="feed-body mobile-rating-smaller-text-2 pb-2">
                         <!-- Loading State -->
@@ -1616,7 +1612,7 @@
 
                         <!-- Activity List -->
                         <div v-else class="overflow-auto" style="max-height: 100%;">
-                            <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="py-1">
+                            <div v-for="activity in recentUserActivity" :key="activity.id || activity.date" class="pb-1">
                                 <!-- Your Activity -->
                                 <div v-if="activity.type === 'review'">
                                     You rated <b><router-link :to="listingUrl(activity)" class="primary-clickable-text" style="color: rgb(2, 117, 98)"><u>{{ activity.listingName }}</u></router-link> <span style="color: rgb(2, 117, 98)">{{ activity.rating }} stars</span></b> {{ getTimeDifference(activity.date) }}
@@ -1714,10 +1710,6 @@
                 </div>   
               </div> 
             </div>
-
-            
-
-
             <!-- Events-->
             <div class="mt-3 mobile-view-hide">
               <EventBox
@@ -1733,7 +1725,7 @@
         <div v-if="ownProfile" class="row d-lg-none">
           <div class="col-12">
             <button 
-              class="ms-3 btn primary-btn-outline-less-round w-100 text-start d-flex justify-content-between align-items-center welcome-toggle"
+              class="ms-3 btn primary-btn-outline-less-round w-100 text-start d-flex justify-content-between align-items-center welcome-toggle mobile-mt-1"
               type="button" 
               data-bs-toggle="collapse" 
               data-bs-target="#welcomeCollapse" 
