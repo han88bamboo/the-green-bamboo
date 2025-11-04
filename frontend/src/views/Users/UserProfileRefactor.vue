@@ -2169,6 +2169,80 @@
             
           </div>
 
+          <!-- Events Nearby Section -->
+          <div v-if="!ownProfile || true"
+            style="
+              border: 1px solid #e0e0e0;
+              border-radius: 8px;
+              padding: 16px;
+              background-color: #ffffff;
+            "
+            class="mb-4"
+            >
+            <h3
+              style="
+                font-size: 24px;
+                font-weight: bold;
+                border-bottom: 1px solid #e0e0e0;
+                padding-bottom: 16px;
+                margin-bottom: 16px;
+                color: #6c757d;
+              "
+            >
+              Check Out Events Nearby!
+            </h3>
+
+            <div>
+              <div
+                style="
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 16px;
+                  margin-bottom: 16px;
+                "
+              >
+                <a 
+                  href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025"
+                >
+                  <div
+                    style="
+                      width: 80px;
+                      height: 80px;
+                      border-radius: 8px;
+                      flex-shrink: 0;
+                      overflow: hidden;
+                      cursor: pointer;
+                      transition: transform 0.2s ease;
+                    "
+                    class="event-image"
+                    @mouseover="$event.target.style.transform = 'scale(1.05)'"
+                    @mouseleave="$event.target.style.transform = 'scale(1)'"
+                  >
+                    <img
+                      src="https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/87edb4b1-c96f-4f26-b6f5-1d59545b2983.jpg"
+                      alt="Champagniac Singapore 2025"
+                      style="
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                      "
+                    >
+                  </div>
+                </a>
+                <div class="flex-grow-1">
+                  <a 
+                    href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025"
+                    style="text-decoration: none; color: inherit;"
+                  >
+                    <h5 class="mb-2 fw-bold event-title" style="cursor: pointer; transition: color 0.2s ease;">Champagniac Singapore 2025</h5>
+                  </a>
+                  <p class="mb-1 text-muted event-date">8-9th Nov 2025</p>
+                  <p class="mb-0 event-description">Taste 100+ Champagnes!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- reviews and lists -->
           <div :class="{ 'mt-2': ownProfile }">
             <!-- reviews button -->
@@ -7792,4 +7866,38 @@ export default {
   }
 }
 
+/* Events Section Mobile Styles */
+@media (max-width: 767.98px) {
+  .event-image {
+    width: 60px !important;
+    height: 60px !important;
+  }
+  
+  .event-title {
+    font-size: 0.9rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .event-date {
+    font-size: 0.75rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  .event-description {
+    font-size: 0.8rem !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .event-image {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+/* Event link hover effects */
+.event-title:hover {
+  color: #f0b358 !important;
+}
 </style>
