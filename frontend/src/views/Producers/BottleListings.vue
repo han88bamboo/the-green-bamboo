@@ -4847,7 +4847,7 @@ export default {
       }
 
       // Check if logged in, then check if moderator is allowed to edit listing
-      if (this.userID != "defaultUser" && this.userType == "user") {
+      if (this.userID != "defaultUser" && this.userType == "user" && this.user) {
         if (
           (this.user.modType.includes(this.specified_listing.drinkType) &&
             this.specified_listing.allowMod) ||
@@ -5137,8 +5137,14 @@ export default {
     },
 
     async shareReview(review) {
-      console.log("review data : ", review)
       this.currentReview = review;
+
+      if (this.userID === 'defaultUser') {
+        this.copyReviewLink();
+        return;
+      }
+
+      console.log("review data : ", review)
       const flavourTags = [];
       if (review.flavourTag != null) {
         review.flavourTag.forEach((subtag) => {
@@ -5174,10 +5180,11 @@ export default {
           location: review.location,
         },
         user: {
-          name: this.user.displayName,
-          avatar: this.user.photo,
+          name: this.getUsernameFromReview(review)
         },
       };
+      console.log("reviewData : ", this.reviewData)
+
       this.selectedTemplate = 'minimal'; // Reset to default template
       this.showShareModal = true;
       const modalElement = document.getElementById('shareReviewModal');
@@ -5208,34 +5215,18 @@ export default {
 
     async copyReviewLink() {
       if (!this.currentReview) return;
-
+      const toast = useToast();
       try {
-        //const currentUrl = window.location.origin;
-        //const shareUrl = `${currentUrl}/listing/${this.listing_id}?reviewId=${this.currentReview.id}`;
         const currentUrl = window.location.origin + window.location.pathname;
         const shareUrl = `${currentUrl}?reviewId=${this.currentReview.id}`;
 
         await navigator.clipboard.writeText(shareUrl);
 
-        this.shareSuccessMessage = "Review link copied to clipboard!";
-        this.shareSuccess = true;
-        this.shareError = false;
-
-        setTimeout(() => {
-          this.shareSuccess = false;
-          this.shareSuccessMessage = "";
-        }, 3000);
+        toast.success("Review link copied to clipboard!");
 
       } catch (err) {
         console.error('Failed to copy link: ', err);
-        this.shareErrorMessage = "Failed to copy link. Please try again.";
-        this.shareError = true;
-        this.shareSuccess = false;
-
-        setTimeout(() => {
-          this.shareError = false;
-          this.shareErrorMessage = "";
-        }, 3000);
+        toast.error("Failed to copy link. Please try again.");
       }
     },
 
