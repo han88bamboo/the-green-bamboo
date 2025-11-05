@@ -241,8 +241,7 @@
               <div class="col-6">
                 <router-link 
                     :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
-                    class=" mobile-rating-smaller-text-2  fw-bold btn primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
-                    
+                    class="btn mobile-rating-smaller-text-2  fw-bold primary-btn-less-round-blue btn-md mt-2 w-100 d-flex justify-content-between align-items-start"
                   >
                     View All Reviews
                   <i class="bi bi-arrow-up-right"></i>
@@ -2162,7 +2161,7 @@
           </div>
 
           <!-- Events Nearby Section -->
-          <section class="dx-events card">
+          <section v-if="ownProfile && user" class="dx-events card">
             <header class="dx-events__header">
               <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
             </header>
