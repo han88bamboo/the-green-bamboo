@@ -103,8 +103,8 @@ export const createMinimalTemplate = async (layer, data) => {
   const tags = [];
 
   // Get flavor tags from review data
-  if (data.review?.flavourTag && Array.isArray(data.review.flavourTag)) {
-    tags.push(...data.review.flavourTag.slice(0, 3));
+  if (data.review?.flavorTags && Array.isArray(data.review.flavorTags)) {
+    tags.push(...data.review.flavorTags.slice(0, 3));
   }
 
   // Get characteristic tags
@@ -121,13 +121,13 @@ export const createMinimalTemplate = async (layer, data) => {
   }
 
   // Tag colors
-  const tagColors = [
-    { bg: "#E8D5A8", text: "#5C4B2E" }, // Cream/tan
-    { bg: "#7B9FE8", text: "#1E3A5F" }, // Blue
-    { bg: "#C77EB5", text: "#4A1E40" }, // Purple/pink
-    { bg: "#F39C6B", text: "#5C2E1E" }, // Orange
-    { bg: "#FFB84D", text: "#5C3E1E" }, // Yellow/gold
-  ];
+  // const tagColors = [
+  //   { bg: "#E8D5A8", text: "#5C4B2E" }, // Cream/tan
+  //   { bg: "#7B9FE8", text: "#1E3A5F" }, // Blue
+  //   { bg: "#C77EB5", text: "#4A1E40" }, // Purple/pink
+  //   { bg: "#F39C6B", text: "#5C2E1E" }, // Orange
+  //   { bg: "#FFB84D", text: "#5C3E1E" }, // Yellow/gold
+  // ];
 
   // Draw tags in rows
   const tagStartY = 680;
@@ -138,7 +138,7 @@ export const createMinimalTemplate = async (layer, data) => {
   let currentRowTags = 0;
 
   tags.forEach((tag, index) => {
-    const colorScheme = tagColors[index % tagColors.length];
+    // const colorScheme = tagColors[index % tagColors.length];
 
     // Calculate tag dimensions
     const tempText = new Konva.Text({
@@ -169,7 +169,7 @@ export const createMinimalTemplate = async (layer, data) => {
       y: currentY,
       width: tagWidth,
       height: tagHeight,
-      fill: colorScheme.bg,
+      fill: tag.color,
       cornerRadius: 30,
       shadowColor: "rgba(0, 0, 0, 0.3)",
       shadowBlur: 10,
@@ -181,11 +181,11 @@ export const createMinimalTemplate = async (layer, data) => {
     const tagText = new Konva.Text({
       x: currentX,
       y: currentY + 12,
-      text: tag,
+      text: tag.name,
       fontSize: 36,
       fontFamily: "Arial, sans-serif",
       fontStyle: "bold",
-      fill: colorScheme.text,
+      fill: "#ffffff",
       width: tagWidth,
       align: "center",
     });

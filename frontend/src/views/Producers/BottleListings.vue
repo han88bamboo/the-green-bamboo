@@ -5144,7 +5144,6 @@ export default {
         return;
       }
 
-      console.log("review data : ", review)
       const flavourTags = [];
       if (review.flavourTag != null) {
         review.flavourTag.forEach((subtag) => {
@@ -5156,10 +5155,16 @@ export default {
               (family) => subTag.familyTagId === family.id
             );
             if (familyTag) {
-              flavourTags.push(subTag.subTag);
+              flavourTags.push({
+                name: subTag.subTag,
+                color: this.getTagColor(parseInt(subtag))
+              });
             }
           } else {
-            flavourTags.push("<deleted>");
+            flavourTags.push({
+              name: "<deleted>",
+              color: "#cccccc" // or any default color for deleted tags
+            });
           }
         });
       }
