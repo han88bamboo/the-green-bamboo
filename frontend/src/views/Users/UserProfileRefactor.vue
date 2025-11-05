@@ -2179,7 +2179,11 @@
                 </a>
 
                 <div class="dx-event__content">
-                  <h3 class="dx-event__name">Champagniac Singapore 2025</h3>
+                  <h3 class="dx-event__name">
+                    <a href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025" >
+                      Champagniac Singapore 2025
+                    </a>
+                  </h3>
                   <p class="dx-event__meta"><em>8th – 9th November 2025</em></p>
                   <p class="dx-event__desc">Taste 100+ Champagnes</p>
                 </div>
