@@ -438,6 +438,7 @@
                     <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled || (editMenuMode && selfView)" 
                          class="row mx-0 mb-3">
                         <div class="col-12">
+                            {{ logSubscriptionData(menuSection) }}
                             <div class="section-subscription-container">
                                 <!-- Description Text (in edit mode) -->
                                 <div v-if="editMenuMode" class="mb-2">
@@ -4348,6 +4349,14 @@ export default {
                 console.log('🔵 charsiucharlie: New menu length:', newMenu ? newMenu.length : 0);
                 console.log('🔵 charsiucharlie: Old menu length:', oldMenu ? oldMenu.length : 0);
                 
+                // Charsiucharlie_section_desc: Log received prop data
+                console.log('Charsiucharlie_section_desc: VenueMenuTabFestivals received detailedMenu prop:');
+                if (newMenu && Array.isArray(newMenu)) {
+                    newMenu.forEach((section, index) => {
+                        console.log(`Charsiucharlie_section_desc: Received prop[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    });
+                }
+                
                 // Only trigger if we're not already loading and this is a significant change
                 if (this.isLoading) {
                     console.log('🔵 charsiucharlie: Already loading, skipping detailedMenu change');
@@ -5342,6 +5351,17 @@ export default {
         initializeMenuData() {
             console.log('🍽️ VenueMenuTabFestivals: Detecting available data sources...');
             
+            // Charsiucharlie_section_desc: Log detailedMenu prop at initialization
+            console.log('Charsiucharlie_section_desc: initializeMenuData - detailedMenu prop check:');
+            if (this.detailedMenu && Array.isArray(this.detailedMenu)) {
+                console.log(`Charsiucharlie_section_desc: detailedMenu has ${this.detailedMenu.length} sections`);
+                this.detailedMenu.forEach((section, index) => {
+                    console.log(`Charsiucharlie_section_desc: initializeMenuData prop[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                });
+            } else {
+                console.log('Charsiucharlie_section_desc: detailedMenu is empty or invalid:', this.detailedMenu);
+            }
+            
             // Priority 1: Check if parent provides detailedMenu data (Legacy/Backward Compatibility)
             if (this.detailedMenu && this.detailedMenu.length > 0) {
                 console.log('🍽️ Using provided detailedMenu data (legacy mode)');
@@ -5411,6 +5431,14 @@ export default {
             console.log('🍽️ Processing hierarchical menu from prop');
             console.log('🍽️ Input detailedMenu:', this.detailedMenu);
             
+            // Charsiucharlie_section_desc: Log data at start of processing
+            console.log('Charsiucharlie_section_desc: processHierarchicalMenuFromProp - Input data:');
+            if (this.detailedMenu && Array.isArray(this.detailedMenu)) {
+                this.detailedMenu.forEach((section, index) => {
+                    console.log(`Charsiucharlie_section_desc: processHierarchical input[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                });
+            }
+            
             // Check if the data is a flat array with parentSectionId/isSubSection fields
             // or a nested structure with subsections arrays
             const hasNestedStructure = this.detailedMenu.some(section => 
@@ -5443,6 +5471,14 @@ export default {
             
             console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
 
+            // Charsiucharlie_section_desc: Log final hierarchical menu before processing
+            console.log('Charsiucharlie_section_desc: Final hierarchical menu before processing:');
+            if (hierarchicalMenu && Array.isArray(hierarchicalMenu)) {
+                hierarchicalMenu.forEach((section, index) => {
+                    console.log(`Charsiucharlie_section_desc: hierarchical final[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                });
+            }
+
             // Map vintage data for all menu items in the hierarchical structure
             this.mapVintageDataInHierarchicalMenu(hierarchicalMenu);
            
@@ -5452,6 +5488,22 @@ export default {
             // Set editableMainSections and searchMenuResults using the provided hierarchical data
             this.resetEditableMainSectionsWithHierarchicalData(hierarchicalMenu);
             this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
+            
+            // Charsiucharlie_section_desc: Log editableMainSections after reset
+            console.log('Charsiucharlie_section_desc: editableMainSections after resetEditableMainSectionsWithHierarchicalData:');
+            if (this.editableMainSections && Array.isArray(this.editableMainSections)) {
+                this.editableMainSections.forEach((section, index) => {
+                    console.log(`Charsiucharlie_section_desc: editableMainSections[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                });
+            }
+            
+            // Charsiucharlie_section_desc: Log searchMenuResults after buildSearchableMenu
+            console.log('Charsiucharlie_section_desc: searchMenuResults after buildSearchableMenu:');
+            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
+                this.searchMenuResults.forEach((section, index) => {
+                    console.log(`Charsiucharlie_section_desc: searchMenuResults[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                });
+            }
 
             // DEBUG: Log sample menu item to check data structure
             if (hierarchicalMenu.length > 0 && hierarchicalMenu[0].sectionMenu && hierarchicalMenu[0].sectionMenu.length > 0) {
@@ -5601,6 +5653,9 @@ export default {
                 parentSectionId: null, // All sections become main sections
                 isSubSection: false,
                 isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                sectionDescription: section.sectionDescription, // Add subscription description
+                subscribersEnabled: section.subscribersEnabled || false, // Add subscription enabled flag
+                subscribers: section.subscribers || [], // Add subscribers array
                 sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: [] // No subsections in converted flat menu
             }));
@@ -5625,6 +5680,9 @@ export default {
                 parentSectionId: null,
                 isSubSection: false,
                 isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                sectionDescription: section.sectionDescription, // Add subscription description
+                subscribersEnabled: section.subscribersEnabled || false, // Add subscription enabled flag
+                subscribers: section.subscribers || [], // Add subscribers array
                 sectionMenu: section.sectionMenu ? [...section.sectionMenu] : [],
                 subsections: []
             }));
@@ -5640,6 +5698,9 @@ export default {
                         parentSectionId: subsection.parentSectionId,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
+                        sectionDescription: subsection.sectionDescription, // Add subscription description for subsections
+                        subscribersEnabled: subsection.subscribersEnabled || false, // Add subscription enabled flag for subsections
+                        subscribers: subsection.subscribers || [], // Add subscribers array for subsections
                         sectionMenu: subsection.sectionMenu ? [...subsection.sectionMenu] : [],
                         subsections: [] // Subsections can't have subsections
                     });
@@ -6146,6 +6207,9 @@ export default {
                         parentSectionId: subsection.parentSectionId || null,
                         isSubSection: true,
                         isVisible: subsection.isVisible !== undefined ? subsection.isVisible : true,
+                        sectionDescription: subsection.sectionDescription, // Add subscription description for subsections
+                        subscribersEnabled: subsection.subscribersEnabled || false, // Add subscription enabled flag for subsections
+                        subscribers: subsection.subscribers || [], // Add subscribers array for subsections
                         sectionMenu: copiedSubsectionMenu,
                         // Ensure unique identifier for drag operations
                         tempId: subsection.tempId || `loaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -6159,6 +6223,9 @@ export default {
                     parentSectionId: null,
                     isSubSection: false,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                    sectionDescription: section.sectionDescription, // Add subscription description
+                    subscribersEnabled: section.subscribersEnabled || false, // Add subscription enabled flag
+                    subscribers: section.subscribers || [], // Add subscribers array
                     sectionMenu: copiedSectionMenu,
                     subsections: copiedSubsections
                 };
@@ -6191,6 +6258,9 @@ export default {
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                    sectionDescription: section.sectionDescription, // Add subscription description
+                    subscribersEnabled: section.subscribersEnabled || false, // Add subscription enabled flag
+                    subscribers: section.subscribers || [], // Add subscribers array
                     sectionMenu: sectionMenu,
                     subsections: section.subsections ? section.subsections.map(sub => ({
                         id: sub.id,
@@ -6199,6 +6269,9 @@ export default {
                         parentSectionId: sub.parentSectionId,
                         isSubSection: true,
                         isVisible: sub.isVisible !== undefined ? sub.isVisible : true,
+                        sectionDescription: sub.sectionDescription, // Add subscription description for subsections
+                        subscribersEnabled: sub.subscribersEnabled || false, // Add subscription enabled flag for subsections
+                        subscribers: sub.subscribers || [], // Add subscribers array for subsections
                         sectionMenu: sub.sectionMenu ? sub.sectionMenu.map(item => JSON.parse(JSON.stringify(item))) : []
                     })) : []
                 });
@@ -6223,6 +6296,9 @@ export default {
                     sectionName: section.sectionName,
                     sectionOrder: section.sectionOrder,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true,
+                    sectionDescription: section.sectionDescription, // Add subscription description
+                    subscribersEnabled: section.subscribersEnabled || false, // Add subscription enabled flag
+                    subscribers: section.subscribers || [], // Add subscribers array
                     sectionMenu: sectionMenu,
                     subsections: section.subsections ? section.subsections.map(sub => ({
                         id: sub.id,
@@ -6231,6 +6307,9 @@ export default {
                         parentSectionId: sub.parentSectionId,
                         isSubSection: true,
                         isVisible: sub.isVisible !== undefined ? sub.isVisible : true,
+                        sectionDescription: sub.sectionDescription, // Add subscription description for subsections
+                        subscribersEnabled: sub.subscribersEnabled || false, // Add subscription enabled flag for subsections
+                        subscribers: sub.subscribers || [], // Add subscribers array for subsections
                         sectionMenu: sub.sectionMenu ? sub.sectionMenu.map(item => JSON.parse(JSON.stringify(item))) : []
                     })) : []
                 });
@@ -11312,6 +11391,12 @@ export default {
       return section.subscribers.includes(this.currentUserId);
     },
     
+    // Helper method for debugging subscription data in template
+    logSubscriptionData(section) {
+      console.log('🍽️ Charsiucharlie_section_desc Template rendering section:', section.sectionName, 'Description:', section.sectionDescription, 'Enabled:', section.subscribersEnabled, 'Subscribers:', section.subscribers);
+      return ''; // Return empty string so it doesn't display anything
+    },
+    
     // Check if subscription is currently loading for a section
     isSubscriptionLoading(section) {
       return this.subscriptionLoadingStates[section.id] || false;
@@ -11329,13 +11414,13 @@ export default {
       const isCurrentlySubscribed = this.isUserSubscribed(section);
       const action = isCurrentlySubscribed ? 'unsubscribe' : 'subscribe';
       
-      // Set loading state
-      this.$set(this.subscriptionLoadingStates, section.id, true);
+      // Set loading state (Vue 3 compatible)
+      this.subscriptionLoadingStates[section.id] = true;
       
       try {
         // Update local state optimistically
         if (!section.subscribers) {
-          this.$set(section, 'subscribers', []);
+          section.subscribers = [];
         }
         
         if (isCurrentlySubscribed) {
@@ -11381,8 +11466,8 @@ export default {
           this.$toast.error(`Failed to ${action}. Please try again.`);
         }
       } finally {
-        // Clear loading state
-        this.$set(this.subscriptionLoadingStates, section.id, false);
+        // Clear loading state (Vue 3 compatible)
+        this.subscriptionLoadingStates[section.id] = false;
       }
     },
     

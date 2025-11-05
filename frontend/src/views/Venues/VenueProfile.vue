@@ -5451,11 +5451,31 @@ export default {
                 const menuResponse = await this.$axios.get(`${process.env.VUE_APP_API_URL}/menu/${this.targetVenue.id}`);
                 console.log('🍽️ loadMenuData: Menu API response:', menuResponse.data);
                 
+                // Charsiucharlie_section_desc: Log raw API response subscription data
+                console.log('Charsiucharlie_section_desc: Raw API response sections:');
+                if (menuResponse.data && Array.isArray(menuResponse.data)) {
+                    menuResponse.data.forEach((section, index) => {
+                        console.log(`Charsiucharlie_section_desc: Section ${index} - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    });
+                }
+                
                 if (menuResponse.data && Array.isArray(menuResponse.data)) {
                     this.detailedMenu = menuResponse.data;
                     
+                    // Charsiucharlie_section_desc: Log data assigned to detailedMenu
+                    console.log('Charsiucharlie_section_desc: After assignment to detailedMenu:');
+                    this.detailedMenu.forEach((section, index) => {
+                        console.log(`Charsiucharlie_section_desc: detailedMenu[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    });
+                    
                     // Sort sections by sectionOrder but DON'T load items yet
                     this.detailedMenu.sort((a, b) => parseInt(a.sectionOrder) - parseInt(b.sectionOrder));
+                    
+                    // Charsiucharlie_section_desc: Log data after sorting
+                    console.log('Charsiucharlie_section_desc: After sorting by sectionOrder:');
+                    this.detailedMenu.forEach((section, index) => {
+                        console.log(`Charsiucharlie_section_desc: sorted detailedMenu[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    });
                     
                     // Initialize each section with empty items array and loading state
                     for (let section of this.detailedMenu) {
@@ -5463,6 +5483,12 @@ export default {
                         section.itemsLoaded = false;  // Track if items are loaded
                         section.isLoading = false;  // Track if currently loading
                     }
+                    
+                    // Charsiucharlie_section_desc: Log final data before passing to child component
+                    console.log('Charsiucharlie_section_desc: Final detailedMenu before passing to VenueMenuTabFestivals:');
+                    this.detailedMenu.forEach((section, index) => {
+                        console.log(`Charsiucharlie_section_desc: final detailedMenu[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    });
                     
                     console.log('🍽️ loadMenuData: Successfully loaded hierarchical menu structure with', this.detailedMenu.length, 'sections (items will load on demand)');
                 } else {
