@@ -432,7 +432,8 @@
                     </button>
                 </div>
                 
-                <!-- Section Description and Subscribe Button -->
+                
+                <!-- Main Section Content (Collapsible) -->
                 <div class="collapse" :id="'collapseMenuSection' + index">
                     <!-- Section Description (visible when section is expanded) -->
                     <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled || (editMenuMode && selfView)" 
@@ -451,18 +452,50 @@
                                     </textarea>
                                 </div>
                                 
-                                <!-- Description Text (in view mode) -->
-                                <div v-else-if="menuSection.sectionDescription" 
-                                     class="section-description" 
-                                     v-html="formatDescription(menuSection.sectionDescription)">
+                                <!-- Combined Description and Subscribe Button Row (in view mode) -->
+                                <div v-else-if="menuSection.sectionDescription || menuSection.subscribersEnabled" 
+                                     class="d-flex justify-content-between align-items-center gap-3">
+                                    
+                                    <!-- Description Text (in view mode) -->
+                                    <div v-if="menuSection.sectionDescription" 
+                                         class="section-description flex-grow-1" 
+                                         v-html="formatDescription(menuSection.sectionDescription)">
+                                    </div>
+                                    
+                                    <!-- Subscribe Button (for users in view mode) -->
+                                    <div v-if="menuSection.subscribersEnabled && !editMenuMode" class="flex-shrink-0">
+                                        <!-- Mobile Subscribe Button -->
+                                        <button 
+                                            type="button"
+                                            class="btn subscribe-btn mobile-view-show"
+                                            :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                            @click="handleSubscribeClick(menuSection)"
+                                            :disabled="isSubscriptionLoading(menuSection)">
+                                            <span v-if="isSubscriptionLoading(menuSection)" 
+                                                  class="spinner-border spinner-border-sm me-1" 
+                                                  role="status" aria-hidden="true"></span>
+                                            {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe' }}
+                                        </button>
+                                        
+                                        <!-- Desktop Subscribe Button -->
+                                        <button 
+                                            type="button"
+                                            class="btn subscribe-btn mobile-view-hide"
+                                            :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                            @click="handleSubscribeClick(menuSection)"
+                                            :disabled="isSubscriptionLoading(menuSection)">
+                                            <span v-if="isSubscriptionLoading(menuSection)" 
+                                                  class="spinner-border spinner-border-sm me-1" 
+                                                  role="status" aria-hidden="true"></span>
+                                            {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe for Updates' }}
+                                        </button>
+                                    </div>
                                 </div>
                                 
-                                <!-- Subscribe Button Row -->
-                                <div v-if="menuSection.subscribersEnabled || (editMenuMode && selfView)" 
+                                <!-- Edit Mode Controls (for venue owners) -->
+                                <div v-if="menuSection.subscribersEnabled && editMenuMode && selfView" 
                                      class="d-flex justify-content-between align-items-center mt-2">
-                                    
-                                    <!-- Edit Mode Controls (for venue owners) -->
-                                    <div v-if="editMenuMode && selfView" class="d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center gap-3">
                                         <div class="form-check">
                                             <input 
                                                 class="form-check-input" 
@@ -479,30 +512,10 @@
                                             {{ menuSection.subscribers.length }} subscriber(s)
                                         </small>
                                     </div>
-                                    
-                                    <!-- Subscribe Button (for users in view mode) -->
-                                    <div v-else-if="menuSection.subscribersEnabled && !editMenuMode">
-                                        <button 
-                                            type="button"
-                                            class="btn subscribe-btn"
-                                            :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
-                                            @click="handleSubscribeClick(menuSection)"
-                                            :disabled="isSubscriptionLoading(menuSection)">
-                                            <span v-if="isSubscriptionLoading(menuSection)" 
-                                                  class="spinner-border spinner-border-sm me-1" 
-                                                  role="status" aria-hidden="true"></span>
-                                            {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe for Updates' }}
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Main Section Content (Collapsible) -->
-                <div class="collapse" :id="'collapseMenuSection' + index">
-                    
                     <!-- Main Section Direct Items (MOBILE VIEW) -->
                     <div class="mobile-view-show">
                         <!-- Main Section Items -->
@@ -965,9 +978,23 @@
                                                 
                                                 <!-- Subscribe Button (for users in view mode) -->
                                                 <div v-else-if="subsection.subscribersEnabled && !editMenuMode">
+                                                    <!-- Mobile Subscribe Button -->
                                                     <button 
                                                         type="button"
-                                                        class="btn subscribe-btn"
+                                                        class="btn subscribe-btn mobile-view-show"
+                                                        :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                                        @click="handleSubscribeClick(subsection)"
+                                                        :disabled="isSubscriptionLoading(subsection)">
+                                                        <span v-if="isSubscriptionLoading(subsection)" 
+                                                              class="spinner-border spinner-border-sm me-1" 
+                                                              role="status" aria-hidden="true"></span>
+                                                        {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe' }}
+                                                    </button>
+                                                    
+                                                    <!-- Desktop Subscribe Button -->
+                                                    <button 
+                                                        type="button"
+                                                        class="btn subscribe-btn mobile-view-hide"
                                                         :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
                                                         @click="handleSubscribeClick(subsection)"
                                                         :disabled="isSubscriptionLoading(subsection)">
@@ -12640,18 +12667,6 @@ input[type="range"].form-range::-webkit-slider-thumb {
         font-size: 0.85rem;
         padding: 6px 12px;
         min-width: 140px;
-    }
-    
-    .d-flex.justify-content-between.align-items-center {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
-    
-    .d-flex.align-items-center.gap-3 {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
     }
 }
 
