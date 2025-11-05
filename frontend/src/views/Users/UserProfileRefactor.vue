@@ -2162,11 +2162,11 @@
 
           <!-- Events Nearby Section -->
           <section v-if="ownProfile && user" class="dx-events card">
-            <header class="dx-events__header">
+            <header class="dx-events__header w-100">
               <h3 class="dx-events__title">📍 Check Out Events Near You</h3>
             </header>
 
-            <div class="dx-events__body">
+            <div class="dx-events__body w-100">
               <article class="dx-event">
                 <a class="dx-event__media" href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025" aria-label="Champagniac Singapore 2025">
                   <!-- Replace with your real image -->
