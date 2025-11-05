@@ -438,8 +438,7 @@
                     <!-- Section Description (visible when section is expanded) -->
                     <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled || (editMenuMode && selfView)" 
                          class="row mx-0 mb-3">
-                        <div class="col-12">
-                            {{ logSubscriptionData(menuSection) }}
+                        <div class="col-12 p-0">
                             <div class="section-subscription-container">
                                 <!-- Description Text (in edit mode) -->
                                 <div v-if="editMenuMode" class="mb-2">
@@ -464,10 +463,10 @@
                                     
                                     <!-- Subscribe Button (for users in view mode) -->
                                     <div v-if="menuSection.subscribersEnabled && !editMenuMode" class="flex-shrink-0">
-                                        <!-- Mobile Subscribe Button -->
+                                        
                                         <button 
                                             type="button"
-                                            class="btn subscribe-btn mobile-view-show"
+                                            class="btn subscribe-btn"
                                             :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
                                             @click="handleSubscribeClick(menuSection)"
                                             :disabled="isSubscriptionLoading(menuSection)">
@@ -477,18 +476,7 @@
                                             {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe' }}
                                         </button>
                                         
-                                        <!-- Desktop Subscribe Button -->
-                                        <button 
-                                            type="button"
-                                            class="btn subscribe-btn mobile-view-hide"
-                                            :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
-                                            @click="handleSubscribeClick(menuSection)"
-                                            :disabled="isSubscriptionLoading(menuSection)">
-                                            <span v-if="isSubscriptionLoading(menuSection)" 
-                                                  class="spinner-border spinner-border-sm me-1" 
-                                                  role="status" aria-hidden="true"></span>
-                                            {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe for Updates' }}
-                                        </button>
+
                                     </div>
                                 </div>
                                 
@@ -934,7 +922,7 @@
                                 <!-- Subsection Description (visible when subsection is expanded) -->
                                 <div v-if="subsection.sectionDescription || subsection.subscribersEnabled || (editMenuMode && selfView)" 
                                      class="row mx-0 mb-3 ms-4">
-                                    <div class="col-12">
+                                    <div class="col-12 p-0">
                                         <div class="section-subscription-container">
                                             <!-- Description Text (in edit mode) -->
                                             <div v-if="editMenuMode && selfView" class="mb-2">
@@ -4376,14 +4364,6 @@ export default {
                 console.log('🔵 charsiucharlie: New menu length:', newMenu ? newMenu.length : 0);
                 console.log('🔵 charsiucharlie: Old menu length:', oldMenu ? oldMenu.length : 0);
                 
-                // Charsiucharlie_section_desc: Log received prop data
-                console.log('Charsiucharlie_section_desc: VenueMenuTabFestivals received detailedMenu prop:');
-                if (newMenu && Array.isArray(newMenu)) {
-                    newMenu.forEach((section, index) => {
-                        console.log(`Charsiucharlie_section_desc: Received prop[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
-                    });
-                }
-                
                 // Only trigger if we're not already loading and this is a significant change
                 if (this.isLoading) {
                     console.log('🔵 charsiucharlie: Already loading, skipping detailedMenu change');
@@ -5378,17 +5358,6 @@ export default {
         initializeMenuData() {
             console.log('🍽️ VenueMenuTabFestivals: Detecting available data sources...');
             
-            // Charsiucharlie_section_desc: Log detailedMenu prop at initialization
-            console.log('Charsiucharlie_section_desc: initializeMenuData - detailedMenu prop check:');
-            if (this.detailedMenu && Array.isArray(this.detailedMenu)) {
-                console.log(`Charsiucharlie_section_desc: detailedMenu has ${this.detailedMenu.length} sections`);
-                this.detailedMenu.forEach((section, index) => {
-                    console.log(`Charsiucharlie_section_desc: initializeMenuData prop[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
-                });
-            } else {
-                console.log('Charsiucharlie_section_desc: detailedMenu is empty or invalid:', this.detailedMenu);
-            }
-            
             // Priority 1: Check if parent provides detailedMenu data (Legacy/Backward Compatibility)
             if (this.detailedMenu && this.detailedMenu.length > 0) {
                 console.log('🍽️ Using provided detailedMenu data (legacy mode)');
@@ -5458,14 +5427,6 @@ export default {
             console.log('🍽️ Processing hierarchical menu from prop');
             console.log('🍽️ Input detailedMenu:', this.detailedMenu);
             
-            // Charsiucharlie_section_desc: Log data at start of processing
-            console.log('Charsiucharlie_section_desc: processHierarchicalMenuFromProp - Input data:');
-            if (this.detailedMenu && Array.isArray(this.detailedMenu)) {
-                this.detailedMenu.forEach((section, index) => {
-                    console.log(`Charsiucharlie_section_desc: processHierarchical input[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
-                });
-            }
-            
             // Check if the data is a flat array with parentSectionId/isSubSection fields
             // or a nested structure with subsections arrays
             const hasNestedStructure = this.detailedMenu.some(section => 
@@ -5498,11 +5459,11 @@ export default {
             
             console.log('🍽️ Final hierarchical menu:', hierarchicalMenu);
 
-            // Charsiucharlie_section_desc: Log final hierarchical menu before processing
-            console.log('Charsiucharlie_section_desc: Final hierarchical menu before processing:');
-            if (hierarchicalMenu && Array.isArray(hierarchicalMenu)) {
+            // CRITICAL DEBUG: Log subscription data after conversion (keep for debugging subscription issues)
+            if (hierarchicalMenu && Array.isArray(hierarchicalMenu) && hierarchicalMenu.length > 0) {
+                console.log('🔍 SUBSCRIPTION DEBUG: Final hierarchical menu subscription data:');
                 hierarchicalMenu.forEach((section, index) => {
-                    console.log(`Charsiucharlie_section_desc: hierarchical final[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
+                    console.log(`  Section[${index}]: "${section.sectionName}" - Description: "${section.sectionDescription}", Enabled: ${section.subscribersEnabled}, Subscribers: ${section.subscribers?.length || 0}`);
                 });
             }
 
@@ -5516,22 +5477,6 @@ export default {
             this.resetEditableMainSectionsWithHierarchicalData(hierarchicalMenu);
             this.searchMenuResults = this.buildSearchableMenu(hierarchicalMenu);
             
-            // Charsiucharlie_section_desc: Log editableMainSections after reset
-            console.log('Charsiucharlie_section_desc: editableMainSections after resetEditableMainSectionsWithHierarchicalData:');
-            if (this.editableMainSections && Array.isArray(this.editableMainSections)) {
-                this.editableMainSections.forEach((section, index) => {
-                    console.log(`Charsiucharlie_section_desc: editableMainSections[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
-                });
-            }
-            
-            // Charsiucharlie_section_desc: Log searchMenuResults after buildSearchableMenu
-            console.log('Charsiucharlie_section_desc: searchMenuResults after buildSearchableMenu:');
-            if (this.searchMenuResults && Array.isArray(this.searchMenuResults)) {
-                this.searchMenuResults.forEach((section, index) => {
-                    console.log(`Charsiucharlie_section_desc: searchMenuResults[${index}] - Name: "${section.sectionName}", Order: "${section.sectionOrder}", Description: "${section.sectionDescription}", SubscribersEnabled: ${section.subscribersEnabled}, Subscribers: [${section.subscribers}]`);
-                });
-            }
-
             // DEBUG: Log sample menu item to check data structure
             if (hierarchicalMenu.length > 0 && hierarchicalMenu[0].sectionMenu && hierarchicalMenu[0].sectionMenu.length > 0) {
                 console.log('🔍 CURRENCY DEBUG - Sample menu item:', JSON.stringify(hierarchicalMenu[0].sectionMenu[0], null, 2));
@@ -11418,12 +11363,6 @@ export default {
       return section.subscribers.includes(this.currentUserId);
     },
     
-    // Helper method for debugging subscription data in template
-    logSubscriptionData(section) {
-      console.log('🍽️ Charsiucharlie_section_desc Template rendering section:', section.sectionName, 'Description:', section.sectionDescription, 'Enabled:', section.subscribersEnabled, 'Subscribers:', section.subscribers);
-      return ''; // Return empty string so it doesn't display anything
-    },
-    
     // Check if subscription is currently loading for a section
     isSubscriptionLoading(section) {
       return this.subscriptionLoadingStates[section.id] || false;
@@ -11443,6 +11382,9 @@ export default {
       
       // Set loading state (Vue 3 compatible)
       this.subscriptionLoadingStates[section.id] = true;
+      
+      // Initialize toast
+      const toast = useToast();
       
       try {
         // Update local state optimistically
@@ -11466,10 +11408,11 @@ export default {
         
         console.log(`User ${this.currentUserId} ${action}d to section "${section.sectionName}"`);
         
-        // Show success toast (if toast system is available)
-        if (this.$toast) {
-          this.$toast.success(`Successfully ${action}d to "${section.sectionName}"`);
-        }
+        // Show success toast with proper grammar
+        const message = action === 'subscribe' 
+          ? `Subscribed to updates from "${section.sectionName}"` 
+          : `Unsubscribed from "${section.sectionName}"`;
+        toast.success(message);
         
       } catch (error) {
         console.error('Subscription error:', error);
@@ -11489,9 +11432,7 @@ export default {
         }
         
         // Show error toast
-        if (this.$toast) {
-          this.$toast.error(`Failed to ${action}. Please try again.`);
-        }
+        toast.error(`Failed to ${action}. Please try again.`);
       } finally {
         // Clear loading state (Vue 3 compatible)
         this.subscriptionLoadingStates[section.id] = false;
@@ -12666,7 +12607,7 @@ input[type="range"].form-range::-webkit-slider-thumb {
     .subscribe-btn-subscribed {
         font-size: 0.85rem;
         padding: 6px 12px;
-        min-width: 140px;
+        min-width: 90px;
     }
 }
 
