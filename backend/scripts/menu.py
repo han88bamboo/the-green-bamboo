@@ -45,7 +45,10 @@ def getMenuSections(venue_id: int):
                     'sectionOrder', vm."sectionOrder",
                     'parentSectionId', vm."parentSectionId",
                     'isSubSection', vm."isSubSection",
-                    'isVisible', vm."isVisible"
+                    'isVisible', vm."isVisible",
+                    'sectionDescription', vm."sectionDescription",
+                    'subscribersEnabled', COALESCE(vm."subscribersEnabled", false),
+                    'subscribers', COALESCE(vm."subscribers", '{}')
                 ) ORDER BY vm."sectionOrder")
                 FROM "venuesMenu" vm
                 WHERE vm."venueId" = %s
@@ -460,5 +463,145 @@ def getMenuItems(section_id):
         return jsonify({
             "code": 500,
             "message": "An error occurred retrieving menu items.",
+            "request_id": request_id
+        }), 500
+
+
+@blueprint.route("/subscribeToMenuSection/<int:section_id>/<int:user_id>", methods=['POST'])
+def subscribeToMenuSection(section_id: int, user_id: int):
+    """
+    Subscribe or unsubscribe a user to/from a menu section.
+    
+    Parameters:
+    - section_id: ID of the menu section from venuesMenu table
+    - user_id: ID of the user from users table
+    
+    Body:
+    - action: 'subscribe' or 'unsubscribe'
+    """
+    request_id = getattr(g, 'request_id', 'unknown')
+    
+    logger.info(f"Subscription REQ-{request_id} section_id={section_id} user_id={user_id}")
+    
+    try:
+        data = request.get_json()
+        action = data.get('action')
+        
+        # Input validation
+        if not section_id or section_id <= 0:
+            logger.warning(f"Subscription REQ-{request_id} Invalid section_id={section_id}")
+            return jsonify({
+                "code": 400,
+                "message": "Invalid section ID",
+                "request_id": request_id
+            }), 400
+            
+        if not user_id or user_id <= 0:
+            logger.warning(f"Subscription REQ-{request_id} Invalid user_id={user_id}")
+            return jsonify({
+                "code": 400,
+                "message": "Invalid user ID",
+                "request_id": request_id
+            }), 400
+            
+        if action not in ['subscribe', 'unsubscribe']:
+            logger.warning(f"Subscription REQ-{request_id} Invalid action={action}")
+            return jsonify({
+                "code": 400,
+                "message": "Invalid action. Must be 'subscribe' or 'unsubscribe'",
+                "request_id": request_id
+            }), 400
+        
+        with db_manager.get_cursor() as cursor:
+            # Check if the section exists and has subscribers enabled
+            cursor.execute(
+                '''
+                SELECT "id", "sectionName", "subscribersEnabled", "subscribers"
+                FROM "venuesMenu"
+                WHERE "id" = %s
+                ''',
+                (section_id,)
+            )
+            section = cursor.fetchone()
+            
+            if not section:
+                logger.warning(f"Subscription REQ-{request_id} Section not found section_id={section_id}")
+                return jsonify({
+                    "code": 404,
+                    "message": "Menu section not found",
+                    "request_id": request_id
+                }), 404
+            
+            if not section['subscribersEnabled']:
+                logger.warning(f"Subscription REQ-{request_id} Subscriptions not enabled section_id={section_id}")
+                return jsonify({
+                    "code": 400,
+                    "message": "Subscriptions are not enabled for this section",
+                    "request_id": request_id
+                }), 400
+            
+            # Check if user exists
+            cursor.execute('SELECT "id" FROM "users" WHERE "id" = %s', (user_id,))
+            user = cursor.fetchone()
+            
+            if not user:
+                logger.warning(f"Subscription REQ-{request_id} User not found user_id={user_id}")
+                return jsonify({
+                    "code": 404,
+                    "message": "User not found",
+                    "request_id": request_id
+                }), 404
+            
+            # Get current subscribers list (handle None case)
+            current_subscribers = section['subscribers'] or []
+            user_id_str = str(user_id)  # Convert to string for array operations
+            
+            if action == 'subscribe':
+                # Add user if not already subscribed
+                if user_id_str not in current_subscribers:
+                    cursor.execute(
+                        '''
+                        UPDATE "venuesMenu"
+                        SET "subscribers" = array_append("subscribers", %s)
+                        WHERE "id" = %s
+                        ''',
+                        (user_id_str, section_id)
+                    )
+                    message = "You have subscribed to updates!"
+                    logger.info(f"Subscription REQ-{request_id} User subscribed section_id={section_id} user_id={user_id}")
+                else:
+                    message = "You are already subscribed to this section"
+                    logger.info(f"Subscription REQ-{request_id} User already subscribed section_id={section_id} user_id={user_id}")
+                    
+            else:  # action == 'unsubscribe'
+                # Remove user if currently subscribed
+                if user_id_str in current_subscribers:
+                    cursor.execute(
+                        '''
+                        UPDATE "venuesMenu"
+                        SET "subscribers" = array_remove("subscribers", %s)
+                        WHERE "id" = %s
+                        ''',
+                        (user_id_str, section_id)
+                    )
+                    message = "You have unsubscribed from updates"
+                    logger.info(f"Subscription REQ-{request_id} User unsubscribed section_id={section_id} user_id={user_id}")
+                else:
+                    message = "You are not subscribed to this section"
+                    logger.info(f"Subscription REQ-{request_id} User was not subscribed section_id={section_id} user_id={user_id}")
+            
+            return jsonify({
+                "code": 200,
+                "message": message,
+                "request_id": request_id,
+                "sectionName": section['sectionName'],
+                "action": action
+            }), 200
+            
+    except Exception as e:
+        logger.error(f"Subscription REQ-{request_id} ERROR section_id={section_id} user_id={user_id} error={str(e)}", exc_info=True)
+        return jsonify({
+            "code": 500,
+            "message": "An error occurred updating subscription",
             "request_id": request_id
         }), 500

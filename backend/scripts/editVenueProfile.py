@@ -1197,13 +1197,17 @@ def editMenu():
 
             # Insert updated menu sections
             for section in updatedMenu:
+                # Prepare subscription fields
+                section_description = section.get('sectionDescription', '')
+                subscribers_enabled = section.get('subscribersEnabled', False)
+                
                 cursor.execute(
                     '''
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible")
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible", "sectionDescription", "subscribersEnabled")
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                     ''',
-                    (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True))
+                    (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True), section_description, subscribers_enabled)
                 )
                 sectionId = cursor.fetchone()['id']
 
@@ -1292,13 +1296,18 @@ def editMenuHierarchical():
             
             for section in main_sections:
                 print(f"  Inserting main section: {section.get('sectionName')} with order {section.get('sectionOrder')}")
+                
+                # Prepare subscription fields
+                section_description = section.get('sectionDescription', '')
+                subscribers_enabled = section.get('subscribersEnabled', False)
+                
                 cursor.execute(
                     '''
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible")
-                    VALUES (%s, %s, %s, %s)
+                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "isVisible", "sectionDescription", "subscribersEnabled")
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                     ''',
-                    (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True))
+                    (section['sectionName'], section['sectionOrder'], venueID, section.get('isVisible', True), section_description, subscribers_enabled)
                 )
                 new_section_id = cursor.fetchone()['id']
                 
@@ -1337,13 +1346,18 @@ def editMenuHierarchical():
                     continue
                     
                 print(f"  Inserting subsection: {subsection.get('sectionName')} with parent DB ID {parent_db_id}")
+                
+                # Prepare subscription fields for subsections
+                section_description = subsection.get('sectionDescription', '')
+                subscribers_enabled = subsection.get('subscribersEnabled', False)
+                
                 cursor.execute(
                     '''
-                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible")
-                    VALUES (%s, %s, %s, %s, %s)
+                    INSERT INTO "venuesMenu" ("sectionName", "sectionOrder", "venueId", "parentSectionId", "isVisible", "sectionDescription", "subscribersEnabled")
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                     ''',
-                    (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id, subsection.get('isVisible', True))
+                    (subsection['sectionName'], subsection['sectionOrder'], venueID, parent_db_id, subsection.get('isVisible', True), section_description, subscribers_enabled)
                 )
                 new_subsection_id = cursor.fetchone()['id']
                 

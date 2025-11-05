@@ -431,7 +431,74 @@
                         <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                     </button>
                 </div>
-
+                
+                <!-- Section Description and Subscribe Button -->
+                <div class="collapse" :id="'collapseMenuSection' + index">
+                    <!-- Section Description (visible when section is expanded) -->
+                    <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled || (editMenuMode && selfView)" 
+                         class="row mx-0 mb-3">
+                        <div class="col-12">
+                            <div class="section-subscription-container">
+                                <!-- Description Text (in edit mode) -->
+                                <div v-if="editMenuMode" class="mb-2">
+                                    <textarea 
+                                        v-model="menuSection.sectionDescription"
+                                        class="form-control"
+                                        placeholder="Enter section description..."
+                                        rows="2"
+                                        style="resize: vertical;">
+                                    </textarea>
+                                </div>
+                                
+                                <!-- Description Text (in view mode) -->
+                                <div v-else-if="menuSection.sectionDescription" 
+                                     class="section-description" 
+                                     v-html="formatDescription(menuSection.sectionDescription)">
+                                </div>
+                                
+                                <!-- Subscribe Button Row -->
+                                <div v-if="menuSection.subscribersEnabled || (editMenuMode && selfView)" 
+                                     class="d-flex justify-content-between align-items-center mt-2">
+                                    
+                                    <!-- Edit Mode Controls (for venue owners) -->
+                                    <div v-if="editMenuMode && selfView" class="d-flex align-items-center gap-3">
+                                        <div class="form-check">
+                                            <input 
+                                                class="form-check-input" 
+                                                type="checkbox" 
+                                                :id="'subscribersEnabled' + menuSection.id"
+                                                v-model="menuSection.subscribersEnabled">
+                                            <label class="form-check-label small text-muted" 
+                                                   :for="'subscribersEnabled' + menuSection.id">
+                                                Enable subscriptions for this section
+                                            </label>
+                                        </div>
+                                        <small v-if="menuSection.subscribersEnabled && menuSection.subscribers" 
+                                               class="text-muted">
+                                            {{ menuSection.subscribers.length }} subscriber(s)
+                                        </small>
+                                    </div>
+                                    
+                                    <!-- Subscribe Button (for users in view mode) -->
+                                    <div v-else-if="menuSection.subscribersEnabled && !editMenuMode">
+                                        <button 
+                                            type="button"
+                                            class="btn subscribe-btn"
+                                            :class="isUserSubscribed(menuSection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                            @click="handleSubscribeClick(menuSection)"
+                                            :disabled="isSubscriptionLoading(menuSection)">
+                                            <span v-if="isSubscriptionLoading(menuSection)" 
+                                                  class="spinner-border spinner-border-sm me-1" 
+                                                  role="status" aria-hidden="true"></span>
+                                            {{ isUserSubscribed(menuSection) ? 'Subscribed' : 'Subscribe for Updates' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Main Section Content (Collapsible) -->
                 <div class="collapse" :id="'collapseMenuSection' + index">
                     
@@ -846,6 +913,73 @@
                                     <span style="flex: 1; overflow: hidden; text-overflow: ellipsis;">{{ subsection.sectionName }}</span>
                                     <i class="bi bi-chevron-down collapse-indicator ms-2" style="flex-shrink: 0; transition: transform 0.3s ease;"></i>
                                 </button>
+                            </div>
+
+                            <!-- Subsection Description and Subscribe Button -->
+                            <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
+                                <!-- Subsection Description (visible when subsection is expanded) -->
+                                <div v-if="subsection.sectionDescription || subsection.subscribersEnabled || (editMenuMode && selfView)" 
+                                     class="row mx-0 mb-3 ms-4">
+                                    <div class="col-12">
+                                        <div class="section-subscription-container">
+                                            <!-- Description Text (in edit mode) -->
+                                            <div v-if="editMenuMode && selfView" class="mb-2">
+                                                <textarea 
+                                                    v-model="subsection.sectionDescription"
+                                                    class="form-control"
+                                                    placeholder="Enter subsection description..."
+                                                    rows="2"
+                                                    style="resize: vertical;">
+                                                </textarea>
+                                            </div>
+                                            
+                                            <!-- Description Text (in view mode) -->
+                                            <div v-else-if="subsection.sectionDescription" 
+                                                 class="section-description" 
+                                                 v-html="formatDescription(subsection.sectionDescription)">
+                                            </div>
+                                            
+                                            <!-- Subscribe Button Row -->
+                                            <div v-if="subsection.subscribersEnabled || (editMenuMode && selfView)" 
+                                                 class="d-flex justify-content-between align-items-center mt-2">
+                                                
+                                                <!-- Edit Mode Controls (for venue owners) -->
+                                                <div v-if="editMenuMode && selfView" class="d-flex align-items-center gap-3">
+                                                    <div class="form-check">
+                                                        <input 
+                                                            class="form-check-input" 
+                                                            type="checkbox" 
+                                                            :id="'subscribersEnabled' + subsection.id"
+                                                            v-model="subsection.subscribersEnabled">
+                                                        <label class="form-check-label small text-muted" 
+                                                               :for="'subscribersEnabled' + subsection.id">
+                                                            Enable subscriptions for this subsection
+                                                        </label>
+                                                    </div>
+                                                    <small v-if="subsection.subscribersEnabled && subsection.subscribers" 
+                                                           class="text-muted">
+                                                        {{ subsection.subscribers.length }} subscriber(s)
+                                                    </small>
+                                                </div>
+                                                
+                                                <!-- Subscribe Button (for users in view mode) -->
+                                                <div v-else-if="subsection.subscribersEnabled && !editMenuMode">
+                                                    <button 
+                                                        type="button"
+                                                        class="btn subscribe-btn"
+                                                        :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                                        @click="handleSubscribeClick(subsection)"
+                                                        :disabled="isSubscriptionLoading(subsection)">
+                                                        <span v-if="isSubscriptionLoading(subsection)" 
+                                                              class="spinner-border spinner-border-sm me-1" 
+                                                              role="status" aria-hidden="true"></span>
+                                                        {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe for Updates' }}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Subsection Content (Collapsible) -->
@@ -1415,6 +1549,57 @@
                                 </div>
                             </div>
 
+                            <!-- Edit Mode: Section Description and Subscription Settings -->
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Section Settings</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Section Description -->
+                                            <div class="mb-3">
+                                                <label :for="'editSectionDescription' + menuSection.id" class="form-label">
+                                                    Section Description <small class="text-muted">(optional)</small>
+                                                </label>
+                                                <textarea 
+                                                    :id="'editSectionDescription' + menuSection.id"
+                                                    class="form-control" 
+                                                    v-model="menuSection.sectionDescription"
+                                                    placeholder="Add a description for this section..."
+                                                    rows="3">
+                                                </textarea>
+                                            </div>
+                                            
+                                            <!-- Subscription Settings -->
+                                            <div class="mb-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" 
+                                                           type="checkbox" 
+                                                           :id="'editSubscribersEnabled' + menuSection.id"
+                                                           v-model="menuSection.subscribersEnabled">
+                                                    <label class="form-check-label" :for="'editSubscribersEnabled' + menuSection.id">
+                                                        Enable subscriptions for this section
+                                                    </label>
+                                                </div>
+                                                <small class="text-muted">
+                                                    When enabled, users can subscribe to receive manual updates about this section.
+                                                </small>
+                                                
+                                                <!-- Show subscriber count if subscriptions are enabled and there are subscribers -->
+                                                <div v-if="menuSection.subscribersEnabled && menuSection.subscribers && menuSection.subscribers.length > 0" 
+                                                     class="mt-2">
+                                                    <small class="text-info">
+                                                        <strong>{{ menuSection.subscribers.length }}</strong> 
+                                                        subscriber{{ menuSection.subscribers.length !== 1 ? 's' : '' }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Show direct items for this main section (items not in subsections) FIRST - ALWAYS show to provide drop zone -->
                             <div class="mt-3">
                                 <p class="text-muted fw-bold mb-2" style="font-size: 0.9rem;">Direct Items:</p>
@@ -1789,6 +1974,57 @@
 
                                         <!-- Subsection Content -->
                                         <div class="collapse show" :id="'collapseEditSubSection' + subsection.sectionOrder">
+                                            <!-- Edit Mode: Subsection Description and Subscription Settings -->
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <div class="card border-secondary">
+                                                        <div class="card-header bg-light">
+                                                            <h6 class="mb-0 text-secondary">Subsection Settings</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <!-- Subsection Description -->
+                                                            <div class="mb-3">
+                                                                <label :for="'editSubsectionDescription' + subsection.id" class="form-label">
+                                                                    Subsection Description <small class="text-muted">(optional)</small>
+                                                                </label>
+                                                                <textarea 
+                                                                    :id="'editSubsectionDescription' + subsection.id"
+                                                                    class="form-control" 
+                                                                    v-model="subsection.sectionDescription"
+                                                                    placeholder="Add a description for this subsection..."
+                                                                    rows="2">
+                                                                </textarea>
+                                                            </div>
+                                                            
+                                                            <!-- Subscription Settings -->
+                                                            <div class="mb-3">
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" 
+                                                                           type="checkbox" 
+                                                                           :id="'editSubsectionSubscribersEnabled' + subsection.id"
+                                                                           v-model="subsection.subscribersEnabled">
+                                                                    <label class="form-check-label" :for="'editSubsectionSubscribersEnabled' + subsection.id">
+                                                                        Enable subscriptions for this subsection
+                                                                    </label>
+                                                                </div>
+                                                                <small class="text-muted">
+                                                                    When enabled, users can subscribe to receive manual updates about this subsection.
+                                                                </small>
+                                                                
+                                                                <!-- Show subscriber count if subscriptions are enabled and there are subscribers -->
+                                                                <div v-if="subsection.subscribersEnabled && subsection.subscribers && subsection.subscribers.length > 0" 
+                                                                     class="mt-2">
+                                                                    <small class="text-info">
+                                                                        <strong>{{ subsection.subscribers.length }}</strong> 
+                                                                        subscriber{{ subsection.subscribers.length !== 1 ? 's' : '' }}
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <!-- No Subsection Contents to Show -->
                                             <div v-if="Array.isArray(subsection?.sectionMenu) && subsection.sectionMenu.length === 0"
                                                 class="col-12 my-2">
@@ -4055,6 +4291,10 @@ export default {
             loggedIn: false,
             userID: localStorage.getItem('88B_accID') || 'defaultUser',
             userType: localStorage.getItem('88B_accType') || '',
+            
+            // Subscription management
+            subscriptionLoadingStates: {}, // Track loading state for each section
+            userSubscriptions: [], // Track which sections user is subscribed to
             reviewDescError: "",
             reviewResponseCode: "",
             addingReview: true,
@@ -7172,6 +7412,9 @@ export default {
                     isSubSection: section.isSubSection || false,
                     parentSectionId: section.parentSectionId || null,
                     isVisible: section.isVisible !== undefined ? section.isVisible : true, // Include visibility status
+                    sectionDescription: section.sectionDescription || null, // Include subscription description
+                    subscribersEnabled: section.subscribersEnabled || false, // Include subscription enabled flag
+                    subscribers: section.subscribers || [], // Include subscribers array
                     sectionMenu: []
                 };
                 
@@ -11048,6 +11291,111 @@ export default {
       this.$nextTick(() => {
         this.setupAutoResize();
       });
+    },
+
+    // ===== SUBSCRIPTION FUNCTIONALITY =====
+    
+    // Format description text with basic HTML support
+    formatDescription(description) {
+      if (!description) return '';
+      
+      // Convert line breaks to <br> tags
+      return description.replace(/\n/g, '<br>');
+    },
+    
+    // Check if current user is subscribed to a section
+    isUserSubscribed(section) {
+      if (!section.subscribers || !this.currentUserId || this.currentUserId === 'defaultUser') {
+        return false;
+      }
+      
+      return section.subscribers.includes(this.currentUserId);
+    },
+    
+    // Check if subscription is currently loading for a section
+    isSubscriptionLoading(section) {
+      return this.subscriptionLoadingStates[section.id] || false;
+    },
+    
+    // Handle subscribe/unsubscribe button click
+    async handleSubscribeClick(section) {
+      // Check if user is logged in
+      if (!this.currentUserId || this.currentUserId === 'defaultUser' || this.userType !== 'user') {
+        // Trigger signup popup for non-logged-in users
+        this.triggerSignUpPopup();
+        return;
+      }
+      
+      const isCurrentlySubscribed = this.isUserSubscribed(section);
+      const action = isCurrentlySubscribed ? 'unsubscribe' : 'subscribe';
+      
+      // Set loading state
+      this.$set(this.subscriptionLoadingStates, section.id, true);
+      
+      try {
+        // Update local state optimistically
+        if (!section.subscribers) {
+          this.$set(section, 'subscribers', []);
+        }
+        
+        if (isCurrentlySubscribed) {
+          // Remove user from subscribers
+          const index = section.subscribers.indexOf(this.currentUserId);
+          if (index > -1) {
+            section.subscribers.splice(index, 1);
+          }
+        } else {
+          // Add user to subscribers
+          section.subscribers.push(this.currentUserId);
+        }
+        
+        // Make API call to update subscription in backend
+        await this.updateSubscriptionAPI(section.id, this.currentUserId, action);
+        
+        console.log(`User ${this.currentUserId} ${action}d to section "${section.sectionName}"`);
+        
+        // Show success toast (if toast system is available)
+        if (this.$toast) {
+          this.$toast.success(`Successfully ${action}d to "${section.sectionName}"`);
+        }
+        
+      } catch (error) {
+        console.error('Subscription error:', error);
+        
+        // Revert optimistic update on error
+        if (isCurrentlySubscribed) {
+          // Re-add user to subscribers
+          if (!section.subscribers.includes(this.currentUserId)) {
+            section.subscribers.push(this.currentUserId);
+          }
+        } else {
+          // Remove user from subscribers
+          const index = section.subscribers.indexOf(this.currentUserId);
+          if (index > -1) {
+            section.subscribers.splice(index, 1);
+          }
+        }
+        
+        // Show error toast
+        if (this.$toast) {
+          this.$toast.error(`Failed to ${action}. Please try again.`);
+        }
+      } finally {
+        // Clear loading state
+        this.$set(this.subscriptionLoadingStates, section.id, false);
+      }
+    },
+    
+    // Method to update subscription via API (placeholder for future implementation)
+    async updateSubscriptionAPI(sectionId, userId, action) {
+      // Updated to use URL parameters instead of body payload
+      const endpoint = `${process.env.VUE_APP_API_URL}/menu/subscribeToMenuSection/${sectionId}/${userId}`;
+      const payload = {
+        action: action
+      };
+      
+      const response = await this.$axios.post(endpoint, payload);
+      return response.data;
     }    
     }
 }
@@ -12127,5 +12475,101 @@ input[type="range"].form-range::-webkit-slider-thumb {
 }
 
 /* ------- END Jump to Section Feature Styles ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
+
+/* ===== SUBSCRIPTION FEATURE STYLES ===== */
+
+/* Section subscription container */
+.section-subscription-container {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+/* Section description styling */
+.section-description {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #495057;
+    margin-bottom: 0;
+}
+
+/* Subscribe button default state - Red theme */
+.subscribe-btn-default {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    min-width: 160px;
+}
+
+.subscribe-btn-default:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+/* Subscribe button subscribed state - Lighter red */
+.subscribe-btn-subscribed {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    min-width: 160px;
+}
+
+.subscribe-btn-subscribed:hover {
+    background-color: #f1b0b7;
+    border-color: #ecaaa6;
+    color: #721c24;
+}
+
+/* Edit mode controls styling */
+.form-check-input:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Mobile responsiveness for subscription elements */
+@media (max-width: 768px) {
+    .section-subscription-container {
+        padding: 12px;
+        margin-top: 8px;
+    }
+    
+    .section-description {
+        font-size: 0.9rem;
+    }
+    
+    .subscribe-btn-default,
+    .subscribe-btn-subscribed {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        min-width: 140px;
+    }
+    
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .d-flex.align-items-center.gap-3 {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+}
+
+/* ===== END SUBSCRIPTION FEATURE STYLES ===== */
 
 </style>

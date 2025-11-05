@@ -731,7 +731,10 @@ CREATE TABLE "venuesMenu" (
     "venueId" INTEGER REFERENCES "venues"("id") ON DELETE SET NULL ,
     "parentSectionId" INTEGER REFERENCES "venuesMenu"("id") ON DELETE CASCADE,
     "isSubSection" BOOLEAN GENERATED ALWAYS AS ("parentSectionId" IS NOT NULL) STORED,
-    "isVisible" BOOLEAN NOT NULL DEFAULT TRUE
+    "isVisible" BOOLEAN NOT NULL DEFAULT TRUE,
+    "sectionDescription" TEXT, -- Description text for the menu section
+    "subscribersEnabled" BOOLEAN DEFAULT FALSE, -- Whether venue has enabled subscription for this section
+    "subscribers" TEXT[] DEFAULT '{}' -- Array of user IDs who have subscribed to this section
 );
 
 -- 3. Copy data from old table
