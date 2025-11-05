@@ -3444,7 +3444,10 @@ def getUserReviewSummary(id):
             if drink_data:
                 drink_type = drink_data["drinkType"]
                 drink_category = drink_data["typeCategory"]
-
+                # ✅ Skip entries where either field is NULL
+                if drink_type is None or drink_category is None:
+                    continue
+                
                 if drink_type not in categories_reviewed_dict:
                     categories_reviewed_dict[drink_type] = {}
 
