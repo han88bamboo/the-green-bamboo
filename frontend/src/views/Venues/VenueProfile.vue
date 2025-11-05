@@ -5526,7 +5526,9 @@ export default {
                         itemPriceCurrency: item.itemPriceCurrency,
                         itemServingType: item.servingType,  // Map to itemServingType for edit mode
                         servingType: item.servingType,
-                        servingTypeText: item.servingTypeText
+                        servingTypeText: item.servingTypeText,
+                        // ✅ FIX: Set the vintage from the backend variant field (same as search workflow)
+                        itemVintage: item.variant
                     }));
                     
                     // Sort items by itemOrder
