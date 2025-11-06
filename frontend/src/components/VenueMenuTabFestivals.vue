@@ -900,10 +900,10 @@
                                             <!-- Subscribe Button Row -->
                                             <div v-if="subsection.subscribersEnabled && !editMenuMode" 
                                                  class="d-flex justify-content-between align-items-center mt-2">
-                                                <!-- Mobile Subscribe Button -->
+                                                
                                                 <button 
                                                     type="button"
-                                                    class="btn subscribe-btn mobile-view-show"
+                                                    class="btn subscribe-btn"
                                                     :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
                                                     @click="handleSubscribeClick(subsection)"
                                                     :disabled="isSubscriptionLoading(subsection)">
@@ -913,18 +913,6 @@
                                                     {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe' }}
                                                 </button>
                                                 
-                                                <!-- Desktop Subscribe Button -->
-                                                <button 
-                                                    type="button"
-                                                    class="btn subscribe-btn mobile-view-hide"
-                                                    :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
-                                                    @click="handleSubscribeClick(subsection)"
-                                                    :disabled="isSubscriptionLoading(subsection)">
-                                                    <span v-if="isSubscriptionLoading(subsection)" 
-                                                          class="spinner-border spinner-border-sm me-1" 
-                                                          role="status" aria-hidden="true"></span>
-                                                    {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe for Updates' }}
-                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -1478,6 +1466,35 @@
                         <div class="collapse"
                             :id="'collapseEditMenuSection' + menuSection.sectionOrder">
 
+                            <!-- EDIT MODE PREVIEW: Shows how description and subscribe button will look -->
+                            <div v-if="editMenuMode && selfView && (menuSection.sectionDescription || menuSection.subscribersEnabled)" 
+                                 class="row mx-0 mb-3">
+                                <div class="col-12 p-0">
+                                    <div class="section-subscription-container">
+                                        <!-- Combined Description and Subscribe Button Row -->
+                                        <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled" 
+                                             class="d-flex justify-content-between align-items-center gap-3">
+                                            
+                                            <!-- Description Text -->
+                                            <div v-if="menuSection.sectionDescription" 
+                                                 class="section-description flex-grow-1" 
+                                                 v-html="formatDescription(menuSection.sectionDescription)">
+                                            </div>
+                                            
+                                            <!-- Subscribe Button (disabled/visual-only) -->
+                                            <div v-if="menuSection.subscribersEnabled" class="flex-shrink-0">
+                                                <button 
+                                                    type="button"
+                                                    class="btn subscribe-btn subscribe-btn-default"
+                                                    disabled>
+                                                    Subscribe
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Add Subsection Button (Desktop) -->
                             <div class="row mb-2 mobile-view-hide">
                                 <div class="col-12">
@@ -1495,57 +1512,6 @@
                                         @click="addSubSection(menuSection)">
                                         <b>+ Subsection</b>
                                     </button>
-                                </div>
-                            </div>
-
-                            <!-- Edit Mode: Section Description and Subscription Settings -->
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-header">
-                                            <h6 class="mb-0">Section Settings</h6>
-                                        </div>
-                                        <div class="card-body">
-                                            <!-- Section Description -->
-                                            <div class="mb-3">
-                                                <label :for="'editSectionDescription' + menuSection.id" class="form-label">
-                                                    Section Description <small class="text-muted">(optional)</small>
-                                                </label>
-                                                <textarea 
-                                                    :id="'editSectionDescription' + menuSection.id"
-                                                    class="form-control" 
-                                                    v-model="menuSection.sectionDescription"
-                                                    placeholder="Add a description for this section..."
-                                                    rows="3">
-                                                </textarea>
-                                            </div>
-                                            
-                                            <!-- Subscription Settings -->
-                                            <div class="mb-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" 
-                                                           type="checkbox" 
-                                                           :id="'editSubscribersEnabled' + menuSection.id"
-                                                           v-model="menuSection.subscribersEnabled">
-                                                    <label class="form-check-label" :for="'editSubscribersEnabled' + menuSection.id">
-                                                        Enable subscriptions for this section
-                                                    </label>
-                                                </div>
-                                                <small class="text-muted">
-                                                    When enabled, users can subscribe to receive manual updates about this section.
-                                                </small>
-                                                
-                                                <!-- Show subscriber count if subscriptions are enabled and there are subscribers -->
-                                                <div v-if="menuSection.subscribersEnabled && menuSection.subscribers && menuSection.subscribers.length > 0" 
-                                                     class="mt-2">
-                                                    <small class="text-info">
-                                                        <strong>{{ menuSection.subscribers.length }}</strong> 
-                                                        subscriber{{ menuSection.subscribers.length !== 1 ? 's' : '' }}
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -1923,52 +1889,29 @@
 
                                         <!-- Subsection Content -->
                                         <div class="collapse show" :id="'collapseEditSubSection' + subsection.sectionOrder">
-                                            <!-- Edit Mode: Subsection Description and Subscription Settings -->
-                                            <div class="row mb-3">
-                                                <div class="col-12">
-                                                    <div class="card border-secondary">
-                                                        <div class="card-header bg-light">
-                                                            <h6 class="mb-0 text-secondary">Subsection Settings</h6>
+                                            
+                                            <!-- EDIT MODE PREVIEW: Shows how subsection description and subscribe button will look -->
+                                            <div v-if="editMenuMode && selfView && (subsection.sectionDescription || subsection.subscribersEnabled)" 
+                                                 class="row mx-0 mb-3 ms-4">
+                                                <div class="col-12 p-0">
+                                                    <div class="section-subscription-container">
+                                                        <!-- Description Text -->
+                                                        <div v-if="subsection.sectionDescription" 
+                                                             class="section-description" 
+                                                             v-html="formatDescription(subsection.sectionDescription)">
                                                         </div>
-                                                        <div class="card-body">
-                                                            <!-- Subsection Description -->
-                                                            <div class="mb-3">
-                                                                <label :for="'editSubsectionDescription' + subsection.id" class="form-label">
-                                                                    Subsection Description <small class="text-muted">(optional)</small>
-                                                                </label>
-                                                                <textarea 
-                                                                    :id="'editSubsectionDescription' + subsection.id"
-                                                                    class="form-control" 
-                                                                    v-model="subsection.sectionDescription"
-                                                                    placeholder="Add a description for this subsection..."
-                                                                    rows="2">
-                                                                </textarea>
-                                                            </div>
+                                                        
+                                                        <!-- Subscribe Button Row -->
+                                                        <div v-if="subsection.subscribersEnabled" 
+                                                             class="d-flex justify-content-between align-items-center mt-2">
                                                             
-                                                            <!-- Subscription Settings -->
-                                                            <div class="mb-3">
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" 
-                                                                           type="checkbox" 
-                                                                           :id="'editSubsectionSubscribersEnabled' + subsection.id"
-                                                                           v-model="subsection.subscribersEnabled">
-                                                                    <label class="form-check-label" :for="'editSubsectionSubscribersEnabled' + subsection.id">
-                                                                        Enable subscriptions for this subsection
-                                                                    </label>
-                                                                </div>
-                                                                <small class="text-muted">
-                                                                    When enabled, users can subscribe to receive manual updates about this subsection.
-                                                                </small>
-                                                                
-                                                                <!-- Show subscriber count if subscriptions are enabled and there are subscribers -->
-                                                                <div v-if="subsection.subscribersEnabled && subsection.subscribers && subsection.subscribers.length > 0" 
-                                                                     class="mt-2">
-                                                                    <small class="text-info">
-                                                                        <strong>{{ subsection.subscribers.length }}</strong> 
-                                                                        subscriber{{ subsection.subscribers.length !== 1 ? 's' : '' }}
-                                                                    </small>
-                                                                </div>
-                                                            </div>
+                                                            <button 
+                                                                type="button"
+                                                                class="btn subscribe-btn subscribe-btn-default"
+                                                                disabled>
+                                                                Subscribe
+                                                            </button>
+
                                                         </div>
                                                     </div>
                                                 </div>
