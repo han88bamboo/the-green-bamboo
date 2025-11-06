@@ -2021,9 +2021,9 @@ export default {
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  border-color: #ff3e31;
+  /* border-color: #ff3e31;
   border-width: 2px;
-  border-style: solid;
+  border-style: solid; */
 }
 
 /* Collapse Header - Visible on both desktop and mobile */

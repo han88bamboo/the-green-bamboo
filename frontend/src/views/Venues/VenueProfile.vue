@@ -1566,7 +1566,7 @@
                 
                 <!-- Poll Card Section (only for logged-in users) -->
                 <div class="row my-3" id="poll-section">
-                    <div class="col-12" id="poll-card-container-highlighted">
+                    <div class="col-12" id="Xpoll-card-container-highlighted">
                         <PollCard 
                             :creator-id="targetVenue.id"
                             creator-type="venue"
