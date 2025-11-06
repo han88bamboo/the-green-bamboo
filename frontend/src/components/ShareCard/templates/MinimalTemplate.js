@@ -1,7 +1,8 @@
 // templates/MinimalTemplate.js
 import Konva from "konva";
 
-export const createMinimalTemplate = async (layer, data) => {
+export const createMinimalTemplate = async (layers, data) => {
+  const { bg, fg } = layers;
   const width = 1080;
   const height = 1350;
 
@@ -10,15 +11,14 @@ export const createMinimalTemplate = async (layer, data) => {
   const ratingText = rating.toFixed(1);
 
   // Background - for preview but not for download
-  const bg = new Konva.Rect({
+  const bgRect = new Konva.Rect({
     x: 0,
     y: 0,
     width: width,
     height: height * 2,
     fill: "#b0b0b0", // Single solid color instead
-    name: "background", // Tag for hiding
   });
-  layer.add(bg);
+  bg.add(bgRect);
 
   // Checkerboard pattern overlay - to simulate transparency, but not for download
   const patternSize = 60;
@@ -35,9 +35,8 @@ export const createMinimalTemplate = async (layer, data) => {
           height: patternSize,
           fill: "#4f4e4eff", // Lighter gray instead of white
           opacity: 0.6, // More visible
-          name: "background", // Tag for hiding
         });
-        layer.add(square);
+        bg.add(square);
       }
     }
   }
@@ -75,7 +74,7 @@ export const createMinimalTemplate = async (layer, data) => {
   });
   ratingGroup.add(star);
 
-  layer.add(ratingGroup);
+  fg.add(ratingGroup);
 
   // Review Comment (Center)
   if (data.review?.reviewDesc) {
@@ -96,7 +95,7 @@ export const createMinimalTemplate = async (layer, data) => {
       wrap: "word",
       lineHeight: 1.3,
     });
-    layer.add(comment);
+    fg.add(comment);
   }
 
   // Tags Section (flavor profiles and characteristics)
@@ -175,7 +174,7 @@ export const createMinimalTemplate = async (layer, data) => {
       shadowBlur: 10,
       shadowOffset: { x: 0, y: 4 },
     });
-    layer.add(tagBg);
+    fg.add(tagBg);
 
     // Tag text
     const tagText = new Konva.Text({
@@ -189,7 +188,7 @@ export const createMinimalTemplate = async (layer, data) => {
       width: tagWidth,
       align: "center",
     });
-    layer.add(tagText);
+    fg.add(tagText);
 
     currentX += tagWidth + tagSpacing;
     currentRowTags++;
@@ -209,7 +208,7 @@ export const createMinimalTemplate = async (layer, data) => {
   //   width: width - 160,
   //   align: "center",
   // });
-  // layer.add(beverageName);
+  // fg.add(beverageName);
 
   // User Info
   const userName = new Konva.Text({
@@ -223,7 +222,7 @@ export const createMinimalTemplate = async (layer, data) => {
     width: width - 160,
     align: "center",
   });
-  layer.add(userName);
+  fg.add(userName);
 
-  layer.batchDraw();
-};
+  fg.batchDraw();
+}

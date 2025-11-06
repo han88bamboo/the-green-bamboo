@@ -24,7 +24,7 @@ const isGenerating = ref(false)
 const previewUrl = ref(null)
 const error = ref(null)
 
-const { initStage, layer, stage } = useKonvaShare()
+const { initStage, backgroundLayer, contentLayer, stage } = useKonvaShare()
 const { loadMultipleImages } = useImageLoader()
 
 const templates = {
@@ -43,10 +43,13 @@ const generateCard = async () => {
 
   try {
     // Initialize Konva stage with explicit dimensions
-    const { layer: konvaLayer } = initStage(containerRef.value, {
-      width: 1080,
-      height: 1080
-    })
+    const { backgroundLayer: bgLayer, contentLayer: fgLayer } = initStage(
+      containerRef.value,
+      {
+        width: 1080,
+        height: 1080
+      }
+    )
 
     // Preload all images
     const imagesToLoad = []
@@ -79,7 +82,7 @@ const generateCard = async () => {
       throw new Error(`Template ${props.template} not found`)
     }
 
-    await templateFn(konvaLayer, normalizedData, images)
+    await templateFn({ bg: bgLayer, fg: fgLayer }, normalizedData, images)
 
     // Wait for next tick to ensure rendering is complete
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -108,25 +111,26 @@ const handleDownload = async () => {
   if (!stage.value) return;
 
   try {
-    // 🔹 1. Find all background nodes
-    const backgroundNodes = stage.value.find('.background');
+    // 🔹 1. Hide the background layer for transparent export
+    if (backgroundLayer.value) {
+      backgroundLayer.value.hide();
+      stage.value.draw();
+    }
 
-    // 🔹 2. Hide them before exporting
-    backgroundNodes.forEach(node => node.hide());
-    layer.value.draw(); // Redraw the layer to apply changes
-
-    // 🔹 3. Export stage as PNG with a transparent background
+    // 🔹 2. Export stage as PNG with a transparent background
     const dataURL = stage.value.toDataURL({
       mimeType: 'image/png',
       quality: 1,
       pixelRatio: 2,
     });
 
-    // 🔹 4. Restore background after export for the preview
-    backgroundNodes.forEach(node => node.show());
-    layer.value.draw(); // Redraw to restore preview
+    // 🔹 3. Restore background after export for the preview
+    if (backgroundLayer.value) {
+      backgroundLayer.value.show();
+      stage.value.draw();
+    }
 
-    // 🔹 5. Trigger download directly
+    // 🔹 4. Trigger download
     const filename = `${props.reviewData.beverage.name
       .replace(/\s+/g, '-')
       .toLowerCase()}-review.png`;
@@ -151,9 +155,10 @@ onMounted(() => {
 })
 
 watch(() => props.template, () => {
-  if (layer.value) {
-    layer.value.destroyChildren()
-    generateCard()
+  if (backgroundLayer.value && contentLayer.value) {
+    backgroundLayer.value.destroyChildren();
+    contentLayer.value.destroyChildren();
+    generateCard();
   }
 })
 </script>

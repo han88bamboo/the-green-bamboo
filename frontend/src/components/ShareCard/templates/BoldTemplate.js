@@ -2,19 +2,20 @@
 import Konva from "konva";
 //import { addGradientBackground } from "@/utils/konvaHelpers";
 
-export const createBoldTemplate = async (layer, data, images) => {
+export const createBoldTemplate = async (layers, data, images) => {
+  const { bg, fg } = layers;
   const WIDTH = 1080;
   const HEIGHT = 1920;
 
   // Black background
-  const bg = new Konva.Rect({
+  const bgRect = new Konva.Rect({
     x: 0,
     y: 0,
     width: WIDTH,
     height: HEIGHT,
     fill: "#000000",
   });
-  layer.add(bg);
+  bg.add(bgRect);
 
   // Large beverage image taking up top half
   if (images.beverage) {
@@ -31,7 +32,7 @@ export const createBoldTemplate = async (layer, data, images) => {
         height: images.beverage.height,
       },
     });
-    layer.add(beverageImg);
+    fg.add(beverageImg);
 
     // Gradient overlay on image
     const overlay = new Konva.Rect({
@@ -43,7 +44,7 @@ export const createBoldTemplate = async (layer, data, images) => {
       fillLinearGradientEndPoint: { x: 0, y: 960 },
       fillLinearGradientColorStops: [0, "rgba(0,0,0,0)", 1, "rgba(0,0,0,0.8)"],
     });
-    layer.add(overlay);
+    fg.add(overlay);
   }
 
   // Bold rating with accent color
@@ -56,7 +57,7 @@ export const createBoldTemplate = async (layer, data, images) => {
     fontStyle: "bold",
     fill: "#FFD700", // Gold accent
   });
-  layer.add(ratingText);
+  fg.add(ratingText);
 
   const outOfText = new Konva.Text({
     text: "/ 5.0",
@@ -67,7 +68,7 @@ export const createBoldTemplate = async (layer, data, images) => {
     fill: "#FFFFFF",
     opacity: 0.5,
   });
-  layer.add(outOfText);
+  fg.add(outOfText);
 
   // Beverage name in bold
   const nameText = new Konva.Text({
@@ -81,7 +82,7 @@ export const createBoldTemplate = async (layer, data, images) => {
     fill: "#FFFFFF",
     lineHeight: 1.2,
   });
-  layer.add(nameText);
+  fg.add(nameText);
 
   // Location and other details...
   // Similar structure to minimal template but with bolder styling

@@ -4,33 +4,49 @@ import Konva from "konva";
 
 export const useKonvaShare = () => {
   const stage = ref(null);
-  const layer = ref(null);
+  const backgroundLayer = ref(null);
+  const contentLayer = ref(null);
 
-  const initStage = (container) => {
+  const initStage = (container, dimensions) => {
     stage.value = new Konva.Stage({
       container: container,
-      width: 1080,
-      height: 1920,
+      width: dimensions.width,
+      height: dimensions.height,
     });
 
-    layer.value = new Konva.Layer();
-    stage.value.add(layer.value);
+    backgroundLayer.value = new Konva.Layer({ name: "background" });
+    contentLayer.value = new Konva.Layer({ name: "content" });
 
-    return { stage: stage.value, layer: layer.value };
+    stage.value.add(backgroundLayer.value);
+    stage.value.add(contentLayer.value);
+
+    return {
+      stage: stage.value,
+      backgroundLayer: backgroundLayer.value,
+      contentLayer: contentLayer.value,
+    };
   };
 
   const exportToPNG = async () => {
     if (!stage.value) return null;
 
+    // Hide background for transparent export
+    if (backgroundLayer.value) {
+      backgroundLayer.value.hide();
+      stage.value.draw(); // Redraw to apply changes
+    }
+
     const dataURL = stage.value.toDataURL({
       mimeType: "image/png",
-      x: 0,
-      y: 0,
-      width: 1080,
-      height: 1350,
       quality: 1,
-      pixelRatio: 3, // High DPI for mobile
+      pixelRatio: 2,
     });
+
+    // Restore background for preview
+    if (backgroundLayer.value) {
+      backgroundLayer.value.show();
+      stage.value.draw();
+    }
 
     return dataURL;
   };
@@ -38,12 +54,14 @@ export const useKonvaShare = () => {
   const downloadImage = async (filename) => {
     const dataURL = await exportToPNG();
 
-    const link = document.createElement("a");
-    link.download = filename;
-    link.href = dataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (dataURL) {
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   return {
@@ -51,6 +69,7 @@ export const useKonvaShare = () => {
     exportToPNG,
     downloadImage,
     stage,
-    layer,
+    backgroundLayer,
+    contentLayer,
   };
 };
