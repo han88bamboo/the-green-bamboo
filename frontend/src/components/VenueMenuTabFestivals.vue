@@ -437,7 +437,7 @@
                 <div class="collapse" :id="'collapseMenuSection' + index">
                     <!-- Section Description (visible when section is expanded) -->
                     <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled || (editMenuMode && selfView)" 
-                         class="row mx-0 mb-3">
+                         class="row mx-0 mb-3 unmargin-for-mobile">
                         <div class="col-12 p-0">
                             <div class="section-subscription-container">
                                 <!-- Combined Description and Subscribe Button Row (in view mode) -->
@@ -888,7 +888,7 @@
                             <div class="collapse" :id="'collapseSubSection' + index + '_' + subIndex">
                                 <!-- Subsection Description (visible when subsection is expanded) -->
                                 <div v-if="subsection.sectionDescription || subsection.subscribersEnabled || (editMenuMode && selfView)" 
-                                     class="row mx-0 mb-3 ms-4">
+                                     class="row mx-0 mb-3 ms-4 ">
                                     <div class="col-12 p-0">
                                         <div class="section-subscription-container">
                                             <!-- Description Text (in view mode) -->
@@ -1468,7 +1468,7 @@
 
                             <!-- EDIT MODE PREVIEW: Shows how description and subscribe button will look -->
                             <div v-if="editMenuMode && selfView && (menuSection.sectionDescription || menuSection.subscribersEnabled)" 
-                                 class="row mx-0 mb-3">
+                                 class="row mx-0 mb-3 unmargin-for-mobile">
                                 <div class="col-12 p-0">
                                     <div class="section-subscription-container">
                                         <!-- Combined Description and Subscribe Button Row -->
@@ -1892,7 +1892,7 @@
                                             
                                             <!-- EDIT MODE PREVIEW: Shows how subsection description and subscribe button will look -->
                                             <div v-if="editMenuMode && selfView && (subsection.sectionDescription || subsection.subscribersEnabled)" 
-                                                 class="row mx-0 mb-3 ms-4">
+                                                 class="row mx-0 mb-3 ms-4 ">
                                                 <div class="col-12 p-0">
                                                     <div class="section-subscription-container">
                                                         <!-- Description Text -->
@@ -12522,5 +12522,15 @@ input[type="range"].form-range::-webkit-slider-thumb {
 }
 
 /* ===== END SUBSCRIPTION FEATURE STYLES ===== */
+
+
+
+@media (max-width: 991px) {
+    .unmargin-for-mobile {
+        margin-left: -10px !important; 
+        margin-right: -10px !important;
+    }
+}
+
 
 </style>
