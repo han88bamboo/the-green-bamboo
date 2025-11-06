@@ -108,13 +108,13 @@ export const createMinimalTemplate = async (layers, data) => {
     tags.push(...data.review.flavorTags.slice(0, 3));
   }
 
-  // Get characteristic tags
-  if (
-    data.review?.characteristics &&
-    Array.isArray(data.review.characteristics)
-  ) {
-    tags.push(...data.review.characteristics.slice(0, 3));
-  }
+  // // Get characteristic tags
+  // if (
+  //   data.review?.characteristics &&
+  //   Array.isArray(data.review.characteristics)
+  // ) {
+  //   tags.push(...data.review.characteristics.slice(0, 3));
+  // }
 
   // Draw tags in rows
   const tagStartY = 680;
@@ -180,6 +180,100 @@ export const createMinimalTemplate = async (layers, data) => {
 
     currentX += tagWidth + tagSpacing;
     currentRowTags++;
+  });
+
+  // #f0b358
+  const ob_tags = [];
+
+  // Get flavor tags from review data
+  if (data.review?.observationTags && Array.isArray(data.review.observationTags)) {
+    ob_tags.push(...data.review.observationTags.slice(0, 3));
+  }
+
+  // Draw tags in rows
+  const ob_tagStartY = 800;
+  const ob_tagSpacing = 20;
+  const ob_maxTagsPerRow = 3;
+  let ob_currentX = width / 2;
+  let ob_currentY = ob_tagStartY;
+  let ob_currentRowTags = 0;
+
+  ob_tags.forEach((ob_tag, index) => {
+    // Calculate tag dimensions
+    const tempText = new Konva.Text({
+      text: ob_tag,
+      fontSize: 36,
+      fontFamily: "Arial, sans-serif",
+      fontStyle: "bold",
+      padding: 20, // Add padding
+    });
+    const tagWidth = tempText.width() + 80; // Increase padding from 60 to 80
+    const tagHeight = 60;
+    tempText.destroy(); // Clean up temporary object
+
+    // Move to next row if needed
+    if (ob_currentRowTags >= ob_maxTagsPerRow) {
+      ob_currentY += tagHeight + ob_tagSpacing;
+      ob_currentRowTags = 0;
+    }
+
+    // Calculate position for centering - RECALCULATE for each tag
+    if (ob_currentRowTags === 0) {
+      const rowTags = Math.min(ob_maxTagsPerRow, ob_tags.length - index);
+      
+      // Calculate actual width needed for this row
+      let rowWidth = 0;
+      for (let i = index; i < Math.min(index + rowTags, ob_tags.length); i++) {
+        const tempCalc = new Konva.Text({
+          text: ob_tags[i],
+          fontSize: 36,
+          fontFamily: "Arial, sans-serif",
+          fontStyle: "bold",
+        });
+        rowWidth += tempCalc.width() + 80 + (i < index + rowTags - 1 ? ob_tagSpacing : 0);
+        tempCalc.destroy();
+      }
+      
+      ob_currentX = (width - rowWidth) / 2;
+    }
+
+    // Calculate position for centering
+    // if (ob_currentRowTags === 0) {
+    //   const rowTags = Math.min(ob_maxTagsPerRow, ob_tags.length - index);
+    //   const rowWidth = rowTags * (tagWidth + ob_tagSpacing) - ob_tagSpacing;
+    //   ob_currentX = (width - rowWidth) / 2;
+    // }
+
+    // Tag background
+    const ob_tagBg = new Konva.Rect({
+      x: ob_currentX,
+      y: ob_currentY,
+      width: tagWidth,
+      height: tagHeight,
+      fill: "#f0b358",
+      cornerRadius: 30,
+      shadowColor: "rgba(0, 0, 0, 0.3)",
+      shadowBlur: 10,
+      shadowOffset: { x: 0, y: 4 },
+    });
+    fg.add(ob_tagBg);
+
+    // Tag text
+    const ob_tagText = new Konva.Text({
+      x: ob_currentX,
+      y: ob_currentY + 12,
+      text: ob_tag,
+      fontSize: 36,
+      fontFamily: "Arial, sans-serif",
+      fontStyle: "bold",
+      fill: "#ffffff",
+      width: tagWidth,
+      align: "center",
+    });
+    fg.add(ob_tagText);
+
+    ob_currentX += tagWidth + ob_tagSpacing;
+    ob_currentRowTags++;
   });
 
   // Beverage Name (Bottom)
