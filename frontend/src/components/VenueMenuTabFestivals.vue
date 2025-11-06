@@ -440,19 +440,8 @@
                          class="row mx-0 mb-3">
                         <div class="col-12 p-0">
                             <div class="section-subscription-container">
-                                <!-- Description Text (in edit mode) -->
-                                <div v-if="editMenuMode" class="mb-2">
-                                    <textarea 
-                                        v-model="menuSection.sectionDescription"
-                                        class="form-control"
-                                        placeholder="Enter section description..."
-                                        rows="2"
-                                        style="resize: vertical;">
-                                    </textarea>
-                                </div>
-                                
                                 <!-- Combined Description and Subscribe Button Row (in view mode) -->
-                                <div v-else-if="menuSection.sectionDescription || menuSection.subscribersEnabled" 
+                                <div v-if="menuSection.sectionDescription || menuSection.subscribersEnabled" 
                                      class="d-flex justify-content-between align-items-center gap-3">
                                     
                                     <!-- Description Text (in view mode) -->
@@ -477,28 +466,6 @@
                                         </button>
                                         
 
-                                    </div>
-                                </div>
-                                
-                                <!-- Edit Mode Controls (for venue owners) -->
-                                <div v-if="menuSection.subscribersEnabled && editMenuMode && selfView" 
-                                     class="d-flex justify-content-between align-items-center mt-2">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="form-check">
-                                            <input 
-                                                class="form-check-input" 
-                                                type="checkbox" 
-                                                :id="'subscribersEnabled' + menuSection.id"
-                                                v-model="menuSection.subscribersEnabled">
-                                            <label class="form-check-label small text-muted" 
-                                                   :for="'subscribersEnabled' + menuSection.id">
-                                                Enable subscriptions for this section
-                                            </label>
-                                        </div>
-                                        <small v-if="menuSection.subscribersEnabled && menuSection.subscribers" 
-                                               class="text-muted">
-                                            {{ menuSection.subscribers.length }} subscriber(s)
-                                        </small>
                                     </div>
                                 </div>
                             </div>
@@ -924,74 +891,40 @@
                                      class="row mx-0 mb-3 ms-4">
                                     <div class="col-12 p-0">
                                         <div class="section-subscription-container">
-                                            <!-- Description Text (in edit mode) -->
-                                            <div v-if="editMenuMode && selfView" class="mb-2">
-                                                <textarea 
-                                                    v-model="subsection.sectionDescription"
-                                                    class="form-control"
-                                                    placeholder="Enter subsection description..."
-                                                    rows="2"
-                                                    style="resize: vertical;">
-                                                </textarea>
-                                            </div>
-                                            
                                             <!-- Description Text (in view mode) -->
-                                            <div v-else-if="subsection.sectionDescription" 
+                                            <div v-if="subsection.sectionDescription" 
                                                  class="section-description" 
                                                  v-html="formatDescription(subsection.sectionDescription)">
                                             </div>
                                             
                                             <!-- Subscribe Button Row -->
-                                            <div v-if="subsection.subscribersEnabled || (editMenuMode && selfView)" 
+                                            <div v-if="subsection.subscribersEnabled && !editMenuMode" 
                                                  class="d-flex justify-content-between align-items-center mt-2">
+                                                <!-- Mobile Subscribe Button -->
+                                                <button 
+                                                    type="button"
+                                                    class="btn subscribe-btn mobile-view-show"
+                                                    :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                                    @click="handleSubscribeClick(subsection)"
+                                                    :disabled="isSubscriptionLoading(subsection)">
+                                                    <span v-if="isSubscriptionLoading(subsection)" 
+                                                          class="spinner-border spinner-border-sm me-1" 
+                                                          role="status" aria-hidden="true"></span>
+                                                    {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe' }}
+                                                </button>
                                                 
-                                                <!-- Edit Mode Controls (for venue owners) -->
-                                                <div v-if="editMenuMode && selfView" class="d-flex align-items-center gap-3">
-                                                    <div class="form-check">
-                                                        <input 
-                                                            class="form-check-input" 
-                                                            type="checkbox" 
-                                                            :id="'subscribersEnabled' + subsection.id"
-                                                            v-model="subsection.subscribersEnabled">
-                                                        <label class="form-check-label small text-muted" 
-                                                               :for="'subscribersEnabled' + subsection.id">
-                                                            Enable subscriptions for this subsection
-                                                        </label>
-                                                    </div>
-                                                    <small v-if="subsection.subscribersEnabled && subsection.subscribers" 
-                                                           class="text-muted">
-                                                        {{ subsection.subscribers.length }} subscriber(s)
-                                                    </small>
-                                                </div>
-                                                
-                                                <!-- Subscribe Button (for users in view mode) -->
-                                                <div v-else-if="subsection.subscribersEnabled && !editMenuMode">
-                                                    <!-- Mobile Subscribe Button -->
-                                                    <button 
-                                                        type="button"
-                                                        class="btn subscribe-btn mobile-view-show"
-                                                        :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
-                                                        @click="handleSubscribeClick(subsection)"
-                                                        :disabled="isSubscriptionLoading(subsection)">
-                                                        <span v-if="isSubscriptionLoading(subsection)" 
-                                                              class="spinner-border spinner-border-sm me-1" 
-                                                              role="status" aria-hidden="true"></span>
-                                                        {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe' }}
-                                                    </button>
-                                                    
-                                                    <!-- Desktop Subscribe Button -->
-                                                    <button 
-                                                        type="button"
-                                                        class="btn subscribe-btn mobile-view-hide"
-                                                        :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
-                                                        @click="handleSubscribeClick(subsection)"
-                                                        :disabled="isSubscriptionLoading(subsection)">
-                                                        <span v-if="isSubscriptionLoading(subsection)" 
-                                                              class="spinner-border spinner-border-sm me-1" 
-                                                              role="status" aria-hidden="true"></span>
-                                                        {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe for Updates' }}
-                                                    </button>
-                                                </div>
+                                                <!-- Desktop Subscribe Button -->
+                                                <button 
+                                                    type="button"
+                                                    class="btn subscribe-btn mobile-view-hide"
+                                                    :class="isUserSubscribed(subsection) ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                                                    @click="handleSubscribeClick(subsection)"
+                                                    :disabled="isSubscriptionLoading(subsection)">
+                                                    <span v-if="isSubscriptionLoading(subsection)" 
+                                                          class="spinner-border spinner-border-sm me-1" 
+                                                          role="status" aria-hidden="true"></span>
+                                                    {{ isUserSubscribed(subsection) ? 'Subscribed' : 'Subscribe for Updates' }}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -2868,29 +2801,63 @@
                 </div>
             </div>
 
-            <!-- ------- END Menu Item Modal / START Rename Menu Section Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+            <!-- ------- END Menu Item Modal / START Edit Menu Section Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
-            <!-- Rename Menu Section Modal -->
+            <!-- Edit Menu Section Modal -->
             <div class="modal fade" id="renameMenuSectionModal" tabindex="-1"
                 aria-labelledby="renameMenuSectionModal" aria-hidden="true">
-                <div class="modal-dialog">
+                <div class="modal-dialog modal-lg">
                     <div class="modal-content">
 
                         <!-- Modal Header -->
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="renameMenuSectionModalLabel">Rename Menu
-                                Section</h1>
+                            <h1 class="modal-title fs-5" id="renameMenuSectionModalLabel">
+                                Edit {{ renameSectionType === 'section' ? 'Section' : 'Subsection' }}
+                            </h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"
                                 aria-label="Close"></button>
                         </div>
 
                         <!-- Modal Body -->
                         <div class="modal-body">
-                            <label class="form-check-label" for="renameMenuSectionInput">Original
-                                Section Name: <span class="fw-bold fst-italic">{{
-                                    renameMenuSectionModalOld }}</span></label>
-                            <input id="renameMenuSectionInput" type="text" class="form-control"
-                                v-model="renameMenuSectionModalNew" placeholder="New Section Name">
+                            <!-- Section Name -->
+                            <div class="mb-3">
+                                <label class="form-label" for="renameMenuSectionInput">
+                                    {{ renameSectionType === 'section' ? 'Section' : 'Subsection' }} Name
+                                </label>
+                                <input id="renameMenuSectionInput" type="text" class="form-control"
+                                    v-model="renameMenuSectionModalNew" 
+                                    :placeholder="'Enter new' + (renameSectionType === 'section' ? 'section' : 'subsection') + ' name...'">
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" 
+                                          v-model="renameMenuSectionModalTarget.data.sectionDescription"
+                                          :placeholder="'Enter ' + (renameSectionType === 'section' ? 'section' : 'subsection') + ' description...'" 
+                                          rows="3"
+                                          style="resize: vertical;"
+                                          v-if="renameMenuSectionModalTarget.data">
+                                </textarea>
+                            </div>
+                            
+                            <!-- Subscription Settings -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                           v-model="renameMenuSectionModalTarget.data.subscribersEnabled" 
+                                           id="modalSubscribersEnabled"
+                                           v-if="renameMenuSectionModalTarget.data">
+                                    <label class="form-check-label" for="modalSubscribersEnabled">
+                                        Enable subscriptions for this {{ renameSectionType }}
+                                    </label>
+                                </div>
+                                <small v-if="renameMenuSectionModalTarget.data && renameMenuSectionModalTarget.data.subscribersEnabled && renameMenuSectionModalTarget.data.subscribers && renameMenuSectionModalTarget.data.subscribers.length > 0" 
+                                       class="text-muted d-block mt-1">
+                                    {{ renameMenuSectionModalTarget.data.subscribers.length }} subscriber(s)
+                                </small>
+                            </div>
                         </div>
 
                         <!-- Modal Footer -->
@@ -2898,14 +2865,14 @@
                             <button type="button" class="btn btn-secondary"
                                 data-bs-dismiss="modal">Cancel</button>
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
-                                @click="renameMenuSection">Save</button>
+                                @click="renameMenuSection">Save Changes</button>
                         </div>
 
                     </div>
                 </div>
             </div>
 
-            <!-- ------- END Rename Menu Section Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+            <!-- ------- END Edit Menu Section Modal ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
         </div>
 
