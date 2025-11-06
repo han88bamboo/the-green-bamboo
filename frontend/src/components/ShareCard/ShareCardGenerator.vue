@@ -154,13 +154,17 @@ onMounted(() => {
   }, 50)
 })
 
-watch(() => props.template, () => {
-  if (backgroundLayer.value && contentLayer.value) {
-    backgroundLayer.value.destroyChildren();
-    contentLayer.value.destroyChildren();
-    generateCard();
-  }
-})
+watch(
+  () => [props.reviewData, props.template],
+  () => {
+    if (backgroundLayer.value && contentLayer.value) {
+      backgroundLayer.value.destroyChildren()
+      contentLayer.value.destroyChildren()
+      generateCard()
+    }
+  },
+  { deep: true }
+)
 </script>
 
 <template>

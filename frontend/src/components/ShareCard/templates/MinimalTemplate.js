@@ -1,5 +1,7 @@
 // templates/MinimalTemplate.js
 import Konva from "konva";
+// only if we need logo on the share card 
+// import logoImage from '@/assets/Drink-X Logo.png';
 
 export const createMinimalTemplate = async (layers, data) => {
   const { bg, fg } = layers;
@@ -114,20 +116,6 @@ export const createMinimalTemplate = async (layers, data) => {
     tags.push(...data.review.characteristics.slice(0, 3));
   }
 
-  // Default tags if none provided
-  if (tags.length === 0) {
-    tags.push("Smooth", "Balanced", "Flavorful");
-  }
-
-  // Tag colors
-  // const tagColors = [
-  //   { bg: "#E8D5A8", text: "#5C4B2E" }, // Cream/tan
-  //   { bg: "#7B9FE8", text: "#1E3A5F" }, // Blue
-  //   { bg: "#C77EB5", text: "#4A1E40" }, // Purple/pink
-  //   { bg: "#F39C6B", text: "#5C2E1E" }, // Orange
-  //   { bg: "#FFB84D", text: "#5C3E1E" }, // Yellow/gold
-  // ];
-
   // Draw tags in rows
   const tagStartY = 680;
   const tagSpacing = 20;
@@ -223,6 +211,17 @@ export const createMinimalTemplate = async (layers, data) => {
     align: "center",
   });
   fg.add(userName);
+
+  // drink-x logo /Users/mingsheng/github/the-green-bamboo/frontend/Images/Logo/Drink-X Logo.png
+  // Konva.Image.fromURL(logoImage, function(drinkx) {
+  //   drinkx.setAttrs({
+  //     x: 120,
+  //     y: 200,
+  //     width: 302.68,
+  //     height: 76
+  //   });
+  //   fg.add(drinkx);
+  // });
 
   fg.batchDraw();
 }
