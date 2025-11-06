@@ -445,9 +445,17 @@
                                      class="d-flex justify-content-between align-items-center gap-3">
                                     
                                     <!-- Description Text (in view mode) -->
-                                    <div v-if="menuSection.sectionDescription" 
-                                         class="section-description flex-grow-1" 
-                                         v-html="formatDescription(menuSection.sectionDescription)">
+                                    <div v-if="menuSection.sectionDescription" class="section-description flex-grow-1">
+                                        <!-- Mobile: Truncated description -->
+                                        <div class="mobile-view-show">
+                                            <span v-html="formatDescriptionMobileTruncated(menuSection.sectionDescription)"></span>
+                                            <span class="read-more-link" @click="openDescriptionModal(menuSection.sectionName, menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
+                                        </div>
+                                        <!-- Desktop: Full description -->
+                                        <div class="mobile-view-hide">
+                                            <span v-html="formatDescription(menuSection.sectionDescription)"></span>
+                                            <span class="read-more-link" @click="openDescriptionModal(menuSection.sectionName, menuSection.sectionDescription, menuSection.subscribersEnabled, menuSection.subscribers, menuSection.id)">(Read More)</span>
+                                        </div>
                                     </div>
                                     
                                     <!-- Subscribe Button (for users in view mode) -->
@@ -892,9 +900,17 @@
                                     <div class="col-12 p-0">
                                         <div class="section-subscription-container">
                                             <!-- Description Text (in view mode) -->
-                                            <div v-if="subsection.sectionDescription" 
-                                                 class="section-description" 
-                                                 v-html="formatDescription(subsection.sectionDescription)">
+                                            <div v-if="subsection.sectionDescription" class="section-description">
+                                                <!-- Mobile: Truncated description -->
+                                                <div class="mobile-view-show">
+                                                    <span v-html="formatDescriptionMobileTruncated(subsection.sectionDescription)"></span>
+                                                    <span class="read-more-link" @click="openDescriptionModal(subsection.sectionName, subsection.sectionDescription, subsection.subscribersEnabled, subsection.subscribers, subsection.id)">(Read More)</span>
+                                                </div>
+                                                <!-- Desktop: Full description -->
+                                                <div class="mobile-view-hide">
+                                                    <span v-html="formatDescription(subsection.sectionDescription)"></span>
+                                                    <span class="read-more-link" @click="openDescriptionModal(subsection.sectionName, subsection.sectionDescription, subsection.subscribersEnabled, subsection.subscribers, subsection.id)">(Read More)</span>
+                                                </div>
                                             </div>
                                             
                                             <!-- Subscribe Button Row -->
@@ -1476,9 +1492,17 @@
                                              class="d-flex justify-content-between align-items-center gap-3">
                                             
                                             <!-- Description Text -->
-                                            <div v-if="menuSection.sectionDescription" 
-                                                 class="section-description flex-grow-1" 
-                                                 v-html="formatDescription(menuSection.sectionDescription)">
+                                            <div v-if="menuSection.sectionDescription" class="section-description flex-grow-1">
+                                                <!-- Mobile: Truncated description -->
+                                                <div class="mobile-view-show">
+                                                    <span v-html="formatDescriptionMobileTruncated(menuSection.sectionDescription)"></span>
+                                                    <span class="read-more-link">(Read More)</span>
+                                                </div>
+                                                <!-- Desktop: Full description -->
+                                                <div class="mobile-view-hide">
+                                                    <span v-html="formatDescription(menuSection.sectionDescription)"></span>
+                                                    <span class="read-more-link">(Read More)</span>
+                                                </div>
                                             </div>
                                             
                                             <!-- Subscribe Button (disabled/visual-only) -->
@@ -1896,9 +1920,17 @@
                                                 <div class="col-12 p-0">
                                                     <div class="section-subscription-container">
                                                         <!-- Description Text -->
-                                                        <div v-if="subsection.sectionDescription" 
-                                                             class="section-description" 
-                                                             v-html="formatDescription(subsection.sectionDescription)">
+                                                        <div v-if="subsection.sectionDescription" class="section-description">
+                                                            <!-- Mobile: Truncated description -->
+                                                            <div class="mobile-view-show">
+                                                                <span v-html="formatDescriptionMobileTruncated(subsection.sectionDescription)"></span>
+                                                                <span class="read-more-link">(Read More)</span>
+                                                            </div>
+                                                            <!-- Desktop: Full description -->
+                                                            <div class="mobile-view-hide">
+                                                                <span v-html="formatDescription(subsection.sectionDescription)"></span>
+                                                                <span class="read-more-link">(Read More)</span>
+                                                            </div>
                                                         </div>
                                                         
                                                         <!-- Subscribe Button Row -->
@@ -2910,6 +2942,39 @@
                         <a @click="showFullImageDescription = false" class="read-more-link">(Read Less)</a>
                     </p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Description Modal -->
+    <div v-if="showDescriptionModal" class="description-modal-overlay" @click="closeDescriptionModal">
+        <div class="description-modal-content-wrapper" @click.stop>
+            <!-- Modal Header -->
+            <div class="description-modal-header">
+                <h3 class="description-modal-title">{{ modalSectionName }}</h3>
+                <button class="description-modal-close" @click="closeDescriptionModal" aria-label="Close">
+                    ✕
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="description-modal-body">
+                <div class="description-modal-text" v-html="formatDescription(modalSectionDescription)"></div>
+            </div>
+            
+            <!-- Modal Footer with Subscribe Button -->
+            <div v-if="modalSectionSubscribersEnabled" class="description-modal-footer">
+                <button 
+                    type="button"
+                    class="btn subscribe-btn"
+                    :class="isModalSectionSubscribed() ? 'subscribe-btn-subscribed' : 'subscribe-btn-default'"
+                    @click="handleModalSubscribeClick()"
+                    :disabled="isModalSubscriptionLoading()">
+                    <span v-if="isModalSubscriptionLoading()" 
+                          class="spinner-border spinner-border-sm me-1" 
+                          role="status" aria-hidden="true"></span>
+                    {{ isModalSectionSubscribed() ? 'Subscribed' : 'Subscribe' }}
+                </button>
             </div>
         </div>
     </div>
@@ -4108,6 +4173,14 @@ export default {
             enlargedImageAlt: '',
             enlargedImageDesc: '',
             showFullImageDescription: false,
+
+            // Description modal data
+            showDescriptionModal: false,
+            modalSectionName: '',
+            modalSectionDescription: '',
+            modalSectionSubscribersEnabled: false,
+            modalSectionSubscribers: [],
+            modalSectionId: null,
 
             // Drag and drop properties - Enhanced for hierarchical structure
             menuSnapshot: null,
@@ -10163,6 +10236,30 @@ export default {
             document.body.style.overflow = '';
         },
 
+        // Handle description modal opening
+        openDescriptionModal(sectionName, description, subscribersEnabled, subscribers, sectionId) {
+            this.modalSectionName = sectionName;
+            this.modalSectionDescription = description;
+            this.modalSectionSubscribersEnabled = subscribersEnabled;
+            this.modalSectionSubscribers = subscribers || [];
+            this.modalSectionId = sectionId;
+            this.showDescriptionModal = true;
+            // Prevent scrolling when modal is open
+            document.body.style.overflow = 'hidden';
+        },
+
+        // Close description modal
+        closeDescriptionModal() {
+            this.showDescriptionModal = false;
+            this.modalSectionName = '';
+            this.modalSectionDescription = '';
+            this.modalSectionSubscribersEnabled = false;
+            this.modalSectionSubscribers = [];
+            this.modalSectionId = null;
+            // Restore scrolling
+            document.body.style.overflow = '';
+        },
+
     // Enhanced image processing with scaling and compression
     async onFileChange(event) {
       const file = event.target.files[0];
@@ -11264,6 +11361,20 @@ export default {
       return description.replace(/\n/g, '<br>');
     },
     
+    // Format description for mobile with truncation only (no read more)
+    formatDescriptionMobileTruncated(description) {
+      if (!description) return '';
+      
+      // Strip HTML tags and get raw text for character counting
+      const rawText = description.replace(/<[^>]*>/g, '');
+      
+      // Truncate to 80 characters if needed and add ellipsis
+      const truncatedText = rawText.length > 80 ? rawText.substring(0, 80) + '...' : rawText;
+      
+      // Convert line breaks to <br> tags
+      return truncatedText.replace(/\n/g, '<br>');
+    },
+    
     // Check if current user is subscribed to a section
     isUserSubscribed(section) {
       if (!section.subscribers || !this.currentUserId || this.currentUserId === 'defaultUser') {
@@ -11359,7 +11470,34 @@ export default {
       
       const response = await this.$axios.post(endpoint, payload);
       return response.data;
-    }    
+    },
+
+    // Helper methods for description modal subscription functionality
+    isModalSectionSubscribed() {
+      if (!this.modalSectionSubscribers || !this.currentUserId || this.currentUserId === 'defaultUser') {
+        return false;
+      }
+      return this.modalSectionSubscribers.includes(this.currentUserId);
+    },
+
+    isModalSubscriptionLoading() {
+      return this.subscriptionLoadingStates[this.modalSectionId] || false;
+    },
+
+    async handleModalSubscribeClick() {
+      // Create a temporary section object for the existing handleSubscribeClick method
+      const modalSection = {
+        id: this.modalSectionId,
+        sectionName: this.modalSectionName,
+        subscribers: this.modalSectionSubscribers,
+        subscribersEnabled: this.modalSectionSubscribersEnabled
+      };
+      
+      await this.handleSubscribeClick(modalSection);
+      
+      // Update modal data after subscription change
+      this.modalSectionSubscribers = modalSection.subscribers;
+    }
     }
 }
 </script>
@@ -12180,6 +12318,139 @@ input[type="range"].form-range::-webkit-slider-thumb {
   }
 }
 
+/* ===== DESCRIPTION MODAL STYLES ===== */
+
+/* Description Modal overlay - darkens background */
+.description-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Description Modal content wrapper */
+.description-modal-content-wrapper {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 80vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  animation: zoomIn 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Description Modal header */
+.description-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #f0b358;
+  background: linear-gradient(135deg, rgba(242, 153, 74, 0.1) 0%, rgba(255, 255, 255, 1) 100%);
+  flex-shrink: 0;
+}
+
+.description-modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+/* Close button */
+.description-modal-close {
+  background: rgba(220, 53, 69, 0.1);
+  border: 2px solid #dc3545;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #dc3545;
+  font-weight: bold;
+}
+
+.description-modal-close:hover {
+  background: #dc3545;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Description Modal body */
+.description-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.description-modal-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #444;
+  margin: 0;
+}
+
+/* Description Modal footer */
+.description-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e9ecef;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Mobile responsiveness for description modal */
+@media (max-width: 768px) {
+  .description-modal-overlay {
+    padding: 15px;
+  }
+  
+  .description-modal-content-wrapper {
+    max-width: 95%;
+    max-height: 90vh;
+  }
+  
+  .description-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .description-modal-title {
+    font-size: 1.25rem;
+  }
+  
+  .description-modal-close {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+  
+  .description-modal-body {
+    padding: 20px;
+  }
+  
+  .description-modal-text {
+    font-size: 0.95rem;
+  }
+  
+  .description-modal-footer {
+    padding: 16px 20px;
+  }
+}
+
 /* ------- START Jump to Section Feature Styles (Mobile Only) ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ */
 
 /* Floating "Jump to Section" Button - Subtle Orange, Mobile Only */
@@ -12456,6 +12727,7 @@ input[type="range"].form-range::-webkit-slider-thumb {
     line-height: 1.5;
     color: #495057;
     margin-bottom: 0;
+    text-align: justify;
 }
 
 /* Subscribe button default state - Red theme */
@@ -12530,6 +12802,19 @@ input[type="range"].form-range::-webkit-slider-thumb {
         margin-left: -10px !important; 
         margin-right: -10px !important;
     }
+}
+
+/* Read More Link Styling */
+.read-more-link {
+    font-weight: bold;
+    color: #006A50;
+    cursor: pointer;
+    margin-left: 4px;
+}
+
+.read-more-link:hover {
+    color: #004d39;
+    text-decoration: underline;
 }
 
 
