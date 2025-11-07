@@ -1237,22 +1237,9 @@
                 </div>
                 <!-- View Mode: Venue Info + Buttons -->
                 <div v-if="!editProfile" class="row text-start">
-                    <!-- Venue Info -->
-                    <div class="col-9 mobile-col-12 mobile-mb-2">
-                        <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
-                        <div v-if="hasAmenities" class="mt-3 d-lg-none">
-                            <button 
-                                class="btn btn-outline-secondary w-100 text-start d-flex justify-content-between align-items-center"
-                                type="button" 
-                                data-bs-toggle="collapse" 
-                                data-bs-target="#amenitiesCollapse" 
-                                aria-expanded="false" 
-                                aria-controls="amenitiesCollapse"
-                            >
-                                <span class="fw-bold">Features & Amenities</span>
-                                <i class="bi bi-chevron-down"></i>
-                            </button>
-                        </div>
+
+                    <!-- Venue Info (desktop version)-->
+                    <div class="col-9 mobile-col-12 mobile-mb-2 mobile-view-hide">
 
                         <!-- Amenities Section -->
                         <div v-if="hasAmenities" class="mt-3 collapse d-lg-block" id="amenitiesCollapse">
@@ -1503,11 +1490,11 @@
                     </div>
 
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
-                    <div class="col-12 col-lg-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2">
+                    <div class="col-12 col-lg-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2 mt-3">
                         
                         <!-- Dining Menu Button (conditional) - Top Row -->
                         <div v-if="hasPdfMenu" class="d-none d-lg-flex justify-content-end w-100 mobile-justify-content-start">
-                            <button class="btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
+                            <button class="btn btn-custom-orange-inverted btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
@@ -1517,7 +1504,7 @@
                         </div>
 
                         <!-- Follow and Review Buttons - Bottom Row -->
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             <!-- Follow Button -->
                             <button v-if="viewerType === 'user' && !userFollowing"
                                 class="d-lg-none btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2 "
@@ -1550,14 +1537,281 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-outline-custom-orange btn-lg text-nowrap mobile-rating-smaller-text-2" 
+                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-custom-orange-inverted btn-lg text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
                                     style="font-weight: bold;">
                                 {{ diningMenuText }}
                             </button>
+
+                        <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
+                        <template v-if="hasAmenities" >
+                            <button 
+                                class="d-lg-none btn btn-secondary btn-lg text-white text-start d-flex justify-content-between align-items-center mobile-rating-smaller-text-2 amenities-toggle-btn"
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#amenitiesCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="amenitiesCollapse"
+                            >
+                                <span class="fw-bold">Amenities</span>
+                                <i class="bi bi-chevron-down amenities-chevron ms-1"></i>
+                            </button>
+                        </template>
+
                         </div>
+                    </div>
+
+                    <!-- Venue Info (mobile version) -->
+                    <div class="col-9 mobile-col-12 mobile-mb-2 mobile-view-show">
+
+                        <!-- Amenities Section -->
+                        <div v-if="hasAmenities" class="mt-3 collapse d-lg-block" id="amenitiesCollapse">
+                            <h6 class="fw-bold mb-2 d-none d-lg-block">Features & Amenities</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                <!-- Payment Methods -->
+                                <span v-if="targetVenue.amenities?.paymentCash" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-cash me-1"></i>Cash Payment
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentVisa" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-credit-card me-1"></i>Visa
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentMasterCard" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-credit-card me-1"></i>MasterCard
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentAmericanExpress" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-credit-card me-1"></i>Amex
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentApplePay" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-phone me-1"></i>Apple Pay
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentGooglePay" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-google me-1"></i>Google Pay
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentPayNow" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-qr-code me-1"></i>PayNow
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentDiscover" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-credit-card me-1"></i>Discover
+                                </span>
+                                <span v-if="targetVenue.amenities?.paymentSamsungPay" class="badge bg-primary me-1 mb-1">
+                                    <i class="bi bi-phone me-1"></i>Samsung Pay
+                                </span>
+
+                                <!-- Beverages -->
+                                <span v-if="targetVenue.amenities?.beverageWine" class="badge bg-success me-1 mb-1">
+                                    <PhChampagne :size="16" class="me-1" />Wine
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageBeer" class="badge bg-success me-1 mb-1">
+                                    <PhBeerStein :size="16" class="me-1" />Beer
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageCocktails" class="badge bg-success me-1 mb-1">
+                                    <PhMartini :size="16" class="me-1" />Cocktails
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageWhisky" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Whisky
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageGin" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Gin
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageVodka" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Vodka
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageRum" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Rum
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageTequila" class="badge bg-success me-1 mb-1">
+                                    <PhFlowerLotus :size="16" class="me-1" />Tequila
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageMezcal" class="badge bg-success me-1 mb-1">
+                                    <PhFlowerLotus :size="16" class="me-1" />Mezcal
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageBrandy" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Brandy
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageSake" class="badge bg-success me-1 mb-1">
+                                    <PhWine :size="16" class="me-1" />Sake
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageShochu" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Shochu
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageSoju" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Soju
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageBaijiu" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Baijiu
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageAbsinthe" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Absinthe
+                                </span>
+                                <span v-if="targetVenue.amenities?.beverageArrack" class="badge bg-success me-1 mb-1">
+                                    <PhBrandy :size="16" class="me-1" />Arrack
+                                </span>
+                                <span v-if="targetVenue.amenities?.nonAlcoholicOptions" class="badge bg-success me-1 mb-1" >
+                                    <i class="bi bi-cup-straw me-1"></i>Non-Alcoholic Options
+                                </span>
+
+
+                                <!-- General Amenities -->
+                                <span v-if="targetVenue.amenities?.foodServed" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-egg-fried me-1"></i>Food Served
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.breakfastService" class="badge bg-info me-1 mb-1">
+                                    <PhBread :size="16" class="me-1" />Breakfast Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.lunchService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-clock me-1"></i>Lunch Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.dinnerService" class="badge bg-info me-1 mb-1">
+                                     <i class="bi bi-moon me-1"></i>Dinner Service
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.vegetarianOptions" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-flower1 me-1"></i>Vegetarian Options
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.localNotPartOfChain" class="badge bg-info me-1 mb-1">
+                                     <PhHouseSimple :size="16" class="me-1" />Local (Not Part Of Chain)
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.casualDressing" class="badge bg-info me-1 mb-1">
+                                     Casual Dressing
+                                </span>
+                                
+                                <span v-if="targetVenue.amenities?.formalDressing" class="badge bg-info me-1 mb-1">
+                                     Formal Dressing
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.freeWiFi" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-wifi me-1"></i>Free WiFi
+                                </span>
+                                <span v-if="targetVenue.amenities?.outdoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-tree me-1"></i>Outdoor Seating
+                                </span>
+                                <span v-if="targetVenue.amenities?.indoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-house me-1"></i>Indoor Seating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.airConditioning" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-snow me-1"></i>Air Conditioning
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.indoorHeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-thermometer-sun me-1"></i>Indoor Heating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.coveredOutdoorSeating" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-umbrella me-1"></i>Covered Outdoor Seating
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.toiletsAvailable" class="badge bg-info me-1 mb-1">
+                                    <PhToilet :size="16" class="me-1" />Toilet Available
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.liveMusic" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-music-note me-1"></i>Live Music
+                                </span>
+                                <span v-if="targetVenue.amenities?.wheelchairAccessibility" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-universal-access me-1"></i>Wheelchair Accessible
+                                </span>
+                                <span v-if="targetVenue.amenities?.petFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-heart me-1"></i>Pet Friendly
+                                </span>
+                                <span v-if="targetVenue.amenities?.childFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-people me-1"></i>Child Friendly
+                                </span>
+                                <span v-if="targetVenue.amenities?.familyFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-house-heart me-1"></i>Family Friendly
+                                </span>
+                                
+                                <span v-if="targetVenue.amenities?.largeGroupsFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <PhUsersFour :size="16" class="me-1" />Large Groups Friendly
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.workStudyFriendly" class="badge bg-secondary me-1 mb-1">
+                                     <PhLaptop :size="16" class="me-1" />Work / Study Friendly
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.nonSmoking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-slash-circle me-1"></i>Non-Smoking
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.smokeFriendly" class="badge bg-secondary me-1 mb-1">
+                                    <i class="bi bi-cloud me-1"></i>Smoking Friendly
+                                </span>
+                                <span v-if="targetVenue.amenities?.barGames" class="badge bg-dark me-1 mb-1">
+                                    <i class="bi bi-controller me-1"></i>Bar Games / Entertainment
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.tvEntertainment" class="badge bg-dark me-1 mb-1">
+                                    <PhTelevision :size="16" />TV / Entertainment
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.happyHourDrinks" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-clock me-1"></i>Happy Hour
+                                </span>
+                                <span v-if="targetVenue.amenities?.deliveryAvailable" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-truck me-1"></i>Delivery Available
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.onlineOrdering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-laptop me-1"></i>Online Ordering
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.takeaway" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bag me-1"></i>Takeaway
+                                </span>  
+
+                                <span v-if="targetVenue.amenities?.catering" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-people-fill me-1"></i>Catering
+                                </span>
+                                
+                                <span v-if="targetVenue.amenities?.ticketed" class="badge bg-warning me-1 mb-1">
+                                    <i class="bi bi-ticket-perforated me-1"></i>Tickets Required
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.reservationsRequired" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-calendar-check me-1"></i>Reservations Required
+                                </span>
+                                <span v-if="targetVenue.amenities?.membershipRequired" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-person-badge me-1"></i>Membership Required
+                                </span>
+                                <span v-if="targetVenue.amenities?.sommelierService" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-award me-1"></i>Sommelier Service
+                                </span>
+                                <span v-if="targetVenue.amenities?.inStoreScheduling" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-calendar3 me-1"></i>In-Store Scheduling
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.streetParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-car-front me-1"></i>Street Parking
+                                </span>                                
+
+                                <span v-if="targetVenue.amenities?.bikeParking" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-bicycle me-1"></i>Bike Parking
+                                </span>
+
+                                <span v-if="targetVenue.amenities?.driveThru" class="badge bg-info me-1 mb-1">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Drive Thru
+                                </span>                                
+
+                                <span v-if="targetVenue.amenities?.lgbtqFriendly" class="badge bg-light text-dark me-1 mb-1">
+                                    <i class="bi bi-rainbow me-1"></i>LGBTQ+ Friendly
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- PDF Menu Section 
+                        <div v-if="targetVenue.pdfMenuUrl" class="mt-3">
+                            <h6 class="fw-bold mb-2">Menu</h6>
+                            <a :href="targetVenue.pdfMenuUrl" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-file-earmark-pdf me-1"></i>View PDF Menu
+                            </a>
+                        </div>-->
                     </div>
 
                 </div>
@@ -8950,6 +9204,38 @@ letter-spacing: 1px;
     border-color: #e28100;
 }
 
+/* Inverted Custom Orange Button */
+.btn-custom-orange-inverted {
+    color: #fff;
+    background-color: #e28100;
+    border-color: #e28100;
+}
+
+.btn-custom-orange-inverted:hover {
+    color: #e28100;
+    background-color: transparent;
+    border-color: #e28100;
+}
+
+.btn-custom-orange-inverted:focus,
+.btn-custom-orange-inverted.focus {
+    box-shadow: 0 0 0 0.2rem rgba(226, 129, 0, 0.5);
+}
+
+.btn-custom-orange-inverted.disabled,
+.btn-custom-orange-inverted:disabled {
+    color: #fff;
+    background-color: #e28100;
+    opacity: 0.65;
+}
+
+.btn-custom-orange-inverted:not(:disabled):not(.disabled):active,
+.btn-custom-orange-inverted:not(:disabled):not(.disabled).active {
+    color: #e28100;
+    background-color: transparent;
+    border-color: #e28100;
+}
+
 /* PDF Container Styling */
 .pdf-container {
     min-height: 400px;
@@ -9138,5 +9424,39 @@ letter-spacing: 1px;
 
 .pdf-container img {
     animation: fadeIn 0.3s ease-out;
+}
+
+/* Amenities Toggle Button Styling */
+.amenities-toggle-btn {
+    transition: all 0.3s ease;
+}
+
+/* Collapsed state: dark background, white text */
+.amenities-toggle-btn[aria-expanded="false"] {
+    background-color: #6c757d !important;
+    color: white !important;
+    border-color: #6c757d !important;
+}
+
+/* Expanded state: light background, dark text with border */
+.amenities-toggle-btn[aria-expanded="true"] {
+    background-color: white !important;
+    color: #6c757d !important;
+    border: 1px solid #6c757d !important;
+}
+
+/* Chevron rotation for amenities toggle */
+.amenities-chevron {
+    transition: transform 0.3s ease;
+}
+
+/* Collapsed state: chevron points right */
+.amenities-toggle-btn[aria-expanded="false"] .amenities-chevron {
+    transform: rotate(-90deg);
+}
+
+/* Expanded state: chevron points down */
+.amenities-toggle-btn[aria-expanded="true"] .amenities-chevron {
+    transform: rotate(0deg);
 }
 </style>
