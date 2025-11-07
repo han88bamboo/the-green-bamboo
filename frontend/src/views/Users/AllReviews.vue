@@ -587,6 +587,9 @@ export default {
         this.hasMoreReviews = response.data.hasMore || false;
         this.currentPage = page;
         
+        // Load supporting data for the new reviews (listings, etc.)
+        await this.loadSupportingData();
+        
         // Apply filters to current page data
         this.applyFilters();
         
