@@ -179,7 +179,8 @@ class DatabaseManager:
         )
         
         # Log successful pool initialization
-        logger.info(f"Database connection pool initialized successfully")
+        logger.info(f"charsiucharlie_connection_pooling_debug: Database connection pool initialized successfully")
+        logger.info(f"charsiucharlie_connection_pooling_debug: Pool config - min:5, max:80, host:{config['POSTGRES_HOST']}, db:{config['POSTGRES_DB']}")
         self.log_pool_status("INIT")
         
         # Store reference to the manager in the Flask app for global access
@@ -219,10 +220,10 @@ class DatabaseManager:
             context = f"[{context}] "
         
         if 'error' in pool_status:
-            logger.warning(f"{context}Pool monitoring error: {pool_status}")
+            logger.warning(f"charsiucharlie_connection_pooling_debug: {context}Pool monitoring error: {pool_status}")
         else:
             logger.info(
-                f"{context}Pool Status - "
+                f"charsiucharlie_connection_pooling_debug: {context}Pool Status - "
                 f"Available: {pool_status.get('available', 'N/A')}, "
                 f"Used: {pool_status.get('used', 'N/A')}, "
                 f"Utilization: {pool_status.get('pool_utilization', 'N/A')}"
@@ -259,54 +260,122 @@ class DatabaseManager:
             logger.warning(f"Could not get pool status: {e}")
             return {"status": "Pool status unavailable", "error": str(e)}
 
+    def _is_connection_alive(self, conn):
+        """
+        Test if a connection is still alive and responsive.
+        Uses a lightweight query that doesn't affect application state.
+        """
+        try:
+            # Use a simple SELECT 1 query to test connection health
+            with conn.cursor() as test_cursor:
+                test_cursor.execute('SELECT 1')
+                test_cursor.fetchone()
+            return True
+        except Exception as e:
+            logger.debug(f"charsiucharlie_connection_pooling_debug: Connection health check failed: {type(e).__name__}: {e}")
+            return False
+
     @contextmanager
     def get_connection(self):
         """
-        CONNECTION CHECKOUT/RELEASE:
+        ENHANCED CONNECTION CHECKOUT/RELEASE with stale connection detection:
+        
         This context manager handles the critical connection lifecycle:
         1. Checks out a connection from the pool (getconn())
-        2. Automatically returns it to the pool when done (putconn())
-        3. Handles rollback on exceptions
+        2. Tests connection health before use (handles Aurora timeouts)
+        3. Automatically retries with fresh connection if stale detected
+        4. Handles safe rollback (only on live connections)
+        5. Automatically returns connection to pool when done (putconn())
         
-        The connection is reused by other requests after being returned to the pool.
+        AWS Aurora closes idle connections after 5 minutes, but psycopg2 pool
+        doesn't detect this until query execution. This implementation proactively
+        detects stale connections and replaces them automatically.
         """
+        request_id = getattr(g, 'request_id', 'unknown')
+        max_retries = 2
+        
         # Log pool status before getting connection
         pool_status = self.get_pool_status()
-        logger.debug(f"Pool status before checkout: {pool_status}")
+        logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Pool status before checkout: {pool_status}")
         
-        try:
-            conn = self.pool.getconn()  # CHECK OUT: Get connection from pool
-            logger.debug("Successfully checked out connection from pool")
-        except Exception as e:
-            logger.error(f"Failed to get connection from pool: {type(e).__name__}: {e}")
-            logger.error(f"Pool status during failure: {self.get_pool_status()}")
-            raise
+        conn = None
+        for attempt in range(max_retries + 1):
+            try:
+                conn = self.pool.getconn()  # CHECK OUT: Get connection from pool
+                logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Successfully checked out connection from pool (attempt {attempt + 1})")
+                
+                # Test connection health before use - critical for handling Aurora timeouts
+                if not self._is_connection_alive(conn):
+                    logger.warning(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Stale connection detected on attempt {attempt + 1}, discarding")
+                    try:
+                        conn.close()  # Force close the stale connection
+                    except:
+                        pass  # Ignore errors when closing stale connection
+                    
+                    # Remove stale connection from pool permanently  
+                    try:
+                        self.pool.putconn(conn, close=True)
+                    except:
+                        pass  # Ignore putconn errors for stale connections
+                    
+                    if attempt < max_retries:
+                        logger.info(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Retrying with fresh connection (attempt {attempt + 2})")
+                        continue  # Try again with a fresh connection
+                    else:
+                        raise psycopg2.OperationalError("charsiucharlie_connection_pooling_debug: Unable to get healthy connection after retries")
+                
+                # Connection is healthy, proceed
+                logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Connection health check passed, proceeding with query")
+                break
+                
+            except Exception as e:
+                logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Failed to get connection on attempt {attempt + 1}: {type(e).__name__}: {e}")
+                if attempt >= max_retries:
+                    logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Pool status during final failure: {self.get_pool_status()}")
+                    raise
+                continue
         
         try:
             yield conn  # Provide connection to calling code
         except Exception as e:
-            conn.rollback()  # ROLLBACK: Undo any uncommitted changes on error
-            logger.error(f"Database error - Type: {type(e).__name__}, Message: {str(e)}")
-            logger.error(f"Pool status during error: {self.get_pool_status()}")
+            # SAFE ROLLBACK: Only attempt rollback if connection is still alive
+            # This prevents the secondary "connection already closed" error
+            if self._is_connection_alive(conn):
+                try:
+                    conn.rollback()  # ROLLBACK: Undo any uncommitted changes on error
+                    logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Successfully rolled back transaction")
+                except Exception as rollback_error:
+                    logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Rollback failed on live connection: {rollback_error}")
+            else:
+                logger.warning(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Skipping rollback - connection already closed")
+            
+            logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Database error - Type: {type(e).__name__}, Message: {str(e)}")
+            logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Pool status during error: {self.get_pool_status()}")
             raise
         finally:
             try:
-                self.pool.putconn(conn)  # RELEASE: Return connection to pool for reuse
-                logger.debug("Successfully returned connection to pool")
+                # Check if connection is still valid before returning to pool
+                if self._is_connection_alive(conn):
+                    self.pool.putconn(conn)  # RELEASE: Return healthy connection to pool for reuse
+                    logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Successfully returned healthy connection to pool")
+                else:
+                    logger.warning(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Connection died during operation, removing from pool")
+                    self.pool.putconn(conn, close=True)  # Remove dead connection from pool
             except Exception as e:
-                logger.error(f"Failed to return connection to pool: {type(e).__name__}: {e}")
-                logger.error(f"Pool status after putconn failure: {self.get_pool_status()}")
+                logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Failed to return connection to pool: {type(e).__name__}: {e}")
+                logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Pool status after putconn failure: {self.get_pool_status()}")
                 # Don't re-raise here as it would mask the original exception
     
     @contextmanager
     def get_cursor(self, commit=True):
         """
-        HIGH-LEVEL CURSOR CONTEXT MANAGER:
+        HIGH-LEVEL CURSOR CONTEXT MANAGER with enhanced error handling:
         This eliminates the need for explicit "sessions" by handling:
-        1. Connection management (via get_connection())
+        1. Connection management (via enhanced get_connection() with health checks)
         2. Cursor creation and cleanup
         3. Automatic commits (unless commit=False)
         4. Automatic rollbacks on errors
+        5. Automatic retry on stale connections (handled by get_connection())
         
         TRANSACTION MANAGEMENT:
         - Each get_cursor() call is its own transaction
@@ -314,17 +383,23 @@ class DatabaseManager:
         - Auto-rollbacks on exceptions
         - No need for explicit session management
         """
-        with self.get_connection() as conn:  # Get pooled connection
+        request_id = getattr(g, 'request_id', 'unknown')
+        logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Starting cursor context (commit={commit})")
+        
+        with self.get_connection() as conn:  # Get pooled connection (with health checks)
             cursor = conn.cursor()  # Create cursor from connection
             try:
                 yield cursor  # Provide cursor to calling code
                 if commit:
                     conn.commit()  # AUTO-COMMIT: Transaction is committed automatically
+                    logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Transaction committed successfully")
             except Exception as e:
-                conn.rollback()  # AUTO-ROLLBACK: Undo changes on any error
+                conn.rollback()  # AUTO-ROLLBACK: Undo changes on any error (connection guaranteed live by get_connection)
+                logger.error(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Cursor operation failed, transaction rolled back: {type(e).__name__}: {e}")
                 raise
             finally:
                 cursor.close()  # Always close cursor to free resources
+                logger.debug(f"charsiucharlie_connection_pooling_debug: REQ-{request_id} Cursor closed")
 
 # SINGLETON PATTERN: Single global instance shared across all modules
 # This instance will be initialized with the Flask app during startup
