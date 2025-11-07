@@ -12395,21 +12395,20 @@ input[type="range"].form-range::-webkit-slider-thumb {
 
 /* Close button */
 .description-modal-close {
-  background: rgba(220, 53, 69, 0.1);
-  border: 2px solid #dc3545;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
   border-radius: 50%;
   width: 40px;
   height: 40px;
   font-size: 24px;
   cursor: pointer;
   transition: all 0.2s;
-  color: #dc3545;
+  color: #333;
   font-weight: bold;
 }
 
 .description-modal-close:hover {
-  background: #dc3545;
-  color: white;
+  background: white;
   transform: scale(1.1);
 }
 
