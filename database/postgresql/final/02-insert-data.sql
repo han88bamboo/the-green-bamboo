@@ -679,7 +679,7 @@ INSERT INTO "languages" ("language") VALUES
 
 -- Insert observation tags into the observationTags table
 INSERT INTO "observationTags" ("observationTag") VALUES
-('Beginner Friendly'),
+('Beginner Friendly#58f058'),
 ('Recommended for Enthusiasts'),
 ('Good for Gifts 🎁'),
 ('Cool Packaging'),
@@ -689,7 +689,7 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Good for Sipping 🥃'),
 ('Good for Highballs 🍹'),
 ('More Complex Than Inception'),
-('Sharp Like a Toothpick'),
+('Sharp Like a Toothpick#ff3737'),
 ('Hot Like Hell 🔥'),
 ('Ticket to Funkytown 🎟️'),
 ('Food Pairing Friendly 🥩'),
@@ -702,7 +702,7 @@ INSERT INTO "observationTags" ("observationTag") VALUES
 ('Overhyped! 🥸'),
 ('Try Once'),
 ('Is This Water?🚰'),
-('Daily Drinker'),
+('Daily Drinker#4aedff'),
 ('Netflix & Chill 🍆');
 
 -- Insert venue main types into the venueMainTypes table

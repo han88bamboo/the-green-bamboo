@@ -7007,7 +7007,7 @@ def getSubTags():
 def getObservationTags():
 
     with db_manager.get_cursor() as cursor:
-        cursor.execute('SELECT * FROM "observationTags"')
+        cursor.execute('SELECT * FROM "observationTags" ORDER BY id')
         observation_tags_data = cursor.fetchall()
 
     if not observation_tags_data:

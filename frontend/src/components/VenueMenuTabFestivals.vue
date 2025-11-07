@@ -3596,10 +3596,10 @@
                           <div class="d-flex flex-wrap gap-2">
                             <div v-for="observationTag in selectedObservations" v-bind:key="observationTag"
                               class="mb-0 pb-0">
-                              <button style="background-color: #f0b358" class="btn">
-                                {{ observationTag.split("#")[0] }}
+                              <button :style="{ backgroundColor: getTagColor(observationTag), color: 'black' }" class="btn">
+                                {{ getTagDisplayText(observationTag) }}
                               </button>
-                              <!--tzh changed grey to #F0B358-->
+                              <!--Updated to support dynamic colors-->
                             </div>
                           </div>
                         </div>
@@ -3609,49 +3609,37 @@
                     <button v-for="observation in observationTags.slice(0, 8)"
                       @click="toggleObservationSelection(observation)" v-bind:key="observation"
                       class="btn mb-2 me-2 action-tags" data-bs-toggle="button" :style="{
-                        color: selectedObservations.includes(observation)
-                          ? 'black'
-                          : 'black',
-                        backgroundColor: selectedObservations.includes(
-                          observation
-                        )
+                        color: 'black',
+                        backgroundColor: selectedObservations.includes(observation)
                           ? '#FEE5BF'
-                          : '#F0B358',
+                          : getTagColor(observation),
                         borderColor: selectedObservations.includes(observation)
-                          ? '#F0B358'
+                          ? getTagColor(observation)
                           : 'none',
                         borderWidth: selectedObservations.includes(observation)
                           ? '1px'
                           : '0px',
                       }">
-                      <!--tzh changed lightgrey to #F0B358-->
-                      {{ observation }}
+                      <!--Updated to support dynamic colors-->
+                      {{ getTagDisplayText(observation) }}
                     </button>
                     <!-- Buttons for additional observations (shown only when extendObservation is true) -->
                     <div v-if="extendObservation">
                       <button v-for="observation in observationTags.slice(8)"
                         @click="toggleObservationSelection(observation)" v-bind:key="observation"
                         class="btn mb-2 me-2 action-tags" :style="{
-                          color: selectedObservations.includes(observation)
-                            ? 'black'
-                            : 'black',
-                          backgroundColor: selectedObservations.includes(
-                            observation
-                          )
+                          color: 'black',
+                          backgroundColor: selectedObservations.includes(observation)
                             ? '#FEE5BF'
-                            : '#F0B358',
-                          borderColor: selectedObservations.includes(
-                            observation
-                          )
-                            ? '#F0B358'
+                            : getTagColor(observation),
+                          borderColor: selectedObservations.includes(observation)
+                            ? getTagColor(observation)
                             : 'none',
-                          borderWidth: selectedObservations.includes(
-                            observation
-                          )
+                          borderWidth: selectedObservations.includes(observation)
                             ? '1px'
                             : '0px',
                         }">
-                        {{ observation }}
+                        {{ getTagDisplayText(observation) }}
                       </button>
                     </div>
                     <!-- Button to toggle between View All and View Less -->
@@ -3721,6 +3709,7 @@
 
 import { useToast } from 'vue-toastification';
 import draggable from 'vuedraggable';
+import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
 
 export default {
     name: 'VenueMenuTabFestivals',
@@ -11497,6 +11486,19 @@ export default {
       
       // Update modal data after subscription change
       this.modalSectionSubscribers = modalSection.subscribers;
+    },
+
+    // Action Tag Utility Methods
+    parseActionTag(tag) {
+      return parseActionTag(tag);
+    },
+
+    getTagDisplayText(tag) {
+      return getTagDisplayText(tag);
+    },
+
+    getTagColor(tag) {
+      return getTagColor(tag);
     }
     }
 }

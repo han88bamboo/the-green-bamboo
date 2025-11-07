@@ -932,8 +932,8 @@
           <div class="text-start mb-2 mobile-mb-0 text-color-black">
             <!-- flavor tag -->
             <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2"
-              style="background-color: #f0b358; color: black">{{ tag }}</span>
-            <!--tzh changed grey to #F0B358-->
+              :style="{ backgroundColor: getTagColor(tag), color: 'black' }">{{ getTagDisplayText(tag) }}</span>
+            <!--Updated to support dynamic colors-->
             <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
               <u> Most Popular Action Tags </u>
             </p>
@@ -2330,10 +2330,10 @@
                           <div class="d-flex flex-wrap gap-2">
                             <div v-for="observationTag in selectedObservations" v-bind:key="observationTag"
                               class="mb-0 pb-0">
-                              <button style="background-color: #f0b358" class="btn">
-                                {{ observationTag.split("#")[0] }}
+                              <button :style="{ backgroundColor: getTagColor(observationTag), color: 'black' }" class="btn">
+                                {{ getTagDisplayText(observationTag) }}
                               </button>
-                              <!--tzh changed grey to #F0B358-->
+                              <!--Updated to support dynamic colors-->
                             </div>
                           </div>
                         </div>
@@ -2343,49 +2343,37 @@
                     <button v-for="observation in observationTags.slice(0, 8)"
                       @click="toggleObservationSelection(observation)" v-bind:key="observation"
                       class="btn mb-2 me-2 action-tags" data-bs-toggle="button" :style="{
-                        color: selectedObservations.includes(observation)
-                          ? 'black'
-                          : 'black',
-                        backgroundColor: selectedObservations.includes(
-                          observation
-                        )
+                        color: 'black',
+                        backgroundColor: selectedObservations.includes(observation)
                           ? '#FEE5BF'
-                          : '#F0B358',
+                          : getTagColor(observation),
                         borderColor: selectedObservations.includes(observation)
-                          ? '#F0B358'
+                          ? getTagColor(observation)
                           : 'none',
                         borderWidth: selectedObservations.includes(observation)
                           ? '1px'
                           : '0px',
                       }">
-                      <!--tzh changed lightgrey to #F0B358-->
-                      {{ observation }}
+                      <!--Updated to support dynamic colors-->
+                      {{ getTagDisplayText(observation) }}
                     </button>
                     <!-- Buttons for additional observations (shown only when extendObservation is true) -->
                     <div v-if="extendObservation">
                       <button v-for="observation in observationTags.slice(8)"
                         @click="toggleObservationSelection(observation)" v-bind:key="observation"
                         class="btn mb-2 me-2 action-tags" :style="{
-                          color: selectedObservations.includes(observation)
-                            ? 'black'
-                            : 'black',
-                          backgroundColor: selectedObservations.includes(
-                            observation
-                          )
+                          color: 'black',
+                          backgroundColor: selectedObservations.includes(observation)
                             ? '#FEE5BF'
-                            : '#F0B358',
-                          borderColor: selectedObservations.includes(
-                            observation
-                          )
-                            ? '#F0B358'
+                            : getTagColor(observation),
+                          borderColor: selectedObservations.includes(observation)
+                            ? getTagColor(observation)
                             : 'none',
-                          borderWidth: selectedObservations.includes(
-                            observation
-                          )
+                          borderWidth: selectedObservations.includes(observation)
                             ? '1px'
                             : '0px',
                         }">
-                        {{ observation }}
+                        {{ getTagDisplayText(observation) }}
                       </button>
                     </div>
                     <!-- Button to toggle between View All and View Less -->
@@ -2645,8 +2633,8 @@
                     {{ getTagName(parseInt(tag)) }}
                   </span>
                   <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1"
-                    style="background-color: #f0b358; color: black">
-                    {{ tag }}
+                    :style="{ backgroundColor: getTagColor(tag), color: 'black' }">
+                    {{ getTagDisplayText(tag) }}
                   </span>
                 </div>
                 
@@ -2954,8 +2942,8 @@
                           <span v-for="(
                               tag, index    
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
-                            style="background-color: #f0b358; color: black">{{ tag }}</span>
-                          <!--tzh changed grey to #F0B358-->
+                            :style="{ backgroundColor: getTagColor(tag), color: 'black' }">{{ getTagDisplayText(tag) }}</span>
+                          <!--Updated to support dynamic colors-->
                         </div>
                       </div>
                     </div>
@@ -3567,6 +3555,7 @@ import { useToast } from "vue-toastification";
 
 // load in control 
 import { VARIANT_DRNK_TYP } from '@/composables/useConstants';
+import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
 
 
 export default {
@@ -6281,37 +6270,58 @@ export default {
       }
     },
 
-    // from filtered reviews, create a dictionary with the count of each flavour tag
+    // from filtered reviews, create a dictionary with the count of each observation tag
+    // Aggregates by display text only, ignoring color differences
     getObservationTagCounts() {
       let allReviews = this.filteredReviews;
-      let observationTags = [];
+      let observationTagCounts = {};
+      let tagColorMap = {}; // Keep track of first color encountered for each tag text
+      
       for (let review of allReviews) {
         for (let tag of review.observationTag) {
-          observationTags.push(tag);
+          const displayText = this.getTagDisplayText(tag);
+          const tagColor = this.getTagColor(tag);
+          
+          // Aggregate by display text only
+          if (displayText in observationTagCounts) {
+            observationTagCounts[displayText] += 1;
+          } else {
+            observationTagCounts[displayText] = 1;
+            // Store the first color we encounter for this tag text
+            // If there are conflicting colors, we'll default to #f0b358 later
+            if (!tagColorMap[displayText]) {
+              tagColorMap[displayText] = tagColor;
+            } else if (tagColorMap[displayText] !== tagColor) {
+              // Conflict detected - use default color
+              tagColorMap[displayText] = '#f0b358';
+            }
+          }
         }
       }
-      let observationTagCounts = {};
-      for (let tag of observationTags) {
-        if (tag in observationTagCounts) {
-          observationTagCounts[tag] += 1;
-        } else {
-          observationTagCounts[tag] = 1;
-        }
-      }
-      // sort observationTagCounts by value
+      
+      // Sort observationTagCounts by value
       let sorted_observationTagCounts = Object.fromEntries(
         Object.entries(observationTagCounts).sort(([, a], [, b]) => b - a)
       );
-      // get top 5 flavor tags if there are more than 3
-      if (Object.keys(sorted_observationTagCounts).length > 3) {
-        let top3 = Object.keys(sorted_observationTagCounts).slice(0, 3);
+      
+      // Create final result with colors - reconstruct full tag strings
+      let finalTagCounts = {};
+      for (let [displayText, count] of Object.entries(sorted_observationTagCounts)) {
+        const color = tagColorMap[displayText] || '#f0b358';
+        // If color is default, just use display text, otherwise append color
+        const fullTag = color === '#f0b358' ? displayText : `${displayText}#${color.substring(1)}`;
+        finalTagCounts[fullTag] = count;
+      }
+      
+      // Get top 3 if there are more than 3
+      if (Object.keys(finalTagCounts).length > 3) {
+        let top3 = Object.keys(finalTagCounts).slice(0, 3);
         this.sorted_observationTagCounts = {};
         for (let tag of top3) {
-          this.sorted_observationTagCounts[tag] =
-            sorted_observationTagCounts[tag];
+          this.sorted_observationTagCounts[tag] = finalTagCounts[tag];
         }
       } else {
-        this.sorted_observationTagCounts = sorted_observationTagCounts;
+        this.sorted_observationTagCounts = finalTagCounts;
       }
     },
     // for bookmark component
@@ -8043,6 +8053,19 @@ export default {
         console.log('Modal not found. Trying to set up event listener...');
         this.setupMenuModalEventListener();
       }
+    },
+
+    // Action Tag Utility Methods
+    parseActionTag(tag) {
+      return parseActionTag(tag);
+    },
+
+    getTagDisplayText(tag) {
+      return getTagDisplayText(tag);
+    },
+
+    getTagColor(tag) {
+      return getTagColor(tag);
     },
 
     

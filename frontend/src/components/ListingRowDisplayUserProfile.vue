@@ -94,9 +94,9 @@
                         v-for="(tag, tagIndex) in review.observationTag" 
                         :key="'obs-' + tagIndex"
                         class="badge rounded-pill me-2 mb-2"
-                        style="background-color: #f0b358; color: #000;"
+                        :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }"
                     >
-                        {{ tag }}
+                        {{ getActionTagDisplayText(tag) }}
                     </span>
                 </div>
             </div>
@@ -141,6 +141,8 @@
 </template>
 
 <script>
+import { parseActionTag, getTagDisplayText, getTagColor } from '@/utils/tagUtils';
+
 export default {
   name: "ListingRowDisplayUserProfile",
   props: {
@@ -316,6 +318,19 @@ export default {
       
       // Return white text for dark backgrounds, black for light backgrounds
       return luminance > 0.5 ? '#000' : '#fff';
+    },
+
+    // Action Tag Utility Methods
+    parseActionTag(tag) {
+      return parseActionTag(tag);
+    },
+
+    getActionTagDisplayText(tag) {
+      return getTagDisplayText(tag);
+    },
+
+    getActionTagColor(tag) {
+      return getTagColor(tag);
     }
   }
 };
