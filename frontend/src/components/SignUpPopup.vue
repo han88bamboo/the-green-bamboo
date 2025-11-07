@@ -94,6 +94,9 @@ export default {
             if (this.venueId === 99) {
                 return 'Welcome to Whisky Live Singapore 2025!';
             }
+            if (this.venueId === 108) {
+                return 'Welcome to Champagniac! 🍾🥂';
+            }
             // Default message for other venues
             return 'Welcome!';
         },
@@ -103,6 +106,9 @@ export default {
             }
             if (this.venueId === 99) {
                 return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_8_Whiskylive-9-november-2019-184-of-361-scaled.jpg?v=1761299521';
+            }
+            if (this.venueId === 108) {
+                return 'https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_6_champagniac-brimoncourt-2025.webp?v=1762502333';
             }
             // Default banner for other venues
             return '/img/defaultGroupBanner.61a71c68.png';
