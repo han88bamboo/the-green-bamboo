@@ -3589,8 +3589,8 @@
                       Tag what's noteworthy about this drink!
                       </span>
                     </p>
-                    <div v-if="selectedObservations.length > 0" class="form-label pb-2">
-                      Selected action tags:
+                    <div v-if="selectedObservations.length > 0" class="form-label pb-2" style="background-color: rgb(233, 236, 239); padding:5px 10px;border-radius:5px;">
+                      You have selected:
                       <div class="row">
                         <div class="col">
                           <div class="d-flex flex-wrap gap-2">
