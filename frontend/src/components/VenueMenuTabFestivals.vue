@@ -6450,14 +6450,6 @@ export default {
             this.isTastingFilterLoading = true;
             
             try {
-                // If activating tasted filter and bookmark filter is currently active, deactivate bookmark filter first
-                if (!this.showOnlyTastedItems && this.showOnlyBookmarkedItems) {
-                    console.log("Deactivating bookmark filter before activating tasted filter");
-                    this.showOnlyBookmarkedItems = false;
-                    // Re-run search to clear bookmark filter first
-                    await this.searchMenu();
-                }
-                
                 this.showOnlyTastedItems = !this.showOnlyTastedItems;
                 console.log("Tasted filter now:", this.showOnlyTastedItems);
                 
@@ -6480,7 +6472,7 @@ export default {
                 // Show toast notification
                 const toast = useToast();
                 if (this.showOnlyTastedItems) {
-                    toast.info(`Now showing ${this.tastedItemsCount} tasted items`, {
+                    toast.info(`Showing ${this.tastedItemsCount} tasted items`, {
                         timeout: 2000
                     });
                 } else {
@@ -6501,14 +6493,6 @@ export default {
             this.isBookmarkFilterLoading = true;
             
             try {
-                // If activating bookmark filter and tasted filter is currently active, deactivate tasted filter first
-                if (!this.showOnlyBookmarkedItems && this.showOnlyTastedItems) {
-                    console.log("Deactivating tasted filter before activating bookmark filter");
-                    this.showOnlyTastedItems = false;
-                    // Re-run search to clear tasted filter first
-                    await this.searchMenu();
-                }
-                
                 this.showOnlyBookmarkedItems = !this.showOnlyBookmarkedItems;
                 console.log("Bookmark filter now:", this.showOnlyBookmarkedItems);
                 
@@ -6531,7 +6515,7 @@ export default {
                 // Show toast notification
                 const toast = useToast();
                 if (this.showOnlyBookmarkedItems) {
-                    toast.info(`Now showing ${this.bookmarkedItemsCount} bookmarked items`, {
+                    toast.info(`Showing ${this.bookmarkedItemsCount} bookmarked items`, {
                         timeout: 2000
                     });
                 } else {
