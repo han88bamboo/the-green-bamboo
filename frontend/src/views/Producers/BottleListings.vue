@@ -932,7 +932,7 @@
           <div class="text-start mb-2 mobile-mb-0 text-color-black">
             <!-- flavor tag -->
             <span v-for="(count, tag) in sorted_observationTagCounts" :key="tag" class="badge rounded-pill me-2"
-              :style="{ backgroundColor: getTagColor(tag), color: 'black' }">{{ getTagDisplayText(tag) }}</span>
+              :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }">{{ getActionTagDisplayText(tag) }}</span>
             <!--Updated to support dynamic colors-->
             <p class="mb-2 mt-2 mobile-rating-smaller-text-2">
               <u> Most Popular Action Tags </u>
@@ -2330,8 +2330,8 @@
                           <div class="d-flex flex-wrap gap-2">
                             <div v-for="observationTag in selectedObservations" v-bind:key="observationTag"
                               class="mb-0 pb-0">
-                              <button :style="{ backgroundColor: getTagColor(observationTag), color: 'black' }" class="btn">
-                                {{ getTagDisplayText(observationTag) }}
+                              <button :style="{ backgroundColor: getActionTagColor(observationTag), color: 'black' }" class="btn">
+                                {{ getActionTagDisplayText(observationTag) }}
                               </button>
                               <!--Updated to support dynamic colors-->
                             </div>
@@ -2346,16 +2346,16 @@
                         color: 'black',
                         backgroundColor: selectedObservations.includes(observation)
                           ? '#FEE5BF'
-                          : getTagColor(observation),
+                          : getActionTagColor(observation),
                         borderColor: selectedObservations.includes(observation)
-                          ? getTagColor(observation)
+                          ? getActionTagColor(observation)
                           : 'none',
                         borderWidth: selectedObservations.includes(observation)
                           ? '1px'
                           : '0px',
                       }">
                       <!--Updated to support dynamic colors-->
-                      {{ getTagDisplayText(observation) }}
+                      {{ getActionTagDisplayText(observation) }}
                     </button>
                     <!-- Buttons for additional observations (shown only when extendObservation is true) -->
                     <div v-if="extendObservation">
@@ -2365,15 +2365,15 @@
                           color: 'black',
                           backgroundColor: selectedObservations.includes(observation)
                             ? '#FEE5BF'
-                            : getTagColor(observation),
+                            : getActionTagColor(observation),
                           borderColor: selectedObservations.includes(observation)
-                            ? getTagColor(observation)
+                            ? getActionTagColor(observation)
                             : 'none',
                           borderWidth: selectedObservations.includes(observation)
                             ? '1px'
                             : '0px',
                         }">
-                        {{ getTagDisplayText(observation) }}
+                        {{ getActionTagDisplayText(observation) }}
                       </button>
                     </div>
                     <!-- Button to toggle between View All and View Less -->
@@ -2633,8 +2633,8 @@
                     {{ getTagName(parseInt(tag)) }}
                   </span>
                   <span v-for="(tag, index) in review.observationTag" :key="index" class="badge rounded-pill me-2 mb-1"
-                    :style="{ backgroundColor: getTagColor(tag), color: 'black' }">
-                    {{ getTagDisplayText(tag) }}
+                    :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }">
+                    {{ getActionTagDisplayText(tag) }}
                   </span>
                 </div>
                 
@@ -2942,7 +2942,7 @@
                           <span v-for="(
                               tag, index    
                             ) in detailedReview.observationTag" :key="index" class="badge rounded-pill me-2"
-                            :style="{ backgroundColor: getTagColor(tag), color: 'black' }">{{ getTagDisplayText(tag) }}</span>
+                            :style="{ backgroundColor: getActionTagColor(tag), color: 'black' }">{{ getActionTagDisplayText(tag) }}</span>
                           <!--Updated to support dynamic colors-->
                         </div>
                       </div>
@@ -6279,8 +6279,8 @@ export default {
       
       for (let review of allReviews) {
         for (let tag of review.observationTag) {
-          const displayText = this.getTagDisplayText(tag);
-          const tagColor = this.getTagColor(tag);
+          const displayText = this.getActionTagDisplayText(tag);
+          const tagColor = this.getActionTagColor(tag);
           
           // Aggregate by display text only
           if (displayText in observationTagCounts) {
@@ -8064,7 +8064,11 @@ export default {
       return getTagDisplayText(tag);
     },
 
-    getTagColor(tag) {
+    getActionTagDisplayText(tag) {
+      return getTagDisplayText(tag);
+    },
+
+    getActionTagColor(tag) {
       return getTagColor(tag);
     },
 
