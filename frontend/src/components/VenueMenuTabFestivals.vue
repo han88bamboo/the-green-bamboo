@@ -2959,7 +2959,7 @@
             
             <!-- Modal Body -->
             <div class="description-modal-body">
-                <div class="description-modal-text" v-html="formatDescription(modalSectionDescription)"></div>
+                <div class="description-modal-text" v-html="formatDescriptionFull(modalSectionDescription)"></div>
             </div>
             
             <!-- Modal Footer with Subscribe Button -->
@@ -11372,6 +11372,17 @@ export default {
       return truncatedText.replace(/\n/g, '<br>');
     },
     
+    // Format full description for modals (no truncation)
+    formatDescriptionFull(description) {
+      if (!description) return '';
+      
+      // Strip HTML tags but keep the full text (no truncation)
+      const rawText = description.replace(/<[^>]*>/g, '');
+      
+      // Convert line breaks to <br> tags
+      return rawText.replace(/\n/g, '<br>');
+    },
+    
     // Format description for mobile with truncation only (no read more)
     formatDescriptionMobileTruncated(description) {
       if (!description) return '';
@@ -12424,6 +12435,7 @@ input[type="range"].form-range::-webkit-slider-thumb {
   line-height: 1.6;
   color: #444;
   margin: 0;
+  text-align: justify;
 }
 
 /* Description Modal footer */
