@@ -241,7 +241,7 @@
               <div class="col-6">
                 <router-link 
                     :to="`/profile/user/allreviews/${displayUserID}/${routeUsername}`"
-                    class="btn mobile-rating-smaller-text-2  fw-bold primary-btn-less-round-blue btn-md mt-2 w-100 d-flex justify-content-between align-items-start"
+                    class="btn mobile-rating-smaller-text-2  fw-bold primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
                   >
                     View All Reviews
                   <i class="bi bi-arrow-up-right"></i>
@@ -249,7 +249,7 @@
               </div>
               <div class="col-6" v-if="ownProfile && user">
                 <div>
-                  <button class="btn mobile-rating-smaller-text-2  primary-btn-less-round-blue btn-md mt-2 w-100 d-flex justify-content-between align-items-start"
+                  <button class="btn mobile-rating-smaller-text-2  primary-btn-less-round-blue btn-md mt-3 w-100 d-flex justify-content-between align-items-start"
                           type="button" 
                           data-bs-toggle="collapse" 
                           data-bs-target="#recentactivityCollapse"
