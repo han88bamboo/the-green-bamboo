@@ -11342,12 +11342,18 @@ export default {
 
     // ===== SUBSCRIPTION FUNCTIONALITY =====
     
-    // Format description text with basic HTML support
+    // Format description text with basic HTML support and desktop truncation
     formatDescription(description) {
       if (!description) return '';
       
+      // Strip HTML tags and get raw text for character counting
+      const rawText = description.replace(/<[^>]*>/g, '');
+      
+      // Truncate to 200 characters if needed and add ellipsis
+      const truncatedText = rawText.length > 200 ? rawText.substring(0, 200) + '...' : rawText;
+      
       // Convert line breaks to <br> tags
-      return description.replace(/\n/g, '<br>');
+      return truncatedText.replace(/\n/g, '<br>');
     },
     
     // Format description for mobile with truncation only (no read more)
