@@ -2626,7 +2626,7 @@
                 </div>
                 
 
-                <!-- Flavour Tags -->
+                <!-- Flavour Tags and Observation Tags-->
                 <div class="text-start mb-3">
                   <span v-for="(tag, index) in review.flavourTag" :key="index" class="badge rounded-pill me-2 mb-1"
                     :style="{ backgroundColor: getTagColor(parseInt(tag)) }">
