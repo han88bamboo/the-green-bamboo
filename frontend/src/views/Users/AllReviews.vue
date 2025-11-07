@@ -75,7 +75,7 @@
 
             <!-- Sort (compact) -->
             <div class="flex-grow-1 mx-2">
-              <select v-model="sortBy" @change="applyFilters" class="form-select form-select-md">
+              <select v-model="sortBy" @change="loadPageReviews(1)" class="form-select form-select-md">
                 <option value="newest">Newest</option>
                 <option value="oldest">Oldest</option>
                 <option value="highest">Highest ★</option>
@@ -112,7 +112,7 @@
           <div class="row mb-4 d-none d-md-flex">
             <div class="col-md-2">
               <label class="form-label">Filter by Rating:</label>
-              <select v-model="ratingFilter" @change="applyFilters" class="form-select">
+              <select v-model="ratingFilter" @change="loadPageReviews(1)" class="form-select">
                 <option value="">All Ratings</option>
                 <option value="9-10">Excellent (9-10)</option>
                 <option value="7-8">Good (7-8)</option>
@@ -122,7 +122,7 @@
             </div>
             <div class="col-md-2">
               <label class="form-label">Filter by Country:</label>
-              <select v-model="countryFilter" @change="applyFilters" class="form-select">
+              <select v-model="countryFilter" @change="loadPageReviews(1)" class="form-select">
                 <option value="">All Countries</option>
                 <option v-for="country in availableCountries" :key="country" :value="country">
                   {{ country }}
@@ -145,7 +145,7 @@
               </label>
               <select
                 v-model="typeCategoryFilter"
-                @change="applyFilters"
+                @change="loadPageReviews(1)"
                 class="form-select"
                 :disabled="!drinkTypeFilter"
                 :class="{ 'text-muted': !drinkTypeFilter }"
@@ -158,7 +158,7 @@
             </div>
             <div class="col-md-3">
               <label class="form-label">Sort by:</label>
-              <select v-model="sortBy" @change="applyFilters" class="form-select">
+              <select v-model="sortBy" @change="loadPageReviews(1)" class="form-select">
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
                 <option value="highest">Highest Rating</option>
@@ -219,7 +219,7 @@
 
             <div class="border-top p-3 d-flex justify-content-between align-items-center bg-white">
               <button class="btn btn-link text-danger" @click="clearAllFilters">Reset</button>
-              <button class="btn primary-btn" data-bs-dismiss="offcanvas" @click="applyFilters">Apply</button>
+              <button class="btn primary-btn" data-bs-dismiss="offcanvas" @click="loadPageReviews(1)">Apply</button>
             </div>
           </div>
 
@@ -247,8 +247,16 @@
             </div>
           </div>
 
+          <!-- Loading overlay for page transitions -->
+          <div v-if="loadingPage" class="d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading reviews...</span>
+            </div>
+            <span class="ms-2">Loading reviews...</span>
+          </div>
+
           <!-- Reviews List (List View) -->
-          <div v-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'list'">
+          <div v-else-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'list'">
             <div v-for="review in paginatedReviews" :key="review.id" class="mb-4">
               <div style="display: flex" class="row mb-2 border rounded p-3">
                 <div class="col-3 mobile-col-3 mobile-pe-0">
@@ -338,7 +346,7 @@
           </div>
 
           <!-- Reviews Grid (Grid View) -->
-          <div v-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'grid'" class="row">
+          <div v-else-if="filteredReviews && filteredReviews.length > 0 && viewMode === 'grid'" class="row">
             <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
               <div class="card h-100 review-card border-light">
                 <div class="card-img-top-wrapper">
@@ -388,7 +396,7 @@
 
           <!-- No Reviews (standalone, not chained) -->
           <div
-            v-if="dataLoaded && (!filteredReviews || filteredReviews.length === 0)"
+            v-else-if="dataLoaded && !loadingPage && (!filteredReviews || filteredReviews.length === 0)"
             class="text-center py-5"
           >
             <h4 class="text-muted">No drink reviews found.</h4>
@@ -401,14 +409,23 @@
           <div v-if="totalPages > 1" class="d-flex justify-content-center mt-4">
             <nav aria-label="Reviews pagination">
               <ul class="pagination">
-                <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                  <button class="page-link" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">Previous</button>
+                <li class="page-item" :class="{ disabled: currentPage === 1 || loadingPage }">
+                  <button class="page-link" @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || loadingPage">
+                    <span v-if="loadingPage" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Previous
+                  </button>
                 </li>
-                <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === currentPage }">
-                  <button class="page-link" @click="changePage(page)">{{ page }}</button>
+                <li v-for="page in visiblePages" :key="page" class="page-item" :class="{ active: page === currentPage, disabled: loadingPage }">
+                  <button class="page-link" @click="changePage(page)" :disabled="loadingPage">
+                    <span v-if="loadingPage && page === currentPage" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    {{ page }}
+                  </button>
                 </li>
-                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                  <button class="page-link" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">Next</button>
+                <li class="page-item" :class="{ disabled: currentPage === totalPages || loadingPage }">
+                  <button class="page-link" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || loadingPage">
+                    <span v-if="loadingPage" class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    Next
+                  </button>
                 </li>
               </ul>
             </nav>
@@ -447,7 +464,7 @@ export default {
       displayUser: {},
 
       // Reviews data
-      allReviews: [],
+      allReviews: [], // Keep for compatibility, but will only contain current page
       filteredReviews: [],
       listings: {},
       venues: {},
@@ -461,6 +478,7 @@ export default {
       hasMoreReviews: true,
       loadingMore: false,
       showPagination: true,
+      loadingPage: false, // New loading state for page transitions
 
       // Filtering and sorting
       ratingFilter: '',
@@ -483,15 +501,12 @@ export default {
   },
   computed: {
     paginatedReviews() {
-      if (this.showPagination) {
-        const start = (this.currentPage - 1) * this.reviewsPerPage;
-        const end = start + this.reviewsPerPage;
-        return this.filteredReviews.slice(start, end);
-      }
+      // With server-side pagination, filteredReviews already contains only the current page
       return this.filteredReviews;
     },
     totalPages() {
-      return Math.ceil(this.filteredReviews.length / this.reviewsPerPage);
+      // Use totalReviews from server response, not filteredReviews.length
+      return Math.ceil(this.totalReviews / this.reviewsPerPage);
     },
     visiblePages() {
       const pages = [];
@@ -537,7 +552,7 @@ export default {
         this.dataLoaded = false;
 
         await this.getDisplayUserProfile();
-        await this.loadAllReviews();
+        await this.loadPageReviews(1); // Load first page instead of all reviews
         await this.loadSupportingData();
 
         this.dataLoaded = true;
@@ -552,41 +567,39 @@ export default {
       this.displayUser = response.data;
     },
 
-    async loadAllReviews() {
+    async loadPageReviews(page = 1) {
       try {
-        this.loadingReviews = true;
-        const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/getData/getAllUserReviews/${this.displayUserID}`);
-        this.allReviews = response.data.reviews || [];
-        this.totalReviews = response.data.total || this.allReviews.length;
+        this.loadingPage = true;
+        const offset = (page - 1) * this.reviewsPerPage;
+        
+        const response = await this.$axios.get(
+          `${process.env.VUE_APP_API_URL}/getData/getAllUserReviews/${this.displayUserID}`,
+          { 
+            params: { 
+              offset, 
+              limit: this.reviewsPerPage 
+            } 
+          }
+        );
+        
+        this.allReviews = response.data.reviews || []; // Current page only
+        this.totalReviews = response.data.total || 0;
         this.hasMoreReviews = response.data.hasMore || false;
+        this.currentPage = page;
+        
+        // Apply filters to current page data
         this.applyFilters();
+        
       } catch (e) {
         console.error("Error loading reviews:", e);
         this.allReviews = [];
         this.totalReviews = 0;
       } finally {
-        this.loadingReviews = false;
+        this.loadingPage = false;
       }
     },
 
-    async loadMoreReviews() {
-      if (this.loadingMore || !this.hasMoreReviews) return;
-      try {
-        this.loadingMore = true;
-        const response = await this.$axios.get(
-          `${process.env.VUE_APP_API_URL}/getData/getAllUserReviews/${this.displayUserID}`,
-          { params: { offset: this.allReviews.length, limit: this.reviewsPerPage } }
-        );
-        const newReviews = response.data.reviews || [];
-        this.allReviews.push(...newReviews);
-        this.hasMoreReviews = response.data.hasMore || false;
-        this.applyFilters();
-      } catch (e) {
-        console.error("Error loading more reviews:", e);
-      } finally {
-        this.loadingMore = false;
-      }
-    },
+
 
     async loadSupportingData() {
       try {
@@ -631,6 +644,8 @@ export default {
     },
 
     applyFilters() {
+      // With server-side pagination, we apply filters to the current page data only
+      // For comprehensive filtering across all reviews, we'd need to reload from server with filter params
       let filtered = [...this.allReviews];
 
       if (this.ratingFilter) {
@@ -673,13 +688,14 @@ export default {
       });
 
       this.filteredReviews = filtered;
-      this.currentPage = 1;
+      // Note: Don't reset currentPage here since we're working with server-side pagination
     },
 
     onDrinkTypeChange() {
       this.typeCategoryFilter = '';
       this.updateAvailableTypeCategories();
-      this.applyFilters();
+      // Reset to page 1 when filters change and reload data
+      this.loadPageReviews(1);
     },
 
     updateAvailableTypeCategories() {
@@ -697,9 +713,9 @@ export default {
       this.availableTypeCategories = [...typeCategories].sort();
     },
 
-    changePage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
+    async changePage(page) {
+      if (page >= 1 && page <= this.totalPages && page !== this.currentPage) {
+        await this.loadPageReviews(page);
         this.$nextTick(() => {
           const reviewsSection = document.querySelector('.userprofile');
           if (reviewsSection) reviewsSection.scrollIntoView({ behavior: 'smooth' });
@@ -765,14 +781,16 @@ export default {
     removeFilter(key) {
       this[key] = '';
       if (key === 'drinkTypeFilter') this.typeCategoryFilter = '';
-      this.applyFilters();
+      // Reset to page 1 when filters change and reload data
+      this.loadPageReviews(1);
     },
     clearAllFilters() {
       this.ratingFilter = '';
       this.countryFilter = '';
       this.drinkTypeFilter = '';
       this.typeCategoryFilter = '';
-      this.applyFilters();
+      // Reset to page 1 when filters change and reload data
+      this.loadPageReviews(1);
     }
   }
 };
