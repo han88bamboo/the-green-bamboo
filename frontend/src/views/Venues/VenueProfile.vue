@@ -1819,7 +1819,7 @@
                 <!--------- END Follow Venue Button ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                 
                 <!-- Poll Card Section (only for logged-in users) -->
-                <div class="row my-3" id="poll-section">
+                <div class="row" id="poll-section">
                     <div class="col-12" id="Xpoll-card-container-highlighted">
                         <PollCard 
                             :creator-id="targetVenue.id"
