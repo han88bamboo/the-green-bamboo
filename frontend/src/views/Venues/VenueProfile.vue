@@ -4919,6 +4919,7 @@ export default {
             // Sign Up Popup for Festival Pages
             showSignUpPopup: false,
             signUpPopupTriggered: false,
+            signUpPopupLastClosedTime: null, // Timestamp when popup was last closed
             signUpEmail: '',
 
             invalidAreaMessageVisible: false,
@@ -5115,19 +5116,38 @@ export default {
                                   this.targetVenue?.id === 108 || this.targetVenueID === '108' ||
                                   this.targetVenue?.id === 109 || this.targetVenueID === '109';
             const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   // Keep user sign-in check
-            const result = isTargetVenue && isNotSignedIn && !this.signUpPopupTriggered;
+            
+            // Check if 5 minutes have passed since popup was last closed
+            const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+            let fiveMinutesPassed = false;
+            
+            if (this.signUpPopupLastClosedTime) {
+                const timeElapsed = Date.now() - this.signUpPopupLastClosedTime;
+                fiveMinutesPassed = timeElapsed >= fiveMinutesInMs;
+            }
+            
+            // Initial trigger: show if never triggered before
+            // Recurring trigger: show if popup was closed before AND 5 minutes have passed
+            const shouldTriggerInitially = !this.signUpPopupTriggered;
+            const shouldTriggerRecurring = this.signUpPopupTriggered && this.signUpPopupLastClosedTime && fiveMinutesPassed;
+            
+            const result = isTargetVenue && isNotSignedIn && (shouldTriggerInitially || shouldTriggerRecurring);
             
             console.log('🎪 shouldTriggerSignUpPopup computed:', {
-                // isFestival: isFestival, // Commented out - no longer needed
-                isTargetVenue: isTargetVenue, // New: Check if venue ID is 99, 108, or 109
+                isTargetVenue: isTargetVenue, // Check if venue ID is 99, 108, or 109
                 isNotSignedIn: isNotSignedIn,
                 signUpPopupTriggered: this.signUpPopupTriggered,
+                signUpPopupLastClosedTime: this.signUpPopupLastClosedTime,
+                fiveMinutesPassed: fiveMinutesPassed,
+                shouldTriggerInitially: shouldTriggerInitially,
+                shouldTriggerRecurring: shouldTriggerRecurring,
                 result: result,
-                venueId: this.targetVenue?.id, // Added: Show actual venue ID for debugging
-                targetVenueID: this.targetVenueID, // Added: Show route venue ID for debugging
-                // specialStatus: this.targetVenue?.specialStatus, // Commented out - no longer needed
+                venueId: this.targetVenue?.id, // Show actual venue ID for debugging
+                targetVenueID: this.targetVenueID, // Show route venue ID for debugging
                 userType: this.userType,
-                user_id: this.user_id
+                user_id: this.user_id,
+                timeElapsed: this.signUpPopupLastClosedTime ? Date.now() - this.signUpPopupLastClosedTime : 0,
+                timeElapsedMinutes: this.signUpPopupLastClosedTime ? Math.floor((Date.now() - this.signUpPopupLastClosedTime) / (60 * 1000)) : 0
             });
             return result;
         }
@@ -5217,6 +5237,11 @@ export default {
             this.userName = userName;
         }
 
+        // Load signup popup timestamp for this venue from sessionStorage
+        if (this.targetVenueID) {
+            this.loadSignUpPopupTimestamp();
+        }
+
         // // Add a global error handler for drag operations
         // window.addEventListener('error', this.handleDragError);
 
@@ -5238,6 +5263,9 @@ export default {
         });
     },
     beforeUnmount() {
+        // Clear signup popup timer when leaving the page
+        this.clearSignUpPopupTimer();
+        
         // Remove the event listener when component is destroyed
         // window.removeEventListener('error', this.handleDragError);
         // window.removeEventListener('unhandledrejection', this.handleDragError);
@@ -5276,10 +5304,22 @@ export default {
 
         closeSignUpPopup() {
             this.showSignUpPopup = false;
+            
+            // Record timestamp when popup was closed for 5-minute recurring logic
+            this.signUpPopupLastClosedTime = Date.now();
+            
+            // Store in sessionStorage to persist within the same page session
+            const storageKey = `88B_signupPopupLastClosed_venue_${this.targetVenueID}`;
+            sessionStorage.setItem(storageKey, this.signUpPopupLastClosedTime.toString());
+            
+            console.log('🎪 Sign up popup closed, timestamp recorded:', this.signUpPopupLastClosedTime);
         },
 
         handleSignUpEmailSubmit() {
             if (this.signUpEmail && this.signUpEmail.trim()) {
+                // Clear signup popup timer since user is proceeding to sign up
+                this.clearSignUpPopupTimer();
+                
                 // Store email in localStorage similar to LoginPage logic
                 localStorage.setItem('88B_signupEmail', this.signUpEmail.trim());
                 console.log('📧 Sign up email stored in localStorage with key 88B_signupEmail:', this.signUpEmail.trim());
@@ -5303,6 +5343,28 @@ export default {
             
             this.showSignUpPopup = true;
             console.log('🎪 Sign up popup manually triggered by button click from child component');
+        },
+
+        // Load signup popup timestamp from sessionStorage
+        loadSignUpPopupTimestamp() {
+            const storageKey = `88B_signupPopupLastClosed_venue_${this.targetVenueID}`;
+            const storedTimestamp = sessionStorage.getItem(storageKey);
+            
+            if (storedTimestamp) {
+                this.signUpPopupLastClosedTime = parseInt(storedTimestamp);
+                console.log('🎪 Loaded signup popup timestamp from sessionStorage:', this.signUpPopupLastClosedTime);
+            } else {
+                console.log('🎪 No signup popup timestamp found in sessionStorage');
+            }
+        },
+
+        // Clear signup popup timer (when user signs up, logs in, or leaves page)
+        clearSignUpPopupTimer() {
+            const storageKey = `88B_signupPopupLastClosed_venue_${this.targetVenueID}`;
+            sessionStorage.removeItem(storageKey);
+            this.signUpPopupLastClosedTime = null;
+            this.signUpPopupTriggered = false;
+            console.log('🎪 Signup popup timer cleared');
         },
         
         // Load venue type data for dropdowns
@@ -8923,6 +8985,18 @@ Thank you!`
             });
         }
     },
+
+    // Clear signup popup timer when user signs in
+    user_id(newValue, oldValue) {
+        // If user changes from not signed in to signed in, clear the timer
+        const wasNotSignedIn = oldValue === 'defaultUser' || !oldValue;
+        const isNowSignedIn = newValue !== 'defaultUser' && newValue;
+        
+        if (wasNotSignedIn && isNowSignedIn) {
+            console.log('🎪 User signed in, clearing signup popup timer');
+            this.clearSignUpPopupTimer();
+        }
+    }
 
     }
     }    

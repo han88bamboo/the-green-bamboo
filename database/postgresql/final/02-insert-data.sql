@@ -3088,7 +3088,7 @@ INSERT INTO "venues" (
     "venueSubType",
     "specialStatus")
 VALUES
-(   '38',
+(   '99',
     'Whisky Live Singapore',
     '555 Festival Grounds, Marina Bay, Singapore 018989',
     'Event Space',
@@ -3123,7 +3123,7 @@ INSERT INTO "pollQuestions" (
     "expiresAt", 
     "orderIndex"
 ) VALUES (
-    38,
+    99,
     'venue',
     'Favorite Whisky Region',
     'Which whisky region do you prefer most at our festival?',
@@ -3146,7 +3146,7 @@ INSERT INTO "pollQuestions" (
     "expiresAt", 
     "orderIndex"
 ) VALUES (
-    38,
+    99,
     'venue',
     'Festival Activities Interest',
     'Which activities would you like to see at future Whisky Live events? (Select all that apply)',
@@ -3169,7 +3169,7 @@ INSERT INTO "pollQuestions" (
     "expiresAt", 
     "orderIndex"
 ) VALUES (
-    38,
+    99,
     'venue',
     'Overall Event Experience',
     'How would you rate your overall experience at Whisky Live Singapore?',
@@ -3322,8 +3322,8 @@ INSERT INTO "venuesMenu" VALUES (7, 'Test new section 1 (Smith Street Taps)', 0,
 INSERT INTO "venuesMenu" VALUES (8, 'Test new section 2 (Smith Street Taps)', 1, 24);
 
 -- Venue menu sections for venue ID 38
-INSERT INTO "venuesMenu" VALUES (2541, 'Festival Beers', 0, 38);
-INSERT INTO "venuesMenu" VALUES (2542, 'Craft Selection', 1, 38);
+INSERT INTO "venuesMenu" VALUES (2541, 'Festival Beers', 0, 99);
+INSERT INTO "venuesMenu" VALUES (2542, 'Craft Selection', 1, 99);
 
 INSERT INTO "menuItems" VALUES (13111, 0, 16.00, true, 1177334, 1, 2540, NULL);
 INSERT INTO "menuItems" VALUES (13112, 1, 17.00, true, 1040419, 1, 2540, NULL);
@@ -3344,11 +3344,11 @@ INSERT INTO "menuItems" VALUES (13120, 0, 17.00, true, 1037431, 1, 2542, NULL);
 -- Insert tastings for user ID 3 at venue ID 38
 -- Tasting record for menu item 13118 (itemID: 1177334, variant: 0)
 INSERT INTO "userFestivalTastedList" ("userId", "venueId", "itemID", "variant", "tastedDate", "notes") 
-VALUES (3, 38, 1177334, 0, CURRENT_TIMESTAMP, 'Great whisky!');
+VALUES (3, 99, 1177334, 0, CURRENT_TIMESTAMP, 'Great whisky!');
 
 -- Tasting record for menu item 13120 (itemID: 1037431, variant: 0)  
 INSERT INTO "userFestivalTastedList" ("userId", "venueId", "itemID", "variant", "tastedDate", "notes")
-VALUES (3, 38, 1037431, 0, CURRENT_TIMESTAMP, 'Smooth and balanced');
+VALUES (3, 99, 1037431, 0, CURRENT_TIMESTAMP, 'Smooth and balanced');
 
 
 -- Removed insert query for "reviews" and "reviewsUserVotes". "reviewsUserVotes" insert query removed because it is related to thre reviews
