@@ -4407,19 +4407,24 @@ export default {
             handler(newSections) {
                 // SEARCH FIX: Only process if watchers are enabled (after mount)
                 if (this.watchersEnabled) {
-                    console.log('🔍 WATCHER: editableMainSections changed, length:', newSections?.length || 0);
+                    console.log('charsiucharlie_filter_debug: 🔍 WATCHER: editableMainSections changed, length:', newSections?.length || 0);
                     // The waitForLazyLoadingComplete method will handle the stability detection
                     // No need for complex tracking here anymore
                 }
 
                 // REVIEW LOADING: Watch for changes in menu data to reload reviews
-                if (this.isSignedInUser && newSections && newSections.length > 0) {
+                // BUT NOT during filter operations to avoid interference
+                if (this.isSignedInUser && newSections && newSections.length > 0 && 
+                    !this.isTastingFilterLoading && !this.isBookmarkFilterLoading) {
+                    console.log('charsiucharlie_filter_debug: 🔍 WATCHER: Scheduling review reload');
                     // Debounce the review loading to avoid excessive API calls
                     clearTimeout(this.reviewLoadTimeout);
                     this.reviewLoadTimeout = setTimeout(() => {
-                        console.log('🍽️ Menu sections changed, reloading user reviews');
+                        console.log('charsiucharlie_filter_debug: 🔍 WATCHER: Loading user reviews');
                         this.loadUserReviews();
                     }, 1000);
+                } else if (this.isTastingFilterLoading || this.isBookmarkFilterLoading) {
+                    console.log('charsiucharlie_filter_debug: 🔍 WATCHER: Skipping review reload during filter operation');
                 }
             },
             deep: true
@@ -6265,14 +6270,23 @@ export default {
 
         // Search Menu - Enhanced for hierarchical structure with tasting filter
         async searchMenu() {
-            console.log("🔍 SEARCH DEBUG: Starting search");
-            console.log("🔍 Search term:", this.searchMenuTerm);
-            console.log("🔍 Tasting filter active:", this.showOnlyTastedItems);
-            console.log("🔍 Bookmark filter active:", this.showOnlyBookmarkedItems);
-            console.log("🔍 editableMainSections:", this.editableMainSections);
-            console.log("🔍 editableMainSections length:", this.editableMainSections.length);
-            console.log("🔍 Current searchMenuResults:", this.searchMenuResults);
-            console.log("🔍 Has performed first search:", this.hasPerformedFirstSearch);
+            console.log("charsiucharlie_filter_debug: 🔍 SEARCH MENU START - Starting search");
+            console.log("charsiucharlie_filter_debug: 🔍 Search term:", this.searchMenuTerm);
+            console.log("charsiucharlie_filter_debug: 🔍 Tasting filter active:", this.showOnlyTastedItems);
+            console.log("charsiucharlie_filter_debug: 🔍 Bookmark filter active:", this.showOnlyBookmarkedItems);
+            console.log("charsiucharlie_filter_debug: 🔍 editableMainSections length:", this.editableMainSections.length);
+            console.log("charsiucharlie_filter_debug: 🔍 editableMainSections content overview:", this.editableMainSections.map(s => ({
+                id: s.id,
+                name: s.sectionName,
+                itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                subsectionCount: s.subsections ? s.subsections.length : 0,
+                firstThreeItems: s.sectionMenu ? s.sectionMenu.slice(0, 3).map(item => ({
+                    id: item.itemID,
+                    name: item.itemDetails?.itemName || 'No name'
+                })) : []
+            })));
+            console.log("charsiucharlie_filter_debug: 🔍 Current searchMenuResults length:", this.searchMenuResults.length);
+            console.log("charsiucharlie_filter_debug: 🔍 Has performed first search:", this.hasPerformedFirstSearch);
             
             // Trim search term, set to lowercase
             this.searchMenuTerm = this.searchMenuTerm.trim().toLowerCase();
@@ -6307,14 +6321,19 @@ export default {
             // Proceed with normal search logic
             if (this.searchMenuTerm == '' && !this.showOnlyTastedItems && !this.showOnlyBookmarkedItems) {
                 // If empty search and no filters active, show all sections and subsections from current editable structure
-                console.log("🔍 Using editableMainSections for empty search");
+                console.log("charsiucharlie_filter_debug: 🔍 EMPTY SEARCH PATH - Using editableMainSections for empty search");
                 this.searchMenuResults = this.buildSearchableMenu(this.editableMainSections);
+                console.log("charsiucharlie_filter_debug: 🔍 EMPTY SEARCH PATH - Built searchMenuResults with length:", this.searchMenuResults.length);
             } else {
                 // Reset searchMenuResults
+                console.log("charsiucharlie_filter_debug: 🔍 FILTER PATH - Starting filtering process");
+                console.log("charsiucharlie_filter_debug: 🔍 FILTER PATH - Processing", this.editableMainSections.length, "main sections");
                 this.searchMenuResults = [];
 
                 // Filter current editable structure
-                for (let mainSection of this.editableMainSections) {
+                for (let mainSectionIndex = 0; mainSectionIndex < this.editableMainSections.length; mainSectionIndex++) {
+                    const mainSection = this.editableMainSections[mainSectionIndex];
+                    console.log("charsiucharlie_filter_debug: 🔍 PROCESSING SECTION", mainSectionIndex + 1, "of", this.editableMainSections.length, "- Section:", mainSection.sectionName, "Items:", mainSection.sectionMenu ? mainSection.sectionMenu.length : 0);
                     let filteredMainSection = {
                         id: mainSection.id,
                         sectionName: mainSection.sectionName,
@@ -6329,8 +6348,8 @@ export default {
                     // Check if main section name matches search term (using fuzzy matching)
                     let mainSectionMatches = this.searchMenuTerm ? this.fuzzyMatch(this.searchMenuTerm, mainSection.sectionName) : true;
                     
-                    // If main section matches and no tasting filter, include all its items and subsections
-                    if (mainSectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems) {
+                    // If main section matches and no filters active, include all its items and subsections
+                    if (mainSectionMatches && this.searchMenuTerm && !this.showOnlyTastedItems && !this.showOnlyBookmarkedItems) {
                         filteredMainSection.sectionMenu = [...mainSection.sectionMenu];
                         if (mainSection.subsections) {
                             filteredMainSection.subsections = [...mainSection.subsections];
@@ -6338,6 +6357,8 @@ export default {
                     } else {
                         // Filter items within main section
                         if (mainSection.sectionMenu) {
+                            console.log("charsiucharlie_filter_debug: 🔍 FILTERING MAIN SECTION ITEMS - Section:", mainSection.sectionName, "has", mainSection.sectionMenu.length, "items to process");
+                            let filteredCount = 0;
                             for (let menuItem of mainSection.sectionMenu) {
                                 // Check search match
                                 let matchesSearch = !this.searchMenuTerm || this.itemMatchesSearch(menuItem);
@@ -6346,11 +6367,23 @@ export default {
                                 // Check bookmark filter
                                 let matchesBookmark = !this.showOnlyBookmarkedItems || this.isBookmarked(menuItem);
                                 
+                                console.log("charsiucharlie_filter_debug: 🔍 ITEM FILTER CHECK:", {
+                                    itemName: menuItem.itemDetails?.itemName || 'No name',
+                                    matchesSearch,
+                                    matchesTasting,
+                                    matchesBookmark,
+                                    finalMatch: matchesSearch && matchesTasting && matchesBookmark
+                                });
+                                
                                 // Include item only if it passes all filters
                                 if (matchesSearch && matchesTasting && matchesBookmark) {
                                     filteredMainSection.sectionMenu.push(menuItem);
+                                    filteredCount++;
                                 }
                             }
+                            console.log("charsiucharlie_filter_debug: 🔍 MAIN SECTION FILTERING RESULT - Section:", mainSection.sectionName, "filtered", filteredCount, "out of", mainSection.sectionMenu.length, "items");
+                        } else {
+                            console.log("charsiucharlie_filter_debug: 🔍 MAIN SECTION NO ITEMS - Section:", mainSection.sectionName, "has no sectionMenu");
                         }
 
                         // Filter subsections and their items
@@ -6420,7 +6453,12 @@ export default {
             
             console.log("🔍 SEARCH DEBUG: Search completed");
             console.log("🔍 Final searchMenuResults:", this.searchMenuResults);
-            console.log("🔍 Final searchMenuResults length:", this.searchMenuResults.length);
+            console.log("charsiucharlie_filter_debug: 🔍 SEARCH MENU END - Final searchMenuResults length:", this.searchMenuResults.length);
+            console.log("charsiucharlie_filter_debug: 🔍 SEARCH MENU END - Final results overview:", this.searchMenuResults.map(s => ({
+                name: s.sectionName,
+                itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                subsectionCount: s.subsections ? s.subsections.length : 0
+            })));
         },
 
         // Check if a menu item matches the search term
@@ -6444,7 +6482,14 @@ export default {
 
         // Toggle Tasting Filter
         async toggleTastedFilter() {
-            console.log("Toggling tasted filter from:", this.showOnlyTastedItems);
+            console.log("charsiucharlie_filter_debug: 🥂 TASTING FILTER START - Toggling tasted filter from:", this.showOnlyTastedItems);
+            console.log("charsiucharlie_filter_debug: 🥂 Current editableMainSections state:", {
+                length: this.editableMainSections.length,
+                sectionsWithItems: this.editableMainSections.filter(s => s.sectionMenu && s.sectionMenu.length > 0).length,
+                sectionsWithSubsections: this.editableMainSections.filter(s => s.subsections && s.subsections.length > 0).length,
+                totalMainItems: this.editableMainSections.reduce((sum, s) => sum + (s.sectionMenu ? s.sectionMenu.length : 0), 0),
+                totalSubsectionItems: this.editableMainSections.reduce((sum, s) => sum + (s.subsections || []).reduce((subSum, sub) => subSum + (sub.sectionMenu ? sub.sectionMenu.length : 0), 0), 0)
+            });
             
             // Set loading state immediately
             this.isTastingFilterLoading = true;
@@ -6463,19 +6508,62 @@ export default {
                 
                 // If we're now showing only tasted items, expand all sections first
                 if (this.showOnlyTastedItems) {
-                    console.log('🥂 TASTING FILTER: Expanding all sections to show tasted items');
+                    console.log('charsiucharlie_filter_debug: 🥂 TASTING FILTER: Activating filter - expanding all sections to show tasted items');
+                    console.log('charsiucharlie_filter_debug: 🥂 Pre-expansion data state:', {
+                        editableMainSectionsLength: this.editableMainSections.length,
+                        sectionsWithData: this.editableMainSections.map(s => ({
+                            id: s.id,
+                            name: s.sectionName,
+                            itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                            subsectionCount: s.subsections ? s.subsections.length : 0,
+                            subsectionItems: s.subsections ? s.subsections.map(sub => ({
+                                name: sub.sectionName,
+                                itemCount: sub.sectionMenu ? sub.sectionMenu.length : 0
+                            })) : []
+                        }))
+                    });
                     
                     // Step 1: Progressively expand all sections
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 1: Starting progressive expansion');
                     await this.progressivelyExpandAllSections();
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 1: Progressive expansion completed');
                     
                     // Step 2: Wait for any lazy loading to complete
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 2: Waiting for lazy loading to complete');
                     await this.waitForLazyLoadingComplete();
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 2: Lazy loading wait completed');
                     
-                    console.log('🥂 TASTING FILTER: All sections expanded and loaded, applying filter');
+                    // Step 3: Wait for data to actually be loaded into editableMainSections
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 3: Waiting for data to be loaded');
+                    await this.waitForDataToBeLoaded();
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 3: Data loading wait completed');
+                    
+                    // Step 4: Additional wait to ensure parent prop update has been processed
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 4: Additional wait for prop update processing');
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    console.log('charsiucharlie_filter_debug: 🥂 Step 4: Additional wait completed');
+                    
+                    console.log('charsiucharlie_filter_debug: 🥂 Post-expansion data state:', {
+                        editableMainSectionsLength: this.editableMainSections.length,
+                        sectionsWithData: this.editableMainSections.map(s => ({
+                            id: s.id,
+                            name: s.sectionName,
+                            itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                            subsectionCount: s.subsections ? s.subsections.length : 0,
+                            subsectionItems: s.subsections ? s.subsections.map(sub => ({
+                                name: sub.sectionName,
+                                itemCount: sub.sectionMenu ? sub.sectionMenu.length : 0
+                            })) : []
+                        }))
+                    });
+                    
+                    console.log('charsiucharlie_filter_debug: 🥂 TASTING FILTER: All sections expanded and loaded, applying filter');
                 }
                 
                 // Re-run search to apply/remove filter (now async)
+                console.log('charsiucharlie_filter_debug: 🥂 About to run searchMenu with tasted filter:', this.showOnlyTastedItems);
                 await this.searchMenu();
+                console.log('charsiucharlie_filter_debug: 🥂 SearchMenu completed, results length:', this.searchMenuResults.length);
                 
                 // Show toast notification
                 const toast = useToast();
@@ -6495,7 +6583,14 @@ export default {
         },
 
         async toggleBookmarkFilter() {
-            console.log("Toggling bookmark filter from:", this.showOnlyBookmarkedItems);
+            console.log("charsiucharlie_filter_debug: 🔖 BOOKMARK FILTER START - Toggling bookmark filter from:", this.showOnlyBookmarkedItems);
+            console.log("charsiucharlie_filter_debug: 🔖 Current editableMainSections state:", {
+                length: this.editableMainSections.length,
+                sectionsWithItems: this.editableMainSections.filter(s => s.sectionMenu && s.sectionMenu.length > 0).length,
+                sectionsWithSubsections: this.editableMainSections.filter(s => s.subsections && s.subsections.length > 0).length,
+                totalMainItems: this.editableMainSections.reduce((sum, s) => sum + (s.sectionMenu ? s.sectionMenu.length : 0), 0),
+                totalSubsectionItems: this.editableMainSections.reduce((sum, s) => sum + (s.subsections || []).reduce((subSum, sub) => subSum + (sub.sectionMenu ? sub.sectionMenu.length : 0), 0), 0)
+            });
             
             // Set loading state immediately
             this.isBookmarkFilterLoading = true;
@@ -6514,19 +6609,62 @@ export default {
                 
                 // If we're now showing only bookmarked items, expand all sections first
                 if (this.showOnlyBookmarkedItems) {
-                    console.log('🔖 BOOKMARK FILTER: Expanding all sections to show bookmarked items');
+                    console.log('charsiucharlie_filter_debug: 🔖 BOOKMARK FILTER: Activating filter - expanding all sections to show bookmarked items');
+                    console.log('charsiucharlie_filter_debug: 🔖 Pre-expansion data state:', {
+                        editableMainSectionsLength: this.editableMainSections.length,
+                        sectionsWithData: this.editableMainSections.map(s => ({
+                            id: s.id,
+                            name: s.sectionName,
+                            itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                            subsectionCount: s.subsections ? s.subsections.length : 0,
+                            subsectionItems: s.subsections ? s.subsections.map(sub => ({
+                                name: sub.sectionName,
+                                itemCount: sub.sectionMenu ? sub.sectionMenu.length : 0
+                            })) : []
+                        }))
+                    });
                     
                     // Step 1: Progressively expand all sections
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 1: Starting progressive expansion');
                     await this.progressivelyExpandAllSections();
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 1: Progressive expansion completed');
                     
                     // Step 2: Wait for any lazy loading to complete
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 2: Waiting for lazy loading to complete');
                     await this.waitForLazyLoadingComplete();
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 2: Lazy loading wait completed');
                     
-                    console.log('🔖 BOOKMARK FILTER: All sections expanded and loaded, applying filter');
+                    // Step 3: Wait for data to actually be loaded into editableMainSections
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 3: Waiting for data to be loaded');
+                    await this.waitForDataToBeLoaded();
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 3: Data loading wait completed');
+                    
+                    // Step 4: Additional wait to ensure parent prop update has been processed
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 4: Additional wait for prop update processing');
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                    console.log('charsiucharlie_filter_debug: 🔖 Step 4: Additional wait completed');
+                    
+                    console.log('charsiucharlie_filter_debug: 🔖 Post-expansion data state:', {
+                        editableMainSectionsLength: this.editableMainSections.length,
+                        sectionsWithData: this.editableMainSections.map(s => ({
+                            id: s.id,
+                            name: s.sectionName,
+                            itemCount: s.sectionMenu ? s.sectionMenu.length : 0,
+                            subsectionCount: s.subsections ? s.subsections.length : 0,
+                            subsectionItems: s.subsections ? s.subsections.map(sub => ({
+                                name: sub.sectionName,
+                                itemCount: sub.sectionMenu ? sub.sectionMenu.length : 0
+                            })) : []
+                        }))
+                    });
+                    
+                    console.log('charsiucharlie_filter_debug: 🔖 BOOKMARK FILTER: All sections expanded and loaded, applying filter');
                 }
                 
                 // Re-run search to apply/remove filter (now async)
+                console.log('charsiucharlie_filter_debug: 🔖 About to run searchMenu with bookmark filter:', this.showOnlyBookmarkedItems);
                 await this.searchMenu();
+                console.log('charsiucharlie_filter_debug: 🔖 SearchMenu completed, results length:', this.searchMenuResults.length);
                 
                 // Show toast notification
                 const toast = useToast();
@@ -9410,20 +9548,16 @@ export default {
             const key = this.generateTrackingKey(menuItem);
             const result = this.userTastings.has(key);
             
-            // Debug logging to trace key matching
-            if (this.userTastings.size > 0) {
-                console.log('🔍 isTasted debug:', {
-                    menuItem: {
-                        itemID: menuItem.itemID,
-                        variant: menuItem.variant,
-                        itemVintage: menuItem.itemVintage,
-                        venueId: this.targetVenue.id
-                    },
-                    computedVariant: this.getVariantValue(menuItem),
+            // Enhanced debug logging for filter debugging
+            if (this.showOnlyTastedItems) {
+                console.log('charsiucharlie_filter_debug: 🥂 isTasted check:', {
+                    itemName: menuItem.itemDetails?.itemName || 'No name',
+                    itemID: menuItem.itemID,
+                    variant: menuItem.variant,
                     generatedKey: key,
                     result: result,
-                    availableKeys: Array.from(this.userTastings.keys()),
-                    userTastingsSize: this.userTastings.size
+                    userTastingsSize: this.userTastings.size,
+                    sampleKeys: Array.from(this.userTastings.keys()).slice(0, 3)
                 });
             }
             
@@ -9439,7 +9573,20 @@ export default {
         // Check if an item is bookmarked
         isBookmarked(menuItem) {
             // Use simple itemID as key instead of complex tracking key
-            return this.userBookmarks.has(menuItem.itemID);
+            const result = this.userBookmarks.has(menuItem.itemID);
+            
+            // Enhanced debug logging for filter debugging
+            if (this.showOnlyBookmarkedItems) {
+                console.log('charsiucharlie_filter_debug: 🔖 isBookmarked check:', {
+                    itemName: menuItem.itemDetails?.itemName || 'No name',
+                    itemID: menuItem.itemID,
+                    result: result,
+                    userBookmarksSize: this.userBookmarks.size,
+                    sampleBookmarks: Array.from(this.userBookmarks.keys()).slice(0, 3)
+                });
+            }
+            
+            return result;
         },
 
         // Generate bookmark tracking key including venue (kept for loading state tracking)
@@ -11213,6 +11360,56 @@ export default {
             });       
         },
 
+    // FILTER FIX: Wait for data to actually be loaded into editableMainSections
+    async waitForDataToBeLoaded() {
+        console.log('charsiucharlie_filter_debug: 🔍 DATA WAIT START - Waiting for data to be loaded into editableMainSections');
+        console.log('charsiucharlie_filter_debug: 🔍 DATA WAIT START - Current state:', {
+            sectionsCount: this.editableMainSections.length,
+            sectionsWithMainItems: this.editableMainSections.filter(s => s.sectionMenu && s.sectionMenu.length > 0).length,
+            sectionsWithSubsections: this.editableMainSections.filter(s => s.subsections && s.subsections.some(sub => sub.sectionMenu && sub.sectionMenu.length > 0)).length,
+            totalMainItems: this.editableMainSections.reduce((sum, s) => sum + (s.sectionMenu ? s.sectionMenu.length : 0), 0),
+            totalSubsectionItems: this.editableMainSections.reduce((sum, s) => sum + (s.subsections || []).reduce((subSum, sub) => subSum + (sub.sectionMenu ? sub.sectionMenu.length : 0), 0), 0)
+        });
+        
+        return new Promise((resolve) => {
+            let checkCount = 0;
+            const maxChecks = 150; // 15 seconds max wait (100ms intervals)
+            
+            const checkForData = () => {
+                checkCount++;
+                
+                // Check if editableMainSections has actual menu items (not just empty arrays)
+                const hasData = this.editableMainSections.some(section => {
+                    const hasMainItems = section.sectionMenu && section.sectionMenu.length > 0;
+                    const hasSubsectionItems = section.subsections && section.subsections.some(sub => 
+                        sub.sectionMenu && sub.sectionMenu.length > 0
+                    );
+                    return hasMainItems || hasSubsectionItems;
+                });
+                
+                console.log(`charsiucharlie_filter_debug: 🔍 DATA WAIT CHECK ${checkCount} - hasData:`, hasData, 'after', checkCount * 100, 'ms');
+                
+                if (hasData) {
+                    console.log('charsiucharlie_filter_debug: 🔍 DATA WAIT SUCCESS - Data found in editableMainSections after', checkCount * 100, 'ms');
+                    console.log('charsiucharlie_filter_debug: 🔍 DATA WAIT SUCCESS - Final state:', {
+                        sectionsCount: this.editableMainSections.length,
+                        sectionsWithMainItems: this.editableMainSections.filter(s => s.sectionMenu && s.sectionMenu.length > 0).length,
+                        totalMainItems: this.editableMainSections.reduce((sum, s) => sum + (s.sectionMenu ? s.sectionMenu.length : 0), 0)
+                    });
+                    resolve();
+                } else if (checkCount >= maxChecks) {
+                    console.log('charsiucharlie_filter_debug: 🔍 DATA WAIT TIMEOUT - Proceeding anyway after', checkCount * 100, 'ms');
+                    resolve();
+                } else {
+                    // Check again in 100ms
+                    setTimeout(checkForData, 100);
+                }
+            };
+            
+            // Start checking immediately
+            checkForData();
+        });
+    },
 
     // NEW METHOD: Detect if new section items were added (for lazy loading)
     detectNewSectionItems(newMenu, oldMenu) {
