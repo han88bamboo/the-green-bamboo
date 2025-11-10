@@ -4918,8 +4918,9 @@ export default {
 
             // Sign Up Popup for Festival Pages
             showSignUpPopup: false,
-            signUpPopupTriggered: false,
+            firstSignUpPopupTriggered: false, // Only controls the initial 2.5 second popup
             signUpPopupLastClosedTime: null, // Timestamp when popup was last closed
+            signUpPopupCheckInterval: null, // Simple interval to check for recurring popups
             signUpEmail: '',
 
             invalidAreaMessageVisible: false,
@@ -5106,50 +5107,28 @@ export default {
 
         // Check if signup popup should be triggered - for venue IDs 99, 108, and 109
         shouldTriggerSignUpPopup() {
-            // Original logic (commented out for reference):
-            // const isFestival = this.targetVenue?.specialStatus === 'EVENT_FESTIVAL';
-            // const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;
-            // const result = isFestival && isNotSignedIn && !this.signUpPopupTriggered;
-            
-            // New logic: Trigger for venue IDs 99, 108, and 109
+            // Basic conditions for all triggers
             const isTargetVenue = this.targetVenue?.id === 99 || this.targetVenueID === '99' ||
                                   this.targetVenue?.id === 108 || this.targetVenueID === '108' ||
                                   this.targetVenue?.id === 109 || this.targetVenueID === '109';
-            const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;   // Keep user sign-in check
+            const isNotSignedIn = this.user_id === 'defaultUser' || !this.user_id;
             
-            // Check if 5 minutes have passed since popup was last closed
-            const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
-            let fiveMinutesPassed = false;
-            
-            if (this.signUpPopupLastClosedTime) {
-                const timeElapsed = Date.now() - this.signUpPopupLastClosedTime;
-                fiveMinutesPassed = timeElapsed >= fiveMinutesInMs;
+            if (!isTargetVenue || !isNotSignedIn) {
+                return false;
             }
             
-            // Initial trigger: show if never triggered before
-            // Recurring trigger: show if popup was closed before AND 5 minutes have passed
-            const shouldTriggerInitially = !this.signUpPopupTriggered;
-            const shouldTriggerRecurring = this.signUpPopupTriggered && this.signUpPopupLastClosedTime && fiveMinutesPassed;
+            // Initial trigger: show if first popup never triggered before
+            const shouldTriggerInitially = !this.firstSignUpPopupTriggered;
             
-            const result = isTargetVenue && isNotSignedIn && (shouldTriggerInitially || shouldTriggerRecurring);
+            // Recurring trigger: independent of firstSignUpPopupTriggered
+            let shouldTriggerRecurring = false;
+            if (this.signUpPopupLastClosedTime) {
+                const fiveMinutesInMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+                const timeElapsed = Date.now() - this.signUpPopupLastClosedTime;
+                shouldTriggerRecurring = timeElapsed >= fiveMinutesInMs;
+            }
             
-            console.log('🎪 shouldTriggerSignUpPopup computed:', {
-                isTargetVenue: isTargetVenue, // Check if venue ID is 99, 108, or 109
-                isNotSignedIn: isNotSignedIn,
-                signUpPopupTriggered: this.signUpPopupTriggered,
-                signUpPopupLastClosedTime: this.signUpPopupLastClosedTime,
-                fiveMinutesPassed: fiveMinutesPassed,
-                shouldTriggerInitially: shouldTriggerInitially,
-                shouldTriggerRecurring: shouldTriggerRecurring,
-                result: result,
-                venueId: this.targetVenue?.id, // Show actual venue ID for debugging
-                targetVenueID: this.targetVenueID, // Show route venue ID for debugging
-                userType: this.userType,
-                user_id: this.user_id,
-                timeElapsed: this.signUpPopupLastClosedTime ? Date.now() - this.signUpPopupLastClosedTime : 0,
-                timeElapsedMinutes: this.signUpPopupLastClosedTime ? Math.floor((Date.now() - this.signUpPopupLastClosedTime) / (60 * 1000)) : 0
-            });
-            return result;
+            return shouldTriggerInitially || shouldTriggerRecurring;
         }
     },
     // -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -5240,6 +5219,24 @@ export default {
         // Load signup popup timestamp for this venue from sessionStorage
         if (this.targetVenueID) {
             this.loadSignUpPopupTimestamp();
+            
+            // For target venues, start a simple timer to check for recurring popups
+            const isTargetVenue = this.targetVenueID === '99' || this.targetVenueID === '108' || this.targetVenueID === '109';
+            if (isTargetVenue) {
+                // Clear any existing interval first
+                if (this.signUpPopupCheckInterval) {
+                    clearInterval(this.signUpPopupCheckInterval);
+                }
+                
+                console.log('🎪 Starting signup popup check interval for venue', this.targetVenueID);
+                // Check every minute if popup should show again
+                this.signUpPopupCheckInterval = setInterval(() => {
+                    if (this.shouldTriggerSignUpPopup && !this.showSignUpPopup) {
+                        console.log('🎪 Recurring popup interval: triggering popup');
+                        this.triggerSignUpPopup();
+                    }
+                }, 60000); // Check every 60 seconds (1 minute)
+            }
         }
 
         // // Add a global error handler for drag operations
@@ -5296,8 +5293,9 @@ export default {
                 
                 setTimeout(() => {
                     this.showSignUpPopup = true;
-                    this.signUpPopupTriggered = true;
-                    console.log('🎪 Sign up popup triggered for festival page');
+                    // Mark first popup as triggered (prevents 2.5 second popup from repeating)
+                    this.firstSignUpPopupTriggered = true;
+                    console.log('🎪 Sign up popup triggered');
                 }, 2500); // 2.5 seconds delay
             }
         },
@@ -5363,7 +5361,14 @@ export default {
             const storageKey = `88B_signupPopupLastClosed_venue_${this.targetVenueID}`;
             sessionStorage.removeItem(storageKey);
             this.signUpPopupLastClosedTime = null;
-            this.signUpPopupTriggered = false;
+            this.firstSignUpPopupTriggered = false;
+            
+            // Clear the recurring popup check interval
+            if (this.signUpPopupCheckInterval) {
+                clearInterval(this.signUpPopupCheckInterval);
+                this.signUpPopupCheckInterval = null;
+            }
+            
             console.log('🎪 Signup popup timer cleared');
         },
         
@@ -8858,7 +8863,11 @@ Thank you!`
         venueDataLoaded: {
             handler(newVal, oldVal) {
                 console.log('🏢 Log 156: venueDataLoaded changed from', oldVal, 'to', newVal);
-                if (newVal && this.targetVenue?.specialStatus) {
+                // Check if this is a target venue (99, 108, 109) instead of specialStatus
+                const isTargetVenue = this.targetVenue?.id === 99 || this.targetVenueID === '99' ||
+                                      this.targetVenue?.id === 108 || this.targetVenueID === '108' ||
+                                      this.targetVenue?.id === 109 || this.targetVenueID === '109';
+                if (newVal && isTargetVenue) {
                     this.triggerSignUpPopup();
                 }
             },
@@ -8892,11 +8901,12 @@ Thank you!`
             immediate: false
         },
 
-        // Watch for changes in targetVenue to trigger signup popup for festivals
-        'targetVenue.specialStatus': {
+        // Watch for changes in targetVenue ID to trigger signup popup for target venues
+        'targetVenue.id': {
             handler(newVal, oldVal) {
-                console.log('🎪 targetVenue.specialStatus changed from', oldVal, 'to', newVal);
-                if (newVal && this.venueDataLoaded) {
+                console.log('🎪 targetVenue.id changed from', oldVal, 'to', newVal);
+                const isTargetVenue = newVal === 99 || newVal === 108 || newVal === 109;
+                if (isTargetVenue && this.venueDataLoaded) {
                     this.triggerSignUpPopup();
                 }
             },

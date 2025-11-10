@@ -5238,11 +5238,21 @@ export default {
       );
       // if there are no ratings
       if (ratings.length == 0) return "-";
-      // else there are ratings
+      
+      // Filter out reviews with null/undefined/empty ratings that would result in NaN
+      const validRatings = ratings.filter(rating => {
+        const parsedRating = parseFloat(rating["rating"]);
+        return !isNaN(parsedRating); // Keep only ratings that are valid numbers (including 0)
+      });
+      
+      // if there are no valid ratings after filtering
+      if (validRatings.length == 0) return "-";
+      
+      // Calculate average using only valid ratings
       const averageRating =
-        ratings.reduce((total, rating) => {
+        validRatings.reduce((total, rating) => {
           return total + parseFloat(rating["rating"]);
-        }, 0) / ratings.length;
+        }, 0) / validRatings.length;
       return averageRating.toFixed(1); //tzh changed .toFixed(2) to .toFixed(1)
     },
 
