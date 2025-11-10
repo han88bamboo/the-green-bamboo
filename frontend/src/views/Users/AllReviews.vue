@@ -283,7 +283,7 @@
                   </p>
 
                   <div class="d-flex justify-content-between align-items-center">
-                    <p class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1 mb-0">
+                    <p v-if="!isNaN(parseFloat(review.rating))" class="fs-4 mobile-fs-5 fw-bold rating-text mobile-mb-1 mb-0">
                       {{ parseFloat(review.rating).toFixed(1) }}★
                     </p>
                   </div>
@@ -387,7 +387,7 @@
 
                   <div class="d-flex justify-content-between align-items-center mt-auto">
                     <small class="text-muted">Drank on {{ formatDateGrid(review.createdDate) }}</small>
-                    <span class="fw-bold rating-text">{{ parseFloat(review.rating).toFixed(1) }}★</span>
+                    <span v-if="!isNaN(parseFloat(review.rating))" class="fw-bold rating-text">{{ parseFloat(review.rating).toFixed(1) }}★</span>
                   </div>
                 </div>
               </div>
