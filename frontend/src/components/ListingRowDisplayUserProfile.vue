@@ -12,9 +12,14 @@
                 <!-- Rating and Listing Name (centered, full width) -->
                 <div class="review-header text-center mb-3" style="margin-right: 140px;">
                     <div class="rating-text mb-2" style="word-wrap: break-word; overflow-wrap: break-word;">
-                        <span style="color: #333; font-size: 1.1em;">Rated ⭐</span>
-                        <span class="fw-bold" style="color: #333; font-size: 1.1em;">{{ parseFloat(review.rating).toFixed(1) }}</span>
-                        <span style="color: #333; font-size: 1.1em;"> Stars</span>
+                        <template v-if="!isNaN(parseFloat(review.rating))">
+                            <span style="color: #333; font-size: 1.1em;">Rated ⭐</span>
+                            <span class="fw-bold" style="color: #333; font-size: 1.1em;">{{ parseFloat(review.rating).toFixed(1) }}</span>
+                            <span style="color: #333; font-size: 1.1em;"> Stars</span>
+                        </template>
+                        <template v-else>
+                            <span style="color: #333; font-size: 1.1em;">Tasted</span>
+                        </template>
                         <span v-if="review.venueName" style="color: #333; font-size: 1.1em; font-weight: 600;"> at {{ review.venueName }}</span>
                     </div>
                     
