@@ -2549,8 +2549,14 @@
                       <span :style="{ color: getUserRankColor(review) }">
                         {{ getUserRankFromReview(review) }}
                       </span>
-                      &nbsp;rated <span style="color: #f0b358">★</span>
-                      <b>{{ review["rating"] }}</b> Stars <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": ""}}</b>
+                      <template v-if="!isNaN(parseFloat(review['rating'])) && review['rating'] !== null && review['rating'] !== ''">
+                        &nbsp;rated <span style="color: #f0b358">★</span>
+                        <b>{{ review["rating"] }}</b> Stars
+                      </template>
+                      <template v-else>
+                        &nbsp;Tasted
+                      </template>
+                      <b>{{ review["variant"] ? " - " + review["variant"] + " Vintage": ""}}</b>
 
                       <!-- Location -->
                       <span
