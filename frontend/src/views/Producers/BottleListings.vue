@@ -2761,7 +2761,7 @@
                         </div>
                       </div>
                       <!-- rating -->
-                      <div class="row mt-2">
+                      <div v-if="!isNaN(parseFloat(detailedReview.rating)) && detailedReview.rating !== null && detailedReview.rating !== ''" class="row mt-2">
                         <div class="col-3">
                           <b>Rating</b>
                         </div>
