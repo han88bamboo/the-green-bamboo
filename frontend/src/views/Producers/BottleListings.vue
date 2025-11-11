@@ -2478,7 +2478,16 @@
                     </div>
                   </div>
                   <div v-for="review in filteredReviewsWithImages" :key="review.id"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1 position-relative">
+                    
+                    <!-- Privacy notch overlay for private review images (only visible to author) -->
+                    <div v-if="!review.isPublic && userID && parseInt(userID) === review.userID" class="item-notch item-notch-private">
+                      <div class="notch-content">
+                        <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                        <span class="notch-text">Private</span>
+                      </div>
+                    </div>
+                    
                     <img :src="review.photo" alt="Review photo" class="review-image clickable-image" loading="lazy"
                       @click="enlargeImage(review.photo, `Review by user - ${review.id}`)" style="cursor: pointer" />
                   </div>
@@ -2498,7 +2507,16 @@
                   </div>
                   <!-- Display up to 5 photos -->
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1 position-relative">
+                    
+                    <!-- Privacy notch overlay for private review images (only visible to author) -->
+                    <div v-if="!review.isPublic && userID && parseInt(userID) === review.userID" class="item-notch item-notch-private">
+                      <div class="notch-content">
+                        <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                        <span class="notch-text">Private</span>
+                      </div>
+                    </div>
+                    
                     <img :src="review['photo'] || defaultPhoto" alt=""
                       class="review-image shadow-effect clickable-image" loading="lazy"
                       @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
@@ -2509,7 +2527,16 @@
                 <!-- If user has already added a review -->
                 <div v-else class="row">
                   <div v-for="review in filteredReviewsWithImages.slice(0, 5)" :key="review"
-                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1">
+                    class="mobile-col-3 col-sm-8 col-md-6 col-lg-2 p-0 mobile-px-1 position-relative">
+                    
+                    <!-- Privacy notch overlay for private review images (only visible to author) -->
+                    <div v-if="!review.isPublic && userID && parseInt(userID) === review.userID" class="item-notch item-notch-private">
+                      <div class="notch-content">
+                        <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                        <span class="notch-text">Private</span>
+                      </div>
+                    </div>
+                    
                     <img :src="review['photo'] || defaultPhoto" alt=""
                       class="review-image shadow-effect clickable-image" loading="lazy"
                       @click="enlargeImage(review['photo'] || defaultPhoto, `Review photo ${index + 1}`)"
@@ -2522,8 +2549,15 @@
 
           <hr />
 
-          <div class="row mb-3" v-for="review in publicFilteredReviews" v-bind:key="review.id">
+          <div class="row mb-3" v-for="review in publicFilteredReviews" v-bind:key="review.id" 
+               :class="{ 'private-review-container': !review.isPublic && userID && parseInt(userID) === review.userID }">
             <!-- user reviews -->
+
+            <!-- Privacy pill badge for private reviews (only visible to author) -->
+            <div v-if="!review.isPublic && userID && parseInt(userID) === review.userID" class="private-review-badge">
+              <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+              <span class="notch-text">Private (not visible to public)</span>
+            </div>
 
             <div class="col-12 col-lg-9">
               <div class="row">
@@ -4259,10 +4293,22 @@ export default {
     
     // NEW: Filter out private reviews for display purposes only
     // This keeps private reviews in statistics/aggregations but hides them from UI
+    // BUT shows private reviews to the user who wrote them
     publicFilteredReviews() {
-      // Filter out reviews where isPublic is explicitly false
-      // Private reviews should not be displayed in the review list or image gallery
-      return this.filteredReviews.filter(review => review.isPublic !== false);
+      return this.filteredReviews.filter(review => {
+        // Show all public reviews
+        if (review.isPublic !== false) {
+          return true;
+        }
+        
+        // Show private reviews only to the user who wrote them
+        if (review.isPublic === false && this.userID && parseInt(this.userID) === review.userID) {
+          return true;
+        }
+        
+        // Hide private reviews from everyone else
+        return false;
+      });
     },
     
     // Add computed for review statistics
@@ -8654,6 +8700,192 @@ export default {
 
 input[type="range"].form-range::-webkit-slider-thumb {
   background: #FF3E31;   /* change this to your colour */
+}
+
+/* Notch overlay styles for private reviews - matches ListingRowDisplayUserProfile exactly */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px;
+}
+
+/* Private review notch - Dark grey theme */
+.item-notch-private {
+  border-color: #596269 transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Private review text styling */
+.item-notch-private .notch-content {
+  color: white;
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
+}
+
+/* Private review container border styling */
+.private-review-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+/* Pseudo-element to create shortened border that overlaps with hr */
+.private-review-container::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  border: 2px solid #6c757d;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Private review pill badge that cuts into border */
+.private-review-badge {
+  position: absolute;
+  top: -18px;
+  left: 20px;
+  background-color: #6c757d;
+  color: #6c757d;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 2px solid #6c757d;
+  width: auto;
+  white-space: nowrap;
+}
+
+.private-review-badge .notch-icon {
+  color: white;
+  font-size: 12px;
+}
+
+.private-review-badge .notch-text {
+  color: white;
+  font-size: 10px;
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Responsive adjustments for private review badge */
+@media (max-width: 768px) {
+  .private-review-badge {
+    top: -17px;
+    left: 15px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  
+  .private-review-badge .notch-icon {
+    font-size: 11px;
+  }
+  
+  .private-review-badge .notch-text {
+    font-size: 9px;
+  }
+}
+
+@media (max-width: 375px) {
+  .private-review-badge {
+    top: -8px;
+    left: 12px;
+    padding: 2px 6px;
+    font-size: 10px;
+  }
+  
+  .private-review-badge .notch-icon {
+    font-size: 10px;
+  }
+  
+  .private-review-badge .notch-text {
+    font-size: 8px;
+  }
 }
 
 </style>
