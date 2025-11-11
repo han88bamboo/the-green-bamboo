@@ -402,6 +402,7 @@ def getRandomListings(user_id, user_type):
                 cursor.execute("""
                     SELECT * FROM "reviews"
                     WHERE "createdDate" >= NOW() - INTERVAL '14 days'
+                    AND "isPublic" = true
                     ORDER BY "createdDate" DESC
                     LIMIT %s
                 """, (limit,))
@@ -699,6 +700,7 @@ def getNext30():
                 SELECT * FROM "reviews"
                 WHERE "createdDate" >= NOW() - INTERVAL '14 days'
                 AND "id" > %s
+                AND "isPublic" = true
                 ORDER BY "createdDate" DESC
                 LIMIT %s
             """, (reviewsLastID, random_records))
