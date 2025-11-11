@@ -27,8 +27,10 @@
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div>
               <h3 class="mb-1 mobile-mt-3 mobile-fs-5"><b>Drinks Reviewed by {{ displayUser.displayName || displayUser.username }}</b></h3>
-              <p class="text-muted mb-0 mobile-rating-smaller-text-2">
-                {{ totalReviews }} drink{{ totalReviews !== 1 ? 's' : '' }} reviewed
+              <p class="text-muted mb-0 mobile-rating-smaller-text-2"><span class="fw-bold">
+                {{ totalReviews }} drink{{ totalReviews !== 1 ? 's' : '' }} reviewed </span>
+                <span v-if="!ownProfile">(private reviews are hidden)</span>
+                <span v-if="ownProfile">(your private reviews will be hidden from the public)</span>
               </p>
             </div>
             <button
@@ -260,7 +262,18 @@
             <div v-for="review in paginatedReviews" :key="review.id" class="mb-4">
               <div style="display: flex" class="row mb-2 border rounded p-3">
                 <div class="col-3 mobile-col-3 mobile-pe-0">
-                  <img :src="review.photo || defaultDrinkImage" alt="" class="rounded bottle-img" />
+                  <!-- Image wrapper with notch overlay for private reviews -->
+                  <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                    <!-- Notch Overlay for Private Review -->
+                    <div v-if="!review.isPublic" class="item-notch item-notch-private">
+                      <div class="notch-content">
+                        <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                        <span class="notch-text">Private</span>
+                      </div>
+                    </div>
+                    
+                    <img :src="review.photo || defaultDrinkImage" alt="" class="rounded bottle-img" />
+                  </div>
                 </div>
                 <div class="col-9 mobile-col-9 mobile-ps-2">
                   <a
@@ -350,7 +363,18 @@
             <div v-for="review in paginatedReviews" :key="review.id" class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
               <div class="card h-100 review-card border-light">
                 <div class="card-img-top-wrapper">
-                  <img :src="review.photo || defaultDrinkImage" alt="" class="card-img-top review-card-img" />
+                  <!-- Image wrapper with notch overlay for private reviews -->
+                  <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden; width: 100%; height: 100%;">
+                    <!-- Notch Overlay for Private Review -->
+                    <div v-if="!review.isPublic" class="item-notch item-notch-private">
+                      <div class="notch-content">
+                        <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                        <span class="notch-text">Private</span>
+                      </div>
+                    </div>
+                    
+                    <img :src="review.photo || defaultDrinkImage" alt="" class="card-img-top review-card-img" />
+                  </div>
                 </div>
 
                 <div class="card-body d-flex flex-column">
@@ -462,6 +486,10 @@ export default {
       displayUserID: null,
       routeUsername: null,
       displayUser: {},
+      
+      // Current user data
+      userID: null,
+      ownProfile: false,
 
       // Reviews data
       allReviews: [], // Keep for compatibility, but will only contain current page
@@ -529,9 +557,20 @@ export default {
     activeFilterCount() { return this.activeFilters.length; }
   },
   async mounted() {
+    // Get current user info from localStorage
+    const accID = localStorage.getItem("88B_accID");
+    if (accID !== null) {
+      this.userID = accID;
+    }
+
     // Get route parameters
     this.displayUserID = parseInt(this.$route.params.userID);
     this.routeUsername = this.$route.params.username;
+
+    // Check if viewing own profile
+    if (this.displayUserID === parseInt(this.userID)) {
+      this.ownProfile = true;
+    }
 
     await this.loadData();
   },
@@ -650,6 +689,11 @@ export default {
       // With server-side pagination, we apply filters to the current page data only
       // For comprehensive filtering across all reviews, we'd need to reload from server with filter params
       let filtered = [...this.allReviews];
+
+      // Privacy filter: Hide private reviews if not viewing own profile
+      if (!this.ownProfile) {
+        filtered = filtered.filter(r => r.isPublic !== false);
+      }
 
       if (this.ratingFilter) {
         const [min, max] = this.ratingFilter.split('-').map(Number);
@@ -973,5 +1017,101 @@ export default {
   background-color: #f0b358;
   border-color: #f0b358;
   color: #000;
+}
+
+/* Notch overlay styles for private reviews */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px;
+}
+
+/* Private review notch - Dark grey theme */
+.item-notch-private {
+  border-color: #596269 transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Private review text styling */
+.item-notch-private .notch-content {
+  color: white;
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
 }
 </style>
