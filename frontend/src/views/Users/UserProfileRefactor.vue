@@ -1436,15 +1436,17 @@
              <h5 class="mobile-view-hide" style="font-weight:bold">{{ totalReviewsCount }} Drinks Reviewed</h5>
               <p class="mobile-view-show"><strong>{{ totalReviewsCount }} Drinks Reviewed</strong></p>
               <hr />
-              <div v-if="!recentReviews || recentReviews.length === 0">
-                {{ ownProfile ? 'You have no drink reviews added yet. Get started by searching for a drink and adding your review!' : 'No drink reviews logged yet.' }}
+              <div v-if="!publicRecentReviews || publicRecentReviews.length === 0">
+                <span v-if="ownProfile">You have no drink reviews added yet. Get started by searching for a drink and adding your review!</span>
+                <span v-else-if="!recentReviews || recentReviews.length === 0">No drink reviews logged yet.</span>
+                <span v-else>No recent public drink reviews</span>
               </div>
 
               <div v-else class="container text-center mb-3">
                 <div class="row">
                   <div 
                     class="mobile-col-3 col-4 p-2 mobile-pt-0 mobile-pb-0 mobile-pe-2 mobile-mb-2"
-                    v-for="(review, index) in recentReviews.slice(0, 3)" 
+                    v-for="(review, index) in publicRecentReviews.slice(0, 3)" 
                     :key="review.id"
                   >
                     <!-- Review image with squared border -->
@@ -1453,12 +1455,23 @@
                         :href="'/listing/view/' + review.reviewTarget + '/' + encodeURIComponent(getListingName(review.reviewTarget) || 'unknown-listing')"
                         style="text-decoration: none; color: inherit;"
                       >
-                        <img
-                          :src="review.photo || defaultDrinkImage"
-                          alt="review image"
-                          class="rounded review-img"
-                          style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
-                        />
+                        <!-- Image wrapper with notch overlay for private reviews -->
+                        <div style="position: relative; display: inline-block; border-radius: 10px; overflow: hidden;">
+                          <!-- Notch Overlay for Private Review -->
+                          <div v-if="!review.isPublic" class="item-notch item-notch-private">
+                            <div class="notch-content">
+                              <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                              <span class="notch-text">Private</span>
+                            </div>
+                          </div>
+                          
+                          <img
+                            :src="review.photo || defaultDrinkImage"
+                            alt="review image"
+                            class="rounded review-img"
+                            style="width: 100%; max-width: 80px; height: 80px; object-fit: cover;"
+                          />
+                        </div>
                         <div class="review-text mt-2" style="font-size: 0.8rem; text-align: center;">
                           <div style="font-weight: bold; margin-bottom: 2px;">{{ getListingName(review.reviewTarget) || 'Unknown Drink' }}</div>
                           <div style="color: #666; margin-bottom: 2px;">{{ getListingDrinkType(review.reviewTarget) || 'Unknown Type' }}</div>
@@ -2265,20 +2278,22 @@
                   </router-link>
                 </div>
                 <ListingRowDisplayUserProfile
-                  :topRatedReviews="formattedRecentReviews"
+                  :topRatedReviews="publicFormattedRecentReviews"
                   :producers="producers"
                   :subTags="subTags"
                   :flavourTags="flavourTags"
+                  :ownProfile="ownProfile"
                   displayName="Latest Reviewed Drinks"
                   columnWidth="165px"
                 />
                 <br>
 
                 <ListingRowDisplayUserProfile
-                  :topRatedReviews="topRatedReviews"
+                  :topRatedReviews="publicTopRatedReviews"
                   :producers="producers"
                   :subTags="subTags"
                   :flavourTags="flavourTags"
+                  :ownProfile="ownProfile"
                   displayName="Highest Rated Drinks"
                   columnWidth="165px"
                 />
@@ -4418,6 +4433,30 @@ export default {
       ...review,
       listingName: this.getListingName(review.reviewTarget)  // This transforms reviewTarget into listingName
     })) || [];
+  },
+
+  // Privacy-filtered recent reviews for main template section
+  publicRecentReviews() {
+    if (!this.recentReviews) return [];
+    return this.ownProfile 
+      ? this.recentReviews // Show all if own profile
+      : this.recentReviews.filter(r => r.isPublic !== false); // Hide private if not owner
+  },
+
+  // Privacy-filtered formatted recent reviews for ListingRowDisplayUserProfile
+  publicFormattedRecentReviews() {
+    return this.publicRecentReviews?.map(review => ({
+      ...review,
+      listingName: this.getListingName(review.reviewTarget)
+    })) || [];
+  },
+
+  // Privacy-filtered top rated reviews for ListingRowDisplayUserProfile  
+  publicTopRatedReviews() {
+    if (!this.topRatedReviews) return [];
+    return this.ownProfile 
+      ? this.topRatedReviews // Show all if own profile
+      : this.topRatedReviews.filter(r => r.isPublic !== false); // Hide private if not owner
   },
 
   // Group cellar items by variantGroupID for display
@@ -7916,5 +7955,100 @@ export default {
   .dx-event__media { width: 72px; }
 }
 
+/* Notch overlay styles for private reviews */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px;
+}
+
+/* Private review notch - Dark grey theme */
+.item-notch-private {
+  border-color: #596269 transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Private review text styling */
+.item-notch-private .notch-content {
+  color: white;
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
+}
 
 </style>

@@ -7,7 +7,15 @@
     <div class="">
         <!-- Top Rated Reviews Display (when topRatedReviews prop is provided) -->
         <div v-if="topRatedReviews && topRatedReviews.length > 0">
-            <div v-for="(review, index) in topRatedReviews" :key="review.id" class="review-card mb-4 p-3 mobile-rating-smaller-text-2" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+            <div v-for="(review, index) in topRatedReviews" :key="review.id" class="review-card mb-4 p-3 mobile-rating-smaller-text-2 position-relative" style="border: 1px solid #e0e0e0; border-radius: 8px; background: #fff;">
+                
+                <!-- Privacy notch overlay for private reviews (only visible to owner) -->
+                <div v-if="!review.isPublic && ownProfile" class="item-notch item-notch-private">
+                  <div class="notch-content">
+                    <span class="notch-icon"><i class="bi bi-eye-slash"></i></span>
+                    <span class="notch-text">Private</span>
+                  </div>
+                </div>
                 
                 <!-- Rating and Listing Name (centered, full width) -->
                 <div class="review-header text-center mb-3" style="margin-right: 140px;">
@@ -176,6 +184,11 @@ export default {
     flavourTags: {
       type: Array,
       default: () => []
+    },
+    // Add ownProfile prop for privacy handling
+    ownProfile: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -340,6 +353,104 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+/* Notch overlay styles for private reviews - matches UserProfileRefactor exactly */
+.item-notch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 62px 62px 0 0;
+  z-index: 10;
+  overflow: visible;
+  border-top-left-radius: 10px;
+}
+
+/* Private review notch - Dark grey theme */
+.item-notch-private {
+  border-color: #596269 transparent transparent transparent;
+}
+
+/* Notch content container - rotated text and icon */
+.notch-content {
+  position: absolute;
+  top: -55px;
+  left: -5px;
+  transform: rotate(-45deg);
+  transform-origin: center center;
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Private review text styling */
+.item-notch-private .notch-content {
+  color: white;
+}
+
+/* Icon placeholder */
+.notch-icon {
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* Text label */
+.notch-text {
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+/* Responsive sizing for mobile devices */
+@media (max-width: 768px) {
+  .item-notch {
+    border-width: 65px 65px 0 0;
+  }
+  
+  .notch-content {
+    top: -56px;
+    left: -3px;
+  }
+  
+  .notch-icon {
+    font-size: 12px;
+  }
+  
+  .notch-text {
+    font-size: 9px;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .item-notch {
+    border-width: 55px 55px 0 0;
+  }
+  
+  .notch-content {
+    top: -50px;
+    left: 2px;
+  }
+  
+  .notch-icon {
+    font-size: 10px;
+  }
+  
+  .notch-text {
+    font-size: 6px;
+    letter-spacing: 0.1px;
+  }
+}
+</style>
 
 <style scoped>
 .read-more-link:hover,
