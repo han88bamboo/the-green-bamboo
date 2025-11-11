@@ -303,7 +303,15 @@
 
                   <div class="mb-2">
                     <p class="mobile-fs-7 mb-1" v-if="review.reviewTitle"><b>{{ review.reviewTitle }}</b></p>
-                    <p class="mobile-fs-7 mb-2" v-if="review.reviewDesc">{{ review.reviewDesc }}</p>
+                    <p class="mobile-fs-7 mb-2" v-if="review.reviewDesc">
+                      {{ getReviewExcerptList(review.reviewDesc) }}
+                      <a
+                        :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
+                        class="btn btn-sm primary-btn-less-round-blue text-decoration-none ms-2 fw-bold"
+                      >
+                        See Full Review
+                      </a>
+                    </p>
                   </div>
                   <div class="mb-2">
                     <span
@@ -861,6 +869,16 @@ export default {
       const excerpt = text.substring(0, 80);
       const lastSpaceIndex = excerpt.lastIndexOf(' ');
       if (lastSpaceIndex > 60) return excerpt.substring(0, lastSpaceIndex) + '...';
+      return excerpt + '...';
+    },
+
+    getReviewExcerptList(text) {
+      if (!text) return '';
+      const firstSentence = text.match(/^[^.!?]+[.!?]/);
+      if (firstSentence && firstSentence[0].length <= 100) return firstSentence[0];
+      const excerpt = text.substring(0, 100);
+      const lastSpaceIndex = excerpt.lastIndexOf(' ');
+      if (lastSpaceIndex > 80) return excerpt.substring(0, lastSpaceIndex) + '...';
       return excerpt + '...';
     },
 
