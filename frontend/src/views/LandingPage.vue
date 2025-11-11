@@ -182,7 +182,7 @@
             <!-- Recent Reviews Grid - Always 5 columns with horizontal scroll -->
             <div class="trending-reviews-container" ref="trendingContainer">
                 <div class="trending-reviews-grid">
-                    <div v-for="review in recentReviews" :key="review.reviewId" class="trending-review-col">
+                    <div v-for="review in publicRecentReviews" :key="review.reviewId" class="trending-review-col">
                         <div class="card h-100 review-card border-light" 
                              style="border: 2px solid #f0b358; cursor: pointer;"
                              @click="goToListing(review)">
@@ -272,7 +272,7 @@
             <!-- Top Rated Reviews Grid - Always 5 columns with horizontal scroll -->
             <div class="trending-reviews-container" ref="topRatedContainer">
                 <div class="trending-reviews-grid">
-                    <div v-for="review in topRatedReviews" :key="review.reviewId" class="trending-review-col">
+                    <div v-for="review in publicTopRatedReviews" :key="review.reviewId" class="trending-review-col">
                         <div class="card h-100 review-card border-light" 
                              style="border: 2px solid #f0b358; cursor: pointer;"
                              @click="goToListing(review)">
@@ -1438,6 +1438,18 @@ export default {
             if (daysUntil === 1) return '⏳ 1 Day Until Kickoff';
             return `⏳ ${daysUntil} Days Until Kickoff`;
             },
+        
+        // Filter out private reviews for Trending Drinks section
+        // Following same pattern as BottleListings.vue - hide private reviews from display
+        publicRecentReviews() {
+            return this.recentReviews.filter(review => review.isPublic !== false);
+        },
+        
+        // Filter out private reviews for Top Rated Drinks section  
+        // Following same pattern as BottleListings.vue - hide private reviews from display
+        publicTopRatedReviews() {
+            return this.topRatedReviews.filter(review => review.isPublic !== false);
+        },
     },
     methods: {
         slugify(text) {
