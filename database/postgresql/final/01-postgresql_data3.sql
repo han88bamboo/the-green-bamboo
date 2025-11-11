@@ -643,7 +643,8 @@ CREATE TABLE "reviews" (
     "taste" VARCHAR(750),
     "observationTag" TEXT[], -- Contains "observationTags" text
     "address" VARCHAR(255),
-    "variant" SMALLINT DEFAULT NULL -- 2 bytes per row, Handles years from -32,768 to 32,767
+    "variant" SMALLINT DEFAULT NULL, -- 2 bytes per row, Handles years from -32,768 to 32,767
+    "isPublic" BOOLEAN DEFAULT TRUE -- True if publicly viewable
 );
 
 -- ========= "reviewsUserVotes" =========

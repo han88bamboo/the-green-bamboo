@@ -2399,12 +2399,12 @@
 
               <!-- End of modal body -->
               <div class="modal-footer d-flex">
-                <span v-for="review in filteredReviews.filter(
+                <span v-for="review in publicFilteredReviews.filter(
                   (review) => review.userID === parseInt(userID)
                 )" v-bind:key="review.id" class="me-auto">
                   <button v-if="inEdit" class="btn btn-danger py-1 mobile-fs-7" @click="
                     setDeleteID(
-                      filteredReviews.find(
+                      publicFilteredReviews.find(
                         (review) => review.userID === parseInt(userID)
                       )
                     )
@@ -2522,7 +2522,7 @@
 
           <hr />
 
-          <div class="row mb-3" v-for="review in filteredReviews" v-bind:key="review.id">
+          <div class="row mb-3" v-for="review in publicFilteredReviews" v-bind:key="review.id">
             <!-- user reviews -->
 
             <div class="col-12 col-lg-9">
@@ -3180,7 +3180,7 @@
           </div>
 
           <!-- Load More Reviews Button -->
-          <div class="d-flex justify-content-center mb-3" v-if="filteredReviews.length > 0 && !noMoreReviews">
+          <div class="d-flex justify-content-center mb-3" v-if="publicFilteredReviews.length > 0 && !noMoreReviews">
             <button class="btn primary-btn btn-lg" @click="loadMoreReviews">Load More Reviews</button>
           </div>
 
@@ -4256,6 +4256,15 @@ export default {
         review.variant === parseInt(this.selectedVintage)
       );
     },
+    
+    // NEW: Filter out private reviews for display purposes only
+    // This keeps private reviews in statistics/aggregations but hides them from UI
+    publicFilteredReviews() {
+      // Filter out reviews where isPublic is explicitly false
+      // Private reviews should not be displayed in the review list or image gallery
+      return this.filteredReviews.filter(review => review.isPublic !== false);
+    },
+    
     // Add computed for review statistics
     reviewStatistics() {
       if (!this.filteredReviews || this.filteredReviews.length === 0) {
@@ -6227,7 +6236,8 @@ export default {
     },
 
     getFilteredReviewsWithImages() {
-      let allReviews = this.filteredReviews;
+      // Use publicFilteredReviews to exclude private reviews from image gallery
+      let allReviews = this.publicFilteredReviews;
       let reviewsWithImages = allReviews.filter(
         (review) => review.photo && review.photo.trim() !== ''
       );
