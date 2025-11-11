@@ -3507,7 +3507,7 @@
                 </div>
 
                 <!-- row 2: rating -->
-                <div class="row">
+                <div class="row" id="rating-container-highlighted">
                   <div class="col-11 mb-3">
                     <div class="row align-items-center text-start" >
                       <p class="text-star mb-1 fw-bold my-2">
@@ -4297,6 +4297,7 @@ export default {
             friendTagList: [],
             showFriendTagList: [],
             isSubmittingReview: false,
+            hasShownRatingValidation: false,
             imageProcessing: false, // Track image processing state
             users: [],
 
@@ -4585,12 +4586,16 @@ export default {
                 reviewModal.addEventListener('shown.bs.modal', () => {
                     console.log('Review modal opened - setting up auto-resize...');
                     this.setupAutoResize();
+                    // Reset rating validation flag when modal opens (new session)
+                    this.hasShownRatingValidation = false;
                 });
                 
                 // Add event listener for when modal is hidden/closed
                 reviewModal.addEventListener('hidden.bs.modal', () => {
                     console.log('Review modal closed - cleaning up flavor tag dropdowns...');
                     this.closeAllFlavorTagDropdowns();
+                    // Reset rating validation flag when modal closes
+                    this.hasShownRatingValidation = false;
                 });
             }
         });
@@ -10542,6 +10547,38 @@ export default {
 
       this.isSubmittingReview = true;
 
+      // Rating validation - check if user hasn't changed from default 5.0
+      if (parseFloat(this.rating) === 5.0 && !this.hasShownRatingValidation) {
+        this.isSubmittingReview = false; // Reset loading state
+        this.hasShownRatingValidation = true; // Mark that validation has been shown
+        
+        // Show popup
+        alert("It seems that you haven't rated the drink yet! Please rate the drink (at point 4)!");
+        
+        // Highlight the rating section and scroll to it
+        const ratingElement = document.getElementById('rating-container-highlighted');
+        if (ratingElement) {
+          ratingElement.classList.add('highlight-section');
+          
+          // Scroll to the rating section within the modal
+          setTimeout(() => {
+            ratingElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          }, 100); // Small delay to ensure popup is closed
+          
+          setTimeout(() => {
+            if (ratingElement) {
+              ratingElement.classList.remove('highlight-section');
+            }
+          }, 10000); // 10 seconds
+        }
+        
+        return "Rating validation error";
+      }
+
+
       // TODO Combine with editReview because using the same variables
 
       // let errorPhrase = "Your completion is incomplete"
@@ -10659,6 +10696,8 @@ export default {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
         this.clearReviewCache();
+        // Reset rating validation flag after successful submission
+        this.hasShownRatingValidation = false;        
         // Refresh user reviews to show updated review status
         this.loadUserReviews();
       } else {
@@ -10919,6 +10958,8 @@ export default {
       this.errorMessage = false;
       this.duplicateEntry = false;
       this.addingReview = true;
+      // Reset rating validation flag
+      this.hasShownRatingValidation = false;
     },
 
     restoreReviewCache() {
