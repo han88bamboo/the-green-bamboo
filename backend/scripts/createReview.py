@@ -212,23 +212,23 @@ def createReviews():
         if variant is None: 
             insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
                                 language, finish, "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", photo, colour, 
-                                aroma, taste, "observationTag", location, address)
-                                VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                                aroma, taste, "observationTag", location, address, "isPublic")
+                                VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
                             created_date, raw_review['language'], raw_review['finish'], will_recommend,
                             would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                             raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                            observation_tags, venue_id, stored_address)
+                            observation_tags, venue_id, stored_address, raw_review.get('isPublic', True))
         else :
             insert_review_sql = """INSERT INTO reviews ("userID", "reviewTarget", "rating", "reviewDesc", "reviewType", "createdDate", 
                                     "language", "finish", "willRecommend", "wouldBuyAgain", "taggedUsers", "flavourTag", "photo", "colour", 
-                                    "aroma", "taste", "observationTag", "location", "address", "variant")
-                                    VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                                    "aroma", "taste", "observationTag", "location", "address", "variant", "isPublic")
+                                    VALUES (%s, %s, %s::DECIMAL(3,1), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
             review_values = (user_id, review_target, float(raw_review['rating']), raw_review['reviewDesc'], raw_review['reviewType'],
                             created_date, raw_review['language'], raw_review['finish'], will_recommend,
                             would_buy_again, tagged_users, flavour_tags, raw_review['photo'],
                             raw_review['colour'], raw_review['aroma'], raw_review['taste'],
-                            observation_tags, venue_id, stored_address, variant)
+                            observation_tags, venue_id, stored_address, variant, raw_review.get('isPublic', True))
 
         try:
             cursor.execute(insert_review_sql, review_values)

@@ -1757,16 +1757,40 @@
               <!-- change modal header colour -->
               <div class="modal-header" style="background-color: #f0b358">
                 <!--tzh changed #535C72 to #F0B358-->
-                <!-- V-if to edit or add review -->
-                <h5 v-if="!inEdit" class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Add Your Review of <b> {{ specified_listing["listingName"] }} </b>
-                </h5>
-                <!--tzh changed white to black and to bold-->
-                <h5 v-else class="modal-title" id="reviewModalLabel" style="color: black; font-weight: bold">
-                  Edit Your Review <b> {{ specified_listing["listingName"] }} </b>
-                </h5>
-                <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
-                  aria-label="Close"></button>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                  <div>
+                    <!-- V-if to edit or add review -->
+                    <h5 v-if="!inEdit" class="modal-title mb-0" id="reviewModalLabel" style="color: black; font-weight: bold">
+                      Add Your Review of <b> {{ specified_listing["listingName"] }} </b>
+                    </h5>
+                    <!--tzh changed white to black and to bold-->
+                    <h5 v-else class="modal-title mb-0" id="reviewModalLabel" style="color: black; font-weight: bold">
+                      Edit Your Review <b> {{ specified_listing["listingName"] }} </b>
+                    </h5>
+                  </div>
+                  
+                  <div class="d-flex align-items-center gap-3">
+                    <!-- Privacy Toggle -->
+                    <div class="privacy-toggle-container d-flex align-items-center">
+                      <div class="form-check form-switch mb-0 me-2">
+                        <input 
+                          class="form-check-input privacy-toggle-switch" 
+                          type="checkbox" 
+                          v-model="isPublic"
+                          id="privacyToggle"
+                        >
+                      </div>
+                      <span class="privacy-toggle-label" :class="{ 'text-muted': !isPublic }">
+                        <i v-if="isPublic" class="bi bi-eye me-1"></i>
+                        <i v-else class="bi bi-eye-slash me-1"></i>
+                        {{ isPublic ? 'Public' : 'Private' }}
+                      </span>
+                    </div>
+                    
+                    <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
+                      aria-label="Close"></button>
+                  </div>
+                </div>
               </div>
 
               <!-- This is where modal starts for review-->
@@ -2722,7 +2746,7 @@
                   </a>
                 </div>
                   <!-- Share Button -->
-                  <button @click="shareReview(review)"
+                  <button v-if="review.isPublic" @click="shareReview(review)"
                     class="btn p-0 text-secondary me-3"
                     style="border: none; background: none; font-size: inherit;">
                     <i class="bi bi-reply share-icon"></i>
@@ -3958,6 +3982,7 @@ export default {
       finish: "",
       wouldRecommend: "",
       wouldBuyAgain: "",
+      isPublic: true, // Default to public review
       extendReview: false,
       locationOptions: [], // Your list of options
       locationSearchTerm: "",
@@ -4509,6 +4534,7 @@ export default {
     finish: 'cacheReviewForm',
     wouldRecommend: 'cacheReviewForm',
     wouldBuyAgain: 'cacheReviewForm',
+    isPublic: 'cacheReviewForm',
     selectedFlavourTags: {
       handler: 'cacheReviewForm',
       deep: true
@@ -5491,6 +5517,7 @@ export default {
         this.taste = specificReview[0].taste;
         this.finish = specificReview[0].finish;
         this.rating = specificReview[0].rating;
+        this.isPublic = specificReview[0].isPublic !== undefined ? specificReview[0].isPublic : true;
         // reconcile id with flavourtags
         // this.selectedFlavourTags= specificReview[0].flavourTag
         if (specificReview[0].flavourTag != null) {
@@ -5771,6 +5798,7 @@ export default {
         wouldBuyAgain: wouldBuyAgain,
         observationTag: this.selectedObservations,
         createdDate: createdDate,
+        isPublic: this.isPublic,
         userVotes: {
           downvotes: [],
           upvotes: [],
@@ -5849,6 +5877,7 @@ export default {
         wouldBuyAgain: wouldBuyAgain,
         observationTag: this.selectedObservations,
         createdDate: this.specificReview[0].createdDate,
+        isPublic: this.isPublic,
       };
       this.updateReview(submitAPI, submitData);
     },
@@ -6857,6 +6886,7 @@ export default {
           this.finish = data.finish || "";
           this.wouldRecommend = data.wouldRecommend;
           this.wouldBuyAgain = data.wouldBuyAgain;
+          this.isPublic = data.isPublic !== undefined ? data.isPublic : true;
           this.selectedFlavourTags = data.selectedFlavourTags || [];
           this.finalSelectedFlavourTags = data.finalSelectedFlavourTags || [];
           this.selectedObservations = data.selectedObservations || [];
@@ -6885,6 +6915,7 @@ export default {
         finish: this.finish,
         wouldRecommend: this.wouldRecommend,
         wouldBuyAgain: this.wouldBuyAgain,
+        isPublic: this.isPublic,
         selectedFlavourTags: this.selectedFlavourTags,
         finalSelectedFlavourTags: this.finalSelectedFlavourTags,
         selectedObservations: this.selectedObservations,
@@ -8888,4 +8919,56 @@ input[type="range"].form-range::-webkit-slider-thumb {
   }
 }
 
+/* Privacy toggle styling */
+.privacy-toggle-container {
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.privacy-toggle-label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.875rem;
+  width: 100px;
+  text-align: left;
+  line-height: 1.2;
+  background-color: white;
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.privacy-toggle-label.text-muted {
+  color: #6c757d !important;
+}
+
+.privacy-toggle-switch {
+  transform: scale(1.1);
+  margin: 0;
+}
+
+.privacy-toggle-switch:checked {
+  background-color: #859cdd;
+  border-color: #859cdd;
+}
+
+.privacy-toggle-switch:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.privacy-toggle-switch:not(:checked) {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.privacy-toggle-switch:not(:checked):focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-check-input {
+  height:1.5em;
+}
+
+.form-switch .form-check-input {
+  width:2.5em;
+}
 </style>

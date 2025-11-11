@@ -391,7 +391,7 @@ def updateReview(id):
             UPDATE "reviews"
             SET "userID" = %s, "reviewTarget" = %s, "rating" = %s::DECIMAL(3,1), "reviewDesc" = %s, "reviewType" = %s, "createdDate" = %s,
                 "language" = %s, "finish" = %s, "willRecommend" = %s, "wouldBuyAgain" = %s, "taggedUsers" = %s, "flavourTag" = %s,
-                "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s
+                "photo" = %s, "colour" = %s, "aroma" = %s, "taste" = %s, "observationTag" = %s, "location" = %s, "address" = %s, "isPublic" = %s
             WHERE "id" = %s
         """
 
@@ -400,7 +400,7 @@ def updateReview(id):
             data.get('reviewType'), created_date,
             data.get('language'), data.get('finish'), data.get('willRecommend', False), data.get('wouldBuyAgain', False),
             tagged_users, flavour_tags, data.get('photo'), data.get('colour'), data.get('aroma'), data.get('taste'),
-            observation_tags, venue_id, address, id
+            observation_tags, venue_id, address, data.get('isPublic', True), id
         )
 
         try:
