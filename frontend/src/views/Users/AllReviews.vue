@@ -353,6 +353,26 @@
                       <i class="bi bi-geo"></i>{{ getLocationName(review.location) || review.address }}
                     </p>
                   </div>
+
+                  <!-- Privacy Toggle (only visible to review owner) -->
+                  <div v-if="ownProfile && parseInt(userID) === review.userID" class="mb-2">
+                    <div class="privacy-toggle-container d-flex align-items-center justify-content-start">
+                      <div class="form-check form-switch mb-0 me-2 ps-0">
+                        <input 
+                          class="form-check-input privacy-toggle-switch" 
+                          type="checkbox" 
+                          :checked="review.isPublic !== false"
+                          @change="toggleReviewPrivacy(review)"
+                          :id="`privacyToggleList-${review.id}`"
+                        >
+                      </div>
+                      <span class="privacy-toggle-label" :class="{ 'text-muted': review.isPublic === false }">
+                        <i v-if="review.isPublic !== false" class="bi bi-eye me-1"></i>
+                        <i v-else class="bi bi-eye-slash me-1"></i>
+                        {{ review.isPublic !== false ? 'Public' : 'Private' }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
