@@ -2292,7 +2292,7 @@
                 </div>
 
                 <!-- row 2: rating -->
-                <div class="row">
+                <div class="row" id="rating-container-highlighted">
                   <div class="col-11 mb-3">
                     <div class="row align-items-center text-start" >
                       <p class="text-star mb-1 fw-bold my-2">
@@ -4124,6 +4124,7 @@ export default {
       shareErrorMessage: "",
 
       isSubmittingReview: false,
+      hasShownRatingValidation: false,
 
       VARIANT_DRNK_TYP,
 
@@ -5764,6 +5765,37 @@ export default {
 
       this.isSubmittingReview = true;
 
+      // Rating validation - check if user hasn't changed from default 5.0
+      if (parseFloat(this.rating) === 5.0 && !this.hasShownRatingValidation) {
+        this.isSubmittingReview = false; // Reset loading state
+        this.hasShownRatingValidation = true; // Mark that validation has been shown
+        
+        // Show popup
+        alert("It seems that you haven't rated the drink yet! Please rate the drink (at point 4)!");
+        
+        // Highlight the rating section and scroll to it
+        const ratingElement = document.getElementById('rating-container-highlighted');
+        if (ratingElement) {
+          ratingElement.classList.add('highlight-section');
+          
+          // Scroll to the rating section within the modal
+          setTimeout(() => {
+            ratingElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center'
+            });
+          }, 100); // Small delay to ensure popup is closed
+          
+          setTimeout(() => {
+            if (ratingElement) {
+              ratingElement.classList.remove('highlight-section');
+            }
+          }, 10000); // 10 seconds
+        }
+        
+        return "Rating validation error";
+      }
+
       // TODO Combine with editReview because using the same variables
 
       // let errorPhrase = "Your completion is incomplete"
@@ -5940,6 +5972,8 @@ export default {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
         this.clearReviewCache();
+        // Reset rating validation flag after successful update
+        this.hasShownRatingValidation = false;
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -5977,6 +6011,8 @@ export default {
         this.successSubmission = true; // Display success message
         this.addingReview = false; // Hide submission in progress message
         this.clearReviewCache();
+        // Reset rating validation flag after successful submission
+        this.hasShownRatingValidation = false;
       } else {
         this.errorSubmission = true; // Display error message
         this.addingReview = false; // Hide submission in progress message
@@ -6258,6 +6294,8 @@ export default {
       this.errorMessage = false;
       this.duplicateEntry = false;
       this.addingReview = true;
+      // Reset rating validation flag
+      this.hasShownRatingValidation = false;
     },
 
     async updateToggle() {
@@ -7268,6 +7306,9 @@ export default {
       // Scroll to top of page instantly
       console.log('Scrolling to top of page...');
       window.scrollTo(0, 0);
+      
+      // Reset rating validation flag when modal opens
+      this.hasShownRatingValidation = false;
       
       // Setup auto-resize functionality when the modal opens
       this.$nextTick(() => {
@@ -9008,5 +9049,26 @@ input[type="range"].form-range::-webkit-slider-thumb {
 
 .form-switch .form-check-input {
   width:2.5em;
+}
+
+/* Rating validation highlight animation */
+@keyframes highlightBorder {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.8);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    }
+}
+
+.highlight-section {
+    animation: highlightBorder 1s ease-out infinite;
+    border: 2px solid #FFC107;
+    border-radius: 5px;
 }
 </style>
