@@ -398,7 +398,7 @@
                     <span v-if="getListingCountry(review.reviewTarget)">{{ getListingCountry(review.reviewTarget) }}</span>
                   </p>
 
-                  <p class="card-text mb-3 flex-grow-1 mobile-rating-smaller-text-2" v-if="review.reviewDesc">
+                  <p class="card-text mb-1 flex-grow-1 mobile-rating-smaller-text-2" v-if="review.reviewDesc">
                     {{ getReviewExcerpt(review.reviewDesc) }}
                     <a
                       :href="'/listing/view/' + review.reviewTarget + '/' + slugify(getListingName(review.reviewTarget) || 'unknown-listing')"
@@ -413,6 +413,26 @@
                     <small class="text-muted">Drank on {{ formatDateGrid(review.createdDate) }}</small>
                     <span v-if="!isNaN(parseFloat(review.rating))" class="fw-bold rating-text">{{ parseFloat(review.rating).toFixed(1) }}★</span>
                   </div>
+                                    <!-- Privacy Toggle (only visible to review owner) -->
+                  <div v-if="ownProfile && parseInt(userID) === review.userID" class="mb-1 mt-1">
+                    <div class="privacy-toggle-container d-flex align-items-center justify-content-start">
+                      <div class="form-check form-switch mb-0 me-2 ps-0">
+                        <input 
+                          class="form-check-input privacy-toggle-switch" 
+                          type="checkbox" 
+                          :checked="review.isPublic !== false"
+                          @change="toggleReviewPrivacy(review)"
+                          :id="`privacyToggle-${review.id}`"
+                        >
+                      </div>
+                      <span class="privacy-toggle-label" :class="{ 'text-muted': review.isPublic === false }">
+                        <i v-if="review.isPublic !== false" class="bi bi-eye me-1"></i>
+                        <i v-else class="bi bi-eye-slash me-1"></i>
+                        {{ review.isPublic !== false ? 'Public' : 'Private' }}
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -838,6 +858,29 @@ export default {
       this.typeCategoryFilter = '';
       // Reset to page 1 when filters change and reload data
       this.loadPageReviews(1);
+    },
+
+    async toggleReviewPrivacy(review) {
+      try {
+        const newPrivacyState = review.isPublic === false;
+        
+        const response = await this.$axios.put(
+          `${process.env.VUE_APP_API_URL}/editReview/toggleReviewPrivacy`,
+          {
+            reviewID: review.id,
+            isPublic: newPrivacyState
+          }
+        );
+
+        if (response.status === 200) {
+          // Update the local review data
+          review.isPublic = newPrivacyState;
+        }
+      } catch (error) {
+        console.error('Error toggling review privacy:', error);
+        // Optionally show an error message to the user
+        alert('Failed to update review privacy. Please try again.');
+      }
     }
   }
 };
@@ -1113,5 +1156,54 @@ export default {
     font-size: 6px;
     letter-spacing: 0.1px;
   }
+}
+
+/* Privacy toggle styling */
+.privacy-toggle-container {
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.privacy-toggle-label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.875rem;
+  width: 100px;
+  text-align: left;
+  line-height: 1.2;
+  background-color: white;
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.privacy-toggle-label.text-muted {
+  color: #6c757d !important;
+}
+
+.privacy-toggle-switch {
+  transform: scale(1.1);
+  margin: 0;
+}
+
+.privacy-toggle-switch:checked {
+  background-color: #859cdd;
+  border-color: #859cdd;
+}
+
+.privacy-toggle-switch:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.privacy-toggle-switch:not(:checked) {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.privacy-toggle-switch:not(:checked):focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.form-check-input {
+  height: 1.5em;
 }
 </style>

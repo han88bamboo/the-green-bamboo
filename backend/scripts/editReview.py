@@ -1,5 +1,5 @@
 # Port: 5022
-# Routes: /voteReview (POST), /updateReview/<id> (PUT), /voteProducerReview (POST), /updateProducerReview/<id> (PUT)
+# Routes: /voteReview (POST), /updateReview/<id> (PUT), /voteProducerReview (POST), /updateProducerReview/<id> (PUT), /toggleReviewPrivacy (PUT)
 # -----------------------------------------------------------------------------------------
 
 import os
@@ -794,3 +794,40 @@ def updateVenueReview(id):
             return jsonify({"code": 500, "message": "An error occurred updating the review."}), 500
 
 
+# -----------------------------------------------------------------------------------------
+# [PUT] Toggle review privacy status
+# - Update review isPublic status
+# - Possible return codes: 200 (Updated), 500 (Error during update)
+@blueprint.route('/toggleReviewPrivacy', methods=['PUT'])
+def toggleReviewPrivacy():
+    with db_manager.get_cursor(commit=True) as cursor:
+        try:
+            data = request.get_json()
+            review_id = data.get('reviewID')
+            is_public = data.get('isPublic')
+            
+            if review_id is None or is_public is None:
+                return jsonify({"code": 400, "message": "Missing required fields: reviewID and isPublic"}), 400
+            
+            # Update the isPublic status of the review
+            update_query = """
+            UPDATE reviews 
+            SET "isPublic" = %s 
+            WHERE "id" = %s
+            """
+            
+            cursor.execute(update_query, (is_public, review_id))
+            
+            if cursor.rowcount > 0:
+                return jsonify({
+                    "code": 200, 
+                    "message": "Review privacy updated successfully",
+                    "reviewID": review_id,
+                    "isPublic": is_public
+                }), 200
+            else:
+                return jsonify({"code": 404, "message": "Review not found"}), 404
+                
+        except Exception as e:
+            print(f"Error toggling review privacy: {str(e)}")
+            return jsonify({"code": 500, "message": "An error occurred updating review privacy"}), 500
