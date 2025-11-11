@@ -1757,7 +1757,8 @@
               <!-- change modal header colour -->
               <div class="modal-header" style="background-color: #f0b358">
                 <!--tzh changed #535C72 to #F0B358-->
-                <div class="d-flex justify-content-between align-items-center w-100">
+                <!-- Desktop Layout: Side by side -->
+                <div class="d-flex justify-content-between align-items-center w-100 d-none d-md-flex">
                   <div>
                     <!-- V-if to edit or add review -->
                     <h5 v-if="!inEdit" class="modal-title mb-0" id="reviewModalLabel" style="color: black; font-weight: bold">
@@ -1789,6 +1790,43 @@
                     
                     <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
                       aria-label="Close"></button>
+                  </div>
+                </div>
+
+                <!-- Mobile Layout: Stacked -->
+                <div class="w-100 d-md-none">
+                  <!-- Top row: Title and Close button -->
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="flex-grow-1 me-2">
+                      <!-- V-if to edit or add review -->
+                      <h6 v-if="!inEdit" class="modal-title mb-0" id="reviewModalLabelMobile" style="color: black; font-weight: bold; font-size: 1rem; line-height: 1.3;">
+                        Add Your Review of <b> {{ specified_listing["listingName"] }} </b>
+                      </h6>
+                      <h6 v-else class="modal-title mb-0" id="reviewModalLabelMobile" style="color: black; font-weight: bold; font-size: 1rem; line-height: 1.3;">
+                        Edit Your Review <b> {{ specified_listing["listingName"] }} </b>
+                      </h6>
+                    </div>
+                    <button type="button" class="btn-close review-modal" data-bs-dismiss="modal"
+                      aria-label="Close"></button>
+                  </div>
+                  
+                  <!-- Bottom row: Privacy Toggle -->
+                  <div class="d-flex justify-content-center">
+                    <div class="privacy-toggle-container d-flex align-items-center">
+                      <div class="form-check form-switch mb-0 me-2 ps-0">
+                        <input 
+                          class="form-check-input privacy-toggle-switch" 
+                          type="checkbox" 
+                          v-model="isPublic"
+                          id="privacyToggleMobile"
+                        >
+                      </div>
+                      <span class="privacy-toggle-label" :class="{ 'text-muted': !isPublic }">
+                        <i v-if="isPublic" class="bi bi-eye me-1"></i>
+                        <i v-else class="bi bi-eye-slash me-1"></i>
+                        {{ isPublic ? 'Public' : 'Private' }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
