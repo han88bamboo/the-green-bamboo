@@ -552,30 +552,31 @@
         </router-link>
 
         <!-- Combined dropdown for Clubs & Events -->
-        <div class="btn-group" v-bind:class="{ 'show': dropdownOpen }" @mouseleave="dropdownOpen = false">
-          <button
-            type="button"
-            class="btn primary-btn border-0 fw-bold dropdown-toggle"
-            aria-expanded="false"
-            @click="dropdownOpen = !dropdownOpen"
-            @keydown.enter.prevent="dropdownOpen = !dropdownOpen"
-          >
-            Join Clubs & Events
-          </button>
-
-          <ul class="dropdown-menu" :class="{ show: dropdownOpen }">
-            <li>
-              <router-link :to="'/clubs/view'" class="dropdown-item" @click="dropdownOpen = false">
-                {{ accType === 'venue' || accType === 'producer' ? 'Create A Club' : 'Find A Club' }}
-              </router-link>
+        <button
+          type="button"
+          class="btn primary-btn border-0 fw-bold dropdown-toggle position-relative"
+          aria-expanded="false"
+          @click="dropdownOpen = !dropdownOpen"
+          @keydown.enter.prevent="dropdownOpen = !dropdownOpen"
+          @mouseleave="startCloseTimer"
+          @mouseenter="cancelCloseTimer"
+        >
+          Join Clubs & Events
+          
+          <!-- Dropdown with drawer styling -->
+          <ul class="list-group clubs-events-dropdown" v-if="dropdownOpen"
+              @mouseenter="cancelCloseTimer"
+              @mouseleave="startCloseTimer">
+            <li class="list-group-item list-group-item-action text-start"
+                @click="navigateToClubs">
+              {{ accType === 'venue' || accType === 'producer' ? 'Create A Club' : 'Find A Club' }}
             </li>
-            <li>
-              <router-link :to="'/events/view'" class="dropdown-item" @click="dropdownOpen = false">
-                {{ accType === 'venue' || accType === 'producer' ? 'Create An Event' : 'Find Events' }}
-              </router-link>
+            <li class="list-group-item list-group-item-action text-start"
+                @click="navigateToEvents">
+              {{ accType === 'venue' || accType === 'producer' ? 'Create An Event' : 'Find Events' }}
             </li>
           </ul>
-        </div>
+        </button>
 
             <!-- Find Friends option - only for regular users -->
         <button 
@@ -858,6 +859,7 @@
           showClubsEvents:false,
           showAdmin: false,
           dropdownOpen: false,
+          dropdownTimer: null,
 
           notifications: {
             forYou: [],
@@ -1422,6 +1424,31 @@
           const text = 'Come join me on Drink-X! https://www.drink-x.com';
           window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         },
+
+        // Navigation methods for clubs & events dropdown
+        navigateToClubs() {
+          this.dropdownOpen = false;
+          this.$router.push('/clubs/view');
+        },
+
+        navigateToEvents() {
+          this.dropdownOpen = false;
+          this.$router.push('/events/view');
+        },
+
+        // Timer methods for dropdown delay
+        startCloseTimer() {
+          this.dropdownTimer = setTimeout(() => {
+            this.dropdownOpen = false;
+          }, 500); // 0.5 second delay
+        },
+
+        cancelCloseTimer() {
+          if (this.dropdownTimer) {
+            clearTimeout(this.dropdownTimer);
+            this.dropdownTimer = null;
+          }
+        },
       },
     };
     </script>
@@ -1540,6 +1567,7 @@
         );
         background-size: 200% 100%;
         -webkit-background-clip: text;
+        background-clip: text;
         -webkit-text-fill-color: transparent;
         animation: shimmer 8s infinite;
       }
@@ -1568,5 +1596,33 @@
   margin-top: 0 !important;
   z-index: 1060;                        /* keep it above other content */
   white-space: nowrap;                  /* optional: prevent wrapping if label is long */
+}
+
+/* Clubs & Events Dropdown with Drawer Styling */
+.clubs-events-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1060;
+  max-height: 300px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+  min-width: 200px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
     </style>
