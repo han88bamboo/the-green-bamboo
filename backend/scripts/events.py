@@ -271,6 +271,71 @@ def getUserEvents(user_id, user_type, offset):
 
 
 # -----------------------------------------------------------------------------------------
+# [GET] Get ALL events organized by user (both past and upcoming)
+# Purpose: Get all events (past and upcoming) organized by a specific user/venue/producer
+# Used: EventBox.vue modal for "See all events" functionality
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getAllUserEvents/<user_id>/<user_type>/<offset>', methods=['GET'])
+def getAllUserEvents(user_id, user_type, offset):
+    return_data = []
+
+    # Set a limit for pagination (only used when offset != '0')
+    limit = 50
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Step 1: Get the user information
+            user_info = getUserInfoByID(cursor, user_id, user_type)
+
+            if not user_info:
+                return jsonify({'error': 'User not found'}), 404
+
+            # Step 2: Get ALL events by the user (no date filter)
+            if offset == '0':
+                # Get all events without limit when offset is 0
+                cursor.execute('SELECT * FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s ORDER BY "eventStartDate" ASC, "eventStartTime" ASC', (user_id, user_type,))
+            else:
+                cursor.execute('SELECT * FROM events WHERE "eventOwnerID" = %s AND "eventOwnerType" = %s ORDER BY "eventStartDate" ASC, "eventStartTime" ASC LIMIT %s OFFSET %s', (user_id, user_type, limit, offset,))
+            
+            events = cursor.fetchall()
+
+            if not events:
+                return jsonify({'error': 'No events'}), 404
+
+            # Step 3: Get the event owner information
+            for event in events:
+                owner_id = event['eventOwnerID']
+                owner_type = event['eventOwnerType']
+
+                owner_info = getUserInfoByID(cursor, owner_id, owner_type)
+
+                # If owner information is not found, skip this event
+                if not owner_info:
+                    continue
+
+                # Else, add the owner information into the event
+                event['ownerInfo'] = owner_info
+
+                # Convert datetime objects to string
+                if event['eventStartDate']:
+                    event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+
+                if event['eventEndDate']:
+                    event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+
+                # Append the event into the return_data
+                return_data.append(event)
+
+        return jsonify({
+            'events': return_data
+        }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
 # [GET] Get top trending events
 # Purpose: Get top trending events (up to 30)
 # Used: Events.vue (inside views/Users folder)

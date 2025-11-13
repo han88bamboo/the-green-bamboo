@@ -5,7 +5,16 @@
         <div v-if="selfView" class="d-flex flex-row justify-content-between align-items-center">
             <div>
                 <h4 class="fw-bold text-start mb-0">Your Events</h4>
-                <small v-if="events.length > 0" class="text-muted">{{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}</small>
+                <small v-if="events.length > 0" class="text-muted">
+                    {{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}
+                    <span 
+                        class="see-all-events-link ms-2" 
+                        @click="openAllEventsModal"
+                        style="cursor: pointer; text-decoration: underline;"
+                    >
+                        (See all events)
+                    </span>
+                </small>
             </div>
 
             <!-- Create event button -->
@@ -20,12 +29,50 @@
         <!-- Title if not current user -->
         <div v-else>
             <h4 class="fw-bold text-start mb-0">Upcoming Events</h4>
-            <small v-if="events.length > 0" class="text-muted">{{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}</small>
+            <small v-if="events.length > 0" class="text-muted">
+                {{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}
+                <span 
+                    class="see-all-events-link ms-2" 
+                    @click="openAllEventsModal"
+                    style="cursor: pointer; text-decoration: underline;"
+                >
+                    (See all events)
+                </span>
+            </small>
         </div>
 
         <!-- Cannot create event message -->
         <div v-if="!canCreateEvent" class="alert alert-danger" role="alert">
             {{ canCreateEventMessage }}
+        </div>
+
+        <!-- Navigation buttons (only show if more than 4 events) -->
+        <div v-if="events.length > 4" class="d-flex justify-content-end gap-2 mb-2">
+            <!-- Left Arrow in Circle -->
+            <button
+                class="d-flex align-items-center justify-content-center rounded-circle border-0"
+                style="width: 36px; height: 36px; background-color: #f0f0f0;"
+                type="button"
+                :data-bs-target="'#eventsCarousel' + targetUserID"
+                data-bs-slide="prev"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L6.707 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            </button>
+
+            <!-- Right Arrow in Circle -->
+            <button
+                class="d-flex align-items-center justify-content-center rounded-circle border-0"
+                style="width: 36px; height: 36px; background-color: #f0f0f0;"
+                type="button"
+                :data-bs-target="'#eventsCarousel' + targetUserID"
+                data-bs-slide="next"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 7 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+            </button>
         </div>
 
         <!-- List of events -->
@@ -35,29 +82,51 @@
                 <p>No events added yet.</p>
             </div>
 
-            <!-- List of events -->
-            <div v-else class="col-12 events-container">
+            <!-- Events Carousel -->
+            <div v-else class="col-12">
+                <div :id="'eventsCarousel' + targetUserID" class="carousel slide events-carousel" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        <div
+                            v-for="(chunk, chunkIndex) in eventChunks"
+                            :key="chunkIndex"
+                            :class="['carousel-item', chunkIndex === 0 ? 'active' : '']"
+                        >
+                            <!-- Event details for this chunk -->
+                            <div v-for="event in chunk" :key="event.id" class="text-start mb-1">
+                                <!-- Banner -->
+                                <div class="row rounded" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">
+                                    <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="rounded img-fluid event-banner" alt="Event Banner">
+                                    <img v-else :src="defaultEventBanner" class="rounded img-fluid event-banner" alt="Event Banner">
+                                </div>
 
-                <!-- Event details-->
-                <div v-for="event in events" :key="event.id" class="text-start">
-                    <!-- Banner -->
-                    <div class="row rounded" style="height: 100px; width: auto; cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">
-                        <img v-if="event.eventBanners" :src="event.eventBanners[0]" class="rounded img-fluid event-banner" alt="Event Banner">
-                        <img v-else :src="defaultEventBanner" class="rounded img-fluid event-banner" alt="Event Banner">
+                                <!-- Event name -->
+                                <div class="row">
+                                    <p class="m-0 mt-2 hover-underline mobile-rating-smaller-text-2" style="cursor: pointer;" @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">{{ event.eventName }}</p>
+                                </div>
+
+                                <!-- Event date and time -->
+                                <div class="row mt-0 pt-0">
+                                    <p class="fw-normal small-text mobile-rating-smaller-text-2" style="color: #027562">
+                                        {{ formatDate(event.eventStartDate) }} 
+                                        <span v-if="event.eventStartTime"> , {{ formatTime(event.eventStartTime) }}</span>
+                                        <span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Event name -->
-                    <div class="row">
-                        <p class="m-0 mt-2 hover-underline mobile-rating-smaller-text-2" style="cursor: pointer; " @click="this.$router.push({ name: 'eventview', params: { eventID: event.id, eventName: slugify(event.eventName) } })">{{ event.eventName }}</p>
-                    </div>
-
-                    <!-- Event date and time -->
-                    <div class="row mt-0 pt-0">
-                        <p class="fw-normal small-text mobile-rating-smaller-text-2" style="color: #027562">
-                            {{ formatDate(event.eventStartDate) }} 
-                            <span v-if="event.eventStartTime"> , {{ formatTime(event.eventStartTime) }}</span>
-                            <span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
-                        </p>
+                    <!-- Dot indicators (only show if more than 4 events) -->
+                    <div v-if="events.length > 4" class="carousel-indicators-custom">
+                        <button
+                            v-for="(chunk, index) in eventChunks"
+                            :key="index"
+                            type="button"
+                            :data-bs-target="'#eventsCarousel' + targetUserID"
+                            :data-bs-slide-to="index"
+                            :class="{ active: index === 0 }"
+                            :aria-label="'Slide ' + (index + 1)"
+                        ></button>
                     </div>
                 </div>
             </div>
@@ -85,6 +154,82 @@
             </div>  
         </div>
         <!-- Create event modal end -->
+
+        <!-- All Events Modal -->
+        <div 
+            v-if="showAllEventsModal"
+            class="modal d-block" 
+            :id="'allEventsModal' + targetUserID" 
+            style="background-color: rgba(0, 0, 0, 0.5); position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1050;"
+        >
+            <div class="modal-dialog modal-xl" style="margin: 10vh auto;">
+                <div class="modal-content">
+                    <div class="modal-header" style="background-color: #f0b358">
+                        <h5 class="modal-title" :id="'allEventsModalLabel' + targetUserID" style="color: black; font-weight: bold;">
+                            All Events by {{ getVenueName() }}
+                        </h5>
+                        <button type="button" class="btn-close" @click="closeAllEventsModal" aria-label="Close"></button>
+                    </div>
+                    
+                    <div class="modal-body px-4">
+                        <!-- Loading spinner -->
+                        <div v-if="allEventsLoading" class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading events...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading all events...</p>
+                        </div>
+
+                        <!-- All Events Grid -->
+                        <div v-else-if="allEvents.length > 0" class="row">
+                            <div v-for="event in allEvents" :key="event.id" class="col-6 col-md-3 mb-4">
+                                <div class="d-flex flex-column justify-content-start align-items-center">
+                                    <!-- Banner -->
+                                    <div class="row" style="cursor: pointer; aspect-ratio: 2 / 1; overflow: hidden;" @click="navigateToEvent(event)">
+                                        <img
+                                            v-if="event.eventBanners"
+                                            :src="event.eventBanners[0]"
+                                            alt="Event Banner"
+                                            class="w-100 h-100 rounded mb-2"
+                                            style="object-fit: cover;"
+                                        />
+                                        <img
+                                            v-else
+                                            :src="defaultEventBanner"
+                                            alt="Event Banner"
+                                            class="w-100 h-100 rounded mb-2"
+                                            style="object-fit: cover;"
+                                        />
+                                    </div>
+                                    
+                                    <!-- Event Name -->
+                                    <div @click="navigateToEvent(event)" style="cursor: pointer;" class="text-center">
+                                        <p class="m-0 my-2 fw-semibold mobile-rating-smaller-text-2" style="color: black;">
+                                            <span v-if="isEventPast(event)" class="text-muted">[Event Ended] </span>{{ event.eventName }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Event date and time -->
+                                    <p class="fw-normal mobile-rating-smaller-text-2 text-center" style="color: #027562">
+                                        {{ formatDate(event.eventStartDate) }}<span v-if="event.eventStartTime">, {{ formatTime(event.eventStartTime) }}</span><span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No events message -->
+                        <div v-else class="text-center py-5">
+                            <p class="text-muted">No events found.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="closeAllEventsModal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- All Events Modal End -->
     </div>
 
 </template>
@@ -100,29 +245,43 @@
         font-size: 0.9rem; /* Adjust the size as needed */
     }
 
-    .events-container {
-      
-        overflow-y: auto; /* Add scroll when content exceeds max height */
-        /* padding-right: 8px; Add some padding for the scrollbar */
+    .events-carousel {
+        max-height: 900px;
+        overflow: hidden;
     }
 
-    /* Custom scrollbar styling for better appearance */
-    .events-container::-webkit-scrollbar {
-        width: 6px;
+    .carousel-item {
+        padding: 10px 0;
     }
 
-    .events-container::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
+    /* Custom dot indicators styling */
+    .carousel-indicators-custom {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+        margin-bottom: 0;
     }
 
-    .events-container::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
+    .carousel-indicators-custom button {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: none;
+        background-color: #d1d5db;
+        opacity: 0.5;
+        transition: all 0.3s ease;
+        cursor: pointer;
     }
 
-    .events-container::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
+    .carousel-indicators-custom button.active {
+        background-color: #6b7280;
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .carousel-indicators-custom button:hover {
+        opacity: 0.8;
     }
 
 </style>
@@ -149,6 +308,11 @@ export default {
         targetUserType: {
             type: String,
             required: true
+        },
+        targetUserName: {
+            type: String,
+            required: false,
+            default: ''
         }
     },
     data() {
@@ -173,8 +337,23 @@ export default {
             // Variable to store can create event status and message 
             canCreateEvent: false,
             canCreateEventMessage: "",
-            disableCreateButton: false
+            disableCreateButton: false,
 
+            // Variables for all events modal
+            allEvents: [],
+            allEventsLoading: false,
+            showAllEventsModal: false
+
+        }
+    },
+    computed: {
+        // Group events into chunks of 4 for carousel slides
+        eventChunks() {
+            return this.events.reduce((acc, cur, i) => {
+                if (i % 4 === 0) acc.push([cur]);
+                else acc[acc.length - 1].push(cur);
+                return acc;
+            }, []);
         }
     },
     methods: {
@@ -322,6 +501,90 @@ export default {
                 console.error(error);
                 const toast = useToast();
                 toast.error("Failed to create event.");
+            }
+        },
+
+        // Function to open all events modal and fetch all events
+        async openAllEventsModal() {
+            this.showAllEventsModal = true;
+            this.allEventsLoading = true;
+            
+            try {
+                // Try the new endpoint first, fallback to old endpoint if needed
+                console.log('Chars Fetching all events for:', this.targetUserID, this.targetUserType);
+                
+                let response;
+                try {
+                    // Fetch ALL events (both past and upcoming) organized by this user
+                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getAllUserEvents/${this.targetUserID}/${this.targetUserType}/0`);
+                    console.log('New endpoint response:', response.data);
+                } catch (newEndpointError) {
+                    console.warn('New endpoint failed, falling back to original:', newEndpointError);
+                    // Fallback to original endpoint if new one fails
+                    response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/${this.targetUserID}/${this.targetUserType}/0`);
+                    console.log('Fallback endpoint response:', response.data);
+                }
+                
+                this.allEvents = response.data.events || [];
+                console.log('All events loaded:', this.allEvents.length);
+                
+                // Sort events chronologically (earliest first)
+                this.allEvents.sort((a, b) => {
+                    const dateA = new Date(a.eventStartDate + (a.eventStartTime ? ' ' + a.eventStartTime : ''));
+                    const dateB = new Date(b.eventStartDate + (b.eventStartTime ? ' ' + b.eventStartTime : ''));
+                    return dateA - dateB;
+                });
+            } catch (error) {
+                console.error('Error fetching all events:', error);
+                // Handle 404 gracefully (no events found)
+                if (error.response && error.response.status === 404) {
+                    console.log('No events found (404)');
+                    this.allEvents = [];
+                } else {
+                    console.log('Other error occurred:', error.response?.status, error.message);
+                    this.allEvents = [];
+                }
+            } finally {
+                this.allEventsLoading = false;
+            }
+        },
+
+        // Function to close all events modal
+        closeAllEventsModal() {
+            this.showAllEventsModal = false;
+        },
+
+        // Function to check if an event is in the past
+        isEventPast(event) {
+            const now = new Date();
+            const eventDate = new Date(event.eventStartDate + (event.eventStartTime ? ' ' + event.eventStartTime : ' 00:00'));
+            return eventDate < now;
+        },
+
+        // Function to navigate to event page
+        navigateToEvent(event) {
+            this.$router.push({
+                name: 'eventview',
+                params: {
+                    eventID: event.id,
+                    eventName: this.slugify(event.eventName)
+                }
+            });
+        },
+
+        // Function to get venue name for modal title
+        getVenueName() {
+            if (this.targetUserName) {
+                return this.targetUserName;
+            }
+            
+            // Fallback to generic names if no name provided
+            if (this.targetUserType === 'venue') {
+                return 'This Venue';
+            } else if (this.targetUserType === 'producer') {
+                return 'This Producer';
+            } else {
+                return 'This User';
             }
         }
     },
