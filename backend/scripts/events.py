@@ -66,7 +66,7 @@ def canCreateMoreEvents(cur, user_id, user_type):
         max_events = 5 # Per month for users
 
     else:
-        max_events = 3 # Per month for producers and venues
+        max_events = 20 # Per month for producers and venues
 
 
     # Check if the user has created any events this month
