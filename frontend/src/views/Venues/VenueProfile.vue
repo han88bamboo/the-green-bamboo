@@ -737,7 +737,7 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-custom-orange-inverted btn-md text-nowrap mobile-rating-smaller-text-2" 
+                            <button v-if="hasPdfMenu" class="btn btn-custom-orange-inverted btn-md text-nowrap mobile-rating-smaller-text-2" 
                                     data-bs-toggle="modal" 
                                     data-bs-target="#diningMenuModal"
                                     @click="resetPdfNavigation"
@@ -1515,16 +1515,7 @@
                     <!-- Right Side: Follow and Review Buttons in 1 Column -->
                     <div class="col-12 col-lg-3 d-flex flex-column justify-content-start justify-content-lg-end align-items-start align-items-lg-end gap-2 mt-3">
                         
-                        <!-- Dining Menu Button (conditional) - Top Row -->
-                        <div v-if="hasPdfMenu" class="d-none d-lg-flex justify-content-end w-100 mobile-justify-content-start">
-                            <button class="btn btn-custom-orange-inverted btn-lg text-nowrap mobile-rating-smaller-text-2" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#diningMenuModal"
-                                    @click="resetPdfNavigation"
-                                    style="font-weight: bold;">
-                                {{ diningMenuText }}
-                            </button>
-                        </div>
+                        
 
                         <!-- Follow and Review Buttons - Bottom Row -->
                         <div class="d-flex gap-2 flex-wrap">
@@ -1560,13 +1551,7 @@
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
-                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-custom-orange-inverted btn-lg text-nowrap mobile-rating-smaller-text-2" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#diningMenuModal"
-                                    @click="resetPdfNavigation"
-                                    style="font-weight: bold;">
-                                {{ diningMenuText }}
-                            </button>
+                            
 
                         <!-- Mobile Amenities Toggle Button (only visible below 992px) -->
                         <template v-if="hasAmenities" >
@@ -1596,7 +1581,13 @@
                                 <span class="fw-bold">Events</span>
                                 <i class="bi bi-chevron-down amenities-chevron ms-1"></i>
                             </button>
-                        
+                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-custom-orange-inverted btn-lg text-nowrap mobile-rating-smaller-text-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                    style="font-weight: bold;">
+                                {{ diningMenuText }}
+                            </button>
                         </div>
                     </div>
 
