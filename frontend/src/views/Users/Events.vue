@@ -381,7 +381,7 @@
                             </p>
 
                             <!-- Description -->
-                            <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                            <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                             <!-- CTA -->
                             <router-link
@@ -493,7 +493,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                    <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -633,7 +633,7 @@
                                     </p>
 
                                     <!-- Description -->
-                                    <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                    <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                     <!-- CTA -->
                                     <router-link
@@ -750,7 +750,7 @@
                                         </p>
 
                                         <!-- Description -->
-                                        <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                        <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                         <!-- CTA -->
                                         <router-link
@@ -808,7 +808,7 @@
                     <div>
                         <!-- Events You're Organising Tab -->
                         <div v-if="activeUserEventsTab === 'organising'">
-                            {{ organisingEvents.length > 0 ? '' : 'No events found.' }}
+                            <!-- {{ organisingEvents.length > 0 ? '' : 'No events found.' }} -->
                             <div v-if="organisingEvents.length > 0" class="mt-4">
                                 <!-- Upcoming Events You're Organising -->
                                 <div v-if="organisingEvents.filter(event => new Date(event.eventStartDate) >= new Date()).length > 0">
@@ -856,7 +856,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                                <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -925,7 +925,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                                <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -995,7 +995,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                                <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -1058,7 +1058,7 @@
                                                 </p>
 
                                                 <!-- Description -->
-                                                <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+                                                <p class="text-muted small mb-2">{{ truncateText(event.eventDesc, 50) }}</p>
 
                                                 <!-- CTA -->
                                                 <router-link
@@ -1185,6 +1185,12 @@ export default {
             .replace(/\s+\n/g, '\n')
             .replace(/\n+/g, ' ')
             .trim();
+        },
+        truncateText(text, maxLength = 50) {
+            if (!text) return '';
+            const plainTextContent = this.plainText(text);
+            if (plainTextContent.length <= maxLength) return plainTextContent;
+            return plainTextContent.substring(0, maxLength).trim() + '...';
         },
         slugify(text) {
                 return text
@@ -1346,7 +1352,7 @@ export default {
             }
             catch (error) {
                 if (error.response && error.response.status === 404) {
-                    this.attendingEventsError = "No events found that you're attending.";
+                    // this.attendingEventsError = "No events found that you're attending.";
                     this.dataLoaded = true;
                 }
                 else {
