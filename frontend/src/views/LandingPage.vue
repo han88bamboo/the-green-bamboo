@@ -3,7 +3,7 @@
     <main>
     <!-- Hero Section with Search -->
     <section class="hero-section text-center">
-        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/another-round-mads-mikkelsen.webp?v=1758423054" class="hero-bg" style="filter: brightness(0.5);"
+        <img src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/fred-moon-0yqa0rMCsYk-unsplash.jpg?v=1763054984" class="hero-bg" style="filter: brightness(0.5);"
             alt="A bartender pouring a cocktail in a dimly lit bar, with the text 'A World of Drinks. Just Look It Up.' overlaid." />
         <div
             class="container position-absolute top-50 start-50 translate-middle text-white d-flex flex-column align-items-center px-3 pt-0">
