@@ -1,7 +1,7 @@
 # Port: 5701
 # Routes: 
 #   [events]    /getEvents (GET), /getSpecificEvent (GET), /getUserEvents (GET), 
-#               /getTop6Events (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
+#               /getTrendingEvents (GET), /getUpcomingFollowingEvents (GET), /getUserPastEvents (GET),
 #               /getUserUpcomingEvents (GET), /getRecentlyAddedEvents (GET), /searchEvents (GET),
 #               /canCreateEvents (GET),
 #               /createEvent (POST), 
@@ -271,18 +271,18 @@ def getUserEvents(user_id, user_type, offset):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] Get top 6 events
-# Purpose: Get top 6 events
+# [GET] Get top trending events
+# Purpose: Get top trending events (up to 30)
 # Used: Events.vue (inside views/Users folder)
 # Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
-@blueprint.route('/getTop6Events', methods=['GET'])
-def getTop6Events():
+@blueprint.route('/getTrendingEvents', methods=['GET'])
+def getTrendingEvents():
     return_data = []
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Step 1: Get the top 6 upcoming events
-            cursor.execute('SELECT * FROM events WHERE "eventStartDate" >= CURRENT_DATE ORDER BY "numAttendees" DESC LIMIT 6')
+            # Step 1: Get the top 30 upcoming events
+            cursor.execute('SELECT * FROM events WHERE "eventStartDate" >= CURRENT_DATE ORDER BY "numAttendees" DESC LIMIT 30')
             events = cursor.fetchall()
 
             if not events:

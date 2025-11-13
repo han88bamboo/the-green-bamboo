@@ -1268,7 +1268,7 @@ export default {
         // Function to get trending events
         async getTrendingEvents() {
             try {
-                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getTop6Events`);
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getTrendingEvents`);
                 this.trendingEvents = response.data.events;
                 this.dataLoaded = true;
             }
