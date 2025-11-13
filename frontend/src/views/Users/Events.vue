@@ -438,7 +438,7 @@
                     <div class="carousel-inner">
                         <div
                             v-for="(chunk, chunkIndex) in upcomingTrendingEvents.reduce((acc, cur, i) => {
-                                if (i % 2 === 0) acc.push([cur]);
+                                if (i % 4 === 0) acc.push([cur]);
                                 else acc[acc.length - 1].push(cur);
                                 return acc;
                             }, [])"
@@ -449,7 +449,7 @@
                                 <div
                                 v-for="event in chunk"
                                 :key="event.eventID"
-                                class="col-md-6 px-3"
+                                class="col-6 col-md-6 px-3 mb-3"
                                 >
                                 <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
                                     <!-- Event Image -->
@@ -540,7 +540,7 @@
 
                 <!-- Past Trending Events -->
                 <div class="d-flex align-items-center justify-content-between">
-                    <h4 class="fw-bold mb-0 text-start mobile-fs-5 text-muted">Past Trending Events</h4>
+                    <h4 class="fw-bold mb-0 text-start mobile-fs-5 text-muted">Past Events</h4>
                     <div class="d-flex gap-2">
                       <!-- Left Arrow in Circle -->
                       <button
