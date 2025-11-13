@@ -994,7 +994,9 @@ CREATE TABLE "events" (
     "eventOwnerID" INTEGER, -- [!] "producers" or "venues" or "users" id in their respective tables 
     "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
     "numAttendees" INTEGER,
-    "createdDate" TIMESTAMP
+    "createdDate" TIMESTAMP,
+    "passcode" VARCHAR(50) DEFAULT NULL, -- Optional passcode for event access
+    "signupOpen" BOOLEAN DEFAULT TRUE -- Indicates if event signup is open - NOT USED AT THE MOMENT
 );
 
 -- ========= "eventAttendees" =========
@@ -1008,7 +1010,11 @@ CREATE TABLE "eventAttendees" (
     "attendeeStatus" BOOLEAN,
     "hasPaid" BOOLEAN DEFAULT FALSE,
     "attendanceStatus" VARCHAR(50) DEFAULT 'Not Checked In',
-    "rsvpTimestamp" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "rsvpTimestamp" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "firstName" VARCHAR(50), -- contact info for RSVP event access
+    "lastName" VARCHAR(50), -- contact info for RSVP event access
+    "phoneNumber" VARCHAR(50), -- contact info for RSVP event access
+    "email" VARCHAR(50) -- contact info for RSVP event access
 );
 
 -- ========= "associations" =========

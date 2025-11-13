@@ -1154,6 +1154,12 @@ def getAttendees(event_id):
                 user_info['rsvpDate'] = attendee.get('rsvpTimestamp')
                 user_info['eventDate'] = attendee.get('eventDate')
                 user_info['attendeeId'] = attendee['id']
+                
+                # Adding the new attendee contact information fields
+                user_info['firstName'] = attendee.get('firstName')
+                user_info['lastName'] = attendee.get('lastName')
+                user_info['phoneNumber'] = attendee.get('phoneNumber')
+                user_info['email'] = attendee.get('email')
 
                 # Append the user information into the return_data
                 return_data.append(user_info)
@@ -1218,11 +1224,24 @@ def addAttendee():
             data = request.json
 
             required_fields = ['eventID', 'userID', 'userType']
+            attendee_info_fields = ['firstName', 'lastName', 'phoneNumber', 'email']
 
             # Check if the required fields are present and not empty
             for field in required_fields:
                 if field not in data or not data[field]:
                     return jsonify({'error': f'Missing or empty required field: {field}'}), 400
+
+            # Check if attendee information fields are present (new feature)
+            # These fields are optional for backward compatibility with existing RSVPs
+            attendee_info = {}
+            for field in attendee_info_fields:
+                if field in data and data[field] and data[field].strip():
+                    # Validate field length
+                    if len(data[field].strip()) > 50:
+                        return jsonify({'error': f'{field} must be 50 characters or less'}), 400
+                    attendee_info[field] = data[field].strip()
+                else:
+                    attendee_info[field] = None
 
             # Step 2: Check if the event exist
             cursor.execute('SELECT * FROM events WHERE id = %s', (data['eventID'],))
@@ -1247,9 +1266,10 @@ def addAttendee():
             # Step 5: Add the attendee to the event
             cursor.execute('''
                 INSERT INTO "eventAttendees" 
-                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp") 
-                VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP)
-            ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType']))
+                ("eventID", "eventDate", "eventStartTime", "userID", "attendeeType", "attendeeStatus", "rsvpTimestamp", "firstName", "lastName", "phoneNumber", "email") 
+                VALUES (%s, %s, %s, %s, %s, TRUE, CURRENT_TIMESTAMP, %s, %s, %s, %s)
+            ''', (data['eventID'], event['eventStartDate'], event['eventStartTime'], data['userID'], data['userType'], 
+                  attendee_info['firstName'], attendee_info['lastName'], attendee_info['phoneNumber'], attendee_info['email']))
 
             # Step 6: Update the number of attendees in the event
             cursor.execute('UPDATE events SET "numAttendees" = "numAttendees" + 1 WHERE id = %s', (data['eventID'],))

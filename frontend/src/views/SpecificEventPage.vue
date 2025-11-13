@@ -126,7 +126,7 @@
                                     <div v-if="event.paidEvent == false">
                                         <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                                 class="btn primary-btn-less-round-blue fw-bold"
-                                                @click="rsvpEvent"
+                                                @click="showAttendeeInfoModal"
                                                 :disabled="rsvpButtonStatus">
                                             I'm interested
                                         </button>
@@ -135,10 +135,8 @@
                                         <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" 
                                             class="btn primary-btn-less-round-blue"  
                                             style="font-weight:bold" 
-                                            @click="rsvpEvent" 
-                                            :disabled="rsvpButtonStatus" 
-                                            :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" 
-                                            :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested
+                                            @click="showAttendeeInfoModal" 
+                                            :disabled="rsvpButtonStatus">I'm interested
                                         </button>
                                     </div>
                                 </div>
@@ -168,17 +166,18 @@
                                     <div v-if="event.paidEvent == false">
                                     <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                             class="btn primary-btn-less-round-blue fw-bold"
-                                            @click="rsvpEvent"
+                                            @click="showAttendeeInfoModal"
                                             :disabled="rsvpButtonStatus">
                                         RSVP
                                     </button>
                                     </div>
                                     <div v-else>
-                                    <a :href="event.paymentLink"
-                                        target="_blank"
-                                        class="btn primary-btn-less-round-blue fw-bold">
+                                    <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
+                                            class="btn primary-btn-less-round-blue fw-bold"
+                                            @click="showAttendeeInfoModal"
+                                            :disabled="rsvpButtonStatus">
                                         RSVP
-                                    </a>
+                                    </button>
                                     </div>
                                 </div>
                             
@@ -264,7 +263,7 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free, but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
                                 <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
@@ -275,7 +274,7 @@
                             <div v-else> 
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
                                 <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                             </div>
@@ -429,7 +428,7 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
                                 <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
@@ -440,7 +439,7 @@
                             <div v-else> 
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket! <Span class="text-muted">(Payment on separate system.)</Span></p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="showAttendeeInfoModal" :disabled="rsvpButtonStatus">I'm interested</button>
                                 <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
                                 <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                             </div>
@@ -570,6 +569,99 @@
         </div>
         <!-- UnRSVP Confirmation Modal End -->
 
+
+        <!-- Attendee Information Modal Start -->
+        <div class="modal fade" id="attendeeInfoModal" tabindex="-1" aria-labelledby="attendeeInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="attendeeInfoModalLabel">Event Registration Information</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fw-bold mb-3">Please provide your information to complete your RSVP:</p>
+                        
+                        <form @submit.prevent="submitAttendeeInfo">
+                            <!-- First Name -->
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label fw-bold">First Name <span class="text-danger">*</span></label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': attendeeInfoErrors.firstName }"
+                                    id="firstName" 
+                                    v-model="attendeeInfo.firstName"
+                                    required
+                                    maxlength="50"
+                                >
+                                <div v-if="attendeeInfoErrors.firstName" class="invalid-feedback">
+                                    {{ attendeeInfoErrors.firstName }}
+                                </div>
+                            </div>
+
+                            <!-- Last Name -->
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label fw-bold">Last Name <span class="text-danger">*</span></label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': attendeeInfoErrors.lastName }"
+                                    id="lastName" 
+                                    v-model="attendeeInfo.lastName"
+                                    required
+                                    maxlength="50"
+                                >
+                                <div v-if="attendeeInfoErrors.lastName" class="invalid-feedback">
+                                    {{ attendeeInfoErrors.lastName }}
+                                </div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="mb-3">
+                                <label for="phoneNumber" class="form-label fw-bold">Phone Number <span class="text-danger">*</span></label>
+                                <input 
+                                    type="tel" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': attendeeInfoErrors.phoneNumber }"
+                                    id="phoneNumber" 
+                                    v-model="attendeeInfo.phoneNumber"
+                                    required
+                                    maxlength="50"
+                                    placeholder="e.g., +65 9123 4567"
+                                >
+                                <div v-if="attendeeInfoErrors.phoneNumber" class="invalid-feedback">
+                                    {{ attendeeInfoErrors.phoneNumber }}
+                                </div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-bold">Email Address <span class="text-danger">*</span></label>
+                                <input 
+                                    type="email" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': attendeeInfoErrors.email }"
+                                    id="email" 
+                                    v-model="attendeeInfo.email"
+                                    required
+                                    maxlength="50"
+                                    placeholder="your@email.com"
+                                >
+                                <!-- TODO: Add logic here to pre-populate email field from user profile if available -->
+                                <div v-if="attendeeInfoErrors.email" class="invalid-feedback">
+                                    {{ attendeeInfoErrors.email }}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetAttendeeInfo">Cancel</button>
+                        <button type="button" class="btn primary-btn-green" @click="submitAttendeeInfo">Complete RSVP</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Attendee Information Modal End -->
 
         <!-- Prompt Purchase Modal Start -->
         <div class="modal fade" id="promptPurchaseModal" tabindex="-1" aria-labelledby="promptPurchaseModalLabel" aria-hidden="true">
@@ -962,6 +1054,15 @@ export default {
 
             earnedBadges: [],
             showBadgePopup: false,
+
+            // Attendee information for RSVP
+            attendeeInfo: {
+                firstName: '',
+                lastName: '',
+                phoneNumber: '',
+                email: ''
+            },
+            attendeeInfoErrors: {},
         }
     },
     computed: {
@@ -1522,6 +1623,160 @@ export default {
             this.showBadgePopup = false;
             this.earnedBadges = [];
         },
+
+        // Show attendee information modal
+        showAttendeeInfoModal() {
+            // Check if the user has already logged in
+            if (this.userType == 'defaultUser') {
+                // Redirect to login page
+                this.$router.push('/login');
+                return;
+            }
+
+            // Reset any previous errors and clear form
+            this.resetAttendeeInfo();
+            
+            // TODO: Add logic here to pre-populate email field from user profile if available
+            // Example: this.attendeeInfo.email = this.currentUserEmail || '';
+            
+            // Show the modal using data attributes
+            const modalElement = document.getElementById('attendeeInfoModal');
+            modalElement.setAttribute('data-bs-show', 'true');
+            modalElement.classList.add('show');
+            modalElement.style.display = 'block';
+            document.body.classList.add('modal-open');
+        },
+
+        // Reset attendee information form
+        resetAttendeeInfo() {
+            this.attendeeInfo = {
+                firstName: '',
+                lastName: '',
+                phoneNumber: '',
+                email: ''
+            };
+            this.attendeeInfoErrors = {};
+        },
+
+        // Validate attendee information
+        validateAttendeeInfo() {
+            this.attendeeInfoErrors = {};
+            let isValid = true;
+
+            // Validate first name
+            if (!this.attendeeInfo.firstName.trim()) {
+                this.attendeeInfoErrors.firstName = 'First name is required';
+                isValid = false;
+            } else if (this.attendeeInfo.firstName.trim().length > 50) {
+                this.attendeeInfoErrors.firstName = 'First name must be 50 characters or less';
+                isValid = false;
+            }
+
+            // Validate last name
+            if (!this.attendeeInfo.lastName.trim()) {
+                this.attendeeInfoErrors.lastName = 'Last name is required';
+                isValid = false;
+            } else if (this.attendeeInfo.lastName.trim().length > 50) {
+                this.attendeeInfoErrors.lastName = 'Last name must be 50 characters or less';
+                isValid = false;
+            }
+
+            // Validate phone number
+            if (!this.attendeeInfo.phoneNumber.trim()) {
+                this.attendeeInfoErrors.phoneNumber = 'Phone number is required';
+                isValid = false;
+            } else if (this.attendeeInfo.phoneNumber.trim().length > 50) {
+                this.attendeeInfoErrors.phoneNumber = 'Phone number must be 50 characters or less';
+                isValid = false;
+            }
+
+            // Validate email
+            if (!this.attendeeInfo.email.trim()) {
+                this.attendeeInfoErrors.email = 'Email address is required';
+                isValid = false;
+            } else if (this.attendeeInfo.email.trim().length > 50) {
+                this.attendeeInfoErrors.email = 'Email must be 50 characters or less';
+                isValid = false;
+            } else {
+                // Basic email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(this.attendeeInfo.email.trim())) {
+                    this.attendeeInfoErrors.email = 'Please enter a valid email address';
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        },
+
+        // Submit attendee information and proceed with RSVP
+        async submitAttendeeInfo() {
+            if (!this.validateAttendeeInfo()) {
+                return;
+            }
+
+            // Hide the attendee info modal
+            const modalElement = document.getElementById('attendeeInfoModal');
+            modalElement.classList.remove('show');
+            modalElement.style.display = 'none';
+            document.body.classList.remove('modal-open');
+
+            // Proceed with RSVP including attendee information
+            this.rsvpEventWithInfo();
+        },
+
+        // Updated RSVP function that includes attendee information
+        rsvpEventWithInfo() {
+            try {
+                const payload = {
+                    eventID: this.event.id,
+                    userID: this.userID,
+                    userType: this.userType,
+                    firstName: this.attendeeInfo.firstName.trim(),
+                    lastName: this.attendeeInfo.lastName.trim(),
+                    phoneNumber: this.attendeeInfo.phoneNumber.trim(),
+                    email: this.attendeeInfo.email.trim()
+                };
+
+                this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, payload)
+                .then((response) => {
+                    if (response.status == 201) {
+                        const toast = useToast();
+                        toast.success('RSVP successful!');
+                        this.getAttendees();
+                        this.rsvpStatus = true;
+
+                        // Show purchase modal for paid events
+                        if (this.event.paidEvent === true || this.event.paidEvent === 'true') {
+                            setTimeout(() => {
+                                const purchaseModal = document.getElementById('promptPurchaseModal');
+                                purchaseModal.classList.add('show');
+                                purchaseModal.style.display = 'block';
+                                document.body.classList.add('modal-open');
+                            }, 500);
+                        }
+
+                        // Reset the form after successful RSVP
+                        this.resetAttendeeInfo();
+                    }
+                    else {
+                        console.log(response.data.message);
+                        const toast = useToast();
+                        toast.error('RSVP failed. Please try again!');
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                    const toast = useToast();
+                    toast.error('RSVP failed. Please try again!');
+                });
+            }
+            catch (error) {
+                console.log(error);
+                const toast = useToast();
+                toast.error('RSVP failed. Please try again!');
+            }
+        },
     },
 
     // Watch for changes in the route ID
@@ -1588,5 +1843,20 @@ export default {
 
 .custom-carousel-color {
     background-color: #ff0000; 
+}
+
+/* Attendee Info Modal Styling */
+#attendeeInfoModal .modal-body {
+    padding: 2rem;
+}
+
+#attendeeInfoModal .form-label {
+    color: #027562;
+    margin-bottom: 0.5rem;
+}
+
+#attendeeInfoModal .form-control:focus {
+    border-color: #027562;
+    box-shadow: 0 0 0 0.2rem rgba(2, 117, 98, 0.25);
 }
 </style>
