@@ -689,7 +689,7 @@
                         </form>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetAttendeeInfo">Cancel</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="closeAttendeeInfoModal">Cancel</button>
                         <button type="button" class="btn primary-btn-green" @click="submitAttendeeInfo">Complete RSVP</button>
                     </div>
                 </div>
@@ -1768,12 +1768,21 @@ export default {
             // TODO: Add logic here to pre-populate email field from user profile if available
             // Example: this.attendeeInfo.email = this.currentUserEmail || '';
             
-            // Show the modal using data attributes
-            const modalElement = document.getElementById('attendeeInfoModal');
-            modalElement.setAttribute('data-bs-show', 'true');
-            modalElement.classList.add('show');
-            modalElement.style.display = 'block';
-            document.body.classList.add('modal-open');
+            // Show the modal using Bootstrap's proper modal system
+            // Look for an existing modal trigger first
+            const modalTrigger = document.querySelector('[data-bs-target="#attendeeInfoModal"]');
+            if (modalTrigger) {
+                modalTrigger.click();
+            } else {
+                // Create a temporary trigger if one doesn't exist
+                const tempTrigger = document.createElement('button');
+                tempTrigger.setAttribute('data-bs-toggle', 'modal');
+                tempTrigger.setAttribute('data-bs-target', '#attendeeInfoModal');
+                tempTrigger.style.display = 'none';
+                document.body.appendChild(tempTrigger);
+                tempTrigger.click();
+                document.body.removeChild(tempTrigger);
+            }
         },
 
         // Reset attendee information form
@@ -1786,6 +1795,11 @@ export default {
                 passcode: ''
             };
             this.attendeeInfoErrors = {};
+        },
+
+        // Close attendee info modal (following the pattern from BottleListings.vue)
+        closeAttendeeInfoModal() {
+            this.resetAttendeeInfo();
         },
 
         // Validate attendee information
@@ -1866,11 +1880,12 @@ export default {
                 this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, payload)
                 .then((response) => {
                     if (response.status == 201) {
-                        // Hide the attendee info modal on successful RSVP
-                        const modalElement = document.getElementById('attendeeInfoModal');
-                        modalElement.classList.remove('show');
-                        modalElement.style.display = 'none';
-                        document.body.classList.remove('modal-open');
+                        // Hide the attendee info modal on successful RSVP using Bootstrap trigger system
+                        // Find the close button or create a temporary one to trigger modal close
+                        const closeButton = document.querySelector('#attendeeInfoModal [data-bs-dismiss="modal"]');
+                        if (closeButton) {
+                            closeButton.click();
+                        }
 
                         const toast = useToast();
                         toast.success('RSVP successful!');
