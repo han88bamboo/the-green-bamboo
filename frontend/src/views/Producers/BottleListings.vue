@@ -3161,19 +3161,23 @@
             <!-- review photo -->
             <div class="col-3 xcol-lg-3 text-end mobile-view-hide">
               <!-- review photo -->
-              <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
+              <!-- KAI TEMPORARILY COMMENTED OUT 
+               <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
                 review
               )}`" style="cursor: pointer">
                 <img :src="review['photo'] || defaultPhoto" alt="" class="review-image"
                   style="width: 125px; height: 125px" />
+              </div>-->
+              <div v-if="review.photo" data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(review)}`" style="cursor: pointer"> 
+                <img :src="review.photo" alt="" class="review-image" style="width: 125px; height: 125px" /> 
               </div>
             </div>
             <div class="modal fade" :id="`reviewImageModal${getUsernameFromReview(review)}`" tabindex="-1"
               aria-labelledby="reviewModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-lg d-flex align-items-center" style="height: 100vh">
                 <div class="modal-content">
-                  <div class="modal-body p-4">
-                    <img :src="review['photo'] || defaultPhoto" alt="" style="width: 100%; height: auto" />
+                  <div v-if="review.photo" class="modal-body p-4">
+                    <img :src="review.photo" alt="" style="width: 100%; height: auto" />
                   </div>
                 </div>
               </div>
@@ -3181,10 +3185,10 @@
             <div class="row">
               <div class="col-3 xcol-lg-3 text-start mb-3 mobile-view-show">
                 <!-- review photo -->
-                <div data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
+                <div v-if="review.photo" data-bs-toggle="modal" :data-bs-target="`#reviewImageModal${getUsernameFromReview(
                   review
                 )}`" style="cursor: pointer">
-                  <img :src="review['photo'] || defaultPhoto" alt="" class="review-image"
+                  <img :src="review.photo"  alt="" class="review-image"
                     style="width: 200%; height: 200%" />
                   <!--for mobile kai replaced 100px with 90% -->
                 </div>
