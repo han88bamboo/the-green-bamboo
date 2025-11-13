@@ -197,8 +197,8 @@ def getSpecificEvent(event_id):
 
 
 # -----------------------------------------------------------------------------------------
-# [GET] Get all events by a user/producer/venue
-# Purpose: Get all events by a user/producer/venue
+# [GET] Get upcoming events by a user/producer/venue (up to 20)
+# Purpose: Get upcoming events by a user/producer/venue in chronological order
 # Used: 
 #     1. VenueProfile.vue (inside views folder inside venues folder)
 #     2. ProducerProfile.vue (inside views folder inside producers folder)
@@ -211,7 +211,7 @@ def getUserEvents(user_id, user_type, offset):
     return_data = []
 
     # Set the limit here
-    limit = 5
+    limit = 20
 
     try:
         with db_manager.get_cursor() as cursor:
