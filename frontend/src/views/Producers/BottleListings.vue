@@ -9026,13 +9026,21 @@ input[type="range"].form-range::-webkit-slider-thumb {
 }
 
 .privacy-toggle-switch:checked {
-  background-color: #6c94d6;
-  border-color: #6c94d6;
+  background-color: #859cdd;
+  border-color: #859cdd;
+}
+
+.privacy-toggle-switch:focus {
+  box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
 }
 
 .privacy-toggle-switch:not(:checked) {
-  background-color: #62686e;
-  border-color: #62686e;
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.privacy-toggle-switch:not(:checked):focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 .form-check-input {
