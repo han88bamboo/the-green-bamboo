@@ -3,7 +3,10 @@
 
         <!-- Title if current user is profile owner -->
         <div v-if="selfView" class="d-flex flex-row justify-content-between align-items-center">
-            <h4 class="fw-bold text-start">Your Events</h4>
+            <div>
+                <h4 class="fw-bold text-start mb-0">Your Events</h4>
+                <small v-if="events.length > 0" class="text-muted">{{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}</small>
+            </div>
 
             <!-- Create event button -->
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16" data-bs-toggle="modal" data-bs-target="#createEventModal" 
@@ -16,7 +19,8 @@
 
         <!-- Title if not current user -->
         <div v-else>
-            <h4 class="fw-bold text-start">Upcoming Events</h4>
+            <h4 class="fw-bold text-start mb-0">Upcoming Events</h4>
+            <small v-if="events.length > 0" class="text-muted">{{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}</small>
         </div>
 
         <!-- Cannot create event message -->
@@ -32,7 +36,7 @@
             </div>
 
             <!-- List of events -->
-            <div v-else class="col-12">
+            <div v-else class="col-12 events-container">
 
                 <!-- Event details-->
                 <div v-for="event in events" :key="event.id" class="text-start">
@@ -94,6 +98,31 @@
 
     .small-text {
         font-size: 0.9rem; /* Adjust the size as needed */
+    }
+
+    .events-container {
+      
+        overflow-y: auto; /* Add scroll when content exceeds max height */
+        /* padding-right: 8px; Add some padding for the scrollbar */
+    }
+
+    /* Custom scrollbar styling for better appearance */
+    .events-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .events-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .events-container::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    .events-container::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
     }
 
 </style>
@@ -166,8 +195,14 @@ export default {
             try {
                 let response;
                 response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getUserEvents/` + this.targetUserID + "/" + this.targetUserType + "/0");
-                this.events = response.data;
                 this.events = response.data.events;
+                
+                // Ensure events are sorted chronologically (backend already does this, but adding as extra safety)
+                this.events.sort((a, b) => {
+                    const dateA = new Date(a.eventStartDate + (a.eventStartTime ? ' ' + a.eventStartTime : ''));
+                    const dateB = new Date(b.eventStartDate + (b.eventStartTime ? ' ' + b.eventStartTime : ''));
+                    return dateA - dateB;
+                });
             }
             catch (error) {
                 console.error(error);
