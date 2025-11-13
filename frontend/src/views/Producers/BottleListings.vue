@@ -8918,11 +8918,11 @@ input[type="range"].form-range::-webkit-slider-thumb {
 .private-review-container::before {
   content: '';
   position: absolute;
-  top: -10px;
+  top: 0px;
   left: 0;
   right: 0;
   bottom: 8px;
-  border: 2px solid #6c757d;
+  
   border-radius: 12px;
   pointer-events: none;
   z-index: 1;
