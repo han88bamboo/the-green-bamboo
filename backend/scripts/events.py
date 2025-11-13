@@ -1279,6 +1279,25 @@ def addAttendee():
                 if normalized_event_passcode != normalized_user_passcode:
                     return jsonify({'error': 'Event passcode wrong'}), 400
 
+            # Step 3.6: Check attendance limit for this event organizer
+            cursor.execute('''
+                SELECT COUNT(*) as attendance_count
+                FROM "eventAttendees" ea
+                JOIN events e ON ea."eventID" = e.id
+                WHERE ea."userID" = %s 
+                AND ea."attendeeType" = %s
+                AND e."eventOwnerID" = %s
+                AND e."eventOwnerType" = %s
+                AND e."eventStartDate" >= CURRENT_DATE
+                AND e.id != %s
+            ''', (data['userID'], data['userType'], event['eventOwnerID'], event['eventOwnerType'], data['eventID']))
+            
+            attendance_result = cursor.fetchone()
+            current_attendance_count = attendance_result['attendance_count'] if attendance_result else 0
+            
+            if current_attendance_count >= 2:
+                return jsonify({'error': 'Maximum of 2 events from the same organiser reached'}), 400
+
             # Step 4: Check if the user is already an attendee
             cursor.execute('SELECT * FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
             attendee = cursor.fetchone()
