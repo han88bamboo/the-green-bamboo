@@ -143,10 +143,37 @@
                 <input type="text" class="form-control" id="eventLocation" v-model="newEvent.eventLocation" @input="emitNewEvent">
             </div>
 
-            <!-- Event passcode -->
+            <!-- Event passcodes -->
             <div class="mb-3">
-                <label for="eventPasscode" class="form-label">Event Passcode <span class="text-muted">Optional</span></label>
-                <input type="text" class="form-control" id="eventPasscode" v-model="newEvent.eventPasscode" @input="emitNewEvent" placeholder="Optional">
+                <label class="form-label">Event Passcodes <span class="text-muted">Optional</span></label>
+                
+                <!-- Passcode input fields -->
+                <div v-for="(passcode, index) in newEvent.eventPasscodes" :key="index" class="mb-2 d-flex align-items-center">
+                    <input 
+                        type="text" 
+                        class="form-control me-2" 
+                        v-model="newEvent.eventPasscodes[index]" 
+                        @input="emitNewEvent" 
+                        :placeholder="'Passcode ' + (index + 1)"
+                    >
+                    <button 
+                        type="button" 
+                        class="btn btn-outline-danger btn-sm" 
+                        @click="removePasscode(index)"
+                        :disabled="newEvent.eventPasscodes.length <= 1"
+                    >
+                        Remove
+                    </button>
+                </div>
+                
+                <!-- Add passcode button -->
+                <button 
+                    type="button" 
+                    class="btn btn-outline-primary btn-sm" 
+                    @click="addPasscode"
+                >
+                    Add Passcode
+                </button>
             </div>
         </form>
     </div>
@@ -180,7 +207,7 @@ export default {
                 paidEvent: null,
                 eventLocation: null,
                 paymentLink: null,
-                eventPasscode: null
+                eventPasscodes: [''] // Array of passcodes, start with one empty field
             },
 
         }
@@ -226,6 +253,20 @@ export default {
         removePhotoNew(index) {
             this.newEvent.eventBanners.splice(index, 1);
             this.emitNewEvent();
+        },
+
+        // Function to add a new passcode field
+        addPasscode() {
+            this.newEvent.eventPasscodes.push('');
+            this.emitNewEvent();
+        },
+
+        // Function to remove a passcode field
+        removePasscode(index) {
+            if (this.newEvent.eventPasscodes.length > 1) {
+                this.newEvent.eventPasscodes.splice(index, 1);
+                this.emitNewEvent();
+            }
         },
 
         // Function to emit the new event details to the parent component

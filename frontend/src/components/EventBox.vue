@@ -40,11 +40,11 @@
                 </span>
             </small>
         </div>
-
-        <!-- Cannot create event message -->
+ 
+        <!-- Cannot create event message
         <div v-if="!canCreateEvent" class="alert alert-danger" role="alert">
             {{ canCreateEventMessage }}
-        </div>
+        </div> -->
 
         <!-- Navigation buttons (only show if more than 4 events) -->
         <div v-if="events.length > 4" class="d-flex justify-content-end gap-2 mb-2">
@@ -216,9 +216,9 @@
 
                                     <!-- View Event button -->
                                     <div class="text-center mt-1">
-                                        <router-link :to="'/eventview/' + event.eventID + '/' + slugify(event.eventName)" class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                        <button @click="navigateToEvent(event)" class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
                                             View Event
-                                        </router-link>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

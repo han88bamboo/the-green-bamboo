@@ -1139,7 +1139,7 @@ export default {
                 paidEvent: '',
                 eventLocation: '',
                 paymentLink: '',
-                eventPasscode: ''
+                eventPasscodes: ['']
             },
             disableButton: false,
 
@@ -1518,7 +1518,7 @@ export default {
                     paidEvent: this.newEvent.paidEvent,
                     eventLocation: this.newEvent.eventLocation,
                     paymentLink: this.newEvent.paymentLink,
-                    eventPasscode: this.newEvent.eventPasscode,
+                    eventPasscodes: this.newEvent.eventPasscodes,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });

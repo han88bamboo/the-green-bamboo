@@ -868,6 +868,38 @@
                             </label>
                             <input type="text" class="form-control" id="eventLocation" v-model="eventCopy.eventLocation">
                         </div>
+
+                        <!-- Event passcodes -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Event Passcodes <span class="text-muted">Optional</span></label>
+                            
+                            <!-- Passcode input fields -->
+                            <div v-for="(passcode, index) in eventCopy.eventPasscodes" :key="index" class="mb-2 d-flex align-items-center">
+                                <input 
+                                    type="text" 
+                                    class="form-control me-2" 
+                                    v-model="eventCopy.eventPasscodes[index]" 
+                                    :placeholder="'Passcode ' + (index + 1)"
+                                >
+                                <button 
+                                    type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    @click="removePasscodeEdit(index)"
+                                    :disabled="eventCopy.eventPasscodes.length <= 1"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                            
+                            <!-- Add passcode button -->
+                            <button 
+                                type="button" 
+                                class="btn btn-outline-primary btn-sm" 
+                                @click="addPasscodeEdit"
+                            >
+                                Add Passcode
+                            </button>
+                        </div>
                         
                     </div>
                     <div class="modal-footer">
@@ -1140,6 +1172,16 @@ export default {
                 
                 // Create a deep copy of the event details for editing
                 this.eventCopy = JSON.parse(JSON.stringify(this.event));
+                
+                // Initialize passcodes for editing (convert single passcode field to eventPasscodes array)
+                if (this.event.passcode && Array.isArray(this.event.passcode)) {
+                    this.eventCopy.eventPasscodes = [...this.event.passcode];
+                } else if (this.event.passcode) {
+                    // Handle case where passcode might be a single string (backward compatibility)
+                    this.eventCopy.eventPasscodes = [this.event.passcode];
+                } else {
+                    this.eventCopy.eventPasscodes = [''];
+                }
 
                 this.dataLoaded = true;
 
@@ -1358,6 +1400,31 @@ export default {
         // Function to cancel editing event details
         cancelEdit() {
             this.eventCopy = JSON.parse(JSON.stringify(this.event));
+            // Ensure eventPasscodes is always an array for editing
+            this.initializeEventPasscodes();
+        },
+
+        // Function to add a new passcode field in edit mode
+        addPasscodeEdit() {
+            this.eventCopy.eventPasscodes.push('');
+        },
+
+        // Function to remove a passcode field in edit mode
+        removePasscodeEdit(index) {
+            if (this.eventCopy.eventPasscodes.length > 1) {
+                this.eventCopy.eventPasscodes.splice(index, 1);
+            }
+        },
+
+        // Function to initialize eventPasscodes array for editing
+        initializeEventPasscodes() {
+            if (this.event.passcode && Array.isArray(this.event.passcode)) {
+                this.eventCopy.eventPasscodes = [...this.event.passcode];
+            } else if (this.event.passcode) {
+                this.eventCopy.eventPasscodes = [this.event.passcode];
+            } else {
+                this.eventCopy.eventPasscodes = [''];
+            }
         },
 
         // Function to update event details
@@ -1415,23 +1482,45 @@ export default {
                 }
 
 
+                // Process eventPasscodes before comparison
+                if (this.eventCopy.eventPasscodes) {
+                    // Filter out empty passcodes and prepare for comparison
+                    const validPasscodes = this.eventCopy.eventPasscodes.filter(p => p && p.trim());
+                    this.eventCopy.eventPasscodes = validPasscodes.length > 0 ? validPasscodes : null;
+                }
+
                 // Check which fields have been changed
                 let changedFields = {};
                 for (const [key, value] of Object.entries(this.eventCopy)) {
                     
+                    // Skip ownerInfo
+                    if (key == 'ownerInfo') {
+                        continue;
+                    }
+
+                    // Special handling for array fields
+                    if (key === 'eventPasscodes' || key === 'passcode') {
+                        // Compare arrays properly
+                        const originalPasscodes = this.event.passcode || [];
+                        const newPasscodes = value || [];
+                        
+                        // Deep array comparison
+                        const arraysEqual = originalPasscodes.length === newPasscodes.length && 
+                                          originalPasscodes.every((val, index) => val === newPasscodes[index]);
+                        
+                        if (!arraysEqual) {
+                            changedFields['eventPasscodes'] = value;
+                        }
+                        continue;
+                    }
+
+                    if (key == 'eventBanners') { 
+                        if (this.eventCopy.eventBanners.length == 0 && this.event.eventBanners.length == 0) {
+                            continue; // Skip if no banners are uploaded
+                        }
+                    }
+
                     if (this.event[key] != value) {
-
-                        // Skip ownerInfo
-                        if (key == 'ownerInfo') {
-                            continue;
-                        }
-
-                        if (key == 'eventBanners') { 
-                            if (this.eventCopy.eventBanners.length == 0 && this.event.eventBanners.length == 0) {
-                                continue; // Skip if no banners are uploaded
-                            }
-                        }
-
                         changedFields[key] = value;
                     }
                 }

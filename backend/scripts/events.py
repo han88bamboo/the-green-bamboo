@@ -903,10 +903,12 @@ def createEvent():
             else:
                 data['eventLimit'] = int(data['eventLimit'])
 
-            # Handle passcode - set to None if empty or only whitespace
-            passcode = data.get('eventPasscode')
-            if passcode and passcode.strip():
-                passcode = passcode.strip()
+            # Handle passcodes - convert array to clean array or None
+            passcode_array = data.get('eventPasscodes', [])
+            if passcode_array and isinstance(passcode_array, list):
+                # Filter out empty/whitespace-only passcodes
+                valid_passcodes = [p.strip() for p in passcode_array if p and p.strip()]
+                passcode = valid_passcodes if valid_passcodes else None
             else:
                 passcode = None
 
@@ -1121,7 +1123,18 @@ def updateEvent():
                     event_banner_pg = "{" + ",".join([f'"{url}"' for url in event_banner]) + "}"
                     update_fields.append('"eventBanners" = %s')
                     update_values.append(event_banner_pg)
-
+            
+            # Handle passcode updates
+            if 'eventPasscodes' in data:
+                passcode_array = data.get('eventPasscodes')
+                if passcode_array and isinstance(passcode_array, list):
+                    # Filter out empty/whitespace-only passcodes
+                    valid_passcodes = [p.strip() for p in passcode_array if p and p.strip()]
+                    passcode = valid_passcodes if valid_passcodes else None
+                else:
+                    passcode = None
+                update_fields.append('"passcode" = %s')
+                update_values.append(passcode)
 
             # Step 4: Update the event
             if update_fields:
