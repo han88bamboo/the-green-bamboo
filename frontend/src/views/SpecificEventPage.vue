@@ -498,7 +498,7 @@
                                 
                 <div v-if="selfView && attendees.length > 0" class="mt-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="fw-bold mobile-fs-6 mx-1" style="color:#027562">Manage Attendees</h5>
+                        <h5 class="fw-bold mobile-fs-6 mx-1" style="color:#027562">Manage Attendees for "{{ event.eventName }}"</h5>
                     </div>
                     
                     <div class="mt-3">
@@ -506,7 +506,10 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Attendee Name</th>
+                                        <th>Account Name</th>
+                                        <th>Full Name</th>
+                                        <th>Phone Number</th>
+                                        <th>Email</th>
                                         <th>RSVP Date</th>
                                         <th v-if="event.paidEvent">Has Paid? <span class="text-muted">(Marked by Organiser)</span></th>
                                         <th>Attendance <span class="text-muted">(Marked by Organiser)</span></th>
@@ -516,6 +519,20 @@
                                     <tr v-for="attendee in attendeesForManagement" :key="attendee.attendeeId">
                                         <td>
                                             {{ attendee.displayName || attendee.venueName || attendee.producerName }}
+                                        </td>
+                                        <td>
+                                            <span v-if="attendee.firstName || attendee.lastName">
+                                                {{ attendee.firstName }} {{ attendee.lastName }}
+                                            </span>
+                                            <span v-else class="text-muted">N/A</span>
+                                        </td>
+                                        <td>
+                                            <span v-if="attendee.phoneNumber">{{ attendee.phoneNumber }}</span>
+                                            <span v-else class="text-muted">N/A</span>
+                                        </td>
+                                        <td>
+                                            <span v-if="attendee.email">{{ attendee.email }}</span>
+                                            <span v-else class="text-muted">N/A</span>
                                         </td>
                                         <td>
                                             {{ formatRSVPDate(attendee.rsvpDate) }}
@@ -650,6 +667,23 @@
                                 <!-- TODO: Add logic here to pre-populate email field from user profile if available -->
                                 <div v-if="attendeeInfoErrors.email" class="invalid-feedback">
                                     {{ attendeeInfoErrors.email }}
+                                </div>
+                            </div>
+
+                            <!-- Event Passcode -->
+                            <div class="mb-3">
+                                <label for="passcode" class="form-label fw-bold">Event Passcode</label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    :class="{ 'is-invalid': attendeeInfoErrors.passcode }"
+                                    id="passcode" 
+                                    v-model="attendeeInfo.passcode"
+                                    maxlength="50"
+                                    placeholder="Enter passcode if required"
+                                >
+                                <div v-if="attendeeInfoErrors.passcode" class="invalid-feedback">
+                                    {{ attendeeInfoErrors.passcode }}
                                 </div>
                             </div>
                         </form>
@@ -1060,7 +1094,8 @@ export default {
                 firstName: '',
                 lastName: '',
                 phoneNumber: '',
-                email: ''
+                email: '',
+                passcode: ''
             },
             attendeeInfoErrors: {},
         }
@@ -1479,12 +1514,17 @@ export default {
             return new Date(date).toLocaleDateString("en-GB", options);
         },
 
-        // Format RSVP timestamp to show just the date
+        // Format RSVP timestamp to show date and time
         formatRSVPDate(timestamp) {
             if (!timestamp) return 'N/A';
             const date = new Date(timestamp);
-            const options = { day: 'numeric', month: 'long', year: 'numeric' };
-            return date.toLocaleDateString("en-GB", options);
+            const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+            
+            const formattedDate = date.toLocaleDateString("en-GB", dateOptions);
+            const formattedTime = date.toLocaleTimeString("en-GB", timeOptions);
+            
+            return `${formattedDate}, ${formattedTime}`;
         },
 
         // Function to convert 24-hour time to 12-hour time with AM/PM
@@ -1653,7 +1693,8 @@ export default {
                 firstName: '',
                 lastName: '',
                 phoneNumber: '',
-                email: ''
+                email: '',
+                passcode: ''
             };
             this.attendeeInfoErrors = {};
         },
@@ -1715,12 +1756,6 @@ export default {
                 return;
             }
 
-            // Hide the attendee info modal
-            const modalElement = document.getElementById('attendeeInfoModal');
-            modalElement.classList.remove('show');
-            modalElement.style.display = 'none';
-            document.body.classList.remove('modal-open');
-
             // Proceed with RSVP including attendee information
             this.rsvpEventWithInfo();
         },
@@ -1735,12 +1770,19 @@ export default {
                     firstName: this.attendeeInfo.firstName.trim(),
                     lastName: this.attendeeInfo.lastName.trim(),
                     phoneNumber: this.attendeeInfo.phoneNumber.trim(),
-                    email: this.attendeeInfo.email.trim()
+                    email: this.attendeeInfo.email.trim(),
+                    passcode: this.attendeeInfo.passcode.trim()
                 };
 
                 this.$axios.post(`${process.env.VUE_APP_API_URL}/events/addAttendee`, payload)
                 .then((response) => {
                     if (response.status == 201) {
+                        // Hide the attendee info modal on successful RSVP
+                        const modalElement = document.getElementById('attendeeInfoModal');
+                        modalElement.classList.remove('show');
+                        modalElement.style.display = 'none';
+                        document.body.classList.remove('modal-open');
+
                         const toast = useToast();
                         toast.success('RSVP successful!');
                         this.getAttendees();
@@ -1762,13 +1804,15 @@ export default {
                     else {
                         console.log(response.data.message);
                         const toast = useToast();
-                        toast.error('RSVP failed. Please try again!');
+                        toast.error(response.data.message || 'RSVP failed. Please try again!');
                     }
                 })
                 .catch((error) => {
                     console.log(error);
                     const toast = useToast();
-                    toast.error('RSVP failed. Please try again!');
+                    // Display specific error message from backend if available
+                    const errorMessage = error.response?.data?.error || 'RSVP failed. Please try again!';
+                    toast.error(errorMessage);
                 });
             }
             catch (error) {

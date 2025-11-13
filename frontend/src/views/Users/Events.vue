@@ -1138,7 +1138,8 @@ export default {
                 ticketed: '',
                 paidEvent: '',
                 eventLocation: '',
-                paymentLink: ''
+                paymentLink: '',
+                eventPasscode: ''
             },
             disableButton: false,
 
@@ -1517,6 +1518,7 @@ export default {
                     paidEvent: this.newEvent.paidEvent,
                     eventLocation: this.newEvent.eventLocation,
                     paymentLink: this.newEvent.paymentLink,
+                    eventPasscode: this.newEvent.eventPasscode,
                     eventOwnerID: this.userID,
                     eventOwnerType: this.userType
                 });

@@ -142,6 +142,12 @@
                 </label>
                 <input type="text" class="form-control" id="eventLocation" v-model="newEvent.eventLocation" @input="emitNewEvent">
             </div>
+
+            <!-- Event passcode -->
+            <div class="mb-3">
+                <label for="eventPasscode" class="form-label">Event Passcode <span class="text-muted">Optional</span></label>
+                <input type="text" class="form-control" id="eventPasscode" v-model="newEvent.eventPasscode" @input="emitNewEvent" placeholder="Optional">
+            </div>
         </form>
     </div>
 
@@ -173,7 +179,8 @@ export default {
                 ticketed: null,
                 paidEvent: null,
                 eventLocation: null,
-                paymentLink: null
+                paymentLink: null,
+                eventPasscode: null
             },
 
         }

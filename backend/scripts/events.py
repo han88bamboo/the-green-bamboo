@@ -838,6 +838,13 @@ def createEvent():
             else:
                 data['eventLimit'] = int(data['eventLimit'])
 
+            # Handle passcode - set to None if empty or only whitespace
+            passcode = data.get('eventPasscode')
+            if passcode and passcode.strip():
+                passcode = passcode.strip()
+            else:
+                passcode = None
+
             # Get today's date as the createdDate
             created_date = datetime.now().date()
 
@@ -851,7 +858,7 @@ def createEvent():
                    "eventLimit", "eventBanners", ticketed,
                    "paidEvent", "eventLocation", "paymentLink",
                    "eventOwnerID", "eventOwnerType",
-                   "numAttendees", "createdDate")
+                   "numAttendees", "createdDate", passcode)
                 VALUES (
                   %s, %s, %s,
                   %s, %s,
@@ -859,7 +866,7 @@ def createEvent():
                   %s, %s, %s,
                   %s, %s, %s,
                   %s, %s,
-                  0, %s
+                  0, %s, %s
                 )
                 RETURNING id
                 ''',
@@ -870,7 +877,7 @@ def createEvent():
                     data['eventLimit'], event_banner_pg, data['ticketed'],
                     data.get('paidEvent'), data.get('eventLocation'), payment_link,
                     data['eventOwnerID'], data['eventOwnerType'],
-                    created_date
+                    created_date, passcode
                 )
             )
             new_event = cursor.fetchone()
@@ -1256,6 +1263,22 @@ def addAttendee():
             if not user_info:
                 return jsonify({'error': 'User not found'}), 400
 
+            # Step 3.5: Validate event passcode if required
+            event_passcode = event.get('passcode')
+            if event_passcode and event_passcode.strip():
+                # Event requires a passcode
+                user_passcode = data.get('passcode', '').strip()
+                
+                if not user_passcode:
+                    return jsonify({'error': 'This event requires a passcode.'}), 400
+                
+                # Normalize both passcodes for comparison (remove spaces and convert to lowercase)
+                normalized_event_passcode = ''.join(event_passcode.split()).lower()
+                normalized_user_passcode = ''.join(user_passcode.split()).lower()
+                
+                if normalized_event_passcode != normalized_user_passcode:
+                    return jsonify({'error': 'Event passcode wrong'}), 400
+
             # Step 4: Check if the user is already an attendee
             cursor.execute('SELECT * FROM "eventAttendees" WHERE "eventID" = %s AND "userID" = %s AND "attendeeType" = %s', (data['eventID'], data['userID'], data['userType'],))
             attendee = cursor.fetchone()
@@ -1493,6 +1516,7 @@ def getUserOrganisingEvents(user_id, user_type):
                 ev['eventBanners'] = event['eventBanners']
                 ev['eventLocation'] = event['eventLocation']
                 ev['numAttendees'] = event['numAttendees']
+                ev['eventPasscode'] = event['passcode']
 
                 return_data.append(ev)
 
