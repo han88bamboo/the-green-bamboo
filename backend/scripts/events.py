@@ -1329,19 +1329,28 @@ def addAttendee():
                 return jsonify({'error': 'User not found'}), 400
 
             # Step 3.5: Validate event passcode if required
+            # passcode is now TEXT[] array (e.g., ['Merlion65', 'Changi66']) or None/[]
             event_passcode = event.get('passcode')
-            if event_passcode and event_passcode.strip():
+            
+            # Check if event requires passcode: array exists, not empty, and has at least one valid (non-empty) passcode
+            if event_passcode and any(p and p.strip() for p in event_passcode):
                 # Event requires a passcode
                 user_passcode = data.get('passcode', '').strip()
                 
                 if not user_passcode:
                     return jsonify({'error': 'This event requires a passcode.'}), 400
                 
-                # Normalize both passcodes for comparison (remove spaces and convert to lowercase)
-                normalized_event_passcode = ''.join(event_passcode.split()).lower()
+                # Normalize user input (remove spaces and convert to lowercase)
                 normalized_user_passcode = ''.join(user_passcode.split()).lower()
                 
-                if normalized_event_passcode != normalized_user_passcode:
+                # Get all valid passcodes (filter out None, empty strings, and whitespace-only strings)
+                valid_passcodes = [p.strip() for p in event_passcode if p and p.strip()]
+                
+                # Normalize all valid passcodes for comparison
+                normalized_valid_passcodes = [''.join(p.split()).lower() for p in valid_passcodes]
+                
+                # Check if user passcode matches any of the valid passcodes
+                if normalized_user_passcode not in normalized_valid_passcodes:
                     return jsonify({'error': 'Event passcode wrong'}), 400
 
             # Step 3.6: Check attendance limit for this event organizer

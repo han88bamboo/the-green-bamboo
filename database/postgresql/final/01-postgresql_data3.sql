@@ -995,7 +995,7 @@ CREATE TABLE "events" (
     "eventOwnerType" VARCHAR(255), -- [!] "producers" or "venues" or "users"
     "numAttendees" INTEGER,
     "createdDate" TIMESTAMP,
-    "passcode" VARCHAR(50) DEFAULT NULL, -- Optional passcode for event access
+    "passcode" TEXT[] DEFAULT NULL, -- Optional passcode for event access (supports multiple passcodes)
     "signupOpen" BOOLEAN DEFAULT TRUE -- Indicates if event signup is open - NOT USED AT THE MOMENT
 );
 
