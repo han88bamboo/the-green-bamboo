@@ -195,7 +195,7 @@
 
                 <!-- PAST EVENTS -->
                 <div class="collapse d-md-block my-4" id="sidebarContent">
-                    <h5 class="text-start fw-bold my-3">Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h5>
+                    <h5 class="text-start fw-bold my-3">Your Past Events <button v-if="pastEvents.length > 5" type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pastEventsModal">View All</button></h5>
                     
                     <div v-for="event in pastEvents" class="event-club-box"  :key="event.eventID" style="background-color: white; overflow: hidden;">
                         
@@ -434,10 +434,10 @@
                   </div>
                   
                 <!-- Trending Events Carousel --> 
-                <div v-if="trendingEvents.length > 0" id="trendingEventsCarousel" class="carousel slide" data-bs-ride="true">
+                <div v-if="upcomingTrendingEvents.length > 0" id="trendingEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
                         <div
-                            v-for="(chunk, chunkIndex) in trendingEvents.reduce((acc, cur, i) => {
+                            v-for="(chunk, chunkIndex) in upcomingTrendingEvents.reduce((acc, cur, i) => {
                                 if (i % 2 === 0) acc.push([cur]);
                                 else acc[acc.length - 1].push(cur);
                                 return acc;
@@ -511,22 +511,43 @@
                     
                 </div>
 
-                <!--- Error message for error retrieving recent activity or no recent activtiy found -->
-                <div v-if="trendingEventsError" class="mt-3">
+                <!-- Message and Add Your Event button section (shows only when no trending events found) -->
+                <div v-if="trendingEventsError === 'Watch this space for trending events!'" class="mt-3">
+                    <!-- Message above the button -->
+                    <div class="text-center mb-3">
+                        <h6 mobile-fs-7>{{ trendingEventsError }}</h6>
+                    </div>
+                    <!-- Add Your Event button -->
+                    <div class="d-flex justify-content-center">
+                        <button v-if="userType !== 'defaultUser'" class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                        @click="handleCreateEventClick">
+                            + Add Your Event
+                        </button>
+                        <button v-else
+                        class="btn primary-btn-less-round-blue btn-lg mobile-rating-smaller-text-2 fw-bold"
+                        @click="$router.push('/login')">
+                            + Add Your Event
+                        </button>
+                    </div>
+                    <hr class="mt-3">
+                </div>
+
+                <!--- Error message for other trending events errors -->
+                <div v-if="trendingEventsError && trendingEventsError !== 'Watch this space for trending events!'" class="mt-3">
                     <h6 mobile-fs-7>{{ trendingEventsError }}</h6>
                     <hr>
                 </div>
 
-                <!-- Events from Brands/Venues You Follow  --> 
+                <!-- Past Trending Events -->
                 <div class="d-flex align-items-center justify-content-between">
-                    <h4 class="fw-bold mb-0 text-start mobile-fs-5">Events from Brands & Venues You Follow</h4>
+                    <h4 class="fw-bold mb-0 text-start mobile-fs-5 text-muted">Past Trending Events</h4>
                     <div class="d-flex gap-2">
-                      <!-- Left arrow -->
+                      <!-- Left Arrow in Circle -->
                       <button
                         class="d-flex align-items-center justify-content-center rounded-circle border-0"
                         style="width: 36px; height: 36px; background-color: #f0f0f0;"
                         type="button"
-                        data-bs-target="#followedEventsCarousel"
+                        data-bs-target="#pastTrendingEventsCarousel"
                         data-bs-slide="prev"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
@@ -534,12 +555,12 @@
                         </svg>
                       </button>
                   
-                      <!-- Right arrow -->
+                      <!-- Right Arrow in Circle -->
                       <button
                         class="d-flex align-items-center justify-content-center rounded-circle border-0"
                         style="width: 36px; height: 36px; background-color: #f0f0f0;"
                         type="button"
-                        data-bs-target="#followedEventsCarousel"
+                        data-bs-target="#pastTrendingEventsCarousel"
                         data-bs-slide="next"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
@@ -547,13 +568,13 @@
                         </svg>
                       </button>
                     </div>
-                </div>
-                
-                
-                <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
+                  </div>
+                  
+                <!-- Past Trending Events Carousel --> 
+                <div v-if="pastTrendingEventsComputed.length > 0" id="pastTrendingEventsCarousel" class="carousel slide" data-bs-ride="true">
                     <div class="carousel-inner">
                         <div
-                            v-for="(chunk, chunkIndex) in followedEvents.reduce((acc, cur, i) => {
+                            v-for="(chunk, chunkIndex) in pastTrendingEventsComputed.reduce((acc, cur, i) => {
                                 if (i % 2 === 0) acc.push([cur]);
                                 else acc[acc.length - 1].push(cur);
                                 return acc;
@@ -567,22 +588,25 @@
                                 :key="event.eventID"
                                 class="col-md-6 px-3"
                                 >
-                                <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
-                                    <!-- Banner -->
-                                    <div class="banner-stack mb-3">
-                                    <!-- blurred background -->
-                                    <img
-                                        class="banner-bg"
-                                        :src="event.eventBanners?.[0] || defaultEventBanner"
-                                        alt=""
-                                        aria-hidden="true"
-                                    />
-                                    <!-- foreground full image -->
-                                    <img
-                                        class="banner-fore"
-                                        :src="event.eventBanners?.[0] || defaultEventBanner"
-                                        :alt="event.eventName"
-                                    />
+                                <div class="rounded-4 shadow-sm p-3 h-100 past-event-card" style="background-color: white;">
+                                    <!-- Event Image with overlay -->
+                                    <div class="position-relative mb-3">
+                                        <div class="banner-stack mb-3">
+                                        <!-- blurred background -->
+                                        <img
+                                            class="banner-bg"
+                                            :src="event.eventBanners?.[0] || defaultEventBanner"
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
+                                        <!-- foreground full image -->
+                                        <img
+                                            class="banner-fore"
+                                            :src="event.eventBanners?.[0] || defaultEventBanner"
+                                            :alt="event.eventName"
+                                        />
+                                        </div>
+                                        <div class="past-event-overlay"></div>
                                     </div>
 
                                     <!-- Event Name -->
@@ -596,7 +620,7 @@
                                     </p>
 
                                     <!-- Event Details -->
-                                    <p class="text-success small mb-2">
+                                    <p class="text-muted small mb-2">
                                     {{ formatDate(event.eventStartDate) }} |
                                     <span v-if="event.eventStartTime && event.eventEndTime">
                                         {{ formatTime(event.eventStartTime) }} -
@@ -621,36 +645,142 @@
                                 </div>
                                 </div>
                             </div>
+                            </div>
+ 
+                    </div>
+                    
+                </div>
+
+                <!--- Error message for past trending events -->
+                <div v-if="pastTrendingEventsError" class="mt-3">
+                    <h6 mobile-fs-7>{{ pastTrendingEventsError }}</h6>
+                    <hr>
+                </div>
+
+                <div class="p-4 rounded-4" style="border: 1px solid rgb(211, 211, 211);">
+                    <!-- Events from Brands/Venues You Follow  --> 
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h4 class="fw-bold mb-0 text-start mobile-fs-5">Events from Brands & Venues You Follow</h4>
+                        <div class="d-flex gap-2">
+                        <!-- Left arrow -->
+                        <button
+                            class="d-flex align-items-center justify-content-center rounded-circle border-0"
+                            style="width: 36px; height: 36px; background-color: #f0f0f0;"
+                            type="button"
+                            data-bs-target="#followedEventsCarousel"
+                            data-bs-slide="prev"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L6.707 7l4.647 4.646a.5.5 0 0 1-.708.708l-5-5a.5.5 0 0 1 0-.708l5-5a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </button>
+                    
+                        <!-- Right arrow -->
+                        <button
+                            class="d-flex align-items-center justify-content-center rounded-circle border-0"
+                            style="width: 36px; height: 36px; background-color: #f0f0f0;"
+                            type="button"
+                            data-bs-target="#followedEventsCarousel"
+                            data-bs-slide="next"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="black" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l5 5a.5.5 0 0 1 0 .708l-5 5a.5.5 0 0 1-.708-.708L9.293 7 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                        </button>
                         </div>
                     </div>
-                </div>
+                    
+                    
+                    <div v-if="followedEvents.length > 0" id="followedEventsCarousel" class="carousel slide" data-bs-ride="true">
+                        <div class="carousel-inner">
+                            <div
+                                v-for="(chunk, chunkIndex) in followedEvents.reduce((acc, cur, i) => {
+                                    if (i % 2 === 0) acc.push([cur]);
+                                    else acc[acc.length - 1].push(cur);
+                                    return acc;
+                                }, [])"
+                                :key="chunkIndex"
+                                :class="['carousel-item', chunkIndex === 0 ? 'active' : '']"
+                                >
+                                <div class="row py-4 justify-content-center">
+                                    <div
+                                    v-for="event in chunk"
+                                    :key="event.eventID"
+                                    class="col-md-6 px-3"
+                                    >
+                                    <div class="rounded-4 shadow-sm p-3 h-100" style="background-color: white;">
+                                        <!-- Banner -->
+                                        <div class="banner-stack mb-3">
+                                        <!-- blurred background -->
+                                        <img
+                                            class="banner-bg"
+                                            :src="event.eventBanners?.[0] || defaultEventBanner"
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
+                                        <!-- foreground full image -->
+                                        <img
+                                            class="banner-fore"
+                                            :src="event.eventBanners?.[0] || defaultEventBanner"
+                                            :alt="event.eventName"
+                                        />
+                                        </div>
 
-                <div v-if="followedEvents.length == 0 && !followedEventsError" class="mt-3 text-start" >
-                    <h5 class="mobile-fs-6">Login to view events from brands/venues you follow.</h5>
-                </div>
+                                        <!-- Event Name -->
+                                        <p class="fw-bold mb-1">
+                                        <router-link
+                                            :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                            class="text-black fs-6 text-decoration-none"
+                                        >
+                                            {{ event.eventName }}
+                                        </router-link>
+                                        </p>
 
-                <!-- Error message for error retrieving followed events -->
-                <div v-if="followedEventsError" class="mt-3 text-start">
-                    <h6 mobile-fs-7>{{ followedEventsError }}</h6>
-                </div>
+                                        <!-- Event Details -->
+                                        <p class="text-success small mb-2">
+                                        {{ formatDate(event.eventStartDate) }} |
+                                        <span v-if="event.eventStartTime && event.eventEndTime">
+                                            {{ formatTime(event.eventStartTime) }} -
+                                            {{ formatTime(event.eventEndTime) }} |
+                                        </span>
+                                        <span v-else-if="event.eventStartTime">
+                                            {{ formatTime(event.eventStartTime) }} |
+                                        </span>
+                                        {{ event.eventType }}
+                                        </p>
 
+                                        <!-- Description -->
+                                        <p class="text-muted small mb-2">{{ plainText(event.eventDesc) }}</p>
+
+                                        <!-- CTA -->
+                                        <router-link
+                                        :to="{ name: 'eventview', params: { eventID: event.eventID, eventName: slugify(event.eventName) } }"
+                                        class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7"
+                                        >
+                                        View Event
+                                        </router-link>
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="followedEvents.length == 0 && !followedEventsError" class="mt-3 text-start" >
+                        <h5 class="mobile-fs-6">Login to view events from brands/venues you follow.</h5>
+                    </div>
+
+                    <!-- Error message for error retrieving followed events -->
+                    <div v-if="followedEventsError" class="mt-3 text-start">
+                        <h6 mobile-fs-7>{{ followedEventsError }}</h6>
+                    </div>
+                </div>
                 <!-- Events You're Organising & Attending Section -->
-                <div class="mt-5">
+                <div class="mt-5 p-4 rounded-4" style="border: 1px solid #d3d3d3;">
                     <h4 class="fw-bold mb-3 text-start mobile-fs-5">Your Events</h4>
                     
                     <!-- Tab Navigation -->
                     <div class="d-flex mb-3">
-                        <button
-                            class="btn mx-1 fw-bold no-hover"
-                            :class="{
-                                'mobile-toggle-button-producer-profile active-toggle-button': activeUserEventsTab === 'organising',
-                                'mobile-toggle-button-producer-profile inactive-toggle-button': activeUserEventsTab !== 'organising',
-                            }"
-                            @click="switchUserEventsTab('organising')"
-                        >
-                            Events You're Organising
-                        </button>
-                        
                         <button
                             class="btn mx-1 fw-bold no-hover"
                             :class="{
@@ -659,10 +789,21 @@
                             }"
                             @click="switchUserEventsTab('attending')"
                         >
-                            Events You're Attending
+                            As Participant
+                        </button>
+                        
+                        <button
+                            class="btn mx-1 fw-bold no-hover"
+                            :class="{
+                                'mobile-toggle-button-producer-profile active-toggle-button': activeUserEventsTab === 'organising',
+                                'mobile-toggle-button-producer-profile inactive-toggle-button': activeUserEventsTab !== 'organising',
+                            }"
+                            @click="switchUserEventsTab('organising')"
+                        >
+                            As Organiser
                         </button>
                     </div>
-
+                
                     <!-- Tab Content -->
                     <div>
                         <!-- Events You're Organising Tab -->
@@ -1015,6 +1156,8 @@ export default {
 
             trendingEvents: [],
             trendingEventsError: null,
+            pastTrendingEvents: [],
+            pastTrendingEventsError: null,
 
             followedEvents: [],
             followedEventsError: null,
@@ -1029,7 +1172,7 @@ export default {
             organisingEventsError: null,
             attendingEvents: [],
             attendingEventsError: null,
-            activeUserEventsTab: 'organising',
+            activeUserEventsTab: 'attending',
         }
     },
     methods: {
@@ -1124,11 +1267,30 @@ export default {
             }
             catch (error) {
                 if (error.response.status == 404) {
-                    this.trendingEventsError = "No trending events found.";
+                    this.trendingEventsError = "Watch this space for trending events!";
                     this.dataLoaded = true;
                 }
                 else {
                     this.trendingEventsError = "Error retrieving trending events";
+                }
+                console.error(error);
+            }
+        },
+
+        // Function to get past trending events
+        async getPastTrendingEvents() {
+            try {
+                const response = await this.$axios.get(`${process.env.VUE_APP_API_URL}/events/getPastTrendingEvents`);
+                this.pastTrendingEvents = response.data.events;
+                this.dataLoaded = true;
+            }
+            catch (error) {
+                if (error.response.status == 404) {
+                    this.pastTrendingEventsError = "No past trending events found.";
+                    this.dataLoaded = true;
+                }
+                else {
+                    this.pastTrendingEventsError = "Error retrieving past trending events";
                 }
                 console.error(error);
             }
@@ -1391,9 +1553,20 @@ export default {
             }
         },
     },
+    computed: {
+        // Since backend now only returns upcoming events, no filtering needed
+        upcomingTrendingEvents() {
+            return this.trendingEvents;
+        },
+        // Return past trending events from separate API call
+        pastTrendingEventsComputed() {
+            return this.pastTrendingEvents;
+        }
+    },
     mounted() {
         this.getRecommendEvents();
         this.getTrendingEvents();
+        this.getPastTrendingEvents();
         // Get the account id and type of the user
         this.userID = localStorage.getItem("88B_accID");
         let userType = localStorage.getItem("88B_accType");

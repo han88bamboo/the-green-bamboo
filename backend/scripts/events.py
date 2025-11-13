@@ -281,8 +281,8 @@ def getTop6Events():
 
     try:
         with db_manager.get_cursor() as cursor:
-            # Step 1: Get the top 6 events
-            cursor.execute('SELECT * FROM events ORDER BY "numAttendees" DESC LIMIT 6')
+            # Step 1: Get the top 6 upcoming events
+            cursor.execute('SELECT * FROM events WHERE "eventStartDate" >= CURRENT_DATE ORDER BY "numAttendees" DESC LIMIT 6')
             events = cursor.fetchall()
 
             if not events:
@@ -310,6 +310,61 @@ def getTop6Events():
                 top_event['eventBanners'] = event['eventBanners']
             
                 return_data.append(top_event)
+            
+            return jsonify({
+                'events': return_data
+            }), 200
+
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
+# -----------------------------------------------------------------------------------------
+# [GET] Get past trending events (within last 24 months, ordered by attendees)
+# Purpose: Get past trending events for Past Trending Events section
+# Used: Events.vue (inside views/Users folder)
+# Output: Possible return codes [200 - Retrieval success, 404 - No events, 500 - Internal server error]
+@blueprint.route('/getPastTrendingEvents', methods=['GET'])
+def getPastTrendingEvents():
+    return_data = []
+
+    try:
+        with db_manager.get_cursor() as cursor:
+            # Get past events from last 24 months, ordered by attendees
+            cursor.execute('''
+                SELECT * FROM events 
+                WHERE "eventStartDate" < CURRENT_DATE 
+                AND "eventStartDate" >= CURRENT_DATE - INTERVAL '24 months'
+                ORDER BY "numAttendees" DESC
+            ''')
+            events = cursor.fetchall()
+
+            if not events:
+                return jsonify({'error': 'No past trending events'}), 404
+
+            # Extract relevant information
+            for event in events:
+                past_event = {}
+                past_event['eventID'] = event['id']
+                past_event['eventName'] = event['eventName']
+                past_event['eventDesc'] = event['eventDesc']
+                past_event['eventType'] = event['eventType']
+                past_event['eventStartDate'] = event['eventStartDate'].strftime('%Y-%m-%d')
+
+                if event['eventEndDate'] is not None:
+                    past_event['eventEndDate'] = event['eventEndDate'].strftime('%Y-%m-%d')
+                
+                if event['eventStartTime'] is not None:
+                    past_event['eventStartTime'] = event['eventStartTime'].strftime('%H:%M')
+
+                if event['eventEndTime'] is not None:
+                    past_event['eventEndTime'] = event['eventEndTime'].strftime('%H:%M')
+
+                past_event['numAttendees'] = event['numAttendees']
+                past_event['eventBanners'] = event['eventBanners']
+            
+                return_data.append(past_event)
             
             return jsonify({
                 'events': return_data
