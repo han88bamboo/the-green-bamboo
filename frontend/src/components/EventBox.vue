@@ -28,7 +28,7 @@
 
         <!-- Title if not current user -->
         <div v-else>
-            <h4 class="fw-bold text-start mb-0">Upcoming Events</h4>
+            <h4 class="fw-bold text-start mb-0 mobile-fs-5">Upcoming Events</h4>
             <small v-if="events.length > 0" class="text-muted">
                 {{ events.length }} upcoming event{{ events.length === 1 ? '' : 's' }}
                 <span 
@@ -78,7 +78,7 @@
         <!-- List of events -->
         <div class="row mt-1">
             <!-- No events added yet message -->
-            <div v-if="events.length === 0" class="col-12">
+            <div v-if="events.length === 0" class="col-12 text-start fw-normal mt-1">
                 <p>No events added yet.</p>
             </div>
 
