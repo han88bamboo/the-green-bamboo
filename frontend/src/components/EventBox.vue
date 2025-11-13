@@ -213,6 +213,13 @@
                                     <p class="fw-normal mobile-rating-smaller-text-2 text-center" style="color: #027562">
                                         {{ formatDate(event.eventStartDate) }}<span v-if="event.eventStartTime">, {{ formatTime(event.eventStartTime) }}</span><span v-if="event.eventEndTime"> - {{ formatTime(event.eventEndTime) }}</span>
                                     </p>
+
+                                    <!-- View Event button -->
+                                    <div class="text-center mt-1">
+                                        <router-link :to="'/eventview/' + event.eventID + '/' + slugify(event.eventName)" class="btn btn-read-more btn-sm fw-bold rounded-pill mobile-pb-1 mobile-pt-1 mobile-mb-2 mobile-fs-7">
+                                            View Event
+                                        </router-link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
