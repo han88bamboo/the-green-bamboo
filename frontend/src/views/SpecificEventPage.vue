@@ -95,7 +95,9 @@
                         <div class="d-md-flex justify-content-between align-items-start mt-2">
                             <div class="flex-shrink-0 me-3 text-start mb-0" style="min-width: 0;">
                                 <!-- Event Name -->
-                                <h4 class="fw-bold mobile-fs-5">{{ event.eventName }}</h4>
+                                <h4 class="fw-bold mobile-fs-5">
+                                    <span v-if="isEventEnded" class="text-muted me-2">[Event Ended]</span>{{ event.eventName }}
+                                </h4>
                                         
                                 <!-- Same Start and End Date -->
                                 <div v-if="event.eventStartDate == event.eventEndDate" class="m-0 p-0" style="color:#027562">
@@ -120,7 +122,7 @@
                             <!-- Buttons: RSVP + Invite -->
                             <div class="d-flex gap-1 flex-shrink-0 mobile-view-hide">
                             <!-- RSVP Button -->
-                                <div>
+                                <div v-if="!isEventEnded">
                                     <div v-if="event.paidEvent == false">
                                         <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                                 class="btn primary-btn-less-round-blue fw-bold"
@@ -142,7 +144,7 @@
                                 </div>
 
                                 <!-- UnRSVP Button -->
-                                <div v-if="rsvpStatus && !selfView">
+                                <div v-if="rsvpStatus && !selfView && !isEventEnded">
                                     <button class="btn btn-danger fw-bold" data-bs-toggle="modal" data-bs-target="#unRSVPConfirmationModal">Withdraw RSVP</button>
                                 </div>                                
 
@@ -155,14 +157,14 @@
                                     <polyline points="16 6 12 2 8 6" />
                                     <line x1="12" y1="2" x2="12" y2="15" />
                                     </svg>
-                                    <span>Invite your friends!</span>
+                                    <span>Invite/Share with friends!</span>
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="d-flex gap-1 flex-shrink-0 mobile-view-show mb-3 mt-0">
                             <!-- RSVP Button -->
-                                <div>
+                                <div v-if="!isEventEnded">
                                     <div v-if="event.paidEvent == false">
                                     <button v-if="attendees.length <= event.eventLimit && !rsvpStatus"
                                             class="btn primary-btn-less-round-blue fw-bold"
@@ -262,8 +264,9 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. Entry is free, but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
@@ -272,8 +275,9 @@
                             <div v-else> 
                                 <p class="mobile-rating-smaller-text-2 mx-1 mobile-view-show">This event is ticketed. RSVP and purchase your ticket!</p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
-                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                             </div>
                             
                         </div>
@@ -292,7 +296,7 @@
                                 <line x1="12" y1="2" x2="12" y2="15" />
                                 </svg>
                                 <!-- Invite text -->
-                                <span class="fw-bold">Invite your friends!</span>
+                                <span class="fw-bold">Invite/Share with friends!</span>
                             </button>
                         </div>
 
@@ -425,8 +429,9 @@
                             <div v-if="event.paidEvent == false">
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. Entry is free but click below to RSVP and save your spot!</p>
                                 <!-- button to RSVP -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
-                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                                 <p v-if="attendees.length >= event.eventlimit && !rsvpStatus" class="text-danger mobile-rating-smaller-text-2">Event is full. No more RSVPs allowed.</p>
                                 <p v-if="rsvpStatus" class="text-danger mobile-rating-smaller-text-2">You have already RSVPed for this event.</p>
                             </div>
@@ -435,8 +440,9 @@
                             <div v-else> 
                                 <p class="fw-bold mobile-rating-smaller-text-2">This event is ticketed. RSVP and purchase your ticket! <Span class="text-muted">(Payment on separate system.)</Span></p>
                                 <!-- button to purchase ticket -->
-                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
-                                <p v-if="!isUserLoggedIn" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <button v-if="attendees.length <= event.eventLimit && !rsvpStatus && !isEventEnded" class="btn primary-btn-less-round-blue"  style="font-weight:bold" @click="rsvpEvent" :disabled="rsvpButtonStatus" :data-bs-toggle="isUserLoggedIn ? 'modal' : ''" :data-bs-target="isUserLoggedIn ? '#promptPurchaseModal' : ''">I'm interested</button>
+                                <p v-if="!isUserLoggedIn && !isEventEnded" class="mt-1" style="color:#0002FF; font-weight:bolder;">Log In to RSVP!</p>
+                                <p v-if="isEventEnded" class="mt-1 text-muted">This event has ended. RSVPs are no longer available.</p>
                             </div>
                             
                         </div>
@@ -961,6 +967,18 @@ export default {
     computed: {
         isUserLoggedIn() {
             return this.userType && this.userType !== 'defaultUser' && this.userID;
+        },
+        isEventEnded() {
+            if (!this.event.eventStartDate) return false;
+            
+            const currentDate = new Date();
+            const currentDateString = currentDate.toISOString().split('T')[0];
+            
+            // If there's an end date, use that; otherwise use start date
+            const eventEndDate = this.event.eventEndDate || this.event.eventStartDate;
+            
+            // Compare dates - event is ended if current date is after the event end date
+            return currentDateString > eventEndDate;
         }
     },
     methods: {
