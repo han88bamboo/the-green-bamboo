@@ -2181,24 +2181,24 @@
 
             <div class="dx-events__body w-100">
               <article class="dx-event">
-                <a class="dx-event__media" href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025" aria-label="Champagniac Singapore 2025">
+                <a class="dx-event__media" href="https://drink-x.com/profile/venue/99/whiskylivesingapore2025" aria-label="Whisky Live Singapore 2025">
                   <!-- Replace with your real image -->
                   <img
                     class="dx-event__img"
-                    src="https://tf-drinkx-prod-fe-images.s3.ap-southeast-1.amazonaws.com/87edb4b1-c96f-4f26-b6f5-1d59545b2983.jpg"
-                    alt="Champagniac Singapore 2025 poster"
+                    src="https://cdn.shopify.com/s/files/1/0353/9510/9003/files/imgi_1_509077392_18366084808196066_4416648360979910106_n.jpg?v=1758609153"
+                    alt="Whisky Live Singapore 2025 poster"
                     loading="lazy"
                   />
                 </a>
 
                 <div class="dx-event__content">
                   <h3 class="dx-event__name">
-                    <a href="https://www.drink-x.com/profile/venue/108/champagniacsingapore2025" >
-                      Champagniac Singapore 2025
+                    <a href="https://drink-x.com/profile/venue/99/whiskylivesingapore2025" >
+                      Whisky Live Singapore 2025
                     </a>
                   </h3>
-                  <p class="dx-event__meta"><em>8th – 9th November 2025</em></p>
-                  <p class="dx-event__desc">Taste 100+ Champagnes</p>
+                  <p class="dx-event__meta"><em>22nd – 23rd November 2025</em></p>
+                  <p class="dx-event__desc">Taste 300+ Whiskies, Rums, Tequila and More!</p>
                 </div>
               </article>
             </div>

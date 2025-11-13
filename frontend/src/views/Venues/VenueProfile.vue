@@ -397,17 +397,14 @@
                     <div class="col-lg-9 col-12 text-start ps-lg-5 ps-1 mobile-col-7">
                         <div class="row">
 
-
                             <!-- Country -->
                             <div class="col-12 col-lg-7 pe-0 ps-0">
-
                                 <!-- [if] editing profile -->
                                 <div v-if="editProfile">
                                     <label for="editCountryInput"> Country of Origin </label>
                                     <input type="text" class="form-control mb-3" id="editCountryInput"
                                         aria-describedby="originLocation" v-model="editCountry">
                                 </div>
-
                                 <!-- [else] not editing -->
                                 <div v-else>
                                     <h5 class="text-body-secondary mobile-view-hide">{{ targetVenue['originLocation'] }}<span v-if="targetVenue['originLocation'] && (targetVenue['venueMainType'] || targetVenue['venueSubType'])">, </span><i><span v-if="targetVenue['venueMainType']">{{ targetVenue["venueMainType"] }}</span><span v-if="targetVenue['venueMainType'] && targetVenue['venueSubType']">, </span><span v-if="targetVenue['venueSubType']">{{ targetVenue["venueSubType"] }}</span></i>
@@ -572,8 +569,8 @@
 
                         </div>
 
-                        <!-- ------- START Producer ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
-                        <!-- Producer -->
+                        <!-- ------- START Venue ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                        <!-- Venue Name -->
                         <div class="row">
                             <!--<div class="col-12"> -->
                             <!-- [if] editing -->
@@ -592,7 +589,7 @@
                             <!--</div>-->
                         </div>
 
-                        <!-- ------- END Producer / START Venue Type   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
+                        <!-- ------- END Venue Nae / START Venue Type   ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
 
                         <!-- Venue Type -->
                         <div class="row">
@@ -692,35 +689,61 @@
                                 </a>
                             </span>
                         </p>
+                        <!-- Average Rating Display -->
+                        <div class="d-flex align-items-center mobile-view-hide">
+                            <p class="text-start text-body-secondary fw-bold m-0 me-2"
+                            style="font-weight: bold; color: black;">
+                            {{ getAverageVenueRatings() }}
+                            <span style="color: #f0b358">★</span>
+                            ({{ filteredVenueReviews.length }} {{ filteredVenueReviews.length === 1 ? 'Review' : 'Reviews' }})
+                            </p>
+                        </div>
 
                         <!-- Desktop Only Rating and Follow Section -->
                         <div v-if="!editProfile" class="row mt-3 d-none d-lg-block">
                             <div class="col-12">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <!-- Average Rating Display -->
-                                    <div class="d-flex align-items-center">
-                                        <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 me-2"
-                                            style="font-weight: bold; color: black;">
-                                            {{ getAverageVenueRatings() }}
-                                            <span style="color: #f0b358">★</span>
-                                            ({{ filteredVenueReviews.length }} {{ filteredVenueReviews.length === 1 ? 'Review' : 'Reviews' }})
-                                        </h4>
-                                    </div>
-                                    
+                                <div class="d-flex align-items-center gap-2">
                                     <!-- Follow Button -->
                                     <div class="d-flex gap-2">
                                         <button v-if="viewerType === 'user' && !userFollowing"
-                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            class="btn btn-md primary-btn-less-round-blue text-nowrap"
                                             @click="editFollow('follow')" style="font-weight: bold;">
                                             + Follow Venue
                                         </button>
                                         <button v-else-if="viewerType === 'user' && userFollowing"
-                                            class="btn btn-lg primary-btn-less-round-blue text-nowrap"
+                                            class="btn btn-md primary-btn-less-round-blue text-nowrap"
                                             @click="editFollow('unfollow')"
                                             style="font-weight: bold; background-color:rgb(249, 115, 106);">
                                             Following
                                         </button>
                                     </div>
+
+                                                                <!-- Review button: logged in + not editing -->
+                            <button v-if="userType === 'user' && userID !== 'defaultUser' && !inEdit"
+                                class="btn btn-md primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                data-bs-toggle="modal" data-bs-target="#venueReviewModal" style="font-weight: bold;">
+                                Review Venue
+                            </button>
+                            <!-- Logged-out users -->
+                            <button v-else-if="userType !== 'user' || userID === 'defaultUser'"
+                                class="btn btn-md primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                @click="$router.push('/login')" style="font-weight: bold;">
+                                Review Venue
+                            </button>
+
+                            <!-- Review button: logged in + editing -->
+                            <button v-if="userType === 'user' && userID !== 'defaultUser' && inEdit"
+                                class="btn btn-md primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                style="font-weight: bold; background-color: rgb(249, 115, 106);">
+                                Venue Reviewed
+                            </button>
+                            <button v-if="hasPdfMenu" class="d-lg-none btn btn-custom-orange-inverted btn-md text-nowrap mobile-rating-smaller-text-2" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#diningMenuModal"
+                                    @click="resetPdfNavigation"
+                                    style="font-weight: bold;">
+                                {{ diningMenuText }}
+                            </button>
                                 </div>
                             </div>
                         </div>
@@ -1520,20 +1543,20 @@
 
                             <!-- Review button: logged in + not editing -->
                             <button v-if="userType === 'user' && userID !== 'defaultUser' && !inEdit"
-                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                class="btn d-lg-none primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 data-bs-toggle="modal" data-bs-target="#venueReviewModal" style="font-weight: bold;">
                                 Review Venue
                             </button>
                             <!-- Logged-out users -->
                             <button v-else-if="userType !== 'user' || userID === 'defaultUser'"
-                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                class="btn d-lg-none primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 @click="$router.push('/login')" style="font-weight: bold;">
                                 Review Venue
                             </button>
 
                             <!-- Review button: logged in + editing -->
                             <button v-if="userType === 'user' && userID !== 'defaultUser' && inEdit"
-                                class="btn btn-lg primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
+                                class="btn d-lg-none primary-btn-less-round-blue text-nowrap mobile-rating-smaller-text-2"
                                 style="font-weight: bold; background-color: rgb(249, 115, 106);">
                                 Venue Reviewed
                             </button>
@@ -1560,6 +1583,20 @@
                             </button>
                         </template>
 
+                        <!-- Mobile Events Toggle Button (only visible below 992px) -->
+                        
+                            <button 
+                                class="d-lg-none btn btn-secondary btn-lg text-white text-start d-flex justify-content-between align-items-center mobile-rating-smaller-text-2 amenities-toggle-btn"
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#eventsCollapse" 
+                                aria-expanded="false" 
+                                aria-controls="eventsCollapse"
+                            >
+                                <span class="fw-bold">Events</span>
+                                <i class="bi bi-chevron-down amenities-chevron ms-1"></i>
+                            </button>
+                        
                         </div>
                     </div>
 
@@ -1813,6 +1850,12 @@
                             </a>
                         </div>-->
                     </div>
+
+                    <!-- Events Details -->
+                    <div class="col-12 mt-3 collapse mobile-view-show" id="eventsCollapse">
+                        <EventBox :selfView="selfView" :targetUserID="targetVenue.id" targetUserType="venue" :targetUserName="targetVenue.venueName" />
+                    </div>
+                    <!-- Map View -->
 
                 </div>
 
@@ -2507,7 +2550,6 @@
                             displayName="Recently Added" :user="userInfo" :listing="loadedListings"
                             @icon-clicked="handleIconClick" />
                         <br>
-
                     </div>
 
                     <!-- ------- END View Sorted Listings ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
@@ -2875,7 +2917,7 @@
                 <div v-if="contentMode == 'recentActivity'">
                     <h4 class="text-start text-body-secondary fs-4 fw-bold m-0 mobile-fs-6 mb-2"
                         style="font-weight: bold; color: black;">
-                        Drinks tasted at this Venue
+                        Drinks Tasted at this Venue
                     </h4>
 
                     <div class="row text-start" style="padding-left: 0.75em">
@@ -3453,36 +3495,16 @@
 
                     <!-- ------- END Q & A / Events Details ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ -->
                     <!-- Events Details -->
-                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-mt-4">
+                    <div class="col-xl-12 col-lg-3 col-md-6 col-12 mobile-view-hide">
                         <EventBox :selfView="selfView" :targetUserID="targetVenue.id" targetUserType="venue" :targetUserName="targetVenue.venueName" />
                     </div>
                     <!-- Map View -->
                     <!-- <div class="row"> -->
                     <div class="col-xl-12 col-lg-3 col-md-6 col-12">
                         <div class="square primary-square-green-outline rounded p-3 mb-3">
-                            <!--tzh changed secondary-square to primary-square-green-outline-->
 
                             <!-- Header -->
                             <h4 class="text-start" style="font-weight:bold;"> Venue Location </h4>
-
-
-                            <!-- <div class="pb-1 text-start" v-if="selfView || powerView">
-                                
-                                <button v-if="!editAddress" type="button" class="btn tertiary-btn rounded-0 reverse-clickable-text" @click="editAddress = true">
-                                    Edit
-                                </button>
-                                
-                                
-                                <button v-if="editAddress" type="button" class="btn success-btn rounded-0 reverse-clickable-text" @click="saveAddress" :disabled="!(newAddress.trim().length > 0)">
-                                    Save
-                                </button>
-                                <button v-if="editAddress" type="button" class="btn secondary-btn rounded-0 reverse-clickable-text ms-1" @click="editAddress = false">
-                                    Cancel
-                                </button>
-                                <button v-if="editAddress" type="button" class="btn btn-danger rounded-0 reverse-clickable-text ms-1" @click="newAddress = targetVenue['address']">
-                                    Reset
-                                </button>
-                            </div> -->
                             <!-- Buttons -->
                             <div class="pb-1 text-start" v-if="selfView || powerView">
                                 <!-- [if] not editing -->
@@ -9517,16 +9539,16 @@ letter-spacing: 1px;
 
 /* Collapsed state: dark background, white text */
 .amenities-toggle-btn[aria-expanded="false"] {
-    background-color: #6c757d !important;
+    background-color: #027562 !important;
     color: white !important;
-    border-color: #6c757d !important;
+    border-color: #027562 !important;
 }
 
 /* Expanded state: light background, dark text with border */
 .amenities-toggle-btn[aria-expanded="true"] {
     background-color: white !important;
-    color: #6c757d !important;
-    border: 1px solid #6c757d !important;
+    color:#027562 !important;
+    border: 1px solid #027562 !important;
 }
 
 /* Chevron rotation for amenities toggle */
