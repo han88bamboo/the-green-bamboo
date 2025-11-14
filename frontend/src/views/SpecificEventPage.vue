@@ -586,6 +586,24 @@
         </div>
         <!-- UnRSVP Confirmation Modal End -->
 
+        <!-- RSVP Success Modal Start -->
+        <div class="modal fade" id="rsvpSuccessModal" tabindex="-1" aria-labelledby="rsvpSuccessModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rsvpSuccessModalLabel">Registration Success!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="fw-bold">Registration success! You can view all of the masterclasses you've signed up for on the <router-link to="/events/view" class="text-decoration-underline" style="color:#027562" @click="closeModalAndNavigate">Find Events page</router-link>.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- RSVP Success Modal End -->
 
         <!-- Attendee Information Modal Start -->
         <div class="modal fade" id="attendeeInfoModal" tabindex="-1" aria-labelledby="attendeeInfoModalLabel" aria-hidden="true">
@@ -672,7 +690,7 @@
 
                             <!-- Event Passcode -->
                             <div class="mb-3">
-                                <label for="passcode" class="form-label fw-bold">Event Passcode</label>
+                                <label for="passcode" class="form-label fw-bold">Event Passcode <span class="text-danger">*</span></label>
                                 <input 
                                     type="text" 
                                     class="form-control" 
@@ -1802,6 +1820,30 @@ export default {
             this.earnedBadges = [];
         },
 
+        // Show RSVP success modal using Bootstrap's declarative approach
+        showRSVPSuccessModal() {
+            // Create a temporary trigger button and click it
+            setTimeout(() => {
+                const tempTrigger = document.createElement('button');
+                tempTrigger.setAttribute('data-bs-toggle', 'modal');
+                tempTrigger.setAttribute('data-bs-target', '#rsvpSuccessModal');
+                tempTrigger.style.display = 'none';
+                document.body.appendChild(tempTrigger);
+                tempTrigger.click();
+                document.body.removeChild(tempTrigger);
+            }, 500); // Small delay to ensure toast appears first
+        },
+
+        // Close modal and navigate to events page
+        closeModalAndNavigate() {
+            // Close the modal first
+            const closeButton = document.querySelector('#rsvpSuccessModal [data-bs-dismiss="modal"]');
+            if (closeButton) {
+                closeButton.click();
+            }
+            // Navigation will happen automatically due to router-link
+        },
+
         // Show attendee information modal
         showAttendeeInfoModal() {
             // Check if the user has already logged in
@@ -1940,6 +1982,9 @@ export default {
                         toast.success('RSVP successful!');
                         this.getAttendees();
                         this.rsvpStatus = true;
+
+                        // Show RSVP success modal
+                        this.showRSVPSuccessModal();
 
                         // Show purchase modal for paid events
                         if (this.event.paidEvent === true || this.event.paidEvent === 'true') {
